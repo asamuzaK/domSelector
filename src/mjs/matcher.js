@@ -422,11 +422,60 @@ export const matchAnPlusBSelector = (leafName, leaf = {}, node = {}) => {
 };
 
 /**
+ * match language pseudo class selector
+ * @param {object} leaf - ast leaf
+ * @param {object} node - element node
+ * @returns {?object} - node if matched
+ */
+export const matchLanguagePseudoClassSelector = (leaf = {}, node = {}) => {
+  const { name: leafName, type: leafType } = leaf;
+  const { lang, nodeType } = node;
+  let res;
+  if (leafType === IDENTIFIER && nodeType === Node.ELEMENT_NODE) {
+    // FIXME:
+    /*
+    if (leafName === '') {
+      if (!lang) {
+        res = node;
+      }
+    } else if (leafName === '*') {
+    }
+    */
+    if (/[A-Za-z\d-]+/.test(leafName)) {
+      const codePart = '(?:-[A-Za-z\\d]+)?';
+      let reg;
+      if (/-/.test(leafName)) {
+        const [langMain, langSub, ...langRest] = leafName.split('-');
+        // FIXME: needs refactoring
+        reg = new RegExp(`${langMain}${codePart}-${langSub}${codePart}-${langRest.join('-')}${codePart}`);
+      } else {
+        reg = new RegExp(`^${leafName}${codePart}$`);
+      }
+      if (lang) {
+        if (reg.test(lang)) {
+          res = node;
+        }
+      } else {
+        let target = node;
+        while (target.parentNode) {
+          if (reg.test(target.lang)) {
+            res = node;
+            break;
+          }
+          target = target.parentNode;
+        }
+      }
+    }
+  }
+  return res || null;
+};
+
+/**
  * match pseudo class selector
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
  * @param {object} [refPoint] - reference point
- * @returns {?object} - node if matched
+ * @returns {object|Array|null} - node or array of nodes if matched
  */
 export const matchPseudoClassSelector = (
   leaf = {},
@@ -442,8 +491,21 @@ export const matchPseudoClassSelector = (
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(leafName)) {
         res = matchAnPlusBSelector(leafName, leafChildAst, node);
+      } else {
+        switch (leafName) {
+          case 'dir':
+            if (leafChildAst.name === node.dir) {
+              res = node;
+            }
+            break;
+          case 'lang':
+            res = matchLanguagePseudoClassSelector(leafChildAst, node);
+            break;
+          }
+          // TODO: :not(), :is(), :where(), :has(), etc.
+          default:
+        }
       }
-      // TODO: :not(), is(), :where(), :has(), etc.
     } else {
       const root = ownerDocument.documentElement;
       const docURL = new URL(ownerDocument.URL);

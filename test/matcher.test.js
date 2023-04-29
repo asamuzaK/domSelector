@@ -18,7 +18,8 @@ import {
 
 describe('match ast leaf against node', () => {
   const globalKeys = ['Node'];
-  const domStr = '<!DOCTYPE html><html><head></head><body></body></html>';
+  const domStr =
+    '<!doctype html><html lang="en"><head></head><body></body></html>';
   const domOpt = {
     runScripts: 'dangerously',
     url: 'https://localhost/#foo'
@@ -2339,6 +2340,69 @@ describe('match ast leaf against node', () => {
     });
   });
 
+  describe('match language pseudo class selector', () => {
+    const func = mjs.matchLanguagePseudoClassSelector;
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en-US');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'de-DE',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
   describe('match pseudo class selector', () => {
     const func = mjs.matchPseudoClassSelector;
 
@@ -2491,6 +2555,131 @@ describe('match ast leaf against node', () => {
         node5,
         node1
       ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'auto',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'dir',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'auto');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'ltr',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'dir',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'ltr');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'rtl',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'dir',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'rtl');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'auto',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'dir',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'en',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'lang',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'en',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'lang',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en-US');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            name: 'de-DE',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'lang',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
     });
 
     it('should get matched node', () => {

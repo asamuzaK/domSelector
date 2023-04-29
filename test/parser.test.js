@@ -3461,6 +3461,217 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func(':dir(foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'foo',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'dir',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':dir(ltr)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'ltr',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'dir',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':dir(rtr)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'rtr',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'dir',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':dir(auto)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'auto',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'dir',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang(de)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'de',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // FIXME: expect to parse
+    it('should throw', () => {
+      assert.throws(() => func(':lang("en-US")'), SyntaxError);
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang(de-DE)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'de-DE',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang(\\*-Latn)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '\\*-Latn',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // FIXME: expect to parse
+    it('should throw', () => {
+      assert.throws(() => func(':lang("*-Latn")'), SyntaxError);
+    });
+
+    // FIXME: expect to parse
+    it('should throw', () => {
+      assert.throws(() => func(':lang("")'), SyntaxError);
+    });
   });
 
   describe('combinators', () => {
