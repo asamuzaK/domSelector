@@ -1,0 +1,38 @@
+{
+  "name": "dom-selector",
+  "description": "Retrieve DOM nodes from the given CSS selectors.",
+  "author": "asamuzaK",
+  "license": "MIT",
+  "homepage": "https://github.com/asamuzaK/domSelector#readme",
+  "bugs": {
+    "url": "https://github.com/asamuzaK/domSelector/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asamuzaK/domSelector.git"
+  },
+  "main": "src/index.js",
+  "type": "module",
+  "dependencies": {
+    "css-tree": "^2.3.1"
+  },
+  "devDependencies": {
+    "c8": "^7.13.0",
+    "chai": "^4.3.7",
+    "esbuild": "^0.17.18",
+    "eslint": "^8.39.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-jsdoc": "^43.1.1",
+    "eslint-plugin-regexp": "^1.14.0",
+    "eslint-plugin-unicorn": "^46.0.0",
+    "jsdom": "^21.1.1",
+    "mocha": "^10.2.0",
+    "sinon": "^15.0.4",
+    "typescript": "^5.0.4"
+  },
+  "scripts": {
+    "lint": "eslint --fix .",
+    "test": "c8 --reporter=text mocha --exit test/*.test.js"
+  },
+  "version": "0.0.1"
+}
