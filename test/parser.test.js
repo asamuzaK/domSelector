@@ -3404,7 +3404,7 @@ describe('create AST from CSS selector', () => {
       assert.throws(() => func(':nth-last-of-type(2n + - 1)'), SyntaxError);
     });
 
-    // NOTE: :nth-colon() not yet supported
+    // NOTE: :nth-col() not yet supported
     it('should get selector list', () => {
       const res = func(':nth-col(even)');
       assert.deepEqual(res, {

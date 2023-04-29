@@ -501,9 +501,14 @@ export const matchPseudoClassSelector = (
           case 'lang':
             res = matchLanguagePseudoClassSelector(leafChildAst, node);
             break;
-          }
-          // TODO: :not(), :is(), :where(), :has(), etc.
+          // TODO: :not(), :is(), :where(), :has()
+          case 'current':
+          case 'nth-col':
+          case 'nth-last-col':
+            console.warn(`${leafName} pseudo class not supported`);
+            break;
           default:
+            console.warn(`Unknown pseudo class ${leafName}`);
         }
       }
     } else {

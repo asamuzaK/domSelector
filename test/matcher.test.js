@@ -2682,6 +2682,50 @@ describe('match ast leaf against node', () => {
       assert.deepEqual(res, node, 'result');
     });
 
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: [
+          {
+            type: RAW,
+            value: 'foo'
+          }
+        ],
+        loc: null,
+        name: 'current',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.isNull(res, 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: [
+          {
+            type: RAW,
+            value: 'foo'
+          }
+        ],
+        loc: null,
+        name: 'foobar',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.isNull(res, 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         children: null,
