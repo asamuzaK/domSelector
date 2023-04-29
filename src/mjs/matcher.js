@@ -2,6 +2,7 @@
  * matcher.js
  */
 
+import { isString } from './common.js';
 import { parseSelector, walkAst } from './parser.js';
 import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
@@ -357,6 +358,70 @@ export const matchAttributeSelector = (leaf = {}, node = {}) => {
 };
 
 /**
+ * match An+B selector
+ * @param {string} leafName - leaf name
+ * @param {object} leaf - ast leaf
+ * @param {object} node - element node
+ * @returns {?Array} - collection of nodes if matched
+ */
+export const matchAnPlusBSelector = (leafName, leaf = {}, node = {}) => {
+  let res;
+  if (isString(leafName)) {
+    leafName = leafName.trim();
+    if (/^nth-(?:last-)?(?:child|of-type)$/.test(leafName)) {
+      const {
+        nth: {
+          a,
+          b,
+          name: identName
+        },
+        selector: leafSelector,
+        type: leafType
+      } = leaf;
+      const { nodeType } = node;
+      if (leafType === N_TH && nodeType === Node.ELEMENT_NODE) {
+        /*
+        // TODO:
+        // :nth-child(An+B of S)
+        if (leafSelector) {
+        } else {
+        */
+        if (!leafSelector) {
+          const optMap = new Map();
+          if (identName) {
+            if (identName === 'even') {
+              optMap.set('a', 2);
+              optMap.set('b', 0);
+            } else if (identName === 'odd') {
+              optMap.set('a', 2);
+              optMap.set('b', 1);
+            }
+            if (/last/.test(leafName)) {
+              optMap.set('reverse', true);
+            }
+          } else if (/-?\d+/.test(a) && /-?\d+/.test(b)) {
+            optMap.set('a', a * 1);
+            optMap.set('b', b * 1);
+            if (/last/.test(leafName)) {
+              optMap.set('reverse', true);
+            }
+          }
+          if (optMap.size > 1) {
+            const opt = Object.fromEntries(optMap);
+            if (/^nth-(?:last-)?child$/.test(leafName)) {
+              res = collectNthChild(node, opt);
+            } else if (/^nth-(?:last-)?of-type$/.test(leafName)) {
+              res = collectNthOfType(node, opt);
+            }
+          }
+        }
+      }
+    }
+  }
+  return res || null;
+};
+
+/**
  * match pseudo class selector
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
@@ -372,12 +437,14 @@ export const matchPseudoClassSelector = (
   const { nodeType, ownerDocument } = node;
   let res;
   if (leafType === PSEUDO_CLASS_SELECTOR && nodeType === Node.ELEMENT_NODE) {
-    /*
     if (Array.isArray(leafChildren)) {
-      // TODO:
+      const [leafChildAst] = leafChildren;
+      // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
+      if (/^nth-(?:last-)?(?:child|of-type)$/.test(leafName)) {
+        res = matchAnPlusBSelector(leafName, leafChildAst, node);
+      }
+      // TODO: :not(), is(), :where(), :has(), etc.
     } else {
-    */
-    if (!leafChildren) {
       const root = ownerDocument.documentElement;
       const docURL = new URL(ownerDocument.URL);
       switch (leafName) {

@@ -340,7 +340,6 @@ describe('match ast leaf against node', () => {
         node6
       ], 'result');
     });
-
   });
 
   describe('collect nth of type', () => {
@@ -2012,12 +2011,486 @@ describe('match ast leaf against node', () => {
     });
   });
 
+  describe('match An+B selector', () => {
+    const func = mjs.matchAnPlusBSelector;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get null', () => {
+      const res = func('foo');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node1,
+        node3,
+        node5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          name: 'odd',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node2,
+        node4,
+        node6
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-last-child';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node6,
+        node4,
+        node2
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node2,
+        node5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-last-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node5,
+        node2
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node1,
+        node5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          name: 'odd',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node3
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-last-of-type';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node5,
+        node1
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node3
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-last-of-type';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node3
+      ], 'result');
+    });
+  });
+
   describe('match pseudo class selector', () => {
     const func = mjs.matchPseudoClassSelector;
 
     it('should get null', () => {
       const res = func();
       assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            nth: {
+              name: 'even',
+              type: IDENTIFIER
+            },
+            selector: null,
+            type: N_TH
+          }
+        ],
+        name: 'nth-child',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [
+        node1,
+        node3,
+        node5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            nth: {
+              name: 'even',
+              type: IDENTIFIER
+            },
+            selector: null,
+            type: N_TH
+          }
+        ],
+        name: 'nth-last-child',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [
+        node6,
+        node4,
+        node2
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            nth: {
+              name: 'even',
+              type: IDENTIFIER
+            },
+            selector: null,
+            type: N_TH
+          }
+        ],
+        name: 'nth-of-type',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [
+        node1,
+        node5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: [
+          {
+            nth: {
+              name: 'even',
+              type: IDENTIFIER
+            },
+            selector: null,
+            type: N_TH
+          }
+        ],
+        name: 'nth-last-of-type',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [
+        node5,
+        node1
+      ], 'result');
     });
 
     it('should get matched node', () => {
