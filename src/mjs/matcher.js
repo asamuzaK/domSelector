@@ -39,7 +39,7 @@ export const collectNthChild = (node = {}, opt = {}) => {
     // :nth-child()
     } else {
       let n = 0;
-      let nth = b;
+      let nth = b - 1;
       while (nth < 0) {
         nth += (++n * a);
       }
@@ -97,7 +97,7 @@ export const collectNthOfType = (node = {}, opt = {}) => {
       }
     // :nth-of-type()
     } else {
-      let nth = b;
+      let nth = b - 1;
       while (nth < 0) {
         nth += a;
       }
@@ -358,13 +358,13 @@ export const matchAttributeSelector = (leaf = {}, node = {}) => {
 };
 
 /**
- * match An+B selector
+ * match An+B
  * @param {string} leafName - leaf name
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
  * @returns {?Array} - collection of nodes if matched
  */
-export const matchAnPlusBSelector = (leafName, leaf = {}, node = {}) => {
+export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
   let res;
   if (isString(leafName)) {
     leafName = leafName.trim();
@@ -381,7 +381,7 @@ export const matchAnPlusBSelector = (leafName, leaf = {}, node = {}) => {
       const { nodeType } = node;
       if (leafType === N_TH && nodeType === Node.ELEMENT_NODE) {
         /*
-        // TODO:
+        // FIXME:
         // :nth-child(An+B of S)
         if (leafSelector) {
         } else {
@@ -422,12 +422,12 @@ export const matchAnPlusBSelector = (leafName, leaf = {}, node = {}) => {
 };
 
 /**
- * match language pseudo class selector
+ * match language pseudo class
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchLanguagePseudoClassSelector = (leaf = {}, node = {}) => {
+export const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
   const { name: leafName, type: leafType } = leaf;
   const { lang, nodeType } = node;
   let res;
@@ -490,7 +490,7 @@ export const matchPseudoClassSelector = (
       const [leafChildAst] = leafChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(leafName)) {
-        res = matchAnPlusBSelector(leafName, leafChildAst, node);
+        res = matchAnPlusB(leafName, leafChildAst, node);
       } else {
         switch (leafName) {
           case 'dir':
@@ -499,7 +499,7 @@ export const matchPseudoClassSelector = (
             }
             break;
           case 'lang':
-            res = matchLanguagePseudoClassSelector(leafChildAst, node);
+            res = matchLanguagePseudoClass(leafChildAst, node);
             break;
           // TODO: :not(), :is(), :where(), :has()
           case 'current':
@@ -719,12 +719,12 @@ export class Matcher {
   }
 
   /**
-   * handle combinator
+   * match combinator
    * @param {Array} leaves - array of ast leaves
    * @param {object} node - referrer node
-   * @returns {?object} - referenced node if matched
+   * @returns {?object} - referenced node if ",\ned
    */
-  _handleCombinator(leaves, node) {
+  _matchCombinator(leaves, node) {
     let res;
     if (Array.isArray(leaves) && leaves.length > 1) {
       const [combo, ...items] = leaves;
@@ -779,12 +779,12 @@ export class Matcher {
   }
 
   /**
-   * handle selector child
+   * match selector child
    * @param {Array} child - selector child
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
-  _handleSelectorChild(child, node) {
+  _matchSelectorChild(child, node) {
     let res;
     if (Array.isArray(child) && child.length) {
       const [...items] = child;
@@ -804,9 +804,16 @@ export class Matcher {
               leaves.push(items.pop());
             }
           }
-          refNode = this._handleCombinator(leaves, refNode);
+          refNode = this._matchCombinator(leaves, refNode);
         } else {
-          refNode = this.matches(item, refNode);
+          const resNode = this.matches(item, refNode);
+          if (Array.isArray(resNode)) {
+            if (!resNode.includes(refNode)) {
+              refNode = null;
+            }
+          } else {
+            refNode = resNode;
+          }
         }
         if (!refNode) {
           break;
@@ -847,7 +854,7 @@ export class Matcher {
     walkAst(ast, opt);
     let res;
     if (leaves.length &&
-        leaves.some(child => this._handleSelectorChild(child, node))) {
+        leaves.some(child => this._matchSelectorChild(child, node))) {
       res = this.node;
     }
     return res || null;
@@ -908,5 +915,45 @@ export class Matcher {
       res = node;
     }
     return res || null;
+  }
+
+  /**
+   * query selector
+   * @returns {?object} - node if matched
+   */
+  querySelector() {
+    const ast = this._createAst();
+    const iterator = this.ownerDocument.createNodeIterator(
+      this.node,
+      NodeFilter.SHOW_ELEMENT,
+      node => this.matches(ast, node)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+    );
+    const res = iterator.nextNode();
+    return res || null;
+  }
+
+  /**
+   * query selector all
+   * CAVEAT: returns Array, not NodeList
+   * @returns {Array} - array of nodes if matched
+   */
+  querySelectorAll() {
+    const ast = this._createAst();
+    const iterator = this.ownerDocument.createNodeIterator(
+      this.node,
+      NodeFilter.SHOW_ELEMENT,
+      node => this.matches(ast, node)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+    );
+    const res = [];
+    let currentNode = iterator.nextNode();
+    while (currentNode) {
+      res.push(currentNode);
+      currentNode = iterator.nextNode();
+    }
+    return res;
   }
 };

@@ -17,7 +17,7 @@ import {
 } from '../src/mjs/constant.js';
 
 describe('match ast leaf against node', () => {
-  const globalKeys = ['Node'];
+  const globalKeys = ['Node', 'NodeFilter'];
   const domStr =
     '<!doctype html><html lang="en"><head></head><body></body></html>';
   const domOpt = {
@@ -253,6 +253,7 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
+        node1,
         node2,
         node3,
         node4,
@@ -282,9 +283,9 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
-        node1,
-        node3,
-        node5
+        node2,
+        node4,
+        node6
       ], 'result');
     });
 
@@ -309,9 +310,9 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
-        node2,
-        node4,
-        node6
+        node1,
+        node3,
+        node5
       ], 'result');
     });
 
@@ -336,9 +337,9 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
-        node2,
-        node4,
-        node6
+        node1,
+        node3,
+        node5
       ], 'result');
     });
   });
@@ -568,6 +569,7 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
+        node1,
         node3,
         node5
       ], 'result');
@@ -621,8 +623,7 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
-        node1,
-        node5
+        node3
       ], 'result');
     });
 
@@ -647,7 +648,8 @@ describe('match ast leaf against node', () => {
       };
       const res = func(node1, opt);
       assert.deepEqual(res, [
-        node3
+        node1,
+        node5
       ], 'result');
     });
   });
@@ -2012,8 +2014,8 @@ describe('match ast leaf against node', () => {
     });
   });
 
-  describe('match An+B selector', () => {
-    const func = mjs.matchAnPlusBSelector;
+  describe('match An+B', () => {
+    const func = mjs.matchAnPlusB;
 
     it('should get null', () => {
       const res = func();
@@ -2051,9 +2053,9 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node1,
-        node3,
-        node5
+        node2,
+        node4,
+        node6
       ], 'result');
     });
 
@@ -2083,9 +2085,9 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node2,
-        node4,
-        node6
+        node1,
+        node3,
+        node5
       ], 'result');
     });
 
@@ -2095,6 +2097,71 @@ describe('match ast leaf against node', () => {
         nth: {
           name: 'even',
           type: IDENTIFIER
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node5,
+        node3,
+        node1
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: N_TH
+      };
+      const parent = document.createElement('dl');
+      const node1 = document.createElement('dt');
+      const node2 = document.createElement('dd');
+      const node3 = document.createElement('dt');
+      const node4 = document.createElement('dd');
+      const node5 = document.createElement('dt');
+      const node6 = document.createElement('dd');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      parent.appendChild(node6);
+      document.body.appendChild(parent);
+      const res = func(leafName, leaf, node1);
+      assert.deepEqual(res, [
+        node1,
+        node4
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-last-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
         },
         selector: null,
         type: N_TH
@@ -2116,72 +2183,7 @@ describe('match ast leaf against node', () => {
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
         node6,
-        node4,
-        node2
-      ], 'result');
-    });
-
-    it('should get matched node', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: N_TH
-      };
-      const parent = document.createElement('dl');
-      const node1 = document.createElement('dt');
-      const node2 = document.createElement('dd');
-      const node3 = document.createElement('dt');
-      const node4 = document.createElement('dd');
-      const node5 = document.createElement('dt');
-      const node6 = document.createElement('dd');
-      parent.appendChild(node1);
-      parent.appendChild(node2);
-      parent.appendChild(node3);
-      parent.appendChild(node4);
-      parent.appendChild(node5);
-      parent.appendChild(node6);
-      document.body.appendChild(parent);
-      const res = func(leafName, leaf, node1);
-      assert.deepEqual(res, [
-        node2,
-        node5
-      ], 'result');
-    });
-
-    it('should get matched node', () => {
-      const leafName = 'nth-last-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: N_TH
-      };
-      const parent = document.createElement('dl');
-      const node1 = document.createElement('dt');
-      const node2 = document.createElement('dd');
-      const node3 = document.createElement('dt');
-      const node4 = document.createElement('dd');
-      const node5 = document.createElement('dt');
-      const node6 = document.createElement('dd');
-      parent.appendChild(node1);
-      parent.appendChild(node2);
-      parent.appendChild(node3);
-      parent.appendChild(node4);
-      parent.appendChild(node5);
-      parent.appendChild(node6);
-      document.body.appendChild(parent);
-      const res = func(leafName, leaf, node1);
-      assert.deepEqual(res, [
-        node5,
-        node2
+        node3
       ], 'result');
     });
 
@@ -2211,8 +2213,7 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node1,
-        node5
+        node3
       ], 'result');
     });
 
@@ -2242,7 +2243,8 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node3
+        node1,
+        node5
       ], 'result');
     });
 
@@ -2272,8 +2274,7 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node5,
-        node1
+        node3
       ], 'result');
     });
 
@@ -2304,7 +2305,7 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node3
+        node1
       ], 'result');
     });
 
@@ -2335,13 +2336,13 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leafName, leaf, node1);
       assert.deepEqual(res, [
-        node3
+        node5
       ], 'result');
     });
   });
 
-  describe('match language pseudo class selector', () => {
-    const func = mjs.matchLanguagePseudoClassSelector;
+  describe('match language pseudo class', () => {
+    const func = mjs.matchLanguagePseudoClass;
 
     it('should get matched node', () => {
       const leaf = {
@@ -2442,9 +2443,9 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leaf, node1);
       assert.deepEqual(res, [
-        node1,
-        node3,
-        node5
+        node2,
+        node4,
+        node6
       ], 'result');
     });
 
@@ -2479,9 +2480,9 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leaf, node1);
       assert.deepEqual(res, [
-        node6,
-        node4,
-        node2
+        node5,
+        node3,
+        node1
       ], 'result');
     });
 
@@ -2516,8 +2517,7 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leaf, node1);
       assert.deepEqual(res, [
-        node1,
-        node5
+        node3
       ], 'result');
     });
 
@@ -2552,8 +2552,7 @@ describe('match ast leaf against node', () => {
       document.body.appendChild(parent);
       const res = func(leaf, node1);
       assert.deepEqual(res, [
-        node5,
-        node1
+        node3
       ], 'result');
     });
 
@@ -3513,7 +3512,7 @@ describe('match ast leaf against node', () => {
       });
     });
 
-    describe('handle combinator', () => {
+    describe('match combinator', () => {
       it('should get matched node', () => {
         const leaves = [
           { type: COMBINATOR, loc: null, name: '>' },
@@ -3544,7 +3543,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleCombinator(leaves);
+        const res = matcher._matchCombinator(leaves);
         assert.deepEqual(res, ul1, 'result');
       });
 
@@ -3578,7 +3577,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('qux');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleCombinator(leaves);
+        const res = matcher._matchCombinator(leaves);
         assert.isNull(res, 'result');
       });
 
@@ -3612,7 +3611,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleCombinator(leaves, ul1);
+        const res = matcher._matchCombinator(leaves, ul1);
         assert.deepEqual(res, div1, 'result');
       });
 
@@ -3646,7 +3645,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleCombinator(leaves, ul1);
+        const res = matcher._matchCombinator(leaves, ul1);
         assert.isNull(res, 'result');
       });
 
@@ -3680,7 +3679,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('bar');
         li4.classList.add('baz');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
-        const res = matcher._handleCombinator(leaves);
+        const res = matcher._matchCombinator(leaves);
         assert.deepEqual(res, li3, 'result');
       });
 
@@ -3714,7 +3713,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('bar');
         li4.classList.add('baz');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz', li5);
-        const res = matcher._handleCombinator(leaves);
+        const res = matcher._matchCombinator(leaves);
         assert.isNull(res, 'result');
       });
 
@@ -3748,7 +3747,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('bar');
         li4.classList.add('baz');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
-        const res = matcher._handleCombinator(leaves, li3);
+        const res = matcher._matchCombinator(leaves, li3);
         assert.deepEqual(res, li1, 'result');
       });
 
@@ -3782,7 +3781,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('bar');
         li4.classList.add('baz');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
-        const res = matcher._handleCombinator(leaves, li3);
+        const res = matcher._matchCombinator(leaves, li3);
         assert.isNull(res, 'result');
       });
 
@@ -3817,7 +3816,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('bar');
         li4.classList.add('baz');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz', li5);
-        const res = matcher._handleCombinator(leaves);
+        const res = matcher._matchCombinator(leaves);
         const { called } = stubWarn;
         stubWarn.restore();
         assert.isTrue(called, 'console');
@@ -3825,7 +3824,7 @@ describe('match ast leaf against node', () => {
       });
     });
 
-    describe('handle selector child', () => {
+    describe('match selector child', () => {
       it('should get matched node', () => {
         const child = [
           {
@@ -3863,7 +3862,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleSelectorChild(child);
+        const res = matcher._matchSelectorChild(child);
         assert.deepEqual(res, li3, 'result');
       });
 
@@ -3934,7 +3933,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleSelectorChild(child);
+        const res = matcher._matchSelectorChild(child);
         assert.deepEqual(res, li3, 'result');
       });
 
@@ -4005,7 +4004,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleSelectorChild(child, li3);
+        const res = matcher._matchSelectorChild(child, li3);
         assert.deepEqual(res, li3, 'result');
       });
 
@@ -4076,7 +4075,7 @@ describe('match ast leaf against node', () => {
         ul1.classList.add('bar');
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
-        const res = matcher._handleSelectorChild(child, li3);
+        const res = matcher._matchSelectorChild(child, li3);
         assert.isNull(res, 'result');
       });
     });
@@ -4277,6 +4276,35 @@ describe('match ast leaf against node', () => {
         const res = matcher.matches();
         assert.deepEqual(res, li4, 'result');
       });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li:nth-child(odd)', li3);
+        const res = matcher.matches();
+        assert.deepEqual(res, li3, 'result');
+      });
     });
 
     describe('closest', () => {
@@ -4336,6 +4364,192 @@ describe('match ast leaf against node', () => {
         const matcher = new Matcher('div.foobar', li3);
         const res = matcher.closest();
         assert.isNull(res, 'result');
+      });
+    });
+
+    describe('query selector', () => {
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('.bar', document);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, ul1, 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('.baz', div1);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('.qux', div1);
+        const res = matcher.querySelector();
+        assert.isNull(res, 'result');
+      });
+    });
+
+    describe('query selector all', () => {
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('li:nth-child(odd)', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          li1,
+          li3,
+          li5
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('li:nth-child(odd)', div1);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          li1,
+          li3,
+          li5
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('.qux', div1);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [], 'result');
       });
     });
   });
