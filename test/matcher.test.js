@@ -3294,4 +3294,989 @@ describe('match ast leaf against node', () => {
       assert.isNull(res, 'result');
     });
   });
+
+  describe('Matcher', () => {
+    const { Matcher } = mjs;
+
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher();
+      assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher('*', document.body);
+      assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher('*', document.body.ownerDocument);
+      assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    describe('create ast', () => {
+      it('should get null', () => {
+        const matcher = new Matcher();
+        const res = matcher._createAst();
+        assert.isNull(res, 'result');
+      });
+
+      it('should get null', () => {
+        const matcher = new Matcher('');
+        const res = matcher._createAst();
+        assert.isNull(res, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('*|');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+
+      it('should get ast', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('div.bar[data-baz]#foo:first-child');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'bar',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  flags: null,
+                  loc: null,
+                  matcher: null,
+                  name: {
+                    loc: null,
+                    name: 'data-baz',
+                    type: 'Identifier'
+                  },
+                  type: ATTRIBUTE_SELECTOR,
+                  value: null
+                },
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: ID_SELECTOR
+                },
+                {
+                  children: null,
+                  loc: null,
+                  name: 'first-child',
+                  type: PSEUDO_CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
+      });
+
+      it('should get ast', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('div.foo ul.bar > li.baz');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'ul',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'bar',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
+      });
+
+      it('should get selector list', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: '~',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'bar',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: '+',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
+      });
+    });
+
+    describe('handle combinator', () => {
+      it('should get matched node', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '>' },
+          { type: CLASS_SELECTOR, loc: null, name: 'bar' },
+          { type: TYPE_SELECTOR, loc: null, name: 'ul' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleCombinator(leaves);
+        assert.deepEqual(res, ul1, 'result');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '>' },
+          { type: CLASS_SELECTOR, loc: null, name: 'bar' },
+          { type: TYPE_SELECTOR, loc: null, name: 'ul' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('qux');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleCombinator(leaves);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: ' ' },
+          { type: CLASS_SELECTOR, loc: null, name: 'foo' },
+          { type: TYPE_SELECTOR, loc: null, name: 'div' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleCombinator(leaves, ul1);
+        assert.deepEqual(res, div1, 'result');
+      });
+
+      it('should not matched node', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: ' ' },
+          { type: CLASS_SELECTOR, loc: null, name: 'foo' },
+          { type: TYPE_SELECTOR, loc: null, name: 'div' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foobar');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleCombinator(leaves, ul1);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '+' },
+          { type: CLASS_SELECTOR, loc: null, name: 'bar' },
+          { type: TYPE_SELECTOR, loc: null, name: 'li' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
+        const res = matcher._handleCombinator(leaves);
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '+' },
+          { type: CLASS_SELECTOR, loc: null, name: 'bar' },
+          { type: TYPE_SELECTOR, loc: null, name: 'li' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li5);
+        const res = matcher._handleCombinator(leaves);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '~' },
+          { type: CLASS_SELECTOR, loc: null, name: 'foo' },
+          { type: TYPE_SELECTOR, loc: null, name: 'li' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
+        const res = matcher._handleCombinator(leaves, li3);
+        assert.deepEqual(res, li1, 'result');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '~' },
+          { type: CLASS_SELECTOR, loc: null, name: 'foo' },
+          { type: TYPE_SELECTOR, loc: null, name: 'li' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foobar');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
+        const res = matcher._handleCombinator(leaves, li3);
+        assert.isNull(res, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const leaves = [
+          { type: COMBINATOR, loc: null, name: '=' },
+          { type: CLASS_SELECTOR, loc: null, name: 'bar' },
+          { type: TYPE_SELECTOR, loc: null, name: 'li' }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li5);
+        const res = matcher._handleCombinator(leaves);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+    });
+
+    describe('handle selector child', () => {
+      it('should get matched node', () => {
+        const child = [
+          {
+            loc: null,
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'baz',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleSelectorChild(child);
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const child = [
+          {
+            loc: null,
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: ' ',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'ul',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'bar',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'baz',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleSelectorChild(child);
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const child = [
+          {
+            loc: null,
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: ' ',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'ul',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'bar',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'baz',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleSelectorChild(child, li3);
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should not match', () => {
+        const child = [
+          {
+            loc: null,
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: ' ',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'ul',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'bar',
+            type: CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            loc: null,
+            name: 'baz',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foobar');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._handleSelectorChild(child, li3);
+        assert.isNull(res, 'result');
+      });
+    });
+
+    describe('walk ast', () => {
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._walkAst();
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'ul',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'bar',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher._walkAst(ast);
+        assert.deepEqual(res, li3, 'result');
+      });
+    });
+
+    describe('matches', () => {
+      it('should get matched node', () => {
+        const node = document.createElement('div');
+        node.id = 'foo';
+        node.classList.add('bar');
+        node.dataset.baz = 'qux';
+        document.body.appendChild(node);
+        const matcher = new Matcher('div.bar[data-baz]#foo:first-child', node);
+        const res = matcher.matches();
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.createElement('div');
+        node.id = 'foo';
+        node.classList.add('bar');
+        node.dataset.baz = 'qux';
+        document.body.appendChild(node);
+        const matcher = new Matcher('div.bar[*|]#foo:first-child', node);
+        const res = matcher.matches();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
+        const res = matcher.matches();
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        li1.classList.add('foo');
+        li3.classList.add('bar');
+        li4.classList.add('baz');
+        const matcher = new Matcher('li.foo ~ li.bar + li.baz', li4);
+        const res = matcher.matches();
+        assert.deepEqual(res, li4, 'result');
+      });
+    });
+  });
 });

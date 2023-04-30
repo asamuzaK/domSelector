@@ -505,7 +505,7 @@ export const matchPseudoClassSelector = (
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
-            console.warn(`${leafName} pseudo class not supported`);
+            console.warn(`Unsupported pseudo class ${leafName}`);
             break;
           default:
             console.warn(`Unknown pseudo class ${leafName}`);
@@ -531,7 +531,8 @@ export const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'visited': // prevent fingerprinting
+        case 'visited':
+          // prevent fingerprinting
           break;
         case 'target':
           if (docURL.hash && node.id && docURL.hash === `#${node.id}`) {
@@ -675,7 +676,7 @@ export const matchPseudoClassSelector = (
         case 'user-valid':
         case 'valid':
         case 'volume-locked':
-          console.warn(`${leafName} pseudo class not supported`);
+          console.warn(`Unsupported pseudo class ${leafName}`);
           break;
         default:
           console.warn(`Unknown pseudo class ${leafName}`);
@@ -683,4 +684,218 @@ export const matchPseudoClassSelector = (
     }
   }
   return res || null;
+};
+
+/**
+ * Matcher
+ */
+export class Matcher {
+  /**
+   * construct
+   * @param {string} sel - CSS selector
+   * @param {object} refPoint - reference point
+   */
+  constructor(sel, refPoint) {
+    this.selector = sel;
+    this.node = refPoint;
+    this.ownerDocument = refPoint?.ownerDocument ?? refPoint;
+  }
+
+  /**
+   * create ast
+   * @returns {?object} - ast
+   */
+  _createAst() {
+    let ast;
+    if (this.selector && isString(this.selector)) {
+      try {
+        ast = parseSelector(this.selector);
+      } catch (e) {
+        console.warn(e);
+        ast = null;
+      }
+    }
+    return ast || null;
+  }
+
+  /**
+   * handle combinator
+   * @param {Array} leaves - array of ast leaves
+   * @param {object} node - referrer node
+   * @returns {?object} - referenced node if matched
+   */
+  _handleCombinator(leaves, node) {
+    let res;
+    if (Array.isArray(leaves) && leaves.length > 1) {
+      const [combo, ...items] = leaves;
+      const { name: comboName, type: comboType } = combo;
+      if (comboType === COMBINATOR) {
+        if (!node) {
+          node = this.node;
+        }
+        switch (comboName) {
+          case ' ': {
+            node = node.parentNode;
+            while (node) {
+              if (items.every(leaf => this.matches(leaf, node))) {
+                res = node;
+                break;
+              }
+              node = node.parentNode;
+            }
+            break;
+          }
+          case '>': {
+            node = node.parentNode;
+            if (items.every(leaf => this.matches(leaf, node))) {
+              res = node;
+            }
+            break;
+          }
+          case '+': {
+            node = node.previousElementSibling;
+            if (items.every(leaf => this.matches(leaf, node))) {
+              res = node;
+            }
+            break;
+          }
+          case '~': {
+            node = node.previousElementSibling;
+            while (node) {
+              if (items.every(leaf => this.matches(leaf, node))) {
+                res = node;
+                break;
+              }
+              node = node.previousElementSibling;
+            }
+            break;
+          }
+          default:
+            console.warn(`Unknown combinator ${comboName}`);
+        }
+      }
+    }
+    return res || null;
+  }
+
+  /**
+   * handle selector child
+   * @param {Array} child - selector child
+   * @param {object} node - target node
+   * @returns {?object} - node if matched
+   */
+  _handleSelectorChild(child, node) {
+    let res;
+    if (Array.isArray(child) && child.length) {
+      const [...items] = child;
+      if (!node) {
+        node = this.node;
+      }
+      let refNode = node;
+      do {
+        const item = items.pop();
+        if (item.type === COMBINATOR) {
+          const leaves = [];
+          leaves.push(item);
+          while (items.length) {
+            if (items[items.length - 1].type === COMBINATOR) {
+              break;
+            } else {
+              leaves.push(items.pop());
+            }
+          }
+          refNode = this._handleCombinator(leaves, refNode);
+        } else {
+          refNode = this.matches(item, refNode);
+        }
+        if (!refNode) {
+          break;
+        }
+      } while (items.length);
+      if (refNode) {
+        res = node;
+      }
+    }
+    return res || null;
+  }
+
+  /**
+   * walk ast
+   * @param {object} ast - ast tree
+   * @param {object} node - target node
+   * @returns {?object} - node if matched
+   */
+  _walkAst(ast, node) {
+    const leaves = [];
+    const opt = {
+      enter: leaf => {
+        if (leaf.type === SELECTOR) {
+          leaves.push(leaf.children);
+        }
+      },
+      leave: leaf => {
+        let skip;
+        if (leaf.type === SELECTOR) {
+          skip = walkAst.skip;
+        }
+        return skip;
+      }
+    };
+    if (!ast) {
+      ast = this._createAst() || {};
+    }
+    walkAst(ast, opt);
+    let res;
+    if (leaves.length &&
+        leaves.some(child => this._handleSelectorChild(child, node))) {
+      res = this.node;
+    }
+    return res || null;
+  }
+
+  /**
+   * matches
+   * @param {object} ast - ast tree
+   * @param {object} node - target node
+   * @returns {?object} - matched node
+   */
+  matches(ast, node) {
+    if (!ast) {
+      ast = this._createAst();
+    }
+    if (!node) {
+      node = this.node;
+    }
+    const { type } = ast || {};
+    let res;
+    switch (type) {
+      case TYPE_SELECTOR:
+        res = matchTypeSelector(ast, node);
+        break;
+      case CLASS_SELECTOR:
+        res = matchClassSelector(ast, node);
+        break;
+      case ID_SELECTOR:
+        res = matchIdSelector(ast, node);
+        break;
+      case ATTRIBUTE_SELECTOR:
+        res = matchAttributeSelector(ast, node);
+        break;
+      case PSEUDO_CLASS_SELECTOR:
+        res = matchPseudoClassSelector(ast, node);
+        break;
+      default:
+        res = this._walkAst(ast, node);
+    }
+    return res || null;
+  }
+
+  /**
+   * closest
+   * @returns {?object} - matched node
+   */
+  /*
+  closest() {
+  }
+  */
 };

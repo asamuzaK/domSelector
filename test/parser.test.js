@@ -285,6 +285,38 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
+    it('should get selector list', () => {
+      const res = func('foo, bar');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          },
+          {
+            children: [
+              {
+                loc: null,
+                name: 'bar',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
     it('should get namespaced selector list', () => {
       const res = func('|foo');
       assert.deepEqual(res, {
@@ -3694,6 +3726,52 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo bar.baz qux');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'bar',
+                type: TYPE_SELECTOR
+              },
+              {
+                loc: null,
+                name: 'baz',
+                type: CLASS_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'qux',
                 type: TYPE_SELECTOR
               }
             ],
