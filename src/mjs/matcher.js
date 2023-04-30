@@ -894,8 +894,19 @@ export class Matcher {
    * closest
    * @returns {?object} - matched node
    */
-  /*
   closest() {
+    const ast = this._createAst();
+    let node = this.node;
+    while (node.parentNode) {
+      if (this.matches(ast, node)) {
+        break;
+      }
+      node = node.parentNode;
+    }
+    let res;
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      res = node;
+    }
+    return res || null;
   }
-  */
 };
