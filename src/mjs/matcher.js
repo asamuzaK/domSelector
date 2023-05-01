@@ -2,7 +2,7 @@
  * matcher.js
  */
 
-import { isString } from './common.js';
+import { isObjectNotEmpty, isString } from './common.js';
 import { parseSelector, walkAst } from './parser.js';
 import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
@@ -384,7 +384,7 @@ export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
         // FIXME:
         // :nth-child(An+B of S)
         if (leafSelector) {
-        } else {
+        }
         */
         if (!leafSelector) {
           const optMap = new Map();
@@ -501,7 +501,6 @@ export const matchPseudoClassSelector = (
           case 'lang':
             res = matchLanguagePseudoClass(leafChildAst, node);
             break;
-          // TODO: :not(), :is(), :where(), :has()
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
@@ -523,6 +522,7 @@ export const matchPseudoClassSelector = (
           }
           break;
         case 'local-link':
+          // FIXME: what about namespaced href? e.g. xlink:href
           if (node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
@@ -719,6 +719,53 @@ export class Matcher {
   }
 
   /**
+   * walk ast
+   * @param {object} ast - ast
+   * @returns {Array} - array of selectors
+   */
+  _walkAst(ast) {
+    const selectors = [];
+    if (isObjectNotEmpty(ast)) {
+      const opt = {
+        enter: leaf => {
+          if (leaf.type === SELECTOR) {
+            selectors.push(leaf.children);
+          }
+        },
+        leave: leaf => {
+          let skip;
+          if (leaf.type === SELECTOR) {
+            skip = walkAst.skip;
+          }
+          return skip;
+        }
+      };
+      walkAst(ast, opt);
+    }
+    return selectors;
+  }
+
+  /**
+   * create iterator
+   * @param {object} root - root node
+   * @returns {object} - iterator
+   */
+  _createIterator(root) {
+    if (!root) {
+      root = this.node;
+    }
+    const ast = this._createAst();
+    const iterator = this.ownerDocument.createNodeIterator(
+      root,
+      NodeFilter.SHOW_ELEMENT,
+      node => this._match(ast, node)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+    );
+    return iterator;
+  }
+
+  /**
    * match combinator
    * @param {Array} leaves - array of ast leaves
    * @param {object} node - referrer node
@@ -737,7 +784,7 @@ export class Matcher {
           case ' ': {
             node = node.parentNode;
             while (node) {
-              if (items.every(leaf => this.matches(leaf, node))) {
+              if (items.every(leaf => this._match(leaf, node))) {
                 res = node;
                 break;
               }
@@ -747,14 +794,14 @@ export class Matcher {
           }
           case '>': {
             node = node.parentNode;
-            if (items.every(leaf => this.matches(leaf, node))) {
+            if (items.every(leaf => this._match(leaf, node))) {
               res = node;
             }
             break;
           }
           case '+': {
             node = node.previousElementSibling;
-            if (items.every(leaf => this.matches(leaf, node))) {
+            if (items.every(leaf => this._match(leaf, node))) {
               res = node;
             }
             break;
@@ -762,7 +809,7 @@ export class Matcher {
           case '~': {
             node = node.previousElementSibling;
             while (node) {
-              if (items.every(leaf => this.matches(leaf, node))) {
+              if (items.every(leaf => this._match(leaf, node))) {
                 res = node;
                 break;
               }
@@ -806,7 +853,7 @@ export class Matcher {
           }
           refNode = this._matchCombinator(leaves, refNode);
         } else {
-          const resNode = this.matches(item, refNode);
+          const resNode = this._match(item, refNode);
           if (Array.isArray(resNode)) {
             if (!resNode.includes(refNode)) {
               refNode = null;
@@ -827,53 +874,54 @@ export class Matcher {
   }
 
   /**
-   * walk ast
-   * @param {object} ast - ast tree
+   * match logical combination pseudo class
+   * @param {object} leaf - ast leaf
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
-  _walkAst(ast, node) {
-    const leaves = [];
-    const opt = {
-      enter: leaf => {
-        if (leaf.type === SELECTOR) {
-          leaves.push(leaf.children);
-        }
-      },
-      leave: leaf => {
-        let skip;
-        if (leaf.type === SELECTOR) {
-          skip = walkAst.skip;
-        }
-        return skip;
-      }
-    };
-    if (!ast) {
-      ast = this._createAst() || {};
-    }
-    walkAst(ast, opt);
+  _matchLogicalCombinationPseudoClass(leaf, node) {
     let res;
-    if (leaves.length &&
-        leaves.some(child => this._matchSelectorChild(child, node))) {
-      res = this.node;
+    if (isObjectNotEmpty(leaf)) {
+      const { name: leafName, type: leafType } = leaf;
+      if (!node) {
+        node = this.node;
+      }
+      if (leafType === PSEUDO_CLASS_SELECTOR &&
+          /^(?:is|not|where)$/.test(leafName) &&
+          node.nodeType === Node.ELEMENT_NODE) {
+        const arr = this._walkAst(leaf);
+        if (arr.length) {
+          // :not()
+          if (leafName === 'not') {
+            if (arr.every(child => !this._matchSelectorChild(child, node))) {
+              res = node;
+            }
+          // :is(), :where()
+          } else {
+            if (arr.some(child => this._matchSelectorChild(child, node))) {
+              res = node;
+            }
+          }
+        }
+      }
     }
     return res || null;
   }
 
   /**
-   * matches
-   * @param {object} ast - ast tree
-   * @param {object} node - target node
+   * match ast
+   * @param {object} [ast] - ast tree
+   * @param {object} [node] - target node
    * @returns {?object} - matched node
    */
-  matches(ast, node) {
+  _match(ast, node) {
     if (!ast) {
       ast = this._createAst();
     }
     if (!node) {
       node = this.node;
     }
-    const { type } = ast || {};
+    const { name, type } = ast || {};
     let res;
     switch (type) {
       case TYPE_SELECTOR:
@@ -889,11 +937,36 @@ export class Matcher {
         res = matchAttributeSelector(ast, node);
         break;
       case PSEUDO_CLASS_SELECTOR:
-        res = matchPseudoClassSelector(ast, node);
+        // :is(), :not(), :where()
+        if (/^(?:is|not|where)$/.test(name)) {
+          res = this._matchLogicalCombinationPseudoClass(ast, node);
+        /*
+        // FIXME: :has()
+        } else if (name === 'has') {
+        */
+        } else {
+          res = matchPseudoClassSelector(ast, node);
+        }
         break;
-      default:
-        res = this._walkAst(ast, node);
+      default: {
+        if (ast) {
+          const arr = this._walkAst(ast);
+          if (arr.length &&
+              arr.some(child => this._matchSelectorChild(child, node))) {
+            res = node;
+          }
+        }
+      }
     }
+    return res || null;
+  }
+
+  /**
+   * matches
+   * @returns {?object} - matched node
+   */
+  matches() {
+    const res = this._match();
     return res || null;
   }
 
@@ -905,7 +978,7 @@ export class Matcher {
     const ast = this._createAst();
     let node = this.node;
     while (node.parentNode) {
-      if (this.matches(ast, node)) {
+      if (this._match(ast, node)) {
         break;
       }
       node = node.parentNode;
@@ -922,14 +995,7 @@ export class Matcher {
    * @returns {?object} - node if matched
    */
   querySelector() {
-    const ast = this._createAst();
-    const iterator = this.ownerDocument.createNodeIterator(
-      this.node,
-      NodeFilter.SHOW_ELEMENT,
-      node => this.matches(ast, node)
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT
-    );
+    const iterator = this._createIterator(this.node);
     const res = iterator.nextNode();
     return res || null;
   }
@@ -940,14 +1006,7 @@ export class Matcher {
    * @returns {Array} - array of nodes if matched
    */
   querySelectorAll() {
-    const ast = this._createAst();
-    const iterator = this.ownerDocument.createNodeIterator(
-      this.node,
-      NodeFilter.SHOW_ELEMENT,
-      node => this.matches(ast, node)
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT
-    );
+    const iterator = this._createIterator(this.node);
     const res = [];
     let currentNode = iterator.nextNode();
     while (currentNode) {
