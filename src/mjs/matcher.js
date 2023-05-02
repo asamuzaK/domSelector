@@ -360,7 +360,7 @@ export const matchAttributeSelector = (leaf = {}, node = {}) => {
  * @param {string} leafName - leaf name
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
- * @returns {?Array} - collection of nodes if matched
+ * @returns {?Array.<object|undefined>} - collection of nodes if matched
  */
 export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
   let res;
@@ -481,7 +481,7 @@ export const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
  * @param {object} [refPoint] - reference point
- * @returns {object|Array|null} - node or array of nodes if matched
+ * @returns {object|Array.<object|undefined>|null} - node or array of nodes
  */
 export const matchPseudoClassSelector = (
   leaf = {},
@@ -725,7 +725,7 @@ export class Matcher {
   /**
    * walk ast
    * @param {object} ast - ast
-   * @returns {Array} - array of selectors
+   * @returns {Array.<object>} - array of selectors
    */
   _walkAst(ast) {
     const selectors = [];
@@ -802,7 +802,7 @@ export class Matcher {
 
   /**
    * match combinator
-   * @param {Array} leaves - array of ast leaves
+   * @param {Array.<object>} leaves - array of ast leaves
    * @param {object} node - referrer node
    * @returns {?object} - referenced node if ",\ned
    */
@@ -862,7 +862,7 @@ export class Matcher {
 
   /**
    * match selector child
-   * @param {Array} child - selector child
+   * @param {Array.<object>} child - selector child
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
@@ -1044,7 +1044,7 @@ export class Matcher {
   /**
    * query selector all
    * NOTE: returns Array, not NodeList
-   * @returns {Array} - array of nodes if matched
+   * @returns {Array.<object|undefined>} - array of nodes if matched
    */
   querySelectorAll() {
     const iterator = this._createIterator(this.node);
