@@ -2,12 +2,10 @@
  * matcher.js
  */
 
-import { isObjectNotEmpty, isString } from './common.js';
 import { parseSelector, walkAst } from './parser.js';
 import {
-  AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, N_TH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
-  STRING, TYPE_SELECTOR
+  ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER, ID_SELECTOR,
+  N_TH, PSEUDO_CLASS_SELECTOR, SELECTOR, TYPE_SELECTOR
 } from './constant.js';
 
 /**
@@ -366,7 +364,7 @@ export const matchAttributeSelector = (leaf = {}, node = {}) => {
  */
 export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
   let res;
-  if (isString(leafName)) {
+  if (typeof leafName === 'string') {
     leafName = leafName.trim();
     if (/^nth-(?:last-)?(?:child|of-type)$/.test(leafName)) {
       const {
@@ -423,6 +421,7 @@ export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
 
 /**
  * match language pseudo class
+ * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} leaf - ast leaf
  * @param {object} node - element node
  * @returns {?object} - node if matched
@@ -446,10 +445,17 @@ export const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
       let reg;
       if (/-/.test(leafName)) {
         const [langMain, langSub, ...langRest] = leafName.split('-');
-        // FIXME: needs refactoring
-        reg = new RegExp(`${langMain}${codePart}-${langSub}${codePart}-${langRest.join('-')}${codePart}`);
+        const extendedMain = `${langMain}${codePart}`;
+        const extendedSub = `-${langSub}${codePart}`;
+        let extendedRest = '';
+        if (langRest.length) {
+          for (const i of langRest) {
+            extendedRest += `-${i}${codePart}`;
+          }
+        }
+        reg = new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
       } else {
-        reg = new RegExp(`^${leafName}${codePart}$`);
+        reg = new RegExp(`^${leafName}${codePart}$`, 'i');
       }
       if (lang) {
         if (reg.test(lang)) {
@@ -707,13 +713,11 @@ export class Matcher {
    */
   _createAst() {
     let ast;
-    if (this.selector && isString(this.selector)) {
-      try {
-        ast = parseSelector(this.selector);
-      } catch (e) {
-        console.warn(e);
-        ast = null;
-      }
+    try {
+      ast = parseSelector(this.selector);
+    } catch (e) {
+      console.warn(e);
+      ast = null;
     }
     return ast || null;
   }
@@ -725,24 +729,55 @@ export class Matcher {
    */
   _walkAst(ast) {
     const selectors = [];
-    if (isObjectNotEmpty(ast)) {
-      const opt = {
-        enter: leaf => {
-          if (leaf.type === SELECTOR) {
-            selectors.push(leaf.children);
-          }
-        },
-        leave: leaf => {
-          let skip;
-          if (leaf.type === SELECTOR) {
-            skip = walkAst.skip;
-          }
-          return skip;
+    const opt = {
+      enter: leaf => {
+        if (leaf.type === SELECTOR) {
+          selectors.push(leaf.children);
         }
-      };
-      walkAst(ast, opt);
-    }
+      },
+      leave: leaf => {
+        let skip;
+        if (leaf.type === SELECTOR) {
+          skip = walkAst.skip;
+        }
+        return skip;
+      }
+    };
+    walkAst(ast, opt);
     return selectors;
+  }
+
+  /**
+   * parse ast and run
+   * @param {object} ast - ast tree
+   * @param {object} node - target node
+   * @returns {?object} - node if matched
+   */
+  _parseAst(ast, node) {
+    const arr = this._walkAst(ast);
+    let res;
+    if (arr.length) {
+      let hasPseudo;
+      for (const i of arr) {
+        for (const item of i) {
+          const { name, type } = item;
+          if (type === PSEUDO_CLASS_SELECTOR && name === 'has') {
+            hasPseudo = true;
+            break;
+          }
+        }
+        if (hasPseudo) {
+          break;
+        }
+      }
+      if (hasPseudo) {
+        const [sel] = arr;
+        res = this._matchRelationalPseudoClass(sel, node);
+      } else if (arr.some(child => this._matchSelectorChild(child, node))) {
+        res = node;
+      }
+    }
+    return res || null;
   }
 
   /**
@@ -874,33 +909,31 @@ export class Matcher {
   }
 
   /**
-   * match logical combination pseudo class
+   * match logical combination pseudo class - :is(), :not(), :where()
    * @param {object} leaf - ast leaf
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
   _matchLogicalCombinationPseudoClass(leaf, node) {
+    const { name: leafName, type: leafType } = leaf;
+    if (!node) {
+      node = this.node;
+    }
     let res;
-    if (isObjectNotEmpty(leaf)) {
-      const { name: leafName, type: leafType } = leaf;
-      if (!node) {
-        node = this.node;
-      }
-      if (leafType === PSEUDO_CLASS_SELECTOR &&
-          /^(?:is|not|where)$/.test(leafName) &&
-          node.nodeType === Node.ELEMENT_NODE) {
-        const arr = this._walkAst(leaf);
-        if (arr.length) {
-          // :not()
-          if (leafName === 'not') {
-            if (arr.every(child => !this._matchSelectorChild(child, node))) {
-              res = node;
-            }
-          // :is(), :where()
-          } else {
-            if (arr.some(child => this._matchSelectorChild(child, node))) {
-              res = node;
-            }
+    if (leafType === PSEUDO_CLASS_SELECTOR &&
+        /^(?:is|not|where)$/.test(leafName) &&
+        node.nodeType === Node.ELEMENT_NODE) {
+      const arr = this._walkAst(leaf);
+      if (arr.length) {
+        // :not()
+        if (leafName === 'not') {
+          if (arr.every(child => !this._matchSelectorChild(child, node))) {
+            res = node;
+          }
+        // :is(), :where()
+        } else {
+          if (arr.some(child => this._matchSelectorChild(child, node))) {
+            res = node;
           }
         }
       }
@@ -909,7 +942,19 @@ export class Matcher {
   }
 
   /**
-   * match ast
+   * match relational pseudo class - :has()
+   * @param {object} selectors - array of selectors
+   * @param {object} node - target node
+   * @returns {?object} - node if matched
+   */
+  _matchRelationalPseudoClass(selectors, node) {
+    // FIXME: later
+    console.warn('Unsupported pseudo class :has()');
+    return null;
+  }
+
+  /**
+   * match ast and node
    * @param {object} [ast] - ast tree
    * @param {object} [node] - target node
    * @returns {?object} - matched node
@@ -921,42 +966,38 @@ export class Matcher {
     if (!node) {
       node = this.node;
     }
-    const { name, type } = ast || {};
     let res;
-    switch (type) {
-      case TYPE_SELECTOR:
-        res = matchTypeSelector(ast, node);
-        break;
-      case CLASS_SELECTOR:
-        res = matchClassSelector(ast, node);
-        break;
-      case ID_SELECTOR:
-        res = matchIdSelector(ast, node);
-        break;
-      case ATTRIBUTE_SELECTOR:
-        res = matchAttributeSelector(ast, node);
-        break;
-      case PSEUDO_CLASS_SELECTOR:
-        // :is(), :not(), :where()
-        if (/^(?:is|not|where)$/.test(name)) {
-          res = this._matchLogicalCombinationPseudoClass(ast, node);
-        /*
-        // FIXME: :has()
-        } else if (name === 'has') {
-        */
-        } else {
-          res = matchPseudoClassSelector(ast, node);
-        }
-        break;
-      default: {
-        if (ast) {
-          const arr = this._walkAst(ast);
-          if (arr.length &&
-              arr.some(child => this._matchSelectorChild(child, node))) {
-            res = node;
+    try {
+      const { name, type } = ast;
+      switch (type) {
+        case TYPE_SELECTOR:
+          res = matchTypeSelector(ast, node);
+          break;
+        case CLASS_SELECTOR:
+          res = matchClassSelector(ast, node);
+          break;
+        case ID_SELECTOR:
+          res = matchIdSelector(ast, node);
+          break;
+        case ATTRIBUTE_SELECTOR:
+          res = matchAttributeSelector(ast, node);
+          break;
+        case PSEUDO_CLASS_SELECTOR:
+          // :is(), :not(), :where()
+          if (/^(?:is|not|where)$/.test(name)) {
+            res = this._matchLogicalCombinationPseudoClass(ast, node);
+          } else {
+            res = matchPseudoClassSelector(ast, node, this.node);
           }
-        }
+          break;
+        default:
+          res = this._parseAst(ast, node);
       }
+    } catch (e) {
+      // FIXME: any additional processes required?
+      // @see https://w3c.github.io/csswg-drafts/css-syntax-3/#error-handling
+      console.warn(e);
+      res = null;
     }
     return res || null;
   }
@@ -1002,7 +1043,7 @@ export class Matcher {
 
   /**
    * query selector all
-   * CAVEAT: returns Array, not NodeList
+   * NOTE: returns Array, not NodeList
    * @returns {Array} - array of nodes if matched
    */
   querySelectorAll() {

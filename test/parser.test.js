@@ -2671,11 +2671,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
-      const res = func(':has(foo)');
+      const res = func('foo:has(> bar) baz');
       assert.deepEqual(res, {
         children: [
           {
             children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
               {
                 children: [
                   {
@@ -2684,7 +2689,12 @@ describe('create AST from CSS selector', () => {
                         children: [
                           {
                             loc: null,
-                            name: 'foo',
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'bar',
                             type: TYPE_SELECTOR
                           }
                         ],
@@ -2699,6 +2709,16 @@ describe('create AST from CSS selector', () => {
                 loc: null,
                 name: 'has',
                 type: PSEUDO_CLASS_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'baz',
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -2711,45 +2731,20 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
-      const res = func(':has(:not(foo), bar)');
+      const res = func('foo:has(bar) baz');
       assert.deepEqual(res, {
         children: [
           {
             children: [
               {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
                 children: [
                   {
                     children: [
-                      {
-                        children: [
-                          {
-                            children: [
-                              {
-                                children: [
-                                  {
-                                    children: [
-                                      {
-                                        loc: null,
-                                        name: 'foo',
-                                        type: TYPE_SELECTOR
-                                      }
-                                    ],
-                                    loc: null,
-                                    type: SELECTOR
-                                  }
-                                ],
-                                loc: null,
-                                type: SELECTOR_LIST
-                              }
-                            ],
-                            loc: null,
-                            name: 'not',
-                            type: PSEUDO_CLASS_SELECTOR
-                          }
-                        ],
-                        loc: null,
-                        type: SELECTOR
-                      },
                       {
                         children: [
                           {
@@ -2769,6 +2764,16 @@ describe('create AST from CSS selector', () => {
                 loc: null,
                 name: 'has',
                 type: PSEUDO_CLASS_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'baz',
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -2781,11 +2786,333 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
-      const res = func(':has(*|*)');
+      const res = func('foo:has(bar, baz) qux');
       assert.deepEqual(res, {
         children: [
           {
             children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: 'bar',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      },
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: 'baz',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'qux',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(> bar, > baz) qux');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'bar',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      },
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'baz',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              },
+              {
+                loc: null,
+                name: ' ',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'qux',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(:is(bar, baz) qux)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: 'bar',
+                                        type: TYPE_SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  },
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: 'baz',
+                                        type: TYPE_SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'is',
+                            type: PSEUDO_CLASS_SELECTOR
+                          },
+                          {
+                            loc: null,
+                            name: ' ',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'qux',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(> :is(bar, baz) qux)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: 'bar',
+                                        type: TYPE_SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  },
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: 'baz',
+                                        type: TYPE_SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'is',
+                            type: PSEUDO_CLASS_SELECTOR
+                          },
+                          {
+                            loc: null,
+                            name: ' ',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'qux',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(*|*)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
               {
                 children: [
                   {

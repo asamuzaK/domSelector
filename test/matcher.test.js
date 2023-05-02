@@ -2402,6 +2402,42 @@ describe('match ast leaf against node', () => {
       const res = func(leaf, node);
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'de-Latn-DE',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'de-de',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-DE');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: 'de-de',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Deva');
+      document.body.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, node, 'result');
+    });
   });
 
   describe('match pseudo class selector', () => {
@@ -3313,18 +3349,6 @@ describe('match ast leaf against node', () => {
     });
 
     describe('create ast', () => {
-      it('should get null', () => {
-        const matcher = new Matcher();
-        const res = matcher._createAst();
-        assert.isNull(res, 'result');
-      });
-
-      it('should get null', () => {
-        const matcher = new Matcher('');
-        const res = matcher._createAst();
-        assert.isNull(res, 'result');
-      });
-
       it('should warn', () => {
         const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('*|');
@@ -3333,6 +3357,34 @@ describe('match ast leaf against node', () => {
         stubWarn.restore();
         assert.isTrue(called, 'console');
         assert.isNull(res, 'result');
+      });
+
+      it('should get ast', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher();
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
+      });
+
+      it('should get ast', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
       });
 
       it('should get ast', () => {
@@ -3782,13 +3834,77 @@ describe('match ast leaf against node', () => {
           type: SELECTOR_LIST
         }, 'result');
       });
+
+      it('should get selector list', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const matcher = new Matcher('div:has(ul) li.baz');
+        const res = matcher._createAst();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isFalse(called, 'console');
+        assert.deepEqual(res, {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              loc: null,
+                              name: 'ul',
+                              type: TYPE_SELECTOR
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'has',
+                  type: PSEUDO_CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }, 'result');
+      });
     });
 
     describe('walk ast', () => {
-      it('should get empty array', () => {
+      it('should throw', () => {
         const matcher = new Matcher('div.foo ul.bar > li.baz');
-        const res = matcher._walkAst();
-        assert.deepEqual(res, [], 'result');
+        assert.throws(() => matcher._walkAst(), TypeError);
       });
 
       it('should get selectors', () => {
@@ -3950,6 +4066,260 @@ describe('match ast leaf against node', () => {
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
         const res = matcher._createIterator(div1);
         assert.instanceOf(res, NodeIterator, 'result');
+      });
+    });
+
+    describe('parse ast', () => {
+      // FIXME: not yet support :has()
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              loc: null,
+                              name: 'ul',
+                              type: TYPE_SELECTOR
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'has',
+                  type: PSEUDO_CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div:has(ul) li.baz', li3);
+        const res = matcher._parseAst(ast, li3);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+
+      // FIXME: enable this test when :has() is implemented
+      xit('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              loc: null,
+                              name: 'ul',
+                              type: TYPE_SELECTOR
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'has',
+                  type: PSEUDO_CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div:has(ul) li.baz', li3);
+        const res = matcher._parseAst(ast, li3);
+        assert.deepEqual(res, li3, 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'ul',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div.foo ul > li.baz', li3);
+        const res = matcher._parseAst(ast, li3);
+        assert.deepEqual(res, li3, 'result');
       });
     });
 
@@ -4522,6 +4892,35 @@ describe('match ast leaf against node', () => {
     });
 
     describe('match logical combination pseudo class', () => {
+      it('should throw', () => {
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher(':not(ol, dl) > li.baz', li3);
+        assert.throws(() => matcher._matchLogicalCombinationPseudoClass(),
+          TypeError);
+      });
+
       it('should get matched node', () => {
         const leaf = {
           children: [
@@ -5293,6 +5692,18 @@ describe('match ast leaf against node', () => {
     });
 
     describe('match ast and node', () => {
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.createElement('div');
+        document.body.appendChild(node);
+        const matcher = new Matcher('*|', node);
+        const res = matcher._match();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+
       it('should get matched node', () => {
         const node = document.createElement('div');
         node.id = 'foo';
@@ -5520,6 +5931,182 @@ describe('match ast leaf against node', () => {
         const matcher = new Matcher(':not(ul) > li.baz', li3);
         const res = matcher._match();
         assert.isNull(res, 'result');
+      });
+
+      // FIXME: not yet support :has()
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              loc: null,
+                              name: 'ul',
+                              type: TYPE_SELECTOR
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'has',
+                  type: PSEUDO_CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div:has(ul) li.baz', li3);
+        const res = matcher._parseAst(ast, li3);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'console');
+        assert.isNull(res, 'result');
+      });
+
+      // FIXME: enable this test when :has() is implemented
+      xit('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'div',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              loc: null,
+                              name: 'ul',
+                              type: TYPE_SELECTOR
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'has',
+                  type: PSEUDO_CLASS_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  loc: null,
+                  name: 'li',
+                  type: TYPE_SELECTOR
+                },
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: CLASS_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        };
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const ul1 = document.createElement('ul');
+        const li1 = document.createElement('li');
+        const li2 = document.createElement('li');
+        const li3 = document.createElement('li');
+        const li4 = document.createElement('li');
+        const li5 = document.createElement('li');
+        div1.id = 'div1';
+        div2.id = 'div2';
+        ul1.id = 'ul1';
+        li1.id = 'li1';
+        li2.id = 'li2';
+        li3.id = 'li3';
+        li4.id = 'li4';
+        li5.id = 'li5';
+        ul1.append(li1, li2, li3, li4, li5);
+        div2.appendChild(ul1);
+        div1.appendChild(div2);
+        document.body.appendChild(div1);
+        div1.classList.add('foo');
+        ul1.classList.add('bar');
+        li3.classList.add('baz');
+        const matcher = new Matcher('div:has(ul) li.baz', li3);
+        const res = matcher._parseAst(ast, li3);
+        assert.deepEqual(res, li3, 'result');
       });
     });
 
