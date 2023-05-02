@@ -40,7 +40,7 @@
     "build": "npm run tsc && npm run lint && npm test && npm run bundle",
     "bundle": "esbuild --format=cjs --platform=node --outfile=dist/dom-selector.cjs --bundle --sourcemap ./src/index.js",
     "lint": "eslint --fix .",
-    "test": "c8 --reporter=text mocha --exit test/*.test.js",
+    "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
   "version": "0.0.1"
