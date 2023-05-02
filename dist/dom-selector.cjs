@@ -9346,7 +9346,7 @@ var Matcher = class {
   /**
    * walk ast
    * @param {object} ast - ast
-   * @returns {Array} - array of selectors
+   * @returns {Array.<object>} - array of selectors
    */
   _walkAst(ast) {
     const selectors = [];
@@ -9418,7 +9418,7 @@ var Matcher = class {
   }
   /**
    * match combinator
-   * @param {Array} leaves - array of ast leaves
+   * @param {Array.<object>} leaves - array of ast leaves
    * @param {object} node - referrer node
    * @returns {?object} - referenced node if ",\ned
    */
@@ -9477,7 +9477,7 @@ var Matcher = class {
   }
   /**
    * match selector child
-   * @param {Array} child - selector child
+   * @param {Array.<object>} child - selector child
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
@@ -9644,7 +9644,7 @@ var Matcher = class {
   /**
    * query selector all
    * NOTE: returns Array, not NodeList
-   * @returns {Array} - array of nodes if matched
+   * @returns {Array.<object|undefined>} - array of nodes if matched
    */
   querySelectorAll() {
     const iterator = this._createIterator(this.node);
