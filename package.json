@@ -1,6 +1,6 @@
 {
   "name": "dom-selector",
-  "description": "Retrieve DOM nodes from the given CSS selectors.",
+  "description": "Retrieve DOM node from the given CSS selector.",
   "author": "asamuzaK",
   "license": "MIT",
   "homepage": "https://github.com/asamuzaK/domSelector#readme",
@@ -11,9 +11,15 @@
     "type": "git",
     "url": "git+https://github.com/asamuzaK/domSelector.git"
   },
-  "main": "src/index.js",
+  "exports": {
+    "import": "src/index.js",
+    "require": "dist/dom-selector.cjs"
+  },
   "type": "module",
+  "types": "types/src/index.d.ts",
   "dependencies": {
+    "@types/css-tree": "^2.3.1",
+    "@types/node": "^18.16.3",
     "css-tree": "^2.3.1"
   },
   "devDependencies": {
@@ -31,8 +37,11 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "build": "npm run tsc && npm run lint && npm test && npm run bundle",
+    "bundle": "esbuild --format=cjs --platform=node --outfile=dist/dom-selector.cjs --bundle --sourcemap ./src/index.js",
     "lint": "eslint --fix .",
-    "test": "c8 --reporter=text mocha --exit test/*.test.js"
+    "test": "c8 --reporter=text mocha --exit test/*.test.js",
+    "tsc": "npx tsc"
   },
   "version": "0.0.1"
 }
