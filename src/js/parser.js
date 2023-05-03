@@ -2,6 +2,7 @@
  * parser.js
  */
 
+/* api */
 const { parse, toPlainObject, walk: walkAst } = require('css-tree');
 
 /**
@@ -17,6 +18,7 @@ const parseSelector = selector => {
   return toPlainObject(ast);
 };
 
+/* export */
 module.exports = {
   parseSelector,
   walkAst
