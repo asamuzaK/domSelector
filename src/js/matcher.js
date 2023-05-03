@@ -2,11 +2,11 @@
  * matcher.js
  */
 
-import { parseSelector, walkAst } from './parser.js';
-import {
+const { parseSelector, walkAst } = require('./parser.js');
+const {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER, ID_SELECTOR,
   N_TH, PSEUDO_CLASS_SELECTOR, SELECTOR, TYPE_SELECTOR
-} from './constant.js';
+} = require('./constant.js');
 
 /**
  * collect nth child
@@ -17,7 +17,7 @@ import {
  * @param {boolean} [opt.reverse] - reverse order
  * @returns {Array.<object>} - collection of matched nodes
  */
-export const collectNthChild = (node = {}, opt = {}) => {
+const collectNthChild = (node = {}, opt = {}) => {
   const { nodeType, parentNode } = node;
   const { a, b, reverse } = opt;
   const res = [];
@@ -64,7 +64,7 @@ export const collectNthChild = (node = {}, opt = {}) => {
  * @param {boolean} [opt.reverse] - reverse order
  * @returns {Array.<object>} - collection of matched nodes
  */
-export const collectNthOfType = (node = {}, opt = {}) => {
+const collectNthOfType = (node = {}, opt = {}) => {
   const { localName, nodeType, parentNode, prefix } = node;
   const { a, b, reverse } = opt;
   const res = [];
@@ -124,7 +124,7 @@ export const collectNthOfType = (node = {}, opt = {}) => {
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchTypeSelector = (leaf = {}, node = {}) => {
+const matchTypeSelector = (leaf = {}, node = {}) => {
   const { name: leafName, type: leafType } = leaf;
   const { localName, nodeType, prefix } = node;
   let res;
@@ -151,7 +151,7 @@ export const matchTypeSelector = (leaf = {}, node = {}) => {
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchClassSelector = (leaf = {}, node = {}) => {
+const matchClassSelector = (leaf = {}, node = {}) => {
   const { name: leafName, type: leafType } = leaf;
   const { classList, nodeType } = node;
   let res;
@@ -168,7 +168,7 @@ export const matchClassSelector = (leaf = {}, node = {}) => {
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchIdSelector = (leaf = {}, node = {}) => {
+const matchIdSelector = (leaf = {}, node = {}) => {
   const { name: leafName, type: leafType } = leaf;
   const { id, nodeType } = node;
   let res;
@@ -185,7 +185,7 @@ export const matchIdSelector = (leaf = {}, node = {}) => {
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchAttributeSelector = (leaf = {}, node = {}) => {
+const matchAttributeSelector = (leaf = {}, node = {}) => {
   const {
     flags: leafFlags, matcher: leafMatcher, name: leafName, type: leafType,
     value: leafValue
@@ -362,7 +362,7 @@ export const matchAttributeSelector = (leaf = {}, node = {}) => {
  * @param {object} node - element node
  * @returns {?Array.<object|undefined>} - collection of nodes if matched
  */
-export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
+const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
   let res;
   if (typeof leafName === 'string') {
     leafName = leafName.trim();
@@ -426,7 +426,7 @@ export const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
  * @param {object} node - element node
  * @returns {?object} - node if matched
  */
-export const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
+const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
   const { name: leafName, type: leafType } = leaf;
   const { lang, nodeType } = node;
   let res;
@@ -483,7 +483,7 @@ export const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
  * @param {object} [refPoint] - reference point
  * @returns {object|Array.<object|undefined>|null} - node or array of nodes
  */
-export const matchPseudoClassSelector = (
+const matchPseudoClassSelector = (
   leaf = {},
   node = {},
   refPoint = {}
@@ -695,7 +695,7 @@ export const matchPseudoClassSelector = (
 /**
  * Matcher
  */
-export class Matcher {
+class Matcher {
   /**
    * construct
    * @param {string} sel - CSS selector
@@ -709,17 +709,11 @@ export class Matcher {
 
   /**
    * create ast
-   * @returns {?object} - ast
+   * @returns {object} - ast
    */
   _createAst() {
-    let ast;
-    try {
-      ast = parseSelector(this.selector);
-    } catch (e) {
-      console.warn(e);
-      ast = null;
-    }
-    return ast || null;
+    const ast = parseSelector(this.selector);
+    return ast;
   }
 
   /**
@@ -786,10 +780,10 @@ export class Matcher {
    * @returns {object} - iterator
    */
   _createIterator(root) {
+    const ast = this._createAst();
     if (!root) {
       root = this.node;
     }
-    const ast = this._createAst();
     const iterator = this.ownerDocument.createNodeIterator(
       root,
       NodeFilter.SHOW_ELEMENT,
@@ -966,38 +960,31 @@ export class Matcher {
     if (!node) {
       node = this.node;
     }
+    const { name, type } = ast;
     let res;
-    try {
-      const { name, type } = ast;
-      switch (type) {
-        case TYPE_SELECTOR:
-          res = matchTypeSelector(ast, node);
-          break;
-        case CLASS_SELECTOR:
-          res = matchClassSelector(ast, node);
-          break;
-        case ID_SELECTOR:
-          res = matchIdSelector(ast, node);
-          break;
-        case ATTRIBUTE_SELECTOR:
-          res = matchAttributeSelector(ast, node);
-          break;
-        case PSEUDO_CLASS_SELECTOR:
-          // :is(), :not(), :where()
-          if (/^(?:is|not|where)$/.test(name)) {
-            res = this._matchLogicalCombinationPseudoClass(ast, node);
-          } else {
-            res = matchPseudoClassSelector(ast, node, this.node);
-          }
-          break;
-        default:
-          res = this._parseAst(ast, node);
-      }
-    } catch (e) {
-      // FIXME: any additional processes required?
-      // @see https://w3c.github.io/csswg-drafts/css-syntax-3/#error-handling
-      console.warn(e);
-      res = null;
+    switch (type) {
+      case TYPE_SELECTOR:
+        res = matchTypeSelector(ast, node);
+        break;
+      case CLASS_SELECTOR:
+        res = matchClassSelector(ast, node);
+        break;
+      case ID_SELECTOR:
+        res = matchIdSelector(ast, node);
+        break;
+      case ATTRIBUTE_SELECTOR:
+        res = matchAttributeSelector(ast, node);
+        break;
+      case PSEUDO_CLASS_SELECTOR:
+        // :is(), :not(), :where()
+        if (/^(?:is|not|where)$/.test(name)) {
+          res = this._matchLogicalCombinationPseudoClass(ast, node);
+        } else {
+          res = matchPseudoClassSelector(ast, node, this.node);
+        }
+        break;
+      default:
+        res = this._parseAst(ast, node);
     }
     return res || null;
   }
@@ -1056,4 +1043,17 @@ export class Matcher {
     }
     return res;
   }
+};
+
+module.exports = {
+  Matcher,
+  collectNthChild,
+  collectNthOfType,
+  matchAnPlusB,
+  matchAttributeSelector,
+  matchClassSelector,
+  matchIdSelector,
+  matchLanguagePseudoClass,
+  matchPseudoClassSelector,
+  matchTypeSelector
 };

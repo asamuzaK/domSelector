@@ -6,37 +6,38 @@
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
  */
 
-import { Matcher } from './mjs/matcher.js';
+/* api */
+const { Matcher } = require('./js/matcher.js');
 
 /**
  * matches - Element.matches()
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Element
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-export const matches = (selector, refPoint) => {
-  const matcher = new Matcher(selector, refPoint);
+const matches = (selector, node) => {
+  const matcher = new Matcher(selector, node);
   return matcher.matches();
 };
 
 /**
  * closest - Element.closest()
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Element
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-export const closest = (selector, refPoint) => {
-  const matcher = new Matcher(selector, refPoint);
+const closest = (selector, node) => {
+  const matcher = new Matcher(selector, node);
   return matcher.closest();
 };
 
 /**
  * querySelector - Document.querySelector(), Element.querySelector()
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Document or Element
+ * @param {object} refPoint - Document interface or Element node
  * @returns {?object} - matched node
  */
-export const querySelector = (selector, refPoint) => {
+const querySelector = (selector, refPoint) => {
   const matcher = new Matcher(selector, refPoint);
   return matcher.querySelector();
 };
@@ -45,10 +46,17 @@ export const querySelector = (selector, refPoint) => {
  * querySelectorAll - Document.querySelectorAll(), Element.querySelectorAll()
  * NOTE: returns Array, not NodeList
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Document or Element
+ * @param {object} refPoint - Document interface or Element node
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
-export const querySelectorAll = (selector, refPoint) => {
+const querySelectorAll = (selector, refPoint) => {
   const matcher = new Matcher(selector, refPoint);
   return matcher.querySelectorAll();
+};
+
+module.exports = {
+  closest,
+  matches,
+  querySelector,
+  querySelectorAll
 };

@@ -3,19 +3,19 @@
  */
 
 /* api */
-import { assert } from 'chai';
-import { describe, it } from 'mocha';
+const { assert } = require('chai');
+const { describe, it } = require('mocha');
 
 /* test */
-import * as mjs from '../src/mjs/parser.js';
-import {
+const parser = require('../src/js/parser.js');
+const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, N_TH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
   STRING, TYPE_SELECTOR
-} from '../src/mjs/constant.js';
+} = require('../src/js/constant.js');
 
 describe('create AST from CSS selector', () => {
-  const func = mjs.parseSelector;
+  const func = parser.parseSelector;
 
   it('should get empty selector list', () => {
     const res = func();

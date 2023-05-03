@@ -3,18 +3,18 @@
  */
 
 /* api */
-import { assert } from 'chai';
-import { afterEach, beforeEach, describe, it, xit } from 'mocha';
-import { JSDOM } from 'jsdom';
-import sinon from 'sinon';
+const { assert } = require('chai');
+const { afterEach, beforeEach, describe, it, xit } = require('mocha');
+const { JSDOM } = require('jsdom');
+const sinon = require('sinon');
 
 /* test */
-import * as mjs from '../src/mjs/matcher.js';
-import {
+const matcherJs = require('../src/js/matcher.js');
+const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, N_TH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
   STRING, TYPE_SELECTOR
-} from '../src/mjs/constant.js';
+} = require('../src/js/constant.js');
 
 describe('match ast leaf against node', () => {
   const globalKeys = ['Node', 'NodeFilter', 'NodeIterator'];
@@ -46,7 +46,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('collect nth child', () => {
-    const func = mjs.collectNthChild;
+    const func = matcherJs.collectNthChild;
 
     it('should get empty array', () => {
       const res = func();
@@ -345,7 +345,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('collect nth of type', () => {
-    const func = mjs.collectNthOfType;
+    const func = matcherJs.collectNthOfType;
 
     it('should get empty array', () => {
       const res = func();
@@ -655,7 +655,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match type selector', () => {
-    const func = mjs.matchTypeSelector;
+    const func = matcherJs.matchTypeSelector;
 
     it('should get null', () => {
       const res = func();
@@ -807,7 +807,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match class selector', () => {
-    const func = mjs.matchClassSelector;
+    const func = matcherJs.matchClassSelector;
 
     it('should get null', () => {
       const res = func();
@@ -840,7 +840,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match id selector', () => {
-    const func = mjs.matchIdSelector;
+    const func = matcherJs.matchIdSelector;
 
     it('should get null', () => {
       const res = func();
@@ -873,7 +873,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match attribute selector', () => {
-    const func = mjs.matchAttributeSelector;
+    const func = matcherJs.matchAttributeSelector;
 
     it('should get null', () => {
       const res = func();
@@ -2015,7 +2015,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match An+B', () => {
-    const func = mjs.matchAnPlusB;
+    const func = matcherJs.matchAnPlusB;
 
     it('should get null', () => {
       const res = func();
@@ -2342,7 +2342,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match language pseudo class', () => {
-    const func = mjs.matchLanguagePseudoClass;
+    const func = matcherJs.matchLanguagePseudoClass;
 
     it('should get matched node', () => {
       const leaf = {
@@ -2441,7 +2441,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('match pseudo class selector', () => {
-    const func = mjs.matchPseudoClassSelector;
+    const func = matcherJs.matchPseudoClassSelector;
 
     it('should get null', () => {
       const res = func();
@@ -3331,7 +3331,7 @@ describe('match ast leaf against node', () => {
   });
 
   describe('Matcher', () => {
-    const { Matcher } = mjs;
+    const { Matcher } = matcherJs;
 
     it('should be instance of Matcher', () => {
       const matcher = new Matcher();
@@ -3349,23 +3349,14 @@ describe('match ast leaf against node', () => {
     });
 
     describe('create ast', () => {
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
+      it('should throw', () => {
         const matcher = new Matcher('*|');
-        const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'console');
-        assert.isNull(res, 'result');
+        assert.throws(() => matcher._createAst(), SyntaxError);
       });
 
       it('should get ast', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher();
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [],
           loc: null,
@@ -3374,12 +3365,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get ast', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [],
           loc: null,
@@ -3388,12 +3375,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get ast', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('div.bar[data-baz]#foo:first-child');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3442,12 +3425,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get ast', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('div.foo ul.bar > li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3503,12 +3482,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get selector list', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('li.foo ~ li.bar + li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3564,12 +3539,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get selector list', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('div :not(ol, dl) > li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3645,12 +3616,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get selector list', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher(':not(ol, dl, :not(ul)) > li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3746,12 +3713,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get selector list', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher(':not(:is(ol, dl)) > li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -3836,12 +3799,8 @@ describe('match ast leaf against node', () => {
       });
 
       it('should get selector list', () => {
-        const stubWarn = sinon.stub(console, 'warn');
         const matcher = new Matcher('div:has(ul) li.baz');
         const res = matcher._createAst();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isFalse(called, 'console');
         assert.deepEqual(res, {
           children: [
             {
@@ -5692,16 +5651,11 @@ describe('match ast leaf against node', () => {
     });
 
     describe('match ast and node', () => {
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
+      it('should throw', () => {
         const node = document.createElement('div');
         document.body.appendChild(node);
         const matcher = new Matcher('*|', node);
-        const res = matcher._match();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'console');
-        assert.isNull(res, 'result');
+        assert.throws(() => matcher._match(), SyntaxError);
       });
 
       it('should get matched node', () => {
@@ -5715,19 +5669,14 @@ describe('match ast leaf against node', () => {
         assert.deepEqual(res, node, 'result');
       });
 
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
+      it('should throw', () => {
         const node = document.createElement('div');
         node.id = 'foo';
         node.classList.add('bar');
         node.dataset.baz = 'qux';
         document.body.appendChild(node);
         const matcher = new Matcher('div.bar[*|]#foo:first-child', node);
-        const res = matcher._match();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'console');
-        assert.isNull(res, 'result');
+        assert.throws(() => matcher._match(), SyntaxError);
       });
 
       it('should get matched node', () => {

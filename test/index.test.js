@@ -3,14 +3,14 @@
  */
 
 /* api */
-import { assert } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
-import { JSDOM } from 'jsdom';
+const { assert } = require('chai');
+const { afterEach, beforeEach, describe, it } = require('mocha');
+const { JSDOM } = require('jsdom');
 
 /* test */
-import {
+const {
   closest, matches, querySelector, querySelectorAll
-} from '../src/index.js';
+} = require('../src/index.js');
 
 describe('retrieve DOM node from the given CSS selector', () => {
   const globalKeys = ['Node', 'NodeFilter', 'NodeIterator'];
