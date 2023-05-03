@@ -1,6 +1,5 @@
 /*!
  * DOM Selector - retrieve DOM node from the given CSS selector
- *
  * @license MIT
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
