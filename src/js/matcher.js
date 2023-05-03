@@ -598,7 +598,9 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'root':
-          res = root;
+          if (node === root) {
+            res = node;
+          }
           break;
         case 'first-child':
           if (node === node.parentNode.firstElementChild) {

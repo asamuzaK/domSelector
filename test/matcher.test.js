@@ -3167,10 +3167,20 @@ describe('match ast leaf against node', () => {
         name: 'root',
         type: PSEUDO_CLASS_SELECTOR
       };
+      const res = func(leaf, document.documentElement);
+      assert.deepEqual(res, document.documentElement, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'root',
+        type: PSEUDO_CLASS_SELECTOR
+      };
       const node = document.createElement('div');
       document.body.appendChild(node);
       const res = func(leaf, node);
-      assert.deepEqual(res, document.documentElement, 'result');
+      assert.isNull(res, 'result');
     });
 
     it('should get matched node', () => {
