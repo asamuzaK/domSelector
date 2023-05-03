@@ -8,6 +8,9 @@ const {
   N_TH, PSEUDO_CLASS_SELECTOR, SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
 
+/* regexp */
+const REG_PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
+
 /**
  * collect nth child
  * @param {object} node - element node
@@ -702,11 +705,11 @@ const matchPseudoClassSelector = (
 class Matcher {
   /**
    * construct
-   * @param {string} sel - CSS selector
+   * @param {string} selector - CSS selector
    * @param {object} refPoint - reference point
    */
-  constructor(sel, refPoint) {
-    this.selector = sel;
+  constructor(selector, refPoint) {
+    this.selector = selector;
     this.node = refPoint;
     this.ownerDocument = refPoint?.ownerDocument ?? refPoint;
   }
@@ -755,22 +758,24 @@ class Matcher {
     const arr = this._walkAst(ast);
     let res;
     if (arr.length) {
-      let hasPseudo;
+      let hasPseudoFunc;
       for (const i of arr) {
         for (const item of i) {
           const { name, type } = item;
-          if (type === PSEUDO_CLASS_SELECTOR && name === 'has') {
-            hasPseudo = true;
+          if (type === PSEUDO_CLASS_SELECTOR && REG_PSEUDO_FUNC.test(name)) {
+            hasPseudoFunc = true;
             break;
           }
         }
-        if (hasPseudo) {
+        if (hasPseudoFunc) {
           break;
         }
       }
-      if (hasPseudo) {
-        const [sel] = arr;
-        res = this._matchRelationalPseudoClass(sel, node);
+      if (hasPseudoFunc) {
+        // FIXME:
+        if (arr.some(child => this._matchSelectorChild(child, node))) {
+          res = node;
+        }
       } else if (arr.some(child => this._matchSelectorChild(child, node))) {
         res = node;
       }
@@ -796,6 +801,25 @@ class Matcher {
         : NodeFilter.FILTER_REJECT
     );
     return iterator;
+  }
+
+  /**
+   * match leaves
+   * @param {Array.<object>} leaves - ast leaves
+   * @param {object} node - target node
+   * @returns {?object} - node if matched
+   */
+  _matchAdjacentLeaves(leaves, node) {
+    const [ prevLeaf, nextLeaf ] = leaves;
+    if (!node) {
+      node = this.node;
+    }
+    const prevNode = this._match(prevLeaf, node);
+    let res;
+    if (prevNode) {
+      res = this._match(nextLeaf, prevNode);
+    }
+    return res || null;
   }
 
   /**
@@ -874,7 +898,18 @@ class Matcher {
       let refNode = node;
       do {
         const item = items.pop();
-        if (item.type === COMBINATOR) {
+        if (item.type === PSEUDO_CLASS_SELECTOR &&
+            REG_PSEUDO_FUNC.test(item.name) &&
+            items.length && items[items.length - 1].type !== COMBINATOR &&
+            !REG_PSEUDO_FUNC.test(items[items.length - 1].name)) {
+          const prevItem = items.pop();
+          const leaves = [prevItem, item];
+          if (item.name === 'has') {
+            refNode = this._matchRelationalPseudoClass(leaves, refNode);
+          } else {
+            refNode = this._matchAdjacentLeaves(leaves, refNode);
+          }
+        } else if (item.type === COMBINATOR) {
           const leaves = [];
           leaves.push(item);
           while (items.length) {
@@ -929,10 +964,8 @@ class Matcher {
             res = node;
           }
         // :is(), :where()
-        } else {
-          if (arr.some(child => this._matchSelectorChild(child, node))) {
-            res = node;
-          }
+        } else if (arr.some(child => this._matchSelectorChild(child, node))) {
+          res = node;
         }
       }
     }
@@ -941,11 +974,11 @@ class Matcher {
 
   /**
    * match relational pseudo class - :has()
-   * @param {object} selectors - array of selectors
+   * @param {Array} leaves - ast leaves
    * @param {object} node - target node
    * @returns {?object} - node if matched
    */
-  _matchRelationalPseudoClass(selectors, node) {
+  _matchRelationalPseudoClass(leaves, node) {
     // FIXME: later
     console.warn('Unsupported pseudo class :has()');
     return null;
