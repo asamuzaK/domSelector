@@ -2925,13 +2925,39 @@ describe('match ast leaf against node', () => {
         name: 'scope',
         type: PSEUDO_CLASS_SELECTOR
       };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      document.body.appendChild(node);
+      const res = func(leaf, node, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'scope',
+        type: PSEUDO_CLASS_SELECTOR
+      };
       const refPoint = document.createElement('div');
       const node = document.createElement('div');
       node.id = 'foo';
       refPoint.appendChild(node);
       document.body.appendChild(refPoint);
       const res = func(leaf, node, refPoint);
-      assert.deepEqual(res, refPoint, 'result');
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'scope',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      document.body.appendChild(node);
+      const res = func(leaf, node, document);
+      assert.isNull(res, 'result');
     });
 
     it('should get matched node', () => {
@@ -2943,7 +2969,7 @@ describe('match ast leaf against node', () => {
       const node = document.createElement('div');
       node.id = 'foo';
       document.body.appendChild(node);
-      const res = func(leaf, node);
+      const res = func(leaf, document.documentElement, document);
       assert.deepEqual(res, document.documentElement, 'result');
     });
 

@@ -547,9 +547,11 @@ const matchPseudoClassSelector = (
           break;
         case 'scope':
           if (refPoint?.nodeType === Node.ELEMENT_NODE) {
-            res = refPoint;
-          } else {
-            res = root;
+            if (node === refPoint) {
+              res = node;
+            }
+          } else if (node === root) {
+            res = node;
           }
           break;
         case 'focus':
@@ -798,7 +800,7 @@ class Matcher {
    * match combinator
    * @param {Array.<object>} leaves - array of ast leaves
    * @param {object} node - referrer node
-   * @returns {?object} - referenced node if ",\ned
+   * @returns {?object} - referenced node if matched
    */
   _matchCombinator(leaves, node) {
     let res;
