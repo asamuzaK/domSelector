@@ -6060,7 +6060,7 @@ describe('match ast leaf against node', () => {
     });
 
     describe('matches', () => {
-      it('should get matched node', () => {
+      it('should match', () => {
         const div1 = document.createElement('div');
         const div2 = document.createElement('div');
         const ul1 = document.createElement('ul');
@@ -6086,7 +6086,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.baz', li3);
         const res = matcher.matches();
-        assert.deepEqual(res, li3, 'result');
+        assert.isTrue(res, 'result');
       });
 
       it('should not match', () => {
@@ -6115,7 +6115,7 @@ describe('match ast leaf against node', () => {
         li3.classList.add('baz');
         const matcher = new Matcher('div.foo ul.bar > li.qux', li3);
         const res = matcher.matches();
-        assert.isNull(res, 'result');
+        assert.isFalse(res, 'result');
       });
     });
 
@@ -6335,7 +6335,7 @@ describe('match ast leaf against node', () => {
         ], 'result');
       });
 
-      it('should get matched node', () => {
+      it('should get empty array', () => {
         const div1 = document.createElement('div');
         const div2 = document.createElement('div');
         const ul1 = document.createElement('ul');

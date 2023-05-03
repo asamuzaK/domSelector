@@ -991,11 +991,11 @@ class Matcher {
 
   /**
    * matches
-   * @returns {?object} - matched node
+   * @returns {boolean} - matched node
    */
   matches() {
     const res = this._match();
-    return res || null;
+    return !!res;
   }
 
   /**
