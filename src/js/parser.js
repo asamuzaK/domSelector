@@ -3,7 +3,8 @@
  */
 
 /* api */
-const { parse, toPlainObject, walk: walkAst } = require('css-tree');
+const { parse, toPlainObject, walk } = require('css-tree');
+const { SELECTOR } = require('./constant.js');
 
 /**
  * create AST from CSS selector
@@ -16,6 +17,31 @@ const parseSelector = selector => {
     parseCustomProperty: true
   });
   return toPlainObject(ast);
+};
+
+/**
+ * walk AST
+ * @param {object} ast - AST
+ * @returns {Array.<object>} - array of selectors
+ */
+const walkAst = (ast = {}) => {
+  const selectors = [];
+  const opt = {
+    enter: leaf => {
+      if (leaf.type === SELECTOR) {
+        selectors.push(leaf.children);
+      }
+    },
+    leave: leaf => {
+      let skip;
+      if (leaf.type === SELECTOR) {
+        skip = walkAst.skip;
+      }
+      return skip;
+    }
+  };
+  walk(ast, opt);
+  return selectors;
 };
 
 /* export */

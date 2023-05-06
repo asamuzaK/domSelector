@@ -10,7 +10,7 @@ const { describe, it } = require('mocha');
 const parser = require('../src/js/parser.js');
 const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, N_TH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
+  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
   STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
@@ -1143,6 +1143,33 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'foo',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:bar');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: null,
+                loc: null,
+                name: 'bar',
                 type: PSEUDO_CLASS_SELECTOR
               }
             ],
@@ -3146,6 +3173,101 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(bar)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: 'bar',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('foo:has(> bar)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            loc: null,
+                            name: 'bar',
+                            type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('An+B notation pseudo-class', () => {
@@ -3173,7 +3295,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3206,7 +3328,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3240,7 +3362,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3274,7 +3396,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3328,7 +3450,7 @@ describe('create AST from CSS selector', () => {
                       loc: null,
                       type: SELECTOR_LIST
                     },
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3369,7 +3491,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3402,7 +3524,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3436,7 +3558,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3470,7 +3592,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3524,7 +3646,7 @@ describe('create AST from CSS selector', () => {
                       loc: null,
                       type: SELECTOR_LIST
                     },
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3565,7 +3687,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3598,7 +3720,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3632,7 +3754,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3666,7 +3788,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3711,7 +3833,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3744,7 +3866,7 @@ describe('create AST from CSS selector', () => {
                       type: IDENTIFIER
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3778,7 +3900,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -3812,7 +3934,7 @@ describe('create AST from CSS selector', () => {
                       type: AN_PLUS_B
                     },
                     selector: null,
-                    type: N_TH
+                    type: NTH
                   }
                 ],
                 loc: null,
@@ -4429,5 +4551,64 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+  });
+});
+
+describe('walk AST', () => {
+  const func = parser.walkAst;
+
+  it('should get empty array', () => {
+    const res = func();
+    assert.deepEqual(res, [], 'result');
+  });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          loc: null,
+          name: 'ul',
+          type: TYPE_SELECTOR
+        },
+        {
+          loc: null,
+          name: '>',
+          type: COMBINATOR
+        },
+        {
+          loc: null,
+          name: 'li',
+          type: TYPE_SELECTOR
+        }
+      ]
+    ], 'result');
   });
 });

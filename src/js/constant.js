@@ -25,7 +25,7 @@ module.exports = {
   MEDIA_QUERY: 'MediaQuery',
   MEDIA_QUERY_LIST: 'MediaQueryList',
   NESTING_SELECTOR: 'NestingSelector',
-  N_TH: 'Nth',
+  NTH: 'Nth',
   NUMBER: 'Number',
   OPERATOR: 'Operator',
   PARENTHESES: 'Parentheses',
