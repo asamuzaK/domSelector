@@ -34,7 +34,7 @@ describe('match AST leaf and DOM node', () => {
             <dl id="dl1">
               <dt id="dt1"></dt>
               <dd id="dd1">
-                <span id="span1"></span>
+                <span id="span1" hidden></span>
               </dd>
               <dt id="dt2"></dt>
               <dd id="dd2">
@@ -42,7 +42,7 @@ describe('match AST leaf and DOM node', () => {
               </dd>
               <dt id="dt3"></dt>
               <dd id="dd3">
-                <span id="span3"></span>
+                <span id="span3" hidden></span>
               </dd>
             </dl>
           </div>
@@ -1887,6 +1887,42 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          a: '2',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dd1'),
+        document.getElementById('dd2'),
+        document.getElementById('dd3')
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          b: '0',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dt1')
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
       const leafName = 'nth-last-child';
       const leaf = {
         nth: {
@@ -3320,9 +3356,10 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('match argument leaf', () => {
-      it('should throw', () => {
+      it('should get emtpty array', () => {
         const matcher = new Matcher('div#div1 :is(ol, ul)', document);
-        assert.throws(() => matcher._matchArgumentLeaf(), TypeError);
+        const res = matcher._matchArgumentLeaf();
+        assert.deepEqual(res, [], 'result');
       });
 
       it('should get matched node', () => {
@@ -3375,11 +3412,11 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('match pseudo class function', () => {
-      it('should get empty array', () => {
+    describe('match logical pseudo class function', () => {
+      it('should get null', () => {
         const matcher = new Matcher('div:not(.bar)', document);
-        const res = matcher._matchLogicalPseudoClassFunc();
-        assert.deepEqual(res, [], 'result');
+        const res = matcher._matchLogicalPseudoFunc();
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -3416,11 +3453,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'is',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const node = document.getElementById('div7');
         const matcher = new Matcher('div:is(.foo.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [node], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, node); ;
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
@@ -3457,63 +3493,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'is',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const node = document.getElementById('div6');
         const matcher = new Matcher('div:is(.foo.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      name: 'foo',
-                      type: CLASS_SELECTOR
-                    },
-                    {
-                      name: 'bar',
-                      type: CLASS_SELECTOR
-                    }
-                  ],
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      name: 'qux',
-                      type: CLASS_SELECTOR
-                    }
-                  ],
-                  type: SELECTOR
-                }
-              ],
-              type: SELECTOR_LIST
-            }
-          ],
-          name: 'is',
-          type: PSEUDO_CLASS_SELECTOR
-        };
-        const leaves = [
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node = document.getElementById('div7');
-        const matcher = new Matcher('div:is(.foo.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [
-          document.getElementById('p2')
-        ], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -3546,13 +3529,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'where',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const node = document.getElementById('div7');
         const matcher = new Matcher('div:where(.foo.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [
-          document.getElementById('div7')
-        ], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, node); ;
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
@@ -3585,11 +3565,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'not',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const node = document.getElementById('div7');
         const matcher = new Matcher('div.foo:not(.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -3622,59 +3601,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'not',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const node = document.getElementById('div6');
         const matcher = new Matcher('div.foo:not(.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      name: 'bar',
-                      type: CLASS_SELECTOR
-                    }
-                  ],
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      name: 'qux',
-                      type: CLASS_SELECTOR
-                    }
-                  ],
-                  type: SELECTOR
-                }
-              ],
-              type: SELECTOR_LIST
-            }
-          ],
-          name: 'not',
-          type: PSEUDO_CLASS_SELECTOR
-        };
-        const leaves = [
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const root = document.getElementById('div6');
-        const matcher = new Matcher('div.foo:not(.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, root);
-        assert.deepEqual(res, [
-          document.getElementById('p1')
-        ], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
@@ -3711,20 +3641,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'not',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ];
         const root = document.getElementById('div7');
         const matcher = new Matcher('div:not(.foo.bar, .qux) > p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, root);
-        assert.deepEqual(res, [], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, root);
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -3757,11 +3677,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'has',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const root = document.getElementById('div4');
         const matcher = new Matcher('div:has(.bar, .qux) p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, root);
-        assert.deepEqual(res, [root], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, root);
+        assert.deepEqual(res, root, 'result');
       });
 
       it('should get matched node', () => {
@@ -3802,11 +3721,10 @@ describe('match AST leaf and DOM node', () => {
           name: 'has',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const root = document.getElementById('div4');
         const matcher = new Matcher('div:has(> .bar, > .qux) p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, root);
-        assert.deepEqual(res, [root], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, root);
+        assert.deepEqual(res, root, 'result');
       });
 
       it('should not match', () => {
@@ -3851,76 +3769,31 @@ describe('match AST leaf and DOM node', () => {
           name: 'has',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const leaves = [];
         const root = document.getElementById('div4');
         const matcher = new Matcher('div:has(> .foo.baz, > .qux) p', document);
-        const res = matcher._matchLogicalPseudoClassFunc(ast, leaves, root);
-        assert.deepEqual(res, [], 'result');
+        const res = matcher._matchLogicalPseudoFunc(ast, root);
+        assert.isNull(res, 'result');
       });
     });
 
     describe('match selector', () => {
-/*
-      it('should throw', () => {
+      it('should get empty array', () => {
         const matcher = new Matcher('#div1');
-        assert.throws(() => matcher._matchSelector(), TypeError);
+        const res = matcher._matchSelector();
+        assert.deepEqual(res, [], 'result');
       });
 
       it('should get matched nodes', () => {
         const ast = [
           {
-            children: [
-              {
-                nth: {
-                  a: '2',
-                  b: '1',
-                  type: AN_PLUS_B
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-child',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            flags: null,
-            loc: null,
-            matcher: null,
-            name: {
-              name: 'hidden',
-              type: IDENTIFIER
-            },
-            type: ATTRIBUTE_SELECTOR,
-            value: null
+            name: 'div2',
+            type: ID_SELECTOR
           }
         ];
-        const node = document.createElement('div');
-        node.setAttribute('hidden', 'hidden');
-        document.getElementById('div5').appendChild(node);
-        const matcher = new Matcher(':nth-child(2n+1)[hidden]', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched nodes', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const matcher = new Matcher('div', document);
+        const matcher = new Matcher('#div2', document);
         const res = matcher._matchSelector(ast, document.documentElement);
         assert.deepEqual(res, [
-          document.getElementById('div1'),
-          document.getElementById('div2'),
-          document.getElementById('div3'),
-          document.getElementById('div4'),
-          document.getElementById('div6'),
-          document.getElementById('div7'),
-          document.getElementById('div8'),
-          document.getElementById('div5')
+          document.getElementById('div2')
         ], 'result');
       });
 
@@ -3935,7 +3808,7 @@ describe('match AST leaf and DOM node', () => {
             type: ID_SELECTOR
           }
         ];
-        const matcher = new Matcher('div', document);
+        const matcher = new Matcher('div#div2', document);
         const res = matcher._matchSelector(ast, document.documentElement);
         assert.deepEqual(res, [
           document.getElementById('div2')
@@ -3945,6 +3818,38 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched nodes', () => {
         const ast = [
           {
+            name: 'ul',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const matcher = new Matcher('ul > li', document);
+        const res = matcher._matchSelector(ast, document.documentElement);
+        assert.deepEqual(res, [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'result');
+      });
+
+      it('should get matched nodes', () => {
+        const ast = [
+          {
+            name: 'ul',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: '>',
+            type: COMBINATOR
+          },
+          {
             name: 'li',
             type: TYPE_SELECTOR
           },
@@ -3952,8 +3857,9 @@ describe('match AST leaf and DOM node', () => {
             children: [
               {
                 nth: {
-                  name: 'even',
-                  type: IDENTIFIER
+                  a: '2',
+                  b: '1',
+                  type: AN_PLUS_B
                 },
                 selector: null,
                 type: NTH
@@ -3963,10 +3869,11 @@ describe('match AST leaf and DOM node', () => {
             type: PSEUDO_CLASS_SELECTOR
           }
         ];
-        const matcher = new Matcher('li:nth-child(even)', document);
+        const matcher = new Matcher('ul > li:nth-child(2n+1)', document);
         const res = matcher._matchSelector(ast, document.documentElement);
         assert.deepEqual(res, [
-          document.getElementById('li2')
+          document.getElementById('li1'),
+          document.getElementById('li3')
         ], 'result');
       });
 
@@ -3974,341 +3881,6 @@ describe('match AST leaf and DOM node', () => {
         const ast = [
           {
             name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'div1',
-            type: ID_SELECTOR
-          },
-          {
-            name: ' ',
-            type: COMBINATOR
-          },
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'even',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-child',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node = document.getElementById('li2');
-        const matcher =
-          new Matcher('div#div1 ul > li:nth-child(even)', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'div1',
-            type: ID_SELECTOR
-          },
-          {
-            name: ' ',
-            type: COMBINATOR
-          },
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'odd',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-child',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node1 = document.getElementById('li1');
-        const node2 = document.getElementById('li3');
-        const matcher =
-          new Matcher('div#div1 ul > li:nth-child(odd)', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node1, node2], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'div1',
-            type: ID_SELECTOR
-          },
-          {
-            name: ' ',
-            type: COMBINATOR
-          },
-          {
-            name: 'dd',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'even',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-of-type',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node = document.getElementById('span2');
-        const matcher =
-          new Matcher('div#div1 dd:nth-of-type(even) > span', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'div1',
-            type: ID_SELECTOR
-          },
-          {
-            name: ' ',
-            type: COMBINATOR
-          },
-          {
-            name: 'dd',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'odd',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-of-type',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node1 = document.getElementById('span1');
-        const node2 = document.getElementById('span3');
-        const matcher =
-          new Matcher('div#div1 dd:nth-of-type(odd) > span', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node1, node2], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'first-child',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '+',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const matcher =
-          new Matcher('ul > li:first-child + li', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [
-          document.getElementById('li2')
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'dl',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'dd',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'even',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-of-type',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node = document.getElementById('dd2').firstElementChild;
-        const matcher =
-          new Matcher('dl > dd:nth-of-type(even) > span', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.strictEqual(node.localName, 'span', 'local name');
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'div5',
-            type: ID_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  name: 'even',
-                  type: IDENTIFIER
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-of-type',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node1 = document.createElement('p');
-        const node2 = document.createElement('p');
-        const node3 = document.createElement('p');
-        const node4 = document.createElement('span');
-        node4.id = 'span1';
-        node2.appendChild(node4);
-        const parent = document.getElementById('div5');
-        parent.appendChild(node1);
-        parent.appendChild(node2);
-        parent.appendChild(node3);
-        const matcher =
-          new Matcher('#div5 > p:nth-of-type(even) > span', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
-        assert.deepEqual(res, [node4], 'result');
-      });
-
-      it('should get matched node', () => {
-        const ast = [
-          {
-            name: 'div5',
-            type: ID_SELECTOR
-          },
-          {
-            name: ' ',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
             type: TYPE_SELECTOR
           },
           {
@@ -4319,6 +3891,10 @@ describe('match AST leaf and DOM node', () => {
                     children: [
                       {
                         name: 'foo',
+                        type: CLASS_SELECTOR
+                      },
+                      {
+                        name: 'bar',
                         type: CLASS_SELECTOR
                       }
                     ],
@@ -4336,34 +3912,167 @@ describe('match AST leaf and DOM node', () => {
             type: COMBINATOR
           },
           {
-            name: 'span',
+            name: 'p',
             type: TYPE_SELECTOR
-          },
-          {
-            name: 'first-child',
-            type: CLASS_SELECTOR
           }
         ];
-        const node1 = document.createElement('p');
-        const node2 = document.createElement('p');
-        const node3 = document.createElement('p');
-        const node4 = document.createElement('span');
-        node4.id = 'span1';
-        node2.appendChild(node4);
-        node2.classList.add('foo');
-        const parent = document.getElementById('div5');
-        parent.appendChild(node1);
-        parent.appendChild(node2);
-        parent.appendChild(node3);
-        const matcher =
-          new Matcher('#div5 p:is(.foo) > span:firstChild', document);
-        const res = matcher._matchSelector(ast, document.documentElement);
+        const node = document.getElementById('div7');
+        const matcher = new Matcher('div:is(.foo.bar) > p', document);
+        const res = matcher._matchSelector(ast, node);
         assert.deepEqual(res, [
-          document.getElementById('span1')
+          document.getElementById('p2')
         ], 'result');
       });
-      */
     });
 
+    describe('match ast and node', () => {
+      it('should get empty array', () => {
+        const matcher = new Matcher('#bar', document);
+        const res = matcher._match();
+        assert.deepEqual(res, [], 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('dt', document);
+        const res = matcher._match();
+        assert.deepEqual(res, [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('.foo', document);
+        const res = matcher._match();
+        assert.deepEqual(res, [
+          document.getElementById('div6'),
+          document.getElementById('div7')
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('[hidden]', document);
+        const res = matcher._match();
+        assert.deepEqual(res, [
+          document.getElementById('span1'),
+          document.getElementById('span3')
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher(':is(ul)', document);
+        const res = matcher._match();
+        assert.deepEqual(res, [
+          document.getElementById('ul1')
+        ], 'result');
+      });
+    });
+
+    describe('matches', () => {
+      it('should get true', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('li', node);
+        const res = matcher.matches();
+        assert.isTrue(res, 'result');
+      });
+
+      it('should get true', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('ul > li', node);
+        const res = matcher.matches();
+        assert.isTrue(res, 'result');
+      });
+
+      it('should get true', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('#li2', node);
+        const res = matcher.matches();
+        assert.isTrue(res, 'result');
+      });
+
+      it('should get true', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('ul > li:nth-child(2n)', node);
+        const res = matcher.matches();
+        assert.isTrue(res, 'result');
+      });
+
+      it('should get false', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('ul > li:nth-child(2n+1)', node);
+        const res = matcher.matches();
+        assert.isFalse(res, 'result');
+      });
+    });
+
+    describe('closest', () => {
+      it('should get matched node', () => {
+        const node = document.getElementById('li2');
+        const target = document.getElementById('div2');
+        const matcher = new Matcher('div', node);
+        const res = matcher.closest();
+        assert.deepEqual(res, target, 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('dl', node);
+        const res = matcher.closest();
+        assert.isNull(res, 'result');
+      });
+    });
+
+    describe('querySelector', () => {
+      it('should get matched node', () => {
+        const node = document.getElementById('div1');
+        const target = document.getElementById('dt1');
+        const matcher = new Matcher('dt', node);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, target, 'result');
+      });
+
+      it('should get matched node', () => {
+        const target = document.getElementById('dt1');
+        const matcher = new Matcher('dt', document);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, target, 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ol', document);
+        const res = matcher.querySelector();
+        assert.isNull(res, 'result');
+      });
+    });
+
+    describe('querySelectorAll', () => {
+      it('should get matched node', () => {
+        const node = document.getElementById('div1');
+        const matcher = new Matcher('dt', node);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('dt', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ol', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [], 'result');
+      });
+    })
   });
 });
