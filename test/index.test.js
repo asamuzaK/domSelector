@@ -681,8 +681,16 @@ describe('patched JSDOM', () => {
 
 describe('jsdom issues tagged with `selectors` label', () => {
   describe('#2359 - https://github.com/jsdom/jsdom/issues/2359', () => {
-    const domStr =
-      '<!DOCTYPE html><html><body><div><p><span>hello</span></p></div></body></html>';
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div id="div">
+          <p id="p">
+            <span id="span">hello</span>
+          </p>
+        </div>
+      </body>
+    </html>`;
     let document;
     beforeEach(() => {
       const dom = jsdom(domStr);
@@ -699,13 +707,14 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
 
     it('should get matched node', () => {
-      const div = document.getElementsByTagName('div')[0];
+      const node = document.getElementById('p');
+      const div = document.getElementById('div');
       const res = div.querySelector(':scope > p');
-      assert.isNotNull(res, 'result');
+      assert.deepEqual(res, node, 'result');
     });
 
     it('should not match', () => {
-      const div = document.getElementsByTagName('div')[0];
+      const div = document.getElementById('div');
       const res = div.querySelector(':scope > span');
       assert.isNull(res, 'result');
     });
@@ -817,7 +826,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
     </a>`;
     let document;
     beforeEach(() => {
-      const dom = jsdom(domStr);
+      const dom = jsdom(domStr, {
+        consentType: 'text/xml'
+      });
       document = dom.window.document;
       for (const key of globalKeys) {
         global[key] = dom.window[key];
@@ -931,7 +942,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
     const domStr = '<a id="9a"><b id="target"/></a>';
     let document;
     beforeEach(() => {
-      const dom = jsdom(domStr);
+      const dom = jsdom(domStr, {
+        contentType: 'text/xml'
+      });
       document = dom.window.document;
       for (const key of globalKeys) {
         global[key] = dom.window[key];
@@ -1002,6 +1015,8 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  // NOTE: test passes, but contentType is 'text/html',
+  // and localName is 'cp:coreproperties', prefixed and lowercased, why?
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     const domStr = `<?xml version="1.0"?>
       <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
@@ -1024,7 +1039,6 @@ describe('jsdom issues tagged with `selectors` label', () => {
       }
     });
 
-    // NOTE: localName is 'cp:coreProperties', and served as 'text/html', why?
     it('should get matched node', () => {
       const node = document.getElementById('target');
       const res = document.querySelector('coreProperties');
@@ -1105,14 +1119,15 @@ describe('jsdom issues tagged with `selectors` label', () => {
       assert.isTrue(res, 'result');
     });
 
-    // NOTE: throws AssertionError
+    // FIXME: throws AssertionError for some reason
     xit('should get matched node', () => {
       const node = document.getElementById('target');
       const item = document.getElementById('item');
       item.focus();
       const res = node.querySelector(':focus-within');
+      // this passes
       assert.strictEqual(res.id, 'target', 'target id');
-      // res !== node, but why?
+      // but this fails, reports res !== node, why?
       assert.deepEqual(res, [node], 'result');
     });
   });
