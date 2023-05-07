@@ -1,5 +1,5 @@
 {
-  "name": "dom-selector",
+  "name": "@asamuzakjp/dom-selector",
   "description": "Retrieve DOM node from the given CSS selector.",
   "author": "asamuzaK",
   "license": "MIT",
@@ -41,5 +41,5 @@
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
-  "version": "0.2.0"
+  "version": "0.2.1"
 }
