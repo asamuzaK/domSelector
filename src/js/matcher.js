@@ -769,7 +769,7 @@ class Matcher {
 
   /**
    * parse ast and run
-   * @param {object} ast - ast tree
+   * @param {object} ast - ast
    * @param {object} node - element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
@@ -1020,7 +1020,7 @@ class Matcher {
    * match selector
    * @param {Array.<object>} children - selector children
    * @param {object} node - element node
-   * @returns {Array.<object|undefined>} - array of nodes if matched
+   * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _matchSelector(children, node) {
     const res = new Set();

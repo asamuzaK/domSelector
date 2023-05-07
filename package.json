@@ -19,17 +19,17 @@
   "types": "types/index.d.ts",
   "dependencies": {
     "@types/css-tree": "^2.3.1",
-    "@types/node": "^18.16.3",
+    "@types/node": "^20.1.0",
     "css-tree": "^2.3.1"
   },
   "devDependencies": {
     "c8": "^7.13.0",
     "chai": "^4.3.7",
-    "eslint": "^8.39.0",
+    "eslint": "^8.40.0",
     "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-jsdoc": "^43.1.1",
+    "eslint-plugin-jsdoc": "^43.2.0",
     "eslint-plugin-regexp": "^1.14.0",
-    "eslint-plugin-unicorn": "^46.0.0",
+    "eslint-plugin-unicorn": "^47.0.0",
     "jsdom": "^22.0.0",
     "mocha": "^10.2.0",
     "sinon": "^15.0.4",

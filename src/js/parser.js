@@ -22,14 +22,14 @@ const parseSelector = selector => {
 /**
  * walk AST
  * @param {object} ast - AST
- * @returns {Array.<object>} - array of selectors
+ * @returns {Array.<object|undefined>} - array of selectors
  */
 const walkAst = (ast = {}) => {
-  const selectors = [];
+  const selectors = new Set();
   const opt = {
     enter: leaf => {
       if (leaf.type === SELECTOR) {
-        selectors.push(leaf.children);
+        selectors.add(leaf.children);
       }
     },
     leave: leaf => {
@@ -41,7 +41,7 @@ const walkAst = (ast = {}) => {
     }
   };
   walk(ast, opt);
-  return selectors;
+  return [...selectors];
 };
 
 /* export */

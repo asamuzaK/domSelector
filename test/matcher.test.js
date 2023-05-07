@@ -4110,6 +4110,6 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [], 'result');
       });
-    })
+    });
   });
 });
