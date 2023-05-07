@@ -12,7 +12,7 @@ const { Matcher } = require('./js/matcher.js');
  * matches - Element.matches()
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
- * @returns {?object} - matched node
+ * @returns {boolean} - result
  */
 const matches = (selector, node) => {
   const matcher = new Matcher(selector, node);
@@ -33,7 +33,7 @@ const closest = (selector, node) => {
 /**
  * querySelector - Document.querySelector(), Element.querySelector()
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Document interface or Element node
+ * @param {object} refPoint - Document or Element node
  * @returns {?object} - matched node
  */
 const querySelector = (selector, refPoint) => {
@@ -45,7 +45,7 @@ const querySelector = (selector, refPoint) => {
  * querySelectorAll - Document.querySelectorAll(), Element.querySelectorAll()
  * NOTE: returns Array, not NodeList
  * @param {string} selector - CSS selector
- * @param {object} refPoint - Document interface or Element node
+ * @param {object} refPoint - Document or Element node
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
 const querySelectorAll = (selector, refPoint) => {
