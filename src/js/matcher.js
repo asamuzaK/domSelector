@@ -2,7 +2,7 @@
  * matcher.js
  */
 
-/* api */
+/* import */
 const { parseSelector, walkAst } = require('./parser.js');
 
 /* constants */
@@ -731,16 +731,22 @@ const matchPseudoClassSelector = (
  * Matcher
  */
 class Matcher {
+  /* private fields */
+  #ast;
+  #document;
+  #node;
+  #selector;
+
   /**
    * construct
    * @param {string} selector - CSS selector
    * @param {object} refPoint - reference point
    */
   constructor(selector, refPoint) {
-    this.ast = parseSelector(selector);
-    this.selector = selector;
-    this.node = refPoint;
-    this.ownerDocument = refPoint?.ownerDocument ?? refPoint;
+    this.#ast = parseSelector(selector);
+    this.#document = refPoint?.ownerDocument ?? refPoint;
+    this.#node = refPoint;
+    this.#selector = selector;
   }
 
   /**
@@ -749,8 +755,8 @@ class Matcher {
    * @param {object} root - root node
    * @returns {object} - iterator
    */
-  _createIterator(ast = this.ast, root = this.node) {
-    const iterator = this.ownerDocument.createNodeIterator(
+  _createIterator(ast = this.#ast, root = this.#node) {
+    const iterator = this.#document.createNodeIterator(
       root,
       NodeFilter.SHOW_ELEMENT,
       node => {
@@ -823,7 +829,7 @@ class Matcher {
    * match combinator
    * @param {Array.<object>} leaves - array of ast leaves
    * @param {object} prevNode - element node
-   * @returns {Array} - matched nodes
+   * @returns {Array.<object|undefined>} - matched nodes
    */
   _matchCombinator(leaves, prevNode) {
     const [{ name: comboName }, ...items] = leaves;
@@ -903,7 +909,7 @@ class Matcher {
    * match argument leaf
    * @param {object} leaf - argument ast leaf
    * @param {object} node - element node
-   * @returns {Array} - matched nodes
+   * @returns {Array.<object|undefined>} - matched nodes
    */
   _matchArgumentLeaf(leaf, node) {
     const iterator = this._createIterator(leaf, node);
@@ -1014,7 +1020,7 @@ class Matcher {
    * match selector
    * @param {Array.<object>} children - selector children
    * @param {object} node - element node
-   * @returns {Array<object|undefined>} - array of nodes if matched
+   * @returns {Array.<object|undefined>} - array of nodes if matched
    */
   _matchSelector(children, node) {
     const res = new Set();
@@ -1119,7 +1125,7 @@ class Matcher {
    * @param {object} [node] - element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
-  _match(ast = this.ast, node = this.node) {
+  _match(ast = this.#ast, node = this.#node) {
     const res = new Set();
     const { name, type } = ast;
     switch (type) {
@@ -1145,7 +1151,7 @@ class Matcher {
         break;
       case PSEUDO_CLASS_SELECTOR:
         if (!REG_PSEUDO_FUNC.test(name)) {
-          const arr = matchPseudoClassSelector(ast, node, this.node);
+          const arr = matchPseudoClassSelector(ast, node, this.#node);
           if (arr.length) {
             for (const i of arr) {
               res.add(i);
@@ -1170,8 +1176,8 @@ class Matcher {
    * @returns {boolean} - matched node
    */
   matches() {
-    const arr = this._match(this.ast, this.ownerDocument);
-    const node = this.node;
+    const arr = this._match(this.#ast, this.#document);
+    const node = this.#node;
     let res;
     if (arr.length) {
       for (const i of arr) {
@@ -1189,8 +1195,8 @@ class Matcher {
    * @returns {?object} - matched node
    */
   closest() {
-    const arr = this._match(this.ast, this.ownerDocument);
-    let node = this.node;
+    const arr = this._match(this.#ast, this.#document);
+    let node = this.#node;
     let res;
     while (node) {
       for (const i of arr) {
@@ -1212,7 +1218,7 @@ class Matcher {
    * @returns {?object} - matched node
    */
   querySelector() {
-    const arr = this._match(this.ast, this.node);
+    const arr = this._match(this.#ast, this.#node);
     let res;
     if (arr.length) {
       [res] = arr;
@@ -1226,7 +1232,7 @@ class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   querySelectorAll() {
-    const arr = this._match(this.ast, this.node);
+    const arr = this._match(this.#ast, this.#node);
     const res = new Set();
     if (arr.length) {
       for (const i of arr) {
