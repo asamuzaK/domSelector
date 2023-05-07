@@ -14,7 +14,7 @@ Retrieve DOM node from the given CSS selector.
 ## Install
 
 ```console
-npm i dom-selector
+npm i @asamuzakjp/dom-selector
 ```
 
 
