@@ -4,7 +4,7 @@
 
 /* api */
 const { assert } = require('chai');
-const { afterEach, beforeEach, describe, it } = require('mocha');
+const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const { JSDOM } = require('jsdom');
 
 /* test */
@@ -741,6 +741,334 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = document.getElementById('foo');
       const res = document.querySelector('svg:not(:root)');
       assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3506 - https://github.com/jsdom/jsdom/issues/3506', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <p id="target">
+          <span>123</span>
+        </p>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('p:has(span)');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3432 - https://github.com/jsdom/jsdom/issues/3432', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <button>hi</button>
+        <input type="submit" value="weee" id="target" />
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector(':is(:is(input), button)');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3427 - https://github.com/jsdom/jsdom/issues/3427', () => {
+    const domStr = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <a xmlns:ns="http://schemas.openxmlformats.org/drawingml/2006/main" id="a">
+      <ns:b id="nsb">
+          <ns:c id="nsc"></ns:c>
+      </ns:b>
+      <b id="b">
+        <c id="c"></c>
+      </b>
+    </a>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('a');
+      const res = document.querySelector('a');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const res = document.querySelector('ns\\:b');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const a = document.getElementById('a');
+      const node = document.getElementById('nsb');
+      const res = a.querySelector('ns|b');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const a = document.getElementById('a');
+      const node = document.getElementById('nsc');
+      const res = a.querySelector('ns|b ns|c');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3370 - https://github.com/jsdom/jsdom/issues/3370', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div class="case" id="target"></div>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('div[class=CasE i]');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('div[class=CasE I]');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#2998 - https://github.com/jsdom/jsdom/issues/2998', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div id="refPoint"><div><span id="target"></span></div></div>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('refPoint');
+      const res = refPoint.querySelector(':scope > span');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('refPoint');
+      const node = document.getElementById('target');
+      const res = refPoint.querySelector(':scope span');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3321 - https://github.com/jsdom/jsdom/issues/3321', () => {
+    const domStr = '<a id="9a"><b id="target"/></a>';
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    // FIXME:
+    xit('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.documentElement.querySelector(':scope > b');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#2544 - https://github.com/jsdom/jsdom/issues/2544', () => {
+    const domStr = `<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE mlt SYSTEM "https://raw.githubusercontent.com/mltframework/mlt/master/src/modules/xml/mlt-xml.dtd">
+        <mlt>
+          <producer id="producerqduAlody2X0FCLy2exeOG">
+            <property name="resource">/mnt/c/xampp/htdocs/videoeditor/WORKER/1234/qduAlody2X0FCLy2exeOG.JPG</property>
+            <property name="musecut:mime_type">image/jpeg</property>
+          </producer>
+          <playlist id="playlist0">
+            <entry producer="producerqduAlody2X0FCLy2exeOG" in="0" out="99"/>
+          </playlist>
+          <tractor id="tractor0">
+            <multitrack>
+              <track producer="playlist0"/>
+            </multitrack>
+            <filter mlt_service="greyscale" track="0" id="target"/>
+            <filter mlt_service="grayscale" track="0"/>
+          </tractor>
+          <playlist id="videotrack0">
+            <entry producer="tractor0"/>
+            <entry producer="producerqduAlody2X0FCLy2exeOG" in="0" out="99"/>
+          </playlist>
+          <tractor id="main">
+            <multitrack>
+              <track producer="videotrack0"/>
+            </multitrack>
+          </tractor>
+        </mlt>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('mlt>tractor[id="tractor0"]>filter[mlt_service="greyscale"][track="0"]');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
+    const domStr = `<?xml version="1.0"?>
+      <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
+        <dc:title></dc:title>
+      </cp:coreProperties>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr, {
+        contentType: 'text/xml'
+      });
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    // NOTE: localName is 'cp:coreProperties', and served as 'text/html', why?
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('coreProperties');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelector('*|coreProperties');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3428 - https://github.com/jsdom/jsdom/issues/3428', () => {
+    const domStr = `<root>
+      <aB>
+        <c id="c"></c>
+      </aB>
+      <cd>
+        <e id="e"></e>
+      </cd>
+    </root>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr, {
+        contentType: 'application/xml'
+      });
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const res = document.querySelectorAll('aB *');
+      const res2 = document.querySelectorAll('cd *');
+      assert.deepEqual(res, [document.getElementById('c')], 'result');
+      assert.deepEqual(res2, [document.getElementById('e')], 'result');
     });
   });
 });

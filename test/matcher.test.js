@@ -533,6 +533,19 @@ describe('match AST leaf and DOM node', () => {
       const res = func(leaf, node);
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: '*|div',
+        type: TYPE_SELECTOR
+      };
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('match class selector', () => {

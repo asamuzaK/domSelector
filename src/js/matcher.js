@@ -131,20 +131,35 @@ const collectNthOfType = (node = {}, opt = {}) => {
  * @returns {?object} - matched node
  */
 const matchTypeSelector = (leaf = {}, node = {}) => {
-  const { name: leafName, type: leafType } = leaf;
-  const { localName, nodeType, prefix } = node;
+  const { type: leafType } = leaf;
+  const { localName, nodeType, ownerDocument, prefix } = node;
   let res;
   if (leafType === TYPE_SELECTOR && nodeType === ELEMENT_NODE) {
-    // namespaced
+    let leafName = leaf.name;
+    let leafPrefix, leafNodeName, nodePrefix, nodeName;
     if (/\|/.test(leafName)) {
-      const [leafPrefix, leafLocalName] = leafName.split('|');
-      if (((leafPrefix === '' && !prefix) || // |E
-           (leafPrefix === '*') || // *|E
-           (leafPrefix === prefix)) && // ns|E
-          (leafLocalName === '*' || leafLocalName === localName)) {
-        res = node;
-      }
-    } else if (leafName === '*' || leafName === localName) {
+      [leafPrefix, leafNodeName] = leafName.split('|');
+    } else {
+      leafPrefix = '';
+      leafNodeName = leafName;
+    }
+    if (ownerDocument?.contentType === 'text/html') {
+      leafNodeName = leafNodeName.toLowerCase();
+      leafName = leafName.toLowerCase();
+    }
+    if (/:/.test(localName)) {
+      [nodePrefix, nodeName] = localName.split(':');
+    } else {
+      nodePrefix = prefix || '';
+      nodeName = localName;
+    }
+    if (leafName === '*' || leafName === '*|*' || leafName === nodeName ||
+        (leafName === '|*' && !nodePrefix) ||
+        (leafPrefix === '*' && leafNodeName === nodeName) ||
+        (leafPrefix === '' && !nodePrefix &&
+         (leafNodeName === '*' || leafNodeName === nodeName)) ||
+        (leafPrefix === nodePrefix &&
+         (leafNodeName === '*' || leafNodeName === nodeName))) {
       res = node;
     }
   }
