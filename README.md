@@ -1,7 +1,7 @@
 # DOM Selector
 
-[![build](https://github.com/asamuzaK/domSelector/workflows/build/badge.svg)](https://github.com/asamuzaK/domSelector/actions?query=workflow%3Abuild)
-[![CodeQL](https://github.com/asamuzaK/domSelector/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/asamuzaK/domSelector/actions/workflows/github-code-scanning/codeql)
+[![build](https://github.com/asamuzaK/domSelector/actions/workflows/node.js.yml/badge.svg)](https://github.com/asamuzaK/domSelector/actions/workflows/node.js.yml)
+[![CodeQL](https://github.com/asamuzaK/domSelector/actions/workflows/codeql.yml/badge.svg)](https://github.com/asamuzaK/domSelector/actions/workflows/codeql.yml)
 <!--
 [![npm](https://img.shields.io/npm/v/dom-selector)](https://www.npmjs.com/package/url-sanitizer)
 [![release](https://img.shields.io/github/v/release/asamuzaK/domSelector)](https://github.com/asamuzaK/domSelector/releases)
@@ -40,7 +40,7 @@ const {
   - [Parameters][8]
 
 
-### matches
+### matches(selector, node)
 
 Implementation of [Element.matches()][62].
 
@@ -52,7 +52,7 @@ Implementation of [Element.matches()][62].
 Returns **[boolean][58]** Result
 
 
-### closest
+### closest(selector, node)
 
 Implementation of [Element.closest()][63].
 
@@ -64,7 +64,7 @@ Implementation of [Element.closest()][63].
 Returns **[object][57]?** Matched node
 
 
-### querySelector
+### querySelector(selector, refPoint)
 
 Implementation of [Document.querySelector()][64], [Element.querySelector()][65].
 
@@ -76,7 +76,7 @@ Implementation of [Document.querySelector()][64], [Element.querySelector()][65].
 Returns **[object][57]?** Matched node
 
 
-### querySelectorAll
+### querySelectorAll(selector, refPoint)
 
 Implementation of [Document.querySelectorAll()][66], [Element.querySelectorAll()][67].
 **NOTE**: returns [Array][59], not [NodeList][61].
