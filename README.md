@@ -1,8 +1,8 @@
 # DOM Selector
 
-<!--
 [![build](https://github.com/asamuzaK/domSelector/workflows/build/badge.svg)](https://github.com/asamuzaK/domSelector/actions?query=workflow%3Abuild)
 [![CodeQL](https://github.com/asamuzaK/domSelector/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/asamuzaK/domSelector/actions/workflows/github-code-scanning/codeql)
+<!--
 [![npm](https://img.shields.io/npm/v/dom-selector)](https://www.npmjs.com/package/url-sanitizer)
 [![release](https://img.shields.io/github/v/release/asamuzaK/domSelector)](https://github.com/asamuzaK/domSelector/releases)
 -->
