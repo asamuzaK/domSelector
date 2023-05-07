@@ -1136,8 +1136,8 @@ class Matcher {
 
   /**
    * match ast and node
-   * @param {object} [ast] - ast tree
-   * @param {object} [node] - element node
+   * @param {object} ast - ast
+   * @param {object} node - element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _match(ast = this.#ast, node = this.#node) {
