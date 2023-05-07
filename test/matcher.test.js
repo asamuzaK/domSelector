@@ -2601,6 +2601,63 @@ describe('match AST leaf and DOM node', () => {
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
+        name: 'target-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'target-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, parent);
+      assert.deepEqual(res, [parent], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'target-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'bar';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, parent);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'target-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const target = document.getElementById('div1');
+      const res = func(leaf, target);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
         name: 'scope',
         type: PSEUDO_CLASS_SELECTOR
       };
@@ -2668,6 +2725,49 @@ describe('match AST leaf and DOM node', () => {
       node.focus();
       const res = func(leaf, node);
       assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      const res = func(leaf, parent);
+      assert.deepEqual(res, [parent], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      const target = document.getElementById('div1');
+      const res = func(leaf, target);
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {

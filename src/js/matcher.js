@@ -591,6 +591,19 @@ const matchPseudoClassSelector = (
             res.add(node);
           }
           break;
+        case 'target-within':
+          if (docURL.hash) {
+            const hash = docURL.hash.replace(/^#/, '');
+            let current = ownerDocument.getElementById(hash);
+            while (current) {
+              if (current === node) {
+                res.add(node);
+                break;
+              }
+              current = current.parentNode;
+            }
+          }
+          break;
         case 'scope':
           if (refPoint?.nodeType === ELEMENT_NODE) {
             if (node === refPoint) {
@@ -605,6 +618,17 @@ const matchPseudoClassSelector = (
             res.add(node);
           }
           break;
+        case 'focus-within': {
+          let current = ownerDocument.activeElement;
+          while (current) {
+            if (current === node) {
+              res.add(node);
+              break;
+            }
+            current = current.parentNode;
+          }
+          break;
+        }
         case 'open':
           if (node.hasAttribute('open')) {
             res.add(node);
@@ -708,7 +732,6 @@ const matchPseudoClassSelector = (
         case 'default':
         case 'empty':
         case 'focus-visible':
-        case 'focus-within':
         case 'fullscreen':
         case 'future':
         case 'hover':
@@ -727,7 +750,6 @@ const matchPseudoClassSelector = (
         case 'read-write':
         case 'seeking':
         case 'stalled':
-        case 'target-within':
         case 'user-invalid':
         case 'user-valid':
         case 'valid':
