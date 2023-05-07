@@ -5,7 +5,7 @@
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
  */
 
-/* api */
+/* import */
 const { Matcher } = require('./js/matcher.js');
 
 /**
