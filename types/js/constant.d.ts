@@ -20,7 +20,7 @@ export const MEDIA_FEATURE: string;
 export const MEDIA_QUERY: string;
 export const MEDIA_QUERY_LIST: string;
 export const NESTING_SELECTOR: string;
-export const N_TH: string;
+export const NTH: string;
 export const NUMBER: string;
 export const OPERATOR: string;
 export const PARENTHESES: string;
