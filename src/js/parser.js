@@ -22,19 +22,19 @@ const parseSelector = selector => {
 /**
  * walk AST
  * @param {object} ast - AST
- * @returns {Array.<object|undefined>} - array of selectors
+ * @returns {Array.<object|undefined>} - collection of AST branches
  */
 const walkAst = (ast = {}) => {
   const selectors = new Set();
   const opt = {
-    enter: leaf => {
-      if (leaf.type === SELECTOR) {
-        selectors.add(leaf.children);
+    enter: branch => {
+      if (branch.type === SELECTOR) {
+        selectors.add(branch.children);
       }
     },
-    leave: leaf => {
+    leave: branch => {
       let skip;
-      if (leaf.type === SELECTOR) {
+      if (branch.type === SELECTOR) {
         skip = walkAst.skip;
       }
       return skip;

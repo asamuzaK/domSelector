@@ -16,7 +16,7 @@ const REG_PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 
 /**
  * collect nth child
- * @param {object} node - element node
+ * @param {object} node - Element node
  * @param {object} opt - options
  * @param {number} opt.a - a
  * @param {number} opt.b - b
@@ -63,7 +63,7 @@ const collectNthChild = (node = {}, opt = {}) => {
 
 /**
  * collect nth of type
- * @param {object} node - element node
+ * @param {object} node - Element node
  * @param {object} opt - options
  * @param {number} opt.a - a
  * @param {number} opt.b - b
@@ -126,26 +126,26 @@ const collectNthOfType = (node = {}, opt = {}) => {
 
 /**
  * match type selector
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchTypeSelector = (leaf = {}, node = {}) => {
-  const { type: leafType } = leaf;
+const matchTypeSelector = (ast = {}, node = {}) => {
+  const { type: astType } = ast;
   const { localName, nodeType, ownerDocument, prefix } = node;
   let res;
-  if (leafType === TYPE_SELECTOR && nodeType === ELEMENT_NODE) {
-    let leafName = leaf.name;
-    let leafPrefix, leafNodeName, nodePrefix, nodeName;
-    if (/\|/.test(leafName)) {
-      [leafPrefix, leafNodeName] = leafName.split('|');
+  if (astType === TYPE_SELECTOR && nodeType === ELEMENT_NODE) {
+    let astName = ast.name;
+    let astPrefix, astNodeName, nodePrefix, nodeName;
+    if (/\|/.test(astName)) {
+      [astPrefix, astNodeName] = astName.split('|');
     } else {
-      leafPrefix = '';
-      leafNodeName = leafName;
+      astPrefix = '';
+      astNodeName = astName;
     }
     if (ownerDocument?.contentType === 'text/html') {
-      leafNodeName = leafNodeName.toLowerCase();
-      leafName = leafName.toLowerCase();
+      astNodeName = astNodeName.toLowerCase();
+      astName = astName.toLowerCase();
     }
     if (/:/.test(localName)) {
       [nodePrefix, nodeName] = localName.split(':');
@@ -153,13 +153,13 @@ const matchTypeSelector = (leaf = {}, node = {}) => {
       nodePrefix = prefix || '';
       nodeName = localName;
     }
-    if (leafName === '*' || leafName === '*|*' || leafName === nodeName ||
-        (leafName === '|*' && !nodePrefix) ||
-        (leafPrefix === '*' && leafNodeName === nodeName) ||
-        (leafPrefix === '' && !nodePrefix &&
-         (leafNodeName === '*' || leafNodeName === nodeName)) ||
-        (leafPrefix === nodePrefix &&
-         (leafNodeName === '*' || leafNodeName === nodeName))) {
+    if (astName === '*' || astName === '*|*' || astName === nodeName ||
+        (astName === '|*' && !nodePrefix) ||
+        (astPrefix === '*' && astNodeName === nodeName) ||
+        (astPrefix === '' && !nodePrefix &&
+         (astNodeName === '*' || astNodeName === nodeName)) ||
+        (astPrefix === nodePrefix &&
+         (astNodeName === '*' || astNodeName === nodeName))) {
       res = node;
     }
   }
@@ -168,16 +168,16 @@ const matchTypeSelector = (leaf = {}, node = {}) => {
 
 /**
  * match class selector
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchClassSelector = (leaf = {}, node = {}) => {
-  const { name: leafName, type: leafType } = leaf;
+const matchClassSelector = (ast = {}, node = {}) => {
+  const { name: astName, type: astType } = ast;
   const { classList, nodeType } = node;
   let res;
-  if (leafType === CLASS_SELECTOR && nodeType === ELEMENT_NODE &&
-      classList.contains(leafName)) {
+  if (astType === CLASS_SELECTOR && nodeType === ELEMENT_NODE &&
+      classList.contains(astName)) {
     res = node;
   }
   return res || null;
@@ -185,16 +185,16 @@ const matchClassSelector = (leaf = {}, node = {}) => {
 
 /**
  * match ID selector
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchIdSelector = (leaf = {}, node = {}) => {
-  const { name: leafName, type: leafType } = leaf;
+const matchIdSelector = (ast = {}, node = {}) => {
+  const { name: astName, type: astType } = ast;
   const { id, nodeType } = node;
   let res;
-  if (leafType === ID_SELECTOR && nodeType === ELEMENT_NODE &&
-      leafName === id) {
+  if (astType === ID_SELECTOR && nodeType === ELEMENT_NODE &&
+      astName === id) {
     res = node;
   }
   return res || null;
@@ -202,32 +202,32 @@ const matchIdSelector = (leaf = {}, node = {}) => {
 
 /**
  * match attribute selector
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchAttributeSelector = (leaf = {}, node = {}) => {
+const matchAttributeSelector = (ast = {}, node = {}) => {
   const {
-    flags: leafFlags, matcher: leafMatcher, name: leafName, type: leafType,
-    value: leafValue
-  } = leaf;
+    flags: astFlags, matcher: astMatcher, name: astName, type: astType,
+    value: astValue
+  } = ast;
   const { attributes, nodeType } = node;
   let res;
-  if (leafType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
+  if (astType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
       attributes?.length) {
-    const { name: leafAttrName } = leafName;
-    const caseInsensitive = !(leafFlags && /^s$/i.test(leafFlags));
+    const { name: astAttrName } = astName;
+    const caseInsensitive = !(astFlags && /^s$/i.test(astFlags));
     const attrValues = [];
     const l = attributes.length;
     // namespaced
-    if (/\|/.test(leafAttrName)) {
-      const [leafAttrPrefix, leafAttrLocalName] = leafAttrName.split('|');
+    if (/\|/.test(astAttrName)) {
+      const [astAttrPrefix, astAttrLocalName] = astAttrName.split('|');
       let i = 0;
       while (i < l) {
         const { name: itemName, value: itemValue } = attributes.item(i);
-        switch (leafAttrPrefix) {
+        switch (astAttrPrefix) {
           case '':
-            if (leafAttrLocalName === itemName) {
+            if (astAttrLocalName === itemName) {
               if (caseInsensitive) {
                 attrValues.push(itemValue.toLowerCase());
               } else {
@@ -237,14 +237,14 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
             break;
           case '*':
             if (/:/.test(itemName)) {
-              if (itemName.endsWith(`:${leafAttrLocalName}`)) {
+              if (itemName.endsWith(`:${astAttrLocalName}`)) {
                 if (caseInsensitive) {
                   attrValues.push(itemValue.toLowerCase());
                 } else {
                   attrValues.push(itemValue);
                 }
               }
-            } else if (leafAttrLocalName === itemName) {
+            } else if (astAttrLocalName === itemName) {
               if (caseInsensitive) {
                 attrValues.push(itemValue.toLowerCase());
               } else {
@@ -255,8 +255,8 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
           default:
             if (/:/.test(itemName)) {
               const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
-              if (leafAttrPrefix === itemNamePrefix &&
-                  leafAttrLocalName === itemNameLocalName) {
+              if (astAttrPrefix === itemNamePrefix &&
+                  astAttrLocalName === itemNameLocalName) {
                 if (caseInsensitive) {
                   attrValues.push(itemValue.toLowerCase());
                 } else {
@@ -273,14 +273,14 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
         const { name: itemName, value: itemValue } = attributes.item(i);
         if (/:/.test(itemName)) {
           const [, itemNameLocalName] = itemName.split(':');
-          if (leafAttrName === itemNameLocalName) {
+          if (astAttrName === itemNameLocalName) {
             if (caseInsensitive) {
               attrValues.push(itemValue.toLowerCase());
             } else {
               attrValues.push(itemValue);
             }
           }
-        } else if (leafAttrName === itemName) {
+        } else if (astAttrName === itemName) {
           if (caseInsensitive) {
             attrValues.push(itemValue.toLowerCase());
           } else {
@@ -292,23 +292,23 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
     }
     if (attrValues.length) {
       const {
-        name: leafAttrIdentValue, value: leafAttrStringValue
-      } = leafValue || {};
+        name: astAttrIdentValue, value: astAttrStringValue
+      } = astValue || {};
       let attrValue;
-      if (leafAttrIdentValue) {
+      if (astAttrIdentValue) {
         if (caseInsensitive) {
-          attrValue = leafAttrIdentValue.toLowerCase();
+          attrValue = astAttrIdentValue.toLowerCase();
         } else {
-          attrValue = leafAttrIdentValue;
+          attrValue = astAttrIdentValue;
         }
-      } else if (leafAttrStringValue) {
+      } else if (astAttrStringValue) {
         if (caseInsensitive) {
-          attrValue = leafAttrStringValue.toLowerCase();
+          attrValue = astAttrStringValue.toLowerCase();
         } else {
-          attrValue = leafAttrStringValue;
+          attrValue = astAttrStringValue;
         }
       }
-      switch (leafMatcher) {
+      switch (astMatcher) {
         case null:
           res = node;
           break;
@@ -369,7 +369,7 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
           }
           break;
         default:
-          console.warn(`Unknown matcher ${leafMatcher}`);
+          console.warn(`Unknown matcher ${astMatcher}`);
       }
     }
   }
@@ -378,34 +378,34 @@ const matchAttributeSelector = (leaf = {}, node = {}) => {
 
 /**
  * match An+B
- * @param {string} leafName - leaf name
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {string} nthName - nth pseudo class name
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
-const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
+const matchAnPlusB = (nthName, ast = {}, node = {}) => {
   const res = new Set();
-  if (typeof leafName === 'string') {
-    leafName = leafName.trim();
-    if (REG_PSEUDO_NTH.test(leafName)) {
+  if (typeof nthName === 'string') {
+    nthName = nthName.trim();
+    if (REG_PSEUDO_NTH.test(nthName)) {
       const {
         nth: {
           a,
           b,
           name: identName
         },
-        selector: leafSelector,
-        type: leafType
-      } = leaf;
+        selector: astSelector,
+        type: astType
+      } = ast;
       const { nodeType } = node;
-      if (leafType === NTH && nodeType === ELEMENT_NODE) {
+      if (astType === NTH && nodeType === ELEMENT_NODE) {
         /*
         // FIXME:
         // :nth-child(An+B of S)
-        if (leafSelector) {
+        if (astSelector) {
         }
         */
-        if (!leafSelector) {
+        if (!astSelector) {
           const optMap = new Map();
           if (identName) {
             if (identName === 'even') {
@@ -415,7 +415,7 @@ const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
               optMap.set('a', 2);
               optMap.set('b', 1);
             }
-            if (/last/.test(leafName)) {
+            if (/last/.test(nthName)) {
               optMap.set('reverse', true);
             }
           } else {
@@ -429,20 +429,20 @@ const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
             } else {
               optMap.set('b', 0);
             }
-            if (/last/.test(leafName)) {
+            if (/last/.test(nthName)) {
               optMap.set('reverse', true);
             }
           }
           if (optMap.size > 1) {
             const opt = Object.fromEntries(optMap);
-            if (/^nth-(?:last-)?child$/.test(leafName)) {
+            if (/^nth-(?:last-)?child$/.test(nthName)) {
               const arr = collectNthChild(node, opt);
               if (arr.length) {
                 for (const i of arr) {
                   res.add(i);
                 }
               }
-            } else if (/^nth-(?:last-)?of-type$/.test(leafName)) {
+            } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
               const arr = collectNthOfType(node, opt);
               if (arr.length) {
                 for (const i of arr) {
@@ -461,29 +461,29 @@ const matchAnPlusB = (leafName, leaf = {}, node = {}) => {
 /**
  * match language pseudo class
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
-  const { name: leafName, type: leafType } = leaf;
+const matchLanguagePseudoClass = (ast = {}, node = {}) => {
+  const { name: astName, type: astType } = ast;
   const { lang, nodeType } = node;
   let res;
-  if (leafType === IDENTIFIER && nodeType === ELEMENT_NODE) {
+  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
     // FIXME:
     /*
-    if (leafName === '') {
+    if (astName === '') {
       if (!lang) {
         res = node;
       }
-    } else if (leafName === '*') {
+    } else if (astName === '*') {
     }
     */
-    if (/[A-Za-z\d-]+/.test(leafName)) {
+    if (/[A-Za-z\d-]+/.test(astName)) {
       const codePart = '(?:-[A-Za-z\\d]+)?';
       let reg;
-      if (/-/.test(leafName)) {
-        const [langMain, langSub, ...langRest] = leafName.split('-');
+      if (/-/.test(astName)) {
+        const [langMain, langSub, ...langRest] = astName.split('-');
         const extendedMain = `${langMain}${codePart}`;
         const extendedSub = `-${langSub}${codePart}`;
         let extendedRest = '';
@@ -494,7 +494,7 @@ const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
         }
         reg = new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
       } else {
-        reg = new RegExp(`^${leafName}${codePart}$`, 'i');
+        reg = new RegExp(`^${astName}${codePart}$`, 'i');
       }
       if (lang) {
         if (reg.test(lang)) {
@@ -517,55 +517,55 @@ const matchLanguagePseudoClass = (leaf = {}, node = {}) => {
 
 /**
  * match pseudo class selector
- * @param {object} leaf - ast leaf
- * @param {object} node - element node
+ * @param {object} ast - AST
+ * @param {object} node - Element node
  * @param {object} [refPoint] - reference point
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
 const matchPseudoClassSelector = (
-  leaf = {},
+  ast = {},
   node = {},
   refPoint = {}
 ) => {
-  const { children: leafChildren, name: leafName, type: leafType } = leaf;
+  const { children: astChildren, name: astName, type: astType } = ast;
   const { nodeType, ownerDocument } = node;
   const res = new Set();
-  if (leafType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
-    if (Array.isArray(leafChildren)) {
-      const [leafChildAst] = leafChildren;
+  if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
+    if (Array.isArray(astChildren)) {
+      const [astChildAst] = astChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (REG_PSEUDO_NTH.test(leafName)) {
-        const arr = matchAnPlusB(leafName, leafChildAst, node);
+      if (REG_PSEUDO_NTH.test(astName)) {
+        const arr = matchAnPlusB(astName, astChildAst, node);
         if (arr.length) {
           for (const i of arr) {
             res.add(i);
           }
         }
       } else {
-        switch (leafName) {
+        switch (astName) {
           case 'dir':
-            if (leafChildAst.name === node.dir) {
+            if (astChildAst.name === node.dir) {
               res.add(node);
             }
             break;
           case 'lang':
-            if (matchLanguagePseudoClass(leafChildAst, node)) {
+            if (matchLanguagePseudoClass(astChildAst, node)) {
               res.add(node);
             }
             break;
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
-            console.warn(`Unsupported pseudo class ${leafName}`);
+            console.warn(`Unsupported pseudo class ${astName}`);
             break;
           default:
-            console.warn(`Unknown pseudo class ${leafName}`);
+            console.warn(`Unknown pseudo class ${astName}`);
         }
       }
     } else {
       const root = ownerDocument.documentElement;
       const docURL = new URL(ownerDocument.URL);
-      switch (leafName) {
+      switch (astName) {
         case 'any-link':
         case 'link':
           // FIXME: what about namespaced href? e.g. xlink:href
@@ -754,10 +754,10 @@ const matchPseudoClassSelector = (
         case 'user-valid':
         case 'valid':
         case 'volume-locked':
-          console.warn(`Unsupported pseudo class ${leafName}`);
+          console.warn(`Unsupported pseudo class ${astName}`);
           break;
         default:
-          console.warn(`Unknown pseudo class ${leafName}`);
+          console.warn(`Unknown pseudo class ${astName}`);
       }
     }
   }
@@ -788,7 +788,7 @@ class Matcher {
 
   /**
    * create iterator
-   * @param {object} ast - ast
+   * @param {object} ast - AST
    * @param {object} root - root node
    * @returns {object} - iterator
    */
@@ -806,8 +806,8 @@ class Matcher {
 
   /**
    * parse ast and run
-   * @param {object} ast - ast
-   * @param {object} node - element node
+   * @param {object} ast - AST
+   * @param {object} node - Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _parseAst(ast, node) {
@@ -828,8 +828,8 @@ class Matcher {
 
   /**
    * match adjacent leaves
-   * @param {Array.<object>} leaves - array of ast leaves
-   * @param {object} node - element node
+   * @param {Array.<object>} leaves - array of AST leaves
+   * @param {object} node - Element node
    * @returns {?object} - matched node
    */
   _matchAdjacentLeaves(leaves, node) {
@@ -864,8 +864,8 @@ class Matcher {
 
   /**
    * match combinator
-   * @param {Array.<object>} leaves - array of ast leaves
-   * @param {object} prevNode - element node
+   * @param {Array.<object>} leaves - array of AST leaves
+   * @param {object} prevNode - Element node
    * @returns {Array.<object|undefined>} - matched nodes
    */
   _matchCombinator(leaves, prevNode) {
@@ -890,10 +890,10 @@ class Matcher {
         nextNode = iterator.nextNode();
       }
       while (items.length) {
-        const leaf = items.shift();
+        const ast = items.shift();
         if (nodes.size) {
           nodes.forEach(node => {
-            const arr = this._match(leaf, node);
+            const arr = this._match(ast, node);
             if (!arr.length) {
               nodes.delete(node);
             }
@@ -944,8 +944,8 @@ class Matcher {
 
   /**
    * match argument leaf
-   * @param {object} leaf - argument ast leaf
-   * @param {object} node - element node
+   * @param {object} leaf - AST leaf
+   * @param {object} node - Element node
    * @returns {Array.<object|undefined>} - matched nodes
    */
   _matchArgumentLeaf(leaf, node) {
@@ -966,16 +966,16 @@ class Matcher {
 
   /**
    * match logical pseudo class functions - :is(), :has(), :not(), :where()
-   * @param {object} leaf - ast leaf
-   * @param {object} node - element node
+   * @param {object} branch - AST branch
+   * @param {object} node - Element node
    * @returns {?object} - matched node
    */
-  _matchLogicalPseudoFunc(leaf, node) {
-    const ast = walkAst(leaf);
+  _matchLogicalPseudoFunc(branch, node) {
+    const ast = walkAst(branch);
     let res;
     if (ast.length) {
-      const { name: leafName } = leaf;
-      switch (leafName) {
+      const { name: branchName } = branch;
+      switch (branchName) {
         // :has()
         case 'has': {
           let matched;
@@ -1056,7 +1056,7 @@ class Matcher {
   /**
    * match selector
    * @param {Array.<object>} children - selector children
-   * @param {object} node - element node
+   * @param {object} node - Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _matchSelector(children, node) {
@@ -1157,9 +1157,9 @@ class Matcher {
   }
 
   /**
-   * match ast and node
-   * @param {object} ast - ast
-   * @param {object} node - element node
+   * match AST and node
+   * @param {object} ast - AST
+   * @param {object} node - Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _match(ast = this.#ast, node = this.#node) {

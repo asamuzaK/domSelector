@@ -5,7 +5,7 @@ export class Matcher {
     _matchAdjacentLeaves(leaves: Array<object>, node: object): object | null;
     _matchCombinator(leaves: Array<object>, prevNode: object): Array<object | undefined>;
     _matchArgumentLeaf(leaf: object, node: object): Array<object | undefined>;
-    _matchLogicalPseudoFunc(leaf: object, node: object): object | null;
+    _matchLogicalPseudoFunc(branch: object, node: object): object | null;
     _matchSelector(children: Array<object>, node: object): Array<object | undefined>;
     _match(ast?: object, node?: object): Array<object | undefined>;
     matches(): boolean;
@@ -24,10 +24,10 @@ export function collectNthOfType(node?: object, opt?: {
     b: number;
     reverse?: boolean;
 }): Array<object | undefined>;
-export function matchAnPlusB(leafName: string, leaf?: object, node?: object): Array<object | undefined>;
-export function matchAttributeSelector(leaf?: object, node?: object): object | null;
-export function matchClassSelector(leaf?: object, node?: object): object | null;
-export function matchIdSelector(leaf?: object, node?: object): object | null;
-export function matchLanguagePseudoClass(leaf?: object, node?: object): object | null;
-export function matchPseudoClassSelector(leaf?: object, node?: object, refPoint?: object): Array<object | undefined>;
-export function matchTypeSelector(leaf?: object, node?: object): object | null;
+export function matchAnPlusB(nthName: string, ast?: object, node?: object): Array<object | undefined>;
+export function matchAttributeSelector(ast?: object, node?: object): object | null;
+export function matchClassSelector(ast?: object, node?: object): object | null;
+export function matchIdSelector(ast?: object, node?: object): object | null;
+export function matchLanguagePseudoClass(ast?: object, node?: object): object | null;
+export function matchPseudoClassSelector(ast?: object, node?: object, refPoint?: object): Array<object | undefined>;
+export function matchTypeSelector(ast?: object, node?: object): object | null;
