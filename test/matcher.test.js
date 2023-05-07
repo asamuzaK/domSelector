@@ -3923,6 +3923,43 @@ describe('match AST leaf and DOM node', () => {
           document.getElementById('p2')
         ], 'result');
       });
+
+      it('should get matched node(s)', () => {
+        const ast = [
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'foo',
+                        type: CLASS_SELECTOR
+                      },
+                      {
+                        name: 'bar',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'is',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const node = document.getElementById('div6');
+        const matcher = new Matcher('div:is(.foo.bar)', document);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [node], 'result');
+      });
     });
 
     describe('match ast and node', () => {

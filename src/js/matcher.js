@@ -1038,10 +1038,20 @@ class Matcher {
         if (items.length) {
           if (items.length === 1) {
             const item = items.shift();
-            const arr = this._match(item, nextNode);
-            if (arr.length) {
-              for (const i of arr) {
-                res.add(i);
+            const { name: itemName, type: itemType } = item;
+            if (itemType === PSEUDO_CLASS_SELECTOR &&
+                REG_PSEUDO_FUNC.test(itemName)) {
+              nextNode = this._matchLogicalPseudoFunc(item, nextNode);
+              if (nextNode) {
+                res.add(nextNode);
+                nextNode = null;
+              }
+            } else {
+              const arr = this._match(item, nextNode);
+              if (arr.length) {
+                for (const i of arr) {
+                  res.add(i);
+                }
               }
             }
           } else {
@@ -1050,7 +1060,7 @@ class Matcher {
               const { name: itemName, type: itemType } = item;
               if (itemType === PSEUDO_CLASS_SELECTOR &&
                   REG_PSEUDO_FUNC.test(itemName)) {
-                const arr = this._matchLogicalPseudoFunc(item, nextNode);
+                nextNode = this._matchLogicalPseudoFunc(item, nextNode);
               } else if (itemType === COMBINATOR) {
                 const leaves = [];
                 leaves.push(item);
@@ -1135,7 +1145,6 @@ class Matcher {
         break;
       case PSEUDO_CLASS_SELECTOR:
         if (!REG_PSEUDO_FUNC.test(name)) {
-          'name'
           const arr = matchPseudoClassSelector(ast, node, this.node);
           if (arr.length) {
             for (const i of arr) {
