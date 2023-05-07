@@ -13,7 +13,7 @@
   },
   "files": [
     "src",
-    "types/src"
+    "types"
   ],
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -41,5 +41,5 @@
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
-  "version": "0.1.1"
+  "version": "0.2.0"
 }
