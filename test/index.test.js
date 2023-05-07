@@ -1071,4 +1071,42 @@ describe('jsdom issues tagged with `selectors` label', () => {
       assert.deepEqual(res2, [document.getElementById('e')], 'result');
     });
   });
+
+  describe('#3055 - https://github.com/jsdom/jsdom/issues/3055', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div class="container" id="target">
+          Focus here:
+          <button>focus me</button>
+        </div>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = node.querySelector(':focus-within');
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.getElementById('target');
+      const res = node.matches(':focus-within');
+      assert.isTrue(res, 'result');
+    });
+  });
 });
