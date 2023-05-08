@@ -17,6 +17,7 @@ const {
 } = require('../src/js/constant.js');
 
 describe('match AST leaf and DOM node', () => {
+  const globalKeys = ['DOMParser', 'Node', 'NodeFilter', 'NodeIterator'];
   const domStr = `<!doctype html>
     <html lang="en">
       <head>
@@ -66,7 +67,6 @@ describe('match AST leaf and DOM node', () => {
     runScripts: 'dangerously',
     url: 'https://localhost/#foo'
   };
-  const globalKeys = ['Node', 'NodeFilter', 'NodeIterator'];
   let document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
@@ -104,6 +104,17 @@ describe('match AST leaf and DOM node', () => {
       const opt = {
         a: 0,
         b: 6,
+        reverse: true
+      };
+      const node = document.getElementById('dt1');
+      const res = func(node, opt);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get empty array', () => {
+      const opt = {
+        a: -1,
+        b: 0,
         reverse: true
       };
       const node = document.getElementById('dt1');
@@ -260,6 +271,16 @@ describe('match AST leaf and DOM node', () => {
       const opt = {
         a: 0,
         b: 6
+      };
+      const node = document.getElementById('dt1');
+      const res = func(node, opt);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get empty array', () => {
+      const opt = {
+        a: -1,
+        b: 0
       };
       const node = document.getElementById('dt1');
       const res = func(node, opt);
@@ -543,6 +564,26 @@ describe('match AST leaf and DOM node', () => {
         document.createElementNS('https://example.com/foo', 'foo:div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<!doctype html>
+      <html>
+        <body>
+          <foo:bar id="foobar">
+            <foo:baz/>
+            <foo:qux/>
+          </foo:bar>
+        </body>
+      </html>`;
+      const doc = new DOMParser().parseFromString(domStr, 'text/html');
+      const leaf = {
+        name: 'foo|bar',
+        type: TYPE_SELECTOR
+      };
+      const node = doc.getElementById('foobar');
       const res = func(leaf, node);
       assert.deepEqual(res, node, 'result');
     });

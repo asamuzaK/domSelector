@@ -44,8 +44,10 @@ const collectNthChild = (node = {}, opt = {}) => {
     } else {
       let n = 0;
       let nth = b - 1;
-      while (nth < 0) {
-        nth += (++n * a);
+      if (a > 0) {
+        while (nth < 0) {
+          nth += (++n * a);
+        }
       }
       let i = 0;
       while (i < l && nth < l) {
@@ -102,8 +104,10 @@ const collectNthOfType = (node = {}, opt = {}) => {
     // :nth-of-type()
     } else {
       let nth = b - 1;
-      while (nth < 0) {
-        nth += a;
+      if (a > 0) {
+        while (nth < 0) {
+          nth += a;
+        }
       }
       let i = 0;
       let j = 0;
@@ -147,6 +151,7 @@ const matchTypeSelector = (ast = {}, node = {}) => {
       astNodeName = astNodeName.toLowerCase();
       astName = astName.toLowerCase();
     }
+    // just in case that the namespaced content is parsed as text/html
     if (/:/.test(localName)) {
       [nodePrefix, nodeName] = localName.split(':');
     } else {
