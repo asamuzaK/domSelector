@@ -713,6 +713,38 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#2114 - https://github.com/jsdom/jsdom/issues/2114', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div class="test">
+        </div>
+        <svg class="test" id="target">
+        </svg>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelectorAll('svg.test');
+      assert.deepEqual(res, [node], 'result');
+    });
+  });
+
   describe('#2359 - https://github.com/jsdom/jsdom/issues/2359', () => {
     const domStr = `<!DOCTYPE html>
     <html>
@@ -739,7 +771,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       }
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
       const div = document.querySelector('div');
       const p = document.querySelector('p');
       assert.deepEqual(div.querySelector(':scope > p'), p, 'result');
@@ -797,7 +829,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       }
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
       const refPoint = document.getElementById('refPoint');
       const res = refPoint.querySelector(':scope > span');
       assert.isNull(res, 'result');
@@ -1124,6 +1156,33 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = doc.getElementById('target');
       const res = doc.querySelector('mlt>tractor[id="tractor0"]>filter[mlt_service="greyscale"][track="0"]');
       assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3015 - https://github.com/jsdom/jsdom/issues/3015', () => {
+    beforeEach(() => {
+      const dom = jsdom('');
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<data>
+        <_g>
+          <b id="target">hey</b>
+        </_g>
+      </data>`;
+      const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.getElementById('target');
+      const res = doc.querySelector('data > _g > b');
+      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res.textContent, 'hey', 'content');
     });
   });
 
