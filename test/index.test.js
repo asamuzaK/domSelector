@@ -37,6 +37,10 @@ describe('exported api', () => {
   });
 
   describe('matches', () => {
+    it('should throw', () => {
+      assert.throws(() => matches('*|', document), SyntaxError);
+    });
+
     it('should match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -95,6 +99,10 @@ describe('exported api', () => {
   });
 
   describe('closest', () => {
+    it('should throw', () => {
+      assert.throws(() => closest('*|', document), SyntaxError);
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -153,6 +161,10 @@ describe('exported api', () => {
   });
 
   describe('query selector', () => {
+    it('should throw', () => {
+      assert.throws(() => querySelector('*|', document), SyntaxError);
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -326,6 +338,10 @@ describe('exported api', () => {
   });
 
   describe('query selector all', () => {
+    it('should throw', () => {
+      assert.throws(() => querySelectorAll('*|', document), SyntaxError);
+    });
+
     it('should get matched node(s)', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -534,10 +550,16 @@ const jsdom = (str = '') => {
   dom.window.Document.prototype.querySelector = function (selector) {
     return querySelector(selector, this);
   };
+  dom.window.DocumentFragment.prototype.querySelector = function (selector) {
+    return querySelector(selector, this);
+  };
   dom.window.Element.prototype.querySelector = function (selector) {
     return querySelector(selector, this);
   };
   dom.window.Document.prototype.querySelectorAll = function (selector) {
+    return querySelectorAll(selector, this);
+  };
+  dom.window.DocumentFragment.prototype.querySelectorAll = function (selector) {
     return querySelectorAll(selector, this);
   };
   dom.window.Element.prototype.querySelectorAll = function (selector) {
@@ -565,6 +587,10 @@ describe('patched JSDOM', () => {
   });
 
   describe('Element.matches()', () => {
+    it('should throw', () => {
+      assert.throws(() => document.body.matches('*|'), SyntaxError);
+    });
+
     it('should match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -623,6 +649,10 @@ describe('patched JSDOM', () => {
   });
 
   describe('Element.closest()', () => {
+    it('should throw', () => {
+      assert.throws(() => document.body.closest('*|'), SyntaxError);
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -681,6 +711,10 @@ describe('patched JSDOM', () => {
   });
 
   describe('Document.querySelector(), Element.querySelector()', () => {
+    it('should throw', () => {
+      assert.throws(() => document.querySelector('*|'), SyntaxError);
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -707,6 +741,38 @@ describe('patched JSDOM', () => {
       li3.classList.add('baz');
       const res = document.querySelector('.bar');
       assert.deepEqual(res, ul1, 'result');
+    });
+
+    it('should not match', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = document.querySelector('.qux');
+      assert.isNull(res, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelector('*|'), SyntaxError);
     });
 
     it('should get matched node', () => {
@@ -737,7 +803,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, li3, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -764,9 +830,76 @@ describe('patched JSDOM', () => {
       const res = div1.querySelector('.qux');
       assert.isNull(res, 'result');
     });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelector('*|'), SyntaxError);
+    });
+
+    it('should get matched node', () => {
+      const frag = document.createDocumentFragment();
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      frag.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = frag.querySelector('.baz');
+      assert.deepEqual(res, li3, 'result');
+    });
+
+    it('should not match', () => {
+      const frag = document.createDocumentFragment();
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      frag.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = frag.querySelector('.qux');
+      assert.isNull(res, 'result');
+    });
   });
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
+    it('should throw', () => {
+      assert.throws(() => document.querySelectorAll('*|'), SyntaxError);
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -797,6 +930,38 @@ describe('patched JSDOM', () => {
         li3,
         li5
       ], 'result');
+    });
+
+    it('should not match', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = document.querySelectorAll('.qux');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelectorAll('*|'), SyntaxError);
     });
 
     it('should get matched node', () => {
@@ -831,7 +996,7 @@ describe('patched JSDOM', () => {
       ], 'result');
     });
 
-    it('should get empty array', () => {
+    it('should not match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -856,6 +1021,73 @@ describe('patched JSDOM', () => {
       ul1.classList.add('bar');
       li3.classList.add('baz');
       const res = div1.querySelectorAll('.qux');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelectorAll('*|'), SyntaxError);
+    });
+
+    it('should get matched node', () => {
+      const frag = document.createDocumentFragment();
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      frag.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = frag.querySelectorAll('li:nth-child(odd)');
+      assert.deepEqual(res, [
+        li1,
+        li3,
+        li5
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const frag = document.createDocumentFragment();
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      frag.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res = frag.querySelectorAll('.qux');
       assert.deepEqual(res, [], 'result');
     });
   });
