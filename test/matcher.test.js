@@ -4114,6 +4114,93 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchSelector(ast, node);
         assert.deepEqual(res, [node], 'result');
       });
+
+      it('should get matched node(s)', () => {
+        const ast = [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'ul',
+                        type: TYPE_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'is',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher(':is(ul)', document);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [node], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const ast = [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'ul',
+                        type: TYPE_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'is',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher(':is(dl, ul)', document);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [node], 'result');
+      });
+
+      it('should not match', () => {
+        const ast = [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'ul',
+                        type: TYPE_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'is',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher(':is(ol)', document);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [node], 'result');
+      });
     });
 
     describe('match ast and node', () => {
@@ -4235,6 +4322,14 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelector();
         assert.isNull(res, 'result');
       });
+
+      it('should get matched node', () => {
+        const refPoint = document.getElementById('dl1');
+        const target = document.getElementById('dt1');
+        const matcher = new Matcher('*', refPoint);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, target, 'result');
+      });
     });
 
     describe('querySelectorAll', () => {
@@ -4264,6 +4359,23 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [], 'result');
       });
+    });
+
+    it('should get matched node(s)', () => {
+      const refPoint = document.getElementById('dl1');
+      const matcher = new Matcher('*', refPoint);
+      const res = matcher.querySelectorAll();
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dd1'),
+        document.getElementById('span1'),
+        document.getElementById('dt2'),
+        document.getElementById('dd2'),
+        document.getElementById('span2'),
+        document.getElementById('dt3'),
+        document.getElementById('dd3'),
+        document.getElementById('span3')
+      ], 'result');
     });
   });
 });

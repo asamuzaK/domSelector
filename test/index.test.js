@@ -717,10 +717,10 @@ describe('jsdom issues tagged with `selectors` label', () => {
     const domStr = `<!DOCTYPE html>
     <html>
       <body>
-        <div id="div">
-          <p id="p">
-            <span id="span">hello</span>
-          </p>
+        <div>
+          <p><span>hello</span></p>
+          <p id="p2">hey</p>
+          <div id="d2">div</div>
         </div>
       </body>
     </html>`;
@@ -740,16 +740,34 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
 
     it('should get matched node', () => {
-      const node = document.getElementById('p');
-      const div = document.getElementById('div');
-      const res = div.querySelector(':scope > p');
-      assert.deepEqual(res, node, 'result');
+      const div = document.querySelector('div');
+      const p = document.querySelector('p');
+      assert.deepEqual(div.querySelector(':scope > p'), p, 'result');
+      assert.isNull(div.querySelector(':scope > span'), 'result');
     });
 
-    it('should not match', () => {
-      const div = document.getElementById('div');
-      const res = div.querySelector(':scope > span');
-      assert.isNull(res, 'result');
+    it('should get matched node(s)', () => {
+      const div = document.querySelector('div');
+      const p = document.querySelector('p');
+      const p2 = document.querySelector('#p2');
+      assert.deepEqual(div.querySelectorAll(':scope > p'), [p, p2], 'result');
+      assert.deepEqual(div.querySelectorAll(':scope > span'), [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const div = document.querySelector('div');
+      const p = document.querySelector('p');
+      assert.deepEqual(div.querySelector(':scope > p, :scope > div'), p,
+        'result');
+    });
+
+    it('should get matched node', () => {
+      const div = document.querySelector('div');
+      const div2 = document.querySelector('#d2');
+      const p = document.querySelector('p');
+      const p2 = document.querySelector('#p2');
+      assert.deepEqual(div.querySelectorAll(':scope > p, :scope > div'),
+        [p, p2, div2], 'result');
     });
   });
 
@@ -832,10 +850,99 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const item = document.getElementById('item');
       item.focus();
       const res = node.querySelector(':focus-within');
-      // this passes
-      assert.strictEqual(res.id, 'target', 'target id');
+      // these pass
+      assert.strictEqual(res.id, 'target', 'id');
+      assert.isTrue(res.classList.contains('container'), 'classList');
+      assert.strictEqual(res.localName, 'div', 'localName');
       // but this fails, reports res !== node, why?
       assert.deepEqual(res, [node], 'result');
+    });
+  });
+
+  describe('#3067 - https://github.com/jsdom/jsdom/issues/3067', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <ul id="refPoint">
+          <li id="li1">Alpha</li>
+          <li id="li2">
+            Beta
+            <ul>
+              <li>Gamma</li>
+              <li>Delta</li>
+            </ul>
+          </li>
+        </ul>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get result', () => {
+      const refPoint = document.getElementById('refPoint');
+      const li1 = document.getElementById('li1');
+      const li2 = document.getElementById('li2');
+      const res = refPoint.querySelectorAll(':scope > li');
+      assert.deepEqual(res, [
+        li1, li2
+      ], 'result');
+      assert.strictEqual(li1.textContent.trim(), 'Alpha', 'content');
+      // NOTE: sample in #3067 is invalid, should include Gamma, Delta
+      assert.notEqual(li2.textContent.trim(), 'Beta', 'content');
+      assert.isTrue(/^Beta\n\s+Gamma\n\s+Delta$/.test(li2.textContent.trim()),
+        'content');
+    });
+  });
+
+  describe('#3297 - https://github.com/jsdom/jsdom/issues/3297', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div id="container">
+          <div id="container-inner-1"></div>
+          <div id="container-inner-2">
+            <p id="p">Foo</p>
+            <button id="button">Bar</button>
+          </div>
+        </div>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get result', () => {
+      const container = document.getElementById("container");
+      const res = container.querySelectorAll(':not(svg, svg *)');
+      assert.deepEqual(res, [
+        document.getElementById('container-inner-1'),
+        document.getElementById('container-inner-2'),
+        document.getElementById('p'),
+        document.getElementById('button'),
+      ], 'result');
     });
   });
 
@@ -1132,6 +1239,25 @@ describe('jsdom issues tagged with `selectors` label', () => {
         doc.getElementById('c'), 'aB *');
       assert.deepEqual(doc.querySelector('cd *'),
         doc.getElementById('e'), 'cd *');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<elem>
+        <Test id="target">
+          content
+          <my-tag id="tag">abc</my-tag>
+        </Test>
+      </elem>`;
+      const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+      assert.isNull(doc.querySelector('test'), 'lowercased');
+      assert.deepEqual(doc.querySelector('Test'),
+        doc.getElementById('target'), 'target');
+      assert.deepEqual(doc.querySelector('my-tag'),
+        doc.getElementById('tag'), 'tag');
+      assert.deepEqual(doc.querySelector('Test > my-tag'),
+        doc.getElementById('tag'), 'tag');
+      assert.isNull(doc.querySelector('test > my-tag'),
+        doc.getElementById('tag'), 'tag');
     });
   });
 });

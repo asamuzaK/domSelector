@@ -1081,81 +1081,94 @@ class Matcher {
       }
       const iterator = this._createIterator(iteratorLeaf, node);
       let nextNode = iterator.nextNode();
-      while (nextNode) {
-        const [...items] = children;
-        if (items.length) {
-          if (items.length === 1) {
-            const item = items.shift();
-            const { name: itemName, type: itemType } = item;
-            if (itemType === PSEUDO_CLASS_SELECTOR &&
-                REG_PSEUDO_FUNC.test(itemName)) {
-              nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-              if (nextNode) {
-                res.add(nextNode);
-                nextNode = null;
-              }
-            } else {
-              const arr = this._match(item, nextNode);
-              if (arr.length) {
-                for (const i of arr) {
-                  res.add(i);
-                }
-              }
-            }
-          } else {
-            do {
+      if (nextNode) {
+        while (nextNode) {
+          const [...items] = children;
+          if (items.length) {
+            if (items.length === 1) {
               const item = items.shift();
               const { name: itemName, type: itemType } = item;
               if (itemType === PSEUDO_CLASS_SELECTOR &&
                   REG_PSEUDO_FUNC.test(itemName)) {
                 nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-              } else if (itemType === COMBINATOR) {
-                const leaves = [];
-                leaves.push(item);
-                while (items.length) {
-                  const [nextItem] = items;
-                  if (nextItem.type === COMBINATOR ||
-                      (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                       REG_PSEUDO_NTH.test(nextItem.name)) ||
-                      (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                       REG_PSEUDO_FUNC.test(nextItem.name))) {
-                    break;
-                  } else {
-                    leaves.push(items.shift());
-                  }
-                }
-                const arr = this._matchCombinator(leaves, nextNode);
-                if (!arr.length || arr.length === 1) {
-                  [nextNode] = arr;
-                } else {
-                  if (items.length) {
-                    for (const i of arr) {
-                      const a = this._matchSelector(items, i);
-                      if (a.length) {
-                        for (const j of a) {
-                          res.add(j);
-                        }
-                      }
-                    }
-                  } else {
-                    for (const i of arr) {
-                      res.add(i);
-                    }
-                  }
+                if (nextNode) {
+                  res.add(nextNode);
                   nextNode = null;
                 }
               } else {
-                [nextNode] = this._match(item, nextNode);
+                const arr = this._match(item, nextNode);
+                if (arr.length) {
+                  for (const i of arr) {
+                    res.add(i);
+                  }
+                }
               }
-            } while (items.length && nextNode);
-            if (nextNode) {
-              res.add(nextNode);
+            } else {
+              do {
+                const item = items.shift();
+                const { name: itemName, type: itemType } = item;
+                if (itemType === PSEUDO_CLASS_SELECTOR &&
+                    REG_PSEUDO_FUNC.test(itemName)) {
+                  nextNode = this._matchLogicalPseudoFunc(item, nextNode);
+                } else if (itemType === COMBINATOR) {
+                  const leaves = [];
+                  leaves.push(item);
+                  while (items.length) {
+                    const [nextItem] = items;
+                    if (nextItem.type === COMBINATOR ||
+                        (nextItem.type === PSEUDO_CLASS_SELECTOR &&
+                         REG_PSEUDO_NTH.test(nextItem.name)) ||
+                        (nextItem.type === PSEUDO_CLASS_SELECTOR &&
+                         REG_PSEUDO_FUNC.test(nextItem.name))) {
+                      break;
+                    } else {
+                      leaves.push(items.shift());
+                    }
+                  }
+                  const arr = this._matchCombinator(leaves, nextNode);
+                  if (!arr.length || arr.length === 1) {
+                    [nextNode] = arr;
+                  } else {
+                    if (items.length) {
+                      for (const i of arr) {
+                        const a = this._matchSelector(items, i);
+                        if (a.length) {
+                          for (const j of a) {
+                            res.add(j);
+                          }
+                        }
+                      }
+                    } else {
+                      for (const i of arr) {
+                        res.add(i);
+                      }
+                    }
+                    nextNode = null;
+                  }
+                } else {
+                  [nextNode] = this._match(item, nextNode);
+                }
+              } while (items.length && nextNode);
+              if (nextNode) {
+                res.add(nextNode);
+              }
             }
+          } else if (nextNode) {
+            res.add(nextNode);
           }
-        } else if (nextNode) {
-          res.add(nextNode);
+          nextNode = iterator.nextNode();
         }
-        nextNode = iterator.nextNode();
+      } else if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
+                 REG_PSEUDO_FUNC.test(firstChild.name) &&
+                 node.nodeType === ELEMENT_NODE) {
+        nextNode = node;
+        while (nextNode) {
+          nextNode = this._matchLogicalPseudoFunc(firstChild, nextNode);
+          if (nextNode) {
+            res.add(nextNode);
+          }
+          nextNode = nextNode.nextElementSibling;
+        }
       }
     }
     return [...res];
@@ -1263,7 +1276,12 @@ class Matcher {
     const arr = this._match(this.#ast, this.#node);
     let res;
     if (arr.length) {
-      [res] = arr;
+      const [i, j] = arr;
+      if (i !== this.#node) {
+        res = i;
+      } else if (j) {
+        res = j;
+      }
     }
     return res || null;
   }
@@ -1278,7 +1296,9 @@ class Matcher {
     const res = new Set();
     if (arr.length) {
       for (const i of arr) {
-        res.add(i);
+        if (i !== this.#node) {
+          res.add(i);
+        }
       }
     }
     return [...res];
