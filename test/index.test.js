@@ -38,7 +38,7 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => matches('*|', document), SyntaxError);
+      assert.throws(() => matches('*|', document.body), SyntaxError);
     });
 
     it('should match', () => {
@@ -1381,13 +1381,13 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
 
     it('should get result', () => {
-      const container = document.getElementById("container");
+      const container = document.getElementById('container');
       const res = container.querySelectorAll(':not(svg, svg *)');
       assert.deepEqual(res, [
         document.getElementById('container-inner-1'),
         document.getElementById('container-inner-2'),
         document.getElementById('p'),
-        document.getElementById('button'),
+        document.getElementById('button')
       ], 'result');
     });
   });
