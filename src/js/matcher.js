@@ -49,14 +49,16 @@ const collectNthChild = (node = {}, opt = {}) => {
           nth += (++n * a);
         }
       }
-      let i = 0;
-      while (i < l && nth < l) {
-        if (i === nth) {
-          const item = arr[i];
-          res.add(item);
-          nth += a;
+      if (nth >= 0) {
+        let i = 0;
+        while (i < l && nth < l) {
+          if (i === nth) {
+            const item = arr[i];
+            res.add(item);
+            nth += a;
+          }
+          i++;
         }
-        i++;
       }
     }
   }
@@ -109,19 +111,21 @@ const collectNthOfType = (node = {}, opt = {}) => {
           nth += a;
         }
       }
-      let i = 0;
-      let j = 0;
-      while (i < l && nth < l) {
-        const item = arr[i];
-        const { localName: itemLocalName, prefix: itemPrefix } = item;
-        if (itemLocalName === localName && itemPrefix === prefix) {
-          if (j === nth) {
-            res.add(item);
-            nth += a;
+      if (nth >= 0) {
+        let i = 0;
+        let j = 0;
+        while (i < l && nth < l) {
+          const item = arr[i];
+          const { localName: itemLocalName, prefix: itemPrefix } = item;
+          if (itemLocalName === localName && itemPrefix === prefix) {
+            if (j === nth) {
+              res.add(item);
+              nth += a;
+            }
+            j++;
           }
-          j++;
+          i++;
         }
-        i++;
       }
     }
   }
@@ -161,9 +165,7 @@ const matchTypeSelector = (ast = {}, node = {}) => {
     if (astName === '*' || astName === '*|*' || astName === nodeName ||
         (astName === '|*' && !nodePrefix) ||
         (astPrefix === '*' && astNodeName === nodeName) ||
-        (astPrefix === '' && !nodePrefix &&
-         (astNodeName === '*' || astNodeName === nodeName)) ||
-        (astPrefix === nodePrefix &&
+        ((astPrefix === nodePrefix || (astPrefix === '' && !nodePrefix)) &&
          (astNodeName === '*' || astNodeName === nodeName))) {
       res = node;
     }
