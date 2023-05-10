@@ -3697,6 +3697,49 @@ describe('match AST leaf and DOM node', () => {
                 {
                   children: [
                     {
+                      children: [
+                        {
+                          children: [
+                            {
+                              children: [
+                                {
+                                  name: 'body',
+                                  type: TYPE_SELECTOR
+                                }
+                              ],
+                              type: SELECTOR
+                            }
+                          ],
+                          type: SELECTOR_LIST
+                        }
+                      ],
+                      name: 'not',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ],
+                  type: SELECTOR
+                }
+              ],
+              type: SELECTOR_LIST
+            }
+          ],
+          name: 'not',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.body;
+        const matcher = new Matcher(':not(:not(body))', document);
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should not match', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
                       name: 'bar',
                       type: CLASS_SELECTOR
                     }
@@ -3798,6 +3841,49 @@ describe('match AST leaf and DOM node', () => {
         const root = document.getElementById('div6');
         const matcher = new Matcher('div:not(.foo.bar, .qux) > p', document);
         const res = matcher._matchLogicalPseudoFunc(ast, root);
+        assert.isNull(res, 'result');
+      });
+
+      it('should not match', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              children: [
+                                {
+                                  name: 'body',
+                                  type: TYPE_SELECTOR
+                                }
+                              ],
+                              type: SELECTOR
+                            }
+                          ],
+                          type: SELECTOR_LIST
+                        }
+                      ],
+                      name: 'has',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ],
+                  type: SELECTOR
+                }
+              ],
+              type: SELECTOR_LIST
+            }
+          ],
+          name: 'has',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.documentElement;
+        const matcher = new Matcher(':has(:has(body))', document);
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
         assert.isNull(res, 'result');
       });
 

@@ -999,6 +999,11 @@ class Matcher {
               firstItem = items.shift();
               itemLeaves.push(item, firstItem);
             }
+            if (firstItem.type === PSEUDO_CLASS_SELECTOR &&
+                firstItem.name === 'has') {
+              matched = false;
+              break;
+            }
             const arr = this._matchCombinator(itemLeaves, node);
             if (arr.length) {
               matched = true;
@@ -1019,6 +1024,12 @@ class Matcher {
           let matched;
           for (const items of ast) {
             const item = items.shift();
+            // NOTE: according to MDN, :not() can not contain :not()
+            // but spec says nothing about that?
+            if (item.type === PSEUDO_CLASS_SELECTOR && item.name === 'not') {
+              matched = true;
+              break;
+            }
             const arr = this._matchArgumentLeaf(item, node);
             if (arr.length) {
               matched = true;
