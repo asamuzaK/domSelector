@@ -16,19 +16,18 @@ const REG_PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 
 /**
  * collect nth child
+ * @param {object} anb - An+B options
+ * @param {number} anb.a - a
+ * @param {number} anb.b - b
+ * @param {boolean} [anb.reverse] - reverse order
  * @param {object} node - Element node
- * @param {object} opt - options
- * @param {number} opt.a - a
- * @param {number} opt.b - b
- * @param {boolean} [opt.reverse] - reverse order
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
-const collectNthChild = (node = {}, opt = {}) => {
+const collectNthChild = (anb = {}, node = {}) => {
+  const { a, b, reverse } = anb;
   const { nodeType, parentNode } = node;
-  const { a, b, reverse } = opt;
   const res = new Set();
-  if (nodeType === ELEMENT_NODE &&
-      Number.isInteger(a) && Number.isInteger(b)) {
+  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -49,7 +48,7 @@ const collectNthChild = (node = {}, opt = {}) => {
           nth += (++n * a);
         }
       }
-      if (nth >= 0) {
+      if (nth >= 0 && nth < l) {
         let i = 0;
         while (i < l && nth < l) {
           if (i === nth) {
@@ -67,19 +66,18 @@ const collectNthChild = (node = {}, opt = {}) => {
 
 /**
  * collect nth of type
+ * @param {object} anb - An+B options
+ * @param {number} anb.a - a
+ * @param {number} anb.b - b
+ * @param {boolean} [anb.reverse] - reverse order
  * @param {object} node - Element node
- * @param {object} opt - options
- * @param {number} opt.a - a
- * @param {number} opt.b - b
- * @param {boolean} [opt.reverse] - reverse order
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
-const collectNthOfType = (node = {}, opt = {}) => {
+const collectNthOfType = (anb = {}, node = {}) => {
+  const { a, b, reverse } = anb;
   const { localName, nodeType, parentNode, prefix } = node;
-  const { a, b, reverse } = opt;
   const res = new Set();
-  if (nodeType === ELEMENT_NODE &&
-      Number.isInteger(a) && Number.isInteger(b)) {
+  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -111,7 +109,7 @@ const collectNthOfType = (node = {}, opt = {}) => {
           nth += a;
         }
       }
-      if (nth >= 0) {
+      if (nth >= 0 && nth < l) {
         let i = 0;
         let j = 0;
         while (i < l && nth < l) {
@@ -125,6 +123,88 @@ const collectNthOfType = (node = {}, opt = {}) => {
             j++;
           }
           i++;
+        }
+      }
+    }
+  }
+  return [...res];
+};
+
+/**
+ * match An+B
+ * @param {string} nthName - nth pseudo class name
+ * @param {object} ast - AST
+ * @param {object} node - Element node
+ * @returns {Array.<object|undefined>} - collection of matched nodes
+ */
+const matchAnPlusB = (nthName, ast = {}, node = {}) => {
+  const res = new Set();
+  if (typeof nthName === 'string') {
+    nthName = nthName.trim();
+    if (REG_PSEUDO_NTH.test(nthName)) {
+      const {
+        nth: {
+          a,
+          b,
+          name: identName
+        },
+        selector: astSelector,
+        type: astType
+      } = ast;
+      const { nodeType } = node;
+      if (astType === NTH && nodeType === ELEMENT_NODE) {
+        /*
+        // FIXME:
+        // :nth-child(An+B of S)
+        if (astSelector) {
+        }
+        */
+        if (!astSelector) {
+          const anbMap = new Map();
+          if (identName) {
+            if (identName === 'even') {
+              anbMap.set('a', 2);
+              anbMap.set('b', 0);
+            } else if (identName === 'odd') {
+              anbMap.set('a', 2);
+              anbMap.set('b', 1);
+            }
+            if (/last/.test(nthName)) {
+              anbMap.set('reverse', true);
+            }
+          } else {
+            if (typeof a === 'string' && /-?\d+/.test(a)) {
+              anbMap.set('a', a * 1);
+            } else {
+              anbMap.set('a', 0);
+            }
+            if (typeof b === 'string' && /-?\d+/.test(b)) {
+              anbMap.set('b', b * 1);
+            } else {
+              anbMap.set('b', 0);
+            }
+            if (/last/.test(nthName)) {
+              anbMap.set('reverse', true);
+            }
+          }
+          if (anbMap.size > 1) {
+            const anb = Object.fromEntries(anbMap);
+            if (/^nth-(?:last-)?child$/.test(nthName)) {
+              const arr = collectNthChild(anb, node);
+              if (arr.length) {
+                for (const i of arr) {
+                  res.add(i);
+                }
+              }
+            } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
+              const arr = collectNthOfType(anb, node);
+              if (arr.length) {
+                for (const i of arr) {
+                  res.add(i);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -384,88 +464,6 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
 };
 
 /**
- * match An+B
- * @param {string} nthName - nth pseudo class name
- * @param {object} ast - AST
- * @param {object} node - Element node
- * @returns {Array.<object|undefined>} - collection of matched nodes
- */
-const matchAnPlusB = (nthName, ast = {}, node = {}) => {
-  const res = new Set();
-  if (typeof nthName === 'string') {
-    nthName = nthName.trim();
-    if (REG_PSEUDO_NTH.test(nthName)) {
-      const {
-        nth: {
-          a,
-          b,
-          name: identName
-        },
-        selector: astSelector,
-        type: astType
-      } = ast;
-      const { nodeType } = node;
-      if (astType === NTH && nodeType === ELEMENT_NODE) {
-        /*
-        // FIXME:
-        // :nth-child(An+B of S)
-        if (astSelector) {
-        }
-        */
-        if (!astSelector) {
-          const optMap = new Map();
-          if (identName) {
-            if (identName === 'even') {
-              optMap.set('a', 2);
-              optMap.set('b', 0);
-            } else if (identName === 'odd') {
-              optMap.set('a', 2);
-              optMap.set('b', 1);
-            }
-            if (/last/.test(nthName)) {
-              optMap.set('reverse', true);
-            }
-          } else {
-            if (typeof a === 'string' && /-?\d+/.test(a)) {
-              optMap.set('a', a * 1);
-            } else {
-              optMap.set('a', 0);
-            }
-            if (typeof b === 'string' && /-?\d+/.test(b)) {
-              optMap.set('b', b * 1);
-            } else {
-              optMap.set('b', 0);
-            }
-            if (/last/.test(nthName)) {
-              optMap.set('reverse', true);
-            }
-          }
-          if (optMap.size > 1) {
-            const opt = Object.fromEntries(optMap);
-            if (/^nth-(?:last-)?child$/.test(nthName)) {
-              const arr = collectNthChild(node, opt);
-              if (arr.length) {
-                for (const i of arr) {
-                  res.add(i);
-                }
-              }
-            } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
-              const arr = collectNthOfType(node, opt);
-              if (arr.length) {
-                for (const i of arr) {
-                  res.add(i);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return [...res];
-};
-
-/**
  * match language pseudo class
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} ast - AST
@@ -696,36 +694,36 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'first-of-type': {
-          const [node1] = collectNthOfType(node, {
+          const [node1] = collectNthOfType({
             a: 0,
             b: 0
-          });
+          }, node);
           if (node1) {
             res.add(node1);
           }
           break;
         }
         case 'last-of-type': {
-          const [node1] = collectNthOfType(node, {
+          const [node1] = collectNthOfType({
             a: 0,
             b: 0,
             reverse: true
-          });
+          }, node);
           if (node1) {
             res.add(node1);
           }
           break;
         }
         case 'only-of-type': {
-          const [node1] = collectNthOfType(node, {
+          const [node1] = collectNthOfType({
             a: 0,
             b: 0
-          });
-          const [node2] = collectNthOfType(node, {
+          }, node);
+          const [node2] = collectNthOfType({
             a: 0,
             b: 0,
             reverse: true
-          });
+          }, node);
           if (node1 === node && node2 === node) {
             res.add(node);
           }

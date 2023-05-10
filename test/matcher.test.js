@@ -91,94 +91,94 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: -1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 6,
         reverse: true
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: -1,
         b: 0,
         reverse: true
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 0,
         reverse: true
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dd3')
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dd1')
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 1,
         reverse: true
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dt3')
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 1,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dd1'),
@@ -190,12 +190,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 1,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dd1'),
@@ -207,12 +207,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 2,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dd1'),
         document.getElementById('dd2'),
@@ -221,12 +221,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 2,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
@@ -235,12 +235,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 2,
         b: -1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
@@ -258,89 +258,89 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: -1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 6
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get empty array', () => {
-      const opt = {
+      const anb = {
         a: -1,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 0,
         reverse: true
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dt3')
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dt2')
       ], 'result');
     });
 
     it('should not match', () => {
-      const opt = {
+      const anb = {
         a: 0,
         b: 3
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 1,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
@@ -349,12 +349,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 1,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
@@ -363,12 +363,12 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 1,
         b: -1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
@@ -377,26 +377,259 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 2,
         b: 0
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         document.getElementById('dt2')
       ], 'result');
     });
 
     it('should get matched node(s)', () => {
-      const opt = {
+      const anb = {
         a: 2,
         b: 1
       };
       const node = document.getElementById('dt1');
-      const res = func(node, opt);
+      const res = func(anb, node);
       assert.deepEqual(res, [
         node,
+        document.getElementById('dt3')
+      ], 'result');
+    });
+  });
+
+  describe('match An+B', () => {
+    const func = matcherJs.matchAnPlusB;
+
+    it('should get empty array', () => {
+      const res = func();
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get empty array', () => {
+      const res = func('foo');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dd1'),
+        document.getElementById('dd2'),
+        document.getElementById('dd3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          name: 'odd',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        node,
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-last-child';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dt3'),
+        document.getElementById('dt2'),
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        node,
+        document.getElementById('dd2')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          a: '2',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dd1'),
+        document.getElementById('dd2'),
+        document.getElementById('dd3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          b: '0',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dt1')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-last-child';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dd3'),
+        document.getElementById('dt2')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dt2')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          name: 'odd',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        node,
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-last-of-type';
+      const leaf = {
+        nth: {
+          name: 'even',
+          type: IDENTIFIER
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        document.getElementById('dt2')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-last-of-type';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
         document.getElementById('dt3')
       ], 'result');
     });
@@ -1848,239 +2081,6 @@ describe('match AST leaf and DOM node', () => {
       stubWarn.restore();
       assert.isTrue(called, 'console');
       assert.isNull(res, 'result');
-    });
-  });
-
-  describe('match An+B', () => {
-    const func = matcherJs.matchAnPlusB;
-
-    it('should get empty array', () => {
-      const res = func();
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should get empty array', () => {
-      const res = func('foo');
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dd1'),
-        document.getElementById('dd2'),
-        document.getElementById('dd3')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          name: 'odd',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        node,
-        document.getElementById('dt2'),
-        document.getElementById('dt3')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-last-child';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dt3'),
-        document.getElementById('dt2'),
-        node
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        node,
-        document.getElementById('dd2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          a: '2',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dd1'),
-        document.getElementById('dd2'),
-        document.getElementById('dd3')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          b: '0',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dt1')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-last-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dd3'),
-        document.getElementById('dt2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dt2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          name: 'odd',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        node,
-        document.getElementById('dt3')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-last-of-type';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENTIFIER
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dt2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        node
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leafName = 'nth-last-of-type';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const res = func(leafName, leaf, node);
-      assert.deepEqual(res, [
-        document.getElementById('dt3')
-      ], 'result');
     });
   });
 

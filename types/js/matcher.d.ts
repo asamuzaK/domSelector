@@ -14,16 +14,16 @@ export class Matcher {
     querySelectorAll(): Array<object | undefined>;
     #private;
 }
-export function collectNthChild(node?: object, opt?: {
+export function collectNthChild(anb?: {
     a: number;
     b: number;
     reverse?: boolean;
-}): Array<object | undefined>;
-export function collectNthOfType(node?: object, opt?: {
+}, node?: object): Array<object | undefined>;
+export function collectNthOfType(anb?: {
     a: number;
     b: number;
     reverse?: boolean;
-}): Array<object | undefined>;
+}, node?: object): Array<object | undefined>;
 export function matchAnPlusB(nthName: string, ast?: object, node?: object): Array<object | undefined>;
 export function matchAttributeSelector(ast?: object, node?: object): object | null;
 export function matchClassSelector(ast?: object, node?: object): object | null;
