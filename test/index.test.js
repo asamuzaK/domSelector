@@ -1345,7 +1345,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
         li1, li2
       ], 'result');
       assert.strictEqual(li1.textContent.trim(), 'Alpha', 'content');
-      // NOTE: sample in #3067 is invalid, should include Gamma, Delta
+      // NOTE: sample in #3067 seems invalid, should include Gamma, Delta
       assert.notEqual(li2.textContent.trim(), 'Beta', 'content');
       assert.isTrue(/^Beta\n\s+Gamma\n\s+Delta$/.test(li2.textContent.trim()),
         'content');
@@ -1504,9 +1504,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
 
     it('should get matched node', () => {
       const domStr = `<?xml version="1.0"?>
-        <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
-          <dc:title></dc:title>
-        </cp:coreProperties>`;
+      <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
+        <dc:title></dc:title>
+      </cp:coreProperties>`;
       const doc = new DOMParser().parseFromString(domStr, 'application/xml');
       const node = doc.getElementById('target');
       const res = doc.querySelector('coreProperties');
@@ -1515,9 +1515,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
 
     it('should get matched node', () => {
       const domStr = `<?xml version="1.0"?>
-        <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
-          <dc:title></dc:title>
-        </cp:coreProperties>`;
+      <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
+        <dc:title></dc:title>
+      </cp:coreProperties>`;
       const doc = new DOMParser().parseFromString(domStr, 'application/xml');
       const node = doc.getElementById('target');
       const res = doc.querySelector('*|coreProperties');
@@ -1676,6 +1676,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const c = doc.getElementById('c');
       const nsb = doc.getElementById('nsb');
       const nsc = doc.getElementById('nsc');
+      // NOTE: namespace should be separated with `|`
       assert.isNull(doc.querySelector('ns\\:b'), 'result');
       assert.deepEqual(a.querySelector('ns|b'), nsb, 'result');
       assert.deepEqual(a.querySelector('ns|b ns|c'), nsc, 'result');
