@@ -3,7 +3,7 @@
  */
 
 /* import */
-const { parseSelector, walkAst } = require('./parser.js');
+const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 
 /* constants */
 const {
@@ -20,24 +20,44 @@ const REG_PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
  * @param {number} anb.a - a
  * @param {number} anb.b - b
  * @param {boolean} [anb.reverse] - reverse order
+ * @param {string} [anb.selector] - CSS selector
  * @param {object} node - Element node
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
 const collectNthChild = (anb = {}, node = {}) => {
-  const { a, b, reverse } = anb;
-  const { nodeType, parentNode } = node;
-  const res = new Set();
+  const { a, b, reverse, selector } = anb;
+  const { nodeType, ownerDocument, parentNode } = node;
+  const matched = [];
   if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
     }
     const l = arr.length;
-    // :first-child, :last-child
+    const items = [];
+    if (selector) {
+      const a = new Matcher(selector, ownerDocument).querySelectorAll();
+      if (a.length) {
+        items.push(...a);
+      }
+    }
+    // :first-child, :last-child, :nth-child(0 of S)
     if (a === 0) {
       if (b >= 0 && b < l) {
-        const item = arr[b];
-        res.add(item);
+        if (items.length) {
+          let i = 0;
+          while (i < l) {
+            const current = arr[i];
+            if (items.includes(current)) {
+              matched.push(current);
+              break;
+            }
+            i++;
+          }
+        } else {
+          const current = arr[b];
+          matched.push(current);
+        }
       }
     // :nth-child()
     } else {
@@ -50,10 +70,23 @@ const collectNthChild = (anb = {}, node = {}) => {
       }
       if (nth >= 0 && nth < l) {
         let i = 0;
-        while (i < l && nth < l) {
-          if (i === nth) {
-            const item = arr[i];
-            res.add(item);
+        let j = a > 0 ? 0 : b - 1;
+        while (i < l && nth >= 0 && nth < l) {
+          const current = arr[i];
+          if (items.length) {
+            if (items.includes(current)) {
+              if (j === nth) {
+                matched.push(current);
+                nth += a;
+              }
+              if (a > 0) {
+                j++;
+              } else {
+                j--;
+              }
+            }
+          } else if (i === nth) {
+            matched.push(current);
             nth += a;
           }
           i++;
@@ -61,7 +94,7 @@ const collectNthChild = (anb = {}, node = {}) => {
       }
     }
   }
-  return [...res];
+  return [...new Set(matched)];
 };
 
 /**
@@ -76,7 +109,7 @@ const collectNthChild = (anb = {}, node = {}) => {
 const collectNthOfType = (anb = {}, node = {}) => {
   const { a, b, reverse } = anb;
   const { localName, nodeType, parentNode, prefix } = node;
-  const res = new Set();
+  const matched = [];
   if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
@@ -89,11 +122,11 @@ const collectNthOfType = (anb = {}, node = {}) => {
         let i = 0;
         let j = 0;
         while (i < l) {
-          const item = arr[i];
-          const { localName: itemLocalName, prefix: itemPrefix } = item;
+          const current = arr[i];
+          const { localName: itemLocalName, prefix: itemPrefix } = current;
           if (itemLocalName === localName && itemPrefix === prefix) {
             if (j === b) {
-              res.add(item);
+              matched.push(current);
               break;
             }
             j++;
@@ -111,23 +144,27 @@ const collectNthOfType = (anb = {}, node = {}) => {
       }
       if (nth >= 0 && nth < l) {
         let i = 0;
-        let j = 0;
-        while (i < l && nth < l) {
-          const item = arr[i];
-          const { localName: itemLocalName, prefix: itemPrefix } = item;
+        let j = a > 0 ? 0 : b - 1;
+        while (i < l && nth >= 0 && nth < l) {
+          const current = arr[i];
+          const { localName: itemLocalName, prefix: itemPrefix } = current;
           if (itemLocalName === localName && itemPrefix === prefix) {
             if (j === nth) {
-              res.add(item);
+              matched.push(current);
               nth += a;
             }
-            j++;
+            if (a > 0) {
+              j++;
+            } else {
+              j--;
+            }
           }
           i++;
         }
       }
     }
   }
-  return [...res];
+  return [...new Set(matched)];
 };
 
 /**
@@ -138,7 +175,7 @@ const collectNthOfType = (anb = {}, node = {}) => {
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
 const matchAnPlusB = (nthName, ast = {}, node = {}) => {
-  const res = new Set();
+  const matched = [];
   if (typeof nthName === 'string') {
     nthName = nthName.trim();
     if (REG_PSEUDO_NTH.test(nthName)) {
@@ -153,63 +190,56 @@ const matchAnPlusB = (nthName, ast = {}, node = {}) => {
       } = ast;
       const { nodeType } = node;
       if (astType === NTH && nodeType === ELEMENT_NODE) {
-        /*
-        // FIXME:
-        // :nth-child(An+B of S)
-        if (astSelector) {
-        }
-        */
-        if (!astSelector) {
-          const anbMap = new Map();
-          if (identName) {
-            if (identName === 'even') {
-              anbMap.set('a', 2);
-              anbMap.set('b', 0);
-            } else if (identName === 'odd') {
-              anbMap.set('a', 2);
-              anbMap.set('b', 1);
-            }
-            if (/last/.test(nthName)) {
-              anbMap.set('reverse', true);
-            }
-          } else {
-            if (typeof a === 'string' && /-?\d+/.test(a)) {
-              anbMap.set('a', a * 1);
-            } else {
-              anbMap.set('a', 0);
-            }
-            if (typeof b === 'string' && /-?\d+/.test(b)) {
-              anbMap.set('b', b * 1);
-            } else {
-              anbMap.set('b', 0);
-            }
-            if (/last/.test(nthName)) {
-              anbMap.set('reverse', true);
-            }
+        const anbMap = new Map();
+        if (identName) {
+          if (identName === 'even') {
+            anbMap.set('a', 2);
+            anbMap.set('b', 0);
+          } else if (identName === 'odd') {
+            anbMap.set('a', 2);
+            anbMap.set('b', 1);
           }
-          if (anbMap.size > 1) {
+          if (/last/.test(nthName)) {
+            anbMap.set('reverse', true);
+          }
+        } else {
+          if (typeof a === 'string' && /-?\d+/.test(a)) {
+            anbMap.set('a', a * 1);
+          } else {
+            anbMap.set('a', 0);
+          }
+          if (typeof b === 'string' && /-?\d+/.test(b)) {
+            anbMap.set('b', b * 1);
+          } else {
+            anbMap.set('b', 0);
+          }
+          if (/last/.test(nthName)) {
+            anbMap.set('reverse', true);
+          }
+        }
+        if (anbMap.has('a') && anbMap.has('b')) {
+          if (/^nth-(?:last-)?child$/.test(nthName)) {
+            if (astSelector) {
+              const css = generateCSS(astSelector);
+              anbMap.set('selector', css);
+            }
             const anb = Object.fromEntries(anbMap);
-            if (/^nth-(?:last-)?child$/.test(nthName)) {
-              const arr = collectNthChild(anb, node);
-              if (arr.length) {
-                for (const i of arr) {
-                  res.add(i);
-                }
-              }
-            } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
-              const arr = collectNthOfType(anb, node);
-              if (arr.length) {
-                for (const i of arr) {
-                  res.add(i);
-                }
-              }
+            const arr = collectNthChild(anb, node);
+            if (arr.length) {
+              matched.push(...arr);
+            }
+          } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
+            const anb = Object.fromEntries(anbMap);
+            const arr = collectNthOfType(anb, node);
+            if (arr.length) {
+              matched.push(...arr);
             }
           }
         }
       }
     }
   }
-  return [...res];
+  return [...new Set(matched)];
 };
 
 /**
@@ -276,7 +306,7 @@ const matchClassSelector = (ast = {}, node = {}) => {
  * @param {object} node - Element node
  * @returns {?object} - matched node
  */
-const matchIdSelector = (ast = {}, node = {}) => {
+const matchIDSelector = (ast = {}, node = {}) => {
   const { name: astName, type: astType } = ast;
   const { id, nodeType } = node;
   let res;
@@ -417,41 +447,35 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         case '|=':
           if (attrValue) {
-            for (const item of attrValues) {
-              if (item === attrValue || item.startsWith(`${attrValue}-`)) {
-                res = node;
-                break;
-              }
+            const item = attrValues.find(v =>
+              (v === attrValue || v.startsWith(`${attrValue}-`))
+            );
+            if (item) {
+              res = node;
             }
           }
           break;
         case '^=':
           if (attrValue) {
-            for (const item of attrValues) {
-              if (item.startsWith(`${attrValue}`)) {
-                res = node;
-                break;
-              }
+            const item = attrValues.find(v => v.startsWith(`${attrValue}`));
+            if (item) {
+              res = node;
             }
           }
           break;
         case '$=':
           if (attrValue) {
-            for (const item of attrValues) {
-              if (item.endsWith(`${attrValue}`)) {
-                res = node;
-                break;
-              }
+            const item = attrValues.find(v => v.endsWith(`${attrValue}`));
+            if (item) {
+              res = node;
             }
           }
           break;
         case '*=':
           if (attrValue) {
-            for (const item of attrValues) {
-              if (item.includes(`${attrValue}`)) {
-                res = node;
-                break;
-              }
+            const item = attrValues.find(v => v.includes(`${attrValue}`));
+            if (item) {
+              res = node;
             }
           }
           break;
@@ -534,7 +558,7 @@ const matchPseudoClassSelector = (
 ) => {
   const { children: astChildren, name: astName, type: astType } = ast;
   const { nodeType, ownerDocument } = node;
-  const res = new Set();
+  const matched = [];
   if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
     if (Array.isArray(astChildren)) {
       const [astChildAst] = astChildren;
@@ -542,20 +566,18 @@ const matchPseudoClassSelector = (
       if (REG_PSEUDO_NTH.test(astName)) {
         const arr = matchAnPlusB(astName, astChildAst, node);
         if (arr.length) {
-          for (const i of arr) {
-            res.add(i);
-          }
+          matched.push(...arr);
         }
       } else {
         switch (astName) {
           case 'dir':
             if (astChildAst.name === node.dir) {
-              res.add(node);
+              matched.push(node);
             }
             break;
           case 'lang':
             if (matchLanguagePseudoClass(astChildAst, node)) {
-              res.add(node);
+              matched.push(node);
             }
             break;
           case 'current':
@@ -575,7 +597,7 @@ const matchPseudoClassSelector = (
         case 'link':
           // FIXME: what about namespaced href? e.g. xlink:href
           if (node.hasAttribute('href')) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'local-link':
@@ -584,7 +606,7 @@ const matchPseudoClassSelector = (
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
                 attrURL.pathname === docURL.pathname) {
-              res.add(node);
+              matched.push(node);
             }
           }
           break;
@@ -593,7 +615,7 @@ const matchPseudoClassSelector = (
           break;
         case 'target':
           if (docURL.hash && node.id && docURL.hash === `#${node.id}`) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'target-within':
@@ -602,7 +624,7 @@ const matchPseudoClassSelector = (
             let current = ownerDocument.getElementById(hash);
             while (current) {
               if (current === node) {
-                res.add(node);
+                matched.push(node);
                 break;
               }
               current = current.parentNode;
@@ -612,22 +634,22 @@ const matchPseudoClassSelector = (
         case 'scope':
           if (refPoint?.nodeType === ELEMENT_NODE) {
             if (node === refPoint) {
-              res.add(node);
+              matched.push(node);
             }
           } else if (node === root) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'focus':
           if (node === ownerDocument.activeElement) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'focus-within': {
           let current = ownerDocument.activeElement;
           while (current) {
             if (current === node) {
-              res.add(node);
+              matched.push(node);
               break;
             }
             current = current.parentNode;
@@ -636,61 +658,61 @@ const matchPseudoClassSelector = (
         }
         case 'open':
           if (node.hasAttribute('open')) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'closed':
           // FIXME: is this really okay?
           if (!node.hasAttribute('open')) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'disabled':
           if (node.hasAttribute('disabled')) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'enabled':
           // FIXME: is this really okay?
           if (!node.hasAttribute('disabled')) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'checked':
           if (node.checked) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'required':
           if (node.required) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'optional':
           // FIXME: is this really okay?
           if (!node.required) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'root':
           if (node === root) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'first-child':
           if (node === node.parentNode.firstElementChild) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'last-child':
           if (node === node.parentNode.lastElementChild) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'only-child':
           if (node === node.parentNode.firstElementChild &&
               node === node.parentNode.lastElementChild) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         case 'first-of-type': {
@@ -699,7 +721,7 @@ const matchPseudoClassSelector = (
             b: 0
           }, node);
           if (node1) {
-            res.add(node1);
+            matched.push(node1);
           }
           break;
         }
@@ -710,7 +732,7 @@ const matchPseudoClassSelector = (
             reverse: true
           }, node);
           if (node1) {
-            res.add(node1);
+            matched.push(node1);
           }
           break;
         }
@@ -725,7 +747,7 @@ const matchPseudoClassSelector = (
             reverse: true
           }, node);
           if (node1 === node && node2 === node) {
-            res.add(node);
+            matched.push(node);
           }
           break;
         }
@@ -766,7 +788,7 @@ const matchPseudoClassSelector = (
       }
     }
   }
-  return [...res];
+  return [...new Set(matched)];
 };
 
 /**
@@ -815,20 +837,18 @@ class Matcher {
    * @param {object} node - Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
-  _parseAst(ast, node) {
-    const items = walkAst(ast);
-    const res = new Set();
+  _parseAST(ast, node) {
+    const items = walkAST(ast);
+    const matched = [];
     if (items.length) {
       for (const item of items) {
         const arr = this._matchSelector(item, node);
         if (arr.length) {
-          for (const i of arr) {
-            res.add(i);
-          }
+          matched.push(...arr);
         }
       }
     }
-    return [...res];
+    return [...new Set(matched)];
   }
 
   /**
@@ -841,28 +861,22 @@ class Matcher {
     const [prevLeaf, nextLeaf] = leaves;
     const iterator = this._createIterator(prevLeaf, node);
     let prevNode = iterator.nextNode();
-    const nodes = new Set();
+    const items = [];
     while (prevNode) {
       const arr = this._match(prevLeaf, prevNode);
       if (arr.length) {
         for (const item of arr) {
           const a = this._match(nextLeaf, item);
           if (a.length) {
-            for (const i of a) {
-              nodes.add(i);
-            }
+            items.push(...a);
           }
         }
       }
       prevNode = iterator.nextNode();
     }
-    const items = [...nodes];
     let res;
-    for (const item of items) {
-      if (item === node) {
-        res = item;
-        break;
-      }
+    if (items.includes(node)) {
+      res = node;
     }
     return res || null;
   }
@@ -888,9 +902,7 @@ class Matcher {
       while (nextNode) {
         const arr = this._match(item, nextNode);
         if (arr.length) {
-          for (const i of arr) {
-            nodes.add(i);
-          }
+          nodes.add(...arr);
         }
         nextNode = iterator.nextNode();
       }
@@ -906,22 +918,22 @@ class Matcher {
         }
       }
     }
-    const res = new Set();
+    const matched = [];
     if (nodes.size && /^[ >+~]$/.test(comboName)) {
-      const items = [...nodes];
-      for (const item of items) {
+      const arr = [...nodes];
+      for (const item of arr) {
         let refNode = item;
         switch (comboName) {
           case '>':
             if (refNode.parentNode === prevNode) {
-              res.add(item);
+              matched.push(item);
             }
             break;
           case '~':
             refNode = refNode.previousElementSibling;
             while (refNode) {
               if (refNode === prevNode) {
-                res.add(item);
+                matched.push(item);
                 break;
               }
               refNode = refNode.previousElementSibling;
@@ -929,14 +941,14 @@ class Matcher {
             break;
           case '+':
             if (refNode.previousElementSibling === prevNode) {
-              res.add(item);
+              matched.push(item);
             }
             break;
           default:
             refNode = refNode.parentNode;
             while (refNode) {
               if (refNode === prevNode) {
-                res.add(item);
+                matched.push(item);
                 break;
               }
               refNode = refNode.parentNode;
@@ -944,7 +956,7 @@ class Matcher {
         }
       }
     }
-    return [...res];
+    return [...new Set(matched)];
   }
 
   /**
@@ -956,17 +968,15 @@ class Matcher {
   _matchArgumentLeaf(leaf, node) {
     const iterator = this._createIterator(leaf, node);
     let nextNode = iterator.nextNode();
-    const res = new Set();
+    const matched = [];
     while (nextNode) {
       const arr = this._match(leaf, nextNode);
       if (arr.length) {
-        for (const i of arr) {
-          res.add(i);
-        }
+        matched.push(...arr);
       }
       nextNode = iterator.nextNode();
     }
-    return [...res];
+    return [...new Set(matched)];
   }
 
   /**
@@ -976,7 +986,7 @@ class Matcher {
    * @returns {?object} - matched node
    */
   _matchLogicalPseudoFunc(branch, node) {
-    const ast = walkAst(branch);
+    const ast = walkAST(branch);
     let res;
     if (ast.length) {
       const { name: branchName } = branch;
@@ -1076,7 +1086,7 @@ class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _matchSelector(children, node) {
-    const res = new Set();
+    const matched = [];
     if (Array.isArray(children) && children.length) {
       const [firstChild] = children;
       let iteratorLeaf;
@@ -1103,15 +1113,13 @@ class Matcher {
                   REG_PSEUDO_FUNC.test(itemName)) {
                 nextNode = this._matchLogicalPseudoFunc(item, nextNode);
                 if (nextNode) {
-                  res.add(nextNode);
+                  matched.push(nextNode);
                   nextNode = null;
                 }
               } else {
                 const arr = this._match(item, nextNode);
                 if (arr.length) {
-                  for (const i of arr) {
-                    res.add(i);
-                  }
+                  matched.push(...arr);
                 }
               }
             } else {
@@ -1144,15 +1152,11 @@ class Matcher {
                       for (const i of arr) {
                         const a = this._matchSelector(items, i);
                         if (a.length) {
-                          for (const j of a) {
-                            res.add(j);
-                          }
+                          matched.push(...a);
                         }
                       }
                     } else {
-                      for (const i of arr) {
-                        res.add(i);
-                      }
+                      matched.push(...arr);
                     }
                     nextNode = null;
                   }
@@ -1161,11 +1165,11 @@ class Matcher {
                 }
               } while (items.length && nextNode);
               if (nextNode) {
-                res.add(nextNode);
+                matched.push(nextNode);
               }
             }
           } else if (nextNode) {
-            res.add(nextNode);
+            matched.push(nextNode);
           }
           nextNode = iterator.nextNode();
         }
@@ -1176,13 +1180,13 @@ class Matcher {
         while (nextNode) {
           nextNode = this._matchLogicalPseudoFunc(firstChild, nextNode);
           if (nextNode) {
-            res.add(nextNode);
+            matched.push(nextNode);
           }
           nextNode = nextNode.nextElementSibling;
         }
       }
     }
-    return [...res];
+    return [...new Set(matched)];
   }
 
   /**
@@ -1192,49 +1196,45 @@ class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _match(ast = this.#ast, node = this.#node) {
-    const res = new Set();
+    const matched = [];
     const { name, type } = ast;
     switch (type) {
       case TYPE_SELECTOR:
         if (matchTypeSelector(ast, node)) {
-          res.add(node);
+          matched.push(node);
         }
         break;
       case CLASS_SELECTOR:
         if (matchClassSelector(ast, node)) {
-          res.add(node);
+          matched.push(node);
         }
         break;
       case ID_SELECTOR:
-        if (matchIdSelector(ast, node)) {
-          res.add(node);
+        if (matchIDSelector(ast, node)) {
+          matched.push(node);
         }
         break;
       case ATTRIBUTE_SELECTOR:
         if (matchAttributeSelector(ast, node)) {
-          res.add(node);
+          matched.push(node);
         }
         break;
       case PSEUDO_CLASS_SELECTOR:
         if (!REG_PSEUDO_FUNC.test(name)) {
           const arr = matchPseudoClassSelector(ast, node, this.#node);
           if (arr.length) {
-            for (const i of arr) {
-              res.add(i);
-            }
+            matched.push(...arr);
           }
         }
         break;
       default: {
-        const arr = this._parseAst(ast, node);
+        const arr = this._parseAST(ast, node);
         if (arr.length) {
-          for (const i of arr) {
-            res.add(i);
-          }
+          matched.push(...arr);
         }
       }
     }
-    return [...res];
+    return [...new Set(matched)];
   }
 
   /**
@@ -1243,16 +1243,7 @@ class Matcher {
    */
   matches() {
     const arr = this._match(this.#ast, this.#document);
-    const node = this.#node;
-    let res;
-    if (arr.length) {
-      for (const i of arr) {
-        if (i === node) {
-          res = true;
-          break;
-        }
-      }
-    }
+    const res = arr.length && arr.includes(this.#node);
     return !!res;
   }
 
@@ -1265,13 +1256,8 @@ class Matcher {
     let node = this.#node;
     let res;
     while (node) {
-      for (const i of arr) {
-        if (i === node) {
-          res = i;
-          break;
-        }
-      }
-      if (res) {
+      if (arr.includes(node)) {
+        res = node;
         break;
       }
       node = node.parentNode;
@@ -1304,15 +1290,13 @@ class Matcher {
    */
   querySelectorAll() {
     const arr = this._match(this.#ast, this.#node);
-    const res = new Set();
     if (arr.length) {
-      for (const i of arr) {
-        if (i !== this.#node) {
-          res.add(i);
-        }
+      const i = arr.findIndex(node => node === this.#node);
+      if (i >= 0) {
+        arr.splice(i, 1);
       }
     }
-    return [...res];
+    return [...new Set(arr)];
   }
 };
 
@@ -1323,7 +1307,7 @@ module.exports = {
   matchAnPlusB,
   matchAttributeSelector,
   matchClassSelector,
-  matchIdSelector,
+  matchIDSelector,
   matchLanguagePseudoClass,
   matchPseudoClassSelector,
   matchTypeSelector

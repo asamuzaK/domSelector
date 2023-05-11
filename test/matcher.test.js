@@ -247,6 +247,206 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('dt3')
       ], 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 0,
+        b: 0,
+        selector: '.noted'
+      };
+      const res = func(anb, l1);
+      assert.deepEqual(res, [
+        document.getElementById('l2')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 0,
+        selector: '.noted'
+      };
+      const res = func(anb, l1);
+      assert.deepEqual(res, [
+        document.getElementById('l4'),
+        document.getElementById('l10')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 1,
+        selector: '.noted'
+      };
+      const res = func(anb, l1);
+      assert.deepEqual(res, [
+        document.getElementById('l2'),
+        document.getElementById('l7')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: -1,
+        b: 3,
+        selector: '.noted'
+      };
+      const res = func(anb, l1);
+      assert.deepEqual(res, [
+        document.getElementById('l2'),
+        document.getElementById('l4'),
+        document.getElementById('l7')
+      ], 'result');
+    });
   });
 
   describe('collect nth of type', () => {
@@ -400,6 +600,19 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('dt3')
       ], 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const anb = {
+        a: -1,
+        b: 2
+      };
+      const node = document.getElementById('dt1');
+      const res = func(anb, node);
+      assert.deepEqual(res, [
+        node,
+        document.getElementById('dt2')
+      ], 'result');
+    });
   });
 
   describe('match An+B', () => {
@@ -449,6 +662,40 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [
         node,
         document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: {
+          name: 'odd',
+          type: IDENTIFIER
+        },
+        selector: {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'dt',
+                  type: TYPE_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const res = func(leafName, leaf, node);
+      assert.deepEqual(res, [
+        node,
         document.getElementById('dt3')
       ], 'result');
     });
@@ -858,7 +1105,7 @@ describe('match AST leaf and DOM node', () => {
   });
 
   describe('match id selector', () => {
-    const func = matcherJs.matchIdSelector;
+    const func = matcherJs.matchIDSelector;
 
     it('should get null', () => {
       const res = func();
@@ -3225,7 +3472,7 @@ describe('match AST leaf and DOM node', () => {
     describe('parse ast and run', () => {
       it('should get empty array', () => {
         const matcher = new Matcher('#div1');
-        const res = matcher._parseAst();
+        const res = matcher._parseAST();
         assert.deepEqual(res, [], 'result');
       });
 
@@ -3246,7 +3493,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('div1');
         const matcher = new Matcher('#div1', document);
-        const res = matcher._parseAst(ast, document);
+        const res = matcher._parseAST(ast, document);
         assert.deepEqual(res, [node], 'result');
       });
     });
@@ -4445,23 +4692,23 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [], 'result');
       });
-    });
 
-    it('should get matched node(s)', () => {
-      const refPoint = document.getElementById('dl1');
-      const matcher = new Matcher('*', refPoint);
-      const res = matcher.querySelectorAll();
-      assert.deepEqual(res, [
-        document.getElementById('dt1'),
-        document.getElementById('dd1'),
-        document.getElementById('span1'),
-        document.getElementById('dt2'),
-        document.getElementById('dd2'),
-        document.getElementById('span2'),
-        document.getElementById('dt3'),
-        document.getElementById('dd3'),
-        document.getElementById('span3')
-      ], 'result');
+      it('should get matched node(s)', () => {
+        const refPoint = document.getElementById('dl1');
+        const matcher = new Matcher('*', refPoint);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          document.getElementById('dt1'),
+          document.getElementById('dd1'),
+          document.getElementById('span1'),
+          document.getElementById('dt2'),
+          document.getElementById('dd2'),
+          document.getElementById('span2'),
+          document.getElementById('dt3'),
+          document.getElementById('dd3'),
+          document.getElementById('span3')
+        ], 'result');
+      });
     });
   });
 });
