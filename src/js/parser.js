@@ -3,7 +3,7 @@
  */
 
 /* api */
-const { parse, toPlainObject, walk } = require('css-tree');
+const { generate, parse, toPlainObject, walk } = require('css-tree');
 const { SELECTOR } = require('./constant.js');
 
 /**
@@ -24,7 +24,7 @@ const parseSelector = selector => {
  * @param {object} ast - AST
  * @returns {Array.<object|undefined>} - collection of AST branches
  */
-const walkAst = (ast = {}) => {
+const walkAST = (ast = {}) => {
   const selectors = new Set();
   const opt = {
     enter: branch => {
@@ -35,7 +35,7 @@ const walkAst = (ast = {}) => {
     leave: branch => {
       let skip;
       if (branch.type === SELECTOR) {
-        skip = walkAst.skip;
+        skip = walkAST.skip;
       }
       return skip;
     }
@@ -46,6 +46,7 @@ const walkAst = (ast = {}) => {
 
 /* export */
 module.exports = {
+  generateCSS: generate,
   parseSelector,
-  walkAst
+  walkAST
 };

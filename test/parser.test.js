@@ -4555,7 +4555,7 @@ describe('create AST from CSS selector', () => {
 });
 
 describe('walk AST', () => {
-  const func = parser.walkAst;
+  const func = parser.walkAST;
 
   it('should get empty array', () => {
     const res = func();
