@@ -1,2 +1,4 @@
+import { generate } from "css-tree";
 export function parseSelector(selector: string): object;
-export function walkAst(ast?: object): Array<object | undefined>;
+export function walkAST(ast?: object): Array<object | undefined>;
+export { generate as generateCSS };
