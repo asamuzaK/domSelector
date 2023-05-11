@@ -26,7 +26,7 @@
     "no-await-in-loop": "error",
     "no-use-before-define": ["error", {
       "allowNamedExports": false,
-      "classes": true,
+      "classes": false,
       "functions": true,
       "variables": true
     }],
