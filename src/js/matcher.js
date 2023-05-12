@@ -1340,7 +1340,7 @@ class Matcher {
     let res;
     if (arr.length) {
       const [i, j] = arr;
-      if (i !== this.#node) {
+      if (i !== this.#node && i.nodeType === ELEMENT_NODE) {
         res = i;
       } else if (j) {
         res = j;
