@@ -768,6 +768,11 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
+        case 'empty':
+          if (!node.hasChildNodes()) {
+            matched.push(node);
+          }
+          break;
         case 'first-child':
           if (node === node.parentNode.firstElementChild) {
             matched.push(node);
@@ -825,7 +830,6 @@ const matchPseudoClassSelector = (
         case 'blank':
         case 'buffering':
         case 'current':
-        case 'empty':
         case 'focus-visible':
         case 'fullscreen':
         case 'future':

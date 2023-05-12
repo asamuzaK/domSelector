@@ -29,8 +29,8 @@ describe('match AST leaf and DOM node', () => {
         <div id="div1">
           <div id="div2">
             <ul id="ul1">
-              <li id="li1"></li>
-              <li id="li2"></li>
+              <li id="li1">foo</li>
+              <li id="li2">bar</li>
               <li id="li3"></li>
             </ul>
           </div>
@@ -3597,6 +3597,28 @@ describe('match AST leaf and DOM node', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'empty',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.getElementById('li3');
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'empty',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.getElementById('li1');
       const res = func(leaf, node);
       assert.deepEqual(res, [], 'result');
     });
