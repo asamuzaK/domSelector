@@ -175,7 +175,7 @@ const collectNthOfType = (anb = {}, node = {}) => {
 
 /**
  * match An+B
- * @param {string} nthName - nth pseudo class name
+ * @param {string} nthName - nth pseudo-class name
  * @param {object} ast - AST
  * @param {object} node - Element node
  * @returns {Array.<object|undefined>} - collection of matched nodes
@@ -494,7 +494,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
 };
 
 /**
- * match language pseudo class
+ * match language pseudo-class
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} ast - AST
  * @param {object} node - Element node
@@ -505,6 +505,7 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
   const { lang, nodeType } = node;
   let res;
   if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
+    // TBD: what about deprecated xml:lang?
     if (astName === '') {
       if (node.getAttribute('lang') === '') {
         res = node;
@@ -550,7 +551,8 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
 };
 
 /**
- * match pseudo class selector
+ * match pseudo-class selector
+ * @see https://html.spec.whatwg.org/#pseudo-classes
  * @param {object} ast - AST
  * @param {object} node - Element node
  * @param {object} [refPoint] - reference point
@@ -562,7 +564,7 @@ const matchPseudoClassSelector = (
   refPoint = {}
 ) => {
   const { children: astChildren, name: astName, type: astType } = ast;
-  const { localName, nodeType, ownerDocument } = node;
+  const { localName, nodeType, ownerDocument, parentNode } = node;
   const matched = [];
   if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
     if (Array.isArray(astChildren)) {
@@ -588,10 +590,10 @@ const matchPseudoClassSelector = (
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
-            console.warn(`Unsupported pseudo class ${astName}`);
+            console.warn(`Unsupported pseudo-class ${astName}`);
             break;
           default:
-            console.warn(`Unknown pseudo class ${astName}`);
+            console.warn(`Unknown pseudo-class ${astName}`);
         }
       }
     } else {
@@ -600,13 +602,13 @@ const matchPseudoClassSelector = (
       switch (astName) {
         case 'any-link':
         case 'link':
-          // FIXME: what about namespaced href? e.g. xlink:href
+          // TBD: what about namespaced href? e.g. xlink:href
           if (node.hasAttribute('href')) {
             matched.push(node);
           }
           break;
         case 'local-link':
-          // FIXME: what about namespaced href? e.g. xlink:href
+          // TBD: what about namespaced href? e.g. xlink:href
           if (node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
@@ -688,8 +690,62 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'checked':
-          if (node.checked) {
+          if ((/^input$/.test(localName) && node.hasAttribute('type') &&
+               /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
+               node.checked) ||
+              (localName === 'option' && node.selected)) {
             matched.push(node);
+          }
+          break;
+        case 'default':
+          // input[type="checkbox"], input[type="radio"]
+          if (/^input$/.test(localName) && node.hasAttribute('type') &&
+              /^(?:checkbox|radio)$/.test(node.getAttribute('type'))) {
+            if (node.hasAttribute('checked')) {
+              matched.push(node);
+            }
+          // option
+          } else if (localName === 'option') {
+            let isMultiple = false;
+            let parent = parentNode;
+            while (parent) {
+              if (parent.localName === 'datalist') {
+                break;
+              } else if (parent.localName === 'select') {
+                isMultiple = !!parent.multiple;
+                break;
+              }
+              parent = parent.parentNode;
+            }
+            // FIXME:
+            if (isMultiple) {
+              console.warn(`Unsupported pseudo-class ${astName}`);
+            } else {
+              const firstOpt = parentNode.firstElementChild;
+              const defaultOpt = [];
+              let opt = firstOpt;
+              while (opt) {
+                if (opt.hasAttribute('selected')) {
+                  defaultOpt.push(opt);
+                  break;
+                }
+                opt = opt.nextElementSibling;
+              }
+              if (!defaultOpt.length) {
+                defaultOpt.push(firstOpt);
+              }
+              if (defaultOpt.includes(node)) {
+                matched.push(node);
+              }
+            }
+          // FIXME:
+          // button[type="submit"], input[type="submit"], input[type="image"]
+          } else if ((localName === 'button' &&
+                      (!node.hasAttribute('type') ||
+                       node.getAttribute('type') === 'submit')) ||
+                     (/^input$/.test(localName) && node.hasAttribute('type') &&
+                      /^(?:image|submit)$/.test(node.getAttribute('type')))) {
+            console.warn(`Unsupported pseudo-class ${astName}`);
           }
           break;
         case 'required':
@@ -764,7 +820,6 @@ const matchPseudoClassSelector = (
         case 'blank':
         case 'buffering':
         case 'current':
-        case 'default':
         case 'empty':
         case 'focus-visible':
         case 'fullscreen':
@@ -789,10 +844,10 @@ const matchPseudoClassSelector = (
         case 'user-valid':
         case 'valid':
         case 'volume-locked':
-          console.warn(`Unsupported pseudo class ${astName}`);
+          console.warn(`Unsupported pseudo-class ${astName}`);
           break;
         default:
-          console.warn(`Unknown pseudo class ${astName}`);
+          console.warn(`Unknown pseudo-class ${astName}`);
       }
     }
   }
@@ -988,7 +1043,7 @@ class Matcher {
   }
 
   /**
-   * match logical pseudo class functions - :is(), :has(), :not(), :where()
+   * match logical pseudo-class functions - :is(), :has(), :not(), :where()
    * @param {object} branch - AST branch
    * @param {object} node - Element node
    * @returns {?object} - matched node

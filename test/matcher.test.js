@@ -3239,6 +3239,22 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      node.setAttribute('checked', 'checked');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'checked',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
       node.setAttribute('checked', 'checked');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -3253,9 +3269,252 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('checked', 'checked');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'checked',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('select');
+      const node = document.createElement('option');
+      node.setAttribute('selected', 'selected');
+      container.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      node.setAttribute('checked', 'checked');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
+      node.setAttribute('checked', 'checked');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'redio');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('select');
+      const group = document.createElement('optgroup');
+      const prev = document.createElement('option');
+      const node = document.createElement('option');
+      node.setAttribute('selected', 'selected');
+      group.appendChild(prev);
+      group.appendChild(node);
+      container.appendChild(group);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('datalist');
+      const prev = document.createElement('option');
+      const node = document.createElement('option');
+      node.setAttribute('selected', 'selected');
+      container.appendChild(prev);
+      container.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('select');
+      const node = document.createElement('option');
+      const next = document.createElement('option');
+      container.appendChild(node);
+      container.appendChild(next);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('select');
+      const node = document.createElement('option');
+      const next = document.createElement('option');
+      next.setAttribute('selected', 'selected');
+      container.appendChild(node);
+      container.appendChild(next);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const container = document.createElement('select');
+      container.setAttribute('multiple', 'multiple');
+      const prev = document.createElement('option');
+      const node = document.createElement('option');
+      node.setAttribute('selected', 'selected');
+      container.appendChild(prev);
+      container.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('button');
+      node.setAttribute('type', 'submit');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'submit');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'image');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'console');
       assert.deepEqual(res, [], 'result');
     });
 
