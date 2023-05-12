@@ -1337,15 +1337,13 @@ class Matcher {
    */
   querySelector() {
     const arr = this._match(this.#ast, this.#node);
-    let res;
     if (arr.length) {
-      const [i, j] = arr;
-      if (i !== this.#node && i.nodeType === ELEMENT_NODE) {
-        res = i;
-      } else if (j) {
-        res = j;
+      const i = arr.findIndex(node => node === this.#node);
+      if (i >= 0) {
+        arr.splice(i, 1);
       }
     }
+    const [res] = arr;
     return res || null;
   }
 
