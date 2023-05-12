@@ -505,16 +505,15 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
   const { lang, nodeType } = node;
   let res;
   if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
-    // FIXME:
-    /*
     if (astName === '') {
-      if (!lang) {
+      if (node.getAttribute('lang') === '') {
         res = node;
       }
     } else if (astName === '*') {
-    }
-    */
-    if (/[A-Za-z\d-]+/.test(astName)) {
+      if (!node.hasAttribute('lang')) {
+        res = node;
+      }
+    } else if (/[A-Za-z\d-]+/.test(astName)) {
       const codePart = '(?:-[A-Za-z\\d]+)?';
       let reg;
       if (/-/.test(astName)) {

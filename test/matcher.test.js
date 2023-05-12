@@ -2337,6 +2337,44 @@ describe('match AST leaf and DOM node', () => {
 
     it('should get matched node', () => {
       const leaf = {
+        name: '',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
         name: 'en',
         type: IDENTIFIER
       };
