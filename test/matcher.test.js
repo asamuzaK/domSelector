@@ -16,8 +16,9 @@ const {
   STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
+const globalKeys = ['DOMParser', 'NodeFilter', 'NodeIterator'];
+
 describe('match AST leaf and DOM node', () => {
-  const globalKeys = ['DOMParser', 'Node', 'NodeFilter', 'NodeIterator'];
   const domStr = `<!doctype html>
     <html lang="en">
       <head>
@@ -3142,10 +3143,37 @@ describe('match AST leaf and DOM node', () => {
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
+        name: 'disabled',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('x-input');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
         name: 'enabled',
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('x-input');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);

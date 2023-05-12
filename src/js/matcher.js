@@ -11,8 +11,14 @@ const {
   NTH, PSEUDO_CLASS_SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
 const ELEMENT_NODE = 1;
-const REG_PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
-const REG_PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
+// FIXME: custom element name is not fully implemented
+// @see https://html.spec.whatwg.org/#valid-custom-element-name
+const HTML_CUSTOM_ELEMENT = /^[a-z][\d._a-z]*-[\d\-._a-z]*$/;
+const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
+const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
+const HTML_INTERACT = /^d(?:etails|ialog)$/;
+const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
+const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 
 /**
  * collect nth child
@@ -178,7 +184,7 @@ const matchAnPlusB = (nthName, ast = {}, node = {}) => {
   const matched = [];
   if (typeof nthName === 'string') {
     nthName = nthName.trim();
-    if (REG_PSEUDO_NTH.test(nthName)) {
+    if (PSEUDO_NTH.test(nthName)) {
       const {
         nth: {
           a,
@@ -557,13 +563,13 @@ const matchPseudoClassSelector = (
   refPoint = {}
 ) => {
   const { children: astChildren, name: astName, type: astType } = ast;
-  const { nodeType, ownerDocument } = node;
+  const { localName, nodeType, ownerDocument } = node;
   const matched = [];
   if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
     if (Array.isArray(astChildren)) {
       const [astChildAst] = astChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (REG_PSEUDO_NTH.test(astName)) {
+      if (PSEUDO_NTH.test(astName)) {
         const arr = matchAnPlusB(astName, astChildAst, node);
         if (arr.length) {
           matched.push(...arr);
@@ -657,24 +663,28 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'open':
-          if (node.hasAttribute('open')) {
+          if (HTML_INTERACT.test(localName) && node.hasAttribute('open')) {
             matched.push(node);
           }
           break;
         case 'closed':
-          // FIXME: is this really okay?
-          if (!node.hasAttribute('open')) {
+          if (HTML_INTERACT.test(localName) && !node.hasAttribute('open')) {
             matched.push(node);
           }
           break;
         case 'disabled':
-          if (node.hasAttribute('disabled')) {
+          if ((HTML_FORM_INPUT.test(localName) ||
+               HTML_FORM_PARTS.test(localName) ||
+               HTML_CUSTOM_ELEMENT.test(localName)) &&
+              node.hasAttribute('disabled')) {
             matched.push(node);
           }
           break;
         case 'enabled':
-          // FIXME: is this really okay?
-          if (!node.hasAttribute('disabled')) {
+          if ((HTML_FORM_INPUT.test(localName) ||
+               HTML_FORM_PARTS.test(localName) ||
+               HTML_CUSTOM_ELEMENT.test(localName)) &&
+              !node.hasAttribute('disabled')) {
             matched.push(node);
           }
           break;
@@ -684,13 +694,12 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'required':
-          if (node.required) {
+          if (HTML_FORM_INPUT.test(localName) && node.required) {
             matched.push(node);
           }
           break;
         case 'optional':
-          // FIXME: is this really okay?
-          if (!node.required) {
+          if (HTML_FORM_INPUT.test(localName) && !node.required) {
             matched.push(node);
           }
           break;
@@ -1092,7 +1101,7 @@ class Matcher {
       let iteratorLeaf;
       if (firstChild.type === COMBINATOR ||
           (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-           REG_PSEUDO_NTH.test(firstChild.name))) {
+           PSEUDO_NTH.test(firstChild.name))) {
         iteratorLeaf = {
           name: '*',
           type: TYPE_SELECTOR
@@ -1110,7 +1119,7 @@ class Matcher {
               const item = items.shift();
               const { name: itemName, type: itemType } = item;
               if (itemType === PSEUDO_CLASS_SELECTOR &&
-                  REG_PSEUDO_FUNC.test(itemName)) {
+                  PSEUDO_FUNC.test(itemName)) {
                 nextNode = this._matchLogicalPseudoFunc(item, nextNode);
                 if (nextNode) {
                   matched.push(nextNode);
@@ -1127,7 +1136,7 @@ class Matcher {
                 const item = items.shift();
                 const { name: itemName, type: itemType } = item;
                 if (itemType === PSEUDO_CLASS_SELECTOR &&
-                    REG_PSEUDO_FUNC.test(itemName)) {
+                    PSEUDO_FUNC.test(itemName)) {
                   nextNode = this._matchLogicalPseudoFunc(item, nextNode);
                 } else if (itemType === COMBINATOR) {
                   const leaves = [];
@@ -1136,9 +1145,9 @@ class Matcher {
                     const [nextItem] = items;
                     if (nextItem.type === COMBINATOR ||
                         (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                         REG_PSEUDO_NTH.test(nextItem.name)) ||
+                         PSEUDO_NTH.test(nextItem.name)) ||
                         (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                         REG_PSEUDO_FUNC.test(nextItem.name))) {
+                         PSEUDO_FUNC.test(nextItem.name))) {
                       break;
                     } else {
                       leaves.push(items.shift());
@@ -1174,7 +1183,7 @@ class Matcher {
           nextNode = iterator.nextNode();
         }
       } else if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-                 REG_PSEUDO_FUNC.test(firstChild.name) &&
+                 PSEUDO_FUNC.test(firstChild.name) &&
                  node.nodeType === ELEMENT_NODE) {
         nextNode = node;
         while (nextNode) {
@@ -1220,7 +1229,7 @@ class Matcher {
         }
         break;
       case PSEUDO_CLASS_SELECTOR:
-        if (!REG_PSEUDO_FUNC.test(name)) {
+        if (!PSEUDO_FUNC.test(name)) {
           const arr = matchPseudoClassSelector(ast, node, this.#node);
           if (arr.length) {
             matched.push(...arr);
