@@ -433,18 +433,20 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
         } else {
           attrValue = astAttrStringValue;
         }
+      } else if (astAttrStringValue === '') {
+        attrValue = astAttrStringValue;
       }
       switch (astMatcher) {
         case null:
           res = node;
           break;
         case '=':
-          if (attrValue && attrValues.includes(attrValue)) {
+          if (typeof attrValue === 'string' && attrValues.includes(attrValue)) {
             res = node;
           }
           break;
         case '~=':
-          if (attrValue) {
+          if (typeof attrValue === 'string') {
             for (const item of attrValues) {
               const arr = item.split(/\s+/);
               if (arr.includes(attrValue)) {
@@ -455,7 +457,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           }
           break;
         case '|=':
-          if (attrValue) {
+          if (typeof attrValue === 'string') {
             const item = attrValues.find(v =>
               (v === attrValue || v.startsWith(`${attrValue}-`))
             );
@@ -465,7 +467,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           }
           break;
         case '^=':
-          if (attrValue) {
+          if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.startsWith(`${attrValue}`));
             if (item) {
               res = node;
@@ -473,7 +475,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           }
           break;
         case '$=':
-          if (attrValue) {
+          if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.endsWith(`${attrValue}`));
             if (item) {
               res = node;
@@ -481,7 +483,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           }
           break;
         case '*=':
-          if (attrValue) {
+          if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.includes(`${attrValue}`));
             if (item) {
               res = node;

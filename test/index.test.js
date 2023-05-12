@@ -1094,6 +1094,43 @@ describe('patched JSDOM', () => {
 });
 
 describe('jsdom issues tagged with `selectors` label', () => {
+  describe('#1163 - https://github.com/jsdom/jsdom/issues/1163', () => {
+    const domStr = `<!DOCTYPE html>
+    <html>
+      <body>
+        <div></div>
+        <div title="" id="target"></div>
+        <div title="foo"></div>
+      </body>
+    </html>`;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelectorAll('div[title=""]');
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('target');
+      const res = document.querySelectorAll('div[title][title=""]');
+      assert.deepEqual(res, [node], 'result');
+    });
+  });
+
   describe('#1750 - https://github.com/jsdom/jsdom/issues/1750', () => {
     const domStr = `<!DOCTYPE html>
     <html>
