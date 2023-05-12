@@ -1250,7 +1250,7 @@ class Matcher {
           if (nextNode) {
             matched.push(nextNode);
           }
-          nextNode = nextNode.nextElementSibling;
+          nextNode = nextNode?.nextElementSibling;
         }
       }
     }

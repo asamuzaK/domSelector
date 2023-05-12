@@ -53,12 +53,18 @@ describe('match AST leaf and DOM node', () => {
           <div id="div4">
             <div id="div5" class="foo">
               <p id="p1"></p>
+              <p id="p2"></p>
+              <p id="p3"></p>
             </div>
             <div id="div6" class="foo bar">
-              <p id="p2"></p>
+              <p id="p4"></p>
+              <p id="p5"></p>
+              <p id="p6"></p>
             </div>
             <div id="div7" class="baz">
-              <p id="p3"></p>
+              <p id="p7"></p>
+              <p id="p8"></p>
+              <p id="p9"></p>
             </div>
           </div>
         </div>
@@ -4467,6 +4473,34 @@ describe('match AST leaf and DOM node', () => {
                 {
                   children: [
                     {
+                      name: 'foo',
+                      type: CLASS_SELECTOR
+                    }
+                  ],
+                  type: SELECTOR
+                }
+              ],
+              type: SELECTOR_LIST
+            }
+          ],
+          name: 'not',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const refPoint = document.getElementById('div4');
+        const node = document.getElementById('div7');
+        const matcher = new Matcher('div:not(.foo)', refPoint);
+        const res = matcher._matchLogicalPseudoFunc(ast, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
                       name: 'bar',
                       type: CLASS_SELECTOR
                     }
@@ -4732,7 +4766,9 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('div:is(.foo.bar) > p', document);
         const res = matcher._matchSelector(ast, node);
         assert.deepEqual(res, [
-          document.getElementById('p2')
+          document.getElementById('p4'),
+          document.getElementById('p5'),
+          document.getElementById('p6')
         ], 'result');
       });
 
@@ -4858,6 +4894,75 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':is(ol)', document);
         const res = matcher._matchSelector(ast, node);
         assert.deepEqual(res, [node], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const ast = [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'foo',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'not',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const refPoint = document.getElementById('div4');
+        const node = document.getElementById('div7');
+        const matcher = new Matcher('div:not(.foo)', refPoint);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [node], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const ast = [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        name: 'foo',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  },
+                  {
+                    children: [
+                      {
+                        name: 'baz',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    type: SELECTOR
+                  }
+                ],
+                type: SELECTOR_LIST
+              }
+            ],
+            name: 'not',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const refPoint = document.getElementById('div4');
+        const node = document.getElementById('div7');
+        const matcher = new Matcher('div:not(.foo, .qux)', refPoint);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual(res, [], 'result');
       });
     });
 
