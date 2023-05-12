@@ -11,6 +11,9 @@ const {
   NTH, PSEUDO_CLASS_SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
 const ELEMENT_NODE = 1;
+const FILTER_ACCEPT = 1;
+const FILTER_REJECT = 2;
+const FILTER_SHOW_ELEMENT = 1;
 // FIXME: custom element name is not fully implemented
 // @see https://html.spec.whatwg.org/#valid-custom-element-name
 const HTML_CUSTOM_ELEMENT = /^[a-z][\d._a-z]*-[\d\-._a-z]*$/;
@@ -885,10 +888,10 @@ class Matcher {
   _createIterator(ast = this.#ast, root = this.#node) {
     const iterator = this.#document.createNodeIterator(
       root,
-      NodeFilter.SHOW_ELEMENT,
+      FILTER_SHOW_ELEMENT,
       node => {
         const arr = this._match(ast, node);
-        return arr.length ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        return arr.length ? FILTER_ACCEPT : FILTER_REJECT;
       }
     );
     return iterator;

@@ -12,7 +12,7 @@ const {
   closest, matches, querySelector, querySelectorAll
 } = require('../src/index.js');
 
-const globalKeys = ['DOMParser', 'NodeFilter', 'NodeIterator'];
+const globalKeys = ['DOMParser'];
 
 describe('exported api', () => {
   const domStr =

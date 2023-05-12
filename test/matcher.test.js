@@ -16,7 +16,7 @@ const {
   STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
-const globalKeys = ['DOMParser', 'NodeFilter', 'NodeIterator'];
+const globalKeys = ['DOMParser', 'NodeIterator'];
 
 describe('match AST leaf and DOM node', () => {
   const domStr = `<!doctype html>
