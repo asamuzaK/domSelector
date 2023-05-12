@@ -4611,4 +4611,92 @@ describe('walk AST', () => {
       ]
     ], 'result');
   });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        },
+        {
+          children: [
+            {
+              loc: null,
+              name: 'ol',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          loc: null,
+          name: 'ul',
+          type: TYPE_SELECTOR
+        },
+        {
+          loc: null,
+          name: '>',
+          type: COMBINATOR
+        },
+        {
+          loc: null,
+          name: 'li',
+          type: TYPE_SELECTOR
+        }
+      ],
+      [
+        {
+          loc: null,
+          name: 'ol',
+          type: TYPE_SELECTOR
+        },
+        {
+          loc: null,
+          name: '>',
+          type: COMBINATOR
+        },
+        {
+          loc: null,
+          name: 'li',
+          type: TYPE_SELECTOR
+        }
+      ]
+    ], 'result');
+  });
 });
