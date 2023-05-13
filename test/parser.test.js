@@ -312,6 +312,27 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func('foo,');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func('foo, bar');
       assert.deepEqual(res, {
         children: [
@@ -821,6 +842,38 @@ describe('create AST from CSS selector', () => {
                   loc: null,
                   type: STRING,
                   value: 'bar baz'
+                }
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('[foo= bar baz ]');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                flags: 'baz',
+                loc: null,
+                matcher: '=',
+                name: {
+                  loc: null,
+                  name: 'foo',
+                  type: IDENTIFIER
+                },
+                type: ATTRIBUTE_SELECTOR,
+                value: {
+                  loc: null,
+                  name: 'bar',
+                  type: IDENTIFIER
                 }
               }
             ],
