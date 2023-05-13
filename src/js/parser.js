@@ -3,6 +3,7 @@
  */
 
 /* api */
+const DOMException = require('domexception');
 const { generate, parse, toPlainObject, walk } = require('css-tree');
 const { SELECTOR } = require('./constant.js');
 
@@ -12,11 +13,17 @@ const { SELECTOR } = require('./constant.js');
  * @returns {object} - AST
  */
 const parseSelector = selector => {
-  const ast = parse(selector, {
-    context: 'selectorList',
-    parseCustomProperty: true
-  });
-  return toPlainObject(ast);
+  let res;
+  try {
+    const ast = parse(selector, {
+      context: 'selectorList',
+      parseCustomProperty: true
+    });
+    res = toPlainObject(ast);
+  } catch (e) {
+    throw new DOMException(e.message, 'SyntaxError');
+  }
+  return res;
 };
 
 /**

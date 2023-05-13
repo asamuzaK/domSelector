@@ -4,8 +4,8 @@
 
 /* api */
 const { assert } = require('chai');
-const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const { JSDOM } = require('jsdom');
+const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const sinon = require('sinon');
 
 /* test */

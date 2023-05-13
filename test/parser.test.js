@@ -4,6 +4,7 @@
 
 /* api */
 const { assert } = require('chai');
+const DOMException = require('domexception');
 const { describe, it } = require('mocha');
 
 /* test */
@@ -49,7 +50,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('*|'), SyntaxError);
+      assert.throws(() => func('*|'), DOMException);
     });
 
     it('should get namespaced selector list', () => {
@@ -409,7 +410,7 @@ describe('create AST from CSS selector', () => {
 
   describe('class selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('.'), SyntaxError);
+      assert.throws(() => func('.'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -460,7 +461,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('|.foo'), SyntaxError);
+      assert.throws(() => func('|.foo'), DOMException);
     });
 
     it('should get namespaced selector list', () => {
@@ -523,7 +524,7 @@ describe('create AST from CSS selector', () => {
 
   describe('id selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('#'), SyntaxError);
+      assert.throws(() => func('#'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -574,7 +575,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('|#foo'), SyntaxError);
+      assert.throws(() => func('|#foo'), DOMException);
     });
 
     it('should get namespaced selector list', () => {
@@ -606,11 +607,11 @@ describe('create AST from CSS selector', () => {
 
   describe('attribute selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('[]'), SyntaxError);
+      assert.throws(() => func('[]'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func('[*]'), SyntaxError);
+      assert.throws(() => func('[*]'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -1209,7 +1210,7 @@ describe('create AST from CSS selector', () => {
 
   describe('pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':'), SyntaxError);
+      assert.throws(() => func(':'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -2235,7 +2236,7 @@ describe('create AST from CSS selector', () => {
 
   describe('negation pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':not()'), SyntaxError);
+      assert.throws(() => func(':not()'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -2461,7 +2462,7 @@ describe('create AST from CSS selector', () => {
 
   describe('matches-any pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':is()'), SyntaxError);
+      assert.throws(() => func(':is()'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -2617,7 +2618,7 @@ describe('create AST from CSS selector', () => {
 
   describe('specificity-adjustment pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':where()'), SyntaxError);
+      assert.throws(() => func(':where()'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -2773,7 +2774,7 @@ describe('create AST from CSS selector', () => {
 
   describe('relational pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':has()'), SyntaxError);
+      assert.throws(() => func(':has()'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3351,11 +3352,11 @@ describe('create AST from CSS selector', () => {
 
   describe('An+B notation pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':nth-child()'), SyntaxError);
+      assert.throws(() => func(':nth-child()'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-child(foo)'), SyntaxError);
+      assert.throws(() => func(':nth-child(foo)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3493,7 +3494,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-child(2n + - 1)'), SyntaxError);
+      assert.throws(() => func(':nth-child(2n + - 1)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3547,11 +3548,11 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child()'), SyntaxError);
+      assert.throws(() => func(':nth-last-child()'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child(foo)'), SyntaxError);
+      assert.throws(() => func(':nth-last-child(foo)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3689,7 +3690,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child(2n + - 1)'), SyntaxError);
+      assert.throws(() => func(':nth-last-child(2n + - 1)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3743,11 +3744,11 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type()'), SyntaxError);
+      assert.throws(() => func(':nth-of-type()'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type(foo)'), SyntaxError);
+      assert.throws(() => func(':nth-of-type(foo)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -3885,15 +3886,15 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type(2n + - 1)'), SyntaxError);
+      assert.throws(() => func(':nth-of-type(2n + - 1)'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type()'), SyntaxError);
+      assert.throws(() => func(':nth-last-of-type()'), DOMException);
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type(foo)'), SyntaxError);
+      assert.throws(() => func(':nth-last-of-type(foo)'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -4031,7 +4032,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type(2n + - 1)'), SyntaxError);
+      assert.throws(() => func(':nth-last-of-type(2n + - 1)'), DOMException);
     });
 
     // NOTE: :nth-col() not yet supported
@@ -4234,7 +4235,7 @@ describe('create AST from CSS selector', () => {
 
     // FIXME: expect to parse
     it('should throw', () => {
-      assert.throws(() => func(':lang("en-US")'), SyntaxError);
+      assert.throws(() => func(':lang("en-US")'), DOMException);
     });
 
     it('should get selector list', () => {
@@ -4295,12 +4296,12 @@ describe('create AST from CSS selector', () => {
 
     // FIXME: expect to parse
     it('should throw', () => {
-      assert.throws(() => func(':lang("*-Latn")'), SyntaxError);
+      assert.throws(() => func(':lang("*-Latn")'), DOMException);
     });
 
     // FIXME: expect to parse
     it('should throw', () => {
-      assert.throws(() => func(':lang("")'), SyntaxError);
+      assert.throws(() => func(':lang("")'), DOMException);
     });
   });
 

@@ -4,8 +4,9 @@
 
 /* api */
 const { assert } = require('chai');
-const { afterEach, beforeEach, describe, it, xit } = require('mocha');
+const DOMException = require('domexception');
 const { JSDOM } = require('jsdom');
+const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 
 /* test */
 const {
@@ -38,7 +39,7 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => matches('*|', document.body), SyntaxError);
+      assert.throws(() => matches('*|', document.body), DOMException);
     });
 
     it('should match', () => {
@@ -100,7 +101,7 @@ describe('exported api', () => {
 
   describe('closest', () => {
     it('should throw', () => {
-      assert.throws(() => closest('*|', document), SyntaxError);
+      assert.throws(() => closest('*|', document), DOMException);
     });
 
     it('should get matched node', () => {
@@ -162,7 +163,7 @@ describe('exported api', () => {
 
   describe('query selector', () => {
     it('should throw', () => {
-      assert.throws(() => querySelector('*|', document), SyntaxError);
+      assert.throws(() => querySelector('*|', document), DOMException);
     });
 
     it('should get matched node', () => {
@@ -339,7 +340,7 @@ describe('exported api', () => {
 
   describe('query selector all', () => {
     it('should throw', () => {
-      assert.throws(() => querySelectorAll('*|', document), SyntaxError);
+      assert.throws(() => querySelectorAll('*|', document), DOMException);
     });
 
     it('should get matched node(s)', () => {
@@ -588,7 +589,7 @@ describe('patched JSDOM', () => {
 
   describe('Element.matches()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.matches('*|'), SyntaxError);
+      assert.throws(() => document.body.matches('*|'), DOMException);
     });
 
     it('should match', () => {
@@ -650,7 +651,7 @@ describe('patched JSDOM', () => {
 
   describe('Element.closest()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.closest('*|'), SyntaxError);
+      assert.throws(() => document.body.closest('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -712,7 +713,7 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelector(), Element.querySelector()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelector('*|'), SyntaxError);
+      assert.throws(() => document.querySelector('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -772,7 +773,7 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelector('*|'), SyntaxError);
+      assert.throws(() => document.body.querySelector('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -833,7 +834,7 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('*|'), SyntaxError);
+      assert.throws(() => frag.querySelector('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -897,7 +898,7 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelectorAll('*|'), SyntaxError);
+      assert.throws(() => document.querySelectorAll('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -961,7 +962,7 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('*|'), SyntaxError);
+      assert.throws(() => document.body.querySelectorAll('*|'), DOMException);
     });
 
     it('should get matched node', () => {
@@ -1026,7 +1027,7 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('*|'), SyntaxError);
+      assert.throws(() => frag.querySelectorAll('*|'), DOMException);
     });
 
     it('should get matched node', () => {
