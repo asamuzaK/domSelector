@@ -5140,7 +5140,7 @@ describe('match AST leaf and DOM node', () => {
         const div = document.createElement('div');
         div.id = 'main';
         const p1 = document.createElement('p');
-        p1.id = 'p1-1'
+        p1.id = 'p1-1';
         p1.classList.add('foo');
         p1.textContent = 'Foo';
         const p2 = document.createElement('p');

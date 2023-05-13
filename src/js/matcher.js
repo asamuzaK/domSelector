@@ -1161,113 +1161,115 @@ class Matcher {
     const matched = [];
     if (Array.isArray(children) && children.length) {
       const [firstChild] = children;
-      let iteratorLeaf;
-      if (firstChild.type === COMBINATOR ||
-          (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-           PSEUDO_NTH.test(firstChild.name))) {
-        iteratorLeaf = {
+      if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
+          PSEUDO_FUNC.test(firstChild.name) &&
+          node.nodeType === ELEMENT_NODE) {
+        const iteratorLeaf = {
           name: '*',
           type: TYPE_SELECTOR
         };
-      } else {
-        iteratorLeaf = children.shift();
-      }
-      let iterator = this._createIterator(iteratorLeaf, node);
-      let nextNode = iterator.nextNode();
-      if (nextNode) {
-        while (nextNode) {
-          const [...items] = children;
-          if (items.length) {
-            if (items.length === 1) {
-              const item = items.shift();
-              const { name: itemName, type: itemType } = item;
-              if (itemType === PSEUDO_CLASS_SELECTOR &&
-                  PSEUDO_FUNC.test(itemName)) {
-                nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-                if (nextNode) {
-                  matched.push(nextNode);
-                  nextNode = null;
-                }
-              } else {
-                const arr = this._match(item, nextNode);
-                if (arr.length) {
-                  matched.push(...arr);
-                }
-              }
-            } else {
-              do {
-                const item = items.shift();
-                const { name: itemName, type: itemType } = item;
-                if (itemType === PSEUDO_CLASS_SELECTOR &&
-                    PSEUDO_FUNC.test(itemName)) {
-                  nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-                } else if (itemType === COMBINATOR) {
-                  const leaves = [];
-                  leaves.push(item);
-                  while (items.length) {
-                    const [nextItem] = items;
-                    if (nextItem.type === COMBINATOR ||
-                        (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                         PSEUDO_NTH.test(nextItem.name)) ||
-                        (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                         PSEUDO_FUNC.test(nextItem.name))) {
-                      break;
-                    } else {
-                      leaves.push(items.shift());
-                    }
-                  }
-                  const arr = this._matchCombinator(leaves, nextNode);
-                  if (!arr.length || arr.length === 1) {
-                    [nextNode] = arr;
-                  } else {
-                    if (items.length) {
-                      const [i] = items;
-                      for (let j of arr) {
-                        if (i.type === PSEUDO_CLASS_SELECTOR &&
-                            PSEUDO_FUNC.test(i.name)) {
-                          if (this._matchLogicalPseudoFunc(i, j)) {
-                            matched.push(j);
-                          }
-                        } else {
-                          const a = this._matchSelector(items, j);
-                          if (a.length) {
-                            matched.push(...a);
-                          }
-                        }
-                      }
-                    } else {
-                      matched.push(...arr);
-                    }
-                    nextNode = null;
-                  }
-                } else {
-                  [nextNode] = this._match(item, nextNode);
-                }
-              } while (items.length && nextNode);
-              if (nextNode) {
-                matched.push(nextNode);
-              }
-            }
-          } else if (nextNode) {
-            matched.push(nextNode);
-          }
-          nextNode = iterator.nextNode();
-        }
-      } else if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-                 PSEUDO_FUNC.test(firstChild.name) &&
-                 node.nodeType === ELEMENT_NODE) {
-        iteratorLeaf = {
-          name: '*',
-          type: TYPE_SELECTOR
-        };
-        iterator = this._createIterator(iteratorLeaf, node);
-        nextNode = iterator.nextNode();
+        const iterator = this._createIterator(iteratorLeaf, node);
+        let nextNode = iterator.nextNode();
         while (nextNode) {
           nextNode = this._matchLogicalPseudoFunc(firstChild, nextNode);
           if (nextNode) {
             matched.push(nextNode);
           }
           nextNode = iterator.nextNode();
+        }
+      } else {
+        let iteratorLeaf;
+        if (firstChild.type === COMBINATOR ||
+            (firstChild.type === PSEUDO_CLASS_SELECTOR &&
+             PSEUDO_NTH.test(firstChild.name))) {
+          iteratorLeaf = {
+            name: '*',
+            type: TYPE_SELECTOR
+          };
+        } else {
+          iteratorLeaf = children.shift();
+        }
+        const iterator = this._createIterator(iteratorLeaf, node);
+        let nextNode = iterator.nextNode();
+        if (nextNode) {
+          while (nextNode) {
+            const [...items] = children;
+            if (items.length) {
+              if (items.length === 1) {
+                const item = items.shift();
+                const { name: itemName, type: itemType } = item;
+                if (itemType === PSEUDO_CLASS_SELECTOR &&
+                    PSEUDO_FUNC.test(itemName)) {
+                  nextNode = this._matchLogicalPseudoFunc(item, nextNode);
+                  if (nextNode) {
+                    matched.push(nextNode);
+                    nextNode = null;
+                  }
+                } else {
+                  const arr = this._match(item, nextNode);
+                  if (arr.length) {
+                    matched.push(...arr);
+                  }
+                }
+              } else {
+                do {
+                  const item = items.shift();
+                  const { name: itemName, type: itemType } = item;
+                  if (itemType === PSEUDO_CLASS_SELECTOR &&
+                      PSEUDO_FUNC.test(itemName)) {
+                    nextNode = this._matchLogicalPseudoFunc(item, nextNode);
+                  } else if (itemType === COMBINATOR) {
+                    const leaves = [];
+                    leaves.push(item);
+                    while (items.length) {
+                      const [nextItem] = items;
+                      if (nextItem.type === COMBINATOR ||
+                          (nextItem.type === PSEUDO_CLASS_SELECTOR &&
+                           PSEUDO_NTH.test(nextItem.name)) ||
+                          (nextItem.type === PSEUDO_CLASS_SELECTOR &&
+                           PSEUDO_FUNC.test(nextItem.name))) {
+                        break;
+                      } else {
+                        leaves.push(items.shift());
+                      }
+                    }
+                    const arr = this._matchCombinator(leaves, nextNode);
+                    if (!arr.length || arr.length === 1) {
+                      [nextNode] = arr;
+                    } else {
+                      if (items.length) {
+                        const [i] = items;
+                        for (const j of arr) {
+                          if (i.type === PSEUDO_CLASS_SELECTOR &&
+                              PSEUDO_FUNC.test(i.name)) {
+                            if (this._matchLogicalPseudoFunc(i, j)) {
+                              matched.push(j);
+                            }
+                          } else {
+                            const a = this._matchSelector(items, j);
+                            if (a.length) {
+                              matched.push(...a);
+                            }
+                          }
+                        }
+                      } else {
+                        matched.push(...arr);
+                      }
+                      nextNode = null;
+                    }
+                  } else {
+                    [nextNode] = this._match(item, nextNode);
+                  }
+                } while (items.length && nextNode);
+                if (nextNode) {
+                  matched.push(nextNode);
+                }
+              }
+            } else if (nextNode) {
+              matched.push(nextNode);
+            }
+            nextNode = iterator.nextNode();
+          }
         }
       }
     }
