@@ -3658,20 +3658,44 @@ describe('match AST leaf and DOM node', () => {
         name: 'empty',
         type: PSEUDO_CLASS_SELECTOR
       };
-      const node = document.getElementById('li3');
-      const res = func(leaf, node);
-      assert.deepEqual(res, [node], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'empty',
-        type: PSEUDO_CLASS_SELECTOR
-      };
-      const node = document.getElementById('li1');
-      const res = func(leaf, node);
-      assert.deepEqual(res, [], 'result');
+      const d1 = document.createElement('div');
+      const p1 = document.createElement('p');
+      const p2 = document.createElement('p');
+      const p3 = document.createElement('p');
+      const p4 = document.createElement('p');
+      const p5 = document.createElement('p');
+      const s1 = document.createElement('span');
+      d1.id = 'ed1';
+      p1.id = 'ep1';
+      p2.id = 'ep2';
+      p3.id = 'ep3';
+      p4.id = 'ep4';
+      p5.id = 'ep5';
+      s1.id = 'es1';
+      const cmt = document.createComment('comment node');
+      p2.appendChild(cmt);
+      p3.textContent = ' ';
+      p4.textContent = 'text node';
+      p5.appendChild(s1);
+      d1.appendChild(p1);
+      d1.appendChild(p2);
+      d1.appendChild(p3);
+      d1.appendChild(p4);
+      d1.appendChild(p5);
+      const parent = document.getElementById('div0');
+      parent.appendChild(d1);
+      const res1 = func(leaf, p1);
+      const res2 = func(leaf, p2);
+      const res3 = func(leaf, p3);
+      const res4 = func(leaf, p4);
+      const res5 = func(leaf, p5);
+      const res6 = func(leaf, s1);
+      assert.deepEqual(res1, [p1], 'result');
+      assert.deepEqual(res2, [p2], 'result');
+      assert.deepEqual(res3, [], 'result');
+      assert.deepEqual(res4, [], 'result');
+      assert.deepEqual(res5, [], 'result');
+      assert.deepEqual(res6, [s1], 'result');
     });
 
     it('should get matched node(s)', () => {

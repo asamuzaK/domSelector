@@ -15,6 +15,9 @@ const ELEMENT_NODE = 1;
 const FILTER_ACCEPT = 1;
 const FILTER_REJECT = 2;
 const FILTER_SHOW_ELEMENT = 1;
+const TEXT_NODE = 3;
+
+/* regexp */
 // FIXME: custom element name is not fully implemented
 // @see https://html.spec.whatwg.org/#valid-custom-element-name
 const HTML_CUSTOM_ELEMENT = /^[a-z][\d._a-z]*-[\d\-._a-z]*$/;
@@ -774,6 +777,12 @@ const matchPseudoClassSelector = (
         case 'empty':
           if (!node.hasChildNodes()) {
             matched.push(node);
+          } else {
+            const nodes = [...node.childNodes];
+            if (nodes.every(n =>
+              n.nodeType !== ELEMENT_NODE && n.nodeType !== TEXT_NODE)) {
+              matched.push(node);
+            }
           }
           break;
         case 'first-child':
