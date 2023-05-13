@@ -3,6 +3,7 @@
  */
 
 /* import */
+const DOMException = require('domexception');
 const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 
 /* constants */
@@ -491,7 +492,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           }
           break;
         default:
-          console.warn(`Unknown matcher ${astMatcher}`);
+          throw new DOMException(`Unknown matcher ${astMatcher}`,
+            'SyntaxError');
       }
     }
   }
@@ -598,7 +600,8 @@ const matchPseudoClassSelector = (
             console.warn(`Unsupported pseudo-class ${astName}`);
             break;
           default:
-            console.warn(`Unknown pseudo-class ${astName}`);
+            throw new DOMException(`Unknown pseudo-class ${astName}`,
+              'SyntaxError');
         }
       }
     } else {
@@ -856,7 +859,8 @@ const matchPseudoClassSelector = (
           console.warn(`Unsupported pseudo-class ${astName}`);
           break;
         default:
-          console.warn(`Unknown pseudo-class ${astName}`);
+          throw new DOMException(`Unknown pseudo-class ${astName}`,
+            'SyntaxError');
       }
     }
   }

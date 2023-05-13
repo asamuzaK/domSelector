@@ -4,6 +4,7 @@
 
 /* api */
 const { assert } = require('chai');
+const DOMException = require('domexception');
 const { JSDOM } = require('jsdom');
 const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const sinon = require('sinon');
@@ -2371,8 +2372,7 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         flags: null,
         matcher: '==',
@@ -2390,11 +2390,7 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('foo', 'bar');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.isNull(res, 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
   });
 
@@ -2798,8 +2794,7 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: [
           {
@@ -2814,11 +2809,7 @@ describe('match AST leaf and DOM node', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     it('should get matched node(s)', () => {
@@ -3829,8 +3820,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     // Unknown
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'foo',
@@ -3838,21 +3828,12 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
   });
 
   describe('Matcher', () => {
     const { Matcher } = matcherJs;
-
-    it('should be instance of Matcher', () => {
-      const matcher = new Matcher();
-      assert.instanceOf(matcher, Matcher, 'instance');
-    });
 
     it('should be instance of Matcher', () => {
       const matcher = new Matcher('*', document.body);

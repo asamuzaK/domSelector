@@ -13,6 +13,12 @@ const { SELECTOR } = require('./constant.js');
  * @returns {object} - AST
  */
 const parseSelector = selector => {
+  // invalid selectors
+  if (typeof selector !== 'string' || selector === '' ||
+      selector.startsWith('>') || selector.endsWith(',') ||
+      selector.includes('= ')) {
+    throw new DOMException(`invalid selector ${selector}`, 'SyntaxError');
+  }
   let res;
   try {
     const ast = parse(selector, {

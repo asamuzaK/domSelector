@@ -18,13 +18,26 @@ const {
 describe('create AST from CSS selector', () => {
   const func = parser.parseSelector;
 
-  it('should get empty selector list', () => {
-    const res = func();
-    assert.deepEqual(res, {
-      children: [],
-      loc: null,
-      type: SELECTOR_LIST
-    }, 'result');
+  describe('invalid selectors', () => {
+    it('should throw', () => {
+      assert.throws(() => func(), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(''), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('>*'), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('*,'), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('[foo= bar baz]'), DOMException);
+    });
   });
 
   describe('universal selector', () => {
@@ -262,58 +275,11 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
-
-    it('should get selector list', () => {
-      const res = func('>*');
-      assert.deepEqual(res, {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: '>',
-                type: COMBINATOR
-              },
-              {
-                loc: null,
-                name: '*',
-                type: TYPE_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      }, 'result');
-    });
   });
 
   describe('type selector', () => {
     it('should get selector list', () => {
       const res = func('foo');
-      assert.deepEqual(res, {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: 'foo',
-                type: TYPE_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      }, 'result');
-    });
-
-    it('should get selector list', () => {
-      const res = func('foo,');
       assert.deepEqual(res, {
         children: [
           {
@@ -843,38 +809,6 @@ describe('create AST from CSS selector', () => {
                   loc: null,
                   type: STRING,
                   value: 'bar baz'
-                }
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      }, 'result');
-    });
-
-    it('should get selector list', () => {
-      const res = func('[foo= bar baz ]');
-      assert.deepEqual(res, {
-        children: [
-          {
-            children: [
-              {
-                flags: 'baz',
-                loc: null,
-                matcher: '=',
-                name: {
-                  loc: null,
-                  name: 'foo',
-                  type: IDENTIFIER
-                },
-                type: ATTRIBUTE_SELECTOR,
-                value: {
-                  loc: null,
-                  name: 'bar',
-                  type: IDENTIFIER
                 }
               }
             ],
@@ -4429,32 +4363,6 @@ describe('create AST from CSS selector', () => {
                 loc: null,
                 name: '>',
                 type: COMBINATOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      }, 'result');
-    });
-
-    it('should get selector list', () => {
-      const res = func('> bar');
-      assert.deepEqual(res, {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: '>',
-                type: COMBINATOR
-              },
-              {
-                loc: null,
-                name: 'bar',
-                type: TYPE_SELECTOR
               }
             ],
             loc: null,
