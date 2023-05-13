@@ -1066,8 +1066,8 @@ class Matcher {
         // :has()
         case 'has': {
           let matched;
-          for (const items of ast) {
-            const item = items.shift();
+          for (const astItem of ast) {
+            const [item, ...items] = astItem;
             const { type: itemType } = item;
             const itemLeaves = [];
             let firstItem = item;
@@ -1104,8 +1104,8 @@ class Matcher {
         // :not()
         case 'not': {
           let matched;
-          for (const items of ast) {
-            const item = items.shift();
+          for (const astItem of ast) {
+            const [item, ...items] = astItem;
             // NOTE: according to MDN, :not() can not contain :not()
             // but spec says nothing about that?
             if (item.type === PSEUDO_CLASS_SELECTOR && item.name === 'not') {
@@ -1130,8 +1130,8 @@ class Matcher {
         // :is(), :where()
         default: {
           let matched;
-          for (const items of ast) {
-            const item = items.shift();
+          for (const astItem of ast) {
+            const [item, ...items] = astItem;
             const arr = this._matchArgumentLeaf(item, node);
             if (arr.length) {
               matched = true;
@@ -1172,7 +1172,7 @@ class Matcher {
       } else {
         iteratorLeaf = children.shift();
       }
-      const iterator = this._createIterator(iteratorLeaf, node);
+      let iterator = this._createIterator(iteratorLeaf, node);
       let nextNode = iterator.nextNode();
       if (nextNode) {
         while (nextNode) {
@@ -1221,10 +1221,18 @@ class Matcher {
                     [nextNode] = arr;
                   } else {
                     if (items.length) {
-                      for (const i of arr) {
-                        const a = this._matchSelector(items, i);
-                        if (a.length) {
-                          matched.push(...a);
+                      const [i] = items;
+                      for (let j of arr) {
+                        if (i.type === PSEUDO_CLASS_SELECTOR &&
+                            PSEUDO_FUNC.test(i.name)) {
+                          if (this._matchLogicalPseudoFunc(i, j)) {
+                            matched.push(j);
+                          }
+                        } else {
+                          const a = this._matchSelector(items, j);
+                          if (a.length) {
+                            matched.push(...a);
+                          }
                         }
                       }
                     } else {
@@ -1248,13 +1256,18 @@ class Matcher {
       } else if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
                  PSEUDO_FUNC.test(firstChild.name) &&
                  node.nodeType === ELEMENT_NODE) {
-        nextNode = node;
+        iteratorLeaf = {
+          name: '*',
+          type: TYPE_SELECTOR
+        };
+        iterator = this._createIterator(iteratorLeaf, node);
+        nextNode = iterator.nextNode();
         while (nextNode) {
           nextNode = this._matchLogicalPseudoFunc(firstChild, nextNode);
           if (nextNode) {
             matched.push(nextNode);
           }
-          nextNode = nextNode?.nextElementSibling;
+          nextNode = iterator.nextNode();
         }
       }
     }

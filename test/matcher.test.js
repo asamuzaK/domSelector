@@ -4423,7 +4423,7 @@ describe('match AST leaf and DOM node', () => {
           type: PSEUDO_CLASS_SELECTOR
         };
         const node = document.getElementById('div6');
-        const matcher = new Matcher('div.foo:not(.bar, .qux) > p', document);
+        const matcher = new Matcher('div.foo:not(.bar, .qux)', document);
         const res = matcher._matchLogicalPseudoFunc(ast, node);
         assert.isNull(res, 'result');
       });
@@ -4981,6 +4981,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const ast = [
           {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
             children: [
               {
                 children: [
@@ -5010,6 +5014,10 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const ast = [
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
           {
             children: [
               {
@@ -5042,7 +5050,7 @@ describe('match AST leaf and DOM node', () => {
         ];
         const refPoint = document.getElementById('div4');
         const node = document.getElementById('div7');
-        const matcher = new Matcher('div:not(.foo, .qux)', refPoint);
+        const matcher = new Matcher('div:not(.foo, .baz)', refPoint);
         const res = matcher._matchSelector(ast, node);
         assert.deepEqual(res, [], 'result');
       });
@@ -5126,6 +5134,25 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li:nth-child(2n+1)', node);
         const res = matcher.matches();
         assert.isFalse(res, 'result');
+      });
+
+      it('should get true', () => {
+        const div = document.createElement('div');
+        div.id = 'main';
+        const p1 = document.createElement('p');
+        p1.id = 'p1-1'
+        p1.classList.add('foo');
+        p1.textContent = 'Foo';
+        const p2 = document.createElement('p');
+        p2.id = 'p1-2';
+        p2.textContent = 'Bar';
+        div.appendChild(p1);
+        div.appendChild(p2);
+        const parent = document.getElementById('div0');
+        parent.appendChild(div);
+        const matcher = new Matcher('#main p:not(.foo)', p2);
+        const res = matcher.matches();
+        assert.isTrue(res, 'result');
       });
     });
 
