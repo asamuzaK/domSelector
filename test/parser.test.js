@@ -261,6 +261,32 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func('>*');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '>',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: '*',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('type selector', () => {
