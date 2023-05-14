@@ -1,10 +1,10 @@
 /**
  * index.test.js
  */
+'use strict';
 
 /* api */
 const { assert } = require('chai');
-const DOMException = require('domexception');
 const { JSDOM } = require('jsdom');
 const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 
@@ -12,6 +12,7 @@ const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const {
   closest, matches, querySelector, querySelectorAll
 } = require('../src/index.js');
+const DOMException = require('../src/js/domexception.js');
 
 const globalKeys = ['DOMParser'];
 

@@ -1,9 +1,10 @@
 /**
  * matcher.js
  */
+'use strict';
 
 /* import */
-const DOMException = require('domexception');
+const DOMException = require('./domexception.js');
 const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 
 /* constants */

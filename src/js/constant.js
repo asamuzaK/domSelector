@@ -1,6 +1,7 @@
 /**
  * constant.js
  */
+'use strict';
 
 module.exports = {
   AN_PLUS_B: 'AnPlusB',

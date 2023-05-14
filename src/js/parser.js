@@ -1,11 +1,12 @@
 /**
  * parser.js
  */
+'use strict';
 
 /* api */
-const DOMException = require('domexception');
 const { generate, parse, toPlainObject, walk } = require('css-tree');
 const { SELECTOR } = require('./constant.js');
+const DOMException = require('./domexception.js');
 
 /**
  * create AST from CSS selector

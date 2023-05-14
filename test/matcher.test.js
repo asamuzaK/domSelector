@@ -1,16 +1,17 @@
 /**
  * matcher.test.js
  */
+'use strict';
 
 /* api */
 const { assert } = require('chai');
-const DOMException = require('domexception');
 const { JSDOM } = require('jsdom');
 const { afterEach, beforeEach, describe, it, xit } = require('mocha');
 const sinon = require('sinon');
 
 /* test */
 const matcherJs = require('../src/js/matcher.js');
+const DOMException = require('../src/js/domexception.js');
 const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,

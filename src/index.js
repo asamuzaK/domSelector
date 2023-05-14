@@ -4,6 +4,7 @@
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
  */
+'use strict';
 
 /* import */
 const { Matcher } = require('./js/matcher.js');
