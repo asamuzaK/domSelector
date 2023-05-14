@@ -21,10 +21,6 @@ describe('create AST from CSS selector', () => {
 
   describe('invalid selectors', () => {
     it('should throw', () => {
-      assert.throws(() => func(), DOMException);
-    });
-
-    it('should throw', () => {
       assert.throws(() => func(''), DOMException);
     });
 
@@ -39,6 +35,76 @@ describe('create AST from CSS selector', () => {
     it('should throw', () => {
       assert.throws(() => func('[foo= bar baz]'), DOMException);
     });
+
+    it('should throw', () => {
+      assert.throws(() => func('*|'), DOMException);
+    });
+  });
+
+  describe('should parse', () => {
+    it('should get selector list', () => {
+      const res = func();
+      assert.deepEqual(res, {
+        "children": [
+          {
+            "children": [
+              {
+                "loc": null,
+                "name": "undefined",
+                "type": TYPE_SELECTOR
+              }
+            ],
+            "loc": null,
+            "type": SELECTOR
+          }
+        ],
+        "loc": null,
+        "type": SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(undefined);
+      assert.deepEqual(res, {
+        "children": [
+          {
+            "children": [
+              {
+                "loc": null,
+                "name": "undefined",
+                "type": TYPE_SELECTOR
+              }
+            ],
+            "loc": null,
+            "type": SELECTOR
+          }
+        ],
+        "loc": null,
+        "type": SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(null);
+      assert.deepEqual(res, {
+        "children": [
+          {
+            "children": [
+              {
+                "loc": null,
+                "name": "null",
+                "type": TYPE_SELECTOR
+              }
+            ],
+            "loc": null,
+            "type": SELECTOR
+          }
+        ],
+        "loc": null,
+        "type": SELECTOR_LIST
+      }, 'result');
+    });
+
   });
 
   describe('universal selector', () => {
@@ -61,10 +127,6 @@ describe('create AST from CSS selector', () => {
         loc: null,
         type: SELECTOR_LIST
       }, 'result');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => func('*|'), DOMException);
     });
 
     it('should get namespaced selector list', () => {

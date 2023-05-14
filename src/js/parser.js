@@ -3,10 +3,14 @@
  */
 'use strict';
 
-/* api */
+/* import */
 const { generate, parse, toPlainObject, walk } = require('css-tree');
 const { SELECTOR } = require('./constant.js');
 const DOMException = require('./domexception.js');
+
+/* constants */
+const TYPE_FROM = 8;
+const TYPE_TO = -1;
 
 /**
  * create AST from CSS selector
@@ -14,6 +18,10 @@ const DOMException = require('./domexception.js');
  * @returns {object} - AST
  */
 const parseSelector = selector => {
+  if (selector === undefined || selector === null) {
+    selector = Object.prototype.toString.call(selector)
+      .slice(TYPE_FROM, TYPE_TO).toLowerCase();
+  }
   // invalid selectors
   if (typeof selector !== 'string' || selector === '' ||
       selector.startsWith('>') || selector.endsWith(',') ||
