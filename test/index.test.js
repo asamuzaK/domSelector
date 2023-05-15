@@ -44,6 +44,24 @@ describe('exported api', () => {
     });
 
     it('should match', () => {
+      const node = document.createElementNS('', 'element');
+      const res = node.matches('element');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElementNS('urn:ns', 'h');
+      const res = node.matches('h');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElementNS('urn:ns', 'h');
+      const res = node.matches('*|h');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
