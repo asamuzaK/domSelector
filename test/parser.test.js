@@ -5,7 +5,7 @@
 
 /* api */
 const { assert } = require('chai');
-const { describe, it } = require('mocha');
+const { describe, it, xit } = require('mocha');
 
 /* test */
 const parser = require('../src/js/parser.js');
@@ -33,7 +33,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('[foo= bar baz]'), DOMException);
+      assert.throws(() => func('[foo=bar baz qux]'), DOMException);
     });
 
     it('should throw', () => {
@@ -45,66 +45,65 @@ describe('create AST from CSS selector', () => {
     it('should get selector list', () => {
       const res = func();
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "undefined",
-                "type": TYPE_SELECTOR
+                loc: null,
+                name: 'undefined',
+                type: TYPE_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
 
     it('should get selector list', () => {
       const res = func(undefined);
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "undefined",
-                "type": TYPE_SELECTOR
+                loc: null,
+                name: 'undefined',
+                type: TYPE_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
 
     it('should get selector list', () => {
       const res = func(null);
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "null",
-                "type": TYPE_SELECTOR
+                loc: null,
+                name: 'null',
+                type: TYPE_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
-
   });
 
   describe('universal selector', () => {
@@ -1180,6 +1179,39 @@ describe('create AST from CSS selector', () => {
             children: [
               {
                 flags: 'S',
+                loc: null,
+                matcher: '=',
+                name: {
+                  loc: null,
+                  name: 'foo',
+                  type: IDENTIFIER
+                },
+                type: ATTRIBUTE_SELECTOR,
+                value: {
+                  loc: null,
+                  name: 'bar',
+                  type: IDENTIFIER
+                }
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // NOTE: should be thrown afterwards
+    it('should get selector list', () => {
+      const res = func('[foo=bar baz]');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                flags: 'baz',
                 loc: null,
                 matcher: '=',
                 name: {

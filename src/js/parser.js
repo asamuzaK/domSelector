@@ -5,10 +5,10 @@
 
 /* import */
 const { generate, parse, toPlainObject, walk } = require('css-tree');
-const { SELECTOR } = require('./constant.js');
 const DOMException = require('./domexception.js');
 
 /* constants */
+const { SELECTOR } = require('./constant.js');
 const TYPE_FROM = 8;
 const TYPE_TO = -1;
 
@@ -24,8 +24,7 @@ const parseSelector = selector => {
   }
   // invalid selectors
   if (typeof selector !== 'string' || selector === '' ||
-      selector.startsWith('>') || selector.endsWith(',') ||
-      selector.includes('= ')) {
+      /^\s*>/.test(selector) || /,\s*$/.test(selector)) {
     throw new DOMException(`invalid selector ${selector}`, 'SyntaxError');
   }
   let res;
