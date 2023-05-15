@@ -75,7 +75,7 @@ Returns **[object][60]?** matched node
 ### querySelectorAll(selector, refPoint, opt)
 
 querySelectorAll - [Document.querySelectorAll()][69], [Document.querySelectorAll()][70], [Element.querySelectorAll()][71]
-NOTE: returns Array, not NodeList
+**NOTE**: returns Array, not NodeList
 
 #### Parameters
 
