@@ -1210,6 +1210,27 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
+    it('should throw', () => {
+      const leaf = {
+        flags: 'baz',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          name: 'bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func(leaf, node), DOMException);
+    });
+
     it('should get matched node', () => {
       const leaf = {
         flags: null,

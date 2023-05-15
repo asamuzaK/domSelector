@@ -346,8 +346,12 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
   let res;
   if (astType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
       attributes?.length) {
+    if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
+      throw new DOMException(`invalid attribute selector`, 'SyntaxError');
+    }
     const { name: astAttrName } = astName;
-    const caseInsensitive = !(astFlags && /^s$/i.test(astFlags));
+    const caseInsensitive =
+      !(typeof astFlags === 'string' && /^s$/i.test(astFlags));
     const attrValues = [];
     const l = attributes.length;
     // namespaced
