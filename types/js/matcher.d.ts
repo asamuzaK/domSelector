@@ -1,5 +1,9 @@
 export class Matcher {
-    constructor(selector: string, refPoint: object);
+    constructor(selector: string, refPoint: object, opt?: {
+        globalObject?: object;
+        jsdom?: boolean;
+    });
+    _createDOMException(msg: string, name: string): void;
     _createIterator(ast?: object, root?: object): object;
     _parseAST(ast: object, node: object): Array<object | undefined>;
     _matchAdjacentLeaves(leaves: Array<object>, node: object): object | null;
