@@ -3891,6 +3891,30 @@ describe('match AST leaf and DOM node', () => {
       assert.instanceOf(matcher, Matcher, 'instance');
     });
 
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher('*', document.body.ownerDocument, {
+        globalObject: globalThis,
+        jsdom: true
+      });
+      assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    describe('create DOMException', () => {
+      it('should not throw', () => {
+        const matcher = new Matcher('div ul li', document);
+        assert.doesNotThrow(() =>
+          matcher._createDOMException('foo', 'SyntaxError'));
+      });
+
+      it('should throw', () => {
+        const matcher = new Matcher('div ul li', document, {
+          globalObject: globalThis,
+          jsdom: true
+        });
+        assert.throws(() => matcher._createDOMException('foo', 'SyntaxError'));
+      });
+    });
+
     describe('create node iterator', () => {
       it('should be instance of NodeIterator', () => {
         const matcher = new Matcher('div ul li', document);
@@ -5128,6 +5152,18 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('matches', () => {
+      it('should throw', () => {
+        assert.throws(() => new Matcher('[foo=bar baz]', document.body, {
+          globalObject: globalThis,
+          jsdom: true
+        }).matches());
+      });
+
+      it('should throw', () => {
+        assert.throws(() =>
+          new Matcher('[foo=bar baz]', document.body).matches(), DOMException);
+      });
+
       it('should get true', () => {
         const node = document.getElementById('li2');
         const matcher = new Matcher('li', node);
@@ -5184,6 +5220,20 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('closest', () => {
+      it('should throw', () => {
+        assert.throws(() =>
+          new Matcher('div[foo=bar baz]', document.getElementById('div0'), {
+            globalObject: globalThis,
+            jsdom: true
+          }).closest());
+      });
+
+      it('should throw', () => {
+        assert.throws(() =>
+          new Matcher('[foo=bar baz]', document.getElementById('div0'))
+            .closest(), DOMException);
+      });
+
       it('should get matched node', () => {
         const node = document.getElementById('li2');
         const target = document.getElementById('div2');
@@ -5201,6 +5251,18 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('querySelector', () => {
+      it('should throw', () => {
+        assert.throws(() => new Matcher('div[foo=bar baz]', document, {
+          globalObject: globalThis,
+          jsdom: true
+        }).querySelector());
+      });
+
+      it('should throw', () => {
+        assert.throws(() =>
+          new Matcher('[foo=bar baz]', document).querySelector(), DOMException);
+      });
+
       it('should get matched node', () => {
         const node = document.getElementById('div1');
         const target = document.getElementById('dt1');
@@ -5240,6 +5302,18 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('querySelectorAll', () => {
+      it('should throw', () => {
+        assert.throws(() => new Matcher('div[foo=bar baz]', document, {
+          globalObject: globalThis,
+          jsdom: true
+        }).querySelectorAll());
+      });
+
+      it('should throw', () => {
+        assert.throws(() => new Matcher('[foo=bar baz]', document)
+          .querySelectorAll(), DOMException);
+      });
+
       it('should get matched node(s)', () => {
         const node = document.getElementById('div1');
         const matcher = new Matcher('dt', node);

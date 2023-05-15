@@ -13,10 +13,13 @@ const { Matcher } = require('./js/matcher.js');
  * matches - Element.matches()
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
+ * @param {object} [opt] - options
+ * @param {object} [opt.globalObject] - global object
+ * @param {boolean} [opt.jsdom] - is jsdom
  * @returns {boolean} - result
  */
-const matches = (selector, node) => {
-  const matcher = new Matcher(selector, node);
+const matches = (selector, node, opt) => {
+  const matcher = new Matcher(selector, node, opt);
   return matcher.matches();
 };
 
@@ -24,10 +27,13 @@ const matches = (selector, node) => {
  * closest - Element.closest()
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
+ * @param {object} [opt] - options
+ * @param {object} [opt.globalObject] - global object
+ * @param {boolean} [opt.jsdom] - is jsdom
  * @returns {?object} - matched node
  */
-const closest = (selector, node) => {
-  const matcher = new Matcher(selector, node);
+const closest = (selector, node, opt) => {
+  const matcher = new Matcher(selector, node, opt);
   return matcher.closest();
 };
 
@@ -35,10 +41,13 @@ const closest = (selector, node) => {
  * querySelector - Document.querySelector(), Element.querySelector()
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document or Element node
+ * @param {object} [opt] - options
+ * @param {object} [opt.globalObject] - global object
+ * @param {boolean} [opt.jsdom] - is jsdom
  * @returns {?object} - matched node
  */
-const querySelector = (selector, refPoint) => {
-  const matcher = new Matcher(selector, refPoint);
+const querySelector = (selector, refPoint, opt) => {
+  const matcher = new Matcher(selector, refPoint, opt);
   return matcher.querySelector();
 };
 
@@ -47,10 +56,13 @@ const querySelector = (selector, refPoint) => {
  * NOTE: returns Array, not NodeList
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document or Element node
+ * @param {object} [opt] - options
+ * @param {object} [opt.globalObject] - global object
+ * @param {boolean} [opt.jsdom] - is jsdom
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
-const querySelectorAll = (selector, refPoint) => {
-  const matcher = new Matcher(selector, refPoint);
+const querySelectorAll = (selector, refPoint, opt) => {
+  const matcher = new Matcher(selector, refPoint, opt);
   return matcher.querySelectorAll();
 };
 

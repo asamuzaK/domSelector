@@ -4,6 +4,7 @@
 'use strict';
 
 /* import */
+const _DOMException = require('domexception/webidl2js-wrapper');
 const DOMException = require('./domexception.js');
 const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 
@@ -347,7 +348,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
   if (astType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
       attributes?.length) {
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
-      throw new DOMException(`invalid attribute selector`, 'SyntaxError');
+      throw new DOMException('invalid attribute selector', 'SyntaxError');
     }
     const { name: astAttrName } = astName;
     const caseInsensitive =
@@ -888,6 +889,8 @@ class Matcher {
   /* private fields */
   #ast;
   #document;
+  #global;
+  #jsdom;
   #node;
   #selector;
 
@@ -895,12 +898,30 @@ class Matcher {
    * construct
    * @param {string} selector - CSS selector
    * @param {object} refPoint - reference point
+   * @param {object} [opt] - options
+   * @param {object} [opt.globalObject] - global object
+   * @param {boolean} [opt.jsdom] - is jsdom
    */
-  constructor(selector, refPoint) {
+  constructor(selector, refPoint, opt = {}) {
+    const { globalObject, jsdom } = opt;
     this.#ast = parseSelector(selector);
     this.#document = refPoint?.ownerDocument ?? refPoint;
+    this.#global = globalObject || globalThis;
+    this.#jsdom = !!jsdom;
     this.#node = refPoint;
     this.#selector = selector;
+  }
+
+  /**
+   * create DOMException
+   * @param {string} msg - message
+   * @param {string} name - name
+   * @throws
+   */
+  _createDOMException(msg, name) {
+    if (this.#jsdom) {
+      throw _DOMException.create(this.#global, [msg, name]);
+    }
   }
 
   /**
@@ -1347,8 +1368,17 @@ class Matcher {
    * @returns {boolean} - matched node
    */
   matches() {
-    const arr = this._match(this.#ast, this.#document);
-    const res = arr.length && arr.includes(this.#node);
+    let res;
+    try {
+      const arr = this._match(this.#ast, this.#document);
+      res = arr.length && arr.includes(this.#node);
+    } catch (e) {
+      if (e instanceof DOMException && this.#jsdom) {
+        res = this._createDOMException(e.message, e.name);
+      } else {
+        throw e;
+      }
+    }
     return !!res;
   }
 
@@ -1357,15 +1387,23 @@ class Matcher {
    * @returns {?object} - matched node
    */
   closest() {
-    const arr = this._match(this.#ast, this.#document);
-    let node = this.#node;
     let res;
-    while (node) {
-      if (arr.includes(node)) {
-        res = node;
-        break;
+    try {
+      const arr = this._match(this.#ast, this.#document);
+      let node = this.#node;
+      while (node) {
+        if (arr.includes(node)) {
+          res = node;
+          break;
+        }
+        node = node.parentNode;
       }
-      node = node.parentNode;
+    } catch (e) {
+      if (e instanceof DOMException && this.#jsdom) {
+        res = this._createDOMException(e.message, e.name);
+      } else {
+        throw e;
+      }
     }
     return res || null;
   }
@@ -1375,14 +1413,23 @@ class Matcher {
    * @returns {?object} - matched node
    */
   querySelector() {
-    const arr = this._match(this.#ast, this.#node);
-    if (arr.length) {
-      const i = arr.findIndex(node => node === this.#node);
-      if (i >= 0) {
-        arr.splice(i, 1);
+    let res;
+    try {
+      const arr = this._match(this.#ast, this.#node);
+      if (arr.length) {
+        const i = arr.findIndex(node => node === this.#node);
+        if (i >= 0) {
+          arr.splice(i, 1);
+        }
+      }
+      [res] = arr;
+    } catch (e) {
+      if (e instanceof DOMException && this.#jsdom) {
+        res = this._createDOMException(e.message, e.name);
+      } else {
+        throw e;
       }
     }
-    const [res] = arr;
     return res || null;
   }
 
@@ -1392,14 +1439,25 @@ class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   querySelectorAll() {
-    const arr = this._match(this.#ast, this.#node);
-    if (arr.length) {
-      const i = arr.findIndex(node => node === this.#node);
-      if (i >= 0) {
-        arr.splice(i, 1);
+    const res = [];
+    try {
+      const arr = this._match(this.#ast, this.#node);
+      if (arr.length) {
+        const i = arr.findIndex(node => node === this.#node);
+        if (i >= 0) {
+          arr.splice(i, 1);
+        }
+      }
+      const a = new Set(arr);
+      res.push(...a);
+    } catch (e) {
+      if (e instanceof DOMException && this.#jsdom) {
+        res.push(this._createDOMException(e.message, e.name));
+      } else {
+        throw e;
       }
     }
-    return [...new Set(arr)];
+    return res;
   }
 };
 

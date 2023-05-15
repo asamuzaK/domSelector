@@ -5,7 +5,7 @@
 
 /* api */
 const { assert } = require('chai');
-const { describe, it, xit } = require('mocha');
+const { describe, it } = require('mocha');
 
 /* test */
 const parser = require('../src/js/parser.js');
