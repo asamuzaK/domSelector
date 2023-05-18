@@ -11,7 +11,7 @@ const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 /* constants */
 const {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER, ID_SELECTOR,
-  NTH, PSEUDO_CLASS_SELECTOR, TYPE_SELECTOR
+  NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
 const ELEMENT_NODE = 1;
 const FILTER_ACCEPT = 1;
@@ -890,6 +890,12 @@ const matchPseudoClassSelector = (
           }
           break;
         }
+        // legacy pseudo-elements
+        case 'after':
+        case 'before':
+        case 'first-letter':
+        case 'first-line':
+          break;
         case 'active':
         case 'autofill':
         case 'blank':
@@ -930,6 +936,42 @@ const matchPseudoClassSelector = (
 };
 
 /**
+ * match pseudo-element selector
+ * NOTE: throws DOMException
+ * @param {object} ast - AST
+ * @param {object} node - Element node
+ * @returns {void}
+ */
+const matchPseudoElementSelector = (ast = {}, node = {}) => {
+  const { type: astType } = ast;
+  const { nodeType } = node;
+  if (astType === PSEUDO_ELEMENT_SELECTOR && nodeType === ELEMENT_NODE) {
+    const astName = unescapeSelector(ast.name);
+    switch (astName) {
+      case 'after':
+      case 'backdrop':
+      case 'before':
+      case 'cue':
+      case 'cue-region':
+      case 'first-letter':
+      case 'first-line':
+      case 'file-selector-button':
+      case 'marker':
+      case 'part':
+      case 'placeholder':
+      case 'selection':
+      case 'slotted':
+      case 'target-text':
+        throw new DOMException(`Unsupported pseudo-element ${astName}`,
+          'NotSupportedError');
+      default:
+        throw new DOMException(`Unknown pseudo-element ${astName}`,
+          'SyntaxError');
+    }
+  }
+};
+
+/**
  * Matcher
  */
 class Matcher {
@@ -955,6 +997,26 @@ class Matcher {
     this.#selector = selector;
     this.#warn = !!warn;
   }
+
+  /**
+   * is attached
+   * @returns {boolean} - result
+   */
+  _isAttached() {
+    const root = this.#document?.documentElement;
+    let bool;
+    if (root) {
+      let node = this.#node;
+      while (node) {
+        if (node === root) {
+          bool = true;
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    return !!bool;
+  };
 
   /**
    * create iterator
@@ -1293,15 +1355,23 @@ class Matcher {
                       PSEUDO_FUNC.test(itemName)) {
                     nextNode = this._matchLogicalPseudoFunc(item, nextNode);
                   } else if (itemType === COMBINATOR) {
+                    let [nextItem] = items;
+                    let nextItemName = unescapeSelector(nextItem.name);
+                    if (nextItem.type === COMBINATOR) {
+                      const comboName = `${itemName}${nextItemName}`;
+                      throw new DOMException(`Unknown combinator ${comboName}`,
+                        'SyntaxError');
+                    }
                     const leaves = [];
                     leaves.push(item);
                     while (items.length) {
-                      const [nextItem] = items;
+                      [nextItem] = items;
+                      nextItemName = unescapeSelector(nextItem.name);
                       if (nextItem.type === COMBINATOR ||
                           (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_NTH.test(unescapeSelector(nextItem.name))) ||
+                           PSEUDO_NTH.test(nextItemName)) ||
                           (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_FUNC.test(unescapeSelector(nextItem.name)))) {
+                           PSEUDO_FUNC.test(nextItemName))) {
                         break;
                       } else {
                         leaves.push(items.shift());
@@ -1388,6 +1458,9 @@ class Matcher {
           }
         }
         break;
+      case PSEUDO_ELEMENT_SELECTOR:
+        matchPseudoElementSelector(ast, node);
+        break;
       default: {
         const arr = this._parseAST(ast, node);
         if (arr.length) {
@@ -1405,7 +1478,13 @@ class Matcher {
   matches() {
     let res;
     try {
-      const arr = this._match(this.#ast, this.#document);
+      let node;
+      if (this._isAttached()) {
+        node = this.#document;
+      } else {
+        node = this.#node;
+      }
+      const arr = this._match(this.#ast, node);
       res = arr.length && arr.includes(this.#node);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'NotSupportedError') {
@@ -1514,6 +1593,7 @@ module.exports = {
   matchIDSelector,
   matchLanguagePseudoClass,
   matchPseudoClassSelector,
+  matchPseudoElementSelector,
   matchTypeSelector,
   unescapeSelector
 };

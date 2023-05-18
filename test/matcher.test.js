@@ -14,8 +14,8 @@ const matcherJs = require('../src/js/matcher.js');
 const DOMException = require('../src/js/domexception.js');
 const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
-  STRING, TYPE_SELECTOR
+  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
+  SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
@@ -3897,7 +3897,20 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [node1], 'result');
     });
 
-    // Not supported
+    // legacy pseudo-element
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'after',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    // not supported
     it('should throw', () => {
       const leaf = {
         children: null,
@@ -3909,12 +3922,43 @@ describe('match AST leaf and DOM node', () => {
       assert.throws(() => func(leaf, node), DOMException);
     });
 
-    // Unknown
+    // unknown
     it('should throw', () => {
       const leaf = {
         children: null,
         name: 'foo',
         type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      assert.throws(() => func(leaf, node), DOMException);
+    });
+  });
+
+  describe('match pseudo-element selector', () => {
+    const func = matcherJs.matchPseudoElementSelector;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isUndefined(res, 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: null,
+        name: 'after',
+        type: PSEUDO_ELEMENT_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      assert.throws(() => func(leaf, node), DOMException);
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: null,
+        name: 'foo',
+        type: PSEUDO_ELEMENT_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -3941,6 +3985,33 @@ describe('match AST leaf and DOM node', () => {
         jsdom: true
       });
       assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    describe('is attached', () => {
+      it('should get result', () => {
+        const elm = document.createElement('div');
+        const parent = document.getElementById('div0');
+        parent.appendChild(elm);
+        const matcher = new Matcher('div', elm);
+        const res = matcher._isAttached();
+        assert.isTrue(res, 'result');
+      });
+
+      it('should get result', () => {
+        const elm = document.createElement('div');
+        const matcher = new Matcher('div', elm);
+        const res = matcher._isAttached();
+        assert.isFalse(res, 'result');
+      });
+
+      it('should get result', () => {
+        const frag = document.createDocumentFragment();
+        const elm = document.createElement('div');
+        frag.appendChild(elm)
+        const matcher = new Matcher('div', frag);
+        const res = matcher._isAttached();
+        assert.isFalse(res, 'result');
+      });
     });
 
     describe('create node iterator', () => {
@@ -5136,6 +5207,11 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('match ast and node', () => {
+      it('should throw', () => {
+        const matcher = new Matcher('#ul1 ++ #li1', document);
+        assert.throws(() => matcher._match(), DOMException);
+      });
+
       it('should get empty array', () => {
         const matcher = new Matcher('#bar', document);
         const res = matcher._match();
@@ -5176,6 +5252,11 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual(res, [
           document.getElementById('ul1')
         ], 'result');
+      });
+
+      it('should throw', () => {
+        const matcher = new Matcher('::before', document);
+        assert.throws(() => matcher._match(), DOMException);
       });
     });
 

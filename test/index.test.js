@@ -1184,6 +1184,36 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#1846 - https://github.com/jsdom/jsdom/issues/1846', () => {
+    const domStr = '<!DOCTYPE html><html><body></body></html>';
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElementNS('urn:ns', 'h');
+      const res = node.matches('h');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElementNS('urn:ns', 'h');
+      const res = node.matches('*|h');
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('#2114 - https://github.com/jsdom/jsdom/issues/2114', () => {
     const domStr = `<!DOCTYPE html>
     <html>
@@ -1213,6 +1243,30 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = document.getElementById('target');
       const res = document.querySelectorAll('svg.test');
       assert.deepEqual(res, [node], 'result');
+    });
+  });
+
+  describe('#2247 - https://github.com/jsdom/jsdom/issues/2247', () => {
+    const domStr = '<!DOCTYPE html><html><body></body></html>';
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(domStr);
+      document = dom.window.document;
+      for (const key of globalKeys) {
+        global[key] = dom.window[key];
+      }
+    });
+    afterEach(() => {
+      document = null;
+      for (const key of globalKeys) {
+        delete global[key];
+      }
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElementNS('', 'element');
+      const res = node.matches('element');
+      assert.isTrue(res, 'result');
     });
   });
 

@@ -12,6 +12,7 @@ module.exports = {
   IDENTIFIER: 'Identifier',
   NTH: 'Nth',
   PSEUDO_CLASS_SELECTOR: 'PseudoClassSelector',
+  PSEUDO_ELEMENT_SELECTOR: 'PseudoElementSelector',
   RAW: 'Raw',
   SELECTOR: 'Selector',
   SELECTOR_LIST: 'SelectorList',

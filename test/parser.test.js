@@ -12,8 +12,8 @@ const parser = require('../src/js/parser.js');
 const DOMException = require('../src/js/domexception.js');
 const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
-  STRING, TYPE_SELECTOR
+  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
+  SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
 describe('preprocess', () => {
@@ -4387,6 +4387,57 @@ describe('create AST from CSS selector', () => {
     });
   });
 
+  describe('pseudo-element', () => {
+    it('should throw', () => {
+      assert.throws(() => func(':::before'), DOMException);
+    });
+
+    it('should get selector list', () => {
+      const res = func('::before');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: null,
+                loc: null,
+                name: 'before',
+                type: PSEUDO_ELEMENT_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // NOTE: parsed as pseudo-class
+    it('should get selector list', () => {
+      const res = func(':before');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: null,
+                loc: null,
+                name: 'before',
+                type: 'PseudoClassSelector'
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+  });
+
   describe('combinators', () => {
     it('should get selector list', () => {
       const res = func('foo bar');
@@ -4671,6 +4722,52 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '~',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: 'bar',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // unknown combinators
+    it('should throw', () => {
+      assert.throws(() => func('foo % bar'), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('foo - bar'), DOMException);
+    });
+
+    // NOTE : thrown afterwards
+    it('should get selector list', () => {
+      const res = func('foo ++ bar');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo',
+                type: TYPE_SELECTOR
+              },
+              {
+                loc: null,
+                name: '+',
+                type: COMBINATOR
+              },
+              {
+                loc: null,
+                name: '+',
                 type: COMBINATOR
               },
               {
