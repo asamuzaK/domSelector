@@ -1,9 +1,7 @@
 export class Matcher {
     constructor(selector: string, refPoint: object, opt?: {
-        globalObject?: object;
-        jsdom?: boolean;
+        warn?: object;
     });
-    _createDOMException(msg: string, name: string): void;
     _createIterator(ast?: object, root?: object): object;
     _parseAST(ast: object, node: object): Array<object | undefined>;
     _matchAdjacentLeaves(leaves: Array<object>, node: object): object | null;
@@ -36,3 +34,4 @@ export function matchIDSelector(ast?: object, node?: object): object | null;
 export function matchLanguagePseudoClass(ast?: object, node?: object): object | null;
 export function matchPseudoClassSelector(ast?: object, node?: object, refPoint?: object): Array<object | undefined>;
 export function matchTypeSelector(ast?: object, node?: object): object | null;
+export function unescapeSelector(selector?: string): string | null;
