@@ -6,6 +6,7 @@ export const ID_SELECTOR: string;
 export const IDENTIFIER: string;
 export const NTH: string;
 export const PSEUDO_CLASS_SELECTOR: string;
+export const PSEUDO_ELEMENT_SELECTOR: string;
 export const RAW: string;
 export const SELECTOR: string;
 export const SELECTOR_LIST: string;
