@@ -4,7 +4,7 @@
 'use strict';
 
 /* import */
-const _DOMException = require('domexception/webidl2js-wrapper');
+const isCustomElementName = require('is-potential-custom-element-name');
 const DOMException = require('./domexception.js');
 const { generateCSS, parseSelector, walkAST } = require('./parser.js');
 
@@ -20,14 +20,51 @@ const FILTER_SHOW_ELEMENT = 1;
 const TEXT_NODE = 3;
 
 /* regexp */
-// FIXME: custom element name is not fully implemented
-// @see https://html.spec.whatwg.org/#valid-custom-element-name
-const HTML_CUSTOM_ELEMENT = /^[a-z][\d._a-z]*-[\d\-._a-z]*$/;
+const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
+const REPLACE_CHAR = /[\0\uD800-\uDFFF]/g;
+const WHITESPACE = /^[\n\r\f]/;
+
+/**
+ * unescape selector
+ * @param {string} selector - CSS selector
+ * @returns {?string} - unescaped selector
+ */
+const unescapeSelector = (selector = '') => {
+  if (typeof selector === 'string' &&
+      selector.indexOf(String.fromCharCode(0x5c), 0) >= 0) {
+    const arr = selector.split('\\');
+    const l = arr.length;
+    for (let i = 0; i < l; i++) {
+      let item = arr[i];
+      if (i === l - 1 && item === '') {
+        item = '\uFFFD';
+      } else {
+        const hexExists = HEX_CAPTURE.exec(item);
+        if (hexExists) {
+          const [, hex] = hexExists;
+          let str;
+          try {
+            str = String.fromCodePoint(`0x${hex.trim()}`)
+              .replace(REPLACE_CHAR, '\uFFFD');
+          } catch (e) {
+            str = '\uFFFD';
+          }
+          item = item.replace(`${hex}`, str);
+        } else if (WHITESPACE.test(item)) {
+          item = '\\' + item;
+        }
+      }
+      arr[i] = item;
+    }
+    selector = arr.join('');
+  }
+  return selector;
+};
 
 /**
  * collect nth child
@@ -198,11 +235,12 @@ const matchAnPlusB = (nthName, ast = {}, node = {}) => {
         nth: {
           a,
           b,
-          name: identName
+          name: nthIdentName
         },
         selector: astSelector,
         type: astType
       } = ast;
+      const identName = unescapeSelector(nthIdentName);
       const { nodeType } = node;
       if (astType === NTH && nodeType === ELEMENT_NODE) {
         const anbMap = new Map();
@@ -268,7 +306,7 @@ const matchTypeSelector = (ast = {}, node = {}) => {
   const { localName, nodeType, ownerDocument, prefix } = node;
   let res;
   if (astType === TYPE_SELECTOR && nodeType === ELEMENT_NODE) {
-    let astName = ast.name;
+    let astName = unescapeSelector(ast.name);
     let astPrefix, astNodeName, nodePrefix, nodeName;
     if (/\|/.test(astName)) {
       [astPrefix, astNodeName] = astName.split('|');
@@ -305,12 +343,14 @@ const matchTypeSelector = (ast = {}, node = {}) => {
  * @returns {?object} - matched node
  */
 const matchClassSelector = (ast = {}, node = {}) => {
-  const { name: astName, type: astType } = ast;
+  const { type: astType } = ast;
   const { classList, nodeType } = node;
   let res;
-  if (astType === CLASS_SELECTOR && nodeType === ELEMENT_NODE &&
-      classList.contains(astName)) {
-    res = node;
+  if (astType === CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
+    const astName = unescapeSelector(ast.name);
+    if (classList.contains(astName)) {
+      res = node;
+    }
   }
   return res || null;
 };
@@ -322,12 +362,14 @@ const matchClassSelector = (ast = {}, node = {}) => {
  * @returns {?object} - matched node
  */
 const matchIDSelector = (ast = {}, node = {}) => {
-  const { name: astName, type: astType } = ast;
+  const { type: astType } = ast;
   const { id, nodeType } = node;
   let res;
-  if (astType === ID_SELECTOR && nodeType === ELEMENT_NODE &&
-      astName === id) {
-    res = node;
+  if (astType === ID_SELECTOR && nodeType === ELEMENT_NODE) {
+    const astName = unescapeSelector(ast.name);
+    if (astName === id) {
+      res = node;
+    }
   }
   return res || null;
 };
@@ -350,11 +392,12 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
       throw new DOMException('invalid attribute selector', 'SyntaxError');
     }
-    const { name: astAttrName } = astName;
     const caseInsensitive =
       !(typeof astFlags === 'string' && /^s$/i.test(astFlags));
     const attrValues = [];
     const l = attributes.length;
+    let { name: astAttrName } = astName;
+    astAttrName = unescapeSelector(astAttrName);
     // namespaced
     if (/\|/.test(astAttrName)) {
       const [astAttrPrefix, astAttrLocalName] = astAttrName.split('|');
@@ -517,11 +560,12 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
  * @returns {?object} - matched node
  */
 const matchLanguagePseudoClass = (ast = {}, node = {}) => {
-  const { name: astName, type: astType } = ast;
+  const { type: astType } = ast;
   const { lang, nodeType } = node;
   let res;
   if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
-    // TBD: what about deprecated xml:lang?
+    const astName = unescapeSelector(ast.name);
+    // TBD: what about xml:lang?
     if (astName === '') {
       if (node.getAttribute('lang') === '') {
         res = node;
@@ -579,10 +623,11 @@ const matchPseudoClassSelector = (
   node = {},
   refPoint = {}
 ) => {
-  const { children: astChildren, name: astName, type: astType } = ast;
+  const { children: astChildren, type: astType } = ast;
   const { localName, nodeType, ownerDocument, parentNode } = node;
   const matched = [];
   if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
+    const astName = unescapeSelector(ast.name);
     if (Array.isArray(astChildren)) {
       const [astChildAst] = astChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
@@ -606,8 +651,8 @@ const matchPseudoClassSelector = (
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
-            console.warn(`Unsupported pseudo-class ${astName}`);
-            break;
+            throw new DOMException(`Unsupported pseudo-class ${astName}`,
+              'NotSupportedError');
           default:
             throw new DOMException(`Unknown pseudo-class ${astName}`,
               'SyntaxError');
@@ -693,7 +738,7 @@ const matchPseudoClassSelector = (
         case 'disabled':
           if ((HTML_FORM_INPUT.test(localName) ||
                HTML_FORM_PARTS.test(localName) ||
-               HTML_CUSTOM_ELEMENT.test(localName)) &&
+               isCustomElementName(localName)) &&
               node.hasAttribute('disabled')) {
             matched.push(node);
           }
@@ -701,7 +746,7 @@ const matchPseudoClassSelector = (
         case 'enabled':
           if ((HTML_FORM_INPUT.test(localName) ||
                HTML_FORM_PARTS.test(localName) ||
-               HTML_CUSTOM_ELEMENT.test(localName)) &&
+               isCustomElementName(localName)) &&
               !node.hasAttribute('disabled')) {
             matched.push(node);
           }
@@ -736,7 +781,8 @@ const matchPseudoClassSelector = (
             }
             // FIXME:
             if (isMultiple) {
-              console.warn(`Unsupported pseudo-class ${astName}`);
+              throw new DOMException(`Unsupported pseudo-class ${astName}`,
+                'NotSupportedError');
             } else {
               const firstOpt = parentNode.firstElementChild;
               const defaultOpt = [];
@@ -762,7 +808,8 @@ const matchPseudoClassSelector = (
                        node.getAttribute('type') === 'submit')) ||
                      (/^input$/.test(localName) && node.hasAttribute('type') &&
                       /^(?:image|submit)$/.test(node.getAttribute('type')))) {
-            console.warn(`Unsupported pseudo-class ${astName}`);
+            throw new DOMException(`Unsupported pseudo-class ${astName}`,
+              'NotSupportedError');
           }
           break;
         case 'required':
@@ -871,8 +918,8 @@ const matchPseudoClassSelector = (
         case 'user-valid':
         case 'valid':
         case 'volume-locked':
-          console.warn(`Unsupported pseudo-class ${astName}`);
-          break;
+          throw new DOMException(`Unsupported pseudo-class ${astName}`,
+            'NotSupportedError');
         default:
           throw new DOMException(`Unknown pseudo-class ${astName}`,
             'SyntaxError');
@@ -889,39 +936,24 @@ class Matcher {
   /* private fields */
   #ast;
   #document;
-  #global;
-  #jsdom;
   #node;
   #selector;
+  #warn;
 
   /**
    * construct
    * @param {string} selector - CSS selector
    * @param {object} refPoint - reference point
    * @param {object} [opt] - options
-   * @param {object} [opt.globalObject] - global object
-   * @param {boolean} [opt.jsdom] - is jsdom
+   * @param {object} [opt.warn] - console warn
    */
   constructor(selector, refPoint, opt = {}) {
-    const { globalObject, jsdom } = opt;
+    const { warn } = opt;
     this.#ast = parseSelector(selector);
     this.#document = refPoint?.ownerDocument ?? refPoint;
-    this.#global = globalObject || globalThis;
-    this.#jsdom = !!jsdom;
     this.#node = refPoint;
     this.#selector = selector;
-  }
-
-  /**
-   * create DOMException
-   * @param {string} msg - message
-   * @param {string} name - name
-   * @throws
-   */
-  _createDOMException(msg, name) {
-    if (this.#jsdom) {
-      throw _DOMException.create(this.#global, [msg, name]);
-    }
+    this.#warn = !!warn;
   }
 
   /**
@@ -1100,7 +1132,7 @@ class Matcher {
     const ast = walkAST(branch);
     let res;
     if (ast.length) {
-      const { name: branchName } = branch;
+      const branchName = unescapeSelector(branch.name);
       switch (branchName) {
         // :has()
         case 'has': {
@@ -1121,7 +1153,7 @@ class Matcher {
               itemLeaves.push(item, firstItem);
             }
             if (firstItem.type === PSEUDO_CLASS_SELECTOR &&
-                firstItem.name === 'has') {
+                unescapeSelector(firstItem.name) === 'has') {
               matched = false;
               break;
             }
@@ -1147,7 +1179,8 @@ class Matcher {
             const [item, ...items] = astItem;
             // NOTE: according to MDN, :not() can not contain :not()
             // but spec says nothing about that?
-            if (item.type === PSEUDO_CLASS_SELECTOR && item.name === 'not') {
+            if (item.type === PSEUDO_CLASS_SELECTOR &&
+                unescapeSelector(item.name) === 'not') {
               matched = true;
               break;
             }
@@ -1201,7 +1234,7 @@ class Matcher {
     if (Array.isArray(children) && children.length) {
       const [firstChild] = children;
       if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-          PSEUDO_FUNC.test(firstChild.name) &&
+          PSEUDO_FUNC.test(unescapeSelector(firstChild.name)) &&
           node.nodeType === ELEMENT_NODE) {
         const iteratorLeaf = {
           name: '*',
@@ -1220,7 +1253,7 @@ class Matcher {
         let iteratorLeaf;
         if (firstChild.type === COMBINATOR ||
             (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-             PSEUDO_NTH.test(firstChild.name))) {
+             PSEUDO_NTH.test(unescapeSelector(firstChild.name)))) {
           iteratorLeaf = {
             name: '*',
             type: TYPE_SELECTOR
@@ -1236,7 +1269,8 @@ class Matcher {
             if (items.length) {
               if (items.length === 1) {
                 const item = items.shift();
-                const { name: itemName, type: itemType } = item;
+                const { type: itemType } = item;
+                const itemName = unescapeSelector(item.name);
                 if (itemType === PSEUDO_CLASS_SELECTOR &&
                     PSEUDO_FUNC.test(itemName)) {
                   nextNode = this._matchLogicalPseudoFunc(item, nextNode);
@@ -1253,7 +1287,8 @@ class Matcher {
               } else {
                 do {
                   const item = items.shift();
-                  const { name: itemName, type: itemType } = item;
+                  const { type: itemType } = item;
+                  const itemName = unescapeSelector(item.name);
                   if (itemType === PSEUDO_CLASS_SELECTOR &&
                       PSEUDO_FUNC.test(itemName)) {
                     nextNode = this._matchLogicalPseudoFunc(item, nextNode);
@@ -1264,9 +1299,9 @@ class Matcher {
                       const [nextItem] = items;
                       if (nextItem.type === COMBINATOR ||
                           (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_NTH.test(nextItem.name)) ||
+                           PSEUDO_NTH.test(unescapeSelector(nextItem.name))) ||
                           (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_FUNC.test(nextItem.name))) {
+                           PSEUDO_FUNC.test(unescapeSelector(nextItem.name)))) {
                         break;
                       } else {
                         leaves.push(items.shift());
@@ -1280,7 +1315,7 @@ class Matcher {
                         const [i] = items;
                         for (const j of arr) {
                           if (i.type === PSEUDO_CLASS_SELECTOR &&
-                              PSEUDO_FUNC.test(i.name)) {
+                              PSEUDO_FUNC.test(unescapeSelector(i.name))) {
                             if (this._matchLogicalPseudoFunc(i, j)) {
                               matched.push(j);
                             }
@@ -1346,7 +1381,7 @@ class Matcher {
         }
         break;
       case PSEUDO_CLASS_SELECTOR:
-        if (!PSEUDO_FUNC.test(name)) {
+        if (!PSEUDO_FUNC.test(unescapeSelector(name))) {
           const arr = matchPseudoClassSelector(ast, node, this.#node);
           if (arr.length) {
             matched.push(...arr);
@@ -1373,8 +1408,10 @@ class Matcher {
       const arr = this._match(this.#ast, this.#document);
       res = arr.length && arr.includes(this.#node);
     } catch (e) {
-      if (e instanceof DOMException && this.#jsdom) {
-        res = this._createDOMException(e.message, e.name);
+      if (e instanceof DOMException && e.name === 'NotSupportedError') {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
       } else {
         throw e;
       }
@@ -1399,8 +1436,10 @@ class Matcher {
         node = node.parentNode;
       }
     } catch (e) {
-      if (e instanceof DOMException && this.#jsdom) {
-        res = this._createDOMException(e.message, e.name);
+      if (e instanceof DOMException && e.name === 'NotSupportedError') {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
       } else {
         throw e;
       }
@@ -1424,8 +1463,10 @@ class Matcher {
       }
       [res] = arr;
     } catch (e) {
-      if (e instanceof DOMException && this.#jsdom) {
-        res = this._createDOMException(e.message, e.name);
+      if (e instanceof DOMException && e.name === 'NotSupportedError') {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
       } else {
         throw e;
       }
@@ -1451,8 +1492,10 @@ class Matcher {
       const a = new Set(arr);
       res.push(...a);
     } catch (e) {
-      if (e instanceof DOMException && this.#jsdom) {
-        res.push(this._createDOMException(e.message, e.name));
+      if (e instanceof DOMException && e.name === 'NotSupportedError') {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
       } else {
         throw e;
       }
@@ -1471,5 +1514,6 @@ module.exports = {
   matchIDSelector,
   matchLanguagePseudoClass,
   matchPseudoClassSelector,
-  matchTypeSelector
+  matchTypeSelector,
+  unescapeSelector
 };

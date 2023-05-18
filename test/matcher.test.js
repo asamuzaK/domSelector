@@ -91,6 +91,85 @@ describe('match AST leaf and DOM node', () => {
     }
   });
 
+  describe('unescape selector', () => {
+    const func = matcherJs.unescapeSelector;
+
+    it('should get value', () => {
+      const res = func();
+      assert.strictEqual(res, '');
+    });
+
+    it('should get value', () => {
+      const res = func('');
+      assert.strictEqual(res, '');
+    });
+
+    it('should get replaced value', () => {
+      const res = func('\\');
+      assert.strictEqual(res, '\uFFFD', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\global');
+      assert.strictEqual(res, 'global', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\n');
+      assert.strictEqual(res, 'n', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\\n');
+      assert.strictEqual(res, '\\\n', 'res');
+    });
+
+    it('should get replaced value', () => {
+      const res = func('\\0');
+      assert.strictEqual(res, '\uFFFD', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\30');
+      assert.strictEqual(res, '0', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\41');
+      assert.strictEqual(res, 'A', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('hel\\6Co');
+      assert.strictEqual(res, 'hello', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('hel\\6C o');
+      assert.strictEqual(res, 'hello', 'res');
+    });
+
+    it('should get value', () => {
+      const res = func('\\26 B');
+      assert.strictEqual(res, '&B', 'res');
+    });
+
+    it('should get replaced value', () => {
+      const res = func('\\2F804 ');
+      assert.strictEqual(res, '\uFFFD\uFFFD', 'result');
+    });
+
+    it('should get replaced value', () => {
+      const res = func('\\110000 ');
+      assert.strictEqual(res, '\uFFFD', 'result');
+    });
+
+    it('should get replaced value', () => {
+      const res = func('\\ffffff ');
+      assert.strictEqual(res, '\uFFFD', 'result');
+    });
+  });
+
   describe('collect nth child', () => {
     const func = matcherJs.collectNthChild;
 
@@ -2793,8 +2872,7 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: [
           {
@@ -2809,11 +2887,7 @@ describe('match AST leaf and DOM node', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     it('should throw', () => {
@@ -3503,8 +3577,7 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -3519,15 +3592,10 @@ describe('match AST leaf and DOM node', () => {
       container.appendChild(node);
       const parent = document.getElementById('div0');
       parent.appendChild(container);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -3536,15 +3604,10 @@ describe('match AST leaf and DOM node', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -3554,15 +3617,10 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'submit');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throws', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -3572,15 +3630,10 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'submit');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -3590,11 +3643,7 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'image');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     it('should get matched node(s)', () => {
@@ -3849,8 +3898,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     // Not supported
-    it('should warn', () => {
-      const stubWarn = sinon.stub(console, 'warn');
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -3858,11 +3906,7 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func(leaf, node);
-      const { called } = stubWarn;
-      stubWarn.restore();
-      assert.isTrue(called, 'console');
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     // Unknown
@@ -3897,22 +3941,6 @@ describe('match AST leaf and DOM node', () => {
         jsdom: true
       });
       assert.instanceOf(matcher, Matcher, 'instance');
-    });
-
-    describe('create DOMException', () => {
-      it('should not throw', () => {
-        const matcher = new Matcher('div ul li', document);
-        assert.doesNotThrow(() =>
-          matcher._createDOMException('foo', 'SyntaxError'));
-      });
-
-      it('should throw', () => {
-        const matcher = new Matcher('div ul li', document, {
-          globalObject: globalThis,
-          jsdom: true
-        });
-        assert.throws(() => matcher._createDOMException('foo', 'SyntaxError'));
-      });
     });
 
     describe('create node iterator', () => {
@@ -5153,15 +5181,21 @@ describe('match AST leaf and DOM node', () => {
 
     describe('matches', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher('[foo=bar baz]', document.body, {
-          globalObject: globalThis,
-          jsdom: true
-        }).matches());
-      });
-
-      it('should throw', () => {
         assert.throws(() =>
           new Matcher('[foo=bar baz]', document.body).matches(), DOMException);
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('li:hover', node, {
+          warn: true
+        });
+        const res = matcher.matches();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'warn');
+        assert.isFalse(res, 'result');
       });
 
       it('should get true', () => {
@@ -5222,16 +5256,21 @@ describe('match AST leaf and DOM node', () => {
     describe('closest', () => {
       it('should throw', () => {
         assert.throws(() =>
-          new Matcher('div[foo=bar baz]', document.getElementById('div0'), {
-            globalObject: globalThis,
-            jsdom: true
-          }).closest());
-      });
-
-      it('should throw', () => {
-        assert.throws(() =>
           new Matcher('[foo=bar baz]', document.getElementById('div0'))
             .closest(), DOMException);
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('ul:hover', node, {
+          warn: true
+        });
+        const res = matcher.closest();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'warn');
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -5252,15 +5291,21 @@ describe('match AST leaf and DOM node', () => {
 
     describe('querySelector', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher('div[foo=bar baz]', document, {
-          globalObject: globalThis,
-          jsdom: true
-        }).querySelector());
-      });
-
-      it('should throw', () => {
         assert.throws(() =>
           new Matcher('[foo=bar baz]', document).querySelector(), DOMException);
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.getElementById('div1');
+        const matcher = new Matcher('dt:hover', node, {
+          warn: true
+        });
+        const res = matcher.querySelector();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'warn');
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -5303,15 +5348,21 @@ describe('match AST leaf and DOM node', () => {
 
     describe('querySelectorAll', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher('div[foo=bar baz]', document, {
-          globalObject: globalThis,
-          jsdom: true
-        }).querySelectorAll());
-      });
-
-      it('should throw', () => {
         assert.throws(() => new Matcher('[foo=bar baz]', document)
           .querySelectorAll(), DOMException);
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const node = document.getElementById('div1');
+        const matcher = new Matcher('dt:hover', node, {
+          warn: true
+        });
+        const res = matcher.querySelectorAll();
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'warn');
+        assert.deepEqual(res, [], 'result');
       });
 
       it('should get matched node(s)', () => {

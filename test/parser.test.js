@@ -16,6 +16,38 @@ const {
   STRING, TYPE_SELECTOR
 } = require('../src/js/constant.js');
 
+describe('preprocess', () => {
+  const func = parser.preprocess;
+
+  it('should throw', () => {
+    assert.throws(() => func(), TypeError);
+  });
+
+  it('should throw', () => {
+    assert.throws(() => func(1), DOMException);
+  });
+
+  it('should get value', () => {
+    const res = func(undefined);
+    assert.strictEqual(res, 'undefined', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func(null);
+    assert.strictEqual(res, 'null', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('foo\fbar');
+    assert.strictEqual(res, 'foo\nbar', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\u0000');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+});
+
 describe('create AST from CSS selector', () => {
   const func = parser.parseSelector;
 
@@ -620,6 +652,27 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#\\30 nextIsWhiteSpace');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '\\30 nextIsWhiteSpace',
                 type: ID_SELECTOR
               }
             ],
