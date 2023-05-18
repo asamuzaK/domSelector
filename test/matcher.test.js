@@ -4007,7 +4007,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get result', () => {
         const frag = document.createDocumentFragment();
         const elm = document.createElement('div');
-        frag.appendChild(elm)
+        frag.appendChild(elm);
         const matcher = new Matcher('div', frag);
         const res = matcher._isAttached();
         assert.isFalse(res, 'result');
