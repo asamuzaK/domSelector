@@ -799,7 +799,7 @@ const matchPseudoClassSelector = (
             if (node.hasAttribute('disabled')) {
               matched.push(node);
             } else {
-              let parent = node.parentNode;
+              let parent = parentNode;
               while (parent) {
                 if (parent.localName === 'fieldset') {
                   break;
@@ -807,7 +807,7 @@ const matchPseudoClassSelector = (
                 parent = parent.parentNode;
               }
               if (parent && parent.hasAttribute('disabled') &&
-                  node.parentNode.localName !== 'legend') {
+                  parentNode.localName !== 'legend') {
                 matched.push(node);
               }
             }
@@ -989,29 +989,29 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'empty':
-          if (!node.hasChildNodes()) {
-            matched.push(node);
-          } else {
-            const nodes = [...node.childNodes];
+          if (node.hasChildNodes()) {
+            const nodes = [...node.childNodes.values()];
             if (nodes.every(n =>
               n.nodeType !== ELEMENT_NODE && n.nodeType !== TEXT_NODE)) {
               matched.push(node);
             }
+          } else {
+            matched.push(node);
           }
           break;
         case 'first-child':
-          if (node === node.parentNode.firstElementChild) {
+          if (node === parentNode.firstElementChild) {
             matched.push(node);
           }
           break;
         case 'last-child':
-          if (node === node.parentNode.lastElementChild) {
+          if (node === parentNode.lastElementChild) {
             matched.push(node);
           }
           break;
         case 'only-child':
-          if (node === node.parentNode.firstElementChild &&
-              node === node.parentNode.lastElementChild) {
+          if (node === parentNode.firstElementChild &&
+              node === parentNode.lastElementChild) {
             matched.push(node);
           }
           break;
