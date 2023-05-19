@@ -28,6 +28,7 @@ export function collectNthOfType(anb?: {
     b: number;
     reverse?: boolean;
 }, node?: object): Array<object | undefined>;
+export function isContentEditable(node?: object): boolean;
 export function matchAnPlusB(nthName: string, ast?: object, node?: object): Array<object | undefined>;
 export function matchAttributeSelector(ast?: object, node?: object): object | null;
 export function matchClassSelector(ast?: object, node?: object): object | null;
