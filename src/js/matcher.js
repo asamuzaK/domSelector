@@ -13,6 +13,7 @@ const {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER, ID_SELECTOR,
   NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
+const DOCUMENT_POSITION_CONTAINS = 8;
 const ELEMENT_NODE = 1;
 const FILTER_ACCEPT = 1;
 const FILTER_REJECT = 2;
@@ -28,6 +29,36 @@ const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 const REPLACE_CHAR = /[\0\uD800-\uDFFF]/g;
 const WHITESPACE = /^[\n\r\f]/;
+
+/**
+ * is content editable
+ * NOTE: not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
+ * @param {object} node - Element
+ * @returns {boolean} - result
+ */
+const isContentEditable = (node = {}) => {
+  let bool;
+  if (node.nodeType === ELEMENT_NODE) {
+    if (node.ownerDocument.designMode === 'on') {
+      bool = true;
+    } else if (node.hasAttribute('contenteditable')) {
+      const attr = node.getAttribute('contenteditable');
+      if (/^(?:plaintext-only|true)$/.test(attr) || attr === '') {
+        bool = true;
+      } else if (attr === 'inherit') {
+        let parent = node.parentNode;
+        while (parent) {
+          if (isContentEditable(parent)) {
+            bool = true;
+            break;
+          }
+          parent = parent.parentNode;
+        }
+      }
+    }
+  }
+  return !!bool;
+};
 
 /**
  * unescape selector
@@ -88,9 +119,9 @@ const collectNthChild = (anb = {}, node = {}) => {
     const l = arr.length;
     const items = [];
     if (selector) {
-      const a = new Matcher(selector, ownerDocument).querySelectorAll();
-      if (a.length) {
-        items.push(...a);
+      const ar = new Matcher(selector, ownerDocument).querySelectorAll();
+      if (ar.length) {
+        items.push(...ar);
       }
     }
     // :first-child, :last-child, :nth-child(0 of S)
@@ -664,14 +695,12 @@ const matchPseudoClassSelector = (
       switch (astName) {
         case 'any-link':
         case 'link':
-          // TBD: what about namespaced href? e.g. xlink:href
-          if (node.hasAttribute('href')) {
+          if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
             matched.push(node);
           }
           break;
         case 'local-link':
-          // TBD: what about namespaced href? e.g. xlink:href
-          if (node.hasAttribute('href')) {
+          if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
                 attrURL.pathname === docURL.pathname) {
@@ -736,11 +765,24 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'disabled':
-          if ((HTML_FORM_INPUT.test(localName) ||
-               HTML_FORM_PARTS.test(localName) ||
-               isCustomElementName(localName)) &&
-              node.hasAttribute('disabled')) {
-            matched.push(node);
+          if (HTML_FORM_INPUT.test(localName) ||
+              HTML_FORM_PARTS.test(localName) ||
+              isCustomElementName(localName)) {
+            if (node.hasAttribute('disabled')) {
+              matched.push(node);
+            } else {
+              let parent = node.parentNode;
+              while (parent) {
+                if (parent.localName === 'fieldset') {
+                  break;
+                }
+                parent = parent.parentNode;
+              }
+              if (parent && parent.hasAttribute('disabled') &&
+                  node.parentNode.localName !== 'legend') {
+                matched.push(node);
+              }
+            }
           }
           break;
         case 'enabled':
@@ -751,17 +793,75 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
+        case 'read-only':
+          if (/^(?:input|textarea)$/.test(localName)) {
+            if (node.hasAttribute('readonly') ||
+                node.hasAttribute('disabled')) {
+              matched.push(node);
+            }
+          } else if (!isContentEditable(node)) {
+            matched.push(node);
+          }
+          break;
+        case 'read-write':
+          if (/^(?:input|textarea)$/.test(localName)) {
+            if (!(node.hasAttribute('readonly') ||
+                  node.hasAttribute('disabled'))) {
+              matched.push(node);
+            }
+          } else if (isContentEditable(node)) {
+            matched.push(node);
+          }
+          break;
+        case 'placeholder-shown':
+          if (/^(?:input|textarea)$/.test(localName) &&
+              node.hasAttribute('placeholder') &&
+              node.getAttribute('placeholder').trim().length &&
+              node.value === '') {
+            matched.push(node);
+          }
+          break;
         case 'checked':
-          if ((/^input$/.test(localName) && node.hasAttribute('type') &&
+          if ((localName === 'input' && node.hasAttribute('type') &&
                /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
                node.checked) ||
               (localName === 'option' && node.selected)) {
             matched.push(node);
           }
           break;
+        case 'indeterminate':
+          if ((localName === 'input' && node.type === 'checkbox' &&
+               node.indeterminate) ||
+              (localName === 'progress' && !node.hasAttribute('value'))) {
+            matched.push(node);
+          } else if (localName === 'input' && node.type === 'radio') {
+            const radioName = node.name;
+            let form = node;
+            while (form) {
+              if (form.localName === 'form') {
+                break;
+              }
+              form = form.parentNode;
+            }
+            if (form && radioName) {
+              const sel = `input[type="radio"][name="${radioName}"]`;
+              const arr = new Matcher(sel, form).querySelectorAll();
+              let checked;
+              for (const i of arr) {
+                checked = !!i.checked;
+                if (checked) {
+                  break;
+                }
+              }
+              if (!checked) {
+                matched.push(node);
+              }
+            }
+          }
+          break;
         case 'default':
           // input[type="checkbox"], input[type="radio"]
-          if (/^input$/.test(localName) && node.hasAttribute('type') &&
+          if (localName === 'input' && node.hasAttribute('type') &&
               /^(?:checkbox|radio)$/.test(node.getAttribute('type'))) {
             if (node.hasAttribute('checked')) {
               matched.push(node);
@@ -806,10 +906,43 @@ const matchPseudoClassSelector = (
           } else if ((localName === 'button' &&
                       (!node.hasAttribute('type') ||
                        node.getAttribute('type') === 'submit')) ||
-                     (/^input$/.test(localName) && node.hasAttribute('type') &&
+                     (localName === 'input' && node.hasAttribute('type') &&
                       /^(?:image|submit)$/.test(node.getAttribute('type')))) {
             throw new DOMException(`Unsupported pseudo-class ${astName}`,
               'NotSupportedError');
+          }
+          break;
+        case 'valid':
+          if (HTML_FORM_INPUT.test(localName) ||
+              /^(?:f(?:ieldset|orm)|button|output)$/.test(localName)) {
+            if (node.checkValidity()) {
+              matched.push(node);
+            }
+          }
+          break;
+        case 'invalid':
+          if (HTML_FORM_INPUT.test(localName) ||
+              /^(?:f(?:ieldset|orm)|button|output)$/.test(localName)) {
+            if (!node.checkValidity()) {
+              matched.push(node);
+            }
+          }
+          break;
+        case 'in-range':
+          if (localName === 'input' &&
+              node.hasAttribute('min') && node.hasAttribute('max')) {
+            if (!(node.validity.rangeUnderflow ||
+                  node.validity.rangeOverflow)) {
+              matched.push(node);
+            }
+          }
+          break;
+        case 'out-of-range':
+          if (localName === 'input' &&
+              node.hasAttribute('min') && node.hasAttribute('max')) {
+            if (node.validity.rangeUnderflow || node.validity.rangeOverflow) {
+              matched.push(node);
+            }
           }
           break;
         case 'required':
@@ -905,24 +1038,16 @@ const matchPseudoClassSelector = (
         case 'fullscreen':
         case 'future':
         case 'hover':
-        case 'indeterminate':
-        case 'invalid':
-        case 'in-range':
         case 'modal':
         case 'muted':
-        case 'out-of-range':
         case 'past':
         case 'paused':
         case 'picture-in-picture':
-        case 'placeholder-shown':
         case 'playing':
-        case 'read-only':
-        case 'read-write':
         case 'seeking':
         case 'stalled':
         case 'user-invalid':
         case 'user-valid':
-        case 'valid':
         case 'volume-locked':
           throw new DOMException(`Unsupported pseudo-class ${astName}`,
             'NotSupportedError');
@@ -1003,19 +1128,10 @@ class Matcher {
    * @returns {boolean} - result
    */
   _isAttached() {
-    const root = this.#document?.documentElement;
-    let bool;
-    if (root) {
-      let node = this.#node;
-      while (node) {
-        if (node === root) {
-          bool = true;
-          break;
-        }
-        node = node.parentNode;
-      }
-    }
-    return !!bool;
+    const root = this.#document.documentElement;
+    const posBit =
+      this.#node.compareDocumentPosition(root) & DOCUMENT_POSITION_CONTAINS;
+    return !!posBit;
   };
 
   /**
@@ -1587,6 +1703,7 @@ module.exports = {
   Matcher,
   collectNthChild,
   collectNthOfType,
+  isContentEditable,
   matchAnPlusB,
   matchAttributeSelector,
   matchClassSelector,

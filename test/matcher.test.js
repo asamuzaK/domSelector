@@ -91,6 +91,80 @@ describe('match AST leaf and DOM node', () => {
     }
   });
 
+  describe('is content editable', () => {
+    const func = matcherJs.isContentEditable;
+
+    it('should get result', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      document.designMode = 'on';
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'true');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'plaintext-only');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'inherit');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node1 = document.createElement('div');
+      node1.setAttribute('contenteditable', 'inherit');
+      const node2 = document.createElement('div');
+      node2.setAttribute('contenteditable', 'true');
+      node2.appendChild(node1);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node2);
+      const res = func(node1);
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('unescape selector', () => {
     const func = matcherJs.unescapeSelector;
 
@@ -3078,6 +3152,35 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
+    // FIXME:
+    xit('should get matched node(s)', () => {
+      const src = `data:text/html,
+        <html>
+          <body>
+            <script>window.addEventListener('load', function() {
+              const data = {
+                foo_matches_target_selector: document.getElementById('foo').matches(':target'),
+                body_html: document.body.innerHTML,
+              };
+              parent.postMessage(data, '*');
+            });</script>
+            <p id="foo">This should be the only visible text.</p>
+          </body>
+        </html>#foo`.replace('\n', '');
+      const leaf = {
+        children: null,
+        name: 'target',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      const parent = document.getElementById('div0');
+      parent.appendChild(iframe);
+      const node = iframe.contentDocument.getElementById('foo');
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -3348,6 +3451,40 @@ describe('match AST leaf and DOM node', () => {
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
+        name: 'disabled',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node1 = document.createElement('input');
+      const node2 = document.createElement('fieldset');
+      node2.setAttribute('disabled', 'disabled');
+      node2.appendChild(node1);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node2);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [node1], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'disabled',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node1 = document.createElement('input');
+      const node2 = document.createElement('legend');
+      node2.appendChild(node1);
+      const node3 = document.createElement('fieldset');
+      node3.setAttribute('disabled', 'disabled');
+      node3.appendChild(node2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node2);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
         name: 'enabled',
         type: PSEUDO_CLASS_SELECTOR
       };
@@ -3379,6 +3516,269 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'true');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'true');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('placeholder', 'foo');
+      node.value = 'bar';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('placeholder', ' ');
+      node.value = '';
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -3444,6 +3844,113 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(container);
       const res = func(leaf, node);
       assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      node.indeterminate = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('progress');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('progress');
+      node.setAttribute('value', '0');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node1 = document.createElement('input');
+      node1.setAttribute('type', 'radio');
+      node1.setAttribute('name', 'foo');
+      const node2 = document.createElement('input');
+      node2.setAttribute('type', 'radio');
+      node2.setAttribute('name', 'foo');
+      const node3 = document.createElement('input');
+      node3.setAttribute('type', 'radio');
+      node3.setAttribute('name', 'foo');
+      form.appendChild(node1);
+      form.appendChild(node2);
+      form.appendChild(node3);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [node1], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node1 = document.createElement('input');
+      node1.setAttribute('type', 'radio');
+      node1.setAttribute('name', 'foo');
+      const node2 = document.createElement('input');
+      node2.setAttribute('type', 'radio');
+      node2.setAttribute('name', 'foo');
+      node2.checked = true;
+      const node3 = document.createElement('input');
+      node3.setAttribute('type', 'radio');
+      node3.setAttribute('name', 'foo');
+      form.appendChild(node1);
+      form.appendChild(node2);
+      form.appendChild(node3);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node1);
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -3644,6 +4151,244 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       assert.throws(() => func(leaf, node), DOMException);
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('required', 'required');
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('required', 'required');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = '';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('required', 'required');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('required', 'required');
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = '';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '0';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '11';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'out-of-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '0';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'out-of-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '11';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'out-of-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {
