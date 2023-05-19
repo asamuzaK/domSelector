@@ -61,6 +61,30 @@ const isContentEditable = (node = {}) => {
 };
 
 /**
+ * is namespace declared
+ * @param {string} ns - namespace
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+const isNamespaceDeclared = (ns = '', node = {}) => {
+  let res;
+  if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
+    const attr = `xmlns:${ns}`;
+    const root = node.ownerDocument.documentElement;
+    while (node) {
+      if (node.hasAttribute(attr)) {
+        res = true;
+        break;
+      } else if (node === root) {
+        break;
+      }
+      node = node.parentNode;
+    }
+  }
+  return !!res;
+};
+
+/**
  * unescape selector
  * @param {string} selector - CSS selector
  * @returns {?string} - unescaped selector
@@ -341,6 +365,10 @@ const matchTypeSelector = (ast = {}, node = {}) => {
     let astPrefix, astNodeName, nodePrefix, nodeName;
     if (/\|/.test(astName)) {
       [astPrefix, astNodeName] = astName.split('|');
+      if (astPrefix && astPrefix !== '*' &&
+          !isNamespaceDeclared(astPrefix, node)) {
+        throw new DOMException(`invalid selector ${astName}`, 'SyntaxError');
+      }
     } else {
       astPrefix = '';
       astNodeName = astName;
@@ -1049,6 +1077,7 @@ const matchPseudoClassSelector = (
         case 'user-invalid':
         case 'user-valid':
         case 'volume-locked':
+        case '-webkit-autofill':
           throw new DOMException(`Unsupported pseudo-class ${astName}`,
             'NotSupportedError');
         default:
@@ -1704,6 +1733,7 @@ module.exports = {
   collectNthChild,
   collectNthOfType,
   isContentEditable,
+  isNamespaceDeclared,
   matchAnPlusB,
   matchAttributeSelector,
   matchClassSelector,

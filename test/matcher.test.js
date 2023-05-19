@@ -165,6 +165,34 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
+  describe('is namespace declared', () => {
+    const func = matcherJs.isNamespaceDeclared;
+
+    it('should get result', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('unescape selector', () => {
     const func = matcherJs.unescapeSelector;
 
@@ -1092,10 +1120,23 @@ describe('match AST leaf and DOM node', () => {
       };
       const node =
         document.createElementNS('https://example.com/foo', 'foo:bar');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
       assert.deepEqual(res, node, 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        name: 'foo|*',
+        type: TYPE_SELECTOR
+      };
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     it('should get matched node', () => {
@@ -1105,6 +1146,7 @@ describe('match AST leaf and DOM node', () => {
       };
       const node =
         document.createElementNS('https://example.com/foo', 'foo:bar');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -1117,6 +1159,7 @@ describe('match AST leaf and DOM node', () => {
         type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const res = func(leaf, node);
       assert.isNull(res, 'result');
     });
@@ -1145,6 +1188,7 @@ describe('match AST leaf and DOM node', () => {
       };
       const node =
         document.createElementNS('https://example.com/foo', 'foo:baz');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -1250,7 +1294,7 @@ describe('match AST leaf and DOM node', () => {
       const domStr = `<!doctype html>
       <html>
         <body>
-          <foo:bar id="foobar">
+          <foo:bar xmlns:foo="https://example.com/foo" id="foobar">
             <foo:baz/>
             <foo:qux/>
           </foo:bar>
