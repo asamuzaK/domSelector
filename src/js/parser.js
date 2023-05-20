@@ -54,7 +54,11 @@ const parseSelector = selector => {
     });
     res = toPlainObject(ast);
   } catch (e) {
-    throw new DOMException(e.message, 'SyntaxError');
+    if (e.message === '"]" is expected' && !selector.endsWith(']')) {
+      res = parseSelector(`${selector}]`);
+    } else {
+      throw new DOMException(e.message, 'SyntaxError');
+    }
   }
   return res;
 };

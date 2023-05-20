@@ -27,7 +27,7 @@ const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
-const REPLACE_CHAR = /[\0\uD800-\uDFFF]/g;
+const REPLACE_CHAR = /[\0\uD800-\uDFFF]/;
 const WHITESPACE = /^[\n\r\f]/;
 
 /**
@@ -104,8 +104,14 @@ const unescapeSelector = (selector = '') => {
           const [, hex] = hexExists;
           let str;
           try {
-            str = String.fromCodePoint(`0x${hex.trim()}`)
-              .replace(REPLACE_CHAR, '\uFFFD');
+            const low = parseInt('D800', 16);
+            const high = parseInt('DFFF', 16);
+            const deci = parseInt(hex, 16);
+            if (deci === 0 || (deci >= low && deci <= high)) {
+              str = '\uFFFD';
+            } else {
+              str = String.fromCodePoint(deci);
+            }
           } catch (e) {
             str = '\uFFFD';
           }
@@ -150,7 +156,7 @@ const collectNthChild = (anb = {}, node = {}) => {
     }
     // :first-child, :last-child, :nth-child(0 of S)
     if (a === 0) {
-      if (b >= 0 && b < l) {
+      if (b > 0 && b <= l) {
         if (items.length) {
           let i = 0;
           while (i < l) {
@@ -162,7 +168,7 @@ const collectNthChild = (anb = {}, node = {}) => {
             i++;
           }
         } else {
-          const current = arr[b];
+          const current = arr[b - 1];
           matched.push(current);
         }
       }
@@ -225,14 +231,14 @@ const collectNthOfType = (anb = {}, node = {}) => {
     const l = arr.length;
     // :first-of-type, :last-of-type
     if (a === 0) {
-      if (b >= 0 && b < l) {
+      if (b > 0 && b <= l) {
         let i = 0;
         let j = 0;
         while (i < l) {
           const current = arr[i];
           const { localName: itemLocalName, prefix: itemPrefix } = current;
           if (itemLocalName === localName && itemPrefix === prefix) {
-            if (j === b) {
+            if (j === b - 1) {
               matched.push(current);
               break;
             }
@@ -457,6 +463,9 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     const l = attributes.length;
     let { name: astAttrName } = astName;
     astAttrName = unescapeSelector(astAttrName);
+    if (caseInsensitive) {
+      astAttrName = astAttrName.toLowerCase();
+    }
     // namespaced
     if (/\|/.test(astAttrName)) {
       const [astAttrPrefix, astAttrLocalName] = astAttrName.split('|');
@@ -1018,7 +1027,7 @@ const matchPseudoClassSelector = (
         case 'first-of-type': {
           const [node1] = collectNthOfType({
             a: 0,
-            b: 0
+            b: 1
           }, node);
           if (node1) {
             matched.push(node1);
@@ -1028,7 +1037,7 @@ const matchPseudoClassSelector = (
         case 'last-of-type': {
           const [node1] = collectNthOfType({
             a: 0,
-            b: 0,
+            b: 1,
             reverse: true
           }, node);
           if (node1) {
@@ -1039,11 +1048,11 @@ const matchPseudoClassSelector = (
         case 'only-of-type': {
           const [node1] = collectNthOfType({
             a: 0,
-            b: 0
+            b: 1
           }, node);
           const [node2] = collectNthOfType({
             a: 0,
-            b: 0,
+            b: 1,
             reverse: true
           }, node);
           if (node1 === node && node2 === node) {

@@ -136,6 +136,39 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func('[align=center');
+      assert.deepEqual(res, {
+        "children": [
+          {
+            "children": [
+              {
+                "flags": null,
+                "loc": null,
+                "matcher": "=",
+                "name": {
+                  "loc": null,
+                  "name": "align",
+                  "type": IDENTIFIER
+                },
+                "type": ATTRIBUTE_SELECTOR,
+                "value": {
+                  "loc": null,
+                  "name": "center",
+                  "type": IDENTIFIER
+                }
+              }
+            ],
+            "loc": null,
+            "type": SELECTOR
+          }
+        ],
+        "loc": null,
+        "type": SELECTOR_LIST
+      }, 'result');
+    });
+
   });
 
   describe('universal selector', () => {
