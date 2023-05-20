@@ -27,7 +27,6 @@ const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
-const REPLACE_CHAR = /[\0\uD800-\uDFFF]/;
 const WHITESPACE = /^[\n\r\f]/;
 
 /**
