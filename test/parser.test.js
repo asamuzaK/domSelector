@@ -140,35 +140,34 @@ describe('create AST from CSS selector', () => {
     it('should get selector list', () => {
       const res = func('[align=center');
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "flags": null,
-                "loc": null,
-                "matcher": "=",
-                "name": {
-                  "loc": null,
-                  "name": "align",
-                  "type": IDENTIFIER
+                flags: null,
+                loc: null,
+                matcher: '=',
+                name: {
+                  loc: null,
+                  name: 'align',
+                  type: IDENTIFIER
                 },
-                "type": ATTRIBUTE_SELECTOR,
-                "value": {
-                  "loc": null,
-                  "name": "center",
-                  "type": IDENTIFIER
+                type: ATTRIBUTE_SELECTOR,
+                value: {
+                  loc: null,
+                  name: 'center',
+                  type: IDENTIFIER
                 }
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
-
   });
 
   describe('universal selector', () => {
