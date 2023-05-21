@@ -25,6 +25,7 @@ const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
+const INPUT_TYPE_BARRED = /^(?:(?:butto|hidde)n|reset)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 const WHITESPACE = /^[\n\r\f]/;
@@ -93,7 +94,7 @@ const unescapeSelector = (selector = '') => {
       selector.indexOf(String.fromCharCode(0x5c), 0) >= 0) {
     const arr = selector.split('\\');
     const l = arr.length;
-    for (let i = 0; i < l; i++) {
+    for (let i = 1; i < l; i++) {
       let item = arr[i];
       if (i === l - 1 && item === '') {
         item = '\uFFFD';
@@ -114,7 +115,11 @@ const unescapeSelector = (selector = '') => {
           } catch (e) {
             str = '\uFFFD';
           }
-          item = item.replace(`${hex}`, str);
+          let postStr = '';
+          if (item.length > hex.length) {
+            postStr = item.substring(hex.length);
+          }
+          item = `${str}${postStr}`;
         } else if (WHITESPACE.test(item)) {
           item = '\\' + item;
         }
@@ -965,20 +970,21 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'in-range':
-          if (localName === 'input' &&
-              node.hasAttribute('min') && node.hasAttribute('max')) {
-            if (!(node.validity.rangeUnderflow ||
-                  node.validity.rangeOverflow)) {
-              matched.push(node);
-            }
+          if (localName === 'input' && !node.readonly &&
+              !(node.hasAttribute('type') &&
+                INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
+              node.hasAttribute('min') && node.hasAttribute('max') &&
+              !(node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
+            matched.push(node);
           }
           break;
         case 'out-of-range':
-          if (localName === 'input' &&
-              node.hasAttribute('min') && node.hasAttribute('max')) {
-            if (node.validity.rangeUnderflow || node.validity.rangeOverflow) {
-              matched.push(node);
-            }
+          if (localName === 'input' && !node.readonly &&
+              !(node.hasAttribute('type') &&
+                INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
+              node.hasAttribute('min') && node.hasAttribute('max') &&
+              (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
+            matched.push(node);
           }
           break;
         case 'required':

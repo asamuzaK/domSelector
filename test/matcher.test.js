@@ -286,9 +286,8 @@ describe('match AST leaf and DOM node', () => {
       assert.strictEqual(res, '\u{10FFFF}', 'result');
     });
 
-    // FIXME: fails
-    xit('should get replaced value', () => {
-      const res = func('\\10FFFF0 ');
+    it('should get replaced value', () => {
+      const res = func('\\10FFFF0');
       assert.strictEqual(res, '\u{10FFFF}0', 'result');
     });
 
@@ -1488,6 +1487,19 @@ describe('match AST leaf and DOM node', () => {
       const node = document.getElementById('div0');
       const res = func(leaf, node);
       assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'foo\\ bar',
+        type: ID_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.setAttribute('id', 'foo bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
     });
   });
 
@@ -4463,6 +4475,34 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.readonly = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('hidden', 'hidden');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -4508,6 +4548,34 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('min', '1');
       node.setAttribute('max', '10');
       node.value = '11';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'out-of-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.readonly = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'out-of-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('hidden', 'hidden');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -6340,6 +6408,15 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('dl', node);
         const res = matcher.closest();
         assert.isNull(res, 'result');
+      });
+
+      // FIXME:
+      xit('should get matched node', () => {
+        const node = document.getElementById('li2');
+        const target = document.getElementById('ul1');
+        const matcher = new Matcher(':has(> :scope)', node);
+        const res = matcher.closest();
+        assert.deepEqual(res, target, 'result');
       });
     });
 

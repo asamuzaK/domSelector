@@ -138,6 +138,27 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func('eof\\');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'eof\u{FFFD}',
+                type: TYPE_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func('[align=center');
       assert.deepEqual(res, {
         children: [
@@ -705,6 +726,27 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\30 nextIsWhiteSpace',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#foo\\ bar');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'foo\\ bar',
                 type: ID_SELECTOR
               }
             ],
@@ -3439,6 +3481,52 @@ describe('create AST from CSS selector', () => {
                             loc: null,
                             name: 'bar',
                             type: TYPE_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':has(> :scope)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '>',
+                            type: COMBINATOR
+                          },
+                          {
+                            children: null,
+                            loc: null,
+                            name: 'scope',
+                            type: PSEUDO_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
