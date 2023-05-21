@@ -116,6 +116,266 @@ describe('exported api', () => {
       const res = matches('div.foo ul.bar > li.qux', li3);
       assert.isFalse(res, 'result');
     });
+
+    it('should match', () => {
+      const domStr = `<table id="pseudo-nth-table1">
+        <tr id="pseudo-nth-tr1">
+          <td id="pseudo-nth-td1"></td>
+          <td id="pseudo-nth-td2"></td>
+          <td id="pseudo-nth-td3"></td>
+          <td id="pseudo-nth-td4"></td>
+          <td id="pseudo-nth-td5"></td>
+          <td id="pseudo-nth-td6"></td>
+        </tr>
+        <tr id="pseudo-nth-tr2">
+          <td id="pseudo-nth-td7"></td>
+          <td id="pseudo-nth-td8"></td>
+          <td id="pseudo-nth-td9"></td>
+          <td id="pseudo-nth-td10"></td>
+          <td id="pseudo-nth-td11"></td>
+          <td id="pseudo-nth-td12"></td>
+        </tr>
+        <tr id="pseudo-nth-tr3">
+          <td id="pseudo-nth-td13"></td>
+          <td id="pseudo-nth-td14"></td>
+          <td id="pseudo-nth-td15"></td>
+          <td id="pseudo-nth-td16"></td>
+          <td id="pseudo-nth-td17"></td>
+          <td id="pseudo-nth-td18"></td>
+        </tr>
+      </table>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('pseudo-nth-tr1');
+      const res = matches('#pseudo-nth-table1 :nth-last-child(3)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<p id="pseudo-nth-p1">
+        <span id="pseudo-nth-span1">span1</span>
+        <em id="pseudo-nth-em1">em1</em>
+        <!-- comment node-->
+        <em id="pseudo-nth-em2">em2</em>
+        <span id="pseudo-nth-span2">span2</span>
+        <strong id="pseudo-nth-strong1">strong1</strong>
+        <em id="pseudo-nth-em3">em3</em>
+        <span id="pseudo-nth-span3">span3</span>
+        <span id="pseudo-nth-span4">span4</span>
+        <strong id="pseudo-nth-strong2">strong2</strong>
+        <em id="pseudo-nth-em4">em4</em>
+      </p>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('pseudo-nth-em2');
+      const res = matches('#pseudo-nth-p1 :nth-child(4n-1)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<p id="pseudo-nth-p1">
+        <span id="pseudo-nth-span1">span1</span>
+        <em id="pseudo-nth-em1">em1</em>
+        <!-- comment node-->
+        <em id="pseudo-nth-em2">em2</em>
+        <span id="pseudo-nth-span2">span2</span>
+        <strong id="pseudo-nth-strong1">strong1</strong>
+        <em id="pseudo-nth-em3">em3</em>
+        <span id="pseudo-nth-span3">span3</span>
+        <span id="pseudo-nth-span4">span4</span>
+        <strong id="pseudo-nth-strong2">strong2</strong>
+        <em id="pseudo-nth-em4">em4</em>
+      </p>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('pseudo-nth-span2');
+      const res = matches('#pseudo-nth-p1 :nth-last-child(4n-1)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<p id="pseudo-nth-p1">
+        <span id="pseudo-nth-span1">span1</span>
+        <em id="pseudo-nth-em1">em1</em>
+        <!-- comment node-->
+        <em id="pseudo-nth-em2">em2</em>
+        <span id="pseudo-nth-span2">span2</span>
+        <strong id="pseudo-nth-strong1">strong1</strong>
+        <em id="pseudo-nth-em3">em3</em>
+        <span id="pseudo-nth-span3">span3</span>
+        <span id="pseudo-nth-span4">span4</span>
+        <strong id="pseudo-nth-strong2">strong2</strong>
+        <em id="pseudo-nth-em4">em4</em>
+      </p>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('pseudo-nth-em2');
+      const res = matches('#pseudo-nth-p1 :nth-of-type(2n)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<p id="pseudo-nth-p1">
+        <span id="pseudo-nth-span1">span1</span>
+        <em id="pseudo-nth-em1">em1</em>
+        <!-- comment node-->
+        <em id="pseudo-nth-em2">em2</em>
+        <span id="pseudo-nth-span2">span2</span>
+        <strong id="pseudo-nth-strong1">strong1</strong>
+        <em id="pseudo-nth-em3">em3</em>
+        <span id="pseudo-nth-span3">span3</span>
+        <span id="pseudo-nth-span4">span4</span>
+        <strong id="pseudo-nth-strong2">strong2</strong>
+        <em id="pseudo-nth-em4">em4</em>
+      </p>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('pseudo-nth-span1');
+      const res = matches('#pseudo-nth-p1 :nth-last-of-type(2n)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="not">
+        <div id="not-div1"></div>
+        <div id="not-div2"></div>
+        <div id="not-div3"></div>
+        <p id="not-p1"><span id="not-span1"></span><em id="not-em1"></em></p>
+        <p id="not-p2"><span id="not-span2"></span><em id="not-em2"></em></p>
+        <p id="not-p3"><span id="not-span3"></span><em id="not-em3"></em></p>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('not-em1');
+      const res = matches('#not * :not(:first-child)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="not">
+        <div id="not-div1"></div>
+        <div id="not-div2"></div>
+        <div id="not-div3"></div>
+        <p id="not-p1"><span id="not-span1"></span><em id="not-em1"></em></p>
+        <p id="not-p2"><span id="not-span2"></span><em id="not-em2"></em></p>
+        <p id="not-p3"><span id="not-span3"></span><em id="not-em3"></em></p>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('not-p1');
+      const res = matches('#not>:not( div )', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="universal">
+        <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+        <hr id="universal-hr1">
+        <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+        <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+        <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('universal-p1');
+      const res = matches('#universal>*', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="attr-presence">
+        <div class="attr-presence-div1" id="attr-presence-div1" align="center"></div>
+        <div class="attr-presence-div2" id="attr-presence-div2" align=""></div>
+        <div class="attr-presence-div3" id="attr-presence-div3" valign="center"></div>
+        <div class="attr-presence-div4" id="attr-presence-div4" alignv="center"></div>
+        <p id="attr-presence-p1">
+          <a  id="attr-presence-a1" tItLe=""></a>
+          <span id="attr-presence-span1" TITLE="attr-presence-span1"></span>
+          <i id="attr-presence-i1"></i>
+        </p>
+        <pre id="attr-presence-pre1" data-attr-presence="pre1"></pre>
+        <blockquote id="attr-presence-blockquote1" data-attr-presence="blockquote1"></blockquote>
+        <ul id="attr-presence-ul1" data-中文=""></ul>
+        <select id="attr-presence-select1">
+          <option id="attr-presence-select1-option1">A</option>
+          <option id="attr-presence-select1-option2">B</option>
+          <option id="attr-presence-select1-option3">C</option>
+          <option id="attr-presence-select1-option4">D</option>
+        </select>
+        <select id="attr-presence-select2">
+          <option id="attr-presence-select2-option1">A</option>
+          <option id="attr-presence-select2-option2">B</option>
+          <option id="attr-presence-select2-option3">C</option>
+          <option id="attr-presence-select2-option4" selected="selected">D</option>
+        </select>
+        <select id="attr-presence-select3" multiple="multiple">
+          <option id="attr-presence-select3-option1">A</option>
+          <option id="attr-presence-select3-option2" selected="">B</option>
+          <option id="attr-presence-select3-option3" selected="selected">C</option>
+          <option id="attr-presence-select3-option4">D</option>
+        </select>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('attr-presence-a1');
+      const res = matches('#attr-presence [*|TiTlE]', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="attr-presence">
+        <div class="attr-presence-div1" id="attr-presence-div1" align="center"></div>
+        <div class="attr-presence-div2" id="attr-presence-div2" align=""></div>
+        <div class="attr-presence-div3" id="attr-presence-div3" valign="center"></div>
+        <div class="attr-presence-div4" id="attr-presence-div4" alignv="center"></div>
+        <p id="attr-presence-p1">
+          <a  id="attr-presence-a1" tItLe=""></a>
+          <span id="attr-presence-span1" TITLE="attr-presence-span1"></span>
+          <i id="attr-presence-i1"></i>
+        </p>
+        <pre id="attr-presence-pre1" data-attr-presence="pre1"></pre>
+        <blockquote id="attr-presence-blockquote1" data-attr-presence="blockquote1"></blockquote>
+        <ul id="attr-presence-ul1" data-中文=""></ul>
+        <select id="attr-presence-select1">
+          <option id="attr-presence-select1-option1">A</option>
+          <option id="attr-presence-select1-option2">B</option>
+          <option id="attr-presence-select1-option3">C</option>
+          <option id="attr-presence-select1-option4">D</option>
+        </select>
+        <select id="attr-presence-select2">
+          <option id="attr-presence-select2-option1">A</option>
+          <option id="attr-presence-select2-option2">B</option>
+          <option id="attr-presence-select2-option3">C</option>
+          <option id="attr-presence-select2-option4" selected="selected">D</option>
+        </select>
+        <select id="attr-presence-select3" multiple="multiple">
+          <option id="attr-presence-select3-option1">A</option>
+          <option id="attr-presence-select3-option2" selected="">B</option>
+          <option id="attr-presence-select3-option3" selected="selected">C</option>
+          <option id="attr-presence-select3-option4">D</option>
+        </select>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('attr-presence-select2-option4');
+      const res = matches('#attr-presence-select2 option[selected]', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="attr-value">
+        <div id="attr-value-div1" align="center"></div>
+        <div id="attr-value-div2" align=""></div>
+        <div id="attr-value-div3" data-attr-value="&#xE9;"></div>
+        <div id="attr-value-div4" data-attr-value_foo="&#xE9;"></div>
+        <form id="attr-value-form1">
+          <input id="attr-value-input1" type="text">
+          <input id="attr-value-input2" type="password">
+          <input id="attr-value-input3" type="hidden">
+          <input id="attr-value-input4" type="radio">
+          <input id="attr-value-input5" type="checkbox">
+          <input id="attr-value-input6" type="radio">
+          <input id="attr-value-input7" type="text">
+          <input id="attr-value-input8" type="hidden">
+          <input id="attr-value-input9" type="radio">
+        </form>
+        <div id="attr-value-div5" data-attr-value="中文"></div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('attr-value-div2');
+      const res = matches('#attr-value [align=\"\"]', node);
+      assert.isTrue(res, 'result');
+    });
   });
 
   describe('closest', () => {

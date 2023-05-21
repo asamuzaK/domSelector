@@ -19,6 +19,10 @@ const FILTER_ACCEPT = 1;
 const FILTER_REJECT = 2;
 const FILTER_SHOW_ELEMENT = 1;
 const TEXT_NODE = 3;
+const UNIVERSAL_SELECTOR = {
+  name: '*',
+  type: TYPE_SELECTOR
+};
 
 /* regexp */
 const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
@@ -955,7 +959,7 @@ const matchPseudoClassSelector = (
           break;
         case 'valid':
           if (HTML_FORM_INPUT.test(localName) ||
-              /^(?:f(?:ieldset|orm)|button|output)$/.test(localName)) {
+              /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
             if (node.checkValidity()) {
               matched.push(node);
             }
@@ -963,7 +967,7 @@ const matchPseudoClassSelector = (
           break;
         case 'invalid':
           if (HTML_FORM_INPUT.test(localName) ||
-              /^(?:f(?:ieldset|orm)|button|output)$/.test(localName)) {
+              /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
             if (!node.checkValidity()) {
               matched.push(node);
             }
@@ -1457,10 +1461,7 @@ class Matcher {
       if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
           PSEUDO_FUNC.test(unescapeSelector(firstChild.name)) &&
           node.nodeType === ELEMENT_NODE) {
-        const iteratorLeaf = {
-          name: '*',
-          type: TYPE_SELECTOR
-        };
+        const iteratorLeaf = UNIVERSAL_SELECTOR;
         const iterator = this._createIterator(iteratorLeaf, node);
         let nextNode = iterator.nextNode();
         while (nextNode) {
@@ -1475,10 +1476,7 @@ class Matcher {
         if (firstChild.type === COMBINATOR ||
             (firstChild.type === PSEUDO_CLASS_SELECTOR &&
              PSEUDO_NTH.test(unescapeSelector(firstChild.name)))) {
-          iteratorLeaf = {
-            name: '*',
-            type: TYPE_SELECTOR
-          };
+          iteratorLeaf = UNIVERSAL_SELECTOR;
         } else {
           iteratorLeaf = children.shift();
         }
@@ -1535,6 +1533,9 @@ class Matcher {
                       } else {
                         leaves.push(items.shift());
                       }
+                    }
+                    if (leaves.length === 1) {
+                      leaves.push(UNIVERSAL_SELECTOR);
                     }
                     const arr = this._matchCombinator(leaves, nextNode);
                     if (!arr.length || arr.length === 1) {
