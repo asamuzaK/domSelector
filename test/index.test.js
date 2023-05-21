@@ -376,6 +376,120 @@ describe('exported api', () => {
       const res = matches('#attr-value [align=""]', node);
       assert.isTrue(res, 'result');
     });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#universal-p1');
+      const res = matches('#universal>*', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#universal-code1');
+      const res = matches('#universal>*>*', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#universal-p1');
+      const res = matches('#universal *', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const frag = document.createDocumentFragment();
+      frag.appendChild(clone);
+      const node = frag.getElementById('universal-p1');
+      const res = matches('#universal>*', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const frag = document.createDocumentFragment();
+      frag.appendChild(clone);
+      const node = frag.getElementById('universal-code1');
+      const res = matches('#universal>*>*', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="universal">
+          <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+          <hr id="universal-hr1">
+          <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+          <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+          <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const frag = document.createDocumentFragment();
+      frag.appendChild(clone);
+      const node = frag.getElementById('universal-p1');
+      const res = matches('#universal *', node);
+      assert.isTrue(res, 'result');
+    });
   });
 
   describe('closest', () => {

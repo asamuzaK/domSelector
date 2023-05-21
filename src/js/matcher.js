@@ -1643,6 +1643,12 @@ class Matcher {
         node = this.#document;
       } else {
         node = this.#node;
+        while (node) {
+          if (!node.parentNode) {
+            break;
+          }
+          node = node.parentNode;
+        }
       }
       const arr = this._match(this.#ast, node);
       res = arr.length && arr.includes(this.#node);
