@@ -25,7 +25,7 @@ const preprocess = (...args) => {
   let [selector] = args;
   if (typeof selector === 'string') {
     selector = selector.replace(/\f|\r\n?/g, '\n')
-      .replace(/[\0\uD800-\uDFFF]|\\$/g, '\uFFFD').trim();
+      .replace(/[\0\uD800-\uDFFF]|\\$/g, '\uFFFD');
   } else if (selector === undefined || selector === null) {
     selector = Object.prototype.toString.call(selector)
       .slice(TYPE_FROM, TYPE_TO).toLowerCase();
