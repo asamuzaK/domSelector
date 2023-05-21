@@ -373,7 +373,7 @@ describe('exported api', () => {
       </div>`;
       document.body.innerHTML = domStr;
       const node = document.getElementById('attr-value-div2');
-      const res = matches('#attr-value [align=\"\"]', node);
+      const res = matches('#attr-value [align=""]', node);
       assert.isTrue(res, 'result');
     });
   });
