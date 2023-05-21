@@ -433,6 +433,73 @@ describe('exported api', () => {
 
     it('should match', () => {
       const domStr = `<div id="root">
+        <div id="not">
+          <div id="not-div1"></div>
+          <div id="not-div2"></div>
+          <div id="not-div3"></div>
+          <p id="not-p1"><span id="not-span1"></span><em id="not-em1"></em></p>
+          <p id="not-p2"><span id="not-span2"></span><em id="not-em2"></em></p>
+          <p id="not-p3"><span id="not-span3"></span><em id="not-em3"></em></p>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#not-em1');
+      const res = matches('#not * :not(:first-child)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="adjacent">
+          <div id="adjacent-div1" class="adjacent-div1"></div>
+          <div id="adjacent-div2" class="adjacent-div2">
+            <div id="adjacent-div3" class="adjacent-div3"></div>
+          </div>
+          <div id="adjacent-div4" class="adjacent-div4">
+            <p id="adjacent-p1" class="adjacent-p1"></p>
+            <div id="adjacent-div5" class="adjacent-div5"></div>
+          </div>
+          <div id="adjacent-div6" class="adjacent-div6"></div>
+          <p id="adjacent-p2" class="adjacent-p2"></p>
+          <p id="adjacent-p3" class="adjacent-p3"></p>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#adjacent-div4');
+      const res = matches('div+#adjacent-div4', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <div id="sibling">
+          <div id="sibling-div1" class="sibling-div"></div>
+          <div id="sibling-div2" class="sibling-div">
+            <div id="sibling-div3" class="sibling-div"></div>
+          </div>
+          <div id="sibling-div4" class="sibling-div">
+            <p id="sibling-p1" class="sibling-p"></p>
+            <div id="sibling-div5" class="sibling-div"></div>
+          </div>
+          <div id="sibling-div6" class="sibling-div"></div>
+          <p id="sibling-p2" class="sibling-p"></p>
+          <p id="sibling-p3" class="sibling-p"></p>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#sibling-div4');
+      const res = matches('div~#sibling-div4', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
         <div id="universal">
           <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
           <hr id="universal-hr1">

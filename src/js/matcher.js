@@ -1018,17 +1018,17 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'first-child':
-          if (node === parentNode.firstElementChild) {
+          if (parentNode && node === parentNode.firstElementChild) {
             matched.push(node);
           }
           break;
         case 'last-child':
-          if (node === parentNode.lastElementChild) {
+          if (parentNode && node === parentNode.lastElementChild) {
             matched.push(node);
           }
           break;
         case 'only-child':
-          if (node === parentNode.firstElementChild &&
+          if (parentNode && node === parentNode.firstElementChild &&
               node === parentNode.lastElementChild) {
             matched.push(node);
           }
@@ -1261,7 +1261,7 @@ class Matcher {
     if (items.length) {
       const [firstItem] = items;
       let rootNode = prevNode;
-      if (comboName === '+' || comboName === '~') {
+      if ((comboName === '+' || comboName === '~') && rootNode.parentNode) {
         rootNode = rootNode.parentNode;
       }
       const iterator = this._createIterator(firstItem, rootNode);
