@@ -879,38 +879,85 @@ const matchPseudoClassSelector = (
                node.indeterminate) ||
               (localName === 'progress' && !node.hasAttribute('value'))) {
             matched.push(node);
-          } else if (localName === 'input' && node.type === 'radio') {
-            const radioName = node.name;
-            let form = node;
+          } else if (localName === 'input' && node.type === 'radio' &&
+                     !node.hasAttribute('checked')) {
+            const nodeName = node.name;
+            let sel;
+            if (nodeName) {
+              sel = `input[type="radio"][name="${nodeName}"]`;
+            } else {
+              sel = 'input[type="radio"]';
+            }
+            let parent = node.parentNode;
+            while (parent) {
+              if (parent.localName === 'form') {
+                break;
+              }
+              parent = parent.parentNode;
+            }
+            if (!parent) {
+              parent = root;
+            }
+            const arr = new Matcher(sel, parent).querySelectorAll();
+            let checked;
+            for (const i of arr) {
+              if (nodeName) {
+                checked = !!i.checked;
+              } else if (!i.hasAttribute('name')) {
+                checked = !!i.checked;
+              }
+              if (checked) {
+                break;
+              }
+            }
+            if (!checked) {
+              matched.push(node);
+            }
+          }
+          break;
+        case 'default':
+          // button[type="submit"], input[type="submit"], input[type="image"]
+          if ((localName === 'button' &&
+               !(node.hasAttribute('type') &&
+                 /^(?:button|reset)$/.test(node.getAttribute('type')))) ||
+              (localName === 'input' && node.hasAttribute('type') &&
+               /^(?:image|submit)$/.test(node.getAttribute('type')))) {
+            let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
                 break;
               }
               form = form.parentNode;
             }
-            if (form && radioName) {
-              const sel = `input[type="radio"][name="${radioName}"]`;
-              const arr = new Matcher(sel, form).querySelectorAll();
-              let checked;
-              for (const i of arr) {
-                checked = !!i.checked;
-                if (checked) {
-                  break;
+            if (form) {
+              const iterator = node.ownerDocument.createNodeIterator(
+                form,
+                FILTER_SHOW_ELEMENT,
+                n => {
+                  const nodeName = n.localName;
+                  let m;
+                  if (nodeName === 'button') {
+                    m = !(
+                      n.hasAttribute('type') &&
+                      /^(?:button|reset)$/.test(n.getAttribute('type'))
+                    );
+                  } else if (nodeName === 'input') {
+                    m = n.hasAttribute('type') &&
+                      /^(?:image|submit)$/.test(n.getAttribute('type'));
+                  }
+                  return m ? FILTER_ACCEPT : FILTER_REJECT;
                 }
-              }
-              if (!checked) {
+              );
+              const nextNode = iterator.nextNode();
+              if (nextNode === node) {
                 matched.push(node);
               }
             }
-          }
-          break;
-        case 'default':
           // input[type="checkbox"], input[type="radio"]
-          if (localName === 'input' && node.hasAttribute('type') &&
-              /^(?:checkbox|radio)$/.test(node.getAttribute('type'))) {
-            if (node.hasAttribute('checked')) {
-              matched.push(node);
-            }
+          } else if (localName === 'input' && node.hasAttribute('type') &&
+                     /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
+                     node.hasAttribute('checked')) {
+            matched.push(node);
           // option
           } else if (localName === 'option') {
             let isMultiple = false;
@@ -946,15 +993,6 @@ const matchPseudoClassSelector = (
                 matched.push(node);
               }
             }
-          // FIXME:
-          // button[type="submit"], input[type="submit"], input[type="image"]
-          } else if ((localName === 'button' &&
-                      (!node.hasAttribute('type') ||
-                       node.getAttribute('type') === 'submit')) ||
-                     (localName === 'input' && node.hasAttribute('type') &&
-                      /^(?:image|submit)$/.test(node.getAttribute('type')))) {
-            throw new DOMException(`Unsupported pseudo-class ${astName}`,
-              'NotSupportedError');
           }
           break;
         case 'valid':
@@ -974,20 +1012,25 @@ const matchPseudoClassSelector = (
           }
           break;
         case 'in-range':
-          if (localName === 'input' && !node.readonly &&
-              !(node.hasAttribute('type') &&
-                INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
-              node.hasAttribute('min') && node.hasAttribute('max') &&
+          if (localName === 'input' && !node.hasAttribute('readonly') &&
+              !node.hasAttribute('disabled') &&
               !(node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
-            matched.push(node);
+            if (!(node.hasAttribute('type') &&
+                 INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
+               node.hasAttribute('min') && node.hasAttribute('max')) {
+              matched.push(node);
+            } else if (node.getAttribute('type') === 'range') {
+              matched.push(node);
+            }
           }
           break;
         case 'out-of-range':
-          if (localName === 'input' && !node.readonly &&
+          if (localName === 'input' && !node.hasAttribute('readonly') &&
+              !node.hasAttribute('disabled') &&
+              (node.validity.rangeUnderflow || node.validity.rangeOverflow) &&
               !(node.hasAttribute('type') &&
                 INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
-              node.hasAttribute('min') && node.hasAttribute('max') &&
-              (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
+              node.hasAttribute('min') && node.hasAttribute('max')) {
             matched.push(node);
           }
           break;

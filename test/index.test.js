@@ -557,6 +557,43 @@ describe('exported api', () => {
       const res = matches('#universal *', node);
       assert.isTrue(res, 'result');
     });
+
+    it('should match', () => {
+      const domStr = `<div>
+        <fieldset id=fieldset1>
+          <input id=input1>
+        </fieldset>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const fieldset = document.querySelector('#fieldset1');
+      const input = document.querySelector('#input1');
+      assert.isTrue(fieldset.matches(':valid'), 'before');
+      fieldset.remove();
+      input.setCustomValidity('foo');
+      assert.isTrue(fieldset.matches(':invalid'), 'inter');
+      input.setCustomValidity('');
+      assert.isTrue(fieldset.matches(':valid'), 'after');
+    });
+
+    it('should match', () => {
+      const domStr = `<div>
+        <fieldset id=fieldset2>
+          <select id=select1 required multiple>
+            <option>foo
+          </select>
+        </fieldset>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const fieldset = document.querySelector('#fieldset2');
+      const select = document.querySelector('#select1');
+      assert.isTrue(fieldset.matches(':invalid'), 'before');
+      fieldset.remove();
+      select.required = false;
+      assert.isTrue(fieldset.matches(':valid'), 'inter');
+      select.required = true;
+      select.firstElementChild.selected = true;
+      assert.isTrue(fieldset.matches(':valid'), 'after');
+    });
   });
 
   describe('closest', () => {
@@ -988,6 +1025,260 @@ describe('exported api', () => {
       li3.classList.add('baz');
       const res = querySelectorAll('.qux', div1);
       assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div>
+        <form>
+          <button id=button1 type=button>button1</button>
+          <button id=button2 type=submit>button2</button>
+        </form>
+        <form>
+          <button id=button3 type=reset>button3</button>
+          <button id=button4>button4</button>
+        </form>
+        <button id=button5 type=submit>button5</button>
+        <form id=form1>
+          <input type=text id=input1>
+        </form>
+        <input type=text id=input2 form=form1>
+        <form>
+          <input type=submit id=input3>
+          <input type=submit id=input4>
+        </form>
+        <form>
+          <input type=image id=input5>
+          <input type=image id=input6>
+        </form>
+        <form>
+          <input type=submit id=input7>
+        </form>
+        <input type=checkbox id=checkbox1 checked>
+        <input type=checkbox id=checkbox2>
+        <input type=checkbox id=checkbox3 default>
+        <input type=radio name=radios id=radio1 checked>
+        <input type=radio name=radios id=radio2>
+        <input type=radio name=radios id=radio3 default>
+        <select id=select1>
+          <optgroup label="options" id=optgroup1>
+            <option value="option1" id=option1>option1
+            <option value="option2" id=option2 selected>option2
+        </select>
+        <dialog id="dialog">
+          <input type=submit id=input8>
+        </dialog>
+        <form>
+          <button id=button6 type='invalid'>button6</button>
+          <button id=button7>button7</button>
+        </form>
+        <form>
+          <button id=button8>button8</button>
+          <button id=button9>button9</button>
+        </form>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const res = querySelectorAll(':default', document);
+      assert.deepEqual(res, [
+        document.getElementById('button2'),
+        document.getElementById('button4'),
+        document.getElementById('input3'),
+        document.getElementById('input5'),
+        document.getElementById('input7'),
+        document.getElementById('checkbox1'),
+        document.getElementById('radio1'),
+        document.getElementById('option2'),
+        document.getElementById('button6'),
+        document.getElementById('button8')
+      ]);
+    });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div>
+        <input type=checkbox id=checkbox1>
+        <input type=checkbox id=checkbox2>
+        <input type=radio id=radio1 checked>
+        <input type=radio id=radio1_2>
+        <input type=radio name=radiogroup id=radio2 checked>
+        <input type=radio name=radiogroup id=radio3>
+        <input type=radio name=group2 id=radio4>
+        <input type=radio name=group2 id=radio5>
+        <progress id="progress1"></progress>
+        <progress id="progress2" value=10></progress>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const checkbox1 = document.getElementById('checkbox1');
+      checkbox1.indeterminate = true;
+      const res = querySelectorAll(':indeterminate', document);
+      assert.deepEqual(res, [
+        checkbox1,
+        document.getElementById('radio4'),
+        document.getElementById('radio5'),
+        document.getElementById('progress1')
+      ]);
+    });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div>
+        <input type=number value=0 min=0 max=10 id=number1>
+        <input type=number value=0 min=0 max=10 id=number2 disabled>
+        <input type=number value=0 min=1 max=10 id=number3>
+        <input type=number value=11 min=0 max=10 id=number4>
+        <input type=number value=0 min=0 max=10 id=number5 readonly>
+
+        <input type="date" min="2005-10-10" max="2020-10-10" value="2010-10-10" id="datein">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2005-10-10" id="dateunder">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2030-10-10" id="dateover">
+
+        <input type="time" min="01:00:00" max="05:00:00" value="02:00:00" id="timein">
+        <input type="time" min="02:00:00" max="05:00:00" value="01:00:00" id="timeunder">
+        <input type="time" min="02:00:00" max="05:00:00" value="07:00:00" id="timeover">
+
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W07" id="weekin">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W02" id="weekunder">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W26" id="weekover">
+
+        <input type="month" min="2000-04" max="2000-09" value="2000-06" id="monthin">
+        <input type="month" min="2000-04" max="2000-09" value="2000-02" id="monthunder">
+        <input type="month" min="2000-04" max="2000-09" value="2000-11" id="monthover">
+
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2012-11-28T23:59:59" id="datetimelocalin">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2008-03-01T23:59:59" id="datetimelocalunder">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2016-01-01T23:59:59" id="datetimelocalover">
+
+        <!-- None of the following have range limitations since they have neither min nor max attributes -->
+        <input type="number" value="0" id="numbernolimit">
+        <input type="date" value="2010-10-10" id="datenolimit">
+        <input type="time" value="02:00:00" id="timenolimit">
+        <input type="week" value="2016-W07" id="weeknolimit">
+        <input type="month" value="2000-06" id="monthnolimit">
+        <input type="datetime-local" value="2012-11-28T23:59:59" id="datetimelocalnolimit">
+
+        <!-- range inputs have default minimum of 0 and default maximum of 100 -->
+        <input type="range" value="50" id="range0">
+        <input type="range" value="-1" id="range0_2">
+        <input type="range" value="101" id="range0_3">
+
+        <!-- range input's value gets immediately clamped to the nearest boundary point -->
+        <input type="range" min="2" max="7" value="5" id="range1">
+        <input type="range" min="2" max="7" value="1" id="range2">
+        <input type="range" min="2" max="7" value="9" id="range3">
+
+        <!-- None of the following input types can have range limitations -->
+        <input min="1" value="0" type="text">
+        <input min="1" value="0" type="search">
+        <input min="1" value="0" type="url">
+        <input min="1" value="0" type="tel">
+        <input min="1" value="0" type="email">
+        <input min="1" value="0" type="password">
+        <input min="1" value="#000000" type="color">
+        <input min="1" value="0" type="checkbox">
+        <input min="1" value="0" type="radio">
+        <input min="1" value="0" type="file">
+        <input min="1" value="0" type="submit">
+        <input min="1" value="0" type="image">
+        <!-- The following types are also barred from constraint validation -->
+        <input min="1" value="0" type="hidden">
+        <input min="1" value="0" type="button">
+        <input min="1" value="0" type="reset">
+      </div>`;
+      document.body.innerHTML = domStr;
+      const res = querySelectorAll(':in-range', document);
+      assert.deepEqual(res, [
+        document.getElementById('number1'),
+        document.getElementById('datein'),
+        document.getElementById('timein'),
+        document.getElementById('weekin'),
+        document.getElementById('monthin'),
+        document.getElementById('datetimelocalin'),
+        document.getElementById('range0'),
+        document.getElementById('range0_2'),
+        document.getElementById('range0_3'),
+        document.getElementById('range1'),
+        document.getElementById('range2'),
+        document.getElementById('range3')
+      ]);
+    });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div>
+        <input type=number value=0 min=0 max=10 id=number1>
+        <input type=number value=0 min=0 max=10 id=number2 disabled>
+        <input type=number value=0 min=1 max=10 id=number3>
+        <input type=number value=11 min=0 max=10 id=number4>
+        <input type=number value=0 min=0 max=10 id=number5 readonly>
+
+        <input type="date" min="2005-10-10" max="2020-10-10" value="2010-10-10" id="datein">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2005-10-10" id="dateunder">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2030-10-10" id="dateover">
+
+        <input type="time" min="01:00:00" max="05:00:00" value="02:00:00" id="timein">
+        <input type="time" min="02:00:00" max="05:00:00" value="01:00:00" id="timeunder">
+        <input type="time" min="02:00:00" max="05:00:00" value="07:00:00" id="timeover">
+
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W07" id="weekin">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W02" id="weekunder">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W26" id="weekover">
+
+        <input type="month" min="2000-04" max="2000-09" value="2000-06" id="monthin">
+        <input type="month" min="2000-04" max="2000-09" value="2000-02" id="monthunder">
+        <input type="month" min="2000-04" max="2000-09" value="2000-11" id="monthover">
+
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2012-11-28T23:59:59" id="datetimelocalin">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2008-03-01T23:59:59" id="datetimelocalunder">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2016-01-01T23:59:59" id="datetimelocalover">
+
+        <!-- None of the following have range limitations since they have neither min nor max attributes -->
+        <input type="number" value="0" id="numbernolimit">
+        <input type="date" value="2010-10-10" id="datenolimit">
+        <input type="time" value="02:00:00" id="timenolimit">
+        <input type="week" value="2016-W07" id="weeknolimit">
+        <input type="month" value="2000-06" id="monthnolimit">
+        <input type="datetime-local" value="2012-11-28T23:59:59" id="datetimelocalnolimit">
+
+        <!-- range inputs have default minimum of 0 and default maximum of 100 -->
+        <input type="range" value="50" id="range0">
+        <input type="range" value="-1" id="range0_2">
+        <input type="range" value="101" id="range0_3">
+
+        <!-- range input's value gets immediately clamped to the nearest boundary point -->
+        <input type="range" min="2" max="7" value="5" id="range1">
+        <input type="range" min="2" max="7" value="1" id="range2">
+        <input type="range" min="2" max="7" value="9" id="range3">
+
+        <!-- None of the following input types can have range limitations -->
+        <input min="1" value="0" type="text">
+        <input min="1" value="0" type="search">
+        <input min="1" value="0" type="url">
+        <input min="1" value="0" type="tel">
+        <input min="1" value="0" type="email">
+        <input min="1" value="0" type="password">
+        <input min="1" value="#000000" type="color">
+        <input min="1" value="0" type="checkbox">
+        <input min="1" value="0" type="radio">
+        <input min="1" value="0" type="file">
+        <input min="1" value="0" type="submit">
+        <input min="1" value="0" type="image">
+        <!-- The following types are also barred from constraint validation -->
+        <input min="1" value="0" type="hidden">
+        <input min="1" value="0" type="button">
+        <input min="1" value="0" type="reset">
+      </div>`;
+      document.body.innerHTML = domStr;
+      const res = querySelectorAll(':out-of-range', document);
+      assert.deepEqual(res, [
+        document.getElementById('number3'),
+        document.getElementById('number4'),
+        document.getElementById('dateunder'),
+        document.getElementById('dateover'),
+        document.getElementById('timeunder'),
+        document.getElementById('timeover'),
+        document.getElementById('weekunder'),
+        document.getElementById('weekover'),
+        document.getElementById('monthunder'),
+        document.getElementById('monthover'),
+        document.getElementById('datetimelocalunder'),
+        document.getElementById('datetimelocalover')
+      ]);
     });
   });
 });

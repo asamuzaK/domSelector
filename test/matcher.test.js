@@ -4288,7 +4288,22 @@ describe('match AST leaf and DOM node', () => {
       assert.throws(() => func(leaf, node), DOMException);
     });
 
-    it('should throw', () => {
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node = document.createElement('button');
+      form.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -4297,10 +4312,27 @@ describe('match AST leaf and DOM node', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(leaf, node), DOMException);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
-    it('should throw', () => {
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node = document.createElement('button');
+      node.setAttribute('type', 'submit');
+      form.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -4310,10 +4342,27 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'submit');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(leaf, node), DOMException);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
-    it('should throws', () => {
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node = document.createElement('input');
+      node.setAttribute('type', 'submit');
+      form.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -4323,10 +4372,27 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'submit');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(leaf, node), DOMException);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
-    it('should throw', () => {
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node = document.createElement('input');
+      node.setAttribute('type', 'image');
+      form.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -4336,7 +4402,8 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('type', 'image');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(leaf, node), DOMException);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node(s)', () => {

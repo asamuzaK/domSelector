@@ -193,84 +193,84 @@ describe('create AST from CSS selector', () => {
     it('should get selector list', () => {
       const res = func('#foo\u{2003}bar');
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "foo bar",
-                "type": ID_SELECTOR
+                loc: null,
+                name: 'foo bar',
+                type: ID_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
 
     it('should get selector list', () => {
       const res = func('#1\u{2003}2');
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "1 2",
-                "type": ID_SELECTOR
+                loc: null,
+                name: '1 2',
+                type: ID_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
 
     it('should get selector list', () => {
       const res = func('#\u{2003}');
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "\u{2003}",
-                "type": ID_SELECTOR
+                loc: null,
+                name: '\u{2003}',
+                type: ID_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
 
     it('should get selector list', () => {
       const res = func('#\u{A0}');
       assert.deepEqual(res, {
-        "children": [
+        children: [
           {
-            "children": [
+            children: [
               {
-                "loc": null,
-                "name": "\u{A0}",
-                "type": ID_SELECTOR
+                loc: null,
+                name: '\u{A0}',
+                type: ID_SELECTOR
               }
             ],
-            "loc": null,
-            "type": SELECTOR
+            loc: null,
+            type: SELECTOR
           }
         ],
-        "loc": null,
-        "type": SELECTOR_LIST
+        loc: null,
+        type: SELECTOR_LIST
       }, 'result');
     });
   });
