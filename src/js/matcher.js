@@ -715,9 +715,41 @@ const matchPseudoClassSelector = (
       } else {
         switch (astName) {
           case 'dir':
+            // FIXME:
             if (astChildAst.name === node.dir) {
               matched.push(node);
             }
+            /*
+            const childAstName = astChildAst.name;
+            const nodeDir = node.dir;
+            if (nodeDir === 'auto') {
+              let parent = node;
+              while (parent) {
+                const {
+                  dir, localName: parentLocalName, value: inputValue
+                } = parent;
+                if (parent === node.ownerDocument.documentElement) {
+                  if ((!dir && childAstName === 'ltr') ||
+                      dir === childAstName) {
+                    matched.push(node);
+                  }
+                  break;
+                } else if (dir !== 'auto') {
+                  if (dir === childAstName) {
+                    matched.push(node);
+                  }
+                  break;
+                } else if (parentLocalName === 'input' &&
+                           inputValue === childAstName) {
+                  matched.push(node);
+                  break;
+                }
+                parent = node.parentNode;
+              }
+            } else if (nodeDir === childAstName) {
+              matched.push(node);
+            }
+            */
             break;
           case 'lang':
             if (matchLanguagePseudoClass(astChildAst, node)) {

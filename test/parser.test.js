@@ -273,6 +273,48 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func('#\u{12345}');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '\\12345 ',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#\u{12345}foo');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '\\12345 foo',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('universal selector', () => {

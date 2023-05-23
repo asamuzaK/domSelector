@@ -9,6 +9,9 @@ const DOMException = require('./domexception.js');
 
 /* constants */
 const { SELECTOR } = require('./constant.js');
+const CODE_POINT_UNIT = parseInt('10000', 16);
+const HEX = 16;
+const PAIR = 2;
 const TYPE_FROM = 8;
 const TYPE_TO = -1;
 
@@ -24,6 +27,26 @@ const preprocess = (...args) => {
   }
   let [selector] = args;
   if (typeof selector === 'string') {
+    let index = 0;
+    while (index >= 0) {
+      index = selector.indexOf('#', index);
+      if (index < 0) {
+        break;
+      }
+      const preHash = selector.substring(0, index + 1);
+      let postHash = selector.substring(index + 1);
+      const codePoint = postHash.codePointAt(0);
+      if (codePoint >= CODE_POINT_UNIT) {
+        const str = `\\${codePoint.toString(HEX)} `;
+        if (postHash.length === PAIR) {
+          postHash = str;
+        } else {
+          postHash = `${str}${postHash.substring(PAIR)}`;
+        }
+      }
+      selector = `${preHash}${postHash}`;
+      index++;
+    }
     selector = selector.replace(/\f|\r\n?/g, '\n')
       .replace(/[\0\uD800-\uDFFF]|\\$/g, '\uFFFD');
   } else if (selector === undefined || selector === null) {

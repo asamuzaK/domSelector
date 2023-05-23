@@ -568,11 +568,20 @@ describe('exported api', () => {
       const fieldset = document.querySelector('#fieldset1');
       const input = document.querySelector('#input1');
       assert.isTrue(fieldset.matches(':valid'), 'before');
+      assert.isFalse(fieldset.matches(':invalid'), 'before');
+      assert.isTrue(input.matches(':valid'), 'before');
+      assert.isFalse(input.matches(':invalid'), 'before');
       fieldset.remove();
       input.setCustomValidity('foo');
+      assert.isFalse(fieldset.matches(':valid'), 'inter');
       assert.isTrue(fieldset.matches(':invalid'), 'inter');
+      assert.isFalse(input.matches(':valid'), 'inter');
+      assert.isTrue(input.matches(':invalid'), 'inter');
       input.setCustomValidity('');
       assert.isTrue(fieldset.matches(':valid'), 'after');
+      assert.isFalse(fieldset.matches(':invalid'), 'after');
+      assert.isTrue(input.matches(':valid'), 'after');
+      assert.isFalse(input.matches(':invalid'), 'after');
     });
 
     it('should match', () => {
@@ -586,13 +595,43 @@ describe('exported api', () => {
       document.body.innerHTML = domStr;
       const fieldset = document.querySelector('#fieldset2');
       const select = document.querySelector('#select1');
+      assert.isFalse(fieldset.matches(':valid'), 'before');
       assert.isTrue(fieldset.matches(':invalid'), 'before');
+      assert.isFalse(select.matches(':valid'), 'before');
+      assert.isTrue(select.matches(':invalid'), 'before');
       fieldset.remove();
       select.required = false;
       assert.isTrue(fieldset.matches(':valid'), 'inter');
+      assert.isFalse(fieldset.matches(':invalid'), 'inter');
+      assert.isTrue(select.matches(':valid'), 'inter');
+      assert.isFalse(select.matches(':invalid'), 'inter');
       select.required = true;
       select.firstElementChild.selected = true;
       assert.isTrue(fieldset.matches(':valid'), 'after');
+      assert.isFalse(fieldset.matches(':invalid'), 'after');
+      assert.isTrue(select.matches(':valid'), 'after');
+      assert.isFalse(select.matches(':invalid'), 'after');
+    });
+
+    // FIXME: later
+    xit('should match', () => {
+      const domStr = '<input value="ltr" dir="auto">';
+      document.body.innerHTML = domStr;
+      const input = document.querySelector('input');
+      assert.isTrue(input.matches(':dir(ltr)'),
+        'Input with ltr value should match dir(ltr)');
+      input.textContent = 'ﷺ';
+      assert.isTrue(input.matches(':dir(ltr)'),
+        'Should still match dir(ltr) after text change');
+      input.value = 'ltr2';
+      assert.isTrue(input.matches(':dir(ltr)'),
+        'Should still match dir(ltr) after value change');
+      input.value = 'ﷺ';
+      assert.isTrue(input.matches(':dir(rtl)'),
+        'Should match dir(rtl) after value change');
+      input.textContent = 'ltr';
+      assert.isTrue(input.matches(':dir(rtl)'),
+        'Should match dir(rtl) after text change');
     });
   });
 

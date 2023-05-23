@@ -198,72 +198,72 @@ describe('match AST leaf and DOM node', () => {
 
     it('should get value', () => {
       const res = func();
-      assert.strictEqual(res, '');
+      assert.strictEqual(res, '', 'result');
     });
 
     it('should get value', () => {
       const res = func('');
-      assert.strictEqual(res, '');
+      assert.strictEqual(res, '', 'result');
     });
 
     it('should get replaced value', () => {
       const res = func('\\');
-      assert.strictEqual(res, '\uFFFD', 'res');
+      assert.strictEqual(res, '\uFFFD', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\global');
-      assert.strictEqual(res, 'global', 'res');
+      assert.strictEqual(res, 'global', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\n');
-      assert.strictEqual(res, 'n', 'res');
+      assert.strictEqual(res, 'n', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\\n');
-      assert.strictEqual(res, '\\\n', 'res');
+      assert.strictEqual(res, '\\\n', 'result');
     });
 
     it('should get replaced value', () => {
       const res = func('\\0');
-      assert.strictEqual(res, '\uFFFD', 'res');
+      assert.strictEqual(res, '\uFFFD', 'result');
     });
 
     it('should get replaced value', () => {
       const res = func('\\000000');
-      assert.strictEqual(res, '\uFFFD', 'res');
+      assert.strictEqual(res, '\uFFFD', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\30');
-      assert.strictEqual(res, '0', 'res');
+      assert.strictEqual(res, '0', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\30 \\30 ');
-      assert.strictEqual(res, '00', 'res');
+      assert.strictEqual(res, '00', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\41');
-      assert.strictEqual(res, 'A', 'res');
+      assert.strictEqual(res, 'A', 'result');
     });
 
     it('should get value', () => {
       const res = func('hel\\6Co');
-      assert.strictEqual(res, 'hello', 'res');
+      assert.strictEqual(res, 'hello', 'result');
     });
 
     it('should get value', () => {
       const res = func('hel\\6C o');
-      assert.strictEqual(res, 'hello', 'res');
+      assert.strictEqual(res, 'hello', 'result');
     });
 
     it('should get value', () => {
       const res = func('\\26 B');
-      assert.strictEqual(res, '&B', 'res');
+      assert.strictEqual(res, '&B', 'result');
     });
 
     it('should get replaced value', () => {
