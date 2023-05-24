@@ -19,12 +19,19 @@ const FILTER_ACCEPT = 1;
 const FILTER_REJECT = 2;
 const FILTER_SHOW_ELEMENT = 1;
 const TEXT_NODE = 3;
+
+/* ast leaf */
+const DESCEND_COMBINATOR = {
+  name: ' ',
+  type: COMBINATOR
+};
 const UNIVERSAL_SELECTOR = {
   name: '*',
   type: TYPE_SELECTOR
 };
 
 /* regexp */
+const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
 const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
@@ -133,6 +140,44 @@ const unescapeSelector = (selector = '') => {
     selector = arr.join('');
   }
   return selector;
+};
+
+/**
+ * get iterator leaf
+ * @param {Array} branch - AST branch
+ * @returns {?object} - leaf
+ */
+const getIteratorLeaf = (branch = []) => {
+  const [item] = branch;
+  let res;
+  if (item) {
+    if (item.type === TYPE_SELECTOR) {
+      res = item;
+    } else {
+      res = UNIVERSAL_SELECTOR;
+    }
+  }
+  return res ?? null;
+};
+
+/**
+ * get grouped leaves
+ * @param {Array} branch - AST branch
+ * @returns {Array.<Array|?object>} - array of leaves, combo, rest of branch
+ */
+const getGroupedLeaves = (branch = []) => {
+  const [...items] = branch;
+  const leaves = [];
+  let combo;
+  while (items.length) {
+    const item = items.shift();
+    if (item.type === COMBINATOR) {
+      combo = item;
+      break;
+    }
+    leaves.push(item);
+  }
+  return [leaves, combo ?? null, items];
 };
 
 /**
@@ -365,6 +410,63 @@ const matchAnPlusB = (nthName, ast = {}, node = {}) => {
 };
 
 /**
+ * match combinator
+ * @param {object} combo - combinator
+ * @param {Array.<object>} prevNodes - array of Element nodes
+ * @param {Array.<object>} nextNodes - array of Element nodes
+ * @returns {Array.<object|undefined>} - matched nodes
+ */
+const matchCombinator = (combo = {}, prevNodes = [], nextNodes = []) => {
+  const { name: comboName, type: comboType } = combo;
+  const matched = [];
+  if (comboType === COMBINATOR && /^[ >+~]$/.test(comboName) &&
+      prevNodes.every(n => n.nodeType === ELEMENT_NODE) &&
+      nextNodes.every(n => n.nodeType === ELEMENT_NODE)) {
+    for (const node of nextNodes) {
+      switch (comboName) {
+        case '+': {
+          const refNode = node.previousElementSibling;
+          if (refNode && prevNodes.includes(refNode)) {
+            matched.push(node);
+          }
+          break;
+        }
+        case '~': {
+          let refNode = node.previousElementSibling;
+          while (refNode) {
+            if (refNode && prevNodes.includes(refNode)) {
+              matched.push(node);
+              break;
+            }
+            refNode = refNode.previousElementSibling;
+          }
+          break;
+        }
+        case '>': {
+          const refNode = node.parentNode;
+          if (refNode && prevNodes.includes(refNode)) {
+            matched.push(node);
+          }
+          break;
+        }
+        case ' ':
+        default: {
+          let refNode = node.parentNode;
+          while (refNode) {
+            if (refNode && prevNodes.includes(refNode)) {
+              matched.push(node);
+              break;
+            }
+            refNode = refNode.parentNode;
+          }
+        }
+      }
+    }
+  }
+  return [...new Set(matched)];
+};
+
+/**
  * match type selector
  * @param {object} ast - AST
  * @param {object} node - Element node
@@ -406,7 +508,7 @@ const matchTypeSelector = (ast = {}, node = {}) => {
       res = node;
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
@@ -425,7 +527,7 @@ const matchClassSelector = (ast = {}, node = {}) => {
       res = node;
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
@@ -444,7 +546,7 @@ const matchIDSelector = (ast = {}, node = {}) => {
       res = node;
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
@@ -625,11 +727,190 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
       }
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
- * match language pseudo-class
+ * match logical pseudo-class functions - :is(), :has(), :not(), :where()
+ * @param {object} ast - AST
+ * @param {object} node - Element node
+ * @returns {?object} - matched node
+ */
+const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
+  const { type: astType } = ast;
+  const astName = unescapeSelector(ast.name);
+  let res;
+  if (astType === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(astName) &&
+      node.nodeType === ELEMENT_NODE) {
+    let nodeSelector = '';
+    if (astName === 'has') {
+      if (node.hasAttribute('id')) {
+        nodeSelector = `${node.localName}#${node.getAttribute('id')}`;
+      } else if (node.hasAttribute('class')) {
+        const values = node.classList.values();
+        nodeSelector = node.localName;
+        for (const value of values) {
+          nodeSelector += `.${value}`;
+        }
+      }
+    }
+    const branchSelectors = [];
+    const branches = walkAST(ast);
+    for (const branch of branches) {
+      const [leaf, ...items] = branch;
+      let css = generateCSS(leaf);
+      if (css) {
+        if (astName === 'has') {
+          if (/^[>+~]/.test(css)) {
+            css = `${nodeSelector}${css}`;
+          } else {
+            css = `${nodeSelector} ${css}`;
+          }
+        }
+        for (const item of items) {
+          const itemCss = generateCSS(item);
+          if (itemCss) {
+            css += itemCss;
+          }
+        }
+        branchSelectors.push(css);
+      }
+    }
+    const branchSelector = [...new Set(branchSelectors)].join(',');
+    const nodes =
+      new Matcher(branchSelector, node.parentNode).querySelectorAll();
+    switch (astName) {
+      // :has()
+      case 'has': {
+        let matched;
+        if (/:has\(/.test(branchSelector)) {
+          matched = false;
+        } else {
+          if (nodes.length) {
+            for (const branch of branches) {
+              const [leaf] = branch;
+              let combo;
+              if (leaf.type === COMBINATOR) {
+                combo = leaf;
+              } else {
+                combo = DESCEND_COMBINATOR;
+              }
+              const arr = matchCombinator(combo, [node], nodes);
+              if (arr.length) {
+                matched = true;
+                break;
+              }
+            }
+          }
+        }
+        if (matched) {
+          res = node;
+        }
+        break;
+      }
+      // :not()
+      case 'not': {
+        let matched;
+        // NOTE: according to MDN, :not() can not contain :not()
+        // but spec says nothing about that?
+        if (/:not\(/.test(branchSelector)) {
+          matched = true;
+        } else if (nodes.length) {
+          for (const item of nodes) {
+            if (item === node) {
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (!matched) {
+          res = node;
+        }
+        break;
+      }
+      // :is(), :where()
+      case 'is':
+      case 'where':
+      default: {
+        let matched;
+        if (nodes.length) {
+          for (const item of nodes) {
+            if (item === node) {
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (matched) {
+          res = node;
+        }
+      }
+    }
+  }
+  return res ?? null;
+};
+
+/**
+ * match directionality pseudo-class - :dir()
+ * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
+ * @param {object} ast - AST
+ * @param {object} node - Element node
+ * @returns {?object} - matched node
+ */
+const matchDirectionPseudoClass = (ast = {}, node = {}) => {
+  const { type: astType } = ast;
+  const {
+    dir: nodeDir, localName, nodeType, type: inputType, value: inputValue
+  } = node;
+  let res;
+  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
+    const astName = unescapeSelector(ast.name);
+    let dir;
+    if (/^(?:ltr|rtl)$/.test(nodeDir)) {
+      dir = nodeDir;
+    } else if ((node === node.ownerDocument.documentElement ||
+                localName === 'input' && inputType === 'tel') &&
+               !(nodeDir && DIR_VALUE.test(nodeDir))) {
+      dir = 'ltr';
+    // FIXME:
+    } else if (nodeDir === 'auto' &&
+               (localName === 'textarea' ||
+                (localName === 'input' &&
+                 (!inputType ||
+                  /^(?:(?:emai|te|ur)l|search|text)$/.test(inputType))))) {
+      throw new DOMException('Unsupported pseudo-class :dir()',
+        'NotSupportedError');
+    // FIXME:
+    } else if (nodeDir === 'auto' || (localName === 'bdi' && !nodeDir)) {
+      throw new DOMException('Unsupported pseudo-class :dir()',
+        'NotSupportedError');
+    } else if (!nodeDir) {
+      let parent = node.parentNode;
+      while (parent) {
+        const { dir: parentDir, localName: parentLocalName } = parent;
+        if (parent === node.ownerDocument.documentElement) {
+          if (parentDir) {
+            dir = parentDir;
+          } else {
+            dir = 'ltr';
+          }
+          break;
+        } else if (parentDir && /^(?:ltr|rtl)$/.test(parentDir)) {
+          dir = parentDir;
+          break;
+        }
+        parent = parent.parentNode;
+      }
+    }
+    if (dir === astName) {
+      res = node;
+    }
+  }
+  return res ?? null;
+};
+
+/**
+ * match language pseudo-class - :lang()
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} ast - AST
  * @param {object} node - Element node
@@ -683,7 +964,7 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
       }
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
@@ -705,57 +986,33 @@ const matchPseudoClassSelector = (
   if (astType === PSEUDO_CLASS_SELECTOR && nodeType === ELEMENT_NODE) {
     const astName = unescapeSelector(ast.name);
     if (Array.isArray(astChildren)) {
-      const [astChildAst] = astChildren;
+      const [branch] = astChildren;
+      // :has(), :is(), :not(), :where()
+      if (PSEUDO_FUNC.test(astName)) {
+        const res = matchLogicalPseudoFunc(ast, node);
+        if (res) {
+          matched.push(node);
+        }
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (PSEUDO_NTH.test(astName)) {
-        const arr = matchAnPlusB(astName, astChildAst, node);
+      } else if (PSEUDO_NTH.test(astName)) {
+        const arr = matchAnPlusB(astName, branch, node);
         if (arr.length) {
           matched.push(...arr);
         }
+      // :dir()
+      } else if (astName === 'dir') {
+        const res = matchDirectionPseudoClass(branch, node);
+        if (res) {
+          matched.push(node);
+        }
+      // :lang()
+      } else if (astName === 'lang') {
+        const res = matchLanguagePseudoClass(branch, node);
+        if (res) {
+          matched.push(node);
+        }
       } else {
         switch (astName) {
-          case 'dir':
-            // FIXME:
-            if (astChildAst.name === node.dir) {
-              matched.push(node);
-            }
-            /*
-            const childAstName = astChildAst.name;
-            const nodeDir = node.dir;
-            if (nodeDir === 'auto') {
-              let parent = node;
-              while (parent) {
-                const {
-                  dir, localName: parentLocalName, value: inputValue
-                } = parent;
-                if (parent === node.ownerDocument.documentElement) {
-                  if ((!dir && childAstName === 'ltr') ||
-                      dir === childAstName) {
-                    matched.push(node);
-                  }
-                  break;
-                } else if (dir !== 'auto') {
-                  if (dir === childAstName) {
-                    matched.push(node);
-                  }
-                  break;
-                } else if (parentLocalName === 'input' &&
-                           inputValue === childAstName) {
-                  matched.push(node);
-                  break;
-                }
-                parent = node.parentNode;
-              }
-            } else if (nodeDir === childAstName) {
-              matched.push(node);
-            }
-            */
-            break;
-          case 'lang':
-            if (matchLanguagePseudoClass(astChildAst, node)) {
-              matched.push(node);
-            }
-            break;
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
@@ -771,12 +1028,13 @@ const matchPseudoClassSelector = (
       const docURL = new URL(ownerDocument.URL);
       switch (astName) {
         case 'any-link':
-        case 'link':
+        case 'link': {
           if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
             matched.push(node);
           }
           break;
-        case 'local-link':
+        }
+        case 'local-link': {
           if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
@@ -785,15 +1043,18 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'visited':
+        }
+        case 'visited': {
           // prevent fingerprinting
           break;
-        case 'target':
+        }
+        case 'target': {
           if (docURL.hash && node.id && docURL.hash === `#${node.id}`) {
             matched.push(node);
           }
           break;
-        case 'target-within':
+        }
+        case 'target-within': {
           if (docURL.hash) {
             const hash = docURL.hash.replace(/^#/, '');
             let current = ownerDocument.getElementById(hash);
@@ -806,7 +1067,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'scope':
+        }
+        case 'scope': {
           if (refPoint?.nodeType === ELEMENT_NODE) {
             if (node === refPoint) {
               matched.push(node);
@@ -815,11 +1077,13 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'focus':
+        }
+        case 'focus': {
           if (node === ownerDocument.activeElement) {
             matched.push(node);
           }
           break;
+        }
         case 'focus-within': {
           let current = ownerDocument.activeElement;
           while (current) {
@@ -831,17 +1095,19 @@ const matchPseudoClassSelector = (
           }
           break;
         }
-        case 'open':
+        case 'open': {
           if (HTML_INTERACT.test(localName) && node.hasAttribute('open')) {
             matched.push(node);
           }
           break;
-        case 'closed':
+        }
+        case 'closed': {
           if (HTML_INTERACT.test(localName) && !node.hasAttribute('open')) {
             matched.push(node);
           }
           break;
-        case 'disabled':
+        }
+        case 'disabled': {
           if (HTML_FORM_INPUT.test(localName) ||
               HTML_FORM_PARTS.test(localName) ||
               isCustomElementName(localName)) {
@@ -862,7 +1128,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'enabled':
+        }
+        case 'enabled': {
           if ((HTML_FORM_INPUT.test(localName) ||
                HTML_FORM_PARTS.test(localName) ||
                isCustomElementName(localName)) &&
@@ -870,7 +1137,8 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'read-only':
+        }
+        case 'read-only': {
           if (/^(?:input|textarea)$/.test(localName)) {
             if (node.hasAttribute('readonly') ||
                 node.hasAttribute('disabled')) {
@@ -880,7 +1148,8 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'read-write':
+        }
+        case 'read-write': {
           if (/^(?:input|textarea)$/.test(localName)) {
             if (!(node.hasAttribute('readonly') ||
                   node.hasAttribute('disabled'))) {
@@ -890,7 +1159,8 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'placeholder-shown':
+        }
+        case 'placeholder-shown': {
           if (/^(?:input|textarea)$/.test(localName) &&
               node.hasAttribute('placeholder') &&
               node.getAttribute('placeholder').trim().length &&
@@ -898,7 +1168,8 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'checked':
+        }
+        case 'checked': {
           if ((localName === 'input' && node.hasAttribute('type') &&
                /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
                node.checked) ||
@@ -906,7 +1177,8 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'indeterminate':
+        }
+        case 'indeterminate': {
           if ((localName === 'input' && node.type === 'checkbox' &&
                node.indeterminate) ||
               (localName === 'progress' && !node.hasAttribute('value'))) {
@@ -947,7 +1219,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'default':
+        }
+        case 'default': {
           // button[type="submit"], input[type="submit"], input[type="image"]
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
@@ -1027,7 +1300,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'valid':
+        }
+        case 'valid': {
           if (HTML_FORM_INPUT.test(localName) ||
               /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
             if (node.checkValidity()) {
@@ -1035,7 +1309,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'invalid':
+        }
+        case 'invalid': {
           if (HTML_FORM_INPUT.test(localName) ||
               /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
             if (!node.checkValidity()) {
@@ -1043,7 +1318,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'in-range':
+        }
+        case 'in-range': {
           if (localName === 'input' && !node.hasAttribute('readonly') &&
               !node.hasAttribute('disabled') &&
               !(node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
@@ -1056,7 +1332,8 @@ const matchPseudoClassSelector = (
             }
           }
           break;
-        case 'out-of-range':
+        }
+        case 'out-of-range': {
           if (localName === 'input' && !node.hasAttribute('readonly') &&
               !node.hasAttribute('disabled') &&
               (node.validity.rangeUnderflow || node.validity.rangeOverflow) &&
@@ -1066,22 +1343,26 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'required':
+        }
+        case 'required': {
           if (HTML_FORM_INPUT.test(localName) && node.required) {
             matched.push(node);
           }
           break;
-        case 'optional':
+        }
+        case 'optional': {
           if (HTML_FORM_INPUT.test(localName) && !node.required) {
             matched.push(node);
           }
           break;
-        case 'root':
+        }
+        case 'root': {
           if (node === root) {
             matched.push(node);
           }
           break;
-        case 'empty':
+        }
+        case 'empty': {
           if (node.hasChildNodes()) {
             const nodes = [...node.childNodes.values()];
             if (nodes.every(n =>
@@ -1092,22 +1373,26 @@ const matchPseudoClassSelector = (
             matched.push(node);
           }
           break;
-        case 'first-child':
+        }
+        case 'first-child': {
           if (parentNode && node === parentNode.firstElementChild) {
             matched.push(node);
           }
           break;
-        case 'last-child':
+        }
+        case 'last-child': {
           if (parentNode && node === parentNode.lastElementChild) {
             matched.push(node);
           }
           break;
-        case 'only-child':
+        }
+        case 'only-child': {
           if (parentNode && node === parentNode.firstElementChild &&
               node === parentNode.lastElementChild) {
             matched.push(node);
           }
           break;
+        }
         case 'first-of-type': {
           const [node1] = collectNthOfType({
             a: 0,
@@ -1170,12 +1455,14 @@ const matchPseudoClassSelector = (
         case 'user-invalid':
         case 'user-valid':
         case 'volume-locked':
-        case '-webkit-autofill':
+        case '-webkit-autofill': {
           throw new DOMException(`Unsupported pseudo-class ${astName}`,
             'NotSupportedError');
-        default:
+        }
+        default: {
           throw new DOMException(`Unknown pseudo-class ${astName}`,
             'SyntaxError');
+        }
       }
     }
   }
@@ -1321,7 +1608,7 @@ class Matcher {
     if (items.includes(node)) {
       res = node;
     }
-    return res || null;
+    return res ?? null;
   }
 
   /**
@@ -1520,7 +1807,7 @@ class Matcher {
         }
       }
     }
-    return res || null;
+    return res ?? null;
   }
 
   /**
@@ -1656,46 +1943,106 @@ class Matcher {
   }
 
   /**
+   * get matched nodes
+   * @param {Array.<object>} branch - AST branch
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @returns {Array.<object|undefined>} - result
+   */
+  /*
+  _getMatchedNodes(branch, node) {
+    const matched = [];
+    if (Array.isArray(branch) && branch.length) {
+      const iteratorLeaf = getIteratorLeaf(branch);
+      const [leaves, combo, items] = getGroupedLeaves(restItems);
+      if (iteratorLeaf && leaves.length) {
+        const iterator = this._createIterator(iteratorLeaf, node);
+        const prevNodes = [];
+        let nextNode = iterator.nextNode();
+        while (nextNode) {
+          if (nextNode && leaves.every(leaf => this._match(leaf, nextNode))) {
+            prevNodes.push(nextNode);
+          }
+          nextNode = iterator.nextNode();
+        }
+        if (prevNodes.length) {
+          if (combo) {
+            if (items.length) {
+              const nextNodes = [];
+              for (const prevNode of prevNodes) {
+                const nodes = this._getMatchedNodes(items, prevNode);
+                if (nodes.length) {
+                  nextNodes.push(...nodes);
+                }
+              }
+              if (nextNodes.length) {
+                const nodes =
+                  matchCombinator(combo, prevNodes, [...new Set(nextNodes)]);
+                if (nodes.length) {
+                  matched.push(...nodes);
+                }
+              }
+            }
+          } else if (items.length) {
+            // should not reach here, throw?
+          } else {
+            matched.push(...prevNodes)
+          }
+        }
+      }
+    }
+    return [...new Set(matched)];
+  }
+  */
+
+  /**
    * match AST and node
    * @param {object} ast - AST
-   * @param {object} node - Element node
+   * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _match(ast = this.#ast, node = this.#node) {
-    const matched = [];
     const { name, type } = ast;
+    const matched = [];
     switch (type) {
-      case TYPE_SELECTOR:
-        if (matchTypeSelector(ast, node)) {
+      case TYPE_SELECTOR: {
+        const res = matchTypeSelector(ast, node);
+        if (res) {
           matched.push(node);
         }
         break;
-      case CLASS_SELECTOR:
-        if (matchClassSelector(ast, node)) {
+      }
+      case ID_SELECTOR: {
+        const res = matchIDSelector(ast, node);
+        if (res) {
           matched.push(node);
         }
         break;
-      case ID_SELECTOR:
-        if (matchIDSelector(ast, node)) {
+      }
+      case CLASS_SELECTOR: {
+        const res = matchClassSelector(ast, node);
+        if (res) {
           matched.push(node);
         }
         break;
-      case ATTRIBUTE_SELECTOR:
-        if (matchAttributeSelector(ast, node)) {
+      }
+      case ATTRIBUTE_SELECTOR: {
+        const res = matchAttributeSelector(ast, node)
+        if (res) {
           matched.push(node);
         }
         break;
-      case PSEUDO_CLASS_SELECTOR:
-        if (!PSEUDO_FUNC.test(unescapeSelector(name))) {
-          const arr = matchPseudoClassSelector(ast, node, this.#node);
-          if (arr.length) {
-            matched.push(...arr);
-          }
+      }
+      case PSEUDO_CLASS_SELECTOR: {
+        const arr = matchPseudoClassSelector(ast, node, this.#node);
+        if (arr.length) {
+          matched.push(...arr);
         }
         break;
-      case PSEUDO_ELEMENT_SELECTOR:
+      }
+      case PSEUDO_ELEMENT_SELECTOR: {
         matchPseudoElementSelector(ast, node);
         break;
+      }
       default: {
         const arr = this._parseAST(ast, node);
         if (arr.length) {
@@ -1725,7 +2072,7 @@ class Matcher {
           node = node.parentNode;
         }
       }
-      const arr = this._match(this.#ast, node);
+      const arr = this._parseAST(this.#ast, node);
       res = arr.length && arr.includes(this.#node);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'NotSupportedError') {
@@ -1746,7 +2093,7 @@ class Matcher {
   closest() {
     let res;
     try {
-      const arr = this._match(this.#ast, this.#document);
+      const arr = this._parseAST(this.#ast, this.#document);
       let node = this.#node;
       while (node) {
         if (arr.includes(node)) {
@@ -1764,7 +2111,7 @@ class Matcher {
         throw e;
       }
     }
-    return res || null;
+    return res ?? null;
   }
 
   /**
@@ -1774,7 +2121,7 @@ class Matcher {
   querySelector() {
     let res;
     try {
-      const arr = this._match(this.#ast, this.#node);
+      const arr = this._parseAST(this.#ast, this.#node);
       if (arr.length) {
         const i = arr.findIndex(node => node === this.#node);
         if (i >= 0) {
@@ -1791,7 +2138,7 @@ class Matcher {
         throw e;
       }
     }
-    return res || null;
+    return res ?? null;
   }
 
   /**
@@ -1802,7 +2149,7 @@ class Matcher {
   querySelectorAll() {
     const res = [];
     try {
-      const arr = this._match(this.#ast, this.#node);
+      const arr = this._parseAST(this.#ast, this.#node);
       if (arr.length) {
         const i = arr.findIndex(node => node === this.#node);
         if (i >= 0) {
@@ -1828,13 +2175,18 @@ module.exports = {
   Matcher,
   collectNthChild,
   collectNthOfType,
+  getGroupedLeaves,
+  getIteratorLeaf,
   isContentEditable,
   isNamespaceDeclared,
   matchAnPlusB,
   matchAttributeSelector,
   matchClassSelector,
+  matchCombinator,
+  matchDirectionPseudoClass,
   matchIDSelector,
   matchLanguagePseudoClass,
+  matchLogicalPseudoFunc,
   matchPseudoClassSelector,
   matchPseudoElementSelector,
   matchTypeSelector,
