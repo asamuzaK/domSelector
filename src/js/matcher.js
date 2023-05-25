@@ -20,16 +20,6 @@ const FILTER_REJECT = 2;
 const FILTER_SHOW_ELEMENT = 1;
 const TEXT_NODE = 3;
 
-/* ast leaf */
-const DESCEND_COMBINATOR = {
-  name: ' ',
-  type: COMBINATOR
-};
-const UNIVERSAL_SELECTOR = {
-  name: '*',
-  type: TYPE_SELECTOR
-};
-
 /* regexp */
 const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
 const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
@@ -143,41 +133,44 @@ const unescapeSelector = (selector = '') => {
 };
 
 /**
- * get iterator leaf
+ * group leaves
  * @param {Array} branch - AST branch
- * @returns {?object} - leaf
+ * @returns {Array.<object>} - array of grouped leaves
  */
-const getIteratorLeaf = (branch = []) => {
-  const [item] = branch;
-  let res;
-  if (item) {
-    if (item.type === TYPE_SELECTOR) {
-      res = item;
-    } else {
-      res = UNIVERSAL_SELECTOR;
-    }
-  }
-  return res ?? null;
-};
-
-/**
- * get grouped leaves
- * @param {Array} branch - AST branch
- * @returns {Array.<Array|?object>} - array of leaves, combo, rest of branch
- */
-const getGroupedLeaves = (branch = []) => {
+const groupLeaves = (branch = []) => {
   const [...items] = branch;
-  const leaves = [];
-  let combo;
-  while (items.length) {
-    const item = items.shift();
+  const twig = [];
+  const leaves = new Set();
+  let item = items.shift();
+  while (item) {
     if (item.type === COMBINATOR) {
-      combo = item;
+      const [nextItem] = items;
+      if (nextItem.type === COMBINATOR) {
+        const combo = `${item.name}${nextItem.name}`;
+        throw new DOMException(`invalid combinator, ${combo}`, SyntaxError);
+      }
+      twig.push({
+        combo: item,
+        leaves: [...leaves],
+        nodes: new Set()
+      });
+      leaves.clear();
+    } else if (item) {
+      leaves.add(item);
+    }
+    if (items.length) {
+      item = items.shift();
+    } else {
+      twig.push({
+        combo: null,
+        leaves: [...leaves],
+        nodes: new Set()
+      });
+      leaves.clear();
       break;
     }
-    leaves.push(item);
   }
-  return [leaves, combo ?? null, items];
+  return twig;
 };
 
 /**
@@ -777,8 +770,14 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
       }
     }
     const branchSelector = [...new Set(branchSelectors)].join(',');
+    let refNode;
+    if (node.parentNode) {
+      refNode = node.parentNode;
+    } else {
+      refNode = node;
+    }
     const nodes =
-      new Matcher(branchSelector, node.parentNode).querySelectorAll();
+      new Matcher(branchSelector, refNode).querySelectorAll();
     switch (astName) {
       // :has()
       case 'has': {
@@ -793,7 +792,10 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
               if (leaf.type === COMBINATOR) {
                 combo = leaf;
               } else {
-                combo = DESCEND_COMBINATOR;
+                combo = {
+                  name: ' ',
+                  type: COMBINATOR
+                };
               }
               const arr = matchCombinator(combo, [node], nodes);
               if (arr.length) {
@@ -859,9 +861,7 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
  */
 const matchDirectionPseudoClass = (ast = {}, node = {}) => {
   const { type: astType } = ast;
-  const {
-    dir: nodeDir, localName, nodeType, type: inputType, value: inputValue
-  } = node;
+  const { dir: nodeDir, localName, nodeType, type: inputType } = node;
   let res;
   if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
     const astName = unescapeSelector(ast.name);
@@ -869,7 +869,7 @@ const matchDirectionPseudoClass = (ast = {}, node = {}) => {
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
       dir = nodeDir;
     } else if ((node === node.ownerDocument.documentElement ||
-                localName === 'input' && inputType === 'tel') &&
+                (localName === 'input' && inputType === 'tel')) &&
                !(nodeDir && DIR_VALUE.test(nodeDir))) {
       dir = 'ltr';
     // FIXME:
@@ -887,7 +887,7 @@ const matchDirectionPseudoClass = (ast = {}, node = {}) => {
     } else if (!nodeDir) {
       let parent = node.parentNode;
       while (parent) {
-        const { dir: parentDir, localName: parentLocalName } = parent;
+        const { dir: parentDir } = parent;
         if (parent === node.ownerDocument.documentElement) {
           if (parentDir) {
             dir = parentDir;
@@ -1526,7 +1526,7 @@ class Matcher {
   constructor(selector, refPoint, opt = {}) {
     const { warn } = opt;
     this.#ast = parseSelector(selector);
-    this.#document = refPoint?.ownerDocument ?? refPoint;
+    this.#document = refPoint.ownerDocument ?? refPoint;
     this.#node = refPoint;
     this.#selector = selector;
     this.#warn = !!warn;
@@ -1544,398 +1544,19 @@ class Matcher {
   };
 
   /**
-   * create iterator
-   * @param {object} ast - AST
-   * @param {object} root - root node
-   * @returns {object} - iterator
-   */
-  _createIterator(ast = this.#ast, root = this.#node) {
-    const iterator = this.#document.createNodeIterator(
-      root,
-      FILTER_SHOW_ELEMENT,
-      node => {
-        const arr = this._match(ast, node);
-        return arr.length ? FILTER_ACCEPT : FILTER_REJECT;
-      }
-    );
-    return iterator;
-  }
-
-  /**
    * parse ast and run
    * @param {object} ast - AST
-   * @param {object} node - Element node
+   * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _parseAST(ast, node) {
-    const items = walkAST(ast);
+    const branches = walkAST(ast);
     const matched = [];
-    if (items.length) {
-      for (const item of items) {
-        const arr = this._matchSelector(item, node);
+    if (branches.length) {
+      for (const branch of branches) {
+        const arr = this._getMatchedNodes(branch, node);
         if (arr.length) {
           matched.push(...arr);
-        }
-      }
-    }
-    return [...new Set(matched)];
-  }
-
-  /**
-   * match adjacent leaves
-   * @param {Array.<object>} leaves - array of AST leaves
-   * @param {object} node - Element node
-   * @returns {?object} - matched node
-   */
-  _matchAdjacentLeaves(leaves, node) {
-    const [prevLeaf, nextLeaf] = leaves;
-    const iterator = this._createIterator(prevLeaf, node);
-    let prevNode = iterator.nextNode();
-    const items = [];
-    while (prevNode) {
-      const arr = this._match(prevLeaf, prevNode);
-      if (arr.length) {
-        for (const item of arr) {
-          const a = this._match(nextLeaf, item);
-          if (a.length) {
-            items.push(...a);
-          }
-        }
-      }
-      prevNode = iterator.nextNode();
-    }
-    let res;
-    if (items.includes(node)) {
-      res = node;
-    }
-    return res ?? null;
-  }
-
-  /**
-   * match combinator
-   * @param {Array.<object>} leaves - array of AST leaves
-   * @param {object} prevNode - Element node
-   * @returns {Array.<object|undefined>} - matched nodes
-   */
-  _matchCombinator(leaves, prevNode) {
-    const [{ name: comboName }, ...items] = leaves;
-    const nodes = new Set();
-    if (items.length) {
-      const [firstItem] = items;
-      let rootNode = prevNode;
-      if ((comboName === '+' || comboName === '~') && rootNode.parentNode) {
-        rootNode = rootNode.parentNode;
-      }
-      const iterator = this._createIterator(firstItem, rootNode);
-      let nextNode = iterator.nextNode();
-      const item = items.shift();
-      while (nextNode) {
-        const arr = this._match(item, nextNode);
-        if (arr.length) {
-          nodes.add(...arr);
-        }
-        nextNode = iterator.nextNode();
-      }
-      while (items.length) {
-        const ast = items.shift();
-        if (nodes.size) {
-          nodes.forEach(node => {
-            const arr = this._match(ast, node);
-            if (!arr.length) {
-              nodes.delete(node);
-            }
-          });
-        }
-      }
-    }
-    const matched = [];
-    if (nodes.size && /^[ >+~]$/.test(comboName)) {
-      const arr = [...nodes];
-      for (const item of arr) {
-        let refNode = item;
-        switch (comboName) {
-          case '>':
-            if (refNode.parentNode === prevNode) {
-              matched.push(item);
-            }
-            break;
-          case '~':
-            refNode = refNode.previousElementSibling;
-            while (refNode) {
-              if (refNode === prevNode) {
-                matched.push(item);
-                break;
-              }
-              refNode = refNode.previousElementSibling;
-            }
-            break;
-          case '+':
-            if (refNode.previousElementSibling === prevNode) {
-              matched.push(item);
-            }
-            break;
-          default:
-            refNode = refNode.parentNode;
-            while (refNode) {
-              if (refNode === prevNode) {
-                matched.push(item);
-                break;
-              }
-              refNode = refNode.parentNode;
-            }
-        }
-      }
-    }
-    return [...new Set(matched)];
-  }
-
-  /**
-   * match argument leaf
-   * @param {object} leaf - AST leaf
-   * @param {object} node - Element node
-   * @returns {Array.<object|undefined>} - matched nodes
-   */
-  _matchArgumentLeaf(leaf, node) {
-    const iterator = this._createIterator(leaf, node);
-    let nextNode = iterator.nextNode();
-    const matched = [];
-    while (nextNode) {
-      const arr = this._match(leaf, nextNode);
-      if (arr.length) {
-        matched.push(...arr);
-      }
-      nextNode = iterator.nextNode();
-    }
-    return [...new Set(matched)];
-  }
-
-  /**
-   * match logical pseudo-class functions - :is(), :has(), :not(), :where()
-   * @param {object} branch - AST branch
-   * @param {object} node - Element node
-   * @returns {?object} - matched node
-   */
-  _matchLogicalPseudoFunc(branch, node) {
-    const ast = walkAST(branch);
-    let res;
-    if (ast.length) {
-      const branchName = unescapeSelector(branch.name);
-      switch (branchName) {
-        // :has()
-        case 'has': {
-          let matched;
-          for (const astItem of ast) {
-            const [item, ...items] = astItem;
-            const { type: itemType } = item;
-            const itemLeaves = [];
-            let firstItem = item;
-            if (itemType !== COMBINATOR) {
-              const comboLeaf = {
-                name: ' ',
-                type: COMBINATOR
-              };
-              itemLeaves.push(comboLeaf, firstItem);
-            } else {
-              firstItem = items.shift();
-              itemLeaves.push(item, firstItem);
-            }
-            if (firstItem.type === PSEUDO_CLASS_SELECTOR &&
-                unescapeSelector(firstItem.name) === 'has') {
-              matched = false;
-              break;
-            }
-            const arr = this._matchCombinator(itemLeaves, node);
-            if (arr.length) {
-              matched = true;
-              while (items.length && matched) {
-                const adjacentLeaves = [firstItem, items.shift()];
-                matched = this._matchAdjacentLeaves(adjacentLeaves, node);
-              }
-              break;
-            }
-          }
-          if (matched) {
-            res = node;
-          }
-          break;
-        }
-        // :not()
-        case 'not': {
-          let matched;
-          for (const astItem of ast) {
-            const [item, ...items] = astItem;
-            // NOTE: according to MDN, :not() can not contain :not()
-            // but spec says nothing about that?
-            if (item.type === PSEUDO_CLASS_SELECTOR &&
-                unescapeSelector(item.name) === 'not') {
-              matched = true;
-              break;
-            }
-            const arr = this._matchArgumentLeaf(item, node);
-            if (arr.length) {
-              matched = true;
-              while (items.length && matched) {
-                const adjacentLeaves = [item, items.shift()];
-                matched = this._matchAdjacentLeaves(adjacentLeaves, node);
-              }
-              break;
-            }
-          }
-          if (!matched) {
-            res = node;
-          }
-          break;
-        }
-        // :is(), :where()
-        default: {
-          let matched;
-          for (const astItem of ast) {
-            const [item, ...items] = astItem;
-            const arr = this._matchArgumentLeaf(item, node);
-            if (arr.length) {
-              matched = true;
-              while (items.length && matched) {
-                const adjacentLeaves = [item, items.shift()];
-                matched = this._matchAdjacentLeaves(adjacentLeaves, node);
-              }
-              break;
-            }
-          }
-          if (matched) {
-            res = node;
-          }
-        }
-      }
-    }
-    return res ?? null;
-  }
-
-  /**
-   * match selector
-   * @param {Array.<object>} children - selector children
-   * @param {object} node - Element node
-   * @returns {Array.<object|undefined>} - collection of matched nodes
-   */
-  _matchSelector(children, node) {
-    const matched = [];
-    if (Array.isArray(children) && children.length) {
-      const [firstChild] = children;
-      if (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-          PSEUDO_FUNC.test(unescapeSelector(firstChild.name)) &&
-          node.nodeType === ELEMENT_NODE) {
-        const iteratorLeaf = UNIVERSAL_SELECTOR;
-        const iterator = this._createIterator(iteratorLeaf, node);
-        let nextNode = iterator.nextNode();
-        while (nextNode) {
-          nextNode = this._matchLogicalPseudoFunc(firstChild, nextNode);
-          if (nextNode) {
-            matched.push(nextNode);
-          }
-          nextNode = iterator.nextNode();
-        }
-      } else {
-        let iteratorLeaf;
-        if (firstChild.type === COMBINATOR ||
-            (firstChild.type === PSEUDO_CLASS_SELECTOR &&
-             PSEUDO_NTH.test(unescapeSelector(firstChild.name)))) {
-          iteratorLeaf = UNIVERSAL_SELECTOR;
-        } else {
-          iteratorLeaf = children.shift();
-        }
-        const iterator = this._createIterator(iteratorLeaf, node);
-        let nextNode = iterator.nextNode();
-        if (nextNode) {
-          while (nextNode) {
-            const [...items] = children;
-            if (items.length) {
-              if (items.length === 1) {
-                const item = items.shift();
-                const { type: itemType } = item;
-                const itemName = unescapeSelector(item.name);
-                if (itemType === PSEUDO_CLASS_SELECTOR &&
-                    PSEUDO_FUNC.test(itemName)) {
-                  nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-                  if (nextNode) {
-                    matched.push(nextNode);
-                    nextNode = null;
-                  }
-                } else {
-                  const arr = this._match(item, nextNode);
-                  if (arr.length) {
-                    matched.push(...arr);
-                  }
-                }
-              } else {
-                do {
-                  const item = items.shift();
-                  const { type: itemType } = item;
-                  const itemName = unescapeSelector(item.name);
-                  if (itemType === PSEUDO_CLASS_SELECTOR &&
-                      PSEUDO_FUNC.test(itemName)) {
-                    nextNode = this._matchLogicalPseudoFunc(item, nextNode);
-                  } else if (itemType === COMBINATOR) {
-                    let [nextItem] = items;
-                    let nextItemName = unescapeSelector(nextItem.name);
-                    if (nextItem.type === COMBINATOR) {
-                      const comboName = `${itemName}${nextItemName}`;
-                      throw new DOMException(`Unknown combinator ${comboName}`,
-                        'SyntaxError');
-                    }
-                    const leaves = [];
-                    leaves.push(item);
-                    while (items.length) {
-                      [nextItem] = items;
-                      nextItemName = unescapeSelector(nextItem.name);
-                      if (nextItem.type === COMBINATOR ||
-                          (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_NTH.test(nextItemName)) ||
-                          (nextItem.type === PSEUDO_CLASS_SELECTOR &&
-                           PSEUDO_FUNC.test(nextItemName))) {
-                        break;
-                      } else {
-                        leaves.push(items.shift());
-                      }
-                    }
-                    if (leaves.length === 1) {
-                      leaves.push(UNIVERSAL_SELECTOR);
-                    }
-                    const arr = this._matchCombinator(leaves, nextNode);
-                    if (!arr.length || arr.length === 1) {
-                      [nextNode] = arr;
-                    } else {
-                      if (items.length) {
-                        const [i] = items;
-                        for (const j of arr) {
-                          if (i.type === PSEUDO_CLASS_SELECTOR &&
-                              PSEUDO_FUNC.test(unescapeSelector(i.name))) {
-                            if (this._matchLogicalPseudoFunc(i, j)) {
-                              matched.push(j);
-                            }
-                          } else {
-                            const a = this._matchSelector(items, j);
-                            if (a.length) {
-                              matched.push(...a);
-                            }
-                          }
-                        }
-                      } else {
-                        matched.push(...arr);
-                      }
-                      nextNode = null;
-                    }
-                  } else {
-                    [nextNode] = this._match(item, nextNode);
-                  }
-                } while (items.length && nextNode);
-                if (nextNode) {
-                  matched.push(nextNode);
-                }
-              }
-            } else if (nextNode) {
-              matched.push(nextNode);
-            }
-            nextNode = iterator.nextNode();
-          }
         }
       }
     }
@@ -1948,51 +1569,48 @@ class Matcher {
    * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array.<object|undefined>} - result
    */
-  /*
-  _getMatchedNodes(branch, node) {
+  _getMatchedNodes(branch = [], node = {}) {
     const matched = [];
-    if (Array.isArray(branch) && branch.length) {
-      const iteratorLeaf = getIteratorLeaf(branch);
-      const [leaves, combo, items] = getGroupedLeaves(restItems);
-      if (iteratorLeaf && leaves.length) {
-        const iterator = this._createIterator(iteratorLeaf, node);
-        const prevNodes = [];
-        let nextNode = iterator.nextNode();
-        while (nextNode) {
-          if (nextNode && leaves.every(leaf => this._match(leaf, nextNode))) {
-            prevNodes.push(nextNode);
+    const twig = groupLeaves(branch);
+    const l = twig.length;
+    if (l) {
+      const iterator =
+        this.#document.createNodeIterator(node, FILTER_SHOW_ELEMENT);
+      let nextNode = iterator.nextNode();
+      while (nextNode) {
+        let i = 0;
+        while (i < l) {
+          const { leaves } = twig[i];
+          const bool = leaves.every(leaf => {
+            const arr = this._match(leaf, nextNode);
+            return arr.includes(nextNode);
+          });
+          if (bool) {
+            twig[i].nodes.add(nextNode);
           }
-          nextNode = iterator.nextNode();
+          i++;
         }
-        if (prevNodes.length) {
-          if (combo) {
-            if (items.length) {
-              const nextNodes = [];
-              for (const prevNode of prevNodes) {
-                const nodes = this._getMatchedNodes(items, prevNode);
-                if (nodes.length) {
-                  nextNodes.push(...nodes);
-                }
-              }
-              if (nextNodes.length) {
-                const nodes =
-                  matchCombinator(combo, prevNodes, [...new Set(nextNodes)]);
-                if (nodes.length) {
-                  matched.push(...nodes);
-                }
-              }
-            }
-          } else if (items.length) {
-            // should not reach here, throw?
-          } else {
-            matched.push(...prevNodes)
-          }
-        }
+        nextNode = iterator.nextNode();
+      }
+      if (l === 1) {
+        const [{ nodes }] = twig;
+        matched.push(...nodes);
+      } else if (l > 1) {
+        const { nodes } = twig.reduce((prevItem, nextItem) => {
+          const { combo: prevCombo, nodes: prevNodes } = prevItem;
+          const { combo: nextCombo, nodes: nextNodes } = nextItem;
+          const matchedNodes =
+            matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
+          return {
+            combo: nextCombo,
+            nodes: new Set(matchedNodes)
+          };
+        });
+        matched.push(...nodes);
       }
     }
-    return [...new Set(matched)];
+    return matched;
   }
-  */
 
   /**
    * match AST and node
@@ -2000,17 +1618,10 @@ class Matcher {
    * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
-  _match(ast = this.#ast, node = this.#node) {
-    const { name, type } = ast;
+  _match(ast, node) {
+    const { type } = ast;
     const matched = [];
     switch (type) {
-      case TYPE_SELECTOR: {
-        const res = matchTypeSelector(ast, node);
-        if (res) {
-          matched.push(node);
-        }
-        break;
-      }
       case ID_SELECTOR: {
         const res = matchIDSelector(ast, node);
         if (res) {
@@ -2026,7 +1637,7 @@ class Matcher {
         break;
       }
       case ATTRIBUTE_SELECTOR: {
-        const res = matchAttributeSelector(ast, node)
+        const res = matchAttributeSelector(ast, node);
         if (res) {
           matched.push(node);
         }
@@ -2043,10 +1654,11 @@ class Matcher {
         matchPseudoElementSelector(ast, node);
         break;
       }
+      case TYPE_SELECTOR:
       default: {
-        const arr = this._parseAST(ast, node);
-        if (arr.length) {
-          matched.push(...arr);
+        const res = matchTypeSelector(ast, node);
+        if (res) {
+          matched.push(node);
         }
       }
     }
@@ -2175,8 +1787,7 @@ module.exports = {
   Matcher,
   collectNthChild,
   collectNthOfType,
-  getGroupedLeaves,
-  getIteratorLeaf,
+  groupLeaves,
   isContentEditable,
   isNamespaceDeclared,
   matchAnPlusB,
