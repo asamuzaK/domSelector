@@ -133,9 +133,31 @@ const unescapeSelector = (selector = '') => {
 };
 
 /**
+ * create CSS selector for node
+ * @param {object} node - Element node;
+ * @returns {?string} - CSS selector
+ */
+const createSelectorForNode = (node = {}) => {
+  let res;
+  if (node.nodeType === ELEMENT_NODE) {
+    res = node.localName;
+    if (node.hasAttribute('id')) {
+      res += `#${node.getAttribute('id')}`;
+    }
+    if (node.hasAttribute('class')) {
+      const values = node.classList.values();
+      for (const value of values) {
+        res += `.${value}`;
+      }
+    }
+  }
+  return res || null;
+};
+
+/**
  * group AST leaves
  * NOTE: extends leaves by adding `nodes` property
- * @param {Array} branch - AST branch
+ * @param {Array.<object>} branch - AST branch
  * @returns {Array.<object>} - array of grouped leaves
  */
 const groupASTLeaves = (branch = []) => {
@@ -143,32 +165,34 @@ const groupASTLeaves = (branch = []) => {
   const twig = [];
   const leaves = new Set();
   let item = items.shift();
-  while (item) {
-    if (item.type === COMBINATOR) {
-      const [nextItem] = items;
-      if (nextItem.type === COMBINATOR) {
-        const combo = `${item.name}${nextItem.name}`;
-        throw new DOMException(`invalid combinator, ${combo}`, SyntaxError);
+  if (item && item.type !== COMBINATOR) {
+    while (item) {
+      if (item.type === COMBINATOR) {
+        const [nextItem] = items;
+        if (nextItem.type === COMBINATOR) {
+          const combo = `${item.name}${nextItem.name}`;
+          throw new DOMException(`invalid combinator, ${combo}`, SyntaxError);
+        }
+        twig.push({
+          combo: item,
+          leaves: [...leaves],
+          nodes: new Set()
+        });
+        leaves.clear();
+      } else if (item) {
+        leaves.add(item);
       }
-      twig.push({
-        combo: item,
-        leaves: [...leaves],
-        nodes: new Set()
-      });
-      leaves.clear();
-    } else if (item) {
-      leaves.add(item);
-    }
-    if (items.length) {
-      item = items.shift();
-    } else {
-      twig.push({
-        combo: null,
-        leaves: [...leaves],
-        nodes: new Set()
-      });
-      leaves.clear();
-      break;
+      if (items.length) {
+        item = items.shift();
+      } else {
+        twig.push({
+          combo: null,
+          leaves: [...leaves],
+          nodes: new Set()
+        });
+        leaves.clear();
+        break;
+      }
     }
   }
   return twig;
@@ -728,25 +752,18 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
  * match logical pseudo-class functions - :is(), :has(), :not(), :where()
  * @param {object} ast - AST
  * @param {object} node - Element node
+ * @param {object} refPoint - reference point
  * @returns {?object} - matched node
  */
-const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
+const matchLogicalPseudoFunc = (ast = {}, node = {}, refPoint = {}) => {
   const { type: astType } = ast;
   const astName = unescapeSelector(ast.name);
   let res;
   if (astType === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(astName) &&
       node.nodeType === ELEMENT_NODE) {
-    let nodeSelector = '';
-    if (astName === 'has') {
-      if (node.hasAttribute('id')) {
-        nodeSelector = `${node.localName}#${node.getAttribute('id')}`;
-      } else if (node.hasAttribute('class')) {
-        const values = node.classList.values();
-        nodeSelector = node.localName;
-        for (const value of values) {
-          nodeSelector += `.${value}`;
-        }
-      }
+    let refPointSelector = '';
+    if (refPoint.nodeType === ELEMENT_NODE) {
+      refPointSelector = createSelectorForNode(refPoint);
     }
     const branchSelectors = [];
     const branches = walkAST(ast);
@@ -754,16 +771,15 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
       const [leaf, ...items] = branch;
       let css = generateCSS(leaf);
       if (css) {
-        if (astName === 'has') {
-          if (/^[>+~]/.test(css)) {
-            css = `${nodeSelector}${css}`;
-          } else {
-            css = `${nodeSelector} ${css}`;
-          }
+        if (astName === 'has' && /^[>+~]$/.test(css)) {
+          css = '';
         }
         for (const item of items) {
-          const itemCss = generateCSS(item);
+          let itemCss = generateCSS(item);
           if (itemCss) {
+            if (/:scope/.test(itemCss) && refPointSelector) {
+              itemCss = itemCss.replace(/:scope/g, refPointSelector);
+            }
             css += itemCss;
           }
         }
@@ -775,34 +791,31 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}) => {
     if (node.parentNode) {
       refNode = node.parentNode;
     } else {
-      refNode = node;
+      refNode = refPoint;
     }
-    const nodes =
-      new Matcher(branchSelector, refNode).querySelectorAll();
+    const nodes = new Matcher(branchSelector, refNode).querySelectorAll();
     switch (astName) {
       // :has()
       case 'has': {
         let matched;
         if (/:has\(/.test(branchSelector)) {
           matched = false;
-        } else {
-          if (nodes.length) {
-            for (const branch of branches) {
-              const [leaf] = branch;
-              let combo;
-              if (leaf.type === COMBINATOR) {
-                combo = leaf;
-              } else {
-                combo = {
-                  name: ' ',
-                  type: COMBINATOR
-                };
-              }
-              const arr = matchCombinator(combo, [node], nodes);
-              if (arr.length) {
-                matched = true;
-                break;
-              }
+        } else if (nodes.length) {
+          for (const branch of branches) {
+            const [leaf] = branch;
+            let combo;
+            if (leaf.type === COMBINATOR) {
+              combo = leaf;
+            } else {
+              combo = {
+                name: ' ',
+                type: COMBINATOR
+              };
+            }
+            const arr = matchCombinator(combo, [node], nodes);
+            if (arr.length) {
+              matched = true;
+              break;
             }
           }
         }
@@ -973,7 +986,7 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
  * @see https://html.spec.whatwg.org/#pseudo-classes
  * @param {object} ast - AST
  * @param {object} node - Element node
- * @param {object} [refPoint] - reference point
+ * @param {object} refPoint - reference point
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
 const matchPseudoClassSelector = (
@@ -990,9 +1003,9 @@ const matchPseudoClassSelector = (
       const [branch] = astChildren;
       // :has(), :is(), :not(), :where()
       if (PSEUDO_FUNC.test(astName)) {
-        const res = matchLogicalPseudoFunc(ast, node);
+        const res = matchLogicalPseudoFunc(ast, node, refPoint);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       } else if (PSEUDO_NTH.test(astName)) {
@@ -1070,7 +1083,7 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'scope': {
-          if (refPoint?.nodeType === ELEMENT_NODE) {
+          if (refPoint.nodeType === ELEMENT_NODE) {
             if (node === refPoint) {
               matched.push(node);
             }
@@ -1786,6 +1799,7 @@ module.exports = {
   Matcher,
   collectNthChild,
   collectNthOfType,
+  createSelectorForNode,
   groupASTLeaves,
   isContentEditable,
   isNamespaceDeclared,

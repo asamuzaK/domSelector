@@ -2177,7 +2177,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = document.getElementById('target');
       const item = document.getElementById('item');
       item.focus();
-      const res = node.querySelector(':focus-within');
+      const res = node.parentNode.querySelector(':focus-within');
       // these pass
       assert.strictEqual(res.id, 'target', 'id');
       assert.isTrue(res.classList.contains('container'), 'classList');

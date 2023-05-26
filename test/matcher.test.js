@@ -194,6 +194,45 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
+  describe('create CSS selector for node', () => {
+    const func = matcherJs.createSelectorForNode;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.strictEqual(res, 'div', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const res = func(node);
+      assert.strictEqual(res, 'div#foo', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.classList.add('bar');
+      node.classList.add('baz');
+      const res = func(node);
+      assert.strictEqual(res, 'div.bar.baz', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.id = 'foo';
+      node.classList.add('bar');
+      node.classList.add('baz');
+      const res = func(node);
+      assert.strictEqual(res, 'div#foo.bar.baz', 'result');
+    });
+  });
+
   describe('unescape selector', () => {
     const func = matcherJs.unescapeSelector;
 
@@ -6619,8 +6658,7 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
-      // FIXME:
-      xit('should get matched node', () => {
+      it('should get matched node', () => {
         const node = document.getElementById('li2');
         const target = document.getElementById('ul1');
         const matcher = new Matcher(':has(> :scope)', node);
