@@ -4,16 +4,19 @@
 'use strict';
 
 /* import */
-const { generate, parse, toPlainObject, walk } = require('css-tree');
+const { generate, findAll, parse, toPlainObject, walk } = require('css-tree');
 const DOMException = require('./domexception.js');
 
 /* constants */
-const { SELECTOR } = require('./constant.js');
+const { PSEUDO_CLASS_SELECTOR, SELECTOR } = require('./constant.js');
 const CODE_POINT_UNIT = parseInt('10000', 16);
 const HEX = 16;
 const PAIR = 2;
 const TYPE_FROM = 8;
 const TYPE_TO = -1;
+
+/* regexp */
+const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 
 /**
  * preprocess
@@ -94,20 +97,34 @@ const parseSelector = selector => {
 const walkAST = (ast = {}) => {
   const selectors = new Set();
   const opt = {
+    visit: SELECTOR,
     enter: branch => {
-      if (branch.type === SELECTOR) {
-        selectors.add(branch.children);
-      }
-    },
-    leave: branch => {
-      let skip;
-      if (branch.type === SELECTOR) {
-        skip = walkAST.skip;
-      }
-      return skip;
+      selectors.add(branch.children);
     }
   };
   walk(ast, opt);
+  findAll(ast, (node, item, list) => {
+    if (node.type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(node.name) &&
+        item) {
+      for (const i of list) {
+        const { children, name, type } = i;
+        if (type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name) &&
+            children) {
+          // SelectorList
+          for (const j of children) {
+            const { children: grandChildren } = j;
+            // Selector
+            for (const k of grandChildren) {
+              const { children: greatGrandChildren } = k;
+              if (selectors.has(greatGrandChildren)) {
+                selectors.delete(greatGrandChildren);
+              }
+            }
+          }
+        }
+      }
+    }
+  });
   return [...selectors];
 };
 

@@ -315,6 +315,51 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func('div:not(.foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'div',
+                type: TYPE_SELECTOR
+              },
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: 'foo',
+                            type: CLASS_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'not',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('universal selector', () => {
@@ -5174,6 +5219,84 @@ describe('walk AST', () => {
           loc: null,
           name: 'li',
           type: TYPE_SELECTOR
+        }
+      ]
+    ], 'result');
+  });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: 'div',
+              type: TYPE_SELECTOR
+            },
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: 'foo',
+                          type: CLASS_SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                }
+              ],
+              loc: null,
+              name: 'not',
+              type: PSEUDO_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          loc: null,
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: 'foo',
+                      type: CLASS_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR_LIST
+            }
+          ],
+          loc: null,
+          name: 'not',
+          type: PSEUDO_CLASS_SELECTOR
         }
       ]
     ], 'result');
