@@ -211,7 +211,8 @@ const collectNthChild = (anb = {}, node = {}) => {
   const { a, b, reverse, selector } = anb;
   const { nodeType, ownerDocument, parentNode } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
+  if (Number.isInteger(a) && Number.isInteger(b) &&
+      nodeType === ELEMENT_NODE && parentNode && parentNode.children) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -293,7 +294,8 @@ const collectNthOfType = (anb = {}, node = {}) => {
   const { a, b, reverse } = anb;
   const { localName, nodeType, parentNode, prefix } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
+  if (Number.isInteger(a) && Number.isInteger(b) &&
+      nodeType === ELEMENT_NODE && parentNode && parentNode.children) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
