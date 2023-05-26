@@ -170,7 +170,7 @@ const groupASTLeaves = (branch = []) => {
         const [nextItem] = items;
         if (nextItem.type === COMBINATOR) {
           const combo = `${item.name}${nextItem.name}`;
-          throw new DOMException(`invalid combinator, ${combo}`, SyntaxError);
+          throw new DOMException(`invalid combinator, ${combo}`, 'SyntaxError');
         }
         twig.push({
           combo: item,
