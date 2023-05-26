@@ -134,7 +134,7 @@ const unescapeSelector = (selector = '') => {
 
 /**
  * group AST leaves
- * NOTE: leaves are extended by adding `nodes` property
+ * NOTE: extends leaves by adding `nodes` property
  * @param {Array} branch - AST branch
  * @returns {Array.<object>} - array of grouped leaves
  */
