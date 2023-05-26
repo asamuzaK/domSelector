@@ -574,6 +574,43 @@ describe('exported api', () => {
 
     it('should match', () => {
       const domStr = `<div id="root">
+        <table id="pseudo-nth-table1">
+          <tr id="pseudo-nth-tr1">
+            <td id="pseudo-nth-td1"></td>
+            <td id="pseudo-nth-td2"></td>
+            <td id="pseudo-nth-td3"></td>
+            <td id="pseudo-nth-td4"></td>
+            <td id="pseudo-nth-td5"></td>
+            <td id="pseudo-nth-td6"></td>
+          </tr>
+          <tr id="pseudo-nth-tr2">
+            <td id="pseudo-nth-td7"></td>
+            <td id="pseudo-nth-td8"></td>
+            <td id="pseudo-nth-td9"></td>
+            <td id="pseudo-nth-td10"></td>
+            <td id="pseudo-nth-td11"></td>
+            <td id="pseudo-nth-td12"></td>
+          </tr>
+          <tr id="pseudo-nth-tr3">
+            <td id="pseudo-nth-td13"></td>
+            <td id="pseudo-nth-td14"></td>
+            <td id="pseudo-nth-td15"></td>
+            <td id="pseudo-nth-td16"></td>
+            <td id="pseudo-nth-td17"></td>
+            <td id="pseudo-nth-td18"></td>
+          </tr>
+        </table>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#pseudo-nth-td1');
+      const res = matches('#pseudo-nth-table1 tr :first-of-type', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
         <div id="universal">
           <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
           <hr id="universal-hr1">
@@ -768,6 +805,245 @@ describe('exported api', () => {
       li3.classList.add('baz');
       const res = closest('div.foobar', li3);
       assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test12');
+      const target = document.getElementById('test3');
+      const res = closest('select', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test13');
+      const target = document.getElementById('test2');
+      const res = closest('fieldset', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test13');
+      const target = document.getElementById('test6');
+      const res = closest('div', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test3');
+      const res = closest('body', node);
+      assert.deepEqual(res, document.body, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test4');
+      const res = closest('[default]', node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test4');
+      const res = closest('[selected]', node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test11');
+      const res = closest('[selected]', node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test13');
+      const target = document.getElementById('test7');
+      const res = closest('div:not(.div1)', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test4');
+      const target = document.getElementById('test3');
+      const res = closest(':has(> :scope)', node);
+      assert.deepEqual(res, target, 'result');
     });
   });
 

@@ -211,7 +211,8 @@ const collectNthChild = (anb = {}, node = {}) => {
   const { a, b, reverse, selector } = anb;
   const { nodeType, parentNode } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
+  if (Number.isInteger(a) && Number.isInteger(b) &&
+      nodeType === ELEMENT_NODE && parentNode) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -293,7 +294,8 @@ const collectNthOfType = (anb = {}, node = {}) => {
   const { a, b, reverse } = anb;
   const { localName, nodeType, parentNode, prefix } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
+  if (Number.isInteger(a) && Number.isInteger(b) &&
+      nodeType === ELEMENT_NODE && parentNode) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -357,67 +359,66 @@ const collectNthOfType = (anb = {}, node = {}) => {
  * @param {object} node - Element node
  * @returns {Array.<object|undefined>} - collection of matched nodes
  */
-const matchAnPlusB = (nthName, ast = {}, node = {}) => {
+const matchAnPlusB = (nthName, ast = { nth: {} }, node = {}) => {
+  const {
+    nth: {
+      a,
+      b,
+      name: nthIdentName
+    },
+    selector: astSelector,
+    type: astType
+  } = ast;
+  const identName = unescapeSelector(nthIdentName);
+  const { nodeType, parentNode } = node;
   const matched = [];
-  if (typeof nthName === 'string') {
+  if (typeof nthName === 'string' && astType === NTH &&
+      nodeType === ELEMENT_NODE && parentNode) {
     nthName = nthName.trim();
     if (PSEUDO_NTH.test(nthName)) {
-      const {
-        nth: {
-          a,
-          b,
-          name: nthIdentName
-        },
-        selector: astSelector,
-        type: astType
-      } = ast;
-      const identName = unescapeSelector(nthIdentName);
-      const { nodeType, parentNode } = node;
-      if (astType === NTH && nodeType === ELEMENT_NODE && parentNode) {
-        const anbMap = new Map();
-        if (identName) {
-          if (identName === 'even') {
-            anbMap.set('a', 2);
-            anbMap.set('b', 0);
-          } else if (identName === 'odd') {
-            anbMap.set('a', 2);
-            anbMap.set('b', 1);
-          }
-          if (/last/.test(nthName)) {
-            anbMap.set('reverse', true);
-          }
-        } else {
-          if (typeof a === 'string' && /-?\d+/.test(a)) {
-            anbMap.set('a', a * 1);
-          } else {
-            anbMap.set('a', 0);
-          }
-          if (typeof b === 'string' && /-?\d+/.test(b)) {
-            anbMap.set('b', b * 1);
-          } else {
-            anbMap.set('b', 0);
-          }
-          if (/last/.test(nthName)) {
-            anbMap.set('reverse', true);
-          }
+      const anbMap = new Map();
+      if (identName) {
+        if (identName === 'even') {
+          anbMap.set('a', 2);
+          anbMap.set('b', 0);
+        } else if (identName === 'odd') {
+          anbMap.set('a', 2);
+          anbMap.set('b', 1);
         }
-        if (anbMap.has('a') && anbMap.has('b')) {
-          if (/^nth-(?:last-)?child$/.test(nthName)) {
-            if (astSelector) {
-              const css = generateCSS(astSelector);
-              anbMap.set('selector', css);
-            }
-            const anb = Object.fromEntries(anbMap);
-            const arr = collectNthChild(anb, node);
-            if (arr.length) {
-              matched.push(...arr);
-            }
-          } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
-            const anb = Object.fromEntries(anbMap);
-            const arr = collectNthOfType(anb, node);
-            if (arr.length) {
-              matched.push(...arr);
-            }
+        if (/last/.test(nthName)) {
+          anbMap.set('reverse', true);
+        }
+      } else {
+        if (typeof a === 'string' && /-?\d+/.test(a)) {
+          anbMap.set('a', a * 1);
+        } else {
+          anbMap.set('a', 0);
+        }
+        if (typeof b === 'string' && /-?\d+/.test(b)) {
+          anbMap.set('b', b * 1);
+        } else {
+          anbMap.set('b', 0);
+        }
+        if (/last/.test(nthName)) {
+          anbMap.set('reverse', true);
+        }
+      }
+      if (anbMap.has('a') && anbMap.has('b')) {
+        if (/^nth-(?:last-)?child$/.test(nthName)) {
+          if (astSelector) {
+            const css = generateCSS(astSelector);
+            anbMap.set('selector', css);
+          }
+          const anb = Object.fromEntries(anbMap);
+          const arr = collectNthChild(anb, node);
+          if (arr.length) {
+            matched.push(...arr);
+          }
+        } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
+          const anb = Object.fromEntries(anbMap);
+          const arr = collectNthOfType(anb, node);
+          if (arr.length) {
+            matched.push(...arr);
           }
         }
       }
@@ -600,7 +601,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
       while (i < l) {
         const { name: itemName, value: itemValue } = attributes.item(i);
         switch (astAttrPrefix) {
-          case '':
+          case '': {
             if (astAttrLocalName === itemName) {
               if (caseInsensitive) {
                 attrValues.push(itemValue.toLowerCase());
@@ -609,7 +610,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
               }
             }
             break;
-          case '*':
+          }
+          case '*': {
             if (/:/.test(itemName)) {
               if (itemName.endsWith(`:${astAttrLocalName}`)) {
                 if (caseInsensitive) {
@@ -626,7 +628,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
               }
             }
             break;
-          default:
+          }
+          default: {
             if (/:/.test(itemName)) {
               const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
               if (astAttrPrefix === itemNamePrefix &&
@@ -638,6 +641,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
                 }
               }
             }
+          }
         }
         i++;
       }
@@ -685,15 +689,17 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
         attrValue = astAttrStringValue;
       }
       switch (astMatcher) {
-        case null:
+        case null: {
           res = node;
           break;
-        case '=':
+        }
+        case '=': {
           if (typeof attrValue === 'string' && attrValues.includes(attrValue)) {
             res = node;
           }
           break;
-        case '~=':
+        }
+        case '~=': {
           if (typeof attrValue === 'string') {
             for (const item of attrValues) {
               const arr = item.split(/\s+/);
@@ -704,7 +710,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
             }
           }
           break;
-        case '|=':
+        }
+        case '|=': {
           if (typeof attrValue === 'string') {
             const item = attrValues.find(v =>
               (v === attrValue || v.startsWith(`${attrValue}-`))
@@ -714,7 +721,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
             }
           }
           break;
-        case '^=':
+        }
+        case '^=': {
           if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.startsWith(`${attrValue}`));
             if (item) {
@@ -722,7 +730,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
             }
           }
           break;
-        case '$=':
+        }
+        case '$=': {
           if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.endsWith(`${attrValue}`));
             if (item) {
@@ -730,7 +739,8 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
             }
           }
           break;
-        case '*=':
+        }
+        case '*=': {
           if (typeof attrValue === 'string') {
             const item = attrValues.find(v => v.includes(`${attrValue}`));
             if (item) {
@@ -738,9 +748,11 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
             }
           }
           break;
-        default:
+        }
+        default: {
           throw new DOMException(`Unknown matcher ${astMatcher}`,
             'SyntaxError');
+        }
       }
     }
   }
@@ -1407,47 +1419,54 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'first-of-type': {
-          const [node1] = collectNthOfType({
-            a: 0,
-            b: 1
-          }, node);
-          if (node1) {
-            matched.push(node1);
+          if (parentNode) {
+            const [node1] = collectNthOfType({
+              a: 0,
+              b: 1
+            }, node);
+            if (node1) {
+              matched.push(node1);
+            }
           }
           break;
         }
         case 'last-of-type': {
-          const [node1] = collectNthOfType({
-            a: 0,
-            b: 1,
-            reverse: true
-          }, node);
-          if (node1) {
-            matched.push(node1);
+          if (parentNode) {
+            const [node1] = collectNthOfType({
+              a: 0,
+              b: 1,
+              reverse: true
+            }, node);
+            if (node1) {
+              matched.push(node1);
+            }
           }
           break;
         }
         case 'only-of-type': {
-          const [node1] = collectNthOfType({
-            a: 0,
-            b: 1
-          }, node);
-          const [node2] = collectNthOfType({
-            a: 0,
-            b: 1,
-            reverse: true
-          }, node);
-          if (node1 === node && node2 === node) {
-            matched.push(node);
+          if (parentNode) {
+            const [node1] = collectNthOfType({
+              a: 0,
+              b: 1
+            }, node);
+            const [node2] = collectNthOfType({
+              a: 0,
+              b: 1,
+              reverse: true
+            }, node);
+            if (node1 === node && node2 === node) {
+              matched.push(node);
+            }
           }
           break;
         }
-        // legacy pseudo-elements
         case 'after':
         case 'before':
         case 'first-letter':
-        case 'first-line':
+        case 'first-line': {
+          // legacy pseudo-elements
           break;
+        }
         case 'active':
         case 'autofill':
         case 'blank':
@@ -1508,12 +1527,14 @@ const matchPseudoElementSelector = (ast = {}, node = {}) => {
       case 'placeholder':
       case 'selection':
       case 'slotted':
-      case 'target-text':
+      case 'target-text': {
         throw new DOMException(`Unsupported pseudo-element ${astName}`,
           'NotSupportedError');
-      default:
+      }
+      default: {
         throw new DOMException(`Unknown pseudo-element ${astName}`,
           'SyntaxError');
+      }
     }
   }
 };
