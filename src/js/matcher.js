@@ -1513,7 +1513,6 @@ class Matcher {
   #ast;
   #document;
   #node;
-  #selector;
   #warn;
 
   /**
@@ -1528,12 +1527,11 @@ class Matcher {
     this.#ast = parseSelector(selector);
     this.#document = refPoint.ownerDocument ?? refPoint;
     this.#node = refPoint;
-    this.#selector = selector;
     this.#warn = !!warn;
   }
 
   /**
-   * is attached
+   * node is attached to document or detached
    * @returns {boolean} - result
    */
   _isAttached() {
@@ -1542,75 +1540,6 @@ class Matcher {
       this.#node.compareDocumentPosition(root) & DOCUMENT_POSITION_CONTAINS;
     return !!posBit;
   };
-
-  /**
-   * parse ast and run
-   * @param {object} ast - AST
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array.<object|undefined>} - collection of matched nodes
-   */
-  _parseAST(ast, node) {
-    const branches = walkAST(ast);
-    const matched = [];
-    if (branches.length) {
-      for (const branch of branches) {
-        const arr = this._getMatchedNodes(branch, node);
-        if (arr.length) {
-          matched.push(...arr);
-        }
-      }
-    }
-    return [...new Set(matched)];
-  }
-
-  /**
-   * get matched nodes
-   * @param {Array.<object>} branch - AST branch
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array.<object|undefined>} - result
-   */
-  _getMatchedNodes(branch = [], node = {}) {
-    const matched = [];
-    const twig = groupLeaves(branch);
-    const l = twig.length;
-    if (l) {
-      const iterator =
-        this.#document.createNodeIterator(node, FILTER_SHOW_ELEMENT);
-      let nextNode = iterator.nextNode();
-      while (nextNode) {
-        let i = 0;
-        while (i < l) {
-          const { leaves } = twig[i];
-          const bool = leaves.every(leaf => {
-            const arr = this._match(leaf, nextNode);
-            return arr.includes(nextNode);
-          });
-          if (bool) {
-            twig[i].nodes.add(nextNode);
-          }
-          i++;
-        }
-        nextNode = iterator.nextNode();
-      }
-      if (l === 1) {
-        const [{ nodes }] = twig;
-        matched.push(...nodes);
-      } else if (l > 1) {
-        const { nodes } = twig.reduce((prevItem, nextItem) => {
-          const { combo: prevCombo, nodes: prevNodes } = prevItem;
-          const { combo: nextCombo, nodes: nextNodes } = nextItem;
-          const matchedNodes =
-            matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
-          return {
-            combo: nextCombo,
-            nodes: new Set(matchedNodes)
-          };
-        });
-        matched.push(...nodes);
-      }
-    }
-    return matched;
-  }
 
   /**
    * match AST and node
@@ -1666,6 +1595,75 @@ class Matcher {
   }
 
   /**
+   * get matched nodes
+   * @param {Array.<object>} branch - AST branch
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @returns {Array.<object|undefined>} - collection of matched nodes
+   */
+  _getMatchedNodes(branch = [], node = {}) {
+    const matched = [];
+    const twig = groupLeaves(branch);
+    const l = twig.length;
+    if (l) {
+      const iterator =
+        this.#document.createNodeIterator(node, FILTER_SHOW_ELEMENT);
+      let nextNode = iterator.nextNode();
+      while (nextNode) {
+        let i = 0;
+        while (i < l) {
+          const { leaves } = twig[i];
+          const bool = leaves.every(leaf => {
+            const arr = this._match(leaf, nextNode);
+            return arr.includes(nextNode);
+          });
+          if (bool) {
+            twig[i].nodes.add(nextNode);
+          }
+          i++;
+        }
+        nextNode = iterator.nextNode();
+      }
+      if (l === 1) {
+        const [{ nodes }] = twig;
+        matched.push(...nodes);
+      } else if (l > 1) {
+        const { nodes } = twig.reduce((prevItem, nextItem) => {
+          const { combo: prevCombo, nodes: prevNodes } = prevItem;
+          const { combo: nextCombo, nodes: nextNodes } = nextItem;
+          const matchedNodes =
+            matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
+          return {
+            combo: nextCombo,
+            nodes: new Set(matchedNodes)
+          };
+        });
+        matched.push(...nodes);
+      }
+    }
+    return matched;
+  }
+
+  /**
+   * parse ast and find node(s)
+   * @param {object} ast - AST
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @returns {Array.<object|undefined>} - collection of matched nodes
+   */
+  _find(ast, node) {
+    const branches = walkAST(ast);
+    const matched = [];
+    if (branches.length) {
+      for (const branch of branches) {
+        const arr = this._getMatchedNodes(branch, node);
+        if (arr.length) {
+          matched.push(...arr);
+        }
+      }
+    }
+    return [...new Set(matched)];
+  }
+
+  /**
    * matches
    * @returns {boolean} - matched node
    */
@@ -1684,7 +1682,7 @@ class Matcher {
           node = node.parentNode;
         }
       }
-      const arr = this._parseAST(this.#ast, node);
+      const arr = this._find(this.#ast, node);
       res = arr.length && arr.includes(this.#node);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'NotSupportedError') {
@@ -1705,7 +1703,7 @@ class Matcher {
   closest() {
     let res;
     try {
-      const arr = this._parseAST(this.#ast, this.#document);
+      const arr = this._find(this.#ast, this.#document);
       let node = this.#node;
       while (node) {
         if (arr.includes(node)) {
@@ -1733,7 +1731,7 @@ class Matcher {
   querySelector() {
     let res;
     try {
-      const arr = this._parseAST(this.#ast, this.#node);
+      const arr = this._find(this.#ast, this.#node);
       if (arr.length) {
         const i = arr.findIndex(node => node === this.#node);
         if (i >= 0) {
@@ -1761,7 +1759,7 @@ class Matcher {
   querySelectorAll() {
     const res = [];
     try {
-      const arr = this._parseAST(this.#ast, this.#node);
+      const arr = this._find(this.#ast, this.#node);
       if (arr.length) {
         const i = arr.findIndex(node => node === this.#node);
         if (i >= 0) {

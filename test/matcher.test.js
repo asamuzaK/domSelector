@@ -6040,18 +6040,18 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('parse ast and run', () => {
+    describe('parse ast and find node(s)', () => {
       it('should throw', () => {
         const ast = parseSelector('#ul1 ++ #li1');
         const matcher = new Matcher('#ul1 ++ #li1', document);
-        assert.throws(() => matcher._parseAST(ast, document), DOMException);
+        assert.throws(() => matcher._find(ast, document), DOMException);
       });
 
       it('should get matched node(s)', () => {
         const ast = parseSelector('#div1');
         const node = document.getElementById('div1');
         const matcher = new Matcher('#div1', document);
-        const res = matcher._parseAST(ast, document);
+        const res = matcher._find(ast, document);
         assert.deepEqual(res, [node], 'result');
       });
     });
