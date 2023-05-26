@@ -537,6 +537,43 @@ describe('exported api', () => {
 
     it('should match', () => {
       const domStr = `<div id="root">
+        <table id="pseudo-nth-table1">
+          <tr id="pseudo-nth-tr1">
+            <td id="pseudo-nth-td1"></td>
+            <td id="pseudo-nth-td2"></td>
+            <td id="pseudo-nth-td3"></td>
+            <td id="pseudo-nth-td4"></td>
+            <td id="pseudo-nth-td5"></td>
+            <td id="pseudo-nth-td6"></td>
+          </tr>
+          <tr id="pseudo-nth-tr2">
+            <td id="pseudo-nth-td7"></td>
+            <td id="pseudo-nth-td8"></td>
+            <td id="pseudo-nth-td9"></td>
+            <td id="pseudo-nth-td10"></td>
+            <td id="pseudo-nth-td11"></td>
+            <td id="pseudo-nth-td12"></td>
+          </tr>
+          <tr id="pseudo-nth-tr3">
+            <td id="pseudo-nth-td13"></td>
+            <td id="pseudo-nth-td14"></td>
+            <td id="pseudo-nth-td15"></td>
+            <td id="pseudo-nth-td16"></td>
+            <td id="pseudo-nth-td17"></td>
+            <td id="pseudo-nth-td18"></td>
+          </tr>
+        </table>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const root = document.getElementById('root');
+      const clone = root.cloneNode(true);
+      const node = clone.querySelector('#pseudo-nth-tr3');
+      const res = matches('#pseudo-nth-table1 :nth-child(3 of tr)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
         <div id="universal">
           <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
           <hr id="universal-hr1">
