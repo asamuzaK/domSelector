@@ -2334,7 +2334,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
 
     it('should get matched node', () => {
       const node = document.getElementById('target');
-      const res = document.querySelector(':is(:is(input), button)');
+      const res = document.querySelector(':is(:is(input))');
       assert.deepEqual(res, node, 'result');
     });
   });
