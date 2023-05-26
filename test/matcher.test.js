@@ -303,8 +303,8 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
-  describe('group leaves', () => {
-    const func = matcherJs.groupLeaves;
+  describe('group AST leaves', () => {
+    const func = matcherJs.groupASTLeaves;
 
     it('should get empty array', () => {
       const res = func();

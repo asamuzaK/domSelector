@@ -133,11 +133,12 @@ const unescapeSelector = (selector = '') => {
 };
 
 /**
- * group leaves
+ * group AST leaves
+ * NOTE: leaves are extended by adding `nodes` property
  * @param {Array} branch - AST branch
  * @returns {Array.<object>} - array of grouped leaves
  */
-const groupLeaves = (branch = []) => {
+const groupASTLeaves = (branch = []) => {
   const [...items] = branch;
   const twig = [];
   const leaves = new Set();
@@ -1602,7 +1603,7 @@ class Matcher {
    */
   _getMatchedNodes(branch = [], node = {}) {
     const matched = [];
-    const twig = groupLeaves(branch);
+    const twig = groupASTLeaves(branch);
     const l = twig.length;
     if (l) {
       const iterator =
@@ -1785,7 +1786,7 @@ module.exports = {
   Matcher,
   collectNthChild,
   collectNthOfType,
-  groupLeaves,
+  groupASTLeaves,
   isContentEditable,
   isNamespaceDeclared,
   matchAnPlusB,
