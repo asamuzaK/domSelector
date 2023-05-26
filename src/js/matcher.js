@@ -209,10 +209,9 @@ const groupASTLeaves = (branch = []) => {
  */
 const collectNthChild = (anb = {}, node = {}) => {
   const { a, b, reverse, selector } = anb;
-  const { nodeType, ownerDocument, parentNode } = node;
+  const { nodeType, parentNode } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) &&
-      nodeType === ELEMENT_NODE && parentNode && parentNode.children) {
+  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -220,7 +219,7 @@ const collectNthChild = (anb = {}, node = {}) => {
     const l = arr.length;
     const items = [];
     if (selector) {
-      const ar = new Matcher(selector, ownerDocument).querySelectorAll();
+      const ar = new Matcher(selector, parentNode).querySelectorAll();
       if (ar.length) {
         items.push(...ar);
       }
@@ -294,8 +293,7 @@ const collectNthOfType = (anb = {}, node = {}) => {
   const { a, b, reverse } = anb;
   const { localName, nodeType, parentNode, prefix } = node;
   const matched = [];
-  if (Number.isInteger(a) && Number.isInteger(b) &&
-      nodeType === ELEMENT_NODE && parentNode && parentNode.children) {
+  if (Number.isInteger(a) && Number.isInteger(b) && nodeType === ELEMENT_NODE) {
     const arr = [...parentNode.children];
     if (reverse) {
       arr.reverse();
@@ -374,8 +372,8 @@ const matchAnPlusB = (nthName, ast = {}, node = {}) => {
         type: astType
       } = ast;
       const identName = unescapeSelector(nthIdentName);
-      const { nodeType } = node;
-      if (astType === NTH && nodeType === ELEMENT_NODE) {
+      const { nodeType, parentNode } = node;
+      if (astType === NTH && nodeType === ELEMENT_NODE && parentNode) {
         const anbMap = new Map();
         if (identName) {
           if (identName === 'even') {
