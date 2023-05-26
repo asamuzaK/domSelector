@@ -91,8 +91,7 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
  * @returns {?string} - unescaped selector
  */
 const unescapeSelector = (selector = '') => {
-  if (typeof selector === 'string' &&
-      selector.indexOf(String.fromCharCode(0x5c), 0) >= 0) {
+  if (typeof selector === 'string' && selector.indexOf('\\', 0) >= 0) {
     const arr = selector.split('\\');
     const l = arr.length;
     for (let i = 1; i < l; i++) {
@@ -1030,10 +1029,10 @@ const matchPseudoClassSelector = (
           case 'current':
           case 'nth-col':
           case 'nth-last-col':
-            throw new DOMException(`Unsupported pseudo-class ${astName}`,
+            throw new DOMException(`Unsupported pseudo-class :${astName}()`,
               'NotSupportedError');
           default:
-            throw new DOMException(`Unknown pseudo-class ${astName}`,
+            throw new DOMException(`Unknown pseudo-class :${astName}()`,
               'SyntaxError');
         }
       }
@@ -1292,7 +1291,7 @@ const matchPseudoClassSelector = (
             }
             // FIXME:
             if (isMultiple) {
-              throw new DOMException(`Unsupported pseudo-class ${astName}`,
+              throw new DOMException(`Unsupported pseudo-class :${astName}`,
                 'NotSupportedError');
             } else {
               const firstOpt = parentNode.firstElementChild;
@@ -1470,11 +1469,11 @@ const matchPseudoClassSelector = (
         case 'user-valid':
         case 'volume-locked':
         case '-webkit-autofill': {
-          throw new DOMException(`Unsupported pseudo-class ${astName}`,
+          throw new DOMException(`Unsupported pseudo-class :${astName}`,
             'NotSupportedError');
         }
         default: {
-          throw new DOMException(`Unknown pseudo-class ${astName}`,
+          throw new DOMException(`Unknown pseudo-class :${astName}`,
             'SyntaxError');
         }
       }
