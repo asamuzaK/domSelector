@@ -2,7 +2,6 @@ export class Matcher {
     constructor(selector: string, refPoint: object, opt?: {
         warn?: object;
     });
-    _isAttached(): boolean;
     _match(ast: object, node: object): Array<object | undefined>;
     _getMatchedNodes(branch?: Array<object>, node?: object): Array<object | undefined>;
     _find(ast: object, node: object): Array<object | undefined>;
@@ -25,6 +24,7 @@ export function collectNthOfType(anb?: {
 }, node?: object): Array<object | undefined>;
 export function createSelectorForNode(node?: object): string | null;
 export function groupASTLeaves(branch?: Array<object>): Array<object>;
+export function isAttached(node?: object): boolean;
 export function isContentEditable(node?: object): boolean;
 export function isNamespaceDeclared(ns?: string, node?: object): boolean;
 export function matchAnPlusB(nthName: string, ast?: object, node?: object): Array<object | undefined>;
