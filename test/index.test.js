@@ -1755,6 +1755,374 @@ describe('exported api', () => {
         document.getElementById('datetimelocalunder'),
         document.getElementById('datetimelocalover')
       ]);
+
+      it('should not match', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+          </div>
+
+          <div id=set3>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set0 :read-write', document);
+        assert.deepEqual(res, [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+          </div>
+
+          <div id=set3>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set0 :read-only', document);
+        assert.deepEqual(res, [
+          document.getElementById('checkbox1'),
+          document.getElementById('hidden1'),
+          document.getElementById('range1'),
+          document.getElementById('color1'),
+          document.getElementById('radio1'),
+          document.getElementById('file1'),
+          document.getElementById('submit1'),
+          document.getElementById('image1'),
+          document.getElementById('button1'),
+          document.getElementById('reset1')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+          </div>
+
+          <div id=set3>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set1 :read-write', document);
+        assert.deepEqual(res, [
+          document.getElementById('input1')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+          </div>
+
+          <div id=set3>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set1 :read-only', document);
+        assert.deepEqual(res, [
+          document.getElementById('input2'),
+          document.getElementById('input3'),
+          document.getElementById('input4'),
+          document.getElementById('input5')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set2 :read-write', document);
+        assert.deepEqual(res, [
+          document.getElementById('textarea1'),
+          document.getElementById('textarea3')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set2 :read-only', document);
+        assert.deepEqual(res, [
+          document.getElementById('textarea2'),
+          document.getElementById('textarea4')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set4 :read-write', document);
+        assert.deepEqual(res, [
+          document.getElementById('p2')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const domStr = `<div id="root">
+          <div id=set0>
+            <!-- The readonly attribute does not apply to the following input types -->
+            <input id=checkbox1 type=checkbox>
+            <input id=hidden1 type=hidden value=abc>
+            <input id=range1 type=range>
+            <input id=color1 type=color>
+            <input id=radio1 type=radio>
+            <input id=file1 type=file>
+            <input id=submit1 type=submit>
+            <input id=image1 type=image>
+            <input id=button1 type=button value="Button">
+            <input id=reset1 type=reset>
+          </div>
+
+          <div id=set1>
+            <input id=input1>
+            <input id=input2 readonly>
+            <input id=input3 disabled>
+            <input id=input4 type=checkbox>
+            <input id=input5 type=checkbox readonly>
+          </div>
+
+          <div id=set2>
+            <textarea id=textarea1>textarea1</textarea>
+            <textarea readonly id=textarea2>textarea2</textarea>
+            <textarea id=textarea3>textarea3</textarea>
+            <textarea disabled id=textarea4>textarea4</textarea>
+          </div>
+
+          <div id=set4>
+            <p id=p1>paragraph1.</p>
+            <p id=p2 contenteditable>paragraph2.</p>
+          </div>
+        </div>`;
+        document.body.innerHTML = domStr;
+        const res = querySelectorAll('#set4 :read-only', document);
+        assert.deepEqual(res, [
+          document.getElementById('p1')
+        ], 'result');
+      });
     });
   });
 });
