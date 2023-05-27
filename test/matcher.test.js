@@ -194,6 +194,38 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
+  describe('is node attached to owner document', () => {
+    const func = matcherJs.isAttached;
+
+    it('should get result', () => {
+      const node = document.documentElement;
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+  });
+
   describe('create CSS selector for node', () => {
     const func = matcherJs.createSelectorForNode;
 
@@ -3626,6 +3658,17 @@ describe('match AST leaf and DOM node', () => {
         name: 'ltr',
         type: IDENTIFIER
       };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'ltr');
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
       const node = document.createElement('div');
       node.setAttribute('dir', 'ltr');
       const parent = document.getElementById('div0');
@@ -5509,6 +5552,45 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
+    // FIXME: fieldset.checkValidity() returns true
+    xit('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = '';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isFalse(node.checkValidity(), 'validity');
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isTrue(node.checkValidity(), 'validity');
+      assert.deepEqual(res, [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -6050,33 +6132,6 @@ describe('match AST leaf and DOM node', () => {
         jsdom: true
       });
       assert.instanceOf(matcher, Matcher, 'instance');
-    });
-
-    describe('is attached', () => {
-      it('should get result', () => {
-        const elm = document.createElement('div');
-        const parent = document.getElementById('div0');
-        parent.appendChild(elm);
-        const matcher = new Matcher('div', elm);
-        const res = matcher._isAttached();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get result', () => {
-        const elm = document.createElement('div');
-        const matcher = new Matcher('div', elm);
-        const res = matcher._isAttached();
-        assert.isFalse(res, 'result');
-      });
-
-      it('should get result', () => {
-        const frag = document.createDocumentFragment();
-        const elm = document.createElement('div');
-        frag.appendChild(elm);
-        const matcher = new Matcher('div', frag);
-        const res = matcher._isAttached();
-        assert.isFalse(res, 'result');
-      });
     });
 
     describe('parse ast and find node(s)', () => {

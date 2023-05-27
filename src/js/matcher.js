@@ -86,6 +86,27 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
 };
 
 /**
+ * is node attached to owner document
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+const isAttached = (node = {}) => {
+  const { nodeType, ownerDocument } = node;
+  let res;
+  if (nodeType === ELEMENT_NODE && ownerDocument) {
+    const root = ownerDocument.documentElement;
+    if (node === root) {
+      res = true;
+    } else {
+      const posBit =
+        node.compareDocumentPosition(root) & DOCUMENT_POSITION_CONTAINS;
+      res = posBit;
+    }
+  }
+  return !!res;
+};
+
+/**
  * unescape selector
  * @param {string} selector - CSS selector
  * @returns {?string} - unescaped selector
@@ -888,7 +909,7 @@ const matchDirectionPseudoClass = (ast = {}, node = {}) => {
   const { type: astType } = ast;
   const { dir: nodeDir, localName, nodeType, type: inputType } = node;
   let res;
-  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE) {
+  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE && isAttached(node)) {
     const astName = unescapeSelector(ast.name);
     let dir;
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
@@ -1565,17 +1586,6 @@ class Matcher {
   }
 
   /**
-   * node is attached to document or detached
-   * @returns {boolean} - result
-   */
-  _isAttached() {
-    const root = this.#document.documentElement;
-    const posBit =
-      this.#node.compareDocumentPosition(root) & DOCUMENT_POSITION_CONTAINS;
-    return !!posBit;
-  };
-
-  /**
    * match AST and node
    * @param {object} ast - AST
    * @param {object} node - Document, DocumentFragment, Element node
@@ -1705,7 +1715,7 @@ class Matcher {
     let res;
     try {
       let node;
-      if (this._isAttached()) {
+      if (isAttached(this.#node)) {
         node = this.#document;
       } else {
         node = this.#node;
@@ -1821,6 +1831,7 @@ module.exports = {
   collectNthOfType,
   createSelectorForNode,
   groupASTLeaves,
+  isAttached,
   isContentEditable,
   isNamespaceDeclared,
   matchAnPlusB,

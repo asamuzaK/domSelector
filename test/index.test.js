@@ -744,6 +744,65 @@ describe('exported api', () => {
       assert.isTrue(input.matches(':dir(rtl)'),
         'Should match dir(rtl) after text change');
     });
+
+    it('should match', () => {
+      const domStr = `<div id="root">
+        <bdo dir="rtl" id=bdo1>WERBEH</bdo>
+        <bdo dir="ltr" id=bdo2>HEBREW</bdo>
+        <bdi id=bdi1>HEBREW</bdi>
+        <bdi dir="rtl" id=bdi2>WERBEH</bdi>
+        <bdi dir="ltr" id=bdi3>HEBREW</bdi>
+        <bdi id=bdi4>إيان</bdi>
+        <span id=span1>WERBEH</span>
+        <span dir="rtl" id=span2>WERBEH</span>
+        <span dir="ltr" id=span3>HEBREW</span>
+        &#x202E;<span id=span4>WERBEH</span>&#x202C;
+        <span dir="rtl" id=span5>WERBEH</span>
+        <span dir="ltr" id=span6>HEBREW</span>
+        <span dir="rtl" id=span7>
+          <input type=tel id=input-tel1>
+          <input type=tel id=input-tel2 dir="invalid">
+        </span>
+        <input type=tel id=input-tel3 dir="rtl">
+        <bdo dir="auto" id=bdo3>HEBREW</bdo>
+        <bdo dir="auto" id=bdo4>إيان</bdo>
+        <bdo dir="ltr" id=bdo5>עברית</bdo>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const rtlElements = [
+        'bdo1',
+        'bdi2',
+        'bdi4',
+        'span2',
+        'span5',
+        'span7',
+        'input-tel3',
+        'bdo4'
+      ];
+      const ltrElements = [
+        'bdo2',
+        'bdi1',
+        'bdi3',
+        'span1',
+        'span3',
+        'span4',
+        'span6',
+        'input-tel1',
+        'input-tel2',
+        'bdo3',
+        'bdo5'
+      ];
+      for (const i of rtlElements) {
+        const node = document.getElementById(i);
+        const res = node.matches(':dir(rtl)');
+        assert.isTrue(res, '&{node.id}');
+      }
+      for (const i of ltrElements) {
+        const node = document.getElementById(i);
+        const res = node.matches(':dir(ltr)');
+        assert.isTrue(res, '&{node.id}');
+      }
+    });
   });
 
   describe('closest', () => {
@@ -990,6 +1049,34 @@ describe('exported api', () => {
       const node = document.getElementById('test11');
       const res = closest('[selected]', node);
       assert.deepEqual(res, node, 'result');
+    });
+
+    // FIXME: fieldset.checkValidity() returns true
+    xit('should get matched node', () => {
+      const domStr = `<div id="test8" class="div3" style="display:none">
+        <div id="test7" class="div2">
+          <div id="test6" class="div1">
+            <form id="test10" class="form2"></form>
+            <form id="test5" class="form1" name="form-a">
+              <input id="test1" class="input1" required>
+              <fieldset class="fieldset2" id="test2">
+                <select id="test3" class="select1" required>
+                  <option default id="test4" value="">Test4</option>
+                  <option selected id="test11">Test11</option>
+                  <option id="test12">Test12</option>
+                  <option id="test13">Test13</option>
+                </select>
+                <input id="test9" type="text" required>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const node = document.getElementById('test11');
+      const target = document.getElementById('test2');
+      const res = closest(':invalid', node);
+      assert.deepEqual(res, target, 'result');
     });
 
     it('should get matched node', () => {
