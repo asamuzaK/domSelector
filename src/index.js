@@ -14,8 +14,7 @@ const { Matcher } = require('./js/matcher.js');
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
- * @param {object} [opt.globalObject] - global object
- * @param {boolean} [opt.jsdom] - is jsdom
+ * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {boolean} - result
  */
 const matches = (selector, node, opt) => {
@@ -28,8 +27,7 @@ const matches = (selector, node, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
- * @param {object} [opt.globalObject] - global object
- * @param {boolean} [opt.jsdom] - is jsdom
+ * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 const closest = (selector, node, opt) => {
@@ -42,8 +40,7 @@ const closest = (selector, node, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document or Element node
  * @param {object} [opt] - options
- * @param {object} [opt.globalObject] - global object
- * @param {boolean} [opt.jsdom] - is jsdom
+ * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 const querySelector = (selector, refPoint, opt) => {
@@ -57,8 +54,7 @@ const querySelector = (selector, refPoint, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document or Element node
  * @param {object} [opt] - options
- * @param {object} [opt.globalObject] - global object
- * @param {boolean} [opt.jsdom] - is jsdom
+ * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
 const querySelectorAll = (selector, refPoint, opt) => {

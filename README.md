@@ -29,52 +29,49 @@ const {
 
 ### matches(selector, node, opt)
 
-matches - [Element.matches()][64]
+matches - same functionality as [Element.matches()][64]
 
 #### Parameters
 
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
-  - `opt.globalObject` **[object][60]?** global object, e.g. `window`, `globalThis`
-  - `opt.jsdom` **[boolean][61]?** is jsdom
+  - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[boolean][61]** result
 
 
 ### closest(selector, node, opt)
 
-closest - [Element.closest()][65]
+closest - same functionality as [Element.closest()][65]
 
 #### Parameters
 
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
-  - `opt.globalObject` **[object][60]?** global object, e.g. `window`, `globalThis`
-  - `opt.jsdom` **[boolean][61]?** is jsdom
+  - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[object][60]?** matched node
 
 
 ### querySelector(selector, refPoint, opt)
 
-querySelector - [Document.querySelector()][66], [DocumentFragment.querySelector()][67], [Element.querySelector()][68]
+querySelector - same functionality as [Document.querySelector()][66], [DocumentFragment.querySelector()][67], [Element.querySelector()][68]
 
 #### Parameters
 
 - `selector` **[string][59]** CSS selector
 - `refPoint` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
-  - `opt.globalObject` **[object][60]?** global object, e.g. `window`, `globalThis`
-  - `opt.jsdom` **[boolean][61]?** is jsdom
+  - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[object][60]?** matched node
 
 
 ### querySelectorAll(selector, refPoint, opt)
 
-querySelectorAll - [Document.querySelectorAll()][69], [Document.querySelectorAll()][70], [Element.querySelectorAll()][71]
+querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Document.querySelectorAll()][70], [Element.querySelectorAll()][71]
 **NOTE**: returns Array, not NodeList
 
 #### Parameters
@@ -82,8 +79,7 @@ querySelectorAll - [Document.querySelectorAll()][69], [Document.querySelectorAll
 - `selector` **[string][59]** CSS selector
 - `refPoint` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
-  - `opt.globalObject` **[object][60]?** global object, e.g. `window`, `globalThis`
-  - `opt.jsdom` **[boolean][61]?** is jsdom
+  - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes
 
