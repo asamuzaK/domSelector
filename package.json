@@ -31,7 +31,7 @@
     "eslint-plugin-jsdoc": "^44.2.7",
     "eslint-plugin-regexp": "^1.15.0",
     "eslint-plugin-unicorn": "^47.0.0",
-    "jsdom": "^22.0.0",
+    "jsdom": "^22.1.0",
     "mocha": "^10.2.0",
     "sinon": "^15.1.0",
     "typescript": "^5.0.4"
@@ -42,5 +42,5 @@
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
-  "version": "0.15.1"
+  "version": "0.15.2"
 }
