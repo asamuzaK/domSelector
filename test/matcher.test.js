@@ -5010,6 +5010,22 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      node.setAttribute('type', 'hidden');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
       node.setAttribute('placeholder', 'foo');
       node.value = 'bar';
       const parent = document.getElementById('div0');
