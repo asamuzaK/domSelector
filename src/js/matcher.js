@@ -26,7 +26,8 @@ const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
-const INPUT_TYPE_BARRED = /^(?:(?:butto|hidde)n|reset)$/;
+const INPUT_PLACEHOLDER = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
+const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 const WHITESPACE = /^[\n\r\f]/;
@@ -38,19 +39,19 @@ const WHITESPACE = /^[\n\r\f]/;
  * @returns {boolean} - result
  */
 const isContentEditable = (node = {}) => {
-  let bool;
+  let res;
   if (node.nodeType === ELEMENT_NODE) {
     if (node.ownerDocument.designMode === 'on') {
-      bool = true;
+      res = true;
     } else if (node.hasAttribute('contenteditable')) {
       const attr = node.getAttribute('contenteditable');
       if (/^(?:plaintext-only|true)$/.test(attr) || attr === '') {
-        bool = true;
+        res = true;
       } else if (attr === 'inherit') {
         let parent = node.parentNode;
         while (parent) {
           if (isContentEditable(parent)) {
-            bool = true;
+            res = true;
             break;
           }
           parent = parent.parentNode;
@@ -58,7 +59,7 @@ const isContentEditable = (node = {}) => {
       }
     }
   }
-  return !!bool;
+  return !!res;
 };
 
 /**
@@ -171,7 +172,7 @@ const createSelectorForNode = (node = {}) => {
       }
     }
   }
-  return res || null;
+  return res ?? null;
 };
 
 /**
@@ -1049,13 +1050,13 @@ const matchPseudoClassSelector = (
       } else if (astName === 'dir') {
         const res = matchDirectionPseudoClass(branch, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
       // :lang()
       } else if (astName === 'lang') {
         const res = matchLanguagePseudoClass(branch, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
       } else {
         switch (astName) {
@@ -1186,8 +1187,8 @@ const matchPseudoClassSelector = (
         }
         case 'read-only': {
           if (/^(?:input|textarea)$/.test(localName)) {
-            if (node.hasAttribute('readonly') ||
-                node.hasAttribute('disabled')) {
+            if (node.readonly || node.hasAttribute('readonly') ||
+                node.disabled || node.hasAttribute('disabled')) {
               matched.push(node);
             }
           } else if (!isContentEditable(node)) {
@@ -1197,8 +1198,8 @@ const matchPseudoClassSelector = (
         }
         case 'read-write': {
           if (/^(?:input|textarea)$/.test(localName)) {
-            if (!(node.hasAttribute('readonly') ||
-                  node.hasAttribute('disabled'))) {
+            if (!(node.readonly || node.hasAttribute('readonly') ||
+                  node.disabled || node.hasAttribute('disabled'))) {
               matched.push(node);
             }
           } else if (isContentEditable(node)) {
@@ -1207,7 +1208,10 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'placeholder-shown': {
-          if (/^(?:input|textarea)$/.test(localName) &&
+          if (((localName === 'input' &&
+                (!node.hasAttribute('type') ||
+                 INPUT_PLACEHOLDER.test(node.getAttribute('type')))) ||
+               localName === 'textarea') &&
               node.hasAttribute('placeholder') &&
               node.getAttribute('placeholder').trim().length &&
               node.value === '') {
@@ -1366,26 +1370,26 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'in-range': {
-          if (localName === 'input' && !node.hasAttribute('readonly') &&
-              !node.hasAttribute('disabled') &&
+          if (localName === 'input' &&
+              !(node.readonly || node.hasAttribute('readonly')) &&
+              !(node.disabled || node.hasAttribute('disabled')) &&
+              node.hasAttribute('type') &&
+              INPUT_RANGE.test(node.getAttribute('type')) &&
               !(node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
-            if (!(node.hasAttribute('type') &&
-                 INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
-               node.hasAttribute('min') && node.hasAttribute('max')) {
-              matched.push(node);
-            } else if (node.getAttribute('type') === 'range') {
+            if (node.hasAttribute('min') || node.hasAttribute('max') ||
+                node.getAttribute('type') === 'range') {
               matched.push(node);
             }
           }
           break;
         }
         case 'out-of-range': {
-          if (localName === 'input' && !node.hasAttribute('readonly') &&
-              !node.hasAttribute('disabled') &&
-              (node.validity.rangeUnderflow || node.validity.rangeOverflow) &&
-              !(node.hasAttribute('type') &&
-                INPUT_TYPE_BARRED.test(node.getAttribute('type'))) &&
-              node.hasAttribute('min') && node.hasAttribute('max')) {
+          if (localName === 'input' &&
+              !(node.readonly || node.hasAttribute('readonly')) &&
+              !(node.disabled || node.hasAttribute('disabled')) &&
+              node.hasAttribute('type') &&
+              INPUT_RANGE.test(node.getAttribute('type')) &&
+              (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
             matched.push(node);
           }
           break;
@@ -1481,12 +1485,13 @@ const matchPseudoClassSelector = (
           }
           break;
         }
+        // legacy pseudo-elements
         case 'after':
         case 'before':
         case 'first-letter':
         case 'first-line': {
-          // legacy pseudo-elements
-          break;
+          throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+            'NotSupportedError');
         }
         case 'active':
         case 'autofill':
@@ -1549,11 +1554,11 @@ const matchPseudoElementSelector = (ast = {}, node = {}) => {
       case 'selection':
       case 'slotted':
       case 'target-text': {
-        throw new DOMException(`Unsupported pseudo-element ${astName}`,
+        throw new DOMException(`Unsupported pseudo-element ::${astName}`,
           'NotSupportedError');
       }
       default: {
-        throw new DOMException(`Unknown pseudo-element ${astName}`,
+        throw new DOMException(`Unknown pseudo-element ::${astName}`,
           'SyntaxError');
       }
     }
@@ -1598,21 +1603,21 @@ class Matcher {
       case ID_SELECTOR: {
         const res = matchIDSelector(ast, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
         break;
       }
       case CLASS_SELECTOR: {
         const res = matchClassSelector(ast, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
         break;
       }
       case ATTRIBUTE_SELECTOR: {
         const res = matchAttributeSelector(ast, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
         break;
       }
@@ -1631,7 +1636,7 @@ class Matcher {
       default: {
         const res = matchTypeSelector(ast, node);
         if (res) {
-          matched.push(node);
+          matched.push(res);
         }
       }
     }

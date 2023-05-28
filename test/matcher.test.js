@@ -4987,6 +4987,22 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,
@@ -5635,6 +5651,28 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('input');
       node.readonly = true;
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.disabled = true;
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -5649,6 +5687,42 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('input');
       node.setAttribute('hidden', 'hidden');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'in-range',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '1';
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -6037,7 +6111,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     // legacy pseudo-element
-    it('should not match', () => {
+    it('should throw', () => {
       const leaf = {
         children: null,
         name: 'after',
@@ -6045,8 +6119,7 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, [], 'result');
+      assert.throws(() => func(leaf, node), DOMException);
     });
 
     // not supported
