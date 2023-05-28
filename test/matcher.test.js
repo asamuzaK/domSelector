@@ -4775,6 +4775,51 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'range');
+      node.setAttribute('readonly', 'readonly');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -4874,6 +4919,48 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       const res = func(leaf, node);
       assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-write',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'range');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should not match', () => {
@@ -5047,6 +5134,21 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       const res = func(leaf, node);
       assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -5882,6 +5984,124 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const node = document.createElement('input');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'range');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'file');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('required', 'required');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'required',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('select');
       node.setAttribute('required', 'required');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
