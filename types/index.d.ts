@@ -1,16 +1,12 @@
 export function closest(selector: string, node: object, opt?: {
-    globalObject?: object;
-    jsdom?: boolean;
+    warn?: object;
 }): object | null;
 export function matches(selector: string, node: object, opt?: {
-    globalObject?: object;
-    jsdom?: boolean;
+    warn?: object;
 }): boolean;
 export function querySelector(selector: string, refPoint: object, opt?: {
-    globalObject?: object;
-    jsdom?: boolean;
+    warn?: object;
 }): object | null;
 export function querySelectorAll(selector: string, refPoint: object, opt?: {
-    globalObject?: object;
-    jsdom?: boolean;
+    warn?: object;
 }): Array<object | undefined>;
