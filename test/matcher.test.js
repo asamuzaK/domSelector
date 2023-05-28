@@ -6135,6 +6135,102 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'range');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('select');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'optional',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, [node], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,

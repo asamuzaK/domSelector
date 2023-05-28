@@ -1464,7 +1464,25 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'optional': {
-          if (HTML_FORM_INPUT.test(localName) && !node.required) {
+          let targetNode;
+          if (localName === 'input') {
+            if (node.hasAttribute('type')) {
+              const inputType = node.getAttribute('type');
+              if (INPUT_TEXT.test(inputType)) {
+                targetNode = node;
+              } else if (INPUT_RANGE.test(inputType) && inputType !== 'range') {
+                targetNode = node;
+              } else if (inputType === 'checkbox' || inputType === 'radio' ||
+                         inputType === 'file') {
+                targetNode = node;
+              }
+            } else {
+              targetNode = node;
+            }
+          } else if (/^(?:select|textarea)$/.test(localName)) {
+            targetNode = node;
+          }
+          if (targetNode && !(node.required || node.hasAttribute('required'))) {
             matched.push(node);
           }
           break;
