@@ -805,12 +805,12 @@ describe('exported api', () => {
       for (const i of rtlElements) {
         const node = document.getElementById(i);
         const res = node.matches(':dir(rtl)');
-        assert.isTrue(res, '${node.id}');
+        assert.isTrue(res, `${node.id}`);
       }
       for (const i of ltrElements) {
         const node = document.getElementById(i);
         const res = node.matches(':dir(ltr)');
-        assert.isTrue(res, '${node.id}');
+        assert.isTrue(res, `${node.id}`);
       }
     });
   });
