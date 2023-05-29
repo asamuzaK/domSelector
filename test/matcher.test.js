@@ -192,6 +192,15 @@ describe('match AST leaf and DOM node', () => {
       const res = func('foo', node);
       assert.isTrue(res, 'result');
     });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      frag.appendChild(node);
+      const res = func('foo', node);
+      assert.isFalse(res, 'result');
+    });
   });
 
   describe('is node attached to owner document', () => {

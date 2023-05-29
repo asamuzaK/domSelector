@@ -73,14 +73,16 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
   if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
     const attr = `xmlns:${ns}`;
     const root = node.ownerDocument.documentElement;
-    while (node) {
-      if (node.hasAttribute(attr)) {
+    let parent = node;
+    while (parent) {
+      if (typeof parent.hasAttribute === 'function' &&
+          parent.hasAttribute(attr)) {
         res = true;
         break;
-      } else if (node === root) {
+      } else if (parent === root) {
         break;
       }
-      node = node.parentNode;
+      parent = parent.parentNode;
     }
   }
   return !!res;
@@ -600,13 +602,13 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     flags: astFlags, matcher: astMatcher, name: astName, type: astType,
     value: astValue
   } = ast;
+  if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
+    throw new DOMException('invalid attribute selector', 'SyntaxError');
+  }
   const { attributes, nodeType } = node;
   let res;
   if (astType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
       attributes?.length) {
-    if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
-      throw new DOMException('invalid attribute selector', 'SyntaxError');
-    }
     const caseInsensitive =
       !(typeof astFlags === 'string' && /^s$/i.test(astFlags));
     const attrValues = [];

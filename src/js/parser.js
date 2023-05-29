@@ -82,6 +82,8 @@ const parseSelector = selector => {
   } catch (e) {
     if (e.message === '"]" is expected' && !selector.endsWith(']')) {
       res = parseSelector(`${selector}]`);
+    } else if (e.message === '")" is expected' && !selector.endsWith(')')) {
+      res = parseSelector(`${selector})`);
     } else {
       throw new DOMException(e.message, 'SyntaxError');
     }

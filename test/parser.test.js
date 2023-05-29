@@ -191,6 +191,40 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func('::slotted(foo');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'foo',
+                        type: TYPE_SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                name: 'slotted',
+                type: PSEUDO_ELEMENT_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func('#foo\u{2003}bar');
       assert.deepEqual(res, {
         children: [
@@ -4717,6 +4751,40 @@ describe('create AST from CSS selector', () => {
                 loc: null,
                 name: 'before',
                 type: 'PseudoClassSelector'
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('::slotted(foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'foo',
+                        type: TYPE_SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                name: 'slotted',
+                type: PSEUDO_ELEMENT_SELECTOR
               }
             ],
             loc: null,
