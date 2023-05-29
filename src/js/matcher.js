@@ -718,7 +718,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         }
         case '~=': {
-          if (typeof attrValue === 'string') {
+          if (attrValue && typeof attrValue === 'string') {
             for (const item of attrValues) {
               const arr = item.split(/\s+/);
               if (arr.includes(attrValue)) {

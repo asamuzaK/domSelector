@@ -2515,6 +2515,28 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        flags: null,
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         flags: null,
