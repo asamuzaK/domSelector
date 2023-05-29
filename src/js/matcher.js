@@ -605,51 +605,53 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
     throw new DOMException('invalid attribute selector', 'SyntaxError');
   }
-  const { attributes, nodeType } = node;
+  const { attributes, nodeType, ownerDocument } = node;
   let res;
   if (astType === ATTRIBUTE_SELECTOR && nodeType === ELEMENT_NODE &&
       attributes?.length) {
-    const caseInsensitive =
-      !(typeof astFlags === 'string' && /^s$/i.test(astFlags));
-    const attrValues = [];
-    const l = attributes.length;
     let { name: astAttrName } = astName;
     astAttrName = unescapeSelector(astAttrName);
+    let caseInsensitive;
+    if (ownerDocument?.contentType === 'text/html') {
+      if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
+        caseInsensitive = false;
+      } else {
+        caseInsensitive = true;
+      }
+    } else if (typeof astFlags === 'string' && /^i$/i.test(astFlags)) {
+      caseInsensitive = true;
+    } else {
+      caseInsensitive = false;
+    }
     if (caseInsensitive) {
       astAttrName = astAttrName.toLowerCase();
     }
+    const l = attributes.length;
+    const attrValues = [];
     // namespaced
     if (/\|/.test(astAttrName)) {
       const [astAttrPrefix, astAttrLocalName] = astAttrName.split('|');
       let i = 0;
       while (i < l) {
-        const { name: itemName, value: itemValue } = attributes.item(i);
+        let { name: itemName, value: itemValue } = attributes.item(i);
+        if (caseInsensitive) {
+          itemName = itemName.toLowerCase();
+          itemValue = itemValue.toLowerCase();
+        }
         switch (astAttrPrefix) {
           case '': {
             if (astAttrLocalName === itemName) {
-              if (caseInsensitive) {
-                attrValues.push(itemValue.toLowerCase());
-              } else {
-                attrValues.push(itemValue);
-              }
+              attrValues.push(itemValue);
             }
             break;
           }
           case '*': {
             if (/:/.test(itemName)) {
               if (itemName.endsWith(`:${astAttrLocalName}`)) {
-                if (caseInsensitive) {
-                  attrValues.push(itemValue.toLowerCase());
-                } else {
-                  attrValues.push(itemValue);
-                }
-              }
-            } else if (astAttrLocalName === itemName) {
-              if (caseInsensitive) {
-                attrValues.push(itemValue.toLowerCase());
-              } else {
                 attrValues.push(itemValue);
               }
+            } else if (astAttrLocalName === itemName) {
+              attrValues.push(itemValue);
             }
             break;
           }
@@ -658,11 +660,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
               const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
               if (astAttrPrefix === itemNamePrefix &&
                   astAttrLocalName === itemNameLocalName) {
-                if (caseInsensitive) {
-                  attrValues.push(itemValue.toLowerCase());
-                } else {
-                  attrValues.push(itemValue);
-                }
+                attrValues.push(itemValue);
               }
             }
           }
@@ -672,22 +670,18 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     } else {
       let i = 0;
       while (i < l) {
-        const { name: itemName, value: itemValue } = attributes.item(i);
+        let { name: itemName, value: itemValue } = attributes.item(i);
+        if (caseInsensitive) {
+          itemName = itemName.toLowerCase();
+          itemValue = itemValue.toLowerCase();
+        }
         if (/:/.test(itemName)) {
           const [, itemNameLocalName] = itemName.split(':');
           if (astAttrName === itemNameLocalName) {
-            if (caseInsensitive) {
-              attrValues.push(itemValue.toLowerCase());
-            } else {
-              attrValues.push(itemValue);
-            }
-          }
-        } else if (astAttrName === itemName) {
-          if (caseInsensitive) {
-            attrValues.push(itemValue.toLowerCase());
-          } else {
             attrValues.push(itemValue);
           }
+        } else if (astAttrName === itemName) {
+          attrValues.push(itemValue);
         }
         i++;
       }

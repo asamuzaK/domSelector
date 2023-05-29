@@ -2143,6 +2143,58 @@ describe('exported api', () => {
   });
 });
 
+describe('xml', () => {
+  it('should get matched node(s)', () => {
+    const { window } = new JSDOM('', {
+      runScripts: 'dangerously',
+      url: 'https://localhost/'
+    });
+    const domStr = `<html>
+      <body>
+        <div id="target" Title="foo"></div>
+      </body>
+    </html>`;
+    const doc =
+      new window.DOMParser().parseFromString(domStr, 'application/xml');
+    const node = doc.getElementById('target');
+    const res = doc.querySelector('[Title]');
+    assert.deepEqual(res, node, 'result');
+  });
+
+  it('should not match', () => {
+    const { window } = new JSDOM('', {
+      runScripts: 'dangerously',
+      url: 'https://localhost/'
+    });
+    const domStr = `<html>
+      <body>
+        <div id="target" Title="foo"></div>
+      </body>
+    </html>`;
+    const doc =
+      new window.DOMParser().parseFromString(domStr, 'application/xml');
+    const res = doc.querySelector('[TITLE]');
+    assert.isNull(res, 'result');
+  });
+
+  it('should get matched node(s)', () => {
+    const { window } = new JSDOM('', {
+      runScripts: 'dangerously',
+      url: 'https://localhost/'
+    });
+    const domStr = `<html>
+      <body>
+        <div id="target" Title="foo"></div>
+      </body>
+    </html>`;
+    const doc =
+      new window.DOMParser().parseFromString(domStr, 'application/xml');
+    const node = doc.getElementById('target');
+    const res = querySelector('[TITLE i]', doc);
+    assert.deepEqual(res, node, 'result');
+  });
+});
+
 /**
  * monkey patch jsdom
  * @param {string} [str] - dom string
