@@ -233,6 +233,15 @@ describe('match AST leaf and DOM node', () => {
       const res = func(node);
       assert.isFalse(res, 'result');
     });
+
+    it('should get result', () => {
+      const tmpl = document.createElement('template');
+      const node = document.createElement('div');
+      tmpl.appendChild(node);
+      document.body.appendChild(tmpl);
+      const res = func(tmpl.content);
+      assert.isFalse(res, 'result');
+    });
   });
 
   describe('create CSS selector for node', () => {

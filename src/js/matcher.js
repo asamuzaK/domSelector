@@ -100,7 +100,7 @@ const isAttached = (node = {}) => {
     const root = ownerDocument.documentElement;
     if (node === root) {
       res = true;
-    } else {
+    } else if (root) {
       const posBit =
         node.compareDocumentPosition(root) & DOCUMENT_POSITION_CONTAINS;
       res = posBit;
