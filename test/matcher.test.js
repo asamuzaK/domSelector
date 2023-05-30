@@ -4537,6 +4537,33 @@ describe('match AST leaf and DOM node', () => {
       assert.deepEqual(res, [], 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'target',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.createElement('div');
+      parent.appendChild(node);
+      const res = func(leaf, parent);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'target',
+        type: PSEUDO_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      node.id = 'foo';
+      frag.appendChild(node);
+      const res = func(leaf, frag);
+      assert.deepEqual(res, [], 'result');
+    });
     // FIXME:
     xit('should get matched node(s)', () => {
       const src = `data:text/html,
@@ -7335,6 +7362,14 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelector();
         assert.deepEqual(res, target, 'result');
       });
+
+      it('should get matched node', () => {
+        const refPoint = document.getElementById('dl1');
+        const target = document.getElementById('dt1');
+        const matcher = new Matcher('body #dt1', refPoint);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, target, 'result');
+      });
     });
 
     describe('querySelectorAll', () => {
@@ -7398,6 +7433,14 @@ describe('match AST leaf and DOM node', () => {
           document.getElementById('dd3'),
           document.getElementById('span3')
         ], 'result');
+      });
+
+      it('should get matched node', () => {
+        const refPoint = document.getElementById('dl1');
+        const target = document.getElementById('dt1');
+        const matcher = new Matcher('body #dt1', refPoint);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [target], 'result');
       });
     });
   });

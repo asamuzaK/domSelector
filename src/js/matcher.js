@@ -1099,7 +1099,8 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'target': {
-          if (docURL.hash && node.id && docURL.hash === `#${node.id}`) {
+          if (isAttached(node) && docURL.hash &&
+              node.id && docURL.hash === `#${node.id}`) {
             matched.push(node);
           }
           break;
@@ -1864,9 +1865,21 @@ class Matcher {
   querySelector() {
     let res;
     try {
-      const arr = this._find(this.#ast, this.#node);
+      let node;
+      if (isAttached(this.#node)) {
+        node = this.#document;
+      } else {
+        node = this.#node;
+        while (node) {
+          if (!node.parentNode) {
+            break;
+          }
+          node = node.parentNode;
+        }
+      }
+      const arr = this._find(this.#ast, node);
       if (arr.length) {
-        const i = arr.findIndex(node => node === this.#node);
+        const i = arr.findIndex(n => n === this.#node);
         if (i >= 0) {
           arr.splice(i, 1);
         }
@@ -1902,9 +1915,21 @@ class Matcher {
   querySelectorAll() {
     const res = [];
     try {
-      const arr = this._find(this.#ast, this.#node);
+      let node;
+      if (isAttached(this.#node)) {
+        node = this.#document;
+      } else {
+        node = this.#node;
+        while (node) {
+          if (!node.parentNode) {
+            break;
+          }
+          node = node.parentNode;
+        }
+      }
+      const arr = this._find(this.#ast, node);
       if (arr.length) {
-        const i = arr.findIndex(node => node === this.#node);
+        const i = arr.findIndex(n => n === this.#node);
         if (i >= 0) {
           arr.splice(i, 1);
         }
