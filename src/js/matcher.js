@@ -1761,17 +1761,30 @@ class Matcher {
         const [{ nodes }] = twig;
         matched.push(...nodes);
       } else if (l > 1) {
-        const { nodes } = twig.reduce((prevItem, nextItem) => {
+        const prevItem = twig[0];
+        let j = 1;
+        while (j < l) {
           const { combo: prevCombo, nodes: prevNodes } = prevItem;
-          const { combo: nextCombo, nodes: nextNodes } = nextItem;
-          const matchedNodes =
-            matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
-          return {
-            combo: nextCombo,
-            nodes: new Set(matchedNodes)
-          };
-        });
-        matched.push(...nodes);
+          const { combo: nextCombo, nodes: nextNodes } = twig[j];
+          if (prevCombo && prevNodes.size && nextNodes.size) {
+            const nodes =
+              matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
+            if (nodes.length) {
+              if (j === l - 1) {
+                matched.push(...new Set(nodes));
+                break;
+              } else {
+                prevItem.combo = nextCombo;
+                prevItem.nodes = new Set(nodes);
+              }
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+          j++;
+        }
       }
     }
     return matched;
