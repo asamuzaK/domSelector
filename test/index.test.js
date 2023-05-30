@@ -1389,7 +1389,7 @@ describe('exported api', () => {
     });
 
     it('should get matched node', () => {
-      const domStr = `<div><svg></svg></div>`;
+      const domStr = '<div><svg></svg></div>';
       const tmpl = document.createElement('template');
       tmpl.innerHTML = domStr;
       document.body.appendChild(tmpl);
