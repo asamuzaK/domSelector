@@ -1870,8 +1870,18 @@ class Matcher {
         if (i >= 0) {
           arr.splice(i, 1);
         }
+        const nodes = new Set(arr);
+        const iterator =
+          this.#document.createNodeIterator(this.#node, FILTER_SHOW_ELEMENT);
+        let nextNode = iterator.nextNode();
+        while (nextNode) {
+          if (nodes.has(nextNode)) {
+            res = nextNode;
+            break;
+          }
+          nextNode = iterator.nextNode();
+        }
       }
-      [res] = arr;
     } catch (e) {
       if (e instanceof DOMException && e.name === 'NotSupportedError') {
         if (this.#warn) {
@@ -1898,9 +1908,21 @@ class Matcher {
         if (i >= 0) {
           arr.splice(i, 1);
         }
+        const nodes = new Set(arr);
+        const iterator =
+          this.#document.createNodeIterator(this.#node, FILTER_SHOW_ELEMENT);
+        let nextNode = iterator.nextNode();
+        while (nextNode) {
+          if (nodes.has(nextNode)) {
+            res.push(nextNode);
+            nodes.delete(nextNode);
+          }
+          if (!nodes.size) {
+            break;
+          }
+          nextNode = iterator.nextNode();
+        }
       }
-      const a = new Set(arr);
-      res.push(...a);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'NotSupportedError') {
         if (this.#warn) {

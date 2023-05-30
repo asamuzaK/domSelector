@@ -1325,6 +1325,68 @@ describe('exported api', () => {
       const res = querySelector('.qux', div1);
       assert.isNull(res, 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div id="root">
+        <div id="attr-whitespace">
+          <div id="attr-whitespace-div1" class="foo div1 bar"></div>
+          <div id="attr-whitespace-div2" class=""></div>
+          <div id="attr-whitespace-div3" class="foo div3 bar"></div>
+
+          <div id="attr-whitespace-div4" data-attr-whitespace="foo &#xE9; bar"></div>
+          <div id="attr-whitespace-div5" data-attr-whitespace_foo="&#xE9; foo"></div>
+
+          <a id="attr-whitespace-a1" rel="next bookmark"></a>
+          <a id="attr-whitespace-a2" rel="tag nofollow"></a>
+          <a id="attr-whitespace-a3" rel="tag bookmark"></a>
+          <a id="attr-whitespace-a4" rel="book mark"></a> <!-- Intentional space in "book mark" -->
+          <a id="attr-whitespace-a5" rel="nofollow"></a>
+          <a id="attr-whitespace-a6" rev="bookmark nofollow"></a>
+          <a id="attr-whitespace-a7" rel="prev next tag alternate nofollow author help icon noreferrer prefetch search stylesheet tag"></a>
+
+          <p id="attr-whitespace-p1" title="Chinese 中文 characters"></p>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const query = [
+        "#attr-whitespace a[rel~='bookmark']",
+        "#attr-whitespace a[rel~='nofollow']"
+      ].join(',');
+      const res = querySelector(query, document);
+      assert.deepEqual(res, document.getElementById('attr-whitespace-a1'),
+        'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const domStr = `<div id="root">
+        <div id="attr-whitespace">
+          <div id="attr-whitespace-div1" class="foo div1 bar"></div>
+          <div id="attr-whitespace-div2" class=""></div>
+          <div id="attr-whitespace-div3" class="foo div3 bar"></div>
+
+          <div id="attr-whitespace-div4" data-attr-whitespace="foo &#xE9; bar"></div>
+          <div id="attr-whitespace-div5" data-attr-whitespace_foo="&#xE9; foo"></div>
+
+          <a id="attr-whitespace-a1" rel="next bookmark"></a>
+          <a id="attr-whitespace-a2" rel="tag nofollow"></a>
+          <a id="attr-whitespace-a3" rel="tag bookmark"></a>
+          <a id="attr-whitespace-a4" rel="book mark"></a> <!-- Intentional space in "book mark" -->
+          <a id="attr-whitespace-a5" rel="nofollow"></a>
+          <a id="attr-whitespace-a6" rev="bookmark nofollow"></a>
+          <a id="attr-whitespace-a7" rel="prev next tag alternate nofollow author help icon noreferrer prefetch search stylesheet tag"></a>
+
+          <p id="attr-whitespace-p1" title="Chinese 中文 characters"></p>
+        </div>
+      </div>`;
+      document.body.innerHTML = domStr;
+      const query = [
+        "#attr-whitespace a[rel~='nofollow']",
+        "#attr-whitespace a[rel~='bookmark']"
+      ].join(',');
+      const res = querySelector(query, document);
+      assert.deepEqual(res, document.getElementById('attr-whitespace-a1'),
+        'result');
+    });
   });
 
   describe('query selector all', () => {
@@ -2168,19 +2230,18 @@ describe('exported api', () => {
         </div>
       </div>`;
       document.body.innerHTML = domStr;
-      const res = querySelectorAll("#attr-whitespace a[rel~='bookmark'], #attr-whitespace a[rel~='nofollow']", document);
-      const ids = [
-        'attr-whitespace-a3',
-        'attr-whitespace-a1',
-        'attr-whitespace-a2',
-        'attr-whitespace-a5',
-        'attr-whitespace-a7'
-      ];
-      assert.strictEqual(res.length, 5, 'length');
-      for (const i of ids) {
-        const elm = document.getElementById(i);
-        assert.isTrue(res.includes(elm), 'includes');
-      }
+      const query = [
+        "#attr-whitespace a[rel~='bookmark']",
+        "#attr-whitespace a[rel~='nofollow']"
+      ].join(',');
+      const res = querySelectorAll(query, document);
+      assert.deepEqual(res, [
+        document.getElementById('attr-whitespace-a1'),
+        document.getElementById('attr-whitespace-a2'),
+        document.getElementById('attr-whitespace-a3'),
+        document.getElementById('attr-whitespace-a5'),
+        document.getElementById('attr-whitespace-a7')
+      ], 'result');
     });
   });
 });
