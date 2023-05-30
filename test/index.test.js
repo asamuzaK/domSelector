@@ -1387,6 +1387,17 @@ describe('exported api', () => {
       assert.deepEqual(res, document.getElementById('attr-whitespace-a1'),
         'result');
     });
+
+    it('should get matched node', () => {
+      const domStr = `<div><svg></svg></div>`;
+      const tmpl = document.createElement('template');
+      tmpl.innerHTML = domStr;
+      document.body.appendChild(tmpl);
+      const frag = tmpl.content;
+      const res = querySelector('svg', frag.firstChild);
+      assert.isNotNull(res, 'result');
+      assert.strictEqual(res.localName, 'svg', 'localName');
+    });
   });
 
   describe('query selector all', () => {
