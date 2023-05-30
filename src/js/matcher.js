@@ -1735,32 +1735,44 @@ class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   _getMatchedNodes(branch = [], node = {}) {
-    const matched = [];
     const twig = groupASTLeaves(branch);
     const l = twig.length;
+    const matched = [];
     if (l) {
+      const lastIndex = l - 1;
       const iterator =
         this.#document.createNodeIterator(node, FILTER_SHOW_ELEMENT);
       let nextNode = iterator.nextNode();
       while (nextNode) {
         let i = 0;
-        while (i < l) {
-          const { leaves } = twig[i];
+        if (nextNode.children.length === 0) {
+          const { leaves } = twig[lastIndex];
           const bool = leaves.every(leaf => {
             const arr = this._match(leaf, nextNode);
             return arr.includes(nextNode);
           });
           if (bool) {
-            twig[i].nodes.add(nextNode);
+            twig[lastIndex].nodes.add(nextNode);
           }
-          i++;
+        } else {
+          while (i < l) {
+            const { leaves } = twig[i];
+            const bool = leaves.every(leaf => {
+              const arr = this._match(leaf, nextNode);
+              return arr.includes(nextNode);
+            });
+            if (bool) {
+              twig[i].nodes.add(nextNode);
+            }
+            i++;
+          }
         }
         nextNode = iterator.nextNode();
       }
-      if (l === 1) {
+      if (lastIndex === 0) {
         const [{ nodes }] = twig;
         matched.push(...nodes);
-      } else if (l > 1) {
+      } else if (lastIndex) {
         const prevItem = twig[0];
         let j = 1;
         while (j < l) {
@@ -1770,7 +1782,7 @@ class Matcher {
             const nodes =
               matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
             if (nodes.length) {
-              if (j === l - 1) {
+              if (j === lastIndex) {
                 matched.push(...new Set(nodes));
                 break;
               } else {
