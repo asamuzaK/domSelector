@@ -1503,12 +1503,14 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should get matched node(s)', () => {
       const leaf = {
         name: '|*',
         type: TYPE_SELECTOR
       };
-      const node = document.getElementById('div0');
+      const node = document.createElementNS('', 'div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
       const res = func(leaf, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -1518,8 +1520,18 @@ describe('match AST leaf and DOM node', () => {
         name: '|*',
         type: TYPE_SELECTOR
       };
+      const node = document.getElementById('div0');
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: '|*',
+        type: TYPE_SELECTOR
+      };
       const node =
-        document.createElementNS('https://example.com/foo', 'foo:bar');
+        document.createElementNS('https://example.com/foo', 'div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -1614,6 +1626,28 @@ describe('match AST leaf and DOM node', () => {
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        name: '|div',
+        type: TYPE_SELECTOR
+      };
+      const node = document.createElementNS('', 'div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: '|div',
+        type: TYPE_SELECTOR
+      };
+      const node = document.getElementById('div0');
       const res = func(leaf, node);
       assert.isNull(res, 'result');
     });
@@ -2691,6 +2725,28 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz-bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         flags: null,
@@ -2813,6 +2869,28 @@ describe('match AST leaf and DOM node', () => {
         value: {
           type: STRING,
           value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        flags: 's',
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
         }
       };
       const node = document.createElement('div');
@@ -2955,6 +3033,28 @@ describe('match AST leaf and DOM node', () => {
       assert.isNull(res, 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        flags: 's',
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         flags: null,
@@ -3077,6 +3177,28 @@ describe('match AST leaf and DOM node', () => {
         value: {
           type: STRING,
           value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        flags: 's',
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: ATTRIBUTE_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
         }
       };
       const node = document.createElement('div');

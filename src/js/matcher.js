@@ -528,7 +528,7 @@ const matchTypeSelector = (ast = {}, node = {}) => {
         throw new DOMException(`invalid selector ${astName}`, 'SyntaxError');
       }
     } else {
-      astPrefix = '';
+      astPrefix = '*';
       astNodeName = astName;
     }
     if (ownerDocument?.contentType === 'text/html') {
@@ -542,12 +542,19 @@ const matchTypeSelector = (ast = {}, node = {}) => {
       nodePrefix = prefix || '';
       nodeName = localName;
     }
-    if (astName === '*' || astName === '*|*' || astName === nodeName ||
-        (astName === '|*' && !nodePrefix) ||
-        (astPrefix === '*' && astNodeName === nodeName) ||
-        ((astPrefix === nodePrefix || (astPrefix === '' && !nodePrefix)) &&
-         (astNodeName === '*' || astNodeName === nodeName))) {
-      res = node;
+    if (astPrefix === '' && nodePrefix === '') {
+      if (node.namespaceURI === null &&
+          (astNodeName === '*' || astNodeName === nodeName)) {
+        res = node;
+      }
+    } else if (astPrefix === '*') {
+      if (astNodeName === '*' || astNodeName === nodeName) {
+        res = node;
+      }
+    } else if (astPrefix === nodePrefix) {
+      if (astNodeName === '*' || astNodeName === nodeName) {
+        res = node;
+      }
     }
   }
   return res ?? null;
@@ -730,7 +737,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         }
         case '|=': {
-          if (typeof attrValue === 'string') {
+          if (attrValue && typeof attrValue === 'string') {
             const item = attrValues.find(v =>
               (v === attrValue || v.startsWith(`${attrValue}-`))
             );
@@ -741,7 +748,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         }
         case '^=': {
-          if (typeof attrValue === 'string') {
+          if (attrValue && typeof attrValue === 'string') {
             const item = attrValues.find(v => v.startsWith(`${attrValue}`));
             if (item) {
               res = node;
@@ -750,7 +757,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         }
         case '$=': {
-          if (typeof attrValue === 'string') {
+          if (attrValue && typeof attrValue === 'string') {
             const item = attrValues.find(v => v.endsWith(`${attrValue}`));
             if (item) {
               res = node;
@@ -759,7 +766,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
           break;
         }
         case '*=': {
-          if (typeof attrValue === 'string') {
+          if (attrValue && typeof attrValue === 'string') {
             const item = attrValues.find(v => v.includes(`${attrValue}`));
             if (item) {
               res = node;
