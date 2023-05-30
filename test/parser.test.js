@@ -5369,4 +5369,140 @@ describe('walk AST', () => {
       ]
     ], 'result');
   });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: '*',
+                          type: TYPE_SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                }
+              ],
+              loc: null,
+              name: 'not',
+              type: PSEUDO_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: '*',
+                      type: TYPE_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR_LIST
+            }
+          ],
+          loc: null,
+          name: 'not',
+          type: PSEUDO_CLASS_SELECTOR
+        }
+      ]
+    ], 'result');
+  });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: '*|*',
+                          type: TYPE_SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                }
+              ],
+              loc: null,
+              name: 'not',
+              type: PSEUDO_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: '*|*',
+                      type: TYPE_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR_LIST
+            }
+          ],
+          loc: null,
+          name: 'not',
+          type: PSEUDO_CLASS_SELECTOR
+        }
+      ]
+    ], 'result');
+  });
 });

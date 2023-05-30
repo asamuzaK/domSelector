@@ -107,7 +107,7 @@ const walkAST = (ast = {}) => {
   walk(ast, opt);
   findAll(ast, (node, item, list) => {
     if (node.type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(node.name) &&
-        item) {
+        list && list.length) {
       for (const i of list) {
         const { children, name, type } = i;
         if (type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name) &&
