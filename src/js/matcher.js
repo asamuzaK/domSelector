@@ -1744,7 +1744,6 @@ class Matcher {
         this.#document.createNodeIterator(node, FILTER_SHOW_ELEMENT);
       let nextNode = iterator.nextNode();
       while (nextNode) {
-        let i = 0;
         if (nextNode.children.length === 0) {
           const { leaves } = twig[lastIndex];
           const bool = leaves.every(leaf => {
@@ -1755,6 +1754,7 @@ class Matcher {
             twig[lastIndex].nodes.add(nextNode);
           }
         } else {
+          let i = 0;
           while (i < l) {
             const { leaves } = twig[i];
             const bool = leaves.every(leaf => {
