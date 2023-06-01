@@ -97,37 +97,45 @@ const parseSelector = selector => {
  * @returns {Array.<object|undefined>} - collection of AST branches
  */
 const walkAST = (ast = {}) => {
-  const selectors = new Set();
+  const branches = new Set();
+  let hasPseudoFunc;
   const opt = {
-    visit: SELECTOR,
-    enter: branch => {
-      selectors.add(branch.children);
+    enter: node => {
+      if (node.type === SELECTOR) {
+        branches.add(node.children);
+      } else if (node.type === PSEUDO_CLASS_SELECTOR &&
+                 PSEUDO_FUNC.test(node.name)) {
+        hasPseudoFunc = true;
+      }
     }
   };
   walk(ast, opt);
-  findAll(ast, (node, item, list) => {
-    if (node.type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(node.name) &&
-        list && list.length) {
-      for (const i of list) {
-        const { children, name, type } = i;
-        if (type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name) &&
-            children) {
+  if (hasPseudoFunc) {
+    findAll(ast, (node, item, list) => {
+      if (node.type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(node.name) &&
+          list) {
+        const itemList = list.filter(i => {
+          const { name, type } = i;
+          return type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name);
+        });
+        for (const i of itemList) {
+          const { children } = i;
           // SelectorList
           for (const j of children) {
             const { children: grandChildren } = j;
             // Selector
             for (const k of grandChildren) {
               const { children: greatGrandChildren } = k;
-              if (selectors.has(greatGrandChildren)) {
-                selectors.delete(greatGrandChildren);
+              if (branches.has(greatGrandChildren)) {
+                branches.delete(greatGrandChildren);
               }
             }
           }
         }
       }
-    }
-  });
-  return [...selectors];
+    });
+  }
+  return [...branches];
 };
 
 /* export */
