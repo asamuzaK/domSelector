@@ -181,43 +181,72 @@ const createSelectorForNode = (node = {}) => {
 };
 
 /**
+ * parse AST name
+ * @param {string} name - AST name
+ * @param {object} [node] - Element node
+ * @returns {object.<string>} - parsed AST name
+ */
+const parseASTName = (name, node) => {
+  let astPrefix, astNodeName;
+  if (name && typeof name === 'string') {
+    if (/\|/.test(name)) {
+      [astPrefix, astNodeName] = name.split('|');
+      if (astPrefix && astPrefix !== '*' &&
+          node && !isNamespaceDeclared(astPrefix, node)) {
+        throw new DOMException(`invalid selector ${name}`, 'SyntaxError');
+      }
+    } else {
+      astPrefix = '*';
+      astNodeName = name;
+    }
+  } else {
+    throw new DOMException(`invalid selector ${name}`, 'SyntaxError');
+  }
+  return {
+    astNodeName,
+    astPrefix
+  }
+};
+
+/**
  * group AST leaves
- * NOTE: extends leaves by adding `nodes` property
  * @param {Array.<object>} branch - AST branch
  * @returns {Array.<object>} - array of grouped leaves
  */
 const groupASTLeaves = (branch = []) => {
   const [...items] = branch;
   const twig = [];
-  const leaves = new Set();
-  let item = items.shift();
-  if (item && item.type !== COMBINATOR) {
-    while (item) {
-      if (item.type === COMBINATOR) {
-        const [nextItem] = items;
-        if (nextItem.type === COMBINATOR) {
-          const combo = `${item.name}${nextItem.name}`;
-          throw new DOMException(`invalid combinator, ${combo}`, 'SyntaxError');
+  if (items.length) {
+    const leaves = new Set();
+    let item = items.shift();
+    if (item && item.type !== COMBINATOR) {
+      while (item) {
+        if (item.type === COMBINATOR) {
+          const [nextItem] = items;
+          if (nextItem.type === COMBINATOR) {
+            const msg = `invalid combinator, ${item.name}${nextItem.name}`;
+            throw new DOMException(msg, 'SyntaxError');
+          }
+          twig.push({
+            combo: item,
+            leaves: [...leaves],
+            nodes: new Set()
+          });
+          leaves.clear();
+        } else if (item) {
+          leaves.add(item);
         }
-        twig.push({
-          combo: item,
-          leaves: [...leaves],
-          nodes: new Set()
-        });
-        leaves.clear();
-      } else if (item) {
-        leaves.add(item);
-      }
-      if (items.length) {
-        item = items.shift();
-      } else {
-        twig.push({
-          combo: null,
-          leaves: [...leaves],
-          nodes: new Set()
-        });
-        leaves.clear();
-        break;
+        if (items.length) {
+          item = items.shift();
+        } else {
+          twig.push({
+            combo: null,
+            leaves: [...leaves],
+            nodes: new Set()
+          });
+          leaves.clear();
+          break;
+        }
       }
     }
   }
@@ -512,6 +541,50 @@ const matchCombinator = (combo = {}, prevNodes = [], nextNodes = []) => {
 };
 
 /**
+ * get matched nodes
+ * @param {Array.<object>} twig - AST twig
+ * @param {object} node - Document, DocumentFragment, Element node
+ * @returns {Array.<object|undefined>} - collection of matched nodes
+ */
+const getMatchedNodes = (twig = [], node = {}) => {
+  const matched = [];
+  const l = twig.length;
+  if (l) {
+    const lastIndex = l - 1;
+    if (lastIndex === 0) {
+      const [{ nodes }] = twig;
+      matched.push(...nodes);
+    } else if (lastIndex) {
+      const prevItem = twig[0];
+      let j = 1;
+      while (j < l) {
+        const { combo: prevCombo, nodes: prevNodes } = prevItem;
+        const { combo: nextCombo, nodes: nextNodes } = twig[j];
+        if (prevCombo && prevNodes.size && nextNodes.size) {
+          const nodes =
+            matchCombinator(prevCombo, [...prevNodes], [...nextNodes]);
+          if (nodes.length) {
+            if (j === lastIndex) {
+              matched.push(...new Set(nodes));
+              break;
+            } else {
+              prevItem.combo = nextCombo;
+              prevItem.nodes = new Set(nodes);
+            }
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+        j++;
+      }
+    }
+  }
+  return matched;
+};
+
+/**
  * match type selector
  * @param {object} ast - AST
  * @param {object} node - Element node
@@ -522,22 +595,13 @@ const matchTypeSelector = (ast = {}, node = {}) => {
   const { localName, nodeType, ownerDocument, prefix } = node;
   let res;
   if (astType === TYPE_SELECTOR && nodeType === ELEMENT_NODE) {
-    let astName = unescapeSelector(ast.name);
-    let astPrefix, astNodeName, nodePrefix, nodeName;
-    if (/\|/.test(astName)) {
-      [astPrefix, astNodeName] = astName.split('|');
-      if (astPrefix && astPrefix !== '*' &&
-          !isNamespaceDeclared(astPrefix, node)) {
-        throw new DOMException(`invalid selector ${astName}`, 'SyntaxError');
-      }
-    } else {
-      astPrefix = '*';
-      astNodeName = astName;
-    }
+    const astName = unescapeSelector(ast.name);
+    let { astPrefix, astNodeName } = parseASTName(astName, node);
     if (ownerDocument?.contentType === 'text/html') {
+      astPrefix = astPrefix.toLowerCase();
       astNodeName = astNodeName.toLowerCase();
-      astName = astName.toLowerCase();
     }
+    let nodePrefix, nodeName;
     // just in case that the namespaced content is parsed as text/html
     if (/:/.test(localName)) {
       [nodePrefix, nodeName] = localName.split(':');
@@ -640,7 +704,9 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     const attrValues = [];
     // namespaced
     if (/\|/.test(astAttrName)) {
-      const [astAttrPrefix, astAttrLocalName] = astAttrName.split('|');
+      const {
+        astPrefix: astAttrPrefix, astNodeName: astAttrLocalName
+      } = parseASTName(astAttrName);
       let i = 0;
       while (i < l) {
         let { name: itemName, value: itemValue } = attributes.item(i);
@@ -1995,6 +2061,7 @@ module.exports = {
   collectNthChild,
   collectNthOfType,
   createSelectorForNode,
+  getMatchedNodes,
   groupASTLeaves,
   isContentEditable,
   isDescendant,
@@ -2010,5 +2077,6 @@ module.exports = {
   matchPseudoClassSelector,
   matchPseudoElementSelector,
   matchTypeSelector,
+  parseASTName,
   unescapeSelector
 };

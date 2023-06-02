@@ -400,6 +400,59 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
+  describe('parse AST name', () => {
+    const func = matcherJs.parseASTName;
+
+    it('should throw', () => {
+      assert.throws(() => func(), DOMException);
+    });
+
+    it('should get value', () => {
+      const res = func('foo');
+      assert.deepEqual(res, {
+        astPrefix: '*',
+        astNodeName: 'foo'
+      });
+    });
+
+    it('should get value', () => {
+      const res = func('|Foo');
+      assert.deepEqual(res, {
+        astPrefix: '',
+        astNodeName: 'Foo'
+      });
+    });
+
+    it('should get value', () => {
+      const res = func('ns|Foo');
+      assert.deepEqual(res, {
+        astPrefix: 'ns',
+        astNodeName: 'Foo'
+      });
+    });
+
+    it('should throw', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func('foo|div', node), DOMException);
+    });
+
+    it('should get value', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttribute('xmlns:foo', 'https:/example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo|div', node);
+      assert.deepEqual(res, {
+        astPrefix: 'foo',
+        astNodeName: 'div'
+      }, 'result');
+    });
+  });
+
   describe('group AST leaves', () => {
     const func = matcherJs.groupASTLeaves;
 
@@ -430,22 +483,26 @@ describe('match AST leaf and DOM node', () => {
           name: ' ',
           type: COMBINATOR
         },
-        leaves: [{
-          name: 'foo',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'bar',
-          type: CLASS_SELECTOR
-        }],
+        leaves: [
+          {
+            name: 'foo',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: 'bar',
+            type: CLASS_SELECTOR
+          }
+        ],
         nodes: new Set()
       },
       {
         combo: null,
-        leaves: [{
-          name: 'baz',
-          type: TYPE_SELECTOR
-        }],
+        leaves: [
+          {
+            name: 'baz',
+            type: TYPE_SELECTOR
+          }
+        ],
         nodes: new Set()
       }], 'result');
     });
@@ -1508,6 +1565,280 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('dt3'),
         document.getElementById('dd3')
       ]);
+      assert.deepEqual(res, [], 'result');
+    });
+  });
+
+  describe('get matched nodes', () => {
+    const func = matcherJs.getMatchedNodes;
+
+    it('should get empty array', () => {
+      const res = func();
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const ast = [{
+        combo: null,
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        }],
+        nodes: new Set([
+          node
+        ])
+      }];
+      const res = func(ast, node);
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.createElement('div');
+      node.classList.add('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const ast = [{
+        combo: null,
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'foo',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'bar',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node
+        ])
+      }];
+      const res = func(ast, node);
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.createElement('div');
+      node.classList.add('foo', 'bar');
+      const node2 = document.createElement('div');
+      node2.classList.add('baz');
+      const node3 = document.createElement('div');
+      node3.classList.add('qux');
+      node2.appendChild(node3);
+      const node4 = document.createElement('div');
+      node4.classList.add('qux');
+      node2.appendChild(node4);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      const ast = [{
+        combo: {
+          name: '+',
+          type: COMBINATOR
+        },
+        leaves: [
+        {
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'foo',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'bar',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node
+        ])
+      },
+      {
+        combo: {
+          name: '>',
+          type: COMBINATOR
+        },
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'baz',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node2
+        ])
+      },
+      {
+        combo: null,
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'qux',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node3,
+          node4
+        ])
+      }];
+      const res = func(ast, node3);
+      assert.deepEqual(res, [
+        node3, node4
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('div');
+      node.classList.add('foo', 'bar');
+      const node2 = document.createElement('div');
+      node2.classList.add('baz');
+      const node3 = document.createElement('div');
+      node3.classList.add('qux');
+      node2.appendChild(node3);
+      const node4 = document.createElement('div');
+      node4.classList.add('qux');
+      node2.appendChild(node4);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      const ast = [{
+        combo: {
+          name: '+',
+          type: COMBINATOR
+        },
+        leaves: [
+        {
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'foo',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'bar',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node
+        ])
+      },
+      {
+        combo: {
+          name: '>',
+          type: COMBINATOR
+        },
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'corge',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([])
+      },
+      {
+        combo: null,
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'qux',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node3,
+          node4
+        ])
+      }];
+      const res = func(ast, node3);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('div');
+      node.classList.add('foo', 'bar');
+      const node2 = document.createElement('div');
+      node2.classList.add('baz');
+      const node3 = document.createElement('div');
+      node3.classList.add('qux');
+      node.appendChild(node3);
+      const node4 = document.createElement('div');
+      node4.classList.add('qux');
+      node.appendChild(node4);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      const ast = [{
+        combo: {
+          name: '+',
+          type: COMBINATOR
+        },
+        leaves: [
+        {
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'foo',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'bar',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node
+        ])
+      },
+      {
+        combo: {
+          name: '>',
+          type: COMBINATOR
+        },
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'baz',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node2
+        ])
+      },
+      {
+        combo: null,
+        leaves: [{
+          name: 'div',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'qux',
+          type: CLASS_SELECTOR
+        }],
+        nodes: new Set([
+          node3,
+          node4
+        ])
+      }];
+      const res = func(ast, node3);
       assert.deepEqual(res, [], 'result');
     });
   });
