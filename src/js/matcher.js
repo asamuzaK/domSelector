@@ -89,15 +89,18 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
 };
 
 /**
- * is node attached to owner document
+ * is node descendant of root node
  * @param {object} node - Element node
+ * @param {object} root - Element node
  * @returns {boolean} - result
  */
-const isAttached = (node = {}) => {
+const isDescendant = (node = {}, root = {}) => {
   const { nodeType, ownerDocument } = node;
   let res;
   if (nodeType === ELEMENT_NODE && ownerDocument) {
-    const root = ownerDocument.documentElement;
+    if (!root || root.nodeType !== ELEMENT_NODE) {
+      root = ownerDocument.documentElement;
+    }
     if (node === root) {
       res = true;
     } else if (root) {
@@ -913,7 +916,8 @@ const matchDirectionPseudoClass = (ast = {}, node = {}) => {
   const { type: astType } = ast;
   const { dir: nodeDir, localName, nodeType, type: inputType } = node;
   let res;
-  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE && isAttached(node)) {
+  if (astType === IDENTIFIER && nodeType === ELEMENT_NODE &&
+      isDescendant(node)) {
     const astName = unescapeSelector(ast.name);
     let dir;
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
@@ -1099,7 +1103,7 @@ const matchPseudoClassSelector = (
           break;
         }
         case 'target': {
-          if (isAttached(node) && docURL.hash &&
+          if (isDescendant(node) && docURL.hash &&
               node.id && docURL.hash === `#${node.id}`) {
             matched.push(node);
           }
@@ -1830,7 +1834,7 @@ class Matcher {
     let res;
     try {
       let node;
-      if (isAttached(this.#node)) {
+      if (isDescendant(this.#node)) {
         node = this.#document;
       } else {
         node = this.#node;
@@ -1891,7 +1895,7 @@ class Matcher {
     let res;
     try {
       let node;
-      if (isAttached(this.#node)) {
+      if (isDescendant(this.#node)) {
         node = this.#document;
       } else {
         node = this.#node;
@@ -1941,7 +1945,7 @@ class Matcher {
     const res = [];
     try {
       let node;
-      if (isAttached(this.#node)) {
+      if (isDescendant(this.#node)) {
         node = this.#document;
       } else {
         node = this.#node;
@@ -1992,8 +1996,8 @@ module.exports = {
   collectNthOfType,
   createSelectorForNode,
   groupASTLeaves,
-  isAttached,
   isContentEditable,
+  isDescendant,
   isNamespaceDeclared,
   matchAnPlusB,
   matchAttributeSelector,

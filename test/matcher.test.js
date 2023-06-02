@@ -203,8 +203,8 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
-  describe('is node attached to owner document', () => {
-    const func = matcherJs.isAttached;
+  describe('is node descendant of root node', () => {
+    const func = matcherJs.isDescendant;
 
     it('should get result', () => {
       const node = document.documentElement;
@@ -217,6 +217,14 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node, document.body);
       assert.isTrue(res, 'result');
     });
 
