@@ -12,6 +12,7 @@ const {
 } = require('../src/index.js');
 const { parseSelector, walkAST } = require('../src/js/parser.js');
 
+/* parser tests */
 const parserParseSelector = () => {
   const selector = 'foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ #grault';
   let i = 0;
@@ -31,159 +32,258 @@ const parserWalkAST = () => {
   }
 };
 
-const matcherClosest = () => {
-  const DEPTH = 10;
-  const JUNK_CHILDREN = 10;
-  const sel = 'evenodd'.repeat(100);
-  const selector =
-    `:first-child + div.even :not(.${sel}) > :nth-child(2n+1) ~ .odd`;
-  const { window: { document } } = new JSDOM('', {
+/*
+ * matcher tests
+ * @see CSS selector performance https://codepen.io/ivancuric/pen/ZaWxqV
+ */
+
+const box = count => `
+<div class="box" id="box${count}">
+  <div id="div${count}" class="title">${count}</div>
+</div>`;
+
+const count = 100;
+let domStr = '';
+for (let i = 0; i < count; i++) {
+  domStr += box(i + 1);
+}
+
+const selectors = [
+  'div',
+  '.box',
+  '.box > .title',
+  '.box .title',
+  '.box ~ .box',
+  '.box + .box',
+  '.box:last-of-type',
+  '.box:nth-of-type(2n - 1)',
+  '.box:not(:last-of-type)',
+  '.box:not(:empty):last-of-type .title',
+  '.box:nth-last-child(n+6) ~ div'
+];
+
+const elementClosest = (type, api) => {
+  const {
+    window: { document }
+  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'http://localhost'
   });
-  const parent = document.createDocumentFragment();
-  let deepest = parent;
-
-  for (let i = 0; i < DEPTH; ++i) {
-    const newNode = document.createElement('div');
-    newNode.classList.add(i % 2 === 1 ? 'even' : 'odd');
-    for (let j = 0; j < JUNK_CHILDREN; ++j) {
-      const childNode = document.createElement('div');
-      childNode.classList.add(j % 2 === 1 ? 'even' : 'odd');
-      newNode.appendChild(childNode);
+  const container = document.createElement('div');
+  container.classList.add('box-container');
+  container.append(document.createRange().createContextualFragment(domStr));
+  let target;
+  switch (type) {
+    case 'document': {
+      document.body.appendChild(container);
+      target = document.getElementById(`box${Math.round(count / 2)}`);
+      break;
     }
-    deepest.appendChild(newNode);
-    deepest = newNode;
+    case 'fragment': {
+      document.body.appendChild(container);
+      target = document.getElementById(`box${Math.round(count / 2)}`);
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(document.body.removeChild(container));
+      break;
+    }
+    case 'element':
+    default: {
+      document.body.appendChild(container);
+      target = document.getElementById(`box${Math.round(count / 2)}`);
+      const root = document.createElement('div');
+      root.appendChild(document.body.removeChild(container));
+    }
   }
-
-  closest(selector.trim(), deepest);
+  for (const selector of selectors) {
+    if (api === 'jsdom') {
+      target.closest(selector);
+    } else {
+      closest(selector, target);
+    }
+  }
 };
 
-const matcherMatches = () => {
-  const DEPTH = 10;
-  const JUNK_CHILDREN = 10;
-  const sel = 'evenodd'.repeat(100);
-  const selector =
-    `:first-child + div.even :not(.${sel}) > :nth-child(2n+1) ~ .odd`;
-  const { window: { document } } = new JSDOM('', {
+const elementMatches = (type, api) => {
+  const {
+    window: { document }
+  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'http://localhost'
   });
-  const parent = document.createDocumentFragment();
-  let deepest = parent;
-
-  for (let i = 0; i < DEPTH; ++i) {
-    const newNode = document.createElement('div');
-    newNode.classList.add(i % 2 === 1 ? 'even' : 'odd');
-    for (let j = 0; j < JUNK_CHILDREN; ++j) {
-      const childNode = document.createElement('div');
-      childNode.classList.add(j % 2 === 1 ? 'even' : 'odd');
-      newNode.appendChild(childNode);
+  const container = document.createElement('div');
+  container.classList.add('box-container');
+  container.append(document.createRange().createContextualFragment(domStr));
+  let target;
+  switch (type) {
+    case 'document': {
+      document.body.appendChild(container);
+      target = document.getElementById(`div${Math.round(count / 2)}`);
+      break;
     }
-    deepest.appendChild(newNode);
-    deepest = newNode;
+    case 'fragment': {
+      document.body.appendChild(container);
+      target = document.getElementById(`div${Math.round(count / 2)}`);
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(document.body.removeChild(container));
+      break;
+    }
+    case 'element':
+    default: {
+      document.body.appendChild(container);
+      target = document.getElementById(`div${Math.round(count / 2)}`);
+      const root = document.createElement('div');
+      root.appendChild(document.body.removeChild(container));
+    }
   }
-
-  matches(selector.trim(), deepest);
+  for (const selector of selectors) {
+    if (api === 'jsdom') {
+      target.matches(selector);
+    } else {
+      matches(selector, target);
+    }
+  }
 };
 
-const matcherQuerySelector = () => {
-  const DEPTH = 10;
-  const JUNK_CHILDREN = 10;
-  const sel = 'evenodd'.repeat(100);
-  const selector =
-    `:first-child + div.even :not(.${sel}) > :nth-child(2n+1) ~ .odd`;
-  const { window: { document } } = new JSDOM('', {
+const refPointQuerySelector = (type, api) => {
+  const {
+    window: { document }
+  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'http://localhost'
   });
-  const parent = document.createDocumentFragment();
-  let deepest = parent;
-
-  for (let i = 0; i < DEPTH; ++i) {
-    const newNode = document.createElement('div');
-    newNode.classList.add(i % 2 === 1 ? 'even' : 'odd');
-    for (let j = 0; j < JUNK_CHILDREN; ++j) {
-      const childNode = document.createElement('div');
-      childNode.classList.add(j % 2 === 1 ? 'even' : 'odd');
-      newNode.appendChild(childNode);
+  const container = document.createElement('div');
+  container.classList.add('box-container');
+  container.append(document.createRange().createContextualFragment(domStr));
+  let refPoint;
+  switch (type) {
+    case 'document': {
+      document.body.appendChild(container);
+      refPoint = document;
+      break;
     }
-    deepest.appendChild(newNode);
-    deepest = newNode;
+    case 'fragment': {
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(container);
+      refPoint = fragment;
+      break;
+    }
+    case 'element':
+    default: {
+      document.body.appendChild(container);
+      const target = document.getElementById(`div${Math.round(count / 2)}`);
+      const root = document.createElement('div');
+      root.appendChild(document.body.removeChild(container));
+      refPoint = target;
+    }
   }
-
-  querySelector(selector.trim(), deepest);
+  for (const selector of selectors) {
+    if (api === 'jsdom') {
+      refPoint.querySelector(selector);
+    } else {
+      querySelector(selector, refPoint);
+    }
+  }
 };
 
-const matcherQuerySelectorAll = () => {
-  const DEPTH = 10;
-  const JUNK_CHILDREN = 10;
-  const sel = 'evenodd'.repeat(100);
-  const selector =
-    `:first-child + div.even :not(.${sel}) > :nth-child(2n+1) ~ .odd`;
-  const { window: { document } } = new JSDOM('', {
+const refPointQuerySelectorAll = (type, api) => {
+  const {
+    window: { document }
+  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'http://localhost'
   });
-  const parent = document.createDocumentFragment();
-  let deepest = parent;
-
-  for (let i = 0; i < DEPTH; ++i) {
-    const newNode = document.createElement('div');
-    newNode.classList.add(i % 2 === 1 ? 'even' : 'odd');
-    for (let j = 0; j < JUNK_CHILDREN; ++j) {
-      const childNode = document.createElement('div');
-      childNode.classList.add(j % 2 === 1 ? 'even' : 'odd');
-      newNode.appendChild(childNode);
+  const container = document.createElement('div');
+  container.classList.add('box-container');
+  container.append(document.createRange().createContextualFragment(domStr));
+  let refPoint;
+  switch (type) {
+    case 'document': {
+      document.body.appendChild(container);
+      refPoint = document;
+      break;
     }
-    deepest.appendChild(newNode);
-    deepest = newNode;
+    case 'fragment': {
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(container);
+      refPoint = fragment;
+      break;
+    }
+    case 'element':
+    default: {
+      document.body.appendChild(container);
+      const target = document.getElementById(`div${Math.round(count / 2)}`);
+      const root = document.createElement('div');
+      root.appendChild(document.body.removeChild(container));
+      refPoint = target;
+    }
   }
-
-  querySelectorAll(selector.trim(), deepest);
+  for (const selector of selectors) {
+    if (api === 'jsdom') {
+      refPoint.querySelectorAll(selector);
+    } else {
+      querySelectorAll(selector, refPoint);
+    }
+  }
 };
 
 const suite = new Suite();
 
 suite.on('start', () => {
   console.log(`benchmark ${packageName} v${version}`);
-}).add('parserParseSelector', () => {
+}).add('parser parseSelector', () => {
   parserParseSelector();
-}).add('parserWalkAST', () => {
+}).add('parser walkAST', () => {
   parserWalkAST();
-}).add('matcherClosest', () => {
-  matcherClosest();
-}).add('matcherMatches', () => {
-  matcherMatches();
-}).add('matcherQuerySelector', () => {
-  matcherQuerySelector();
-}).add('matcherQuerySelectorAll', () => {
-  matcherQuerySelectorAll();
+}).add('dom-selector querySelector - document', () => {
+  refPointQuerySelector('document');
+}).add('jsdom querySelector - document', () => {
+  refPointQuerySelector('document', 'jsdom');
+}).add('dom-selector querySelector - fragment', () => {
+  refPointQuerySelector('fragment');
+}).add('jsdom querySelector - fragment', () => {
+  refPointQuerySelector('fragment', 'jsdom');
+}).add('dom-selector querySelector - element', () => {
+  refPointQuerySelector('element');
+}).add('jsdom querySelector - element', () => {
+  refPointQuerySelector('element', 'jsdom');
+}).add('dom-selector querySelectorAll - document', () => {
+  refPointQuerySelectorAll('document');
+}).add('jsdom querySelectorAll - document', () => {
+  refPointQuerySelectorAll('document', 'jsdom');
+}).add('dom-selector querySelectorAll - fragment', () => {
+  refPointQuerySelectorAll('fragment');
+}).add('jsdom querySelectorAll - fragment', () => {
+  refPointQuerySelectorAll('fragment', 'jsdom');
+}).add('dom-selector querySelectorAll - element', () => {
+  refPointQuerySelectorAll('element');
+}).add('jsdom querySelectorAll - element', () => {
+  refPointQuerySelectorAll('element', 'jsdom');
+}).add('dom-selector closest - document', () => {
+  elementClosest('document');
+}).add('jsdom closest - document', () => {
+  elementClosest('document', 'jsdom');
+}).add('dom-selector closest - fragment', () => {
+  elementClosest('fragment');
+}).add('jsdom closest - fragment', () => {
+  elementClosest('fragment', 'jsdom');
+}).add('dom-selector closest - element', () => {
+  elementClosest('element');
+}).add('jsdom closest - element', () => {
+  elementClosest('element', 'jsdom');
+}).add('dom-selector matches - document', () => {
+  elementMatches('document');
+}).add('jsdom matches - document', () => {
+  elementMatches('document', 'jsdom');
+}).add('dom-selector matches - fragment', () => {
+  elementMatches('fragment');
+}).add('jsdom matches - fragment', () => {
+  elementMatches('fragment', 'jsdom');
+}).add('dom-selector matches - element', () => {
+  elementMatches('element');
+}).add('jsdom matches - element', () => {
+  elementMatches('element', 'jsdom');
 }).on('cycle', (evt) => {
-  const { target } = evt;
-  const { name: targetName } = target;
-  switch (targetName) {
-    case 'matcherClosest':
-      console.log(`* closest\n  ${String(target)}`);
-      break;
-    case 'matcherMatches':
-      console.log(`* matches\n  ${String(target)}`);
-      break;
-    case 'matcherQuerySelector':
-      console.log(`* querySelector\n  ${String(target)}`);
-      break;
-    case 'matcherQuerySelectorAll':
-      console.log(`* querySelectorAll\n  ${String(target)}`);
-      break;
-    case 'parserParseSelector':
-      console.log(`* parseSelector\n  ${String(target)}`);
-      break;
-    case 'parserWalkAST':
-      console.log(`* walkAST\n  ${String(target)}`);
-      break;
-    default:
-      console.warn(`no benchmark for ${name}`);
-  }
+  console.log(`* ${String(evt.target)}`);
 }).run({
   async: true
 });
