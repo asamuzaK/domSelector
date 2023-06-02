@@ -184,7 +184,7 @@ const createSelectorForNode = (node = {}) => {
  * parse AST name
  * @param {string} name - AST name
  * @param {object} [node] - Element node
- * @returns {object.<string>} - parsed AST name
+ * @returns {object} - parsed AST name
  */
 const parseASTName = (name, node) => {
   let astPrefix, astNodeName;
@@ -205,7 +205,7 @@ const parseASTName = (name, node) => {
   return {
     astNodeName,
     astPrefix
-  }
+  };
 };
 
 /**
@@ -1746,6 +1746,22 @@ class Matcher {
   }
 
   /**
+   * handle error
+   * @param {object} e - Error
+   * @throws Error
+   * @returns {void}
+   */
+  _onError(e) {
+    if (e instanceof DOMException && e.name === 'NotSupportedError') {
+      if (this.#warn) {
+        console.warn(e.message);
+      }
+    } else {
+      throw e;
+    }
+  }
+
+  /**
    * match AST and node
    * @param {object} ast - AST
    * @param {object} node - Document, DocumentFragment, Element node
@@ -1914,13 +1930,7 @@ class Matcher {
       const arr = this._find(this.#ast, node);
       res = arr.length && arr.includes(this.#node);
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'NotSupportedError') {
-        if (this.#warn) {
-          console.warn(e.message);
-        }
-      } else {
-        throw e;
-      }
+      this._onError(e);
     }
     return !!res;
   }
@@ -1942,13 +1952,7 @@ class Matcher {
         node = node.parentNode;
       }
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'NotSupportedError') {
-        if (this.#warn) {
-          console.warn(e.message);
-        }
-      } else {
-        throw e;
-      }
+      this._onError(e);
     }
     return res ?? null;
   }
@@ -1991,13 +1995,7 @@ class Matcher {
         }
       }
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'NotSupportedError') {
-        if (this.#warn) {
-          console.warn(e.message);
-        }
-      } else {
-        throw e;
-      }
+      this._onError(e);
     }
     return res ?? null;
   }
@@ -2044,13 +2042,7 @@ class Matcher {
         }
       }
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'NotSupportedError') {
-        if (this.#warn) {
-          console.warn(e.message);
-        }
-      } else {
-        throw e;
-      }
+      this._onError(e);
     }
     return res;
   }

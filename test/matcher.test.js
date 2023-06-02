@@ -1646,18 +1646,18 @@ describe('match AST leaf and DOM node', () => {
           type: COMBINATOR
         },
         leaves: [
-        {
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'foo',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'bar',
-          type: CLASS_SELECTOR
-        }],
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            name: 'bar',
+            type: CLASS_SELECTOR
+          }],
         nodes: new Set([
           node
         ])
@@ -1720,18 +1720,18 @@ describe('match AST leaf and DOM node', () => {
           type: COMBINATOR
         },
         leaves: [
-        {
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'foo',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'bar',
-          type: CLASS_SELECTOR
-        }],
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            name: 'bar',
+            type: CLASS_SELECTOR
+          }],
         nodes: new Set([
           node
         ])
@@ -1790,18 +1790,18 @@ describe('match AST leaf and DOM node', () => {
           type: COMBINATOR
         },
         leaves: [
-        {
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'foo',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'bar',
-          type: CLASS_SELECTOR
-        }],
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: 'foo',
+            type: CLASS_SELECTOR
+          },
+          {
+            name: 'bar',
+            type: CLASS_SELECTOR
+          }],
         nodes: new Set([
           node
         ])
@@ -7065,6 +7065,34 @@ describe('match AST leaf and DOM node', () => {
         jsdom: true
       });
       assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    describe('handle error', () => {
+      it('should throw', () => {
+        const e = new Error('error');
+        const matcher = new Matcher('*', document);
+        assert.throws(() => matcher._onError(e), Error);
+      });
+
+      it('should not throw', () => {
+        const e = new DOMException('error', 'NotSupportedError');
+        const matcher = new Matcher('*', document);
+        const res = matcher._onError(e);
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const e = new DOMException('error', 'NotSupportedError');
+        const matcher = new Matcher('*', document, {
+          warn: true
+        });
+        const res = matcher._onError(e);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'called');
+        assert.isUndefined(res, 'result');
+      });
     });
 
     describe('parse ast and find node(s)', () => {
