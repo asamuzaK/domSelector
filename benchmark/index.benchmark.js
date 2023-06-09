@@ -34,148 +34,202 @@ const parserWalkAST = () => {
 
 /*
  * matcher tests
- * @see CSS selector performance https://codepen.io/ivancuric/pen/ZaWxqV
  */
+const {
+  window: { document }
+} = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+  runScripts: 'dangerously',
+  url: 'http://localhost'
+});
 
-const box = count => `
-<div class="box" id="box${count}">
-  <div id="div${count}" class="title">${count}</div>
-</div>`;
-
-const count = 100;
-let domStr = '';
-for (let i = 0; i < count; i++) {
-  domStr += box(i + 1);
-}
-
-const selectors = [
-  'div',
-  '.box',
-  '.box > .title',
-  '.box .title',
-  '.box ~ .box',
-  '.box + .box',
-  '.box:last-of-type',
-  '.box:nth-of-type(2n - 1)',
-  '.box:not(:last-of-type)',
-  '.box:not(:empty):last-of-type .title',
-  '.box:nth-last-child(n+6) ~ div'
-];
-
-const elementClosest = (type, api) => {
-  const {
-    window: { document }
-  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-    runScripts: 'dangerously',
-    url: 'http://localhost'
-  });
-  const container = document.createElement('div');
-  container.classList.add('box-container');
-  container.append(document.createRange().createContextualFragment(domStr));
-  let target;
-  switch (type) {
-    case 'document': {
-      document.body.appendChild(container);
-      target = document.getElementById(`box${Math.round(count / 2)}`);
-      break;
-    }
-    case 'fragment': {
-      document.body.appendChild(container);
-      target = document.getElementById(`box${Math.round(count / 2)}`);
-      const fragment = document.createDocumentFragment();
-      fragment.appendChild(document.body.removeChild(container));
-      break;
-    }
-    case 'element':
-    default: {
-      document.body.appendChild(container);
-      target = document.getElementById(`box${Math.round(count / 2)}`);
-      const root = document.createElement('div');
-      root.appendChild(document.body.removeChild(container));
+const x = 32;
+const y = 32;
+const xyFrag = document.createDocumentFragment();
+for (let i = 0; i < x; i++) {
+  const xNode = document.createElement('div');
+  xNode.id = `box${i}`;
+  xNode.classList.add('box');
+  xyFrag.appendChild(xNode);
+  const yFrag = document.createDocumentFragment();
+  for (let j = 0; j < y; j++) {
+    const yNode = document.createElement('div');
+    yNode.id = `div${i}-${j}`;
+    if (j === 0) {
+      yFrag.appendChild(yNode);
+    } else if (j === y - 1) {
+      yNode.classList.add('div');
+      yNode.textContent = `${i}-${j}`;
+      yFrag.appendChild(yNode);
+      xNode.appendChild(yFrag);
+    } else {
+      const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+      parent.appendChild(yNode);
     }
   }
-  for (const selector of selectors) {
-    if (api === 'jsdom') {
-      target.closest(selector);
-    } else {
-      closest(selector, target);
-    }
+}
+const container = document.createElement('div');
+container.classList.add('box-container');
+container.appendChild(xyFrag);
+
+const forLoop = () => {
+  document.body.append(container);
+  const [...items] = document.getElementsByTagName('*');
+  const l = items.length;
+  const nodes = new Set();
+  for (let i = 0; i < l; i++) {
+    const item = items[i];
+    nodes.add(item);
+  }
+};
+
+const nodeIterator = () => {
+  document.body.append(container);
+  const iterator = document.createNodeIterator(document, 1);
+  let nextNode = iterator.nextNode();
+  const nodes = new Set();
+  while (nextNode) {
+    nodes.add(nextNode);
+    nextNode = iterator.nextNode();
+  }
+};
+
+const setForEach = () => {
+  document.body.append(container);
+  const items = new Set([...document.getElementsByTagName('*')]);
+  const nodes = new Set();
+  items.forEach(item => {
+    nodes.add(item);
+  });
+};
+
+const setForOf = () => {
+  document.body.append(container);
+  const items = new Set([...document.getElementsByTagName('*')]);
+  const nodes = new Set();
+  for (const item of items) {
+    nodes.add(item);
   }
 };
 
 const elementMatches = (type, api) => {
-  const {
-    window: { document }
-  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-    runScripts: 'dangerously',
-    url: 'http://localhost'
-  });
-  const container = document.createElement('div');
-  container.classList.add('box-container');
-  container.append(document.createRange().createContextualFragment(domStr));
-  let target;
+  let box;
+  let div;
   switch (type) {
     case 'document': {
-      document.body.appendChild(container);
-      target = document.getElementById(`div${Math.round(count / 2)}`);
+      document.body.append(container);
+      box = document.getElementById(`box${x - 1}`);
+      div = document.getElementById(`div${x - 1}-${y - 1}`);
       break;
     }
     case 'fragment': {
-      document.body.appendChild(container);
-      target = document.getElementById(`div${Math.round(count / 2)}`);
       const fragment = document.createDocumentFragment();
-      fragment.appendChild(document.body.removeChild(container));
+      fragment.append(container);
+      box = fragment.getElementById(`box${x - 1}`);
+      div = fragment.getElementById(`div${x - 1}-${y - 1}`);
       break;
     }
     case 'element':
     default: {
-      document.body.appendChild(container);
-      target = document.getElementById(`div${Math.round(count / 2)}`);
+      document.body.append(container);
+      box = document.getElementById(`box${x - 1}`);
+      div = document.getElementById(`div${x - 1}-${y - 1}`);
       const root = document.createElement('div');
-      root.appendChild(document.body.removeChild(container));
+      root.append(document.body.removeChild(container));
     }
   }
-  for (const selector of selectors) {
+  const selectors = new Map([
+    ['.box .div', 'div'],
+    ['.box ~ .box', 'box']
+  ]);
+  for (const [key, value] of selectors) {
     if (api === 'jsdom') {
-      target.matches(selector);
+      if (value === 'box') {
+        box.matches(key);
+      } else if (value === 'div') {
+        div.matches(key);
+      }
     } else {
-      matches(selector, target);
+      if (value === 'box') {
+        matches(key, box);
+      } else if (value === 'div') {
+        matches(key, div);
+      }
+    }
+  }
+};
+
+const elementClosest = (type, api) => {
+  let box;
+  let div;
+  switch (type) {
+    case 'document': {
+      document.body.append(container);
+      box = document.getElementById(`box${x - 1}`);
+      div = document.getElementById(`div${x - 1}-${y - 1}`);
+      break;
+    }
+    case 'fragment': {
+      const fragment = document.createDocumentFragment();
+      fragment.append(container);
+      box = fragment.getElementById(`box${x - 1}`);
+      div = fragment.getElementById(`div${x - 1}-${y - 1}`);
+      break;
+    }
+    case 'element':
+    default: {
+      document.body.append(container);
+      box = document.getElementById(`box${x - 1}`);
+      div = document.getElementById(`div${x - 1}-${y - 1}`);
+      const root = document.createElement('div');
+      root.append(document.body.removeChild(container));
+    }
+  }
+  const selectors = new Map([
+    ['.box .div', 'div'],
+    ['.box ~ .box', 'box']
+  ]);
+  for (const [key, value] of selectors) {
+    if (api === 'jsdom') {
+      if (value === 'box') {
+        box.closest(key);
+      } else if (value === 'div') {
+        div.closest(key);
+      }
+    } else {
+      if (value === 'box') {
+        closest(key, box);
+      } else if (value === 'div') {
+        closest(key, div);
+      }
     }
   }
 };
 
 const refPointQuerySelector = (type, api) => {
-  const {
-    window: { document }
-  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-    runScripts: 'dangerously',
-    url: 'http://localhost'
-  });
-  const container = document.createElement('div');
-  container.classList.add('box-container');
-  container.append(document.createRange().createContextualFragment(domStr));
   let refPoint;
   switch (type) {
     case 'document': {
-      document.body.appendChild(container);
+      document.body.append(container);
       refPoint = document;
       break;
     }
     case 'fragment': {
       const fragment = document.createDocumentFragment();
-      fragment.appendChild(container);
+      fragment.append(container);
       refPoint = fragment;
       break;
     }
     case 'element':
     default: {
-      document.body.appendChild(container);
-      const target = document.getElementById(`div${Math.round(count / 2)}`);
       const root = document.createElement('div');
-      root.appendChild(document.body.removeChild(container));
-      refPoint = target;
+      root.appendChild(container);
+      refPoint = root;
     }
   }
+  const selectors = [
+    '.box .div',
+    '.box ~ .box'
+  ];
   for (const selector of selectors) {
     if (api === 'jsdom') {
       refPoint.querySelector(selector);
@@ -186,37 +240,31 @@ const refPointQuerySelector = (type, api) => {
 };
 
 const refPointQuerySelectorAll = (type, api) => {
-  const {
-    window: { document }
-  } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-    runScripts: 'dangerously',
-    url: 'http://localhost'
-  });
-  const container = document.createElement('div');
-  container.classList.add('box-container');
-  container.append(document.createRange().createContextualFragment(domStr));
   let refPoint;
   switch (type) {
     case 'document': {
-      document.body.appendChild(container);
+      document.body.append(container);
       refPoint = document;
       break;
     }
     case 'fragment': {
       const fragment = document.createDocumentFragment();
-      fragment.appendChild(container);
+      fragment.append(container);
       refPoint = fragment;
       break;
     }
     case 'element':
     default: {
-      document.body.appendChild(container);
-      const target = document.getElementById(`div${Math.round(count / 2)}`);
+      document.body.append(container);
       const root = document.createElement('div');
-      root.appendChild(document.body.removeChild(container));
-      refPoint = target;
+      root.append(document.body.removeChild(container));
+      refPoint = root;
     }
   }
+  const selectors = [
+    '.box .div',
+    '.box ~ .box'
+  ];
   for (const selector of selectors) {
     if (api === 'jsdom') {
       refPoint.querySelectorAll(selector);
@@ -230,10 +278,42 @@ const suite = new Suite();
 
 suite.on('start', () => {
   console.log(`benchmark ${packageName} v${version}`);
+}).add('for loop', () => {
+  forLoop();
+}).add('node iterator', () => {
+  nodeIterator();
+}).add('set forEach', () => {
+  setForEach();
+}).add('set for of', () => {
+  setForOf();
 }).add('parser parseSelector', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {
   parserWalkAST();
+}).add('dom-selector matches - document', () => {
+  elementMatches('document');
+}).add('jsdom matches - document', () => {
+  elementMatches('document', 'jsdom');
+}).add('dom-selector matches - fragment', () => {
+  elementMatches('fragment');
+}).add('jsdom matches - fragment', () => {
+  elementMatches('fragment', 'jsdom');
+}).add('dom-selector matches - element', () => {
+  elementMatches('element');
+}).add('jsdom matches - element', () => {
+  elementMatches('element', 'jsdom');
+}).add('dom-selector closest - document', () => {
+  elementClosest('document');
+}).add('jsdom closest - document', () => {
+  elementClosest('document', 'jsdom');
+}).add('dom-selector closest - fragment', () => {
+  elementClosest('fragment');
+}).add('jsdom closest - fragment', () => {
+  elementClosest('fragment', 'jsdom');
+}).add('dom-selector closest - element', () => {
+  elementClosest('element');
+}).add('jsdom closest - element', () => {
+  elementClosest('element', 'jsdom');
 }).add('dom-selector querySelector - document', () => {
   refPointQuerySelector('document');
 }).add('jsdom querySelector - document', () => {
@@ -258,30 +338,6 @@ suite.on('start', () => {
   refPointQuerySelectorAll('element');
 }).add('jsdom querySelectorAll - element', () => {
   refPointQuerySelectorAll('element', 'jsdom');
-}).add('dom-selector closest - document', () => {
-  elementClosest('document');
-}).add('jsdom closest - document', () => {
-  elementClosest('document', 'jsdom');
-}).add('dom-selector closest - fragment', () => {
-  elementClosest('fragment');
-}).add('jsdom closest - fragment', () => {
-  elementClosest('fragment', 'jsdom');
-}).add('dom-selector closest - element', () => {
-  elementClosest('element');
-}).add('jsdom closest - element', () => {
-  elementClosest('element', 'jsdom');
-}).add('dom-selector matches - document', () => {
-  elementMatches('document');
-}).add('jsdom matches - document', () => {
-  elementMatches('document', 'jsdom');
-}).add('dom-selector matches - fragment', () => {
-  elementMatches('fragment');
-}).add('jsdom matches - fragment', () => {
-  elementMatches('fragment', 'jsdom');
-}).add('dom-selector matches - element', () => {
-  elementMatches('element');
-}).add('jsdom matches - element', () => {
-  elementMatches('element', 'jsdom');
 }).on('cycle', (evt) => {
   console.log(`* ${String(evt.target)}`);
 }).run({
