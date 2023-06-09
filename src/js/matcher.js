@@ -1685,11 +1685,11 @@ class Matcher {
   #warn;
 
   /**
-   * list[{ branch[], skip }, { branch[], skip }]
+   * #list[{ branch[], skip }, { branch[], skip }]
    * branch[twig{}, twig{}]
    * twig{combo{}, leaves[]}
    * leaves[leaf{}, leaf{}, leaf{}]
-   * matrix[
+   * #matrix[
    *   [
    *     Set([node, node]),
    *     Set([node, node, node, node]),
@@ -1701,7 +1701,6 @@ class Matcher {
    *   ]
    * ]
    * matrix[i] maps to list[i]
-   * @typedef {Array.<Array.<object>>} Matrix
    */
 
   /**
@@ -1723,7 +1722,7 @@ class Matcher {
 
   /**
    * handle error
-   * @param {object} e - Error
+   * @param {Error} e - Error
    * @throws Error
    * @returns {void}
    */
@@ -1788,7 +1787,7 @@ class Matcher {
 
   /**
    * prepare list and matrix
-   * @returns {Array.<Array|Matrix>} - array of list and matrix
+   * @returns {Array} - list and matrix
    */
   _prepare() {
     const branches = walkAST(this.#ast);
@@ -1898,10 +1897,9 @@ class Matcher {
   /**
    * find nodes
    * @param {object} twig - twig
-   * @param {string} range - target range
    * @returns {object} - result
    */
-  _findNodes(twig, range) {
+  _findNodes(twig) {
     const { leaves } = twig;
     const l = leaves.length;
     const { detached, root } = this.#root;
@@ -2031,7 +2029,7 @@ class Matcher {
   /**
    * collect nodes
    * @param {string} range - target range
-   * @returns {Array.<Array|Matrix>} - result
+   * @returns {Array} - list and matrix
    */
   _collectNodes(range) {
     const l = this.#list.length;
