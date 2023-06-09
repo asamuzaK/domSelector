@@ -12,7 +12,6 @@ const sinon = require('sinon');
 /* test */
 const matcherJs = require('../src/js/matcher.js');
 const DOMException = require('../src/js/domexception.js');
-const { parseSelector } = require('../src/js/parser.js');
 const {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
@@ -32,23 +31,23 @@ describe('match AST leaf and DOM node', () => {
         <div id="div1">
           <div id="div2">
             <ul id="ul1">
-              <li id="li1">foo</li>
-              <li id="li2">bar</li>
-              <li id="li3"></li>
+              <li id="li1" class="li">foo</li>
+              <li id="li2" class="li">bar</li>
+              <li id="li3" class="li"></li>
             </ul>
           </div>
           <div id="div3">
             <dl id="dl1">
               <dt id="dt1"></dt>
-              <dd id="dd1">
+              <dd id="dd1" class="dd">
                 <span id="span1" hidden></span>
               </dd>
               <dt id="dt2"></dt>
-              <dd id="dd2">
+              <dd id="dd2" class="dd">
                 <span id="span2"></span>
               </dd>
               <dt id="dt3"></dt>
-              <dd id="dd3">
+              <dd id="dd3" class="dd">
                 <span id="span3" hidden></span>
               </dd>
             </dl>
@@ -75,7 +74,7 @@ describe('match AST leaf and DOM node', () => {
     </html>`;
   const domOpt = {
     runScripts: 'dangerously',
-    url: 'https://localhost/#foo'
+    url: 'http://localhost/#foo'
   };
   let document;
   beforeEach(() => {
@@ -291,6 +290,35 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
+  describe('factorial', () => {
+    const func = matcherJs.factorial;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get null', () => {
+      const res = func(-1);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get result', () => {
+      const res = func(0);
+      assert.strictEqual(res, 1, 'result');
+    });
+
+    it('should get result', () => {
+      const res = func(1);
+      assert.strictEqual(res, 1, 'result');
+    });
+
+    it('should get result', () => {
+      const res = func(5);
+      assert.strictEqual(res, 120, 'result');
+    });
+  });
+
   describe('unescape selector', () => {
     const func = matcherJs.unescapeSelector;
 
@@ -453,67 +481,11 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
-  describe('group AST leaves', () => {
-    const func = matcherJs.groupASTLeaves;
-
-    it('should not match', () => {
-      const res = func();
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should get value', () => {
-      const res = func([{
-        name: 'foo',
-        type: TYPE_SELECTOR
-      },
-      {
-        name: 'bar',
-        type: CLASS_SELECTOR
-      },
-      {
-        name: ' ',
-        type: COMBINATOR
-      },
-      {
-        name: 'baz',
-        type: TYPE_SELECTOR
-      }]);
-      assert.deepEqual(res, [{
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'foo',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'bar',
-            type: CLASS_SELECTOR
-          }
-        ],
-        nodes: new Set()
-      },
-      {
-        combo: null,
-        leaves: [
-          {
-            name: 'baz',
-            type: TYPE_SELECTOR
-          }
-        ],
-        nodes: new Set()
-      }], 'result');
-    });
-  });
-
   describe('collect nth child', () => {
     const func = matcherJs.collectNthChild;
 
     it('should not match', () => {
       const res = func();
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -524,7 +496,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -536,7 +507,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -551,7 +521,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -562,7 +531,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -574,7 +542,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -585,7 +552,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt1')
@@ -600,7 +566,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd3')
@@ -614,7 +579,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 6, 'size');
       assert.deepEqual([...res], [
         node,
@@ -633,7 +597,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 6, 'size');
       assert.deepEqual([...res], [
         node,
@@ -652,7 +615,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd1'),
@@ -668,7 +630,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -684,7 +645,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -737,7 +697,6 @@ describe('match AST leaf and DOM node', () => {
         selector: '.noted'
       };
       const res = func(anb, l1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         l2
@@ -788,7 +747,6 @@ describe('match AST leaf and DOM node', () => {
         selector: '.noted'
       };
       const res = func(anb, l1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         l4,
@@ -840,7 +798,6 @@ describe('match AST leaf and DOM node', () => {
         selector: '.noted'
       };
       const res = func(anb, l1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         l2,
@@ -892,7 +849,6 @@ describe('match AST leaf and DOM node', () => {
         selector: '.noted'
       };
       const res = func(anb, l1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         l2,
@@ -907,7 +863,6 @@ describe('match AST leaf and DOM node', () => {
 
     it('should not match', () => {
       const res = func();
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -918,7 +873,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -929,7 +883,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -940,7 +893,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -951,7 +903,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -962,7 +913,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -977,7 +927,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt3')
@@ -991,7 +940,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -1005,7 +953,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt3');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -1019,7 +966,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1035,7 +981,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1051,7 +996,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1067,7 +1011,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -1081,7 +1024,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1096,7 +1038,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(anb, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1110,13 +1051,11 @@ describe('match AST leaf and DOM node', () => {
 
     it('should not match', () => {
       const res = func();
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
     it('should not match', () => {
       const res = func('foo');
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1132,7 +1071,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd1'),
@@ -1153,7 +1091,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1190,7 +1127,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1210,7 +1146,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt3'),
@@ -1232,7 +1167,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1252,7 +1186,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd1'),
@@ -1273,7 +1206,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt2');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -1292,7 +1224,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt1')
@@ -1312,7 +1243,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd3'),
@@ -1332,7 +1262,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -1351,7 +1280,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 2, 'size');
       assert.deepEqual([...res], [
         node,
@@ -1371,7 +1299,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -1391,7 +1318,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -1410,7 +1336,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt2');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -1429,7 +1354,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt3');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -1449,7 +1373,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leafName, leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt3')
@@ -1462,7 +1385,6 @@ describe('match AST leaf and DOM node', () => {
 
     it('should not match', () => {
       const res = func();
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1471,7 +1393,6 @@ describe('match AST leaf and DOM node', () => {
         name: '^',
         type: COMBINATOR
       });
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1480,7 +1401,6 @@ describe('match AST leaf and DOM node', () => {
         name: '>',
         type: COMBINATOR
       });
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1492,7 +1412,6 @@ describe('match AST leaf and DOM node', () => {
       [
         document.getElementById('div1')
       ]);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1501,17 +1420,16 @@ describe('match AST leaf and DOM node', () => {
         name: '+',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('dt1')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd1')
@@ -1523,15 +1441,14 @@ describe('match AST leaf and DOM node', () => {
         name: '+',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('dt2')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1540,18 +1457,17 @@ describe('match AST leaf and DOM node', () => {
         name: '~',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('dt2')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd2'),
@@ -1565,14 +1481,13 @@ describe('match AST leaf and DOM node', () => {
         name: '~',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('dt2')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1581,18 +1496,17 @@ describe('match AST leaf and DOM node', () => {
         name: '>',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('dl1')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 6, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt1'),
@@ -1609,18 +1523,17 @@ describe('match AST leaf and DOM node', () => {
         name: '>',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('ul1')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -1629,18 +1542,17 @@ describe('match AST leaf and DOM node', () => {
         name: ' ',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('div3')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 6, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt1'),
@@ -1657,293 +1569,18 @@ describe('match AST leaf and DOM node', () => {
         name: '>',
         type: COMBINATOR
       },
-      [
+      new Set([
         document.getElementById('div0')
-      ],
-      [
+      ]),
+      new Set([
         document.getElementById('dt1'),
         document.getElementById('dd1'),
         document.getElementById('dt2'),
         document.getElementById('dd2'),
         document.getElementById('dt3'),
         document.getElementById('dd3')
-      ]);
-      assert.instanceOf(res, Set, 'instance');
+      ]));
       assert.strictEqual(res.size, 0, 'size');
-    });
-  });
-
-  describe('get matched nodes', () => {
-    const func = matcherJs.getMatchedNodes;
-
-    it('should not match', () => {
-      const res = func();
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const ast = [{
-        combo: null,
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        }],
-        nodes: new Set([
-          node
-        ])
-      }];
-      const res = func(ast, node);
-      assert.deepEqual(res, [
-        node
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      node.classList.add('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const ast = [{
-        combo: null,
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'foo',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'bar',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node
-        ])
-      }];
-      const res = func(ast, node);
-      assert.deepEqual(res, [
-        node
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      node.classList.add('foo', 'bar');
-      const node2 = document.createElement('div');
-      node2.classList.add('baz');
-      const node3 = document.createElement('div');
-      node3.classList.add('qux');
-      node2.appendChild(node3);
-      const node4 = document.createElement('div');
-      node4.classList.add('qux');
-      node2.appendChild(node4);
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      parent.appendChild(node2);
-      const ast = [{
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'foo',
-            type: CLASS_SELECTOR
-          },
-          {
-            name: 'bar',
-            type: CLASS_SELECTOR
-          }],
-        nodes: new Set([
-          node
-        ])
-      },
-      {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'baz',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node2
-        ])
-      },
-      {
-        combo: null,
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'qux',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node3,
-          node4
-        ])
-      }];
-      const res = func(ast, node3);
-      assert.deepEqual(res, [
-        node3, node4
-      ], 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.createElement('div');
-      node.classList.add('foo', 'bar');
-      const node2 = document.createElement('div');
-      node2.classList.add('baz');
-      const node3 = document.createElement('div');
-      node3.classList.add('qux');
-      node2.appendChild(node3);
-      const node4 = document.createElement('div');
-      node4.classList.add('qux');
-      node2.appendChild(node4);
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      parent.appendChild(node2);
-      const ast = [{
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'foo',
-            type: CLASS_SELECTOR
-          },
-          {
-            name: 'bar',
-            type: CLASS_SELECTOR
-          }],
-        nodes: new Set([
-          node
-        ])
-      },
-      {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'corge',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([])
-      },
-      {
-        combo: null,
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'qux',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node3,
-          node4
-        ])
-      }];
-      const res = func(ast, node3);
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.createElement('div');
-      node.classList.add('foo', 'bar');
-      const node2 = document.createElement('div');
-      node2.classList.add('baz');
-      const node3 = document.createElement('div');
-      node3.classList.add('qux');
-      node.appendChild(node3);
-      const node4 = document.createElement('div');
-      node4.classList.add('qux');
-      node.appendChild(node4);
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      parent.appendChild(node2);
-      const ast = [{
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'foo',
-            type: CLASS_SELECTOR
-          },
-          {
-            name: 'bar',
-            type: CLASS_SELECTOR
-          }],
-        nodes: new Set([
-          node
-        ])
-      },
-      {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'baz',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node2
-        ])
-      },
-      {
-        combo: null,
-        leaves: [{
-          name: 'div',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'qux',
-          type: CLASS_SELECTOR
-        }],
-        nodes: new Set([
-          node3,
-          node4
-        ])
-      }];
-      const res = func(ast, node3);
-      assert.deepEqual(res, [], 'result');
     });
   });
 
@@ -4612,7 +4249,6 @@ describe('match AST leaf and DOM node', () => {
 
     it('should not match', () => {
       const res = func();
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
       assert.deepEqual([...res], [], 'result');
     });
@@ -4634,7 +4270,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dd1'),
@@ -4660,7 +4295,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 3, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt3'),
@@ -4686,7 +4320,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -4710,7 +4343,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt1');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt2')
@@ -4733,7 +4365,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4756,7 +4387,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4779,7 +4409,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4802,7 +4431,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4856,7 +4484,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4876,7 +4503,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4893,7 +4519,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -4908,7 +4533,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4928,7 +4552,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4945,7 +4568,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -4960,7 +4582,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -4975,7 +4596,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -4993,7 +4613,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5011,7 +4630,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5026,7 +4644,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5044,7 +4661,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5059,7 +4675,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.createElement('div');
       parent.appendChild(node);
       const res = func(leaf, parent);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5074,7 +4689,6 @@ describe('match AST leaf and DOM node', () => {
       node.id = 'foo';
       frag.appendChild(node);
       const res = func(leaf, frag);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5104,7 +4718,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(iframe);
       const node = iframe.contentDocument.getElementById('foo');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5122,7 +4735,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5140,7 +4752,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, parent);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         parent
@@ -5158,7 +4769,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, parent);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5174,7 +4784,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       const target = document.getElementById('div1');
       const res = func(leaf, target);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5189,7 +4798,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5209,7 +4817,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(refPoint);
       const res = func(leaf, node, refPoint);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5224,7 +4831,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node, document);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5239,7 +4845,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, document.documentElement, document);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.documentElement
@@ -5257,7 +4862,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       node.focus();
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5275,7 +4879,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       node.focus();
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5293,7 +4896,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       node.focus();
       const res = func(leaf, parent);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         parent
@@ -5312,7 +4914,6 @@ describe('match AST leaf and DOM node', () => {
       node.focus();
       const target = document.getElementById('div1');
       const res = func(leaf, target);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5327,7 +4928,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5344,7 +4944,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5358,7 +4957,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5376,7 +4974,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5391,7 +4988,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5408,7 +5004,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5423,7 +5018,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5443,7 +5037,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node2);
       const res = func(leaf, node1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node1
@@ -5465,7 +5058,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node2);
       const res = func(leaf, node1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5479,7 +5071,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5496,7 +5087,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5514,7 +5104,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5529,7 +5118,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5548,7 +5136,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5567,7 +5154,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5586,7 +5172,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5601,7 +5186,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5618,7 +5202,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5633,7 +5216,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5651,7 +5233,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5668,7 +5249,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5682,7 +5262,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5700,7 +5279,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5714,7 +5292,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5732,7 +5309,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5750,7 +5326,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5768,7 +5343,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5783,7 +5357,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5798,7 +5371,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5812,7 +5384,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5830,7 +5401,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5845,7 +5415,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5860,7 +5429,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5877,7 +5445,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5893,7 +5460,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5913,7 +5479,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -5933,7 +5498,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5949,7 +5513,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5965,7 +5528,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -5981,7 +5543,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6000,7 +5561,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6019,7 +5579,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6038,7 +5597,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6055,7 +5613,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(container);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6074,7 +5631,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6092,7 +5648,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6106,7 +5661,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6124,7 +5678,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6150,7 +5703,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node1
@@ -6180,7 +5732,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6196,7 +5747,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6214,7 +5764,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6230,7 +5779,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6248,7 +5796,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6269,7 +5816,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(container);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6291,7 +5837,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(container);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6312,7 +5857,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(container);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6334,7 +5878,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(container);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6368,7 +5911,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6385,7 +5927,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6402,7 +5943,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6420,7 +5960,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6437,7 +5976,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6455,7 +5993,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6472,7 +6009,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6490,7 +6026,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6507,7 +6042,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6527,7 +6061,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6546,7 +6079,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6568,7 +6100,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6585,7 +6116,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6605,7 +6135,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6626,7 +6155,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       const res = func(leaf, node);
       assert.isFalse(node.checkValidity(), 'validity');
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6649,7 +6177,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       const res = func(leaf, node);
       assert.isTrue(node.checkValidity(), 'validity');
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6668,7 +6195,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6690,7 +6216,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6709,7 +6234,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6728,7 +6252,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6746,7 +6269,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6764,7 +6286,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6781,7 +6302,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6799,7 +6319,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6820,7 +6339,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6838,7 +6356,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6853,7 +6370,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6868,7 +6384,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6886,7 +6401,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6907,7 +6421,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6928,7 +6441,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -6943,7 +6455,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6962,7 +6473,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -6981,7 +6491,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7000,7 +6509,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7016,7 +6524,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7035,7 +6542,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7054,7 +6560,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7072,7 +6577,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7090,7 +6594,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7107,7 +6610,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7121,7 +6623,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7139,7 +6640,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7157,7 +6657,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7175,7 +6674,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7190,7 +6688,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7208,7 +6705,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7225,7 +6721,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7242,7 +6737,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7260,7 +6754,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7271,7 +6764,6 @@ describe('match AST leaf and DOM node', () => {
         type: PSEUDO_CLASS_SELECTOR
       };
       const res = func(leaf, document.documentElement);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.documentElement
@@ -7288,7 +6780,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7365,7 +6856,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       parent.appendChild(next);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7384,7 +6874,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(prev);
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7400,7 +6889,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       parent.appendChild(next);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7416,7 +6904,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(prev);
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7433,7 +6920,6 @@ describe('match AST leaf and DOM node', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node
@@ -7454,7 +6940,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node);
       parent.appendChild(next);
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 0, 'size');
     });
 
@@ -7466,7 +6951,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt2');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt1')
@@ -7481,7 +6965,6 @@ describe('match AST leaf and DOM node', () => {
       };
       const node = document.getElementById('dt2');
       const res = func(leaf, node);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('dt3')
@@ -7501,7 +6984,6 @@ describe('match AST leaf and DOM node', () => {
       parent.appendChild(node2);
       document.getElementById('div0').appendChild(parent);
       const res = func(leaf, node1);
-      assert.instanceOf(res, Set, 'instance');
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         node1
@@ -7633,373 +7115,253 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('parse ast and find node(s)', () => {
+    describe('get root node', () => {
       it('should throw', () => {
-        const ast = parseSelector('#ul1 ++ #li1');
+        const matcher = new Matcher('*', document);
+        assert.throws(() => matcher._getRoot(), TypeError);
+      });
+
+      it('should get root node', () => {
+        const matcher = new Matcher('*', document);
+        const res = matcher._getRoot(document);
+        assert.deepEqual(res, {
+          detached: false,
+          document,
+          root: document
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        document.body.appendChild(parent);
+        const matcher = new Matcher('*', parent);
+        const res = matcher._getRoot(parent);
+        assert.deepEqual(res, {
+          detached: false,
+          document,
+          root: document
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        document.body.appendChild(parent);
+        const matcher = new Matcher('*', node);
+        const res = matcher._getRoot(node);
+        assert.deepEqual(res, {
+          detached: false,
+          document,
+          root: document
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher('*', doc);
+        const res = matcher._getRoot(doc);
+        assert.deepEqual(res, {
+          detached: false,
+          document: doc,
+          root: doc
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher('*', parent);
+        const res = matcher._getRoot(parent);
+        assert.deepEqual(res, {
+          detached: false,
+          document: doc,
+          root: doc
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher('*', node);
+        const res = matcher._getRoot(node);
+        assert.deepEqual(res, {
+          detached: false,
+          document: doc,
+          root: doc
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher('*', frag);
+        const res = matcher._getRoot(frag);
+        assert.deepEqual(res, {
+          detached: true,
+          document,
+          root: frag
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher('*', parent);
+        const res = matcher._getRoot(parent);
+        assert.deepEqual(res, {
+          detached: true,
+          document,
+          root: frag
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher('*', node);
+        const res = matcher._getRoot(node);
+        assert.deepEqual(res, {
+          detached: true,
+          document,
+          root: frag
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        const matcher = new Matcher('*', parent);
+        const res = matcher._getRoot(parent);
+        assert.deepEqual(res, {
+          detached: true,
+          document,
+          root: parent
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        const matcher = new Matcher('*', node);
+        const res = matcher._getRoot(node);
+        assert.deepEqual(res, {
+          detached: true,
+          document,
+          root: parent
+        }, 'result');
+      });
+    });
+
+    describe('prepare list and matrix', () => {
+      it('should throw', () => {
         const matcher = new Matcher('#ul1 ++ #li1', document);
-        assert.throws(() => matcher._find(ast, document), DOMException);
+        assert.throws(() => matcher._prepare(), DOMException);
       });
 
-      it('should get matched node(s)', () => {
-        const ast = parseSelector('#div1');
-        const node = document.getElementById('div1');
-        const matcher = new Matcher('#div1', document);
-        const res = matcher._find(ast, document);
-        assert.instanceOf(res, Set, 'instance');
-        assert.strictEqual(res.size, 1, 'size');
-        assert.deepEqual([...res], [node], 'result');
-      });
-    });
-
-    describe('get matched nodes', () => {
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'div2',
-            type: ID_SELECTOR
-          }
-        ];
-        const node = document.getElementById('div2');
-        const matcher = new Matcher('#div2', document);
-        const res = matcher._getMatchedNodes(ast, document);
+      it('should get list and matrix', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        const res = matcher._prepare();
         assert.deepEqual(res, [
-          node
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: 'div2',
-            type: ID_SELECTOR
-          }
-        ];
-        const node = document.getElementById('div2');
-        const matcher = new Matcher('div#div2', document);
-        const res = matcher._getMatchedNodes(ast, document.documentElement);
-        assert.deepEqual(res, [
-          node
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const matcher = new Matcher('ul > li', document);
-        const res = matcher._getMatchedNodes(ast, document.documentElement);
-        assert.deepEqual(res, [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                nth: {
-                  a: '2',
-                  b: '1',
-                  type: AN_PLUS_B
-                },
-                selector: null,
-                type: NTH
-              }
-            ],
-            name: 'nth-child',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const matcher = new Matcher('ul > li:nth-child(2n+1)', document);
-        const res = matcher._getMatchedNodes(ast, document.documentElement);
-        assert.deepEqual(res, [
-          document.getElementById('li1'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'foo',
-                        type: CLASS_SELECTOR
-                      },
-                      {
-                        name: 'bar',
-                        type: CLASS_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'is',
-            type: PSEUDO_CLASS_SELECTOR
-          },
-          {
-            name: '>',
-            type: COMBINATOR
-          },
-          {
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ];
-        const node = document.getElementById('div6');
-        const matcher = new Matcher('div:is(.foo.bar) > p', document);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [
-          document.getElementById('p4'),
-          document.getElementById('p5'),
-          document.getElementById('p6')
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'foo',
-                        type: CLASS_SELECTOR
-                      },
-                      {
-                        name: 'bar',
-                        type: CLASS_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'is',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node = document.getElementById('div6');
-        const matcher = new Matcher('div:is(.foo.bar)', document);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'ul',
-                        type: TYPE_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'is',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node = document.getElementById('ul1');
-        const matcher = new Matcher(':is(ul)', document);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'ul',
-                        type: TYPE_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'is',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node = document.getElementById('ul1');
-        const matcher = new Matcher(':is(dl, ul)', document);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should not match', () => {
-        const ast = [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'ul',
-                        type: TYPE_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'is',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const node = document.getElementById('ul1');
-        const matcher = new Matcher(':is(ol)', document);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'foo',
-                        type: CLASS_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
-            ],
-            name: 'not',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const refPoint = document.getElementById('div4');
-        const node = document.getElementById('div7');
-        const matcher = new Matcher('div:not(.foo)', refPoint);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [node], 'result');
-      });
-
-      it('should not match', () => {
-        const ast = [
-          {
-            name: 'div',
-            type: TYPE_SELECTOR
-          },
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        name: 'foo',
-                        type: CLASS_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'last-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            },
+            {
+              branch: [
+                {
+                  combo: {
+                    loc: null,
+                    name: '+',
+                    type: COMBINATOR
                   },
-                  {
-                    children: [
-                      {
-                        name: 'baz',
-                        type: CLASS_SELECTOR
-                      }
-                    ],
-                    type: SELECTOR
-                  }
-                ],
-                type: SELECTOR_LIST
-              }
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'first-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                },
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set()
             ],
-            name: 'not',
-            type: PSEUDO_CLASS_SELECTOR
-          }
-        ];
-        const refPoint = document.getElementById('div4');
-        const node = document.getElementById('div7');
-        const matcher = new Matcher('div:not(.foo, .baz)', refPoint);
-        const res = matcher._getMatchedNodes(ast, node);
-        assert.deepEqual(res, [], 'result');
+            [
+              new Set(),
+              new Set()
+            ]
+          ]
+        ], 'result');
       });
     });
 
-    describe('match ast and node', () => {
+    describe('match selector', () => {
       it('should get matched node(s)', () => {
         const ast = {
           name: 'dt',
@@ -8007,8 +7369,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('dt1');
         const matcher = new Matcher('dt', document);
-        const res = matcher._match(ast, node);
-        assert.instanceOf(res, Set, 'instance');
+        const res = matcher._matchSelector(ast, node);
         assert.strictEqual(res.size, 1, 'size');
         assert.deepEqual([...res], [
           node
@@ -8022,8 +7383,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('div5');
         const matcher = new Matcher('.foo', document);
-        const res = matcher._match(ast, node);
-        assert.instanceOf(res, Set, 'instance');
+        const res = matcher._matchSelector(ast, node);
         assert.strictEqual(res.size, 1, 'size');
         assert.deepEqual([...res], [
           node
@@ -8043,8 +7403,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('span3');
         const matcher = new Matcher('[hidden]', document);
-        const res = matcher._match(ast, node);
-        assert.instanceOf(res, Set, 'instance');
+        const res = matcher._matchSelector(ast, node);
         assert.strictEqual(res.size, 1, 'size');
         assert.deepEqual([...res], [
           document.getElementById('span3')
@@ -8074,8 +7433,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ul)', document);
-        const res = matcher._match(ast, node);
-        assert.instanceOf(res, Set, 'instance');
+        const res = matcher._matchSelector(ast, node);
         assert.strictEqual(res.size, 1, 'size');
         assert.deepEqual([...res], [
           node
@@ -8088,9 +7446,733 @@ describe('match AST leaf and DOM node', () => {
           name: 'before',
           type: PSEUDO_ELEMENT_SELECTOR
         };
+        const node = document.documentElement;
         const matcher = new Matcher('::before', document);
-        assert.throws(() => matcher._match(ast, document.documentElement),
+        assert.throws(() => matcher._matchSelector(ast, node),
           DOMException);
+      });
+    });
+
+    describe('find nodes', () => {
+      it('should throw', () => {
+        const matcher = new Matcher('li', document);
+        matcher._prepare();
+        assert.throws(() => matcher._findNodes(), TypeError);
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('#ul1', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('ul1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('ul#ul1', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('ul1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('#foobar', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node = document.createElement('div');
+        node.id = 'foobar';
+        frag.appendChild(node);
+        const matcher = new Matcher('#foobar', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        node.id = 'foobar';
+        parent.appendChild(node);
+        const matcher = new Matcher('#foobar', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('#li1:first-child', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('.li', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        parent.classList.add('foo');
+        const node = document.createElement('div');
+        node.classList.add('foo');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher('.foo', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          parent, node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('li.li', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const node = document.getElementById('li1');
+        const matcher = new Matcher('li:first-child', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const node = document.getElementById('li2');
+        const matcher = new Matcher('li:first-child', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const node = document.getElementById('li1');
+        const matcher = new Matcher('dd:first-child', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig, 'self');
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('li.li:last-child', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        parent.classList.add('foo');
+        parent.classList.add('bar');
+        const node = document.createElement('div');
+        node.classList.add('foo');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher('.foo.bar', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          parent
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('.foobar', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node = document.createElement('div');
+        frag.appendChild(node);
+        const matcher = new Matcher('div', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        const matcher = new Matcher('div', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          parent, node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const parent = document.createElement('div');
+        parent.classList.add('foo');
+        const node = document.createElement('div');
+        node.classList.add('foo');
+        parent.appendChild(node);
+        const matcher = new Matcher('.foo', node);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          parent, node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const frag = document.createDocumentFragment();
+        const node = document.createElement('div');
+        frag.appendChild(node);
+        const matcher = new Matcher('p', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const matcher = new Matcher(':first-child', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+    });
+
+    describe('collect nodes', () => {
+      it('should get list and matrix', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        matcher._prepare();
+        const res = matcher._collectNodes();
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'last-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            },
+            {
+              branch: [
+                {
+                  combo: {
+                    loc: null,
+                    name: '+',
+                    type: COMBINATOR
+                  },
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'first-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                },
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set([
+                document.getElementById('li3')
+              ])
+            ],
+            [
+              new Set([
+                document.getElementById('li1')
+              ]),
+              new Set([
+                document.getElementById('li1'),
+                document.getElementById('li2'),
+                document.getElementById('li3')
+              ])
+            ]
+          ]
+        ], 'result');
+      });
+
+      it('should get list and matrix', () => {
+        const node = document.getElementById('li1');
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', node);
+        matcher._prepare();
+        const res = matcher._collectNodes('self');
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'last-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: true
+            },
+            {
+              branch: [
+                {
+                  combo: {
+                    loc: null,
+                    name: '+',
+                    type: COMBINATOR
+                  },
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      children: null,
+                      loc: null,
+                      name: 'first-child',
+                      type: PSEUDO_CLASS_SELECTOR
+                    }
+                  ]
+                },
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set([])
+            ],
+            [
+              new Set([
+                document.getElementById('li1')
+              ]),
+              new Set([
+                document.getElementById('li1')
+              ])
+            ]
+          ]
+        ], 'result');
+      });
+
+      it('should get list and matrix', () => {
+        const node = document.getElementById('span1');
+        const matcher = new Matcher('.dd', node);
+        matcher._prepare();
+        const res = matcher._collectNodes('parent');
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'dd',
+                      type: CLASS_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set([
+                document.getElementById('dd1')
+              ])
+            ]
+          ]
+        ], 'result');
+      });
+
+      it('should get list and matrix', () => {
+        const node = document.getElementById('span1');
+        const matcher = new Matcher('li', node);
+        matcher._prepare();
+        const res = matcher._collectNodes('parent');
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'li',
+                      type: TYPE_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: true
+            }
+          ],
+          [
+            [
+              new Set([])
+            ]
+          ]
+        ], 'result');
+      });
+
+      it('should get list and matrix', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        node1.id = 'foo';
+        const node2 = document.createElement('div');
+        node2.id = 'bar';
+        frag.appendChild(node1);
+        frag.appendChild(node2);
+        const matcher = new Matcher('#foo, #bar', frag);
+        matcher._prepare();
+        const res = matcher._collectNodes();
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'foo',
+                      type: ID_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            },
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'bar',
+                      type: ID_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set([
+                node1
+              ])
+            ],
+            [
+              new Set([
+                node2
+              ])
+            ]
+          ]
+        ], 'result');
+      });
+
+      it('should get list and matrix', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        node.id = 'foobar';
+        parent.appendChild(node);
+        const matcher = new Matcher('#foobar', node);
+        matcher._prepare();
+        const res = matcher._collectNodes();
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'foobar',
+                      type: ID_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: false
+            }
+          ],
+          [
+            [
+              new Set([
+                node
+              ])
+            ]
+          ]
+        ], 'nodes');
+      });
+
+      it('should get list and matrix', () => {
+        const matcher = new Matcher('ol', document);
+        matcher._prepare();
+        const res = matcher._collectNodes();
+        assert.deepEqual(res, [
+          [
+            {
+              branch: [
+                {
+                  combo: null,
+                  leaves: [
+                    {
+                      loc: null,
+                      name: 'ol',
+                      type: TYPE_SELECTOR
+                    }
+                  ]
+                }
+              ],
+              skip: true
+            }
+          ],
+          [
+            [
+              new Set([])
+            ]
+          ]
+        ], 'nodes');
+      });
+    });
+
+    describe('match nodes', () => {
+      it('should get matched node(s)', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        matcher._prepare();
+        matcher._collectNodes();
+        const res = matcher._matchNodes();
+        assert.deepEqual([...res], [
+          document.getElementById('li3'),
+          document.getElementById('li2')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('ol > .li ~ li, ul > .li ~ li', document);
+        matcher._prepare();
+        matcher._collectNodes();
+        const res = matcher._matchNodes();
+        assert.deepEqual([...res], [
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.getElementById('li1');
+        const matcher = new Matcher('li:last-child, li:first-child + li', node);
+        matcher._prepare();
+        matcher._collectNodes('self');
+        const res = matcher._matchNodes();
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ul > .dd ~ li', document);
+        matcher._prepare();
+        matcher._collectNodes();
+        const res = matcher._matchNodes();
+        assert.deepEqual([...res], [], 'result');
+      });
+    });
+
+    describe('find matched nodes', () => {
+      it('should get matched node(s)', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        const res = matcher._find();
+        assert.deepEqual([...res], [
+          document.getElementById('li3'),
+          document.getElementById('li2')
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.getElementById('li1');
+        const matcher = new Matcher('li:last-child, li:first-child + li', node);
+        const res = matcher._find('self');
+        assert.deepEqual([...res], [], 'result');
+      });
+    });
+
+    describe('sort nodes', () => {
+      it('should throw', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        assert.throws(() => matcher._sortNodes(), TypeError);
+      });
+
+      it('should get matched node(s)', () => {
+        const node1 = document.getElementById('li1');
+        const node2 = document.getElementById('li2');
+        const node3 = document.getElementById('li3');
+        const nodes = new Set([node3, node2, node1]);
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        const res = matcher._sortNodes(nodes);
+        assert.deepEqual([...res], [
+          node1
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const node1 = document.getElementById('li1');
+        const node2 = document.getElementById('li2');
+        const node3 = document.getElementById('li3');
+        const nodes = new Set([node1, node2, node3]);
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        const res = matcher._sortNodes(nodes, 'all');
+        assert.deepEqual([...res], [
+          node1, node2, node3
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        frag.appendChild(node1);
+        frag.appendChild(node2);
+        frag.appendChild(node3);
+        const nodes = new Set([node3, node2, node1]);
+        const matcher = new Matcher('div', frag);
+        const res = matcher._sortNodes(nodes);
+        assert.deepEqual([...res], [
+          node1
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        frag.appendChild(node1);
+        frag.appendChild(node2);
+        frag.appendChild(node3);
+        const nodes = new Set([node3, node2, node1]);
+        const matcher = new Matcher('div', frag);
+        const res = matcher._sortNodes(nodes, 'all');
+        assert.deepEqual([...res], [
+          node1, node2, node3
+        ], 'result');
       });
     });
 
