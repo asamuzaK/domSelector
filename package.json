@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.1",
+    "benchmark": "^2.1.4",
     "c8": "^7.14.0",
     "chai": "^4.3.7",
     "eslint": "^8.41.0",
@@ -37,6 +38,7 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "bench": "node benchmark/index.benchmark.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",

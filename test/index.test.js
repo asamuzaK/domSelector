@@ -37,10 +37,41 @@ describe('exported api', () => {
       delete global[key];
     }
   });
+  const selectors = [
+    'div',
+    '.box',
+    '.box > .title',
+    '.box .title',
+    '.box ~ .box',
+    '.box + .box',
+    '.box:last-of-type',
+    '.box:nth-of-type(2n - 1)',
+    '.box:not(:last-of-type)',
+    '.box:not(:empty):last-of-type .title',
+    '.box:nth-last-child(n+6) ~ div'
+  ];
 
   describe('matches', () => {
     it('should throw', () => {
       assert.throws(() => matches('*|', document.body), DOMException);
+    });
+
+    it('should match', () => {
+      const box = count => `<div class="box" id="box${count}">
+        <div id="div${count}" class="title">${count}</div>
+      </div>`;
+      const count = 100;
+      let domStr = '';
+      for (let i = 0; i < count; i++) {
+        domStr += box(i + 1);
+      }
+      const container = document.createElement('div');
+      container.classList.add('box-container');
+      container.append(document.createRange().createContextualFragment(domStr));
+      document.body.appendChild(container);
+      const node = document.getElementById(`div${Math.round(count / 2)}`);
+      const res = node.matches(selectors[0]);
+      assert.isTrue(res, 'result');
     });
 
     it('should match', () => {
