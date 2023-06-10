@@ -15,11 +15,9 @@ const { parseSelector, walkAST } = require('../src/js/parser.js');
 /* parser tests */
 const parserParseSelector = () => {
   const opt = {
-    setup: () => {
+    fn: () => {
       const selector =
         '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
-    },
-    fn: () => {
       parseSelector(selector);
     }
   };
@@ -27,11 +25,12 @@ const parserParseSelector = () => {
 };
 
 const parserWalkAST = () => {
+  let ast;
   const opt = {
     setup: () => {
       const selector =
         '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
-      const ast = parseSelector(selector);
+      ast = parseSelector(selector);
     },
     fn: () => {
       walkAST(ast);
@@ -42,6 +41,8 @@ const parserWalkAST = () => {
 
 /* loop tests */
 const forLoop = () => {
+  const nodes = new Set();
+  let items;
   const opt = {
     setup: () => {
       const {
@@ -80,11 +81,10 @@ const forLoop = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      const nodes = new Set();
-      const [...items] = document.getElementsByTagName('*');
-      const l = items.length;
+      [...items] = document.getElementsByTagName('*');
     },
     fn: () => {
+      const l = items.length;
       for (let i = 0; i < l; i++) {
         const item = items[i];
         nodes.add(item);
@@ -95,6 +95,8 @@ const forLoop = () => {
 };
 
 const nodeIterator = () => {
+  const nodes = new Set();
+  let iterator;
   const opt = {
     setup: () => {
       const {
@@ -133,10 +135,9 @@ const nodeIterator = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      const nodes = new Set();
+      iterator = document.createNodeIterator(document, 1);
     },
     fn: () => {
-      const iterator = document.createNodeIterator(document, 1);
       let nextNode = iterator.nextNode();
       while (nextNode) {
         nodes.add(nextNode);
@@ -148,6 +149,8 @@ const nodeIterator = () => {
 };
 
 const setForEach = () => {
+  const nodes = new Set();
+  let items;
   const opt = {
     setup: () => {
       const {
@@ -186,8 +189,7 @@ const setForEach = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      const nodes = new Set();
-      const items = new Set([...document.getElementsByTagName('*')]);
+      items = new Set([...document.getElementsByTagName('*')]);
     },
     fn: () => {
       items.forEach(item => {
@@ -199,6 +201,8 @@ const setForEach = () => {
 };
 
 const setForOf = () => {
+  const nodes = new Set();
+  let items;
   const opt = {
     setup: () => {
       const {
@@ -237,8 +241,7 @@ const setForOf = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      const nodes = new Set();
-      const items = new Set([...document.getElementsByTagName('*')]);
+      items = new Set([...document.getElementsByTagName('*')]);
     },
     fn: () => {
       for (const item of items) {
