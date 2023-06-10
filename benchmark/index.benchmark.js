@@ -41,8 +41,7 @@ const parserWalkAST = () => {
 
 /* loop tests */
 const forLoop = () => {
-  const nodes = new Set();
-  let items;
+  let document;
   const opt = {
     setup: () => {
       const {
@@ -51,9 +50,9 @@ const forLoop = () => {
         runScripts: 'dangerously',
         url: 'http://localhost'
       });
-      const { document } = window;
-      const x = 32;
-      const y = 32;
+      document = window.document;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -81,10 +80,11 @@ const forLoop = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      [...items] = document.getElementsByTagName('*');
     },
     fn: () => {
+      const [...items] = document.getElementsByTagName('*');
       const l = items.length;
+      const nodes = new Set();
       for (let i = 0; i < l; i++) {
         const item = items[i];
         nodes.add(item);
@@ -95,8 +95,7 @@ const forLoop = () => {
 };
 
 const nodeIterator = () => {
-  const nodes = new Set();
-  let iterator;
+  let document;
   const opt = {
     setup: () => {
       const {
@@ -105,9 +104,9 @@ const nodeIterator = () => {
         runScripts: 'dangerously',
         url: 'http://localhost'
       });
-      const { document } = window;
-      const x = 32;
-      const y = 32;
+      document = window.document;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -135,10 +134,11 @@ const nodeIterator = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      iterator = document.createNodeIterator(document, 1);
     },
     fn: () => {
+      const iterator = document.createNodeIterator(document, 1);
       let nextNode = iterator.nextNode();
+      const nodes = new Set();
       while (nextNode) {
         nodes.add(nextNode);
         nextNode = iterator.nextNode();
@@ -149,8 +149,7 @@ const nodeIterator = () => {
 };
 
 const setForEach = () => {
-  const nodes = new Set();
-  let items;
+  let document;
   const opt = {
     setup: () => {
       const {
@@ -159,9 +158,9 @@ const setForEach = () => {
         runScripts: 'dangerously',
         url: 'http://localhost'
       });
-      const { document } = window;
-      const x = 32;
-      const y = 32;
+      document = window.document;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -189,9 +188,10 @@ const setForEach = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      items = new Set([...document.getElementsByTagName('*')]);
     },
     fn: () => {
+      const items = new Set([...document.getElementsByTagName('*')]);
+      const nodes = new Set();
       items.forEach(item => {
         nodes.add(item);
       });
@@ -201,8 +201,7 @@ const setForEach = () => {
 };
 
 const setForOf = () => {
-  const nodes = new Set();
-  let items;
+  let document;
   const opt = {
     setup: () => {
       const {
@@ -211,9 +210,9 @@ const setForOf = () => {
         runScripts: 'dangerously',
         url: 'http://localhost'
       });
-      const { document } = window;
-      const x = 32;
-      const y = 32;
+      document = window.document;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -241,9 +240,10 @@ const setForOf = () => {
       container.classList.add('box-container');
       container.appendChild(xyFrag);
       document.body.append(container);
-      items = new Set([...document.getElementsByTagName('*')]);
     },
     fn: () => {
+      const items = new Set([...document.getElementsByTagName('*')]);
+      const nodes = new Set();
       for (const item of items) {
         nodes.add(item);
       }
@@ -294,8 +294,8 @@ const elementMatches = (type, api) => {
         });
       window = dom.window;
       document = dom.window.document;
-      const x = 32;
-      const y = 32;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -419,8 +419,8 @@ const elementClosest = (type, api) => {
         });
       window = dom.window;
       document = dom.window.document;
-      const x = 32;
-      const y = 32;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -543,8 +543,8 @@ const refPointQuerySelector = (type, api) => {
         });
       window = dom.window;
       document = dom.window.document;
-      const x = 32;
-      const y = 32;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
@@ -651,8 +651,8 @@ const refPointQuerySelectorAll = (type, api) => {
         });
       window = dom.window;
       document = dom.window.document;
-      const x = 32;
-      const y = 32;
+      const x = 1000;
+      const y = 1000;
       const xyFrag = document.createDocumentFragment();
       for (let i = 0; i < x; i++) {
         const xNode = document.createElement('div');
