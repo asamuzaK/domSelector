@@ -2899,6 +2899,33 @@ describe('patched JSDOM', () => {
       const res = frag.querySelectorAll('.qux');
       assert.deepEqual(res, [], 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const span = document.createElement('span');
+      const span2 = document.createElement('span');
+      const elm = document.createElement('p');
+      const elm2 = document.createElement('p');
+      const body = document.body;
+      span.classList.add('bar');
+      elm.classList.add('foo');
+      elm.appendChild(span);
+      span2.classList.add('bar');
+      elm2.classList.add('foo');
+      elm2.appendChild(span2);
+      body.appendChild(elm);
+      body.appendChild(elm2);
+      const items = querySelectorAll('.foo', document);
+      const arr = [];
+      for (const item of items) {
+        const i = item.querySelector('.bar');
+        if (i) {
+          arr.push(i);
+        }
+      }
+      assert.deepEqual(arr, [
+        span, span2
+      ], 'result');
+    });
   });
 });
 

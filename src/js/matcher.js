@@ -2278,6 +2278,13 @@ class Matcher {
     try {
       const nodes = this._find();
       nodes.delete(this.#node);
+      if (this.#node.nodeType === ELEMENT_NODE) {
+        nodes.forEach(node => {
+          if(!isDescendant(node, this.#node)) {
+            nodes.delete(node);
+          }
+        });
+      }
       if (nodes.size > 1) {
         [res] = [...this._sortNodes(nodes)];
       } else if (nodes.size) {
@@ -2299,6 +2306,13 @@ class Matcher {
     try {
       const nodes = this._find();
       nodes.delete(this.#node);
+      if (this.#node.nodeType === ELEMENT_NODE) {
+        nodes.forEach(node => {
+          if(!isDescendant(node, this.#node)) {
+            nodes.delete(node);
+          }
+        });
+      }
       if (nodes.size > 1) {
         const sorted = this._sortNodes(nodes, 'all');
         res.push(...sorted);
