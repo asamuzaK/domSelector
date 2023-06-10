@@ -251,15 +251,46 @@ const setForOf = () => {
 
 /* matcher tests*/
 const elementMatches = (type, api) => {
+  const patch = win => {
+    win.Element.prototype.matches = function (selector) {
+      return matches(selector, this);
+    };
+    win.Element.prototype.closest = function (selector) {
+      return closest(selector, this);
+    };
+    win.Document.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Element.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Document.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelectorAll =
+      function (selector) {
+        return querySelectorAll(selector, this);
+      };
+    win.Element.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+  };
+  let window;
+  let document;
+  let box;
+  let div;
   const opt = {
     setup: () => {
-      const {
-        window
-      } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-        runScripts: 'dangerously',
-        url: 'http://localhost'
-      });
-      const { document } = window;
+      const dom =
+        new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+          runScripts: 'dangerously',
+          url: 'http://localhost'
+        });
+      window = dom.window;
+      document = dom.window.document;
       const x = 32;
       const y = 32;
       const xyFrag = document.createDocumentFragment();
@@ -288,35 +319,6 @@ const elementMatches = (type, api) => {
       const container = document.createElement('div');
       container.classList.add('box-container');
       container.appendChild(xyFrag);
-      const patch = () => {
-        window.Element.prototype.matches = function (selector) {
-          return matches(selector, this);
-        };
-        window.Element.prototype.closest = function (selector) {
-          return closest(selector, this);
-        };
-        window.Document.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Element.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Document.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelectorAll =
-          function (selector) {
-            return querySelectorAll(selector, this);
-          };
-        window.Element.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-      }
-      let box;
-      let div;
       switch (type) {
         case 'document': {
           document.body.append(container);
@@ -374,15 +376,46 @@ const elementMatches = (type, api) => {
 };
 
 const elementClosest = (type, api) => {
+  const patch = win => {
+    win.Element.prototype.matches = function (selector) {
+      return matches(selector, this);
+    };
+    win.Element.prototype.closest = function (selector) {
+      return closest(selector, this);
+    };
+    win.Document.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Element.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Document.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelectorAll =
+      function (selector) {
+        return querySelectorAll(selector, this);
+      };
+    win.Element.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+  };
+  let window;
+  let document;
+  let box;
+  let div;
   const opt = {
     setup: () => {
-      const {
-        window
-      } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-        runScripts: 'dangerously',
-        url: 'http://localhost'
-      });
-      const { document } = window;
+      const dom =
+        new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+          runScripts: 'dangerously',
+          url: 'http://localhost'
+        });
+      window = dom.window;
+      document = dom.window.document;
       const x = 32;
       const y = 32;
       const xyFrag = document.createDocumentFragment();
@@ -411,35 +444,6 @@ const elementClosest = (type, api) => {
       const container = document.createElement('div');
       container.classList.add('box-container');
       container.appendChild(xyFrag);
-      const patch = () => {
-        window.Element.prototype.matches = function (selector) {
-          return matches(selector, this);
-        };
-        window.Element.prototype.closest = function (selector) {
-          return closest(selector, this);
-        };
-        window.Document.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Element.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Document.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelectorAll =
-          function (selector) {
-            return querySelectorAll(selector, this);
-          };
-        window.Element.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-      }
-      let box;
-      let div;
       switch (type) {
         case 'document': {
           document.body.append(container);
@@ -497,15 +501,45 @@ const elementClosest = (type, api) => {
 };
 
 const refPointQuerySelector = (type, api) => {
+  const patch = win => {
+    win.Element.prototype.matches = function (selector) {
+      return matches(selector, this);
+    };
+    win.Element.prototype.closest = function (selector) {
+      return closest(selector, this);
+    };
+    win.Document.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Element.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Document.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelectorAll =
+      function (selector) {
+        return querySelectorAll(selector, this);
+      };
+    win.Element.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+  };
+  let window;
+  let document;
+  let refPoint;
   const opt = {
     setup: () => {
-      const {
-        window
-      } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-        runScripts: 'dangerously',
-        url: 'http://localhost'
-      });
-      const { document } = window;
+      const dom =
+        new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+          runScripts: 'dangerously',
+          url: 'http://localhost'
+        });
+      window = dom.window;
+      document = dom.window.document;
       const x = 32;
       const y = 32;
       const xyFrag = document.createDocumentFragment();
@@ -534,34 +568,6 @@ const refPointQuerySelector = (type, api) => {
       const container = document.createElement('div');
       container.classList.add('box-container');
       container.appendChild(xyFrag);
-      const patch = () => {
-        window.Element.prototype.matches = function (selector) {
-          return matches(selector, this);
-        };
-        window.Element.prototype.closest = function (selector) {
-          return closest(selector, this);
-        };
-        window.Document.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Element.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Document.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelectorAll =
-          function (selector) {
-            return querySelectorAll(selector, this);
-          };
-        window.Element.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-      }
-      let refPoint;
       switch (type) {
         case 'document': {
           document.body.append(container);
@@ -603,15 +609,45 @@ const refPointQuerySelector = (type, api) => {
 };
 
 const refPointQuerySelectorAll = (type, api) => {
+  const patch = win => {
+    win.Element.prototype.matches = function (selector) {
+      return matches(selector, this);
+    };
+    win.Element.prototype.closest = function (selector) {
+      return closest(selector, this);
+    };
+    win.Document.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Element.prototype.querySelector = function (selector) {
+      return querySelector(selector, this);
+    };
+    win.Document.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+    win.DocumentFragment.prototype.querySelectorAll =
+      function (selector) {
+        return querySelectorAll(selector, this);
+      };
+    win.Element.prototype.querySelectorAll = function (selector) {
+      return querySelectorAll(selector, this);
+    };
+  };
+  let window;
+  let document;
+  let refPoint;
   const opt = {
     setup: () => {
-      const {
-        window
-      } = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
-        runScripts: 'dangerously',
-        url: 'http://localhost'
-      });
-      const { document } = window;
+      const dom =
+        new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+          runScripts: 'dangerously',
+          url: 'http://localhost'
+        });
+      window = dom.window;
+      document = dom.window.document;
       const x = 32;
       const y = 32;
       const xyFrag = document.createDocumentFragment();
@@ -640,34 +676,6 @@ const refPointQuerySelectorAll = (type, api) => {
       const container = document.createElement('div');
       container.classList.add('box-container');
       container.appendChild(xyFrag);
-      const patch = () => {
-        window.Element.prototype.matches = function (selector) {
-          return matches(selector, this);
-        };
-        window.Element.prototype.closest = function (selector) {
-          return closest(selector, this);
-        };
-        window.Document.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Element.prototype.querySelector = function (selector) {
-          return querySelector(selector, this);
-        };
-        window.Document.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-        window.DocumentFragment.prototype.querySelectorAll =
-          function (selector) {
-            return querySelectorAll(selector, this);
-          };
-        window.Element.prototype.querySelectorAll = function (selector) {
-          return querySelectorAll(selector, this);
-        };
-      }
-      let refPoint;
       switch (type) {
         case 'document': {
           document.body.append(container);
@@ -697,7 +705,7 @@ const refPointQuerySelectorAll = (type, api) => {
         if (api === 'jsdom') {
           refPoint.querySelectorAll(selector);
         } else if ('patched') {
-          patch();
+          patch(window);
           refPoint.querySelectorAll(selector);
         } else {
           querySelectorAll(selector, refPoint);
