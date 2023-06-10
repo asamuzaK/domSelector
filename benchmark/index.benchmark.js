@@ -35,7 +35,7 @@ const parserWalkAST = () => {
     fn: () => {
       walkAST(ast);
     }
-  }
+  };
   return new Benchmark(opt);
 };
 
@@ -90,7 +90,7 @@ const forLoop = () => {
         nodes.add(item);
       }
     }
-  }
+  };
   return new Benchmark(opt);
 };
 
@@ -144,7 +144,7 @@ const nodeIterator = () => {
         nextNode = iterator.nextNode();
       }
     }
-  }
+  };
   return new Benchmark(opt);
 };
 
@@ -196,7 +196,7 @@ const setForEach = () => {
         nodes.add(item);
       });
     }
-  }
+  };
   return new Benchmark(opt);
 };
 
@@ -248,11 +248,11 @@ const setForOf = () => {
         nodes.add(item);
       }
     }
-  }
+  };
   return new Benchmark(opt);
 };
 
-/* matcher tests*/
+/* matcher tests */
 const elementMatches = (type, api) => {
   const patch = win => {
     win.Element.prototype.matches = function (selector) {
@@ -358,8 +358,8 @@ const elementMatches = (type, api) => {
           } else if (value === 'div') {
             div.matches(key);
           }
-        } else if ('patched') {
-          patch();
+        } else if (api === 'patched') {
+          patch(window);
           if (value === 'box') {
             box.matches(key);
           } else if (value === 'div') {
@@ -483,8 +483,8 @@ const elementClosest = (type, api) => {
           } else if (value === 'div') {
             div.closest(key);
           }
-        } else if ('patched') {
-          patch();
+        } else if (api === 'patched') {
+          patch(window);
           if (value === 'box') {
             box.closest(key);
           } else if (value === 'div') {
@@ -599,8 +599,8 @@ const refPointQuerySelector = (type, api) => {
       for (const selector of selectors) {
         if (api === 'jsdom') {
           refPoint.querySelector(selector);
-        } else if ('patched') {
-          patch();
+        } else if (api === 'patched') {
+          patch(window);
           refPoint.querySelector(selector);
         } else {
           querySelector(selector, refPoint);
@@ -707,7 +707,7 @@ const refPointQuerySelectorAll = (type, api) => {
       for (const selector of selectors) {
         if (api === 'jsdom') {
           refPoint.querySelectorAll(selector);
-        } else if ('patched') {
+        } else if (api === 'patched') {
           patch(window);
           refPoint.querySelectorAll(selector);
         } else {
