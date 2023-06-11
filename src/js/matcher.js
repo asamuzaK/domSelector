@@ -1357,10 +1357,8 @@ const matchPseudoClassSelector = (
                   const nodeName = n.localName;
                   let m;
                   if (nodeName === 'button') {
-                    m = !(
-                      n.hasAttribute('type') &&
-                      /^(?:button|reset)$/.test(n.getAttribute('type'))
-                    );
+                    m = !(n.hasAttribute('type') &&
+                          /^(?:button|reset)$/.test(n.getAttribute('type')));
                   } else if (nodeName === 'input') {
                     m = n.hasAttribute('type') &&
                       /^(?:image|submit)$/.test(n.getAttribute('type'));
@@ -1440,11 +1438,10 @@ const matchPseudoClassSelector = (
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
               INPUT_RANGE.test(node.getAttribute('type')) &&
-              !(node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
-            if (node.hasAttribute('min') || node.hasAttribute('max') ||
-                node.getAttribute('type') === 'range') {
-              matched.add(node);
-            }
+              !(node.validity.rangeUnderflow || node.validity.rangeOverflow) &&
+              (node.hasAttribute('min') || node.hasAttribute('max') ||
+               node.getAttribute('type') === 'range')) {
+            matched.add(node);
           }
           break;
         }
@@ -1742,25 +1739,21 @@ class Matcher {
    * @returns {object} - root object
    */
   _getRoot(node) {
-    let detached;
     let document;
     let root;
     switch (node.nodeType) {
       case DOCUMENT_NODE: {
-        detached = false;
         document = node;
         root = node;
         break;
       }
       case DOCUMENT_FRAGMENT_NODE: {
-        detached = true;
         document = node.ownerDocument;
         root = node;
         break;
       }
       default: {
         if (isDescendant(node)) {
-          detached = false;
           document = node.ownerDocument;
           root = node.ownerDocument;
         } else {
@@ -1772,14 +1765,12 @@ class Matcher {
               break;
             }
           }
-          detached = true;
           document = parent.ownerDocument;
           root = parent;
         }
       }
     }
     return {
-      detached,
       document,
       root
     };
@@ -1902,7 +1893,7 @@ class Matcher {
   _findNodes(twig) {
     const { leaves } = twig;
     const l = leaves.length;
-    const { detached, root } = this.#root;
+    const { root } = this.#root;
     let nodes = new Set();
     let pending = false;
     for (let i = 0; i < l; i++) {
@@ -1911,22 +1902,23 @@ class Matcher {
       const leafName = unescapeSelector(leaf.name);
       switch (leafType) {
         case ID_SELECTOR: {
-          if (nodes.size) {
-            const items = new Set([...nodes]);
-            nodes.clear();
-            for (const node of items) {
-              const bool = this._matchSelector(leaf, node).has(node);
-              if (bool) {
-                nodes.add(node);
-                break;
-              }
-            }
-          } else if (detached && root.nodeType === ELEMENT_NODE) {
+          if (root.nodeType === ELEMENT_NODE) {
             pending = true;
           } else {
             const matched = root.getElementById(leafName);
             if (matched) {
-              nodes.add(matched);
+              if (nodes.size) {
+                if (nodes.has(matched)) {
+                  nodes.clear();
+                  nodes.add(matched);
+                } else {
+                  nodes.clear();
+                }
+              } else {
+                nodes.add(matched);
+              }
+            } else {
+              nodes.clear();
             }
           }
           break;
@@ -1945,7 +1937,7 @@ class Matcher {
             });
           } else {
             const a = [...root.getElementsByClassName(leafName)];
-            if (detached && root.nodeType === ELEMENT_NODE &&
+            if (root.nodeType === ELEMENT_NODE &&
                 this._matchSelector(leaf, root).has(root)) {
               a.unshift(root);
             }
@@ -1954,9 +1946,9 @@ class Matcher {
           const matched = new Set(arr);
           if (matched.size) {
             if (nodes.size) {
-              nodes.forEach(n => {
-                if (!matched.has(n)) {
-                  nodes.delete(n);
+              nodes.forEach(node => {
+                if (!matched.has(node)) {
+                  nodes.delete(node);
                 }
               });
             } else {
@@ -1990,10 +1982,10 @@ class Matcher {
           const allNodesLen = allNodes.length;
           const matched = new Set();
           for (let j = 0; j < allNodesLen; j++) {
-            const n = allNodes[j];
-            const bool = this._matchSelector(leaf, n).has(n);
+            const node = allNodes[j];
+            const bool = this._matchSelector(leaf, node).has(node);
             if (bool) {
-              matched.add(n);
+              matched.add(node);
             }
           }
           if (matched.size) {
@@ -2005,10 +1997,10 @@ class Matcher {
         }
         default: {
           if (nodes.size) {
-            nodes.forEach(n => {
-              const bool = this._matchSelector(leaf, n).has(n);
+            nodes.forEach(node => {
+              const bool = this._matchSelector(leaf, node).has(node);
               if (!bool) {
-                nodes.delete(n);
+                nodes.delete(node);
               }
             });
           } else {
@@ -2164,7 +2156,6 @@ class Matcher {
    * @returns {object} - collection of sorted nodes
    */
   _sortNodes(nodes, range) {
-    const f = factorial(nodes.size);
     const { document, root } = this.#root;
     let n = 0;
     if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
@@ -2177,6 +2168,7 @@ class Matcher {
     } else {
       n += document.getElementsByTagName('*').length;
     }
+    const f = factorial(nodes.size);
     const sorted = new Set();
     if (f < n) {
       const items = [...nodes];
@@ -2193,7 +2185,7 @@ class Matcher {
               const nextNode = items[i];
               const posBit = node.compareDocumentPosition(nextNode);
               if (posBit & DOCUMENT_POSITION_PRECEDING ||
-                     posBit & DOCUMENT_POSITION_CONTAINS) {
+                  posBit & DOCUMENT_POSITION_CONTAINS) {
                 node = nextNode;
                 pos = i;
               }
@@ -2280,7 +2272,7 @@ class Matcher {
       nodes.delete(this.#node);
       if (this.#node.nodeType === ELEMENT_NODE) {
         nodes.forEach(node => {
-          if(!isDescendant(node, this.#node)) {
+          if (!isDescendant(node, this.#node)) {
             nodes.delete(node);
           }
         });
@@ -2308,7 +2300,7 @@ class Matcher {
       nodes.delete(this.#node);
       if (this.#node.nodeType === ELEMENT_NODE) {
         nodes.forEach(node => {
-          if(!isDescendant(node, this.#node)) {
+          if (!isDescendant(node, this.#node)) {
             nodes.delete(node);
           }
         });

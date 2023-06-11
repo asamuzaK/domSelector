@@ -7125,7 +7125,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', document);
         const res = matcher._getRoot(document);
         assert.deepEqual(res, {
-          detached: false,
           document,
           root: document
         }, 'result');
@@ -7139,7 +7138,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
-          detached: false,
           document,
           root: document
         }, 'result');
@@ -7153,7 +7151,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
-          detached: false,
           document,
           root: document
         }, 'result');
@@ -7169,7 +7166,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', doc);
         const res = matcher._getRoot(doc);
         assert.deepEqual(res, {
-          detached: false,
           document: doc,
           root: doc
         }, 'result');
@@ -7185,7 +7181,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
-          detached: false,
           document: doc,
           root: doc
         }, 'result');
@@ -7201,7 +7196,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
-          detached: false,
           document: doc,
           root: doc
         }, 'result');
@@ -7216,7 +7210,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', frag);
         const res = matcher._getRoot(frag);
         assert.deepEqual(res, {
-          detached: true,
           document,
           root: frag
         }, 'result');
@@ -7231,7 +7224,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
-          detached: true,
           document,
           root: frag
         }, 'result');
@@ -7246,7 +7238,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
-          detached: true,
           document,
           root: frag
         }, 'result');
@@ -7259,7 +7250,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
-          detached: true,
           document,
           root: parent
         }, 'result');
@@ -7272,7 +7262,6 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
-          detached: true,
           document,
           root: parent
         }, 'result');
@@ -8084,6 +8073,14 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('ul > .dd ~ li', document);
+        matcher._prepare();
+        matcher._collectNodes();
+        const res = matcher._matchNodes();
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ul#dl1', document);
         matcher._prepare();
         matcher._collectNodes();
         const res = matcher._matchNodes();
