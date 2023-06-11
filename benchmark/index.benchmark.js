@@ -12,6 +12,8 @@ const {
 } = require('../src/index.js');
 const { parseSelector, walkAST } = require('../src/js/parser.js');
 
+const errors = [];
+
 /* parser tests */
 const parserParseSelector = () => {
   const opt = {
@@ -19,6 +21,9 @@ const parserParseSelector = () => {
       const selector =
         '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
       parseSelector(selector);
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -34,6 +39,9 @@ const parserWalkAST = () => {
     },
     fn: () => {
       walkAST(ast);
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -89,6 +97,9 @@ const forLoop = () => {
         const item = items[i];
         nodes.add(item);
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -143,6 +154,9 @@ const nodeIterator = () => {
         nodes.add(nextNode);
         nextNode = iterator.nextNode();
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -195,6 +209,9 @@ const setForEach = () => {
       items.forEach(item => {
         nodes.add(item);
       });
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -247,6 +264,9 @@ const setForOf = () => {
       for (const item of items) {
         nodes.add(item);
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -373,6 +393,9 @@ const elementMatches = (type, api) => {
           }
         }
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -498,6 +521,9 @@ const elementClosest = (type, api) => {
           }
         }
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -606,6 +632,9 @@ const refPointQuerySelector = (type, api) => {
           querySelector(selector, refPoint);
         }
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -714,6 +743,9 @@ const refPointQuerySelectorAll = (type, api) => {
           querySelectorAll(selector, refPoint);
         }
       }
+    },
+    onError: e => {
+      errors.push(e);
     }
   };
   return new Benchmark(opt);
@@ -807,8 +839,13 @@ suite.on('start', () => {
   refPointQuerySelectorAll('element', 'jsdom');
 }).add('patched jsdom querySelectorAll - element', () => {
   refPointQuerySelectorAll('element', 'patched');
-}).on('cycle', (evt) => {
+}).on('cycle', evt => {
   console.log(`* ${String(evt.target)}`);
+}).on('complete', evt => {
+  console.log(`errors: ${errors.length}`);
+  for (const e of errors) {
+    console.error(e);
+  }
 }).run({
   async: true
 });
