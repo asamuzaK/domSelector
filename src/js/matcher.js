@@ -116,20 +116,20 @@ const isDescendant = (node = {}, root = {}) => {
 };
 
 /**
- * factorial
+ * sum of series
  * @param {number} n - number
- * @returns {number} - n!
+ * @returns {?number} - sum
  */
-const factorial = n => {
-  let f;
+const sumSeries = n => {
+  let s;
   if (Number.isInteger(n) && n >= 0) {
-    f = 1;
-    for (let i = n; i > 0; i--) {
-      f *= i;
+    s = 0;
+    for (let i = 1; i <= n; i++) {
+      s += i;
     }
   }
-  return f ?? null;
-};
+  return s ?? null;
+}
 
 /**
  * unescape selector
@@ -2168,9 +2168,9 @@ class Matcher {
     } else {
       n += document.getElementsByTagName('*').length;
     }
-    const f = factorial(nodes.size);
+    const s = sumSeries(nodes.size);
     const sorted = new Set();
-    if (f < n) {
+    if (s < n) {
       const items = [...nodes];
       let [node] = items;
       let l = items.length;
@@ -2323,7 +2323,6 @@ module.exports = {
   collectNthChild,
   collectNthOfType,
   createSelectorForNode,
-  factorial,
   isContentEditable,
   isDescendant,
   isNamespaceDeclared,
@@ -2339,5 +2338,6 @@ module.exports = {
   matchPseudoElementSelector,
   matchTypeSelector,
   parseASTName,
+  sumSeries,
   unescapeSelector
 };

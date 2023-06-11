@@ -290,8 +290,8 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 
-  describe('factorial', () => {
-    const func = matcherJs.factorial;
+  describe('sum of series', () => {
+    const func = matcherJs.sumSeries;
 
     it('should get null', () => {
       const res = func();
@@ -305,7 +305,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should get result', () => {
       const res = func(0);
-      assert.strictEqual(res, 1, 'result');
+      assert.strictEqual(res, 0, 'result');
     });
 
     it('should get result', () => {
@@ -315,7 +315,12 @@ describe('match AST leaf and DOM node', () => {
 
     it('should get result', () => {
       const res = func(5);
-      assert.strictEqual(res, 120, 'result');
+      assert.strictEqual(res, 15, 'result');
+    });
+
+    it('should get result', () => {
+      const res = func(10);
+      assert.strictEqual(res, 55, 'result');
     });
   });
 
