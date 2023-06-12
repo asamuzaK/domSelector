@@ -1682,11 +1682,19 @@ class Matcher {
   #warn;
 
   /**
-   * #list[{ branch[], skip }, { branch[], skip }]
-   * branch[twig{}, twig{}]
-   * twig{combo{}, leaves[]}
-   * leaves[leaf{}, leaf{}, leaf{}]
-   * #matrix[
+   * NOTE: #list[i] corresponds to #matrix[i]
+   * #list: [
+   *  { branch: branch[], skip: boolean },
+   *  { branch: branch[], skip: boolean }
+   * ]
+   * branch[]: [twig{}, twig{}]
+   * twig{}: {
+   *   combo: leaf{}|null,
+   *   leaves: leaves[]
+   * }
+   * leaves[]: [leaf{}, leaf{}, leaf{}]
+   * leaf{}: AST leaf
+   * #matrix: [
    *   [
    *     Set([node, node]),
    *     Set([node, node, node, node]),
@@ -1697,7 +1705,7 @@ class Matcher {
    *     Set([node, node])
    *   ]
    * ]
-   * matrix[i] maps to list[i]
+   * node: Element node
    */
 
   /**
@@ -2126,7 +2134,7 @@ class Matcher {
             } else if (matched.size) {
               const { combo: nextCombo } = branch[j];
               prevCombo = nextCombo;
-              prevNodes = nextNodes;
+              prevNodes = matched;
             } else {
               break;
             }
@@ -2174,7 +2182,7 @@ class Matcher {
       const items = [...nodes];
       let [node] = items;
       let l = items.length;
-      let pos = 0;
+      let index = 0;
       while (node) {
         if (node) {
           if (l === 1) {
@@ -2187,15 +2195,15 @@ class Matcher {
               if (posBit & DOCUMENT_POSITION_PRECEDING ||
                   posBit & DOCUMENT_POSITION_CONTAINS) {
                 node = nextNode;
-                pos = i;
+                index = i;
               }
             }
             sorted.add(node);
             if (range === 'all') {
-              items.splice(pos, 1);
+              items.splice(index, 1);
               [node] = items;
               l = items.length;
-              pos = 0;
+              index = 0;
             } else {
               break;
             }

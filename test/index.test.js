@@ -37,19 +37,11 @@ describe('exported api', () => {
       delete global[key];
     }
   });
-  const selectors = [
-    'div',
-    '.box',
-    '.box > .title',
-    '.box .title',
-    '.box ~ .box',
-    '.box + .box',
-    '.box:last-of-type',
-    '.box:nth-of-type(2n - 1)',
-    '.box:not(:last-of-type)',
-    '.box:not(:empty):last-of-type .title',
-    '.box:nth-last-child(n+6) ~ div'
-  ];
+  const selectors = new Map([
+    ['.box .div', 'div'],
+    ['.box ~ .box', 'box'],
+    ['.box:first-child ~ .box .div', 'div2']
+  ]);
 
   describe('matches', () => {
     it('should throw', () => {
@@ -57,21 +49,49 @@ describe('exported api', () => {
     });
 
     it('should match', () => {
-      const box = count => `<div class="box" id="box${count}">
-        <div id="div${count}" class="title">${count}</div>
-      </div>`;
-      const count = 100;
-      let domStr = '';
-      for (let i = 0; i < count; i++) {
-        domStr += box(i + 1);
+      const x = 10;
+      const y = 10;
+      const xyFrag = document.createDocumentFragment();
+      for (let i = 0; i < x; i++) {
+        const xNode = document.createElement('div');
+        xNode.id = `box${i}`;
+        xNode.classList.add('box');
+        xyFrag.appendChild(xNode);
+        const yFrag = document.createDocumentFragment();
+        for (let j = 0; j < y; j++) {
+          const yNode = document.createElement('div');
+          yNode.id = `div${i}-${j}`;
+          if (j === 0) {
+            yFrag.appendChild(yNode);
+          } else if (j === y - 1) {
+            yNode.classList.add('div');
+            yNode.textContent = `${i}-${j}`;
+            yFrag.appendChild(yNode);
+            xNode.appendChild(yFrag);
+          } else {
+            const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+            parent.appendChild(yNode);
+          }
+        }
       }
       const container = document.createElement('div');
       container.classList.add('box-container');
-      container.append(document.createRange().createContextualFragment(domStr));
+      container.appendChild(xyFrag);
       document.body.appendChild(container);
-      const node = document.getElementById(`div${Math.round(count / 2)}`);
-      const res = node.matches(selectors[0]);
-      assert.isTrue(res, 'result');
+      const box = document.getElementById(`box${x - 1}`);
+      const div = document.getElementById(`div${x - 1}-${y - 1}`);
+      for (const [key, value] of selectors) {
+        if (value === 'box') {
+          const res = matches(key, box);
+          assert.isTrue(res, `result ${box.id} ${key}`);
+        } else if (value === 'div') {
+          const res = matches(key, div);
+          assert.isTrue(res, `result ${div.id} ${key}`);
+        } else if (value === 'div2') {
+          const res = matches(key, div);
+          assert.isTrue(res, `result ${div.id} ${key}`);
+        }
+      }
     });
 
     it('should match', () => {
@@ -852,6 +872,52 @@ describe('exported api', () => {
     });
 
     it('should get matched node', () => {
+      const x = 10;
+      const y = 10;
+      const xyFrag = document.createDocumentFragment();
+      for (let i = 0; i < x; i++) {
+        const xNode = document.createElement('div');
+        xNode.id = `box${i}`;
+        xNode.classList.add('box');
+        xyFrag.appendChild(xNode);
+        const yFrag = document.createDocumentFragment();
+        for (let j = 0; j < y; j++) {
+          const yNode = document.createElement('div');
+          yNode.id = `div${i}-${j}`;
+          if (j === 0) {
+            yFrag.appendChild(yNode);
+          } else if (j === y - 1) {
+            yNode.classList.add('div');
+            yNode.textContent = `${i}-${j}`;
+            yFrag.appendChild(yNode);
+            xNode.appendChild(yFrag);
+          } else {
+            const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+            parent.appendChild(yNode);
+          }
+        }
+      }
+      const container = document.createElement('div');
+      container.classList.add('box-container');
+      container.appendChild(xyFrag);
+      document.body.appendChild(container);
+      const box = document.getElementById(`box${x - 1}`);
+      const div = document.getElementById(`div${x - 1}-${y - 1}`);
+      for (const [key, value] of selectors) {
+        if (value === 'box') {
+          const res = closest(key, box);
+          assert.deepEqual(res, box, `result ${box.id} ${key}`);
+        } else if (value === 'div') {
+          const res = closest(key, div);
+          assert.deepEqual(res, div, `result ${div.id} ${key}`);
+        } else if (value === 'div2') {
+          const res = closest(key, div);
+          assert.deepEqual(res, div, `result ${div.id} ${key}`);
+        }
+      }
+    });
+
+    it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -1187,6 +1253,53 @@ describe('exported api', () => {
     });
 
     it('should get matched node', () => {
+      const x = 10;
+      const y = 10;
+      const xyFrag = document.createDocumentFragment();
+      for (let i = 0; i < x; i++) {
+        const xNode = document.createElement('div');
+        xNode.id = `box${i}`;
+        xNode.classList.add('box');
+        xyFrag.appendChild(xNode);
+        const yFrag = document.createDocumentFragment();
+        for (let j = 0; j < y; j++) {
+          const yNode = document.createElement('div');
+          yNode.id = `div${i}-${j}`;
+          if (j === 0) {
+            yFrag.appendChild(yNode);
+          } else if (j === y - 1) {
+            yNode.classList.add('div');
+            yNode.textContent = `${i}-${j}`;
+            yFrag.appendChild(yNode);
+            xNode.appendChild(yFrag);
+          } else {
+            const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+            parent.appendChild(yNode);
+          }
+        }
+      }
+      const container = document.createElement('div');
+      container.classList.add('box-container');
+      container.appendChild(xyFrag);
+      document.body.appendChild(container);
+      const box = document.getElementById(`box${1}`);
+      const div = document.getElementById(`div${0}-${y - 1}`);
+      const div2 = document.getElementById(`div${1}-${y - 1}`);
+      for (const [key, value] of selectors) {
+        if (value === 'box') {
+          const res = querySelector(key, document);
+          assert.deepEqual(res, box, `result ${box.id} ${key}`);
+        } else if (value === 'div') {
+          const res = querySelector(key, document);
+          assert.deepEqual(res, div, `result ${div.id} ${key}`);
+        } else if (value === 'div2') {
+          const res = querySelector(key, document);
+          assert.deepEqual(res, div2, `result ${div2.id} ${key}`);
+        }
+      }
+    });
+
+    it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -1434,6 +1547,81 @@ describe('exported api', () => {
   describe('query selector all', () => {
     it('should throw', () => {
       assert.throws(() => querySelectorAll('*|', document), DOMException);
+    });
+
+    it('should get matched node', () => {
+      const x = 10;
+      const y = 10;
+      const xyFrag = document.createDocumentFragment();
+      for (let i = 0; i < x; i++) {
+        const xNode = document.createElement('div');
+        xNode.id = `box${i}`;
+        xNode.classList.add('box');
+        xyFrag.appendChild(xNode);
+        const yFrag = document.createDocumentFragment();
+        for (let j = 0; j < y; j++) {
+          const yNode = document.createElement('div');
+          yNode.id = `div${i}-${j}`;
+          if (j === 0) {
+            yFrag.appendChild(yNode);
+          } else if (j === y - 1) {
+            yNode.classList.add('div');
+            yNode.textContent = `${i}-${j}`;
+            yFrag.appendChild(yNode);
+            xNode.appendChild(yFrag);
+          } else {
+            const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+            parent.appendChild(yNode);
+          }
+        }
+      }
+      const container = document.createElement('div');
+      container.classList.add('box-container');
+      container.appendChild(xyFrag);
+      document.body.appendChild(container);
+      for (const [key, value] of selectors) {
+        if (value === 'box') {
+          const res = querySelectorAll(key, document);
+          assert.deepEqual(res, [
+            document.getElementById('box1'),
+            document.getElementById('box2'),
+            document.getElementById('box3'),
+            document.getElementById('box4'),
+            document.getElementById('box5'),
+            document.getElementById('box6'),
+            document.getElementById('box7'),
+            document.getElementById('box8'),
+            document.getElementById('box9')
+          ], `result ${key}`);
+        } else if (value === 'div') {
+          const res = querySelectorAll(key, document);
+          assert.deepEqual(res, [
+            document.getElementById('div0-9'),
+            document.getElementById('div1-9'),
+            document.getElementById('div2-9'),
+            document.getElementById('div3-9'),
+            document.getElementById('div4-9'),
+            document.getElementById('div5-9'),
+            document.getElementById('div6-9'),
+            document.getElementById('div7-9'),
+            document.getElementById('div8-9'),
+            document.getElementById('div9-9')
+          ], `result ${key}`);
+        } else if (value === 'div2') {
+          const res = querySelectorAll(key, document);
+          assert.deepEqual(res, [
+            document.getElementById('div1-9'),
+            document.getElementById('div2-9'),
+            document.getElementById('div3-9'),
+            document.getElementById('div4-9'),
+            document.getElementById('div5-9'),
+            document.getElementById('div6-9'),
+            document.getElementById('div7-9'),
+            document.getElementById('div8-9'),
+            document.getElementById('div9-9')
+          ], `result ${key}`);
+        }
+      }
     });
 
     it('should get matched node(s)', () => {
@@ -2348,32 +2536,34 @@ describe('xml', () => {
 const jsdom = (str = '') => {
   const dom = new JSDOM(str, {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'https://localhost/',
+    beforeParse: window => {
+      window.Element.prototype.matches = function (selector) {
+        return matches(selector, this);
+      };
+      window.Element.prototype.closest = function (selector) {
+        return closest(selector, this);
+      };
+      window.Document.prototype.querySelector = function (selector) {
+        return querySelector(selector, this);
+      };
+      window.DocumentFragment.prototype.querySelector = function (selector) {
+        return querySelector(selector, this);
+      };
+      window.Element.prototype.querySelector = function (selector) {
+        return querySelector(selector, this);
+      };
+      window.Document.prototype.querySelectorAll = function (selector) {
+        return querySelectorAll(selector, this);
+      };
+      window.DocumentFragment.prototype.querySelectorAll = function (selector) {
+        return querySelectorAll(selector, this);
+      };
+      window.Element.prototype.querySelectorAll = function (selector) {
+        return querySelectorAll(selector, this);
+      };
+    }
   });
-  dom.window.Element.prototype.matches = function (selector) {
-    return matches(selector, this);
-  };
-  dom.window.Element.prototype.closest = function (selector) {
-    return closest(selector, this);
-  };
-  dom.window.Document.prototype.querySelector = function (selector) {
-    return querySelector(selector, this);
-  };
-  dom.window.DocumentFragment.prototype.querySelector = function (selector) {
-    return querySelector(selector, this);
-  };
-  dom.window.Element.prototype.querySelector = function (selector) {
-    return querySelector(selector, this);
-  };
-  dom.window.Document.prototype.querySelectorAll = function (selector) {
-    return querySelectorAll(selector, this);
-  };
-  dom.window.DocumentFragment.prototype.querySelectorAll = function (selector) {
-    return querySelectorAll(selector, this);
-  };
-  dom.window.Element.prototype.querySelectorAll = function (selector) {
-    return querySelectorAll(selector, this);
-  };
   return dom;
 };
 
