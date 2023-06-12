@@ -370,7 +370,8 @@ const elementMatches = (type, api) => {
     fn: () => {
       const selectors = new Map([
         ['.box .div', 'div'],
-        ['.box ~ .box', 'box']
+        ['.box ~ .box', 'box'],
+        ['.box:first-child ~ .box .div', 'div']
       ]);
       for (const [key, value] of selectors) {
         if (api === 'jsdom') {
@@ -504,7 +505,8 @@ const elementClosest = (type, api) => {
     fn: () => {
       const selectors = new Map([
         ['.box .div', 'div'],
-        ['.box ~ .box', 'box']
+        ['.box ~ .box', 'box'],
+        ['.box:first-child ~ .box .div', 'div']
       ]);
       for (const [key, value] of selectors) {
         if (api === 'jsdom') {
@@ -633,7 +635,8 @@ const refPointQuerySelector = (type, api) => {
     fn: () => {
       const selectors = [
         '.box .div',
-        '.box ~ .box'
+        '.box ~ .box',
+        '.box:first-child ~ .box .div'
       ];
       for (const selector of selectors) {
         if (api === 'jsdom') {
@@ -746,7 +749,8 @@ const refPointQuerySelectorAll = (type, api) => {
     fn: () => {
       const selectors = [
         '.box .div',
-        '.box ~ .box'
+        '.box ~ .box',
+        '.box:first-child ~ .box .div'
       ];
       for (const selector of selectors) {
         if (api === 'jsdom') {
