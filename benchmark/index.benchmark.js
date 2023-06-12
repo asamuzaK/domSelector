@@ -6,6 +6,7 @@
 /* import */
 const Benchmark = require('benchmark');
 const { JSDOM } = require('jsdom');
+const nwsapi = require('nwsapi');
 const { name: packageName, version } = require('../package.json');
 const {
   closest, matches, querySelector, querySelectorAll
@@ -378,6 +379,12 @@ const elementMatches = (type, api) => {
           } else if (value === 'div') {
             div.matches(key);
           }
+        } else if (api === 'nwsapi') {
+          if (value === 'box') {
+            nwsapi.match(key, box);
+          } else if (value === 'div') {
+            nwsapi.match(key, div);
+          }
         } else if (api === 'patched') {
           patch(window);
           if (value === 'box') {
@@ -506,6 +513,12 @@ const elementClosest = (type, api) => {
           } else if (value === 'div') {
             div.closest(key);
           }
+        } else if (api === 'nwsapi') {
+          if (value === 'box') {
+            nwsapi.ancestor(key, box);
+          } else if (value === 'div') {
+            nwsapi.ancestor(key, div);
+          }
         } else if (api === 'patched') {
           patch(window);
           if (value === 'box') {
@@ -625,6 +638,8 @@ const refPointQuerySelector = (type, api) => {
       for (const selector of selectors) {
         if (api === 'jsdom') {
           refPoint.querySelector(selector);
+        } else if (api === 'nwsapi') {
+          nwsapi.first(selector, refPoint);
         } else if (api === 'patched') {
           patch(window);
           refPoint.querySelector(selector);
@@ -736,6 +751,8 @@ const refPointQuerySelectorAll = (type, api) => {
       for (const selector of selectors) {
         if (api === 'jsdom') {
           refPoint.querySelectorAll(selector);
+        } else if (api === 'nwsapi') {
+          nwsapi.select(selector, refPoint);
         } else if (api === 'patched') {
           patch(window);
           refPoint.querySelectorAll(selector);
@@ -769,72 +786,96 @@ suite.on('start', () => {
   parserWalkAST();
 }).add('dom-selector matches - document', () => {
   elementMatches('document');
+}).add('nwsapi matches - document', () => {
+  elementMatches('document', 'nwsapi');
 }).add('jsdom matches - document', () => {
   elementMatches('document', 'jsdom');
 }).add('patched jsdom matches - document', () => {
   elementMatches('document', 'patched');
 }).add('dom-selector matches - fragment', () => {
   elementMatches('fragment');
+}).add('nwsapi matches - fragment', () => {
+  elementMatches('fragment', 'nwsapi');
 }).add('jsdom matches - fragment', () => {
   elementMatches('fragment', 'jsdom');
 }).add('patched jsdom matches - fragment', () => {
   elementMatches('fragment', 'patched');
 }).add('dom-selector matches - element', () => {
   elementMatches('element');
+}).add('nwsapi matches - element', () => {
+  elementMatches('element', 'nwsapi');
 }).add('jsdom matches - element', () => {
   elementMatches('element', 'jsdom');
 }).add('patched jsdom matches - element', () => {
   elementMatches('element', 'patched');
 }).add('dom-selector closest - document', () => {
   elementClosest('document');
+}).add('nwsapi closest - document', () => {
+  elementClosest('document', 'nwsapi');
 }).add('jsdom closest - document', () => {
   elementClosest('document', 'jsdom');
 }).add('patched jsdom closest - document', () => {
   elementClosest('document', 'patched');
 }).add('dom-selector closest - fragment', () => {
   elementClosest('fragment');
+}).add('nwsapi closest - fragment', () => {
+  elementClosest('fragment', 'nwsapi');
 }).add('jsdom closest - fragment', () => {
   elementClosest('fragment', 'jsdom');
 }).add('patched jsdom closest - fragment', () => {
   elementClosest('fragment', 'patched');
 }).add('dom-selector closest - element', () => {
   elementClosest('element');
+}).add('nwsapi closest - element', () => {
+  elementClosest('element', 'nwsapi');
 }).add('jsdom closest - element', () => {
   elementClosest('element', 'jsdom');
 }).add('patched jsdom closest - element', () => {
   elementClosest('element', 'patched');
 }).add('dom-selector querySelector - document', () => {
   refPointQuerySelector('document');
+}).add('nwsapi querySelector - document', () => {
+  refPointQuerySelector('document', 'nwsapi');
 }).add('jsdom querySelector - document', () => {
   refPointQuerySelector('document', 'jsdom');
 }).add('patched jsdom querySelector - document', () => {
   refPointQuerySelector('document', 'patched');
 }).add('dom-selector querySelector - fragment', () => {
   refPointQuerySelector('fragment');
+}).add('nwsapi querySelector - fragment', () => {
+  refPointQuerySelector('fragment', 'nwsapi');
 }).add('jsdom querySelector - fragment', () => {
   refPointQuerySelector('fragment', 'jsdom');
 }).add('patched jsdom querySelector - fragment', () => {
   refPointQuerySelector('fragment', 'patched');
 }).add('dom-selector querySelector - element', () => {
   refPointQuerySelector('element');
+}).add('nwsapi querySelector - element', () => {
+  refPointQuerySelector('element', 'nwsapi');
 }).add('jsdom querySelector - element', () => {
   refPointQuerySelector('element', 'jsdom');
 }).add('patched jsdom querySelector - element', () => {
   refPointQuerySelector('element', 'patched');
 }).add('dom-selector querySelectorAll - document', () => {
   refPointQuerySelectorAll('document');
+}).add('nwsapi querySelectorAll - document', () => {
+  refPointQuerySelectorAll('document', 'nwsapi');
 }).add('jsdom querySelectorAll - document', () => {
   refPointQuerySelectorAll('document', 'jsdom');
 }).add('patched jsdom querySelectorAll - document', () => {
   refPointQuerySelectorAll('document', 'patched');
 }).add('dom-selector querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment');
+}).add('nwsapi querySelectorAll - fragment', () => {
+  refPointQuerySelectorAll('fragment', 'nwsapi');
 }).add('jsdom querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment', 'jsdom');
 }).add('patched jsdom querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment', 'patched');
 }).add('dom-selector querySelectorAll - element', () => {
   refPointQuerySelectorAll('element');
+}).add('nwsapi querySelectorAll - element', () => {
+  refPointQuerySelectorAll('element', 'nwsapi');
 }).add('jsdom querySelectorAll - element', () => {
   refPointQuerySelectorAll('element', 'jsdom');
 }).add('patched jsdom querySelectorAll - element', () => {
