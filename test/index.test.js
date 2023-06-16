@@ -3104,7 +3104,7 @@ describe('patched JSDOM', () => {
       elm2.appendChild(span2);
       body.appendChild(elm);
       body.appendChild(elm2);
-      const items = querySelectorAll('.foo', document);
+      const items = document.querySelectorAll('.foo');
       const arr = [];
       for (const item of items) {
         const i = item.querySelector('.bar');
