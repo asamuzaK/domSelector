@@ -2023,8 +2023,8 @@ class Matcher {
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const { children } = root;
-          const childrenLen = children.length;
-          for (let i = 0; i < childrenLen; i++) {
+          const childLen = children.length;
+          for (let i = 0; i < childLen; i++) {
             const child = children.item(i);
             if (child.classList.contains(leafName)) {
               arr.push(child);
@@ -2082,8 +2082,8 @@ class Matcher {
             }
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const { children } = root;
-            const childrenLen = children.length;
-            for (let i = 0; i < childrenLen; i++) {
+            const childLen = children.length;
+            for (let i = 0; i < childLen; i++) {
               const child = children.item(i);
               if (child.localName === leafName.toLowerCase()) {
                 arr.push(child);
