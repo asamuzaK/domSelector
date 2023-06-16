@@ -1043,10 +1043,10 @@ const matchLanguagePseudoClass = (ast = {}, node = {}) => {
         const [langMain, langSub, ...langRest] = astName.split('-');
         const extendedMain = `${langMain}${codePart}`;
         const extendedSub = `-${langSub}${codePart}`;
-        const l = langRest.length;
+        const len = langRest.length;
         let extendedRest = '';
-        if (l) {
-          for (let i = 0; i < l; i++) {
+        if (len) {
+          for (let i = 0; i < len; i++) {
             extendedRest += `-${langRest[i]}${codePart}`;
           }
         }
@@ -1961,7 +1961,7 @@ class Matcher {
    */
   _findNodes(twig, range) {
     const { leaves: [leaf, ...items] } = twig;
-    const l = items.length;
+    const len = items.length;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
     const { document, root } = this.#root;
@@ -1991,7 +1991,7 @@ class Matcher {
           node = root.getElementById(leafName);
         }
         if (node) {
-          if (l) {
+          if (len) {
             const bool = this._matchLeaves(items, node);
             if (bool) {
               nodes.add(node);
@@ -2042,7 +2042,7 @@ class Matcher {
         }
         const arrLen = arr.length;
         if (arrLen) {
-          if (l) {
+          if (len) {
             for (let i = 0; i < arrLen; i++) {
               const node = arr[i];
               const bool = this._matchLeaves(items, node);
@@ -2101,7 +2101,7 @@ class Matcher {
           }
           const arrLen = arr.length;
           if (arrLen) {
-            if (l) {
+            if (len) {
               for (let i = 0; i < arrLen; i++) {
                 const node = arr[i];
                 const bool = this._matchLeaves(items, node);
@@ -2137,7 +2137,7 @@ class Matcher {
         }
         const arrLen = arr.length;
         if (arrLen) {
-          if (l) {
+          if (len) {
             for (let i = 0; i < arrLen; i++) {
               const node = arr[i];
               const bool = this._matchLeaves(items, node);
