@@ -665,14 +665,13 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
     if (caseInsensitive) {
       astAttrName = astAttrName.toLowerCase();
     }
-    const attrs = [...attributes];
     const attrValues = new Set();
     // namespaced
     if (/\|/.test(astAttrName)) {
       const {
         astPrefix: astAttrPrefix, astNodeName: astAttrLocalName
       } = parseASTName(astAttrName);
-      for (const attr of attrs) {
+      for (const attr of attributes) {
         let { name: itemName, value: itemValue } = attr;
         if (caseInsensitive) {
           itemName = itemName.toLowerCase();
@@ -707,7 +706,7 @@ const matchAttributeSelector = (ast = {}, node = {}) => {
         }
       }
     } else {
-      for (const attr of attrs) {
+      for (const attr of attributes) {
         let { name: itemName, value: itemValue } = attr;
         if (caseInsensitive) {
           itemName = itemName.toLowerCase();
@@ -854,24 +853,25 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}, refPoint = {}) => {
       refPointSelector = createSelectorForNode(refPoint);
     }
     const branchSelectors = new Set();
-    const branches = new Set(walkAST(ast));
-    for (const branch of branches) {
-      const [leaf, ...leaves] = branch;
+    const branches = walkAST(ast);
+    const branchLen = branches.length;
+    for (let i = 0; i < branchLen; i++) {
+      const [leaf, ...leaves] = branches[i];
       let css = generateCSS(leaf);
       if (css) {
         if (astName === 'has' && /^[>+~]$/.test(css)) {
           css = '';
         }
-        const items = new Set(leaves);
-        items.forEach(item => {
-          let itemCss = generateCSS(item);
+        const leafLen = leaves.length;
+        for (let j = 0; j < leafLen; j++) {
+          let itemCss = generateCSS(leaves[j]);
           if (itemCss) {
             if (/:scope/.test(itemCss) && refPointSelector) {
               itemCss = itemCss.replace(/:scope/g, refPointSelector);
             }
             css += itemCss;
           }
-        });
+        }
         branchSelectors.add(css);
       }
     }
@@ -891,8 +891,8 @@ const matchLogicalPseudoFunc = (ast = {}, node = {}, refPoint = {}) => {
         if (/:has\(/.test(branchSelector)) {
           matched = false;
         } else if (nodes.size) {
-          for (const branch of branches) {
-            const [leaf] = branch;
+          for (let i = 0; i < branchLen; i++) {
+            const [leaf] = branches[i];
             let combo;
             if (leaf.type === COMBINATOR) {
               combo = leaf;
@@ -2040,9 +2040,11 @@ class Matcher {
           const a = [...root.getElementsByClassName(leafName)];
           arr.push(...a);
         }
-        if (arr.length) {
+        const arrLen = arr.length;
+        if (arrLen) {
           if (l) {
-            for (const node of arr) {
+            for (let i = 0; i < arrLen; i++) {
+              const node = arr[i];
               const bool = this._matchLeaves(items, node);
               if (bool) {
                 nodes.add(node);
@@ -2097,9 +2099,11 @@ class Matcher {
             const a = [...root.getElementsByTagName(leafName)];
             arr.push(...a);
           }
-          if (arr.length) {
+          const arrLen = arr.length;
+          if (arrLen) {
             if (l) {
-              for (const node of arr) {
+              for (let i = 0; i < arrLen; i++) {
+                const node = arr[i];
                 const bool = this._matchLeaves(items, node);
                 if (bool) {
                   nodes.add(node);
@@ -2131,9 +2135,11 @@ class Matcher {
         } else {
           pending = true;
         }
-        if (arr.length) {
+        const arrLen = arr.length;
+        if (arrLen) {
           if (l) {
-            for (const node of arr) {
+            for (let i = 0; i < arrLen; i++) {
+              const node = arr[i];
               const bool = this._matchLeaves(items, node);
               if (bool) {
                 nodes.add(node);
@@ -2199,8 +2205,6 @@ class Matcher {
         if (bool) {
           pendingItems.forEach(pendingItem => {
             const { leaves } = pendingItem.get('twig');
-            const indexI = pendingItem.get('i');
-            const indexJ = pendingItem.get('j');
             let matched;
             for (const leaf of leaves) {
               matched = this._matchSelector(leaf, nextNode).has(nextNode);
@@ -2209,6 +2213,8 @@ class Matcher {
               }
             }
             if (matched) {
+              const indexI = pendingItem.get('i');
+              const indexJ = pendingItem.get('j');
               this.#matrix[indexI][indexJ].add(nextNode);
             }
           });
