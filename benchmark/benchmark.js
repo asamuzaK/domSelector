@@ -1,5 +1,5 @@
 /**
- * index.benchmark.js
+ * benchmark.js
  */
 'use strict';
 
