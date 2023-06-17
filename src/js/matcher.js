@@ -1721,11 +1721,11 @@ const matchPseudoElementSelector = (ast = {}, node = {}) => {
  */
 class Matcher {
   /* private fields */
-  #ast;
   #list;
   #matrix;
   #node;
   #root;
+  #selector;
   #warn;
 
   /**
@@ -1764,11 +1764,10 @@ class Matcher {
    */
   constructor(selector, node, opt = {}) {
     const { warn } = opt;
-    this.#ast = parseSelector(selector);
-    this.#list = [];
-    this.#matrix = [];
+    [this.#list, this.#matrix] = this._prepare(selector);
     this.#node = node;
     this.#root = this._getRoot(node);
+    this.#selector = selector;
     this.#warn = !!warn;
   }
 
@@ -1793,7 +1792,7 @@ class Matcher {
    * @param {object} node - Document, DocumentFragment, Element node
    * @returns {object} - root object
    */
-  _getRoot(node) {
+  _getRoot(node = this.#node) {
     let document;
     let root;
     switch (node.nodeType) {
@@ -1833,10 +1832,14 @@ class Matcher {
 
   /**
    * prepare list and matrix
+   * @param {string} selector - CSS selector
    * @returns {Array} - list and matrix
    */
-  _prepare() {
-    const branchIterator = walkAST(this.#ast).values();
+  _prepare(selector = this.#selector) {
+    const ast = parseSelector(selector);
+    const branchIterator = walkAST(ast).values();
+    this.#list = [];
+    this.#matrix = [];
     let i = 0;
     for (const branchItem of branchIterator) {
       const [...items] = branchItem;
@@ -2370,7 +2373,6 @@ class Matcher {
    * @returns {object} - collection of matched nodes
    */
   _find(range) {
-    this._prepare();
     this._collectNodes(range);
     const nodes = this._matchNodes(range);
     return nodes;

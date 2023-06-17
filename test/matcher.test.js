@@ -7200,6 +7200,11 @@ describe('match AST leaf and DOM node', () => {
       assert.throws(() => new Matcher('*'), TypeError);
     });
 
+    it('should throw', () => {
+      assert.throws(() => new Matcher('#ul1 ++ #li1', document),
+        DOMException);
+    });
+
     it('should be instance of Matcher', () => {
       const matcher = new Matcher('*', document.body);
       assert.instanceOf(matcher, Matcher, 'instance');
@@ -7247,11 +7252,6 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('get root node', () => {
-      it('should throw', () => {
-        const matcher = new Matcher('*', document);
-        assert.throws(() => matcher._getRoot(), TypeError);
-      });
-
       it('should get root node', () => {
         const matcher = new Matcher('*', document);
         const res = matcher._getRoot(document);
@@ -7400,11 +7400,6 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('prepare list and matrix', () => {
-      it('should throw', () => {
-        const matcher = new Matcher('#ul1 ++ #li1', document);
-        assert.throws(() => matcher._prepare(), DOMException);
-      });
-
       it('should get list and matrix', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
@@ -7576,7 +7571,6 @@ describe('match AST leaf and DOM node', () => {
     describe('match leaves', () => {
       it('should throw', () => {
         const matcher = new Matcher('li', document);
-        matcher._prepare();
         assert.throws(() => matcher._matchLeaves(), TypeError);
       });
 
@@ -7618,7 +7612,6 @@ describe('match AST leaf and DOM node', () => {
     describe('find nodes', () => {
       it('should throw', () => {
         const matcher = new Matcher('li', document);
-        matcher._prepare();
         assert.throws(() => matcher._findNodes(), TypeError);
       });
 
@@ -8010,7 +8003,6 @@ describe('match AST leaf and DOM node', () => {
       it('should get list and matrix', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
-        matcher._prepare();
         const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
@@ -8095,7 +8087,6 @@ describe('match AST leaf and DOM node', () => {
         const node = document.getElementById('li1');
         const matcher =
           new Matcher('li:last-child, li:first-child + li', node);
-        matcher._prepare();
         const res = matcher._collectNodes('self');
         assert.deepEqual(res, [
           [
@@ -8175,7 +8166,6 @@ describe('match AST leaf and DOM node', () => {
       it('should get list and matrix', () => {
         const node = document.getElementById('span1');
         const matcher = new Matcher('.dd', node);
-        matcher._prepare();
         const res = matcher._collectNodes('parent');
         assert.deepEqual(res, [
           [
@@ -8208,7 +8198,6 @@ describe('match AST leaf and DOM node', () => {
       it('should get list and matrix', () => {
         const node = document.getElementById('span1');
         const matcher = new Matcher('li', node);
-        matcher._prepare();
         const res = matcher._collectNodes('parent');
         assert.deepEqual(res, [
           [
@@ -8245,7 +8234,6 @@ describe('match AST leaf and DOM node', () => {
         frag.appendChild(node1);
         frag.appendChild(node2);
         const matcher = new Matcher('#foo, #bar', frag);
-        matcher._prepare();
         const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
@@ -8301,7 +8289,6 @@ describe('match AST leaf and DOM node', () => {
         node.id = 'foobar';
         parent.appendChild(node);
         const matcher = new Matcher('#foobar', node);
-        matcher._prepare();
         const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
@@ -8333,7 +8320,6 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get list and matrix', () => {
         const matcher = new Matcher('ol', document);
-        matcher._prepare();
         const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
@@ -8366,7 +8352,6 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
@@ -8377,7 +8362,6 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('ol > .li ~ li, ul > .li ~ li', document);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
@@ -8387,7 +8371,6 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('ol > .li ~ li, ul > .li ~ li', document);
-        matcher._prepare();
         matcher._collectNodes('all');
         const res = matcher._matchNodes('all');
         assert.deepEqual([...res], [
@@ -8399,7 +8382,6 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('li:last-child, li:first-child + li', node);
-        matcher._prepare();
         matcher._collectNodes('self');
         const res = matcher._matchNodes();
         assert.deepEqual([...res], [], 'result');
@@ -8407,7 +8389,6 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('ul > .dd ~ li', document);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [], 'result');
@@ -8415,7 +8396,6 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('ul#dl1', document);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [], 'result');
@@ -8432,7 +8412,6 @@ describe('match AST leaf and DOM node', () => {
         div.appendChild(p);
         root.appendChild(div);
         const matcher = new Matcher('div > p > span', root);
-        matcher._prepare();
         matcher._collectNodes('all');
         const res = matcher._matchNodes('all');
         assert.deepEqual([...res], [
@@ -8452,7 +8431,6 @@ describe('match AST leaf and DOM node', () => {
         div.appendChild(p);
         root.appendChild(div);
         const matcher = new Matcher('div > p > span', root);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
@@ -8471,7 +8449,6 @@ describe('match AST leaf and DOM node', () => {
         div.appendChild(p);
         root.appendChild(div);
         const matcher = new Matcher('div > div > span', root);
-        matcher._prepare();
         matcher._collectNodes('all');
         const res = matcher._matchNodes('all');
         assert.deepEqual([...res], [], 'result');
@@ -8488,7 +8465,6 @@ describe('match AST leaf and DOM node', () => {
         div.appendChild(p);
         root.appendChild(div);
         const matcher = new Matcher('div > div > span', root);
-        matcher._prepare();
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [], 'result');
