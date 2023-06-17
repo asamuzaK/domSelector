@@ -1627,6 +1627,25 @@ describe('match AST leaf and DOM node', () => {
       ], 'result');
     });
 
+    it('should not match', () => {
+      const res = func({
+        name: '>',
+        type: COMBINATOR
+      },
+      new Set([
+        document.getElementById('dl1')
+      ]),
+      new Set([
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ]),
+      {
+        filter: 'prev'
+      });
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const res = func({
         name: ' ',
@@ -7992,7 +8011,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
         matcher._prepare();
-        const res = matcher._collectNodes();
+        const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
             {
@@ -8227,7 +8246,7 @@ describe('match AST leaf and DOM node', () => {
         frag.appendChild(node2);
         const matcher = new Matcher('#foo, #bar', frag);
         matcher._prepare();
-        const res = matcher._collectNodes();
+        const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
             {
@@ -8283,7 +8302,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher('#foobar', node);
         matcher._prepare();
-        const res = matcher._collectNodes();
+        const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
             {
@@ -8315,7 +8334,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get list and matrix', () => {
         const matcher = new Matcher('ol', document);
         matcher._prepare();
-        const res = matcher._collectNodes();
+        const res = matcher._collectNodes('first');
         assert.deepEqual(res, [
           [
             {
@@ -8348,8 +8367,8 @@ describe('match AST leaf and DOM node', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
         matcher._prepare();
-        matcher._collectNodes();
-        const res = matcher._matchNodes();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
           document.getElementById('li3'),
           document.getElementById('li2')
@@ -8359,8 +8378,8 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const matcher = new Matcher('ol > .li ~ li, ul > .li ~ li', document);
         matcher._prepare();
-        matcher._collectNodes();
-        const res = matcher._matchNodes();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
           document.getElementById('li2')
         ], 'result');
@@ -8369,7 +8388,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const matcher = new Matcher('ol > .li ~ li, ul > .li ~ li', document);
         matcher._prepare();
-        matcher._collectNodes();
+        matcher._collectNodes('all');
         const res = matcher._matchNodes('all');
         assert.deepEqual([...res], [
           document.getElementById('li2'),
@@ -8389,16 +8408,89 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const matcher = new Matcher('ul > .dd ~ li', document);
         matcher._prepare();
-        matcher._collectNodes();
-        const res = matcher._matchNodes();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [], 'result');
       });
 
       it('should not match', () => {
         const matcher = new Matcher('ul#dl1', document);
         matcher._prepare();
-        matcher._collectNodes();
-        const res = matcher._matchNodes();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const root = document.createElement('div');
+        const div = document.createElement('div');
+        const p = document.createElement('p');
+        const span = document.createElement('span');
+        const span2 = document.createElement('span');
+        p.appendChild(span);
+        p.appendChild(span2);
+        div.appendChild(p);
+        root.appendChild(div);
+        const matcher = new Matcher('div > p > span', root);
+        matcher._prepare();
+        matcher._collectNodes('all');
+        const res = matcher._matchNodes('all');
+        assert.deepEqual([...res], [
+          span,
+          span2
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const root = document.createElement('div');
+        const div = document.createElement('div');
+        const p = document.createElement('p');
+        const span = document.createElement('span');
+        const span2 = document.createElement('span');
+        p.appendChild(span);
+        p.appendChild(span2);
+        div.appendChild(p);
+        root.appendChild(div);
+        const matcher = new Matcher('div > p > span', root);
+        matcher._prepare();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
+        assert.deepEqual([...res], [
+          span
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const root = document.createElement('div');
+        const div = document.createElement('div');
+        const p = document.createElement('p');
+        const span = document.createElement('span');
+        const span2 = document.createElement('span');
+        p.appendChild(span);
+        p.appendChild(span2);
+        div.appendChild(p);
+        root.appendChild(div);
+        const matcher = new Matcher('div > div > span', root);
+        matcher._prepare();
+        matcher._collectNodes('all');
+        const res = matcher._matchNodes('all');
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const root = document.createElement('div');
+        const div = document.createElement('div');
+        const p = document.createElement('p');
+        const span = document.createElement('span');
+        const span2 = document.createElement('span');
+        p.appendChild(span);
+        p.appendChild(span2);
+        div.appendChild(p);
+        root.appendChild(div);
+        const matcher = new Matcher('div > div > span', root);
+        matcher._prepare();
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [], 'result');
       });
     });

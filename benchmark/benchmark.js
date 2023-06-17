@@ -10,6 +10,7 @@ const { name: packageName, version } = require('../package.json');
 const {
   closest, matches, querySelector, querySelectorAll
 } = require('../src/index.js');
+const { matchCombinator } = require('../src/js/matcher.js');
 const { parseSelector, walkAST } = require('../src/js/parser.js');
 
 const selector = '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
@@ -160,6 +161,24 @@ const htmlCollectionForOf = () => {
   }
 };
 
+const symbolIterator = () => {
+  const items = [...document.getElementsByTagName('*')].values();
+  let item = items.next().value;
+  const nodes = new Set();
+  while (item) {
+    nodes.add(item);
+    item = items.next().value;
+  }
+};
+
+const symbolIteratorForOf = () => {
+  const items = [...document.getElementsByTagName('*')].values();
+  const nodes = new Set();
+  for (const item of items) {
+    nodes.add(item);
+  }
+};
+
 const forLoop = () => {
   const [...items] = document.getElementsByTagName('*');
   const l = items.length;
@@ -202,6 +221,25 @@ const setForOf = () => {
   }
 };
 
+/* match combinator test */
+const matchCombo = filter => {
+  const combo = {
+    name: ' ',
+    type: 'Combinator'
+  };
+  if (filter === 'prev') {
+    const prevNodes = new Set([...document.getElementsByClassName('box')]);
+    const nextNodes = new Set([docDiv]);
+    matchCombinator(combo, prevNodes, nextNodes, {
+      filter
+    });
+  } else {
+    const prevNodes = new Set([docBox]);
+    const nextNodes = new Set([...document.getElementsByClassName('div')]);
+    matchCombinator(combo, prevNodes, nextNodes);
+  }
+};
+
 /* matcher tests */
 const elementMatches = (type, api) => {
   let box;
@@ -224,8 +262,10 @@ const elementMatches = (type, api) => {
     }
   }
   const selectors = new Map([
+    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
+    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -266,8 +306,10 @@ const elementClosest = (type, api) => {
     }
   }
   const selectors = new Map([
+    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
+    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -304,8 +346,10 @@ const refPointQuerySelector = (type, api) => {
     }
   }
   const selectors = [
+    /*
     '.box .div',
     '.box ~ .box',
+    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
@@ -334,8 +378,10 @@ const refPointQuerySelectorAll = (type, api) => {
     }
   }
   const selectors = [
+    /*
     '.box .div',
     '.box ~ .box',
+    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
@@ -351,18 +397,30 @@ const suite = new Benchmark.Suite();
 
 suite.on('start', () => {
   console.log(`benchmark ${packageName} v${version}`);
-}).add('tree walker', () => {
-  treeWalker();
-}).add('tree walker with function', () => {
-  treeWalkerWithFn();
+}).add('parser parseSelector', () => {
+  parserParseSelector();
+}).add('parser walkAST', () => {
+  parserWalkAST();
+}).add('match combinator - prev', () => {
+  matchCombo('prev');
+}).add('match combinator - next', () => {
+  matchCombo('next');
 }).add('node iterator', () => {
   nodeIterator();
-}).add('node iterator with function', () => {
+}).add('node iterator with filter function', () => {
   nodeIteratorWithFn();
+}).add('tree walker', () => {
+  treeWalker();
+}).add('tree walker with filter function', () => {
+  treeWalkerWithFn();
 }).add('html collection', () => {
   htmlCollection();
 }).add('html collection for of', () => {
   htmlCollectionForOf();
+}).add('symbol iterator', () => {
+  symbolIterator();
+}).add('symbol iterator for of', () => {
+  symbolIteratorForOf();
 }).add('for loop', () => {
   forLoop();
 }).add('for of loop', () => {
@@ -373,10 +431,6 @@ suite.on('start', () => {
   setForOf();
 }).add('set forEach', () => {
   setForEach();
-}).add('parser parseSelector', () => {
-  parserParseSelector();
-}).add('parser walkAST', () => {
-  parserWalkAST();
 }).add('dom-selector matches - document', () => {
   elementMatches('document');
 }).add('jsdom matches - document', () => {

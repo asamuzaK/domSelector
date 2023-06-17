@@ -3280,8 +3280,8 @@ describe('jsdom issues tagged with `selectors` label', () => {
     const domStr = `<!DOCTYPE html>
     <html>
       <body>
-        <div>
-          <p><span>hello</span></p>
+        <div id="d1">
+          <p id="p1"><span id="s1">hello</span></p>
           <p id="p2">hey</p>
           <div id="d2">div</div>
         </div>
@@ -3303,32 +3303,32 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
 
     it('should not match', () => {
-      const div = document.querySelector('div');
-      const p = document.querySelector('p');
+      const div = document.getElementById('d1');
+      const p = document.getElementById('p1');
       assert.deepEqual(div.querySelector(':scope > p'), p, 'result');
       assert.isNull(div.querySelector(':scope > span'), 'result');
     });
 
     it('should get matched node(s)', () => {
-      const div = document.querySelector('div');
-      const p = document.querySelector('p');
-      const p2 = document.querySelector('#p2');
+      const div = document.getElementById('d1');
+      const p = document.getElementById('p1');
+      const p2 = document.getElementById('p2');
       assert.deepEqual(div.querySelectorAll(':scope > p'), [p, p2], 'result');
       assert.deepEqual(div.querySelectorAll(':scope > span'), [], 'result');
     });
 
     it('should get matched node', () => {
-      const div = document.querySelector('div');
-      const p = document.querySelector('p');
+      const div = document.getElementById('d1');
+      const p = document.getElementById('p1');
       assert.deepEqual(div.querySelector(':scope > p, :scope > div'), p,
         'result');
     });
 
     it('should get matched node', () => {
-      const div = document.querySelector('div');
-      const div2 = document.querySelector('#d2');
-      const p = document.querySelector('p');
-      const p2 = document.querySelector('#p2');
+      const div = document.getElementById('d1');
+      const div2 = document.getElementById('d2');
+      const p = document.getElementById('p1');
+      const p2 = document.getElementById('p2');
       assert.deepEqual(div.querySelectorAll(':scope > p, :scope > div'),
         [p, p2, div2], 'result');
     });
