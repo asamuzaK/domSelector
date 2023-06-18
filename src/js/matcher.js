@@ -91,9 +91,9 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
 };
 
 /**
- * node is descendant of root node
+ * node is same or descendant of the root node
  * @param {object} node - Element node
- * @param {object} root - Element node
+ * @param {object} root - Document, DocumentFragment, Element node
  * @returns {boolean} - result
  */
 const isDescendant = (node = {}, root = {}) => {
@@ -101,7 +101,7 @@ const isDescendant = (node = {}, root = {}) => {
   let res;
   if (nodeType === ELEMENT_NODE && ownerDocument) {
     if (!root || root.nodeType !== ELEMENT_NODE) {
-      root = ownerDocument.documentElement;
+      root = ownerDocument;
     }
     if (node === root) {
       res = true;
