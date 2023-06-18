@@ -3,14 +3,15 @@ export class Matcher {
         warn?: boolean;
     });
     _onError(e: Error): void;
-    _getRoot(node: object): object;
-    _prepare(): any[];
+    _getRoot(node?: object): object;
+    _prepare(selector?: string): any[];
     _matchSelector(ast: object, node: object): object;
-    _findNodes(twig: object): object;
+    _matchLeaves(leaves: object, node: object): boolean;
+    _findNodes(twig: object, range: string): object;
     _collectNodes(range: string): any[];
-    _matchNodes(): object;
+    _matchNodes(range: string): object;
     _find(range: string): object;
-    _sortNodes(nodes: object, range: string): object;
+    _sortNodes(nodes: object): any[];
     matches(): boolean;
     closest(): object | null;
     querySelector(): object | null;
@@ -29,14 +30,15 @@ export function collectNthOfType(anb?: {
     reverse?: boolean;
 }, node?: object): object;
 export function createSelectorForNode(node?: object): string | null;
-export function factorial(n: number): number;
 export function isContentEditable(node?: object): boolean;
 export function isDescendant(node?: object, root?: object): boolean;
 export function isNamespaceDeclared(ns?: string, node?: object): boolean;
 export function matchAnPlusB(nthName: string, ast?: object, node?: object): object;
 export function matchAttributeSelector(ast?: object, node?: object): object | null;
 export function matchClassSelector(ast?: object, node?: object): object | null;
-export function matchCombinator(combo?: object, prevNodes?: object, nextNodes?: object): object;
+export function matchCombinator(combo?: object, prevNodes?: object, nextNodes?: object, opt?: {
+    filter?: string;
+}): object;
 export function matchDirectionPseudoClass(ast?: object, node?: object): object | null;
 export function matchIDSelector(ast?: object, node?: object): object | null;
 export function matchLanguagePseudoClass(ast?: object, node?: object): object | null;
