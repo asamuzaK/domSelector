@@ -488,7 +488,6 @@ const suite = new Benchmark.Suite();
 
 suite.on('start', () => {
   console.log(`benchmark ${packageName} v${version}`);
-/*
 }).add('parser parseSelector', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {
@@ -523,7 +522,6 @@ suite.on('start', () => {
   setForOf();
 }).add('set forEach', () => {
   setForEach();
-*/
 }).add('dom-selector matches - document', () => {
   elementMatches('document');
 }).add('jsdom matches - document', () => {
