@@ -132,37 +132,6 @@ const linkeDocBox = linkeDoc.getElementById(`box${x - 1}`);
 const linkeDocDiv = linkeDoc.getElementById(`div${x - 1}-${y - 1}`);
 
 /* loop tests */
-const treeWalker = () => {
-  const walker = document.createTreeWalker(document, 1);
-  let nextNode = walker.nextNode();
-  const nodes = new Set();
-  while (nextNode) {
-    if (nextNode.nodeType === 1) {
-      nodes.add(nextNode);
-    }
-    nextNode = walker.nextNode();
-  }
-};
-
-const treeWalkerWithFn = () => {
-  const walker = document.createTreeWalker(document, 1, n => {
-    const m = n.nodeType === 1;
-    let res;
-    if (m) {
-      res = 1;
-    } else {
-      res = 2;
-    }
-    return res;
-  });
-  let nextNode = walker.nextNode();
-  const nodes = new Set();
-  while (nextNode) {
-    nodes.add(nextNode);
-    nextNode = walker.nextNode();
-  }
-};
-
 const nodeIterator = () => {
   const iterator = document.createNodeIterator(document, 1);
   let nextNode = iterator.nextNode();
@@ -191,6 +160,37 @@ const nodeIteratorWithFn = () => {
   while (nextNode) {
     nodes.add(nextNode);
     nextNode = iterator.nextNode();
+  }
+};
+
+const treeWalker = () => {
+  const walker = document.createTreeWalker(document, 1);
+  let nextNode = walker.nextNode();
+  const nodes = new Set();
+  while (nextNode) {
+    if (nextNode.nodeType === 1) {
+      nodes.add(nextNode);
+    }
+    nextNode = walker.nextNode();
+  }
+};
+
+const treeWalkerWithFn = () => {
+  const walker = document.createTreeWalker(document, 1, n => {
+    const m = n.nodeType === 1;
+    let res;
+    if (m) {
+      res = 1;
+    } else {
+      res = 2;
+    }
+    return res;
+  });
+  let nextNode = walker.nextNode();
+  const nodes = new Set();
+  while (nextNode) {
+    nodes.add(nextNode);
+    nextNode = walker.nextNode();
   }
 };
 
