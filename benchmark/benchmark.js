@@ -6,6 +6,7 @@
 /* import */
 const Benchmark = require('benchmark');
 const { JSDOM } = require('jsdom');
+const { parseHTML } = require('linkedom');
 const { name: packageName, version } = require('../package.json');
 const {
   closest, matches, querySelector, querySelectorAll
@@ -79,6 +80,56 @@ elmRoot.append(document.body.removeChild(elmContainer));
 document.body.append(container);
 const docBox = document.getElementById(`box${x - 1}`);
 const docDiv = document.getElementById(`div${x - 1}-${y - 1}`);
+
+/* linkeDOM */
+const {
+  document: linkeDoc
+} = parseHTML('<!doctype html><html><head></head><body></body></html>');
+
+const linkeXyFrag = linkeDoc.createDocumentFragment();
+for (let i = 0; i < x; i++) {
+  const xNode = linkeDoc.createElement('div');
+  xNode.id = `box${i}`;
+  xNode.classList.add('box');
+  linkeXyFrag.appendChild(xNode);
+  const yFrag = linkeDoc.createDocumentFragment();
+  for (let j = 0; j < y; j++) {
+    const yNode = linkeDoc.createElement('div');
+    yNode.id = `div${i}-${j}`;
+    if (j === 0) {
+      yFrag.appendChild(yNode);
+    } else if (j === y - 1) {
+      yNode.classList.add('div');
+      yNode.textContent = `${i}-${j}`;
+      yFrag.appendChild(yNode);
+      xNode.appendChild(yFrag);
+    } else {
+      const parent = yFrag.getElementById(`div${i}-${j - 1}`);
+      parent.appendChild(yNode);
+    }
+  }
+}
+
+const linkeContainer = linkeDoc.createElement('div');
+linkeContainer.classList.add('box-container');
+linkeContainer.appendChild(linkeXyFrag);
+
+const linkeFragContainer = linkeContainer.cloneNode(true);
+const linkeFragment = linkeDoc.createDocumentFragment();
+linkeFragment.append(linkeFragContainer);
+const linkeFragBox = linkeFragment.getElementById(`box${x - 1}`);
+const linkeFragDiv = linkeFragment.getElementById(`div${x - 1}-${y - 1}`);
+
+const linkElmContainer = linkeContainer.cloneNode(true);
+linkeDoc.body.append(linkElmContainer);
+const linkeElmBox = linkeDoc.getElementById(`box${x - 1}`);
+const linkeElmDiv = linkeDoc.getElementById(`div${x - 1}-${y - 1}`);
+const linkeElmRoot = linkeDoc.createElement('div');
+linkeElmRoot.append(linkeDoc.body.removeChild(linkElmContainer));
+
+linkeDoc.body.append(linkeContainer);
+const linkeDocBox = linkeDoc.getElementById(`box${x - 1}`);
+const linkeDocDiv = linkeDoc.getElementById(`div${x - 1}-${y - 1}`);
 
 /* loop tests */
 const treeWalker = () => {
@@ -244,21 +295,29 @@ const matchCombo = filter => {
 const elementMatches = (type, api) => {
   let box;
   let div;
+  let linkeBox;
+  let linkeDiv;
   switch (type) {
     case 'document': {
       box = docBox;
       div = docDiv;
+      linkeBox = linkeDocBox;
+      linkeDiv = linkeDocDiv;
       break;
     }
     case 'fragment': {
       box = fragBox;
       div = fragDiv;
+      linkeBox = linkeFragBox;
+      linkeDiv = linkeFragDiv;
       break;
     }
     case 'element':
     default: {
       box = elmBox;
       div = elmDiv;
+      linkeBox = linkeElmBox;
+      linkeDiv = linkeElmDiv;
     }
   }
   const selectors = new Map([
@@ -275,6 +334,12 @@ const elementMatches = (type, api) => {
       } else if (value === 'div') {
         div.matches(key);
       }
+    } else if (api === 'linkedom') {
+      if (value === 'box') {
+        linkeBox.matches(key);
+      } else if (value === 'div') {
+        linkeDiv.matches(key);
+      }
     } else {
       if (value === 'box') {
         matches(key, box);
@@ -288,21 +353,29 @@ const elementMatches = (type, api) => {
 const elementClosest = (type, api) => {
   let box;
   let div;
+  let linkeBox;
+  let linkeDiv;
   switch (type) {
     case 'document': {
       box = docBox;
       div = docDiv;
+      linkeBox = linkeDocBox;
+      linkeDiv = linkeDocDiv;
       break;
     }
     case 'fragment': {
       box = fragBox;
       div = fragDiv;
+      linkeBox = linkeFragBox;
+      linkeDiv = linkeFragDiv;
       break;
     }
     case 'element':
     default: {
       box = elmBox;
       div = elmDiv;
+      linkeBox = linkeElmBox;
+      linkeDiv = linkeElmDiv;
     }
   }
   const selectors = new Map([
@@ -319,6 +392,12 @@ const elementClosest = (type, api) => {
       } else if (value === 'div') {
         div.closest(key);
       }
+    } else if (api === 'linkedom') {
+      if (value === 'box') {
+        linkeBox.closest(key);
+      } else if (value === 'div') {
+        linkeDiv.closest(key);
+      }
     } else {
       if (value === 'box') {
         closest(key, box);
@@ -331,18 +410,22 @@ const elementClosest = (type, api) => {
 
 const refPointQuerySelector = (type, api) => {
   let refPoint;
+  let linkeRefPoint;
   switch (type) {
     case 'document': {
       refPoint = document;
+      linkeRefPoint = linkeDoc;
       break;
     }
     case 'fragment': {
       refPoint = fragment;
+      linkeRefPoint = linkeFragment;
       break;
     }
     case 'element':
     default: {
       refPoint = elmRoot;
+      linkeRefPoint = linkeElmRoot;
     }
   }
   const selectors = [
@@ -355,6 +438,8 @@ const refPointQuerySelector = (type, api) => {
   for (const selector of selectors) {
     if (api === 'jsdom') {
       refPoint.querySelector(selector);
+    } else if (api === 'linkedom') {
+      linkeRefPoint.querySelector(selector);
     } else {
       querySelector(selector, refPoint);
     }
@@ -363,18 +448,22 @@ const refPointQuerySelector = (type, api) => {
 
 const refPointQuerySelectorAll = (type, api) => {
   let refPoint;
+  let linkeRefPoint;
   switch (type) {
     case 'document': {
       refPoint = document;
+      linkeRefPoint = linkeDoc;
       break;
     }
     case 'fragment': {
       refPoint = fragment;
+      linkeRefPoint = linkeFragment;
       break;
     }
     case 'element':
     default: {
       refPoint = elmRoot;
+      linkeRefPoint = linkeElmRoot;
     }
   }
   const selectors = [
@@ -387,6 +476,8 @@ const refPointQuerySelectorAll = (type, api) => {
   for (const selector of selectors) {
     if (api === 'jsdom') {
       refPoint.querySelectorAll(selector);
+    } else if (api === 'linkedom') {
+      linkeRefPoint.querySelectorAll(selector);
     } else {
       querySelectorAll(selector, refPoint);
     }
@@ -397,6 +488,7 @@ const suite = new Benchmark.Suite();
 
 suite.on('start', () => {
   console.log(`benchmark ${packageName} v${version}`);
+/*
 }).add('parser parseSelector', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {
@@ -431,54 +523,79 @@ suite.on('start', () => {
   setForOf();
 }).add('set forEach', () => {
   setForEach();
+*/
 }).add('dom-selector matches - document', () => {
   elementMatches('document');
 }).add('jsdom matches - document', () => {
   elementMatches('document', 'jsdom');
+}).add('linkedom matches - document', () => {
+  elementMatches('document', 'linkedom');
 }).add('dom-selector matches - fragment', () => {
   elementMatches('fragment');
 }).add('jsdom matches - fragment', () => {
   elementMatches('fragment', 'jsdom');
+}).add('linkedom matches - fragment', () => {
+  elementMatches('fragment', 'linkedom');
 }).add('dom-selector matches - element', () => {
   elementMatches('element');
 }).add('jsdom matches - element', () => {
   elementMatches('element', 'jsdom');
+}).add('linkedom matches - element', () => {
+  elementMatches('element', 'linkedom');
 }).add('dom-selector closest - document', () => {
   elementClosest('document');
 }).add('jsdom closest - document', () => {
   elementClosest('document', 'jsdom');
+}).add('linkedom closest - document', () => {
+  elementClosest('document', 'linkedom');
 }).add('dom-selector closest - fragment', () => {
   elementClosest('fragment');
 }).add('jsdom closest - fragment', () => {
   elementClosest('fragment', 'jsdom');
+}).add('linkedom closest - fragment', () => {
+  elementClosest('fragment', 'linkedom');
 }).add('dom-selector closest - element', () => {
   elementClosest('element');
 }).add('jsdom closest - element', () => {
   elementClosest('element', 'jsdom');
+}).add('linkedom closest - element', () => {
+  elementClosest('element', 'linkedom');
 }).add('dom-selector querySelector - document', () => {
   refPointQuerySelector('document');
 }).add('jsdom querySelector - document', () => {
   refPointQuerySelector('document', 'jsdom');
+}).add('linkedom querySelector - document', () => {
+  refPointQuerySelector('document', 'linkedom');
 }).add('dom-selector querySelector - fragment', () => {
   refPointQuerySelector('fragment');
 }).add('jsdom querySelector - fragment', () => {
   refPointQuerySelector('fragment', 'jsdom');
+}).add('linkedom querySelector - fragment', () => {
+  refPointQuerySelector('fragment', 'linkedom');
 }).add('dom-selector querySelector - element', () => {
   refPointQuerySelector('element');
 }).add('jsdom querySelector - element', () => {
   refPointQuerySelector('element', 'jsdom');
+}).add('linkedom querySelector - element', () => {
+  refPointQuerySelector('element', 'linkedom');
 }).add('dom-selector querySelectorAll - document', () => {
   refPointQuerySelectorAll('document');
 }).add('jsdom querySelectorAll - document', () => {
   refPointQuerySelectorAll('document', 'jsdom');
+}).add('linkedom querySelectorAll - document', () => {
+  refPointQuerySelectorAll('document', 'linkedom');
 }).add('dom-selector querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment');
 }).add('jsdom querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment', 'jsdom');
+}).add('linkedom querySelectorAll - fragment', () => {
+  refPointQuerySelectorAll('fragment', 'linkedom');
 }).add('dom-selector querySelectorAll - element', () => {
   refPointQuerySelectorAll('element');
 }).add('jsdom querySelectorAll - element', () => {
   refPointQuerySelectorAll('element', 'jsdom');
+}).add('linkedom querySelectorAll - element', () => {
+  refPointQuerySelectorAll('element', 'linkedom');
 }).on('cycle', evt => {
   console.log(`* ${String(evt.target)}`);
 }).run({

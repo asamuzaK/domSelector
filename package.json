@@ -33,6 +33,7 @@
     "eslint-plugin-regexp": "^1.15.0",
     "eslint-plugin-unicorn": "^47.0.0",
     "jsdom": "^22.1.0",
+    "linkedom": "^0.14.26",
     "mocha": "^10.2.0",
     "nwsapi": "^2.2.5",
     "sinon": "^15.1.2",
