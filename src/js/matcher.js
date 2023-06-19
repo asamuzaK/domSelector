@@ -1984,7 +1984,7 @@ class Matcher {
           if (bool) {
             node = this.#node;
           }
-        } else if (range === 'parent') {
+        } else if (range === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode);
@@ -2018,7 +2018,7 @@ class Matcher {
               this.#node.classList.contains(leafName)) {
             arr.push(this.#node);
           }
-        } else if (range === 'parent') {
+        } else if (range === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
@@ -2076,7 +2076,7 @@ class Matcher {
             if (bool) {
               arr.push(this.#node);
             }
-          } else if (range === 'parent') {
+          } else if (range === 'lineal') {
             let refNode = this.#node;
             while (refNode) {
               if (refNode.nodeType === ELEMENT_NODE) {
@@ -2131,7 +2131,7 @@ class Matcher {
           if (bool) {
             arr.push(this.#node);
           }
-        } else if (range === 'parent') {
+        } else if (range === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode); ;
@@ -2421,7 +2421,7 @@ class Matcher {
   closest() {
     let res;
     try {
-      const nodes = this._find('parent');
+      const nodes = this._find('lineal');
       let node = this.#node;
       while (node) {
         if (nodes.has(node)) {
