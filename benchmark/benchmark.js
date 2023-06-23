@@ -11,7 +11,6 @@ const { name: packageName, version } = require('../package.json');
 const {
   closest, matches, querySelector, querySelectorAll
 } = require('../src/index.js');
-const { matchCombinator } = require('../src/js/matcher.js');
 const { parseSelector, walkAST } = require('../src/js/parser.js');
 
 const selector = '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
@@ -131,6 +130,8 @@ linkeDoc.body.append(linkeContainer);
 const linkeDocBox = linkeDoc.getElementById(`box${x - 1}`);
 const linkeDocDiv = linkeDoc.getElementById(`div${x - 1}-${y - 1}`);
 
+const randomId = `box${Math.floor(Math.random() * x)}`;
+
 /* loop tests */
 const nodeIterator = () => {
   const iterator = document.createNodeIterator(document, 1);
@@ -192,6 +193,21 @@ const treeWalkerWithFn = () => {
     nodes.add(nextNode);
     nextNode = walker.nextNode();
   }
+};
+
+const getElementById = (id) => {
+  const nodes = new Set();
+  nodes.add(document.getElementById(id));
+};
+
+const getElementsByClassName = (name) => {
+  const nodes = new Set();
+  nodes.add(document.getElementsByClassName(name));
+};
+
+const getElementsByTagName = (name) => {
+  const nodes = new Set();
+  nodes.add(document.getElementsByTagName(name));
 };
 
 const htmlCollection = () => {
@@ -272,25 +288,6 @@ const setForOf = () => {
   }
 };
 
-/* match combinator test */
-const matchCombo = filter => {
-  const combo = {
-    name: ' ',
-    type: 'Combinator'
-  };
-  if (filter === 'prev') {
-    const prevNodes = new Set([...document.getElementsByClassName('box')]);
-    const nextNodes = new Set([docDiv]);
-    matchCombinator(combo, prevNodes, nextNodes, {
-      filter
-    });
-  } else {
-    const prevNodes = new Set([docBox]);
-    const nextNodes = new Set([...document.getElementsByClassName('div')]);
-    matchCombinator(combo, prevNodes, nextNodes);
-  }
-};
-
 /* matcher tests */
 const elementMatches = (type, api) => {
   let box;
@@ -321,10 +318,8 @@ const elementMatches = (type, api) => {
     }
   }
   const selectors = new Map([
-    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
-    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -379,10 +374,8 @@ const elementClosest = (type, api) => {
     }
   }
   const selectors = new Map([
-    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
-    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -429,10 +422,8 @@ const refPointQuerySelector = (type, api) => {
     }
   }
   const selectors = [
-    /*
     '.box .div',
     '.box ~ .box',
-    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
@@ -467,10 +458,8 @@ const refPointQuerySelectorAll = (type, api) => {
     }
   }
   const selectors = [
-    /*
     '.box .div',
     '.box ~ .box',
-    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
@@ -492,10 +481,6 @@ suite.on('start', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {
   parserWalkAST();
-}).add('match combinator - prev', () => {
-  matchCombo('prev');
-}).add('match combinator - next', () => {
-  matchCombo('next');
 }).add('node iterator', () => {
   nodeIterator();
 }).add('node iterator with filter function', () => {
@@ -504,6 +489,14 @@ suite.on('start', () => {
   treeWalker();
 }).add('tree walker with filter function', () => {
   treeWalkerWithFn();
+}).add('getElementById', () => {
+  getElementById(randomId);
+}).add('getElementsByClassName', () => {
+  getElementsByClassName('div');
+}).add('getElementsByTagName - div', () => {
+  getElementsByTagName('div');
+}).add('getElementsByTagName - *', () => {
+  getElementsByTagName('*');
 }).add('html collection', () => {
   htmlCollection();
 }).add('html collection for of', () => {
