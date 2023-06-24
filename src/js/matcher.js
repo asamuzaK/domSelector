@@ -232,6 +232,7 @@ class Matcher {
   #node;
   #root;
   #selector;
+  #sort;
   #warn;
 
   /**
@@ -239,13 +240,15 @@ class Matcher {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
+   * @param {boolean} [opt.sort] - sort results of querySelectorAll()
    * @param {boolean} [opt.warn] - console warn
    */
   constructor(selector, node, opt = {}) {
-    const { warn } = opt;
+    const { sort, warn } = opt;
     this.#node = node;
     this.#root = this._getRoot(node);
     this.#selector = selector;
+    this.#sort = !!sort;
     this.#warn = !!warn;
     this._prepare(selector);
   }
@@ -2458,7 +2461,7 @@ class Matcher {
     try {
       const nodes = this._find('all');
       nodes.delete(this.#node);
-      if (nodes.size > 1) {
+      if (nodes.size > 1 && this.#sort) {
         res.push(...this._sortNodes(nodes));
       } else if (nodes.size) {
         res.push(...nodes);

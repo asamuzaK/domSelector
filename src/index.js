@@ -14,7 +14,7 @@ const { Matcher } = require('./js/matcher.js');
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
- * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
+ * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {boolean} - result
  */
 const matches = (selector, node, opt) =>
@@ -25,7 +25,7 @@ const matches = (selector, node, opt) =>
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
- * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
+ * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 const closest = (selector, node, opt) =>
@@ -36,7 +36,7 @@ const closest = (selector, node, opt) =>
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document, DocumentFragment or Element node
  * @param {object} [opt] - options
- * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
+ * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 const querySelector = (selector, refPoint, opt) =>
@@ -48,7 +48,8 @@ const querySelector = (selector, refPoint, opt) =>
  * @param {string} selector - CSS selector
  * @param {object} refPoint - Document, DocumentFragment or Element node
  * @param {object} [opt] - options
- * @param {object} [opt.warn] - console warn e.g. unsupported pseudo-class
+ * @param {boolean} [opt.sort] - sort matched nodes
+ * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
 const querySelectorAll = (selector, refPoint, opt) =>
