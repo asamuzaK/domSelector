@@ -13,6 +13,12 @@ const {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, ID_SELECTOR,
   PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, TYPE_SELECTOR
 } = require('./constant.js');
+const BIT_ATTRIBUTE_SELECTOR = 16;
+const BIT_CLASS_SELECTOR = 2;
+const BIT_ID_SELECTOR = 4;
+const BIT_PSEUDO_CLASS_SELECTOR = 32;
+const BIT_PSEUDO_ELEMENT_SELECTOR = 1;
+const BIT_TYPE_SELECTOR = 8;
 const DOCUMENT_NODE = 9;
 const DOCUMENT_FRAGMENT_NODE = 11;
 const DOCUMENT_POSITION_CONTAINED_BY = 16;
@@ -301,6 +307,39 @@ class Matcher {
   }
 
   /**
+   * sort AST leaves
+   * @param {object} leaves - leaves
+   * @returns {Array} - sorted leaves
+   */
+  _sortLeaves(leaves) {
+    const arr = [...leaves];
+    const bitMap = new Map([
+      [ATTRIBUTE_SELECTOR, BIT_ATTRIBUTE_SELECTOR],
+      [CLASS_SELECTOR, BIT_CLASS_SELECTOR],
+      [ID_SELECTOR, BIT_ID_SELECTOR],
+      [PSEUDO_CLASS_SELECTOR, BIT_PSEUDO_CLASS_SELECTOR],
+      [PSEUDO_ELEMENT_SELECTOR, BIT_PSEUDO_ELEMENT_SELECTOR],
+      [TYPE_SELECTOR, BIT_TYPE_SELECTOR]
+    ]);
+    arr.sort((a, b) => {
+      const { type: typeA } = a;
+      const { type: typeB } = b;
+      const bitA = bitMap.get(typeA);
+      const bitB = bitMap.get(typeB);
+      let res;
+      if (bitA === bitB) {
+        res = 0;
+      } else if (bitA > bitB) {
+        res = 1;
+      } else {
+        res = -1;
+      }
+      return res;
+    });
+    return arr;
+  }
+
+  /**
    * prepare list and matrix
    * @param {string} selector - CSS selector
    * @returns {Array} - list and matrix
@@ -326,7 +365,7 @@ class Matcher {
             }
             branch.push({
               combo: item,
-              leaves: [...leaves]
+              leaves: this._sortLeaves(leaves)
             });
             leaves.clear();
           } else if (item) {
@@ -337,7 +376,7 @@ class Matcher {
           } else {
             branch.push({
               combo: null,
-              leaves: [...leaves]
+              leaves: this._sortLeaves(leaves)
             });
             leaves.clear();
             break;
@@ -2031,6 +2070,9 @@ class Matcher {
         }
         break;
       }
+      case PSEUDO_ELEMENT_SELECTOR: {
+        break;
+      }
       default: {
         const arr = [];
         if (range === 'self') {
@@ -2078,13 +2120,13 @@ class Matcher {
    */
   _collectNodes(range) {
     const pendingItems = new Set();
-    if (range === 'all') {
-      const listIterator = this.#list.values();
-      let i = 0;
-      for (const list of listIterator) {
-        const { branch } = list;
-        const branchLen = branch.length;
-        const lastIndex = branchLen - 1;
+    const listIterator = this.#list.values();
+    let i = 0;
+    for (const list of listIterator) {
+      const { branch } = list;
+      const branchLen = branch.length;
+      const lastIndex = branchLen - 1;
+      if (range === 'all') {
         for (let j = 0; j < branchLen; j++) {
           const twig = branch[j];
           const { nodes, pending } =
@@ -2101,15 +2143,7 @@ class Matcher {
             this.#list[i].skip = true;
           }
         }
-        i++;
-      }
-    } else {
-      const listIterator = this.#list.values();
-      let i = 0;
-      for (const list of listIterator) {
-        const { branch } = list;
-        const branchLen = branch.length;
-        const lastIndex = branchLen - 1;
+      } else {
         const twig = branch[lastIndex];
         const { nodes, pending } = this._findNodes(twig, range);
         if (nodes.size) {
@@ -2123,8 +2157,8 @@ class Matcher {
         } else {
           this.#list[i].skip = true;
         }
-        i++;
       }
+      i++;
     }
     if (pendingItems.size) {
       const { document, root } = this.#root;
@@ -2259,70 +2293,68 @@ class Matcher {
           } else {
             nodes = matched;
           }
-        } else {
-          if (range === 'all') {
-            let { combo } = branch[0];
-            let prevNodes = this.#matrix[i][0];
-            for (let j = 1; j < branchLen; j++) {
-              const nextNodes = this.#matrix[i][j];
-              const matched = this._matchCombo(combo, prevNodes, nextNodes);
-              if (matched.size) {
-                if (j === lastIndex) {
-                  if (this.#node.nodeType === ELEMENT_NODE) {
-                    for (const node of matched) {
-                      if (isDescendant(node, this.#node)) {
-                        nodes.add(node);
-                      }
+        } else if (range === 'all') {
+          let { combo } = branch[0];
+          let prevNodes = this.#matrix[i][0];
+          for (let j = 1; j < branchLen; j++) {
+            const nextNodes = this.#matrix[i][j];
+            const matched = this._matchCombo(combo, prevNodes, nextNodes);
+            if (matched.size) {
+              if (j === lastIndex) {
+                if (this.#node.nodeType === ELEMENT_NODE) {
+                  for (const node of matched) {
+                    if (isDescendant(node, this.#node)) {
+                      nodes.add(node);
                     }
-                  } else if (nodes.size) {
-                    const arr = [...nodes].concat([...matched]);
-                    nodes = new Set(arr);
+                  }
+                } else if (nodes.size) {
+                  const arr = [...nodes].concat([...matched]);
+                  nodes = new Set(arr);
+                } else {
+                  nodes = matched;
+                }
+              } else {
+                const { combo: nextCombo } = branch[j];
+                combo = nextCombo;
+                prevNodes = matched;
+              }
+            } else {
+              break;
+            }
+          }
+        } else {
+          const startNodes = this.#matrix[i][lastIndex];
+          for (const node of startNodes) {
+            let matched = new Set();
+            let nextNodes = new Set([node]);
+            for (let j = lastIndex - 1; j >= 0; j--) {
+              const twig = branch[j];
+              for (const nextNode of nextNodes) {
+                matched = this._matchTwig(twig, nextNode, {
+                  filter: 'prev'
+                });
+              }
+              if (matched.size) {
+                if (j === 0) {
+                  if (range === 'first' &&
+                      this.#node.nodeType === ELEMENT_NODE) {
+                    if (isDescendant(node, this.#node)) {
+                      nodes.add(node);
+                      break;
+                    }
                   } else {
-                    nodes = matched;
+                    nodes.add(node);
+                    break;
                   }
                 } else {
-                  const { combo: nextCombo } = branch[j];
-                  combo = nextCombo;
-                  prevNodes = matched;
+                  nextNodes = matched;
                 }
               } else {
                 break;
               }
             }
-          } else {
-            const startNodes = this.#matrix[i][lastIndex];
-            for (const node of startNodes) {
-              let matched = new Set();
-              let nextNodes = new Set([node]);
-              for (let j = lastIndex - 1; j >= 0; j--) {
-                const twig = branch[j];
-                for (const nextNode of nextNodes) {
-                  matched = this._matchTwig(twig, nextNode, {
-                    filter: 'prev'
-                  });
-                }
-                if (matched.size) {
-                  if (j === 0) {
-                    if (range === 'first' &&
-                        this.#node.nodeType === ELEMENT_NODE) {
-                      if (isDescendant(node, this.#node)) {
-                        nodes.add(node);
-                        break;
-                      }
-                    } else {
-                      nodes.add(node);
-                      break;
-                    }
-                  } else {
-                    nextNodes = matched;
-                  }
-                } else {
-                  break;
-                }
-              }
-              if (matched.size) {
-                break;
-              }
+            if (matched.size) {
+              break;
             }
           }
         }

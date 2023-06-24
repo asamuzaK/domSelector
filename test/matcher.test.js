@@ -637,6 +637,31 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('sort AST leaves', () => {
+      it('should get sorted leaves', () => {
+        const leaves = [
+          { type: ATTRIBUTE_SELECTOR },
+          { type: CLASS_SELECTOR, name: 'foo' },
+          { type: ID_SELECTOR },
+          { type: PSEUDO_CLASS_SELECTOR },
+          { type: CLASS_SELECTOR, name:'bar' },
+          { type: PSEUDO_ELEMENT_SELECTOR },
+          { type: TYPE_SELECTOR }
+        ];
+        const matcher = new Matcher('*', document);
+        const res = matcher._sortLeaves(leaves);
+        assert.deepEqual(res, [
+          { type: PSEUDO_ELEMENT_SELECTOR },
+          { type: CLASS_SELECTOR, name: 'foo' },
+          { type: CLASS_SELECTOR, name: 'bar' },
+          { type: ID_SELECTOR },
+          { type: TYPE_SELECTOR },
+          { type: ATTRIBUTE_SELECTOR },
+          { type: PSEUDO_CLASS_SELECTOR }
+        ], 'result');
+      });
+    });
+
     describe('prepare list and matrix', () => {
       it('should get list and matrix', () => {
         const matcher =
@@ -7700,6 +7725,14 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('find nodes', () => {
+      it('should not match', () => {
+        const matcher = new Matcher('::before', document);
+        const [[{ branch: [twig] }]] = matcher._prepare();
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
       it('should get matched node(s)', () => {
         const matcher = new Matcher('#ul1', document);
         const [[{ branch: [twig] }]] = matcher._prepare();
@@ -8933,12 +8966,6 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('sort nodes', () => {
-      it('should throw', () => {
-        const matcher =
-          new Matcher('li:last-child, li:first-child + li', document);
-        assert.throws(() => matcher._sortNodes(), TypeError);
-      });
-
       it('should get matched node(s)', () => {
         const node1 = document.getElementById('li1');
         const node2 = document.getElementById('li2');
