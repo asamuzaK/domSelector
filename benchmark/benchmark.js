@@ -318,8 +318,10 @@ const elementMatches = (type, api) => {
     }
   }
   const selectors = new Map([
+    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
+    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -374,8 +376,10 @@ const elementClosest = (type, api) => {
     }
   }
   const selectors = new Map([
+    /*
     ['.box .div', 'div'],
     ['.box ~ .box', 'box'],
+    */
     ['.box:first-child ~ .box .div', 'div']
   ]);
   for (const [key, value] of selectors) {
@@ -422,8 +426,10 @@ const refPointQuerySelector = (type, api) => {
     }
   }
   const selectors = [
+    /*
     '.box .div',
     '.box ~ .box',
+    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
@@ -458,8 +464,10 @@ const refPointQuerySelectorAll = (type, api) => {
     }
   }
   const selectors = [
+    /*
     '.box .div',
     '.box ~ .box',
+    */
     '.box:first-child ~ .box .div'
   ];
   for (const selector of selectors) {
