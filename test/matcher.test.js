@@ -644,7 +644,7 @@ describe('match AST leaf and DOM node', () => {
           { type: CLASS_SELECTOR, name: 'foo' },
           { type: ID_SELECTOR },
           { type: PSEUDO_CLASS_SELECTOR },
-          { type: CLASS_SELECTOR, name:'bar' },
+          { type: CLASS_SELECTOR, name: 'bar' },
           { type: PSEUDO_ELEMENT_SELECTOR },
           { type: TYPE_SELECTOR }
         ];

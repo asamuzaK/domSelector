@@ -194,6 +194,36 @@ const parseASTName = (name, node) => {
 
 /**
  * Matcher
+ * NOTE: #list[i] corresponds to #matrix[i]
+ * #list: [
+ *   {
+ *     branch: branch[],
+ *     skip: boolean
+ *   },
+ *   {
+ *     branch: branch[],
+ *     skip: boolean
+ *   }
+ * ]
+ * #matrix: [
+ *   [
+ *     Set([node, node]),
+ *     Set([node, node, node]
+ *     Set([node, node])
+ *   ],
+ *   [
+ *     Set([node, node, node]),
+ *     Set([node, node])
+ *   ]
+ * ]
+ * branch[]: [twig{}, twig{}]
+ * twig{}: {
+ *   combo: leaf{}|null,
+ *   leaves: leaves[]
+ * }
+ * leaves[]: [leaf{}, leaf{}, leaf{}]
+ * leaf{}: AST leaf
+ * node: Element node
  */
 class Matcher {
   /* private fields */
@@ -205,33 +235,6 @@ class Matcher {
   #warn;
 
   /**
-   * NOTE: #list[i] corresponds to #matrix[i]
-   * #list: [
-   *  { branch: branch[], skip: boolean },
-   *  { branch: branch[], skip: boolean }
-   * ]
-   * branch[]: [twig{}, twig{}]
-   * twig{}: {
-   *   combo: leaf{}|null,
-   *   leaves: leaves[]
-   * }
-   * leaves[]: [leaf{}, leaf{}, leaf{}]
-   * leaf{}: AST leaf
-   * #matrix: [
-   *   [
-   *     Set([node, node]),
-   *     Set([node, node, node]
-   *     Set([node, node])
-   *   ],
-   *   [
-   *     Set([node, node, node]),
-   *     Set([node, node])
-   *   ]
-   * ]
-   * node: Element node
-   */
-
-  /**
    * construct
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
@@ -240,11 +243,11 @@ class Matcher {
    */
   constructor(selector, node, opt = {}) {
     const { warn } = opt;
-    [this.#list, this.#matrix] = this._prepare(selector);
     this.#node = node;
     this.#root = this._getRoot(node);
     this.#selector = selector;
     this.#warn = !!warn;
+    this._prepare(selector);
   }
 
   /**
@@ -2187,14 +2190,7 @@ class Matcher {
         if (bool) {
           for (const pendingItem of pendingItems) {
             const { leaves } = pendingItem.get('twig');
-            const leafIterator = leaves.values();
-            let matched;
-            for (const leaf of leafIterator) {
-              matched = this._matchSelector(leaf, nextNode).has(nextNode);
-              if (!matched) {
-                break;
-              }
-            }
+            const matched = this._matchLeaves(leaves, nextNode);
             if (matched) {
               const indexI = pendingItem.get('i');
               const indexJ = pendingItem.get('j');
@@ -2397,7 +2393,7 @@ class Matcher {
 
   /**
    * matches
-   * @returns {boolean} - matched node
+   * @returns {boolean} - matched or not
    */
   matches() {
     let res;
