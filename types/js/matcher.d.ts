@@ -4,6 +4,7 @@ export class Matcher {
     });
     _onError(e: Error): void;
     _getRoot(node?: object): object;
+    _sortLeaves(leaves: object): any[];
     _prepare(selector?: string): any[];
     _collectNthChild(anb: {
         a: number;
