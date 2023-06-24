@@ -2396,7 +2396,7 @@ class Matcher {
 
   /**
    * matches
-   * @returns {boolean} - matched or not
+   * @returns {boolean} - `true` if matched `false` otherwise
    */
   matches() {
     let res;

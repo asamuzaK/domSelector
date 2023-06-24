@@ -15,7 +15,7 @@ const { Matcher } = require('./js/matcher.js');
  * @param {object} node - Element node
  * @param {object} [opt] - options
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
- * @returns {boolean} - result
+ * @returns {boolean} - `true` if matched `false` otherwise
  */
 const matches = (selector, node, opt) =>
   new Matcher(selector, node, opt).matches();
