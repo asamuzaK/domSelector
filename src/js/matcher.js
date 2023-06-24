@@ -319,29 +319,31 @@ class Matcher {
    */
   _sortLeaves(leaves) {
     const arr = [...leaves];
-    const bitMap = new Map([
-      [ATTRIBUTE_SELECTOR, BIT_ATTRIBUTE_SELECTOR],
-      [CLASS_SELECTOR, BIT_CLASS_SELECTOR],
-      [ID_SELECTOR, BIT_ID_SELECTOR],
-      [PSEUDO_CLASS_SELECTOR, BIT_PSEUDO_CLASS_SELECTOR],
-      [PSEUDO_ELEMENT_SELECTOR, BIT_PSEUDO_ELEMENT_SELECTOR],
-      [TYPE_SELECTOR, BIT_TYPE_SELECTOR]
-    ]);
-    arr.sort((a, b) => {
-      const { type: typeA } = a;
-      const { type: typeB } = b;
-      const bitA = bitMap.get(typeA);
-      const bitB = bitMap.get(typeB);
-      let res;
-      if (bitA === bitB) {
-        res = 0;
-      } else if (bitA > bitB) {
-        res = 1;
-      } else {
-        res = -1;
-      }
-      return res;
-    });
+    if (arr.length > 1) {
+      const bitMap = new Map([
+        [ATTRIBUTE_SELECTOR, BIT_ATTRIBUTE_SELECTOR],
+        [CLASS_SELECTOR, BIT_CLASS_SELECTOR],
+        [ID_SELECTOR, BIT_ID_SELECTOR],
+        [PSEUDO_CLASS_SELECTOR, BIT_PSEUDO_CLASS_SELECTOR],
+        [PSEUDO_ELEMENT_SELECTOR, BIT_PSEUDO_ELEMENT_SELECTOR],
+        [TYPE_SELECTOR, BIT_TYPE_SELECTOR]
+      ]);
+      arr.sort((a, b) => {
+        const { type: typeA } = a;
+        const { type: typeB } = b;
+        const bitA = bitMap.get(typeA);
+        const bitB = bitMap.get(typeB);
+        let res;
+        if (bitA === bitB) {
+          res = 0;
+        } else if (bitA > bitB) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
     return arr;
   }
 
@@ -741,7 +743,7 @@ class Matcher {
   }
 
   /**
-   * match logical pseudo-class functions - :is(), :has(), :not(), :where()
+   * match logical pseudo-class functions - :has(), :is(), :not(), :where()
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @returns {?object} - matched node
@@ -2380,17 +2382,19 @@ class Matcher {
    */
   _sortNodes(nodes) {
     const arr = [...nodes];
-    arr.sort((a, b) => {
-      let res;
-      const posBit = a.compareDocumentPosition(b);
-      if (posBit & DOCUMENT_POSITION_PRECEDING ||
-          posBit & DOCUMENT_POSITION_CONTAINS) {
-        res = 1;
-      } else {
-        res = -1;
-      }
-      return res;
-    });
+    if (arr.length > 1) {
+      arr.sort((a, b) => {
+        let res;
+        const posBit = a.compareDocumentPosition(b);
+        if (posBit & DOCUMENT_POSITION_PRECEDING ||
+            posBit & DOCUMENT_POSITION_CONTAINS) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
     return arr;
   }
 
@@ -2440,10 +2444,8 @@ class Matcher {
     try {
       const nodes = this._find('first');
       nodes.delete(this.#node);
-      if (nodes.size > 1) {
+      if (nodes.size) {
         [res] = this._sortNodes(nodes);
-      } else if (nodes.size) {
-        [res] = [...nodes];
       }
     } catch (e) {
       this._onError(e);
