@@ -5,10 +5,35 @@ export class Matcher {
     _onError(e: Error): void;
     _getRoot(node?: object): object;
     _prepare(selector?: string): any[];
+    _collectNthChild(anb: {
+        a: number;
+        b: number;
+        reverse?: boolean;
+        selector?: object;
+    }, node: object): object;
+    _collectNthOfType(anb: {
+        a: number;
+        b: number;
+        reverse?: boolean;
+    }, node: object): object;
+    _matchAnPlusB(ast: object, node: object, nthName: string): object;
+    _matchDirectionPseudoClass(ast: object, node: object): object | null;
+    _matchLanguagePseudoClass(ast: object, node: object): object | null;
+    _matchLogicalPseudoFunc(ast: object, node: object): object | null;
+    _matchPseudoClassSelector(ast: object, node: object): object;
+    _matchAttributeSelector(ast: object, node: object): object | null;
+    _matchClassSelector(ast: object, node: object): object | null;
+    _matchIDSelector(ast: object, node: object): object | null;
+    _matchPseudoElementSelector(ast: object, node: object): void;
+    _matchTypeSelector(ast: object, node: object): object | null;
     _matchSelector(ast: object, node: object): object;
-    _matchLeaves(leaves: object, node: object): boolean;
+    _matchLeaves(leaves: any[], node: object): boolean;
+    _matchTwig(twig: object, node: object, opt?: {
+        find?: string;
+    }): object;
     _findNodes(twig: object, range: string): object;
     _collectNodes(range: string): any[];
+    _matchCombo(combo: object, prevNodes: object, nextNodes: object): object;
     _matchNodes(range: string): object;
     _find(range: string): object;
     _sortNodes(nodes: object): any[];
@@ -18,33 +43,8 @@ export class Matcher {
     querySelectorAll(): Array<object | undefined>;
     #private;
 }
-export function collectNthChild(anb?: {
-    a: number;
-    b: number;
-    reverse?: boolean;
-    selector?: string;
-}, node?: object): object;
-export function collectNthOfType(anb?: {
-    a: number;
-    b: number;
-    reverse?: boolean;
-}, node?: object): object;
-export function createSelectorForNode(node?: object): string | null;
 export function isContentEditable(node?: object): boolean;
 export function isDescendant(node?: object, root?: object): boolean;
 export function isNamespaceDeclared(ns?: string, node?: object): boolean;
-export function matchAnPlusB(nthName: string, ast?: object, node?: object): object;
-export function matchAttributeSelector(ast?: object, node?: object): object | null;
-export function matchClassSelector(ast?: object, node?: object): object | null;
-export function matchCombinator(combo?: object, prevNodes?: object, nextNodes?: object, opt?: {
-    filter?: string;
-}): object;
-export function matchDirectionPseudoClass(ast?: object, node?: object): object | null;
-export function matchIDSelector(ast?: object, node?: object): object | null;
-export function matchLanguagePseudoClass(ast?: object, node?: object): object | null;
-export function matchLogicalPseudoFunc(ast?: object, node?: object, refPoint?: object): object | null;
-export function matchPseudoClassSelector(ast?: object, node?: object, refPoint?: object): object;
-export function matchPseudoElementSelector(ast?: object, node?: object): void;
-export function matchTypeSelector(ast?: object, node?: object): object | null;
 export function parseASTName(name: string, node?: object): object;
 export function unescapeSelector(selector?: string): string | null;
