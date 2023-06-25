@@ -9,6 +9,7 @@
 -->
 
 Retrieve DOM node from the given CSS selector.
+
 **Experimental**
 
 ## Install
@@ -38,7 +39,7 @@ matches - same functionality as [Element.matches()][64]
 - `opt` **[object][60]?** options
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
-Returns **[boolean][61]** `true` if matched `false` otherwise
+Returns **[boolean][61]** `true` if matched, `false` otherwise
 
 
 ### closest(selector, node, opt)
@@ -72,6 +73,7 @@ Returns **[object][60]?** matched node
 ### querySelectorAll(selector, refPoint, opt)
 
 querySelectorAll - same functionality as [Document.querySelectorAll()][69], [DocumentFragment.querySelectorAll()][70], [Element.querySelectorAll()][71]
+
 **NOTE**: returns Array, not NodeList
 
 #### Parameters
