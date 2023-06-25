@@ -2330,7 +2330,7 @@ export class Matcher {
               const twig = branch[j];
               for (const nextNode of nextNodes) {
                 matched = this._matchTwig(twig, nextNode, {
-                  filter: 'prev'
+                  find: 'prev'
                 });
               }
               if (matched.size) {
