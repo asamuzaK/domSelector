@@ -10,6 +10,10 @@
     "plugin:regexp/recommended",
     "standard"
   ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
   "plugins": [
     "eslint-plugin-import",
     "eslint-plugin-regexp",
