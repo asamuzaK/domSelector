@@ -4,10 +4,9 @@
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
  */
-'use strict';
 
 /* import */
-const { Matcher } = require('./js/matcher.js');
+import { Matcher } from './js/matcher.js';
 
 /**
  * matches
@@ -17,7 +16,7 @@ const { Matcher } = require('./js/matcher.js');
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {boolean} - `true` if matched `false` otherwise
  */
-const matches = (selector, node, opt) =>
+export const matches = (selector, node, opt) =>
   new Matcher(selector, node, opt).matches();
 
 /**
@@ -28,7 +27,7 @@ const matches = (selector, node, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
-const closest = (selector, node, opt) =>
+export const closest = (selector, node, opt) =>
   new Matcher(selector, node, opt).closest();
 
 /**
@@ -39,7 +38,7 @@ const closest = (selector, node, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
-const querySelector = (selector, refPoint, opt) =>
+export const querySelector = (selector, refPoint, opt) =>
   new Matcher(selector, refPoint, opt).querySelector();
 
 /**
@@ -52,12 +51,5 @@ const querySelector = (selector, refPoint, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
-const querySelectorAll = (selector, refPoint, opt) =>
+export const querySelectorAll = (selector, refPoint, opt) =>
   new Matcher(selector, refPoint, opt).querySelectorAll();
-
-module.exports = {
-  closest,
-  matches,
-  querySelector,
-  querySelectorAll
-};

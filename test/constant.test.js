@@ -3,11 +3,11 @@
  */
 
 /* api */
-const { assert } = require('chai');
-const { describe, it } = require('mocha');
+import { assert } from 'chai';
+import { describe, it } from 'mocha';
 
 /* test */
-const constant = require('../src/js/constant.js');
+import * as constant from '../src/js/constant.js';
 
 describe('constants', () => {
   const items = Object.entries(constant);

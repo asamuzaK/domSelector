@@ -1,18 +1,16 @@
 /**
  * index.test.js
  */
-'use strict';
 
 /* api */
-const { assert } = require('chai');
-const { JSDOM } = require('jsdom');
-const { afterEach, beforeEach, describe, it, xit } = require('mocha');
+import { assert } from 'chai';
+import { JSDOM } from 'jsdom';
+import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 
 /* test */
-const {
+import {
   closest, matches, querySelector, querySelectorAll
-} = require('../src/index.js');
-const DOMException = require('../src/js/domexception.js');
+} from '../src/index.js';
 
 const globalKeys = ['DOMParser'];
 

@@ -1,22 +1,20 @@
 /**
  * matcher.test.js
  */
-'use strict';
 
 /* api */
-const { assert } = require('chai');
-const { JSDOM } = require('jsdom');
-const { afterEach, beforeEach, describe, it, xit } = require('mocha');
-const sinon = require('sinon');
+import { assert } from 'chai';
+import { JSDOM } from 'jsdom';
+import { afterEach, beforeEach, describe, it, xit } from 'mocha';
+import sinon from 'sinon';
 
 /* test */
-const matcherJs = require('../src/js/matcher.js');
-const DOMException = require('../src/js/domexception.js');
-const {
+import * as matcherJs from '../src/js/matcher.js';
+import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
   SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
-} = require('../src/js/constant.js');
+} from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
 

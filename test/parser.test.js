@@ -1,20 +1,18 @@
 /**
  * parser.test.js
  */
-'use strict';
 
 /* api */
-const { assert } = require('chai');
-const { describe, it } = require('mocha');
+import { assert } from 'chai';
+import { describe, it } from 'mocha';
 
 /* test */
-const parser = require('../src/js/parser.js');
-const DOMException = require('../src/js/domexception.js');
-const {
+import * as parser from '../src/js/parser.js';
+import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
   SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
-} = require('../src/js/constant.js');
+} from '../src/js/constant.js';
 
 describe('preprocess', () => {
   const func = parser.preprocess;

@@ -1,17 +1,17 @@
 /**
  * benchmark.js
  */
-'use strict';
 
 /* import */
-const Benchmark = require('benchmark');
-const { JSDOM } = require('jsdom');
-const { parseHTML } = require('linkedom');
-const { name: packageName, version } = require('../package.json');
-const {
+import { promises as fsPromise } from 'node:fs';
+import path from 'node:path';
+import Benchmark from 'benchmark';
+import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
+import {
   closest, matches, querySelector, querySelectorAll
-} = require('../src/index.js');
-const { parseSelector, walkAST } = require('../src/js/parser.js');
+} from '../src/index.js';
+import { parseSelector, walkAST } from '../src/js/parser.js';
 
 const selector = '#foo * .bar > baz:not(:is(.qux, .quux)) + [corge] ~ .grault';
 
@@ -483,8 +483,14 @@ const refPointQuerySelectorAll = (type, api) => {
 
 const suite = new Benchmark.Suite();
 
-suite.on('start', () => {
-  console.log(`benchmark ${packageName} v${version}`);
+suite.on('start', async () => {
+  const filePath = path.resolve('./package.json');
+  const value = await fsPromise.readFile(filePath, {
+    encoding: 'utf8',
+    flag: 'r'
+  });
+  const { name: pkgName, version } = JSON.parse(value);
+  console.log(`benchmark ${pkgName} v${version}`);
 }).add('parser parseSelector', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {

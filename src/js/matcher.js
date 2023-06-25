@@ -1,18 +1,16 @@
 /**
  * matcher.js
  */
-'use strict';
 
 /* import */
-const isCustomElementName = require('is-potential-custom-element-name');
-const DOMException = require('./domexception.js');
-const { generateCSS, parseSelector, walkAST } = require('./parser.js');
+import isCustomElementName from 'is-potential-custom-element-name';
+import { generateCSS, parseSelector, walkAST } from './parser.js';
 
 /* constants */
-const {
+import {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, ID_SELECTOR,
   PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, TYPE_SELECTOR
-} = require('./constant.js');
+} from './constant.js';
 const BIT_ATTRIBUTE_SELECTOR = 16;
 const BIT_CLASS_SELECTOR = 2;
 const BIT_ID_SELECTOR = 4;
@@ -46,7 +44,7 @@ const WHITESPACE = /^[\n\r\f]/;
  * @param {object} node - Element
  * @returns {boolean} - result
  */
-const isContentEditable = (node = {}) => {
+export const isContentEditable = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     if (node.ownerDocument.designMode === 'on') {
@@ -76,7 +74,7 @@ const isContentEditable = (node = {}) => {
  * @param {object} node - Element node
  * @returns {boolean} - result
  */
-const isNamespaceDeclared = (ns = '', node = {}) => {
+export const isNamespaceDeclared = (ns = '', node = {}) => {
   let res;
   if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
     const attr = `xmlns:${ns}`;
@@ -102,7 +100,7 @@ const isNamespaceDeclared = (ns = '', node = {}) => {
  * @param {object} root - Document, DocumentFragment, Element node
  * @returns {boolean} - result
  */
-const isDescendant = (node = {}, root = {}) => {
+export const isDescendant = (node = {}, root = {}) => {
   const { nodeType, ownerDocument } = node;
   let res;
   if (nodeType === ELEMENT_NODE && ownerDocument) {
@@ -123,7 +121,7 @@ const isDescendant = (node = {}, root = {}) => {
  * @param {string} selector - CSS selector
  * @returns {?string} - unescaped selector
  */
-const unescapeSelector = (selector = '') => {
+export const unescapeSelector = (selector = '') => {
   if (typeof selector === 'string' && selector.indexOf('\\', 0) >= 0) {
     const arr = selector.split('\\');
     const l = arr.length;
@@ -170,7 +168,7 @@ const unescapeSelector = (selector = '') => {
  * @param {object} [node] - Element node
  * @returns {object} - parsed AST name
  */
-const parseASTName = (name, node) => {
+export const parseASTName = (name, node) => {
   let astPrefix, astNodeName;
   if (name && typeof name === 'string') {
     if (/\|/.test(name)) {
@@ -225,7 +223,7 @@ const parseASTName = (name, node) => {
  * leaf{}: AST leaf
  * node: Element node
  */
-class Matcher {
+export class Matcher {
   /* private fields */
   #list;
   #matrix;
@@ -2473,13 +2471,4 @@ class Matcher {
     }
     return res;
   }
-};
-
-module.exports = {
-  Matcher,
-  isContentEditable,
-  isDescendant,
-  isNamespaceDeclared,
-  parseASTName,
-  unescapeSelector
 };

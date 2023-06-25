@@ -1,14 +1,12 @@
 /**
  * parser.js
  */
-'use strict';
 
 /* import */
-const { generate, findAll, parse, toPlainObject, walk } = require('css-tree');
-const DOMException = require('./domexception.js');
+import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
-const { PSEUDO_CLASS_SELECTOR, SELECTOR } = require('./constant.js');
+import { PSEUDO_CLASS_SELECTOR, SELECTOR } from './constant.js';
 const CODE_POINT_UNIT = parseInt('10000', 16);
 const HEX = 16;
 const PAIR = 2;
@@ -24,7 +22,7 @@ const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
  * @param {...*} args - arguments
  * @returns {string} - filtered selector string
  */
-const preprocess = (...args) => {
+export const preprocess = (...args) => {
   if (!args.length) {
     throw new TypeError('1 argument required, but only 0 present');
   }
@@ -66,7 +64,7 @@ const preprocess = (...args) => {
  * @param {string} selector - CSS selector
  * @returns {object} - AST
  */
-const parseSelector = selector => {
+export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
   if (selector === '' || /^\s*>/.test(selector) || /,\s*$/.test(selector)) {
@@ -96,7 +94,7 @@ const parseSelector = selector => {
  * @param {object} ast - AST
  * @returns {Array.<object|undefined>} - collection of AST branches
  */
-const walkAST = (ast = {}) => {
+export const walkAST = (ast = {}) => {
   const branches = new Set();
   let hasPseudoFunc;
   const opt = {
@@ -139,9 +137,4 @@ const walkAST = (ast = {}) => {
 };
 
 /* export */
-module.exports = {
-  generateCSS: generate,
-  parseSelector,
-  preprocess,
-  walkAST
-};
+export { generate as generateCSS } from 'css-tree';
