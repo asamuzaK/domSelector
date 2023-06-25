@@ -1,5 +1,11 @@
+export function isContentEditable(node?: object): boolean;
+export function isNamespaceDeclared(ns?: string, node?: object): boolean;
+export function isDescendant(node?: object, root?: object): boolean;
+export function unescapeSelector(selector?: string): string | null;
+export function parseASTName(name: string, node?: object): object;
 export class Matcher {
     constructor(selector: string, node: object, opt?: {
+        sort?: boolean;
         warn?: boolean;
     });
     _onError(e: Error): void;
@@ -44,8 +50,3 @@ export class Matcher {
     querySelectorAll(): Array<object | undefined>;
     #private;
 }
-export function isContentEditable(node?: object): boolean;
-export function isDescendant(node?: object, root?: object): boolean;
-export function isNamespaceDeclared(ns?: string, node?: object): boolean;
-export function parseASTName(name: string, node?: object): object;
-export function unescapeSelector(selector?: string): string | null;

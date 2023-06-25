@@ -1,12 +1,13 @@
-export function closest(selector: string, node: object, opt?: {
-    warn?: object;
-}): object | null;
 export function matches(selector: string, node: object, opt?: {
-    warn?: object;
+    warn?: boolean;
 }): boolean;
+export function closest(selector: string, node: object, opt?: {
+    warn?: boolean;
+}): object | null;
 export function querySelector(selector: string, refPoint: object, opt?: {
-    warn?: object;
+    warn?: boolean;
 }): object | null;
 export function querySelectorAll(selector: string, refPoint: object, opt?: {
-    warn?: object;
+    sort?: boolean;
+    warn?: boolean;
 }): Array<object | undefined>;
