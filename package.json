@@ -29,7 +29,7 @@
     "chai": "^4.3.7",
     "eslint": "^8.43.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-jsdoc": "^46.2.6",
+    "eslint-plugin-jsdoc": "^46.3.0",
     "eslint-plugin-regexp": "^1.15.0",
     "eslint-plugin-unicorn": "^47.0.0",
     "jsdom": "^22.1.0",
@@ -46,5 +46,5 @@
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
-  "version": "0.19.1"
+  "version": "0.19.2"
 }
