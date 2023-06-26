@@ -46,5 +46,5 @@
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "tsc": "npx tsc"
   },
-  "version": "0.19.2"
+  "version": "0.19.3"
 }
