@@ -39,6 +39,9 @@
     "sinon": "^15.2.0",
     "typescript": "^5.1.3"
   },
+  "overrides": {
+    "semver": "^7.5.2"
+  },
   "scripts": {
     "bench": "node benchmark/benchmark.js",
     "build": "npm run tsc && npm run lint && npm test",
