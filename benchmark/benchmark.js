@@ -143,6 +143,7 @@ const nodeIterator = () => {
     }
     nextNode = iterator.nextNode();
   }
+  return nodes;
 };
 
 const nodeIteratorWithFn = () => {
@@ -162,6 +163,7 @@ const nodeIteratorWithFn = () => {
     nodes.add(nextNode);
     nextNode = iterator.nextNode();
   }
+  return nodes;
 };
 
 const treeWalker = () => {
@@ -174,6 +176,7 @@ const treeWalker = () => {
     }
     nextNode = walker.nextNode();
   }
+  return nodes;
 };
 
 const treeWalkerWithFn = () => {
@@ -193,21 +196,22 @@ const treeWalkerWithFn = () => {
     nodes.add(nextNode);
     nextNode = walker.nextNode();
   }
+  return nodes;
 };
 
 const getElementById = (id) => {
-  const nodes = new Set();
-  nodes.add(document.getElementById(id));
+  const nodes = new Set([document.getElementById(id)]);
+  return nodes;
 };
 
 const getElementsByClassName = (name) => {
-  const nodes = new Set();
-  nodes.add(document.getElementsByClassName(name));
+  const nodes = new Set([...document.getElementsByClassName(name)]);
+  return nodes;
 };
 
 const getElementsByTagName = (name) => {
-  const nodes = new Set();
-  nodes.add(document.getElementsByTagName(name));
+  const nodes = new Set([...document.getElementsByTagName(name)]);
+  return nodes;
 };
 
 const htmlCollection = () => {
@@ -218,6 +222,7 @@ const htmlCollection = () => {
     const item = items.item(i);
     nodes.add(item);
   }
+  return nodes;
 };
 
 const htmlCollectionForOf = () => {
@@ -226,6 +231,7 @@ const htmlCollectionForOf = () => {
   for (const item of items) {
     nodes.add(item);
   }
+  return nodes;
 };
 
 const symbolIterator = () => {
@@ -236,6 +242,7 @@ const symbolIterator = () => {
     nodes.add(item);
     item = items.next().value;
   }
+  return nodes;
 };
 
 const symbolIteratorForOf = () => {
@@ -244,6 +251,7 @@ const symbolIteratorForOf = () => {
   for (const item of items) {
     nodes.add(item);
   }
+  return nodes;
 };
 
 const forLoop = () => {
@@ -254,6 +262,7 @@ const forLoop = () => {
     const item = items[i];
     nodes.add(item);
   }
+  return nodes;
 };
 
 const forOfLoop = () => {
@@ -262,6 +271,7 @@ const forOfLoop = () => {
   for (const item of items) {
     nodes.add(item);
   }
+  return nodes;
 };
 
 const forEachLoop = () => {
@@ -270,6 +280,7 @@ const forEachLoop = () => {
   items.forEach(item => {
     nodes.add(item);
   });
+  return nodes;
 };
 
 const setForEach = () => {
@@ -278,6 +289,7 @@ const setForEach = () => {
   items.forEach(item => {
     nodes.add(item);
   });
+  return nodes;
 };
 
 const setForOf = () => {
@@ -286,6 +298,7 @@ const setForOf = () => {
   for (const item of items) {
     nodes.add(item);
   }
+  return nodes;
 };
 
 /* matcher tests */
