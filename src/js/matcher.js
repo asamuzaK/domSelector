@@ -1875,12 +1875,12 @@ export class Matcher {
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode);
             if (bool) {
-              arr.unshift(refNode);
+              arr.push(refNode);
             }
             refNode = refNode.previousElementSibling;
           }
           if (arr.length) {
-            matched = new Set(arr);
+            matched = new Set(arr.reverse());
           }
           break;
         }
@@ -1901,12 +1901,12 @@ export class Matcher {
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode);
             if (bool) {
-              arr.unshift(refNode);
+              arr.push(refNode);
             }
             refNode = refNode.parentNode;
           }
           if (arr.length) {
-            matched = new Set(arr);
+            matched = new Set(arr.reverse());
           }
         }
       }
