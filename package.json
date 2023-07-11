@@ -20,13 +20,15 @@
   "types": "types/index.d.ts",
   "dependencies": {
     "css-tree": "^2.3.1",
-    "is-potential-custom-element-name": "^1.0.1"
+    "is-potential-custom-element-name": "^1.0.1",
+    "xpath": "^0.0.32"
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.1",
     "benchmark": "^2.1.4",
     "c8": "^8.0.0",
     "chai": "^4.3.7",
+    "css2xpath": "^0.0.3",
     "eslint": "^8.44.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.27.5",

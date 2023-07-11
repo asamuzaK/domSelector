@@ -6,8 +6,10 @@
 import { promises as fsPromise } from 'node:fs';
 import path from 'node:path';
 import Benchmark from 'benchmark';
+import css2xpath from 'css2xpath';
 import { JSDOM } from 'jsdom';
 import { parseHTML } from 'linkedom';
+import xpath from 'xpath';
 import {
   closest, matches, querySelector, querySelectorAll
 } from '../src/index.js';
@@ -33,8 +35,8 @@ const {
 });
 
 const document = window.document;
-const x = 32;
-const y = 32;
+const x = 64;
+const y = 64;
 const xyFrag = document.createDocumentFragment();
 for (let i = 0; i < x; i++) {
   const xNode = document.createElement('div');
@@ -211,6 +213,27 @@ const getElementsByClassName = (name) => {
 
 const getElementsByTagName = (name) => {
   const nodes = new Set([...document.getElementsByTagName(name)]);
+  return nodes;
+};
+
+const xpathSelectId = (id) => {
+  const nodes = new Set(xpath.select1(`//*[@id=${id}]`, document));
+  return nodes;
+};
+
+const xpathSelectClass = (name) => {
+  const nodes =
+    new Set(xpath.select(`//*[contains(@class, '${name}')]`, document));
+  return nodes;
+};
+
+const xpathSelectTag = (name) => {
+  const nodes = new Set(xpath.select(`//${name}`, document));
+  return nodes;
+};
+
+const xpathSelectLocalName = (name) => {
+  const nodes = new Set(xpath.select(`//*[local-name()='${name}']`, document));
   return nodes;
 };
 
@@ -450,6 +473,9 @@ const refPointQuerySelector = (type, api) => {
       refPoint.querySelector(selector);
     } else if (api === 'linkedom') {
       linkeRefPoint.querySelector(selector);
+    } else if (api === 'xpath') {
+      const exp = css2xpath(selector);
+      xpath.select1(exp, refPoint);
     } else {
       querySelector(selector, refPoint);
     }
@@ -488,6 +514,9 @@ const refPointQuerySelectorAll = (type, api) => {
       refPoint.querySelectorAll(selector);
     } else if (api === 'linkedom') {
       linkeRefPoint.querySelectorAll(selector);
+    } else if (api === 'xpath') {
+      const exp = css2xpath(selector);
+      xpath.select(exp, refPoint);
     } else {
       querySelectorAll(selector, refPoint);
     }
@@ -524,6 +553,16 @@ suite.on('start', async () => {
   getElementsByTagName('div');
 }).add('getElementsByTagName - *', () => {
   getElementsByTagName('*');
+}).add('xpathSelectId', () => {
+  xpathSelectId(randomId);
+}).add('xpathSelectClass', () => {
+  xpathSelectClass('div');
+}).add('xpathSelectTag - div', () => {
+  xpathSelectTag('div');
+}).add('xpathSelectTag - *', () => {
+  xpathSelectTag('*');
+}).add('xpathSelectLocalName', () => {
+  xpathSelectLocalName('div');
 }).add('html collection', () => {
   htmlCollection();
 }).add('html collection for of', () => {
@@ -584,6 +623,8 @@ suite.on('start', async () => {
   refPointQuerySelector('document', 'jsdom');
 }).add('linkedom querySelector - document', () => {
   refPointQuerySelector('document', 'linkedom');
+}).add('xpath querySelector - document', () => {
+  refPointQuerySelector('document', 'xpath');
 }).add('dom-selector querySelector - fragment', () => {
   refPointQuerySelector('fragment');
 }).add('jsdom querySelector - fragment', () => {
@@ -596,12 +637,16 @@ suite.on('start', async () => {
   refPointQuerySelector('element', 'jsdom');
 }).add('linkedom querySelector - element', () => {
   refPointQuerySelector('element', 'linkedom');
+}).add('xpath querySelector - element', () => {
+  refPointQuerySelector('element', 'xpath');
 }).add('dom-selector querySelectorAll - document', () => {
   refPointQuerySelectorAll('document');
 }).add('jsdom querySelectorAll - document', () => {
   refPointQuerySelectorAll('document', 'jsdom');
 }).add('linkedom querySelectorAll - document', () => {
   refPointQuerySelectorAll('document', 'linkedom');
+}).add('xpath querySelectorAll - document', () => {
+  refPointQuerySelectorAll('document', 'xpath');
 }).add('dom-selector querySelectorAll - fragment', () => {
   refPointQuerySelectorAll('fragment');
 }).add('jsdom querySelectorAll - fragment', () => {
@@ -614,6 +659,8 @@ suite.on('start', async () => {
   refPointQuerySelectorAll('element', 'jsdom');
 }).add('linkedom querySelectorAll - element', () => {
   refPointQuerySelectorAll('element', 'linkedom');
+}).add('xpath querySelectorAll - element', () => {
+  refPointQuerySelectorAll('element', 'xpath');
 }).on('cycle', evt => {
   console.log(`* ${String(evt.target)}`);
 }).run({
