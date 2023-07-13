@@ -38,9 +38,9 @@ export class Matcher {
     _matchTwig(twig: object, node: object, opt?: {
         find?: string;
     }): object;
+    _matchCombo(combo: object, prevNodes: object, nextNodes: object): object;
     _findNodes(twig: object, range: string): object;
     _collectNodes(range: string): any[];
-    _matchCombo(combo: object, prevNodes: object, nextNodes: object): object;
     _matchNodes(range: string): object;
     _find(range: string): object;
     _sortNodes(nodes: object): any[];
