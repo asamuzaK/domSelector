@@ -5,6 +5,7 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import { generateCSS, parseSelector, walkAST } from './parser.js';
+import xpath from 'xpath';
 
 /* constants */
 import {
@@ -1915,6 +1916,60 @@ export class Matcher {
   }
 
   /**
+   * match combinator
+   * @param {object} combo - combinator
+   * @param {object} prevNodes - collection of Element nodes
+   * @param {object} nextNodes - collection of Element nodes
+   * @returns {object} - collection of matched nodes
+   */
+  _matchCombo(combo, prevNodes, nextNodes) {
+    const { name: comboName } = combo;
+    const matched = new Set();
+    for (const node of nextNodes) {
+      const { parentNode, previousElementSibling } = node;
+      switch (comboName) {
+        case '+': {
+          const refNode = previousElementSibling;
+          if (refNode && prevNodes.has(refNode)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case '~': {
+          let refNode = previousElementSibling;
+          while (refNode) {
+            if (refNode && prevNodes.has(refNode)) {
+              matched.add(node);
+              break;
+            }
+            refNode = refNode.previousElementSibling;
+          }
+          break;
+        }
+        case '>': {
+          const refNode = parentNode;
+          if (refNode && prevNodes.has(refNode)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case ' ':
+        default: {
+          let refNode = parentNode;
+          while (refNode) {
+            if (refNode && prevNodes.has(refNode)) {
+              matched.add(node);
+              break;
+            }
+            refNode = refNode.parentNode;
+          }
+        }
+      }
+    }
+    return matched;
+  }
+
+  /**
    * find nodes
    * @param {object} twig - twig
    * @param {string} range - target range
@@ -2041,6 +2096,9 @@ export class Matcher {
                 break;
               }
             }
+          } else if (root.nodeType === DOCUMENT_NODE) {
+            const a = xpath.select(`//*[local-name()='${tagName}']`, root);
+            arr.push(...a);
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const walker = document.createTreeWalker(root, FILTER_SHOW_ELEMENT);
             let nextNode = walker.firstChild();
@@ -2208,60 +2266,6 @@ export class Matcher {
       this.#list,
       this.#matrix
     ];
-  }
-
-  /**
-   * match combinator
-   * @param {object} combo - combinator
-   * @param {object} prevNodes - collection of Element nodes
-   * @param {object} nextNodes - collection of Element nodes
-   * @returns {object} - collection of matched nodes
-   */
-  _matchCombo(combo, prevNodes, nextNodes) {
-    const { name: comboName } = combo;
-    const matched = new Set();
-    for (const node of nextNodes) {
-      const { parentNode, previousElementSibling } = node;
-      switch (comboName) {
-        case '+': {
-          const refNode = previousElementSibling;
-          if (refNode && prevNodes.has(refNode)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case '~': {
-          let refNode = previousElementSibling;
-          while (refNode) {
-            if (refNode && prevNodes.has(refNode)) {
-              matched.add(node);
-              break;
-            }
-            refNode = refNode.previousElementSibling;
-          }
-          break;
-        }
-        case '>': {
-          const refNode = parentNode;
-          if (refNode && prevNodes.has(refNode)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          let refNode = parentNode;
-          while (refNode) {
-            if (refNode && prevNodes.has(refNode)) {
-              matched.add(node);
-              break;
-            }
-            refNode = refNode.parentNode;
-          }
-        }
-      }
-    }
-    return matched;
   }
 
   /**
