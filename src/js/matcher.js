@@ -4,8 +4,8 @@
 
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
-import { generateCSS, parseSelector, walkAST } from './parser.js';
 import xpath from 'xpath';
+import { generateCSS, parseSelector, walkAST } from './parser.js';
 
 /* constants */
 import {
