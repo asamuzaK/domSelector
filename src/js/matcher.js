@@ -249,7 +249,7 @@ export class Matcher {
     this.#selector = selector;
     this.#sort = !!sort;
     this.#warn = !!warn;
-    this._prepare(selector);
+    [this.#list, this.#matrix] = this._prepare(selector);
   }
 
   /**
@@ -354,8 +354,8 @@ export class Matcher {
   _prepare(selector = this.#selector) {
     const ast = parseSelector(selector);
     const branches = walkAST(ast).values();
-    this.#list = [];
-    this.#matrix = [];
+    const list = [];
+    const matrix = [];
     let i = 0;
     for (const branchItem of branches) {
       const [...items] = branchItem;
@@ -391,19 +391,19 @@ export class Matcher {
         }
       }
       const branchLen = branch.length;
-      this.#matrix[i] = [];
+      matrix[i] = [];
       for (let j = 0; j < branchLen; j++) {
-        this.#matrix[i][j] = new Set();
+        matrix[i][j] = new Set();
       }
-      this.#list.push({
+      list.push({
         branch,
         skip: false
       });
       i++;
     }
     return [
-      this.#list,
-      this.#matrix
+      list,
+      matrix
     ];
   }
 
@@ -2110,9 +2110,8 @@ export class Matcher {
               arr.push(...a);
               nextNode = walker.nextSibling();
             }
-          } else {
-            if (root.nodeType === ELEMENT_NODE &&
-                root.localName === tagName) {
+          } else if (root.nodeType === ELEMENT_NODE) {
+            if (root.localName === tagName) {
               arr.push(root);
             }
             const a = [...root.getElementsByTagName(leafName)];
