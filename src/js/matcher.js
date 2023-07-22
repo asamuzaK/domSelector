@@ -2072,31 +2072,32 @@ export class Matcher {
         break;
       }
       case TYPE_SELECTOR: {
-        if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
+        const arr = [];
+        if (range === 'self') {
+          const bool = this.#node.nodeType === ELEMENT_NODE &&
+                       this._matchLeaves([leaf], this.#node);
+          if (bool) {
+            arr.push(this.#node);
+          }
+        } else if (range === 'lineal') {
+          let refNode = this.#node;
+          while (refNode) {
+            if (refNode.nodeType === ELEMENT_NODE) {
+              const bool = this._matchLeaves([leaf], refNode);
+              if (bool) {
+                arr.push(refNode);
+              }
+              refNode = refNode.parentNode;
+            } else {
+              break;
+            }
+          }
+        } else if (document.contentType !== 'text/html' ||
+                   /[*|]/.test(leafName)) {
           pending = true;
         } else {
           const tagName = leafName.toLowerCase();
-          const arr = [];
-          if (range === 'self') {
-            const bool = this.#node.nodeType === ELEMENT_NODE &&
-                         this._matchLeaves([leaf], this.#node);
-            if (bool) {
-              arr.push(this.#node);
-            }
-          } else if (range === 'lineal') {
-            let refNode = this.#node;
-            while (refNode) {
-              if (refNode.nodeType === ELEMENT_NODE) {
-                const bool = this._matchLeaves([leaf], refNode);
-                if (bool) {
-                  arr.push(refNode);
-                }
-                refNode = refNode.parentNode;
-              } else {
-                break;
-              }
-            }
-          } else if (root.nodeType === DOCUMENT_NODE) {
+          if (root.nodeType === DOCUMENT_NODE) {
             const a = xpath.select(`//*[local-name()='${tagName}']`, root);
             arr.push(...a);
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
@@ -2117,18 +2118,18 @@ export class Matcher {
             const a = [...root.getElementsByTagName(leafName)];
             arr.push(...a);
           }
-          if (arr.length) {
-            if (len) {
-              const iterator = arr.values();
-              for (const node of iterator) {
-                const bool = this._matchLeaves(items, node);
-                if (bool) {
-                  nodes.add(node);
-                }
+        }
+        if (arr.length) {
+          if (len) {
+            const iterator = arr.values();
+            for (const node of iterator) {
+              const bool = this._matchLeaves(items, node);
+              if (bool) {
+                nodes.add(node);
               }
-            } else {
-              nodes = new Set(arr);
             }
+          } else {
+            nodes = new Set(arr);
           }
         }
         break;
@@ -2229,18 +2230,7 @@ export class Matcher {
       let nextNode = iterator.nextNode();
       while (nextNode) {
         let bool;
-        if (range === 'self') {
-          bool = nextNode === this.#node;
-        } else if (range === 'lineal') {
-          let refNode = this.#node;
-          while (refNode) {
-            bool = nextNode === refNode;
-            if (bool) {
-              break;
-            }
-            refNode = refNode.parentNode;
-          }
-        } else if (/^(?:all|first)$/.test(range)) {
+        if (/^(?:all|first)$/.test(range)) {
           if (this.#node.nodeType === ELEMENT_NODE) {
             bool = isDescendant(nextNode, this.#node);
           } else {
