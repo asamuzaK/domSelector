@@ -1650,13 +1650,15 @@ export class Matcher {
 
   /**
    * match pseudo-element selector
-   * NOTE: throws DOMException
    * @param {object} ast - AST
    * @param {object} node - Element node
+   * @throws {DOMException}
    * @returns {void}
    */
   _matchPseudoElementSelector(ast, node) {
     const astName = unescapeSelector(ast.name);
+    let msg;
+    let type;
     switch (astName) {
       case 'after':
       case 'backdrop':
@@ -1672,14 +1674,16 @@ export class Matcher {
       case 'selection':
       case 'slotted':
       case 'target-text': {
-        throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-          'NotSupportedError');
+        msg = `Unsupported pseudo-element ::${astName}`;
+        type = 'NotSupportedError';
+        break;
       }
       default: {
-        throw new DOMException(`Unknown pseudo-element ::${astName}`,
-          'SyntaxError');
+        msg = `Unknown pseudo-element ::${astName}`;
+        type = 'SyntaxError';
       }
     }
+    throw new DOMException(msg, type);
   }
 
   /**
