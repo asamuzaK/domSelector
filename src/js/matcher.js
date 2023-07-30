@@ -1976,10 +1976,10 @@ export class Matcher {
   /**
    * find nodes
    * @param {object} twig - twig
-   * @param {string} range - target range
+   * @param {string} targetType - target type
    * @returns {object} - result
    */
-  _findNodes(twig, range) {
+  _findNodes(twig, targetType) {
     const { leaves: [leaf, ...items] } = twig;
     const len = items.length;
     const { type: leafType } = leaf;
@@ -1990,12 +1990,12 @@ export class Matcher {
     switch (leafType) {
       case ID_SELECTOR: {
         let node;
-        if (range === 'self') {
+        if (targetType === 'self') {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
             node = this.#node;
           }
-        } else if (range === 'lineal') {
+        } else if (targetType === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode);
@@ -2024,12 +2024,12 @@ export class Matcher {
       }
       case CLASS_SELECTOR: {
         const arr = [];
-        if (range === 'self') {
+        if (targetType === 'self') {
           if (this.#node.nodeType === ELEMENT_NODE &&
               this.#node.classList.contains(leafName)) {
             arr.push(this.#node);
           }
-        } else if (range === 'lineal') {
+        } else if (targetType === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
@@ -2077,13 +2077,13 @@ export class Matcher {
       }
       case TYPE_SELECTOR: {
         const arr = [];
-        if (range === 'self') {
+        if (targetType === 'self') {
           const bool = this.#node.nodeType === ELEMENT_NODE &&
                        this._matchLeaves([leaf], this.#node);
           if (bool) {
             arr.push(this.#node);
           }
-        } else if (range === 'lineal') {
+        } else if (targetType === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
@@ -2143,12 +2143,12 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (range === 'self') {
+        if (targetType === 'self') {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
             arr.push(this.#node);
           }
-        } else if (range === 'lineal') {
+        } else if (targetType === 'lineal') {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode); ;
@@ -2183,10 +2183,10 @@ export class Matcher {
 
   /**
    * collect nodes
-   * @param {string} range - target range
+   * @param {string} targetType - target type
    * @returns {Array} - matrix
    */
-  _collectNodes(range) {
+  _collectNodes(targetType) {
     const pendingItems = new Set();
     const listIterator = this.#list.values();
     let i = 0;
@@ -2194,11 +2194,11 @@ export class Matcher {
       const { branch } = list;
       const branchLen = branch.length;
       const lastIndex = branchLen - 1;
-      if (range === 'all') {
+      if (targetType === 'all') {
         for (let j = 0; j < branchLen; j++) {
           const twig = branch[j];
           const { nodes, pending } =
-            this._findNodes(twig, j === lastIndex ? range : null);
+            this._findNodes(twig, j === lastIndex ? targetType : null);
           if (nodes.size) {
             this.#matrix[i][j] = nodes;
           } else if (pending) {
@@ -2213,7 +2213,7 @@ export class Matcher {
         }
       } else {
         const twig = branch[lastIndex];
-        const { nodes, pending } = this._findNodes(twig, range);
+        const { nodes, pending } = this._findNodes(twig, targetType);
         if (nodes.size) {
           this.#matrix[i][lastIndex] = nodes;
         } else if (pending) {
@@ -2234,7 +2234,7 @@ export class Matcher {
       let nextNode = iterator.nextNode();
       while (nextNode) {
         let bool;
-        if (/^(?:all|first)$/.test(range)) {
+        if (/^(?:all|first)$/.test(targetType)) {
           if (this.#node.nodeType === ELEMENT_NODE) {
             bool = isDescendant(nextNode, this.#node);
           } else {
@@ -2263,10 +2263,10 @@ export class Matcher {
 
   /**
    * match nodes
-   * @param {string} range - target range
+   * @param {string} targetType - target type
    * @returns {object} - collection of matched nodes
    */
-  _matchNodes(range) {
+  _matchNodes(targetType) {
     const [...branches] = this.#list;
     const l = branches.length;
     let nodes = new Set();
@@ -2279,7 +2279,7 @@ export class Matcher {
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
           const matched = this.#matrix[i][0];
-          if (/^(?:all|first)$/.test(range) &&
+          if (/^(?:all|first)$/.test(targetType) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of matched) {
               if (isDescendant(node, this.#node)) {
@@ -2289,7 +2289,7 @@ export class Matcher {
           } else {
             nodes = matched;
           }
-        } else if (range === 'all') {
+        } else if (targetType === 'all') {
           let { combo } = branch[0];
           let prevNodes = this.#matrix[i][0];
           for (let j = 1; j < branchLen; j++) {
@@ -2332,7 +2332,7 @@ export class Matcher {
               }
               if (matched.size) {
                 if (j === 0) {
-                  if (range === 'first' &&
+                  if (targetType === 'first' &&
                       this.#node.nodeType === ELEMENT_NODE) {
                     if (isDescendant(node, this.#node)) {
                       nodes.add(node);
@@ -2361,12 +2361,12 @@ export class Matcher {
 
   /**
    * find matched nodes
-   * @param {string} range - target range
+   * @param {string} targetType - target type
    * @returns {object} - collection of matched nodes
    */
-  _find(range) {
-    this._collectNodes(range);
-    const nodes = this._matchNodes(range);
+  _find(targetType) {
+    this._collectNodes(targetType);
+    const nodes = this._matchNodes(targetType);
     return nodes;
   }
 
