@@ -1,6 +1,7 @@
 /**
  * benchmark.js
  */
+/* eslint-disable no-unused-vars */
 
 /* import */
 import { promises as fsPromise } from 'node:fs';
@@ -86,6 +87,14 @@ const docDiv = document.getElementById(`div${x - 1}-${y - 1}`);
 const {
   document: linkeDoc
 } = parseHTML('<!doctype html><html><head></head><body></body></html>');
+Object.defineProperty(linkeDoc, 'documentURI', {
+  value: 'http://localhost',
+  writable: false
+});
+Object.defineProperty(linkeDoc, 'URL', {
+  value: 'http://localhost',
+  writable: false
+});
 
 const linkeXyFrag = linkeDoc.createDocumentFragment();
 for (let i = 0; i < x; i++) {
@@ -325,7 +334,7 @@ const setForOf = () => {
 };
 
 /* matcher tests */
-const elementMatches = (type, api) => {
+const elementMatches = (type, api, selector) => {
   let box;
   let div;
   let linkeBox;
@@ -353,37 +362,35 @@ const elementMatches = (type, api) => {
       linkeDiv = linkeElmDiv;
     }
   }
-  const selectors = new Map([
-    /*
-    ['.box .div', 'div'],
-    ['.box ~ .box', 'box'],
-    */
-    ['.box:first-child ~ .box .div', 'div']
-  ]);
-  for (const [key, value] of selectors) {
-    if (api === 'jsdom') {
-      if (value === 'box') {
-        box.matches(key);
-      } else if (value === 'div') {
-        div.matches(key);
-      }
-    } else if (api === 'linkedom') {
-      if (value === 'box') {
-        linkeBox.matches(key);
-      } else if (value === 'div') {
-        linkeDiv.matches(key);
-      }
-    } else {
-      if (value === 'box') {
-        matches(key, box);
-      } else if (value === 'div') {
-        matches(key, div);
-      }
+  const [key, value] = selector;
+  if (api === 'jsdom') {
+    if (value === 'box') {
+      box.matches(key);
+    } else if (value === 'div') {
+      div.matches(key);
+    }
+  } else if (api === 'linkedom') {
+    if (value === 'box') {
+      linkeBox.matches(key);
+    } else if (value === 'div') {
+      linkeDiv.matches(key);
+    }
+  } else if (api === 'altdom') {
+    if (value === 'box') {
+      matches(key, linkeBox);
+    } else if (value === 'div') {
+      matches(key, linkeDiv);
+    }
+  } else {
+    if (value === 'box') {
+      matches(key, box);
+    } else if (value === 'div') {
+      matches(key, div);
     }
   }
 };
 
-const elementClosest = (type, api) => {
+const elementClosest = (type, api, selector) => {
   let box;
   let div;
   let linkeBox;
@@ -411,37 +418,35 @@ const elementClosest = (type, api) => {
       linkeDiv = linkeElmDiv;
     }
   }
-  const selectors = new Map([
-    /*
-    ['.box .div', 'div'],
-    ['.box ~ .box', 'box'],
-    */
-    ['.box:first-child ~ .box .div', 'div']
-  ]);
-  for (const [key, value] of selectors) {
-    if (api === 'jsdom') {
-      if (value === 'box') {
-        box.closest(key);
-      } else if (value === 'div') {
-        div.closest(key);
-      }
-    } else if (api === 'linkedom') {
-      if (value === 'box') {
-        linkeBox.closest(key);
-      } else if (value === 'div') {
-        linkeDiv.closest(key);
-      }
-    } else {
-      if (value === 'box') {
-        closest(key, box);
-      } else if (value === 'div') {
-        closest(key, div);
-      }
+  const [key, value] = selector;
+  if (api === 'jsdom') {
+    if (value === 'box') {
+      box.closest(key);
+    } else if (value === 'div') {
+      div.closest(key);
+    }
+  } else if (api === 'linkedom') {
+    if (value === 'box') {
+      linkeBox.closest(key);
+    } else if (value === 'div') {
+      linkeDiv.closest(key);
+    }
+  } else if (api === 'altdom') {
+    if (value === 'box') {
+      closest(key, linkeBox);
+    } else if (value === 'div') {
+      closest(key, linkeDiv);
+    }
+  } else {
+    if (value === 'box') {
+      closest(key, box);
+    } else if (value === 'div') {
+      closest(key, div);
     }
   }
 };
 
-const refPointQuerySelector = (type, api) => {
+const refPointQuerySelector = (type, api, selector) => {
   let refPoint;
   let linkeRefPoint;
   switch (type) {
@@ -461,28 +466,22 @@ const refPointQuerySelector = (type, api) => {
       linkeRefPoint = linkeElmRoot;
     }
   }
-  const selectors = [
-    /*
-    '.box .div',
-    '.box ~ .box',
-    */
-    '.box:first-child ~ .box .div'
-  ];
-  for (const selector of selectors) {
-    if (api === 'jsdom') {
-      refPoint.querySelector(selector);
-    } else if (api === 'linkedom') {
-      linkeRefPoint.querySelector(selector);
-    } else if (api === 'xpath') {
-      const exp = css2xpath(selector);
-      xpath.select1(exp, refPoint);
-    } else {
-      querySelector(selector, refPoint);
-    }
+  const [key] = selector;
+  if (api === 'jsdom') {
+    refPoint.querySelector(key);
+  } else if (api === 'linkedom') {
+    linkeRefPoint.querySelector(key);
+  } else if (api === 'xpath') {
+    const exp = css2xpath(key);
+    xpath.select1(exp, refPoint);
+  } else if (api === 'altdom') {
+    querySelector(key, linkeRefPoint);
+  } else {
+    querySelector(key, refPoint);
   }
 };
 
-const refPointQuerySelectorAll = (type, api) => {
+const refPointQuerySelectorAll = (type, api, selector) => {
   let refPoint;
   let linkeRefPoint;
   switch (type) {
@@ -502,27 +501,31 @@ const refPointQuerySelectorAll = (type, api) => {
       linkeRefPoint = linkeElmRoot;
     }
   }
-  const selectors = [
-    /*
-    '.box .div',
-    '.box ~ .box',
-    */
-    '.box:first-child ~ .box .div'
-  ];
-  for (const selector of selectors) {
-    if (api === 'jsdom') {
-      refPoint.querySelectorAll(selector);
-    } else if (api === 'linkedom') {
-      linkeRefPoint.querySelectorAll(selector);
-    } else if (api === 'xpath') {
-      const exp = css2xpath(selector);
-      xpath.select(exp, refPoint);
-    } else {
-      querySelectorAll(selector, refPoint);
-    }
+  const [key] = selector;
+  if (api === 'jsdom') {
+    refPoint.querySelectorAll(key);
+  } else if (api === 'linkedom') {
+    linkeRefPoint.querySelectorAll(key);
+  } else if (api === 'xpath') {
+    const exp = css2xpath(key);
+    xpath.select(exp, refPoint);
+  } else if (api === 'altdom') {
+    querySelectorAll(key, linkeRefPoint);
+  } else {
+    querySelectorAll(key, refPoint);
   }
 };
 
+/* selector items */
+const selectorItems = [
+  ['.div', 'div'],
+  ['.box:nth-child(2n+1)', 'box'],
+  ['.box .div', 'div'],
+  ['.box ~ .box', 'box'],
+  ['.box:first-child ~ .box .div', 'div']
+];
+
+/* benchmark */
 const suite = new Benchmark.Suite();
 
 suite.on('start', async () => {
@@ -533,6 +536,7 @@ suite.on('start', async () => {
   });
   const { name: pkgName, version } = JSON.parse(value);
   console.log(`benchmark ${pkgName} v${version}`);
+/*
 }).add('parser parseSelector', () => {
   parserParseSelector();
 }).add('parser walkAST', () => {
@@ -581,86 +585,207 @@ suite.on('start', async () => {
   setForOf();
 }).add('set forEach', () => {
   setForEach();
-}).add('dom-selector matches - document', () => {
-  elementMatches('document');
-}).add('jsdom matches - document', () => {
-  elementMatches('document', 'jsdom');
-}).add('linkedom matches - document', () => {
-  elementMatches('document', 'linkedom');
-}).add('dom-selector matches - fragment', () => {
-  elementMatches('fragment');
-}).add('jsdom matches - fragment', () => {
-  elementMatches('fragment', 'jsdom');
-}).add('linkedom matches - fragment', () => {
-  elementMatches('fragment', 'linkedom');
-}).add('dom-selector matches - element', () => {
-  elementMatches('element');
-}).add('jsdom matches - element', () => {
-  elementMatches('element', 'jsdom');
-}).add('linkedom matches - element', () => {
-  elementMatches('element', 'linkedom');
-}).add('dom-selector closest - document', () => {
-  elementClosest('document');
-}).add('jsdom closest - document', () => {
-  elementClosest('document', 'jsdom');
-}).add('linkedom closest - document', () => {
-  elementClosest('document', 'linkedom');
-}).add('dom-selector closest - fragment', () => {
-  elementClosest('fragment');
-}).add('jsdom closest - fragment', () => {
-  elementClosest('fragment', 'jsdom');
-}).add('linkedom closest - fragment', () => {
-  elementClosest('fragment', 'linkedom');
-}).add('dom-selector closest - element', () => {
-  elementClosest('element');
-}).add('jsdom closest - element', () => {
-  elementClosest('element', 'jsdom');
-}).add('linkedom closest - element', () => {
-  elementClosest('element', 'linkedom');
-}).add('dom-selector querySelector - document', () => {
-  refPointQuerySelector('document');
-}).add('jsdom querySelector - document', () => {
-  refPointQuerySelector('document', 'jsdom');
-}).add('linkedom querySelector - document', () => {
-  refPointQuerySelector('document', 'linkedom');
-}).add('xpath querySelector - document', () => {
-  refPointQuerySelector('document', 'xpath');
-}).add('dom-selector querySelector - fragment', () => {
-  refPointQuerySelector('fragment');
-}).add('jsdom querySelector - fragment', () => {
-  refPointQuerySelector('fragment', 'jsdom');
-}).add('linkedom querySelector - fragment', () => {
-  refPointQuerySelector('fragment', 'linkedom');
-}).add('dom-selector querySelector - element', () => {
-  refPointQuerySelector('element');
-}).add('jsdom querySelector - element', () => {
-  refPointQuerySelector('element', 'jsdom');
-}).add('linkedom querySelector - element', () => {
-  refPointQuerySelector('element', 'linkedom');
-}).add('xpath querySelector - element', () => {
-  refPointQuerySelector('element', 'xpath');
-}).add('dom-selector querySelectorAll - document', () => {
-  refPointQuerySelectorAll('document');
-}).add('jsdom querySelectorAll - document', () => {
-  refPointQuerySelectorAll('document', 'jsdom');
-}).add('linkedom querySelectorAll - document', () => {
-  refPointQuerySelectorAll('document', 'linkedom');
-}).add('xpath querySelectorAll - document', () => {
-  refPointQuerySelectorAll('document', 'xpath');
-}).add('dom-selector querySelectorAll - fragment', () => {
-  refPointQuerySelectorAll('fragment');
-}).add('jsdom querySelectorAll - fragment', () => {
-  refPointQuerySelectorAll('fragment', 'jsdom');
-}).add('linkedom querySelectorAll - fragment', () => {
-  refPointQuerySelectorAll('fragment', 'linkedom');
-}).add('dom-selector querySelectorAll - element', () => {
-  refPointQuerySelectorAll('element');
-}).add('jsdom querySelectorAll - element', () => {
-  refPointQuerySelectorAll('element', 'jsdom');
-}).add('linkedom querySelectorAll - element', () => {
-  refPointQuerySelectorAll('element', 'linkedom');
-}).add('xpath querySelectorAll - element', () => {
-  refPointQuerySelectorAll('element', 'xpath');
+*/
+}).add('dom-selector matches - document - 0', () => {
+  elementMatches('document', null, selectorItems[0]);
+}).add('jsdom matches - document - 0', () => {
+  elementMatches('document', 'jsdom', selectorItems[0]);
+}).add('altdom matches - document - 0', () => {
+  elementMatches('document', 'altdom', selectorItems[0]);
+}).add('dom-selector matches - document - 1', () => {
+  elementMatches('document', null, selectorItems[1]);
+}).add('jsdom matches - document - 1', () => {
+  elementMatches('document', 'jsdom', selectorItems[1]);
+}).add('altdom matches - document - 1', () => {
+  elementMatches('document', 'altdom', selectorItems[1]);
+}).add('dom-selector matches - document - 2', () => {
+  elementMatches('document', null, selectorItems[2]);
+}).add('jsdom matches - document - 2', () => {
+  elementMatches('document', 'jsdom', selectorItems[2]);
+}).add('altdom matches - document - 2', () => {
+  elementMatches('document', 'altdom', selectorItems[2]);
+}).add('dom-selector matches - document - 3', () => {
+  elementMatches('document', null, selectorItems[3]);
+}).add('jsdom matches - document - 3', () => {
+  elementMatches('document', 'jsdom', selectorItems[3]);
+}).add('altdom matches - document - 3', () => {
+  elementMatches('document', 'altdom', selectorItems[3]);
+}).add('dom-selector matches - document - 4', () => {
+  elementMatches('document', null, selectorItems[4]);
+}).add('jsdom matches - document - 4', () => {
+  elementMatches('document', 'jsdom', selectorItems[4]);
+}).add('altdom matches - document - 4', () => {
+  elementMatches('document', 'altdom', selectorItems[4]);
+}).add('linkedom matches - document - 4', () => {
+  elementMatches('document', 'linkedom', selectorItems[4]);
+}).add('dom-selector matches - fragment - 4', () => {
+  elementMatches('fragment', null, selectorItems[4]);
+}).add('jsdom matches - fragment - 4', () => {
+  elementMatches('fragment', 'jsdom', selectorItems[4]);
+}).add('altdom matches - fragment - 4', () => {
+  elementMatches('fragment', 'altdom', selectorItems[4]);
+}).add('linkedom matches - fragment - 4', () => {
+  elementMatches('fragment', 'linkedom', selectorItems[4]);
+}).add('dom-selector matches - element - 4', () => {
+  elementMatches('element', null, selectorItems[4]);
+}).add('jsdom matches - element - 4', () => {
+  elementMatches('element', 'jsdom', selectorItems[4]);
+}).add('altdom matches - element - 4', () => {
+  elementMatches('element', 'altdom', selectorItems[4]);
+}).add('linkedom matches - element - 4', () => {
+  elementMatches('element', 'linkedom', selectorItems[4]);
+}).add('dom-selector closest - document - 0', () => {
+  elementClosest('document', null, selectorItems[0]);
+}).add('jsdom closest - document - 0', () => {
+  elementClosest('document', 'jsdom', selectorItems[0]);
+}).add('altdom closest - document - 0', () => {
+  elementClosest('document', 'altdom', selectorItems[0]);
+}).add('dom-selector closest - document - 1', () => {
+  elementClosest('document', null, selectorItems[1]);
+}).add('jsdom closest - document - 1', () => {
+  elementClosest('document', 'jsdom', selectorItems[1]);
+}).add('altdom closest - document - 1', () => {
+  elementClosest('document', 'altdom', selectorItems[1]);
+}).add('dom-selector closest - document - 2', () => {
+  elementClosest('document', null, selectorItems[2]);
+}).add('jsdom closest - document - 2', () => {
+  elementClosest('document', 'jsdom', selectorItems[2]);
+}).add('altdom closest - document - 2', () => {
+  elementClosest('document', 'altdom', selectorItems[2]);
+}).add('dom-selector closest - document - 3', () => {
+  elementClosest('document', null, selectorItems[3]);
+}).add('jsdom closest - document - 3', () => {
+  elementClosest('document', 'jsdom', selectorItems[3]);
+}).add('altdom closest - document - 3', () => {
+  elementClosest('document', 'altdom', selectorItems[3]);
+}).add('dom-selector closest - document - 4', () => {
+  elementClosest('document', null, selectorItems[4]);
+}).add('jsdom closest - document - 4', () => {
+  elementClosest('document', 'jsdom', selectorItems[4]);
+}).add('altdom closest - document - 4', () => {
+  elementClosest('document', 'altdom', selectorItems[4]);
+}).add('linkedom closest - document - 4', () => {
+  elementClosest('document', 'linkedom', selectorItems[4]);
+}).add('dom-selector closest - fragment - 4', () => {
+  elementClosest('fragment', null, selectorItems[4]);
+}).add('jsdom closest - fragment - 4', () => {
+  elementClosest('fragment', 'jsdom', selectorItems[4]);
+}).add('altdom closest - fragment - 4', () => {
+  elementClosest('fragment', 'altdom', selectorItems[4]);
+}).add('linkedom closest - fragment - 4', () => {
+  elementClosest('fragment', 'linkedom', selectorItems[4]);
+}).add('dom-selector closest - element - 4', () => {
+  elementClosest('element', null, selectorItems[4]);
+}).add('jsdom closest - element - 4', () => {
+  elementClosest('element', 'jsdom', selectorItems[4]);
+}).add('altdom closest - element - 4', () => {
+  elementClosest('element', 'altdom', selectorItems[4]);
+}).add('linkedom closest - element - 4', () => {
+  elementClosest('element', 'linkedom', selectorItems[4]);
+}).add('dom-selector querySelector - document - 0', () => {
+  refPointQuerySelector('document', null, selectorItems[0]);
+}).add('jsdom querySelector - document - 0', () => {
+  refPointQuerySelector('document', 'jsdom', selectorItems[0]);
+}).add('altdom querySelector - document - 0', () => {
+  refPointQuerySelector('document', 'altdom', selectorItems[0]);
+}).add('dom-selector querySelector - document - 1', () => {
+  refPointQuerySelector('document', null, selectorItems[1]);
+}).add('jsdom querySelector - document - 1', () => {
+  refPointQuerySelector('document', 'jsdom', selectorItems[1]);
+}).add('altdom querySelector - document - 1', () => {
+  refPointQuerySelector('document', 'altdom', selectorItems[1]);
+}).add('dom-selector querySelector - document - 2', () => {
+  refPointQuerySelector('document', null, selectorItems[2]);
+}).add('jsdom querySelector - document - 2', () => {
+  refPointQuerySelector('document', 'jsdom', selectorItems[2]);
+}).add('altdom querySelector - document - 2', () => {
+  refPointQuerySelector('document', 'altdom', selectorItems[2]);
+}).add('dom-selector querySelector - document - 3', () => {
+  refPointQuerySelector('document', null, selectorItems[3]);
+}).add('jsdom querySelector - document - 3', () => {
+  refPointQuerySelector('document', 'jsdom', selectorItems[3]);
+}).add('altdom querySelector - document - 3', () => {
+  refPointQuerySelector('document', 'altdom', selectorItems[3]);
+}).add('dom-selector querySelector - document - 4', () => {
+  refPointQuerySelector('document', null, selectorItems[4]);
+}).add('jsdom querySelector - document - 4', () => {
+  refPointQuerySelector('document', 'jsdom', selectorItems[4]);
+}).add('altdom querySelector - document - 4', () => {
+  refPointQuerySelector('document', 'altdom', selectorItems[4]);
+}).add('linkedom querySelector - document - 4', () => {
+  refPointQuerySelector('document', 'linkedom', selectorItems[4]);
+}).add('xpath querySelector - document - 4', () => {
+  refPointQuerySelector('document', 'xpath', selectorItems[4]);
+}).add('dom-selector querySelector - fragment - 4', () => {
+  refPointQuerySelector('fragment', null, selectorItems[4]);
+}).add('jsdom querySelector - fragment - 4', () => {
+  refPointQuerySelector('fragment', 'jsdom', selectorItems[4]);
+}).add('altdom querySelector - fragment - 4', () => {
+  refPointQuerySelector('fragment', 'altdom', selectorItems[4]);
+}).add('linkedom querySelector - fragment - 4', () => {
+  refPointQuerySelector('fragment', 'linkedom', selectorItems[4]);
+}).add('dom-selector querySelector - element - 4', () => {
+  refPointQuerySelector('element', null, selectorItems[4]);
+}).add('jsdom querySelector - element - 4', () => {
+  refPointQuerySelector('element', 'jsdom', selectorItems[4]);
+}).add('altdom querySelector - element - 4', () => {
+  refPointQuerySelector('element', 'altdom', selectorItems[4]);
+}).add('linkedom querySelector - element - 4', () => {
+  refPointQuerySelector('element', 'linkedom', selectorItems[4]);
+}).add('xpath querySelector - element - 4', () => {
+  refPointQuerySelector('element', 'xpath', selectorItems[4]);
+}).add('dom-selector querySelectorAll - document - 0', () => {
+  refPointQuerySelectorAll('document', null, selectorItems[0]);
+}).add('jsdom querySelectorAll - document - 0', () => {
+  refPointQuerySelectorAll('document', 'jsdom', selectorItems[0]);
+}).add('altdom querySelectorAll - document - 0', () => {
+  refPointQuerySelectorAll('document', 'altdom', selectorItems[0]);
+}).add('dom-selector querySelectorAll - document - 1', () => {
+  refPointQuerySelectorAll('document', null, selectorItems[1]);
+}).add('jsdom querySelectorAll - document - 1', () => {
+  refPointQuerySelectorAll('document', 'jsdom', selectorItems[1]);
+}).add('altdom querySelectorAll - document - 1', () => {
+  refPointQuerySelectorAll('document', 'altdom', selectorItems[1]);
+}).add('dom-selector querySelectorAll - document - 2', () => {
+  refPointQuerySelectorAll('document', null, selectorItems[2]);
+}).add('jsdom querySelectorAll - document - 2', () => {
+  refPointQuerySelectorAll('document', 'jsdom', selectorItems[2]);
+}).add('altdom querySelectorAll - document - 2', () => {
+  refPointQuerySelectorAll('document', 'altdom', selectorItems[2]);
+}).add('dom-selector querySelectorAll - document - 3', () => {
+  refPointQuerySelectorAll('document', null, selectorItems[3]);
+}).add('jsdom querySelectorAll - document - 3', () => {
+  refPointQuerySelectorAll('document', 'jsdom', selectorItems[3]);
+}).add('altdom querySelectorAll - document - 3', () => {
+  refPointQuerySelectorAll('document', 'altdom', selectorItems[3]);
+}).add('dom-selector querySelectorAll - document - 4', () => {
+  refPointQuerySelectorAll('document', null, selectorItems[4]);
+}).add('jsdom querySelectorAll - document - 4', () => {
+  refPointQuerySelectorAll('document', 'jsdom', selectorItems[4]);
+}).add('altdom querySelectorAll - document - 4', () => {
+  refPointQuerySelectorAll('document', 'altdom', selectorItems[4]);
+}).add('linkedom querySelectorAll - document - 4', () => {
+  refPointQuerySelectorAll('document', 'linkedom', selectorItems[4]);
+}).add('xpath querySelectorAll - document - 4', () => {
+  refPointQuerySelectorAll('document', 'xpath', selectorItems[4]);
+}).add('dom-selector querySelectorAll - fragment - 4', () => {
+  refPointQuerySelectorAll('fragment', null, selectorItems[4]);
+}).add('jsdom querySelectorAll - fragment - 4', () => {
+  refPointQuerySelectorAll('fragment', 'jsdom', selectorItems[4]);
+}).add('altdom querySelectorAll - fragment - 4', () => {
+  refPointQuerySelectorAll('fragment', 'altdom', selectorItems[4]);
+}).add('linkedom querySelectorAll - fragment - 4', () => {
+  refPointQuerySelectorAll('fragment', 'linkedom', selectorItems[4]);
+}).add('dom-selector querySelectorAll - element - 4', () => {
+  refPointQuerySelectorAll('element', null, selectorItems[4]);
+}).add('jsdom querySelectorAll - element - 4', () => {
+  refPointQuerySelectorAll('element', 'jsdom', selectorItems[4]);
+}).add('altdom querySelectorAll - element - 4', () => {
+  refPointQuerySelectorAll('element', 'altdom', selectorItems[4]);
+}).add('linkedom querySelectorAll - element - 4', () => {
+  refPointQuerySelectorAll('element', 'linkedom', selectorItems[4]);
+}).add('xpath querySelectorAll - element - 4', () => {
+  refPointQuerySelectorAll('element', 'xpath', selectorItems[4]);
 }).on('cycle', evt => {
   console.log(`* ${String(evt.target)}`);
 }).run({
