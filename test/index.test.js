@@ -2526,7 +2526,7 @@ describe('xml', () => {
     const doc =
       new window.DOMParser().parseFromString(domStr, 'application/xml');
     const node = doc.getElementById('target');
-    const res = doc.querySelector('[Title]');
+    const res = querySelector('[Title]', doc);
     assert.deepEqual(res, node, 'result');
   });
 
@@ -2542,7 +2542,7 @@ describe('xml', () => {
     </html>`;
     const doc =
       new window.DOMParser().parseFromString(domStr, 'application/xml');
-    const res = doc.querySelector('[TITLE]');
+    const res = querySelector('[TITLE]', doc);
     assert.isNull(res, 'result');
   });
 
