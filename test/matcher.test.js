@@ -107,6 +107,18 @@ describe('match AST leaf and DOM node', () => {
 
     it('should get result', () => {
       const node = document.createElement('div');
+      Object.defineProperty(node, 'isContentEditable', {
+        value: true,
+        writable: false
+      });
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       document.designMode = 'on';

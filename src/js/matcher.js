@@ -48,7 +48,9 @@ const WHITESPACE = /^[\n\r\f]/;
 export const isContentEditable = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
-    if (node.ownerDocument.designMode === 'on') {
+    if (typeof node.isContentEditable === 'boolean') {
+      res = node.isContentEditable;
+    } else if (node.ownerDocument.designMode === 'on') {
       res = true;
     } else if (node.hasAttribute('contenteditable')) {
       const attr = node.getAttribute('contenteditable');
