@@ -10,6 +10,8 @@ import sinon from 'sinon';
 
 /* test */
 import * as matcherJs from '../src/js/matcher.js';
+
+/* constants */
 import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,

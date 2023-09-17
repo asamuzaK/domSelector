@@ -8,6 +8,8 @@ import { describe, it } from 'mocha';
 
 /* test */
 import * as parser from '../src/js/parser.js';
+
+/* constants */
 import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
