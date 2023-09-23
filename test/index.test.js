@@ -19,7 +19,7 @@ describe('exported api', () => {
     '<!doctype html><html lang="en"><head></head><body></body></html>';
   const domOpt = {
     runScripts: 'dangerously',
-    url: 'https://localhost/'
+    url: 'http://localhost/'
   };
   let document;
   beforeEach(() => {
@@ -2516,7 +2516,7 @@ describe('xml', () => {
   it('should get matched node(s)', () => {
     const { window } = new JSDOM('', {
       runScripts: 'dangerously',
-      url: 'https://localhost/'
+      url: 'http://localhost/'
     });
     const domStr = `<html>
       <body>
@@ -2533,7 +2533,7 @@ describe('xml', () => {
   it('should not match', () => {
     const { window } = new JSDOM('', {
       runScripts: 'dangerously',
-      url: 'https://localhost/'
+      url: 'http://localhost/'
     });
     const domStr = `<html>
       <body>
@@ -2549,7 +2549,7 @@ describe('xml', () => {
   it('should get matched node(s)', () => {
     const { window } = new JSDOM('', {
       runScripts: 'dangerously',
-      url: 'https://localhost/'
+      url: 'http://localhost/'
     });
     const domStr = `<html>
       <body>
@@ -2572,7 +2572,7 @@ describe('xml', () => {
 const jsdom = (str = '') => {
   const dom = new JSDOM(str, {
     runScripts: 'dangerously',
-    url: 'https://localhost/',
+    url: 'http://localhost/',
     beforeParse: window => {
       window.Element.prototype.matches = function (selector) {
         return matches(selector, this);

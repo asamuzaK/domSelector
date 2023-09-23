@@ -87,7 +87,7 @@ const docDiv = document.getElementById(`div${x - 1}-${y - 1}`);
 const patchedDom =
   new JSDOM('<!doctype html><html><head></head><body></body></html>', {
     runScripts: 'dangerously',
-    url: 'https://localhost/',
+    url: 'http://localhost/',
     beforeParse: window => {
       window.Element.prototype.matches = function (selector) {
         return matches(selector, this);
