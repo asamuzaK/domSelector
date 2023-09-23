@@ -26,6 +26,10 @@ const DOCUMENT_POSITION_PRECEDING = 2;
 const ELEMENT_NODE = 1;
 const FILTER_SHOW_ELEMENT = 1;
 const TEXT_NODE = 3;
+const TYPE_ALL = 'all';
+const TYPE_FIRST = 'first';
+const TYPE_LINEAL = 'lineal';
+const TYPE_SELF = 'self';
 
 /* regexp */
 const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
@@ -1992,12 +1996,12 @@ export class Matcher {
     switch (leafType) {
       case ID_SELECTOR: {
         let node;
-        if (targetType === 'self') {
+        if (targetType === TYPE_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
             node = this.#node;
           }
-        } else if (targetType === 'lineal') {
+        } else if (targetType === TYPE_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode);
@@ -2026,12 +2030,12 @@ export class Matcher {
       }
       case CLASS_SELECTOR: {
         const arr = [];
-        if (targetType === 'self') {
+        if (targetType === TYPE_SELF) {
           if (this.#node.nodeType === ELEMENT_NODE &&
               this.#node.classList.contains(leafName)) {
             arr.push(this.#node);
           }
-        } else if (targetType === 'lineal') {
+        } else if (targetType === TYPE_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
@@ -2044,15 +2048,13 @@ export class Matcher {
             }
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const walker = document.createTreeWalker(root, FILTER_SHOW_ELEMENT);
-          let nextNode = walker.firstChild();
-          while (nextNode) {
-            if (nextNode.classList.contains(leafName)) {
-              arr.push(nextNode);
+          const { children } = root;
+          for (const child of children) {
+            if (child.classList.contains(leafName)) {
+              arr.push(child);
             }
-            const a = [...nextNode.getElementsByClassName(leafName)];
+            const a = [...child.getElementsByClassName(leafName)];
             arr.push(...a);
-            nextNode = walker.nextSibling();
           }
         } else {
           if (root.nodeType === ELEMENT_NODE &&
@@ -2079,13 +2081,13 @@ export class Matcher {
       }
       case TYPE_SELECTOR: {
         const arr = [];
-        if (targetType === 'self') {
+        if (targetType === TYPE_SELF) {
           const bool = this.#node.nodeType === ELEMENT_NODE &&
                        this._matchLeaves([leaf], this.#node);
           if (bool) {
             arr.push(this.#node);
           }
-        } else if (targetType === 'lineal') {
+        } else if (targetType === TYPE_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
@@ -2107,15 +2109,13 @@ export class Matcher {
             const a = xpath.select(`//*[local-name()='${tagName}']`, root);
             arr.push(...a);
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const walker = document.createTreeWalker(root, FILTER_SHOW_ELEMENT);
-            let nextNode = walker.firstChild();
-            while (nextNode) {
-              if (nextNode.localName === tagName) {
-                arr.push(nextNode);
+            const { children } = root;
+            for (const child of children) {
+              if (child.localName === tagName) {
+                arr.push(child);
               }
-              const a = [...nextNode.getElementsByTagName(leafName)];
+              const a = [...child.getElementsByTagName(leafName)];
               arr.push(...a);
-              nextNode = walker.nextSibling();
             }
           } else if (root.nodeType === ELEMENT_NODE) {
             if (root.localName === tagName) {
@@ -2145,12 +2145,12 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (targetType === 'self') {
+        if (targetType === TYPE_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
             arr.push(this.#node);
           }
-        } else if (targetType === 'lineal') {
+        } else if (targetType === TYPE_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode); ;
@@ -2196,7 +2196,7 @@ export class Matcher {
       const { branch } = list;
       const branchLen = branch.length;
       const lastIndex = branchLen - 1;
-      if (targetType === 'all') {
+      if (targetType === TYPE_ALL) {
         for (let j = 0; j < branchLen; j++) {
           const twig = branch[j];
           const { nodes, pending } =
@@ -2236,7 +2236,7 @@ export class Matcher {
       let nextNode = iterator.nextNode();
       while (nextNode) {
         let bool;
-        if (/^(?:all|first)$/.test(targetType)) {
+        if (targetType === TYPE_ALL || targetType === TYPE_FIRST) {
           if (this.#node.nodeType === ELEMENT_NODE) {
             bool = isDescendant(nextNode, this.#node);
           } else {
@@ -2281,7 +2281,7 @@ export class Matcher {
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
           const matched = this.#matrix[i][0];
-          if (/^(?:all|first)$/.test(targetType) &&
+          if ((targetType === TYPE_ALL || targetType === TYPE_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of matched) {
               if (isDescendant(node, this.#node)) {
@@ -2291,7 +2291,7 @@ export class Matcher {
           } else {
             nodes = matched;
           }
-        } else if (targetType === 'all') {
+        } else if (targetType === TYPE_ALL) {
           let { combo } = branch[0];
           let prevNodes = this.#matrix[i][0];
           for (let j = 1; j < branchLen; j++) {
@@ -2334,7 +2334,7 @@ export class Matcher {
               }
               if (matched.size) {
                 if (j === 0) {
-                  if (targetType === 'first' &&
+                  if (targetType === TYPE_FIRST &&
                       this.#node.nodeType === ELEMENT_NODE) {
                     if (isDescendant(node, this.#node)) {
                       nodes.add(node);
@@ -2402,7 +2402,7 @@ export class Matcher {
   matches() {
     let res;
     try {
-      const nodes = this._find('self');
+      const nodes = this._find(TYPE_SELF);
       res = nodes.has(this.#node);
     } catch (e) {
       this._onError(e);
@@ -2417,7 +2417,7 @@ export class Matcher {
   closest() {
     let res;
     try {
-      const nodes = this._find('lineal');
+      const nodes = this._find(TYPE_LINEAL);
       let node = this.#node;
       while (node) {
         if (nodes.has(node)) {
@@ -2439,7 +2439,7 @@ export class Matcher {
   querySelector() {
     let res;
     try {
-      const nodes = this._find('first');
+      const nodes = this._find(TYPE_FIRST);
       nodes.delete(this.#node);
       if (nodes.size) {
         [res] = this._sortNodes(nodes);
@@ -2458,7 +2458,7 @@ export class Matcher {
   querySelectorAll() {
     const res = [];
     try {
-      const nodes = this._find('all');
+      const nodes = this._find(TYPE_ALL);
       nodes.delete(this.#node);
       if (nodes.size > 1 && this.#sort) {
         res.push(...this._sortNodes(nodes));
