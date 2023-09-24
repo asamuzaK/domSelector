@@ -6,7 +6,7 @@
 import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
-import { PSEUDO_CLASS_SELECTOR, SELECTOR } from './constant.js';
+import { PSEUDO_CLASS_SELECTOR, SELECTOR, SYNTAX_ERR } from './constant.js';
 const CODE_POINT_UNIT = parseInt('10000', 16);
 const HEX = 16;
 const PAIR = 2;
@@ -54,7 +54,7 @@ export const preprocess = (...args) => {
     selector = Object.prototype.toString.call(selector)
       .slice(TYPE_FROM, TYPE_TO).toLowerCase();
   } else {
-    throw new DOMException(`invalid selector ${selector}`, 'SyntaxError');
+    throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
   }
   return selector;
 };
@@ -68,7 +68,7 @@ export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
   if (selector === '' || /^\s*>/.test(selector) || /,\s*$/.test(selector)) {
-    throw new DOMException(`invalid selector ${selector}`, 'SyntaxError');
+    throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
   }
   let res;
   try {
@@ -83,7 +83,7 @@ export const parseSelector = selector => {
     } else if (e.message === '")" is expected' && !selector.endsWith(')')) {
       res = parseSelector(`${selector})`);
     } else {
-      throw new DOMException(e.message, 'SyntaxError');
+      throw new DOMException(e.message, SYNTAX_ERR);
     }
   }
   return res;

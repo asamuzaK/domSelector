@@ -10,7 +10,8 @@ import { generateCSS, parseSelector, walkAST } from './parser.js';
 /* constants */
 import {
   ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, ID_SELECTOR,
-  PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, TYPE_SELECTOR
+  NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR,
+  SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
 const BIT_ATTRIBUTE_SELECTOR = 16;
 const BIT_CLASS_SELECTOR = 2;
@@ -182,14 +183,14 @@ export const parseASTName = (name, node) => {
       [astPrefix, astNodeName] = name.split('|');
       if (astPrefix && astPrefix !== '*' &&
           node && !isNamespaceDeclared(astPrefix, node)) {
-        throw new DOMException(`invalid selector ${name}`, 'SyntaxError');
+        throw new DOMException(`invalid selector ${name}`, SYNTAX_ERR);
       }
     } else {
       astPrefix = '*';
       astNodeName = name;
     }
   } else {
-    throw new DOMException(`invalid selector ${name}`, 'SyntaxError');
+    throw new DOMException(`invalid selector ${name}`, SYNTAX_ERR);
   }
   return {
     astNodeName,
@@ -265,7 +266,7 @@ export class Matcher {
    * @returns {void}
    */
   _onError(e) {
-    if (e instanceof DOMException && e.name === 'NotSupportedError') {
+    if (e instanceof DOMException && e.name === NOT_SUPPORTED_ERR) {
       if (this.#warn) {
         console.warn(e.message);
       }
@@ -374,7 +375,7 @@ export class Matcher {
             const [nextItem] = items;
             if (nextItem.type === COMBINATOR) {
               const msg = `invalid combinator, ${item.name}${nextItem.name}`;
-              throw new DOMException(msg, 'SyntaxError');
+              throw new DOMException(msg, SYNTAX_ERR);
             }
             branch.push({
               combo: item,
@@ -661,11 +662,11 @@ export class Matcher {
                    (!inputType ||
                     /^(?:(?:emai|te|ur)l|search|text)$/.test(inputType))))) {
         throw new DOMException('Unsupported pseudo-class :dir()',
-          'NotSupportedError');
+          NOT_SUPPORTED_ERR);
       // FIXME:
       } else if (nodeDir === 'auto' || (localName === 'bdi' && !nodeDir)) {
         throw new DOMException('Unsupported pseudo-class :dir()',
-          'NotSupportedError');
+          NOT_SUPPORTED_ERR);
       } else if (!nodeDir) {
         let parent = node.parentNode;
         while (parent) {
@@ -869,10 +870,10 @@ export class Matcher {
           case 'nth-col':
           case 'nth-last-col':
             throw new DOMException(`Unsupported pseudo-class :${astName}()`,
-              'NotSupportedError');
+              NOT_SUPPORTED_ERR);
           default:
             throw new DOMException(`Unknown pseudo-class :${astName}()`,
-              'SyntaxError');
+              SYNTAX_ERR);
         }
       }
     } else {
@@ -1178,7 +1179,7 @@ export class Matcher {
             // FIXME:
             if (isMultiple) {
               throw new DOMException(`Unsupported pseudo-class :${astName}`,
-                'NotSupportedError');
+                NOT_SUPPORTED_ERR);
             } else {
               const firstOpt = parentNode.firstElementChild;
               const defaultOpt = new Set();
@@ -1388,7 +1389,7 @@ export class Matcher {
         case 'first-letter':
         case 'first-line': {
           throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-            'NotSupportedError');
+            NOT_SUPPORTED_ERR);
         }
         case 'active':
         case 'autofill':
@@ -1412,11 +1413,11 @@ export class Matcher {
         case 'volume-locked':
         case '-webkit-autofill': {
           throw new DOMException(`Unsupported pseudo-class :${astName}`,
-            'NotSupportedError');
+            NOT_SUPPORTED_ERR);
         }
         default: {
           throw new DOMException(`Unknown pseudo-class :${astName}`,
-            'SyntaxError');
+            SYNTAX_ERR);
         }
       }
     }
@@ -1434,7 +1435,7 @@ export class Matcher {
       flags: astFlags, matcher: astMatcher, name: astName, value: astValue
     } = ast;
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
-      throw new DOMException('invalid attribute selector', 'SyntaxError');
+      throw new DOMException('invalid attribute selector', SYNTAX_ERR);
     }
     const { attributes } = node;
     let res;
@@ -1681,12 +1682,12 @@ export class Matcher {
       case 'slotted':
       case 'target-text': {
         msg = `Unsupported pseudo-element ::${astName}`;
-        type = 'NotSupportedError';
+        type = NOT_SUPPORTED_ERR;
         break;
       }
       default: {
         msg = `Unknown pseudo-element ::${astName}`;
-        type = 'SyntaxError';
+        type = SYNTAX_ERR;
       }
     }
     throw new DOMException(msg, type);

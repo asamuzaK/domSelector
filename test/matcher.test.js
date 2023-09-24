@@ -14,8 +14,8 @@ import * as matcherJs from '../src/js/matcher.js';
 /* constants */
 import {
   AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
-  SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
+  ID_SELECTOR, NOT_SUPPORTED_ERR, NTH, PSEUDO_CLASS_SELECTOR,
+  PSEUDO_ELEMENT_SELECTOR, RAW, SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
@@ -481,7 +481,7 @@ describe('match AST leaf and DOM node', () => {
       });
 
       it('should not throw', () => {
-        const e = new DOMException('error', 'NotSupportedError');
+        const e = new DOMException('error', NOT_SUPPORTED_ERR);
         const matcher = new Matcher('*', document);
         const res = matcher._onError(e);
         assert.isUndefined(res, 'result');
@@ -489,7 +489,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should warn', () => {
         const stubWarn = sinon.stub(console, 'warn');
-        const e = new DOMException('error', 'NotSupportedError');
+        const e = new DOMException('error', NOT_SUPPORTED_ERR);
         const matcher = new Matcher('*', document, {
           warn: true
         });
