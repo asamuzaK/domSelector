@@ -2049,12 +2049,12 @@ export class Matcher {
             }
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const { children } = root;
-          for (const child of children) {
-            if (child.classList.contains(leafName)) {
-              arr.push(child);
+          const iterator = [...root.children].values();
+          for (const node of iterator) {
+            if (node.classList.contains(leafName)) {
+              arr.push(node);
             }
-            const a = [...child.getElementsByClassName(leafName)];
+            const a = [...node.getElementsByClassName(leafName)];
             arr.push(...a);
           }
         } else {
@@ -2110,12 +2110,12 @@ export class Matcher {
             const a = xpath.select(`//*[local-name()='${tagName}']`, root);
             arr.push(...a);
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const { children } = root;
-            for (const child of children) {
-              if (child.localName === tagName) {
-                arr.push(child);
+            const iterator = [...root.children].values();
+            for (const node of iterator) {
+              if (node.localName === tagName) {
+                arr.push(node);
               }
-              const a = [...child.getElementsByTagName(leafName)];
+              const a = [...node.getElementsByTagName(leafName)];
               arr.push(...a);
             }
           } else if (root.nodeType === ELEMENT_NODE) {
