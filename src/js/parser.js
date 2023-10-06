@@ -67,7 +67,7 @@ export const preprocess = (...args) => {
 export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
-  if (selector === '' || /^\s*>/.test(selector) || /,\s*$/.test(selector)) {
+  if (/^$|^\s*>|,\s*$/.test(selector)) {
     throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
   }
   let res;
