@@ -984,8 +984,7 @@ export class Matcher {
               form = form.parentNode;
             }
             if (form) {
-              const iterator =
-                document.createNodeIterator(form, SHOW_ELEMENT);
+              const iterator = document.createNodeIterator(form, SHOW_ELEMENT);
               let nextNode = iterator.nextNode();
               while (nextNode) {
                 const nodeName = nextNode.localName;
@@ -1647,9 +1646,9 @@ export class Matcher {
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node) {
-    const leafIterator = leaves.values();
+    const iterator = leaves.values();
     let bool;
-    for (const leaf of leafIterator) {
+    for (const leaf of iterator) {
       bool = this._matchSelector(leaf, node).has(node);
       if (!bool) {
         break;
@@ -1707,8 +1706,7 @@ export class Matcher {
         case ' ':
         default: {
           const { document } = this.#root;
-          const iterator =
-            document.createNodeIterator(node, SHOW_ELEMENT);
+          const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
           let refNode = iterator.nextNode();
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode);
