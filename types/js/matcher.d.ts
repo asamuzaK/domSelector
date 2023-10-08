@@ -1,8 +1,3 @@
-export function isContentEditable(node?: object): boolean;
-export function isNamespaceDeclared(ns?: string, node?: object): boolean;
-export function isDescendant(node?: object, root?: object): boolean;
-export function unescapeSelector(selector?: string): string | null;
-export function parseASTName(name: string, node?: object): object;
 export class Matcher {
     constructor(selector: string, node: object, opt?: {
         sort?: boolean;
@@ -39,10 +34,10 @@ export class Matcher {
         find?: string;
     }): object;
     _matchCombo(combo: object, prevNodes: object, nextNodes: object): object;
-    _findNodes(twig: object, range: string): object;
-    _collectNodes(range: string): any[];
-    _matchNodes(range: string): object;
-    _find(range: string): object;
+    _findNodes(twig: object, targetType: string): object;
+    _collectNodes(targetType: string): any[];
+    _matchNodes(targetType: string): object;
+    _find(targetType: string): object;
     _sortNodes(nodes: object): any[];
     matches(): boolean;
     closest(): object | null;
