@@ -5,7 +5,12 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import xpath from 'xpath';
-import { generateCSS, parseSelector, walkAST } from './parser.js';
+import {
+  isContentEditable, isSameOrDescendant, selectorToNodeProps
+} from './dom-util.js';
+import {
+  generateCSS, parseSelector, unescapeSelector, walkAST
+} from './parser.js';
 
 /* constants */
 import {
@@ -21,7 +26,6 @@ const BIT_PSEUDO_ELEMENT_SELECTOR = 1;
 const BIT_TYPE_SELECTOR = 8;
 const DOCUMENT_NODE = 9;
 const DOCUMENT_FRAGMENT_NODE = 11;
-const DOCUMENT_POSITION_CONTAINED_BY = 16;
 const DOCUMENT_POSITION_CONTAINS = 8;
 const DOCUMENT_POSITION_PRECEDING = 2;
 const ELEMENT_NODE = 1;
@@ -34,7 +38,6 @@ const TARGET_SELF = 'self';
 
 /* regexp */
 const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
-const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
@@ -42,161 +45,6 @@ const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
 const INPUT_TEXT = /^(?:(?:emai|te|ur)l|password|search|text)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
-const WHITESPACE = /^[\n\r\f]/;
-
-/**
- * is content editable
- * NOTE: not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
- * @param {object} node - Element
- * @returns {boolean} - result
- */
-export const isContentEditable = (node = {}) => {
-  let res;
-  if (node.nodeType === ELEMENT_NODE) {
-    if (typeof node.isContentEditable === 'boolean') {
-      res = node.isContentEditable;
-    } else if (node.ownerDocument.designMode === 'on') {
-      res = true;
-    } else if (node.hasAttribute('contenteditable')) {
-      const attr = node.getAttribute('contenteditable');
-      if (/^(?:plaintext-only|true)$/.test(attr) || attr === '') {
-        res = true;
-      } else if (attr === 'inherit') {
-        let parent = node.parentNode;
-        while (parent) {
-          if (isContentEditable(parent)) {
-            res = true;
-            break;
-          }
-          parent = parent.parentNode;
-        }
-      }
-    }
-  }
-  return !!res;
-};
-
-/**
- * is namespace declared
- * @param {string} ns - namespace
- * @param {object} node - Element node
- * @returns {boolean} - result
- */
-export const isNamespaceDeclared = (ns = '', node = {}) => {
-  let res;
-  if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
-    const attr = `xmlns:${ns}`;
-    const root = node.ownerDocument.documentElement;
-    let parent = node;
-    while (parent) {
-      if (typeof parent.hasAttribute === 'function' &&
-          parent.hasAttribute(attr)) {
-        res = true;
-        break;
-      } else if (parent === root) {
-        break;
-      }
-      parent = parent.parentNode;
-    }
-  }
-  return !!res;
-};
-
-/**
- * node is same or descendant of the root node
- * @param {object} node - Element node
- * @param {object} root - Document, DocumentFragment, Element node
- * @returns {boolean} - result
- */
-export const isDescendant = (node = {}, root = {}) => {
-  const { nodeType, ownerDocument } = node;
-  let res;
-  if (nodeType === ELEMENT_NODE && ownerDocument) {
-    if (!root || root.nodeType !== ELEMENT_NODE) {
-      root = ownerDocument;
-    }
-    if (node === root) {
-      res = true;
-    } else if (root) {
-      res = root.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY;
-    }
-  }
-  return !!res;
-};
-
-/**
- * unescape selector
- * @param {string} selector - CSS selector
- * @returns {?string} - unescaped selector
- */
-export const unescapeSelector = (selector = '') => {
-  if (typeof selector === 'string' && selector.indexOf('\\', 0) >= 0) {
-    const arr = selector.split('\\');
-    const l = arr.length;
-    for (let i = 1; i < l; i++) {
-      let item = arr[i];
-      if (i === l - 1 && item === '') {
-        item = '\uFFFD';
-      } else {
-        const hexExists = HEX_CAPTURE.exec(item);
-        if (hexExists) {
-          const [, hex] = hexExists;
-          let str;
-          try {
-            const low = parseInt('D800', 16);
-            const high = parseInt('DFFF', 16);
-            const deci = parseInt(hex, 16);
-            if (deci === 0 || (deci >= low && deci <= high)) {
-              str = '\uFFFD';
-            } else {
-              str = String.fromCodePoint(deci);
-            }
-          } catch (e) {
-            str = '\uFFFD';
-          }
-          let postStr = '';
-          if (item.length > hex.length) {
-            postStr = item.substring(hex.length);
-          }
-          item = `${str}${postStr}`;
-        } else if (WHITESPACE.test(item)) {
-          item = '\\' + item;
-        }
-      }
-      arr[i] = item;
-    }
-    selector = arr.join('');
-  }
-  return selector;
-};
-
-/**
- * parse AST name
- * @param {string} name - AST name
- * @param {object} [node] - Element node
- * @returns {object} - parsed AST name
- */
-export const parseASTName = (name, node) => {
-  let astPrefix, astNodeName;
-  if (name && typeof name === 'string') {
-    if (/\|/.test(name)) {
-      [astPrefix, astNodeName] = name.split('|');
-      if (astPrefix && astPrefix !== '*' &&
-          node && !isNamespaceDeclared(astPrefix, node)) {
-        throw new DOMException(`invalid selector ${name}`, SYNTAX_ERR);
-      }
-    } else {
-      astPrefix = '*';
-      astNodeName = name;
-    }
-  } else {
-    throw new DOMException(`invalid selector ${name}`, SYNTAX_ERR);
-  }
-  return {
-    astNodeName,
-    astPrefix
-  };
-};
 
 /**
  * Matcher
@@ -295,7 +143,7 @@ export class Matcher {
         break;
       }
       default: {
-        if (isDescendant(node)) {
+        if (isSameOrDescendant(node)) {
           document = node.ownerDocument;
           root = node.ownerDocument;
         } else {
@@ -645,7 +493,7 @@ export class Matcher {
   _matchDirectionPseudoClass(ast, node) {
     const { dir: nodeDir, localName, type: inputType } = node;
     let res;
-    if (isDescendant(node)) {
+    if (isSameOrDescendant(node)) {
       const astName = unescapeSelector(ast.name);
       const { document } = this.#root;
       let dir;
@@ -903,7 +751,7 @@ export class Matcher {
           break;
         }
         case 'target': {
-          if (isDescendant(node) && docURL.hash &&
+          if (isSameOrDescendant(node) && docURL.hash &&
               node.id && docURL.hash === `#${node.id}`) {
             matched.add(node);
           }
@@ -1462,8 +1310,8 @@ export class Matcher {
       // namespaced
       if (/\|/.test(astAttrName)) {
         const {
-          astPrefix: astAttrPrefix, astNodeName: astAttrLocalName
-        } = parseASTName(astAttrName);
+          prefix: astAttrPrefix, tagName: astAttrLocalName
+        } = selectorToNodeProps(astAttrName);
         for (const attr of attributes) {
           let { name: itemName, value: itemValue } = attr;
           if (caseInsensitive) {
@@ -1703,7 +1551,9 @@ export class Matcher {
     const astName = unescapeSelector(ast.name);
     const { localName, prefix } = node;
     const { document } = this.#root;
-    let { astPrefix, astNodeName } = parseASTName(astName, node);
+    let {
+      prefix: astPrefix, tagName: astNodeName
+    } = selectorToNodeProps(astName, node);
     if (document.contentType === 'text/html') {
       astPrefix = astPrefix.toLowerCase();
       astNodeName = astNodeName.toLowerCase();
@@ -2239,7 +2089,7 @@ export class Matcher {
         let bool;
         if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
           if (this.#node.nodeType === ELEMENT_NODE) {
-            bool = isDescendant(nextNode, this.#node);
+            bool = isSameOrDescendant(nextNode, this.#node);
           } else {
             bool = true;
           }
@@ -2285,7 +2135,7 @@ export class Matcher {
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of matched) {
-              if (isDescendant(node, this.#node)) {
+              if (isSameOrDescendant(node, this.#node)) {
                 nodes.add(node);
               }
             }
@@ -2302,7 +2152,7 @@ export class Matcher {
               if (j === lastIndex) {
                 if (this.#node.nodeType === ELEMENT_NODE) {
                   for (const node of matched) {
-                    if (isDescendant(node, this.#node)) {
+                    if (isSameOrDescendant(node, this.#node)) {
                       nodes.add(node);
                     }
                   }
@@ -2337,7 +2187,7 @@ export class Matcher {
                 if (j === 0) {
                   if (targetType === TARGET_FIRST &&
                       this.#node.nodeType === ELEMENT_NODE) {
-                    if (isDescendant(node, this.#node)) {
+                    if (isSameOrDescendant(node, this.#node)) {
                       nodes.add(node);
                       break;
                     }

@@ -16,6 +16,115 @@ import {
   SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
+describe('unescape selector', () => {
+  const func = parser.unescapeSelector;
+
+  it('should get value', () => {
+    const res = func();
+    assert.strictEqual(res, '', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('');
+    assert.strictEqual(res, '', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\global');
+    assert.strictEqual(res, 'global', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\n');
+    assert.strictEqual(res, 'n', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\\n');
+    assert.strictEqual(res, '\\\n', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\0');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\000000');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\30');
+    assert.strictEqual(res, '0', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\30 \\30 ');
+    assert.strictEqual(res, '00', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\41');
+    assert.strictEqual(res, 'A', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('hel\\6Co');
+    assert.strictEqual(res, 'hello', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('hel\\6C o');
+    assert.strictEqual(res, 'hello', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\26 B');
+    assert.strictEqual(res, '&B', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\D83D \\DE00 ');
+    assert.strictEqual(res, '\u{FFFD}\u{FFFD}', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('\\1f511 ');
+    assert.strictEqual(res, '\u{1F511}', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\2F804 ');
+    assert.strictEqual(res, '\u{2F804}', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\10FFFF ');
+    assert.strictEqual(res, '\u{10FFFF}', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\10FFFF0');
+    assert.strictEqual(res, '\u{10FFFF}0', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\110000 ');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+
+  it('should get replaced value', () => {
+    const res = func('\\ffffff ');
+    assert.strictEqual(res, '\uFFFD', 'result');
+  });
+});
+
 describe('preprocess', () => {
   const func = parser.preprocess;
 

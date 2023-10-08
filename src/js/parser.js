@@ -14,7 +14,55 @@ const TYPE_FROM = 8;
 const TYPE_TO = -1;
 
 /* regexp */
+const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
+const WHITESPACE = /^[\n\r\f]/;
+
+/**
+ * unescape selector
+ * @param {string} selector - CSS selector
+ * @returns {?string} - unescaped selector
+ */
+export const unescapeSelector = (selector = '') => {
+  if (typeof selector === 'string' && selector.indexOf('\\', 0) >= 0) {
+    const arr = selector.split('\\');
+    const l = arr.length;
+    for (let i = 1; i < l; i++) {
+      let item = arr[i];
+      if (i === l - 1 && item === '') {
+        item = '\uFFFD';
+      } else {
+        const hexExists = HEX_CAPTURE.exec(item);
+        if (hexExists) {
+          const [, hex] = hexExists;
+          let str;
+          try {
+            const low = parseInt('D800', 16);
+            const high = parseInt('DFFF', 16);
+            const deci = parseInt(hex, 16);
+            if (deci === 0 || (deci >= low && deci <= high)) {
+              str = '\uFFFD';
+            } else {
+              str = String.fromCodePoint(deci);
+            }
+          } catch (e) {
+            str = '\uFFFD';
+          }
+          let postStr = '';
+          if (item.length > hex.length) {
+            postStr = item.substring(hex.length);
+          }
+          item = `${str}${postStr}`;
+        } else if (WHITESPACE.test(item)) {
+          item = '\\' + item;
+        }
+      }
+      arr[i] = item;
+    }
+    selector = arr.join('');
+  }
+  return selector;
+};
 
 /**
  * preprocess
