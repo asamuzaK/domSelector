@@ -10,7 +10,7 @@ const ELEMENT_NODE = 1;
 /**
  * is content editable
  * NOTE: not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
- * @param {object} node - Element
+ * @param {object} node - Element node
  * @returns {boolean} - result
  */
 export const isContentEditable = (node = {}) => {
@@ -88,7 +88,7 @@ export const isSameOrDescendant = (node = {}, root = {}) => {
 };
 
 /**
- * selector to node properties
+ * selector to node properties - e.g. ns|E -> { prefix: ns, tagName: E }
  * @param {string} selector - type selector
  * @param {object} [node] - Element node
  * @returns {object} - node properties
