@@ -4,7 +4,6 @@
 
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
-import xpath from 'xpath';
 import {
   isContentEditable, isSameOrDescendant, selectorToNodeProps
 } from './dom-util.js';
@@ -14,23 +13,12 @@ import {
 
 /* constants */
 import {
-  ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, ID_SELECTOR,
-  NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR,
-  SYNTAX_ERR, TYPE_SELECTOR
+  ATTRIBUTE_SELECTOR, BIT_1, BIT_10, BIT_100, BIT_1000, BIT_10000, BIT_100000,
+  CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
+  ID_SELECTOR, NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR,
+  PSEUDO_ELEMENT_SELECTOR, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE, TYPE_SELECTOR
 } from './constant.js';
-const BIT_ATTRIBUTE_SELECTOR = 16;
-const BIT_CLASS_SELECTOR = 2;
-const BIT_ID_SELECTOR = 4;
-const BIT_PSEUDO_CLASS_SELECTOR = 32;
-const BIT_PSEUDO_ELEMENT_SELECTOR = 1;
-const BIT_TYPE_SELECTOR = 8;
-const DOCUMENT_NODE = 9;
-const DOCUMENT_FRAGMENT_NODE = 11;
-const DOCUMENT_POSITION_CONTAINS = 8;
-const DOCUMENT_POSITION_PRECEDING = 2;
-const ELEMENT_NODE = 1;
-const SHOW_ELEMENT = 1;
-const TEXT_NODE = 3;
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
@@ -175,12 +163,12 @@ export class Matcher {
     const arr = [...leaves];
     if (arr.length > 1) {
       const bitMap = new Map([
-        [ATTRIBUTE_SELECTOR, BIT_ATTRIBUTE_SELECTOR],
-        [CLASS_SELECTOR, BIT_CLASS_SELECTOR],
-        [ID_SELECTOR, BIT_ID_SELECTOR],
-        [PSEUDO_CLASS_SELECTOR, BIT_PSEUDO_CLASS_SELECTOR],
-        [PSEUDO_ELEMENT_SELECTOR, BIT_PSEUDO_ELEMENT_SELECTOR],
-        [TYPE_SELECTOR, BIT_TYPE_SELECTOR]
+        [ATTRIBUTE_SELECTOR, BIT_10000],
+        [CLASS_SELECTOR, BIT_10],
+        [ID_SELECTOR, BIT_100],
+        [PSEUDO_CLASS_SELECTOR, BIT_100000],
+        [PSEUDO_ELEMENT_SELECTOR, BIT_1],
+        [TYPE_SELECTOR, BIT_1000]
       ]);
       arr.sort((a, b) => {
         const { type: typeA } = a;
@@ -638,7 +626,7 @@ export class Matcher {
             combo,
             leaves
           };
-          const nodes = this._matchTwig(twig, node, {
+          const nodes = this._matchCombinator(twig, node, {
             find: 'next'
           });
           if (nodes.size) {
@@ -1658,14 +1646,14 @@ export class Matcher {
   }
 
   /**
-   * match twig
+   * match combinator
    * @param {object} twig - twig
    * @param {object} node - Element node
    * @param {object} [opt] - option
    * @param {string} [opt.find] - 'prev'|'next', which nodes to find
    * @returns {object} - collection of matched nodes
    */
-  _matchTwig(twig, node, opt = {}) {
+  _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
     const { find } = opt;
@@ -1775,60 +1763,6 @@ export class Matcher {
   }
 
   /**
-   * match combinator
-   * @param {object} combo - combinator
-   * @param {object} prevNodes - collection of Element nodes
-   * @param {object} nextNodes - collection of Element nodes
-   * @returns {object} - collection of matched nodes
-   */
-  _matchCombo(combo, prevNodes, nextNodes) {
-    const { name: comboName } = combo;
-    const matched = new Set();
-    for (const node of nextNodes) {
-      const { parentNode, previousElementSibling } = node;
-      switch (comboName) {
-        case '+': {
-          const refNode = previousElementSibling;
-          if (refNode && prevNodes.has(refNode)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case '~': {
-          let refNode = previousElementSibling;
-          while (refNode) {
-            if (refNode && prevNodes.has(refNode)) {
-              matched.add(node);
-              break;
-            }
-            refNode = refNode.previousElementSibling;
-          }
-          break;
-        }
-        case '>': {
-          const refNode = parentNode;
-          if (refNode && prevNodes.has(refNode)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          let refNode = parentNode;
-          while (refNode) {
-            if (refNode && prevNodes.has(refNode)) {
-              matched.add(node);
-              break;
-            }
-            refNode = refNode.parentNode;
-          }
-        }
-      }
-    }
-    return matched;
-  }
-
-  /**
    * find nodes
    * @param {object} twig - twig
    * @param {string} targetType - target type
@@ -1836,9 +1770,9 @@ export class Matcher {
    */
   _findNodes(twig, targetType) {
     const { leaves: [leaf, ...items] } = twig;
-    const len = items.length;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
+    const matchItems = items.length > 0;
     const { document, root } = this.#root;
     let nodes = new Set();
     let pending = false;
@@ -1860,13 +1794,13 @@ export class Matcher {
             }
             refNode = refNode.parentNode;
           }
-        } else if (root.nodeType === ELEMENT_NODE) {
+        } else if (this.#node.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
-          node = root.getElementById(leafName);
+          node = this.#node.getElementById(leafName);
         }
         if (node) {
-          if (len) {
+          if (matchItems) {
             const bool = this._matchLeaves(items, node);
             if (bool) {
               nodes.add(node);
@@ -1896,8 +1830,8 @@ export class Matcher {
               break;
             }
           }
-        } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const iterator = [...root.children].values();
+        } else if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          const iterator = [...this.#node.children].values();
           for (const node of iterator) {
             if (node.classList.contains(leafName)) {
               arr.push(node);
@@ -1906,15 +1840,15 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          if (root.nodeType === ELEMENT_NODE &&
-              root.classList.contains(leafName)) {
-            arr.push(root);
+          if (this.#node.nodeType === ELEMENT_NODE &&
+              this.#node.classList.contains(leafName)) {
+            arr.push(this.#node);
           }
-          const a = [...root.getElementsByClassName(leafName)];
+          const a = [...this.#node.getElementsByClassName(leafName)];
           arr.push(...a);
         }
         if (arr.length) {
-          if (len) {
+          if (matchItems) {
             const iterator = arr.values();
             for (const node of iterator) {
               const bool = this._matchLeaves(items, node);
@@ -1954,11 +1888,11 @@ export class Matcher {
           pending = true;
         } else {
           const tagName = leafName.toLowerCase();
-          if (root.nodeType === DOCUMENT_NODE) {
-            const a = xpath.select(`//*[local-name()='${tagName}']`, root);
+          if (this.#node.nodeType === DOCUMENT_NODE) {
+            const a = [...this.#node.getElementsByTagName(leafName)];
             arr.push(...a);
-          } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const iterator = [...root.children].values();
+          } else if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+            const iterator = [...this.#node.children].values();
             for (const node of iterator) {
               if (node.localName === tagName) {
                 arr.push(node);
@@ -1966,16 +1900,16 @@ export class Matcher {
               const a = [...node.getElementsByTagName(leafName)];
               arr.push(...a);
             }
-          } else if (root.nodeType === ELEMENT_NODE) {
-            if (root.localName === tagName) {
+          } else if (this.#node.nodeType === ELEMENT_NODE) {
+            if (this.#node.localName === tagName) {
               arr.push(root);
             }
-            const a = [...root.getElementsByTagName(leafName)];
+            const a = [...this.#node.getElementsByTagName(leafName)];
             arr.push(...a);
           }
         }
         if (arr.length) {
-          if (len) {
+          if (matchItems) {
             const iterator = arr.values();
             for (const node of iterator) {
               const bool = this._matchLeaves(items, node);
@@ -2012,7 +1946,7 @@ export class Matcher {
           pending = true;
         }
         if (arr.length) {
-          if (len) {
+          if (matchItems) {
             const iterator = arr.values();
             for (const node of iterator) {
               const bool = this._matchLeaves(items, node);
@@ -2045,37 +1979,18 @@ export class Matcher {
       const { branch } = list;
       const branchLen = branch.length;
       const lastIndex = branchLen - 1;
-      if (targetType === TARGET_ALL) {
-        for (let j = 0; j < branchLen; j++) {
-          const twig = branch[j];
-          const { nodes, pending } =
-            this._findNodes(twig, j === lastIndex ? targetType : null);
-          if (nodes.size) {
-            this.#matrix[i][j] = nodes;
-          } else if (pending) {
-            pendingItems.add(new Map([
-              ['i', i],
-              ['j', j],
-              ['twig', twig]
-            ]));
-          } else {
-            this.#list[i].skip = true;
-          }
-        }
+      const twig = branch[lastIndex];
+      const { nodes, pending } = this._findNodes(twig, targetType);
+      if (nodes.size) {
+        this.#matrix[i][lastIndex] = nodes;
+      } else if (pending) {
+        pendingItems.add(new Map([
+          ['i', i],
+          ['j', lastIndex],
+          ['twig', twig]
+        ]));
       } else {
-        const twig = branch[lastIndex];
-        const { nodes, pending } = this._findNodes(twig, targetType);
-        if (nodes.size) {
-          this.#matrix[i][lastIndex] = nodes;
-        } else if (pending) {
-          pendingItems.add(new Map([
-            ['i', i],
-            ['j', lastIndex],
-            ['twig', twig]
-          ]));
-        } else {
-          this.#list[i].skip = true;
-        }
+        this.#list[i].skip = true;
       }
       i++;
     }
@@ -2140,35 +2055,6 @@ export class Matcher {
           } else {
             nodes = matched;
           }
-        } else if (targetType === TARGET_ALL) {
-          let { combo } = branch[0];
-          let prevNodes = this.#matrix[i][0];
-          for (let j = 1; j < branchLen; j++) {
-            const nextNodes = this.#matrix[i][j];
-            const matched = this._matchCombo(combo, prevNodes, nextNodes);
-            if (matched.size) {
-              if (j === lastIndex) {
-                if (this.#node.nodeType === ELEMENT_NODE) {
-                  for (const node of matched) {
-                    if (isSameOrDescendant(node, this.#node)) {
-                      nodes.add(node);
-                    }
-                  }
-                } else if (nodes.size) {
-                  const arr = [...nodes].concat([...matched]);
-                  nodes = new Set(arr);
-                } else {
-                  nodes = matched;
-                }
-              } else {
-                const { combo: nextCombo } = branch[j];
-                combo = nextCombo;
-                prevNodes = matched;
-              }
-            } else {
-              break;
-            }
-          }
         } else {
           const startNodes = this.#matrix[i][lastIndex];
           for (const node of startNodes) {
@@ -2177,13 +2063,14 @@ export class Matcher {
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
               for (const nextNode of nextNodes) {
-                matched = this._matchTwig(twig, nextNode, {
+                matched = this._matchCombinator(twig, nextNode, {
                   find: 'prev'
                 });
               }
               if (matched.size) {
                 if (j === 0) {
-                  if (targetType === TARGET_FIRST &&
+                  if ((targetType === TARGET_ALL ||
+                       targetType === TARGET_FIRST) &&
                       this.#node.nodeType === ELEMENT_NODE) {
                     if (isSameOrDescendant(node, this.#node)) {
                       nodes.add(node);
@@ -2201,7 +2088,11 @@ export class Matcher {
               }
             }
             if (matched.size) {
-              break;
+              if (targetType === TARGET_ALL) {
+                matched.clear();
+              } else {
+                break;
+              }
             }
           }
         }

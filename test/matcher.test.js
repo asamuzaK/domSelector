@@ -7058,7 +7058,7 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('match twig', () => {
+    describe('match combinator', () => {
       it('should get matched node(s)', () => {
         const twig = {
           combo: {
@@ -7074,7 +7074,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('li + li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [
           document.getElementById('li2')
         ], 'result');
@@ -7095,7 +7095,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('li + li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [], 'result');
       });
 
@@ -7114,7 +7114,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('li + li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [
@@ -7137,7 +7137,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('li + li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [], 'result');
@@ -7158,7 +7158,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('li ~ li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [
           document.getElementById('li1'),
           document.getElementById('li2')
@@ -7180,7 +7180,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('li ~ li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [], 'result');
       });
 
@@ -7199,7 +7199,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('li ~ li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [
@@ -7223,7 +7223,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('li ~ li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [], 'result');
@@ -7244,7 +7244,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('ul > li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [
           document.getElementById('ul1')
         ], 'result');
@@ -7265,7 +7265,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('ol > li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [], 'result');
       });
 
@@ -7284,7 +7284,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher('ul > .li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [
@@ -7309,7 +7309,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher('ul > .foobar', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [], 'result');
@@ -7330,7 +7330,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li3');
         const matcher = new Matcher('ul li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [
           document.getElementById('ul1')
         ], 'result');
@@ -7351,7 +7351,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('ol li', node);
-        const res = matcher._matchTwig(twig, node);
+        const res = matcher._matchCombinator(twig, node);
         assert.deepEqual([...res], [], 'result');
       });
 
@@ -7370,7 +7370,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher('ul .li', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [
@@ -7395,7 +7395,7 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('li1');
         const matcher = new Matcher('ol .foobar', node);
-        const res = matcher._matchTwig(twig, node, {
+        const res = matcher._matchCombinator(twig, node, {
           find: 'next'
         });
         assert.deepEqual([...res], [], 'result');
@@ -7645,19 +7645,17 @@ describe('match AST leaf and DOM node', () => {
         assert.isFalse(res.pending, 'pending');
       });
 
-      it('should get matched node(s)', () => {
+      it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('li:first-child', node);
         const [[{ branch: [twig] }]] = matcher._prepare();
         const res = matcher._findNodes(twig);
-        assert.deepEqual([...res.nodes], [
-          node
-        ], 'nodes');
+        assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.pending, 'pending');
       });
 
       it('should get matched node(s)', () => {
-        const node = document.getElementById('li2');
+        const node = document.getElementById('ul1');
         const matcher = new Matcher('li:first-child', node);
         const [[{ branch: [twig] }]] = matcher._prepare();
         const res = matcher._findNodes(twig);
@@ -7729,7 +7727,7 @@ describe('match AST leaf and DOM node', () => {
         const parent = document.createElement('div');
         const node = document.createElement('div');
         parent.appendChild(node);
-        const matcher = new Matcher('div', node);
+        const matcher = new Matcher('div', parent);
         const [[{ branch: [twig] }]] = matcher._prepare();
         const res = matcher._findNodes(twig);
         assert.deepEqual([...res.nodes], [
@@ -7748,7 +7746,7 @@ describe('match AST leaf and DOM node', () => {
         const [[{ branch: [twig] }]] = matcher._prepare();
         const res = matcher._findNodes(twig);
         assert.deepEqual([...res.nodes], [
-          parent, node
+          node
         ], 'nodes');
         assert.isFalse(res.pending, 'pending');
       });
@@ -8099,9 +8097,7 @@ describe('match AST leaf and DOM node', () => {
               ])
             ],
             [
-              new Set([
-                document.getElementById('li1')
-              ]),
+              new Set(),
               new Set([
                 document.getElementById('li1'),
                 document.getElementById('li2'),
@@ -8369,161 +8365,6 @@ describe('match AST leaf and DOM node', () => {
             ]
           ]
         ], 'result');
-      });
-    });
-
-    describe('match combinator', () => {
-      it('should get matched node(s)', () => {
-        const combo = {
-          name: '+',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('li:first-child + li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [
-          document.getElementById('li2')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const combo = {
-          name: '+',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const matcher = new Matcher('li:first-child + li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const combo = {
-          name: '~',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('li:first-child ~ li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const combo = {
-          name: '~',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1')
-        ]);
-        const matcher = new Matcher('li:first-child ~ li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const combo = {
-          name: '>',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('ul1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('ul > li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const combo = {
-          name: '>',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('dl1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('dl > li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const combo = {
-          name: ' ',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('ul1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('ul li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const combo = {
-          name: ' ',
-          type: COMBINATOR
-        };
-        const prevNodes = new Set([
-          document.getElementById('dl1')
-        ]);
-        const nextNodes = new Set([
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ]);
-        const matcher = new Matcher('dl li', document);
-        const res = matcher._matchCombo(combo, prevNodes, nextNodes);
-        assert.deepEqual([...res], [], 'result');
       });
     });
 
