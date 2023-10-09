@@ -3,9 +3,9 @@
  */
 
 /* constants */
-import { SYNTAX_ERR } from './constant.js';
-const DOCUMENT_POSITION_CONTAINED_BY = 16;
-const ELEMENT_NODE = 1;
+import {
+  DOCUMENT_POSITION_CONTAINED_BY, ELEMENT_NODE, SYNTAX_ERR
+} from './constant.js';
 
 /**
  * is content editable
