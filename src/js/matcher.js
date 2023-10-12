@@ -164,8 +164,8 @@ export class Matcher {
     if (arr.length > 1) {
       const bitMap = new Map([
         [ATTRIBUTE_SELECTOR, BIT_10000],
-        [CLASS_SELECTOR, BIT_10],
-        [ID_SELECTOR, BIT_100],
+        [CLASS_SELECTOR, BIT_100],
+        [ID_SELECTOR, BIT_10],
         [PSEUDO_CLASS_SELECTOR, BIT_100000],
         [PSEUDO_ELEMENT_SELECTOR, BIT_1],
         [TYPE_SELECTOR, BIT_1000]
@@ -2087,12 +2087,8 @@ export class Matcher {
                 break;
               }
             }
-            if (matched.size) {
-              if (targetType === TARGET_ALL) {
-                matched.clear();
-              } else {
-                break;
-              }
+            if (matched.size && targetType !== TARGET_ALL) {
+              break;
             }
           }
         }

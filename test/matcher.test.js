@@ -319,10 +319,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get sorted leaves', () => {
         const leaves = [
           { type: ATTRIBUTE_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'foo' },
+          { type: CLASS_SELECTOR, name: 'bar' },
           { type: ID_SELECTOR },
           { type: PSEUDO_CLASS_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'bar' },
+          { type: CLASS_SELECTOR, name: 'foo' },
           { type: PSEUDO_ELEMENT_SELECTOR },
           { type: TYPE_SELECTOR }
         ];
@@ -330,9 +330,9 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._sortLeaves(leaves);
         assert.deepEqual(res, [
           { type: PSEUDO_ELEMENT_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'foo' },
-          { type: CLASS_SELECTOR, name: 'bar' },
           { type: ID_SELECTOR },
+          { type: CLASS_SELECTOR, name: 'bar' },
+          { type: CLASS_SELECTOR, name: 'foo' },
           { type: TYPE_SELECTOR },
           { type: ATTRIBUTE_SELECTOR },
           { type: PSEUDO_CLASS_SELECTOR }
