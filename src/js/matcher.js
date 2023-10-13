@@ -591,45 +591,47 @@ export class Matcher {
    * @returns {boolean} - result
    */
   _matchHasPseudoFunc(leaves, node) {
-    const [leaf] = leaves;
-    const { type: leafType } = leaf;
-    let combo;
-    if (leafType === COMBINATOR) {
-      combo = leaves.shift();
-    } else {
-      combo = {
-        name: ' ',
-        type: COMBINATOR
-      };
-    }
-    const twigLeaves = [];
-    while (leaves.length) {
-      const [item] = leaves;
-      const { type: itemType } = item;
-      if (itemType === COMBINATOR) {
-        break;
-      } else {
-        twigLeaves.push(leaves.shift());
-      }
-    }
-    const twig = {
-      combo,
-      leaves: twigLeaves
-    };
-    const nodes = this._matchCombinator(twig, node, {
-      find: 'next'
-    });
     let bool;
-    if (nodes.size) {
-      if (leaves.length) {
-        for (const nextNode of nodes) {
-          bool = this._matchHasPseudoFunc(leaves, nextNode);
-          if (bool) {
-            break;
-          }
-        }
+    if (Array.isArray(leaves) && leaves.length) {
+      const [leaf] = leaves;
+      const { type: leafType } = leaf;
+      let combo;
+      if (leafType === COMBINATOR) {
+        combo = leaves.shift();
       } else {
-        bool = true;
+        combo = {
+          name: ' ',
+          type: COMBINATOR
+        };
+      }
+      const twigLeaves = [];
+      while (leaves.length) {
+        const [item] = leaves;
+        const { type: itemType } = item;
+        if (itemType === COMBINATOR) {
+          break;
+        } else {
+          twigLeaves.push(leaves.shift());
+        }
+      }
+      const twig = {
+        combo,
+        leaves: twigLeaves
+      };
+      const nodes = this._matchCombinator(twig, node, {
+        find: 'next'
+      });
+      if (nodes.size) {
+        if (leaves.length) {
+          for (const nextNode of nodes) {
+            bool = this._matchHasPseudoFunc(leaves, nextNode);
+            if (bool) {
+              break;
+            }
+          }
+        } else {
+          bool = true;
+        }
       }
     }
     return !!bool;
@@ -1729,15 +1731,15 @@ export class Matcher {
           const { document } = this.#root;
           const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
           let refNode = iterator.nextNode();
-          if (refNode) {
+          if (refNode === node) {
             refNode = iterator.nextNode();
-            while (refNode) {
-              const bool = this._matchLeaves(leaves, refNode);
-              if (bool) {
-                matched.add(refNode);
-              }
-              refNode = iterator.nextNode();
+          }
+          while (refNode) {
+            const bool = this._matchLeaves(leaves, refNode);
+            if (bool) {
+              matched.add(refNode);
             }
+            refNode = iterator.nextNode();
           }
         }
       }
