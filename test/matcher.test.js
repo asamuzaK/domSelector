@@ -1787,7 +1787,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [{
           name: 'li',
           type: TYPE_SELECTOR
-        }]
+        }];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isFalse(res, 'result');
       });
@@ -1798,7 +1798,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [{
           name: 'dd',
           type: TYPE_SELECTOR
-        }]
+        }];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isTrue(res, 'result');
       });
@@ -1819,7 +1819,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'p',
             type: TYPE_SELECTOR
           }
-        ]
+        ];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isFalse(res, 'result');
       });
@@ -1840,7 +1840,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'span',
             type: TYPE_SELECTOR
           }
-        ]
+        ];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isTrue(res, 'result');
       });
