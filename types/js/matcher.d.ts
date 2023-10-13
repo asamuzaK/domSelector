@@ -21,6 +21,7 @@ export class Matcher {
     _matchAnPlusB(ast: object, node: object, nthName: string): object;
     _matchDirectionPseudoClass(ast: object, node: object): object | null;
     _matchLanguagePseudoClass(ast: object, node: object): object | null;
+    _matchHasPseudoFunc(leaves: any[], node: object): boolean;
     _matchLogicalPseudoFunc(ast: object, node: object): object | null;
     _matchPseudoClassSelector(ast: object, node: object): object;
     _matchAttributeSelector(ast: object, node: object): object | null;
@@ -30,10 +31,9 @@ export class Matcher {
     _matchTypeSelector(ast: object, node: object): object | null;
     _matchSelector(ast: object, node: object): object;
     _matchLeaves(leaves: any[], node: object): boolean;
-    _matchTwig(twig: object, node: object, opt?: {
+    _matchCombinator(twig: object, node: object, opt?: {
         find?: string;
     }): object;
-    _matchCombo(combo: object, prevNodes: object, nextNodes: object): object;
     _findNodes(twig: object, targetType: string): object;
     _collectNodes(targetType: string): any[];
     _matchNodes(targetType: string): object;
