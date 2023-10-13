@@ -1780,6 +1780,72 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('match :has() pseudo-class function', () => {
+      it('should not match', () => {
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':has(li)', node);
+        const leaves = [{
+          name: 'li',
+          type: TYPE_SELECTOR
+        }]
+        const res = matcher._matchHasPseudoFunc(leaves, node);
+        assert.isFalse(res, 'result');
+      });
+
+      it('should match', () => {
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':has(dd)', node);
+        const leaves = [{
+          name: 'dd',
+          type: TYPE_SELECTOR
+        }]
+        const res = matcher._matchHasPseudoFunc(leaves, node);
+        assert.isTrue(res, 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':has(dd p)', node);
+        const leaves = [
+          {
+            name: 'dd',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: ' ',
+            type: COMBINATOR
+          },
+          {
+            name: 'p',
+            type: TYPE_SELECTOR
+          }
+        ]
+        const res = matcher._matchHasPseudoFunc(leaves, node);
+        assert.isFalse(res, 'result');
+      });
+
+      it('should match', () => {
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':has(dd span)', node);
+        const leaves = [
+          {
+            name: 'dd',
+            type: TYPE_SELECTOR
+          },
+          {
+            name: ' ',
+            type: COMBINATOR
+          },
+          {
+            name: 'span',
+            type: TYPE_SELECTOR
+          }
+        ]
+        const res = matcher._matchHasPseudoFunc(leaves, node);
+        assert.isTrue(res, 'result');
+      });
+    });
+
     describe('match logical pseudo-class function', () => {
       it('should get matched node', () => {
         const leaf = {
@@ -1880,6 +1946,47 @@ describe('match AST leaf and DOM node', () => {
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(li)', node);
+        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: 'dd',
+                      type: TYPE_SELECTOR
+                    },
+                    {
+                      loc: null,
+                      name: '>',
+                      type: COMBINATOR
+                    },
+                    {
+                      loc: null,
+                      name: 'span',
+                      type: TYPE_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR_LIST
+            }
+          ],
+          loc: null,
+          name: 'has',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':has(dd > span)', node);
         const res = matcher._matchLogicalPseudoFunc(leaf, node);
         assert.deepEqual(res, node, 'result');
       });
@@ -8659,12 +8766,11 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
-      it('should get matched node', () => {
+      it('should not match', () => {
         const node = document.getElementById('li2');
-        const target = document.getElementById('ul1');
-        const matcher = new Matcher(':has(> :scope)', node);
+        const matcher = new Matcher(':has(:scope)', node);
         const res = matcher.closest();
-        assert.deepEqual(res, target, 'result');
+        assert.isNull(res, 'result');
       });
     });
 

@@ -585,6 +585,57 @@ export class Matcher {
   }
 
   /**
+   * match :has() pseudo-class function
+   * @param {Array} leaves - leaves
+   * @param {object} node - Element node
+   * @returns {boolean} - result
+   */
+  _matchHasPseudoFunc(leaves, node) {
+    const [leaf] = leaves;
+    const { type: leafType } = leaf;
+    let combo;
+    if (leafType === COMBINATOR) {
+      combo = leaves.shift();
+    } else {
+      combo = {
+        name: ' ',
+        type: COMBINATOR
+      };
+    }
+    const twigLeaves = [];
+    while (leaves.length) {
+      const [item] = leaves;
+      const { type: itemType } = item;
+      if (itemType === COMBINATOR) {
+        break;
+      } else {
+        twigLeaves.push(leaves.shift());
+      }
+    }
+    const twig = {
+      combo,
+      leaves: twigLeaves
+    };
+    const nodes = this._matchCombinator(twig, node, {
+      find: 'next'
+    });
+    let bool;
+    if (nodes.size) {
+      if (leaves.length) {
+        for (const nextNode of nodes) {
+          bool = this._matchHasPseudoFunc(leaves, nextNode);
+          if (bool) {
+            break;
+          }
+        }
+      } else {
+        bool = true;
+      }
+    }
+    return !!bool;
+  }
+
+  /**
    * match logical pseudo-class functions - :has(), :is(), :not(), :where()
    * @param {object} ast - AST
    * @param {object} node - Element node
@@ -611,26 +662,8 @@ export class Matcher {
         let bool;
         for (let i = 0; i < branchLen; i++) {
           const leaves = branches[i];
-          const [leaf] = leaves;
-          const { type: leafType } = leaf;
-          let combo;
-          if (leafType === COMBINATOR) {
-            combo = leaves.shift();
-          } else {
-            combo = {
-              name: ' ',
-              type: COMBINATOR
-            };
-          }
-          const twig = {
-            combo,
-            leaves
-          };
-          const nodes = this._matchCombinator(twig, node, {
-            find: 'next'
-          });
-          if (nodes.size) {
-            bool = true;
+          bool = this._matchHasPseudoFunc(leaves, node);
+          if (bool) {
             break;
           }
         }
@@ -1696,12 +1729,15 @@ export class Matcher {
           const { document } = this.#root;
           const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
           let refNode = iterator.nextNode();
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
-            if (bool) {
-              matched.add(refNode);
-            }
+          if (refNode) {
             refNode = iterator.nextNode();
+            while (refNode) {
+              const bool = this._matchLeaves(leaves, refNode);
+              if (bool) {
+                matched.add(refNode);
+              }
+              refNode = iterator.nextNode();
+            }
           }
         }
       }

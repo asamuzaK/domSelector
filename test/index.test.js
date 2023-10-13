@@ -1233,9 +1233,8 @@ describe('exported api', () => {
       </div>`;
       document.body.innerHTML = domStr;
       const node = document.getElementById('test4');
-      const target = document.getElementById('test3');
-      const res = closest(':has(> :scope)', node);
-      assert.deepEqual(res, target, 'result');
+      const res = closest(':has(:scope)', node);
+      assert.isNull(res, 'result');
     });
   });
 
