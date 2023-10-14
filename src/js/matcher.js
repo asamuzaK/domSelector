@@ -2096,16 +2096,22 @@ export class Matcher {
         } else {
           const startNodes = this.#matrix[i][lastIndex];
           for (const node of startNodes) {
-            let matched = new Set();
+            let bool;
             let nextNodes = new Set([node]);
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
+              const arr = [];
               for (const nextNode of nextNodes) {
-                matched = this._matchCombinator(twig, nextNode, {
+                const m = this._matchCombinator(twig, nextNode, {
                   find: 'prev'
                 });
+                if (m.size) {
+                  arr.push(...m);
+                }
               }
+              const matched = new Set(arr);
               if (matched.size) {
+                bool = true;
                 if (j === 0) {
                   if ((targetType === TARGET_ALL ||
                        targetType === TARGET_FIRST) &&
@@ -2122,10 +2128,11 @@ export class Matcher {
                   nextNodes = matched;
                 }
               } else {
+                bool = false;
                 break;
               }
             }
-            if (matched.size && targetType !== TARGET_ALL) {
+            if (bool && targetType !== TARGET_ALL) {
               break;
             }
           }
