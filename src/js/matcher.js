@@ -2076,6 +2076,29 @@ export class Matcher {
   }
 
   /**
+   * sort nodes
+   * @param {object} nodes - collection of nodes
+   * @returns {Array} - collection of sorted nodes
+   */
+  _sortNodes(nodes) {
+    const arr = [...nodes];
+    if (arr.length > 1) {
+      arr.sort((a, b) => {
+        let res;
+        const posBit = a.compareDocumentPosition(b);
+        if (posBit & DOCUMENT_POSITION_PRECEDING ||
+            posBit & DOCUMENT_POSITION_CONTAINS) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
+    return arr;
+  }
+
+  /**
    * match nodes
    * @param {string} targetType - target type
    * @returns {object} - collection of matched nodes
@@ -2198,29 +2221,6 @@ export class Matcher {
   }
 
   /**
-   * sort nodes
-   * @param {object} nodes - collection of nodes
-   * @returns {Array} - collection of sorted nodes
-   */
-  _sortNodes(nodes) {
-    const arr = [...nodes];
-    if (arr.length > 1) {
-      arr.sort((a, b) => {
-        let res;
-        const posBit = a.compareDocumentPosition(b);
-        if (posBit & DOCUMENT_POSITION_PRECEDING ||
-            posBit & DOCUMENT_POSITION_CONTAINS) {
-          res = 1;
-        } else {
-          res = -1;
-        }
-        return res;
-      });
-    }
-    return arr;
-  }
-
-  /**
    * matches
    * @returns {boolean} - `true` if matched `false` otherwise
    */
@@ -2266,8 +2266,10 @@ export class Matcher {
     try {
       const nodes = this._find(TARGET_FIRST);
       nodes.delete(this.#node);
-      if (nodes.size) {
+      if (nodes.size > 1) {
         [res] = this._sortNodes(nodes);
+      } else if (nodes.size) {
+        [res] = [...nodes];
       }
     } catch (e) {
       this._onError(e);

@@ -8861,6 +8861,13 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelector();
         assert.deepEqual(res, target, 'result');
       });
+
+      it('should get matched node', () => {
+        const target = document.getElementById('li1');
+        const matcher = new Matcher('.li', document);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, target, 'result');
+      });
     });
 
     describe('querySelectorAll', () => {
@@ -8932,6 +8939,16 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('body #dt1', refPoint);
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [target], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher = new Matcher('.li', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'result');
       });
     });
   });
