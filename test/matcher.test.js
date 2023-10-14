@@ -8933,7 +8933,7 @@ describe('match AST leaf and DOM node', () => {
         ], 'result');
       });
 
-      it('should get matched node', () => {
+      it('should get matched node(s)', () => {
         const refPoint = document.getElementById('dl1');
         const target = document.getElementById('dt1');
         const matcher = new Matcher('body #dt1', refPoint);
