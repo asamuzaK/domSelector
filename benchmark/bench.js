@@ -276,7 +276,7 @@ const refPointQuerySelectorAll = (type, api, selector) => {
 /* selectors */
 const selectors = [
   ['.div', 'div'],
-  ['div.div', 'div'],
+  ['div.box', 'div'],
   ['.box > .div', 'div'],
   ['.box .div', 'div'],
   ['.box + .box', 'box'],
