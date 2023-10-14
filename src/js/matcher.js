@@ -1832,10 +1832,10 @@ export class Matcher {
             }
             refNode = refNode.parentNode;
           }
-        } else if (this.#node.nodeType === ELEMENT_NODE) {
+        } else if (root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
-          node = this.#node.getElementById(leafName);
+          node = root.getElementById(leafName);
         }
         if (node) {
           if (matchItems) {
@@ -1868,8 +1868,8 @@ export class Matcher {
               break;
             }
           }
-        } else if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const iterator = [...this.#node.children].values();
+        } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          const iterator = [...root.children].values();
           for (const node of iterator) {
             if (node.classList.contains(leafName)) {
               arr.push(node);
@@ -1878,11 +1878,11 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          if (this.#node.nodeType === ELEMENT_NODE &&
-              this.#node.classList.contains(leafName)) {
-            arr.push(this.#node);
+          if (root.nodeType === ELEMENT_NODE &&
+              root.classList.contains(leafName)) {
+            arr.push(root);
           }
-          const a = [...this.#node.getElementsByClassName(leafName)];
+          const a = [...root.getElementsByClassName(leafName)];
           arr.push(...a);
         }
         if (arr.length) {
@@ -1926,11 +1926,11 @@ export class Matcher {
           pending = true;
         } else {
           const tagName = leafName.toLowerCase();
-          if (this.#node.nodeType === DOCUMENT_NODE) {
-            const a = [...this.#node.getElementsByTagName(leafName)];
+          if (root.nodeType === DOCUMENT_NODE) {
+            const a = [...document.getElementsByTagName(leafName)];
             arr.push(...a);
-          } else if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const iterator = [...this.#node.children].values();
+          } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+            const iterator = [...root.children].values();
             for (const node of iterator) {
               if (node.localName === tagName) {
                 arr.push(node);
@@ -1938,11 +1938,11 @@ export class Matcher {
               const a = [...node.getElementsByTagName(leafName)];
               arr.push(...a);
             }
-          } else if (this.#node.nodeType === ELEMENT_NODE) {
-            if (this.#node.localName === tagName) {
+          } else if (root.nodeType === ELEMENT_NODE) {
+            if (root.localName === tagName) {
               arr.push(root);
             }
-            const a = [...this.#node.getElementsByTagName(leafName)];
+            const a = [...root.getElementsByTagName(leafName)];
             arr.push(...a);
           }
         }
@@ -2015,20 +2015,30 @@ export class Matcher {
     let i = 0;
     for (const list of listIterator) {
       const { branch } = list;
-      const branchLen = branch.length;
-      const lastIndex = branchLen - 1;
-      const twig = branch[lastIndex];
-      const { nodes, pending } = this._findNodes(twig, targetType);
-      if (nodes.size) {
-        this.#matrix[i][lastIndex] = nodes;
-      } else if (pending) {
-        pendingItems.add(new Map([
-          ['i', i],
-          ['j', lastIndex],
-          ['twig', twig]
-        ]));
+      if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+        const twig = branch[0];
+        const { nodes, pending } = this._findNodes(twig, targetType);
+        if (nodes.size) {
+          this.#matrix[i][0] = nodes;
+        } else if (pending) {
+          pendingItems.add(new Map([
+            ['i', i],
+            ['j', 0],
+            ['twig', twig]
+          ]));
+        } else {
+          this.#list[i].skip = true;
+        }
       } else {
-        this.#list[i].skip = true;
+        const branchLen = branch.length;
+        const lastIndex = branchLen - 1;
+        const twig = branch[lastIndex];
+        const { nodes } = this._findNodes(twig, targetType);
+        if (nodes.size) {
+          this.#matrix[i][lastIndex] = nodes;
+        } else {
+          this.#list[i].skip = true;
+        }
       }
       i++;
     }
@@ -2091,13 +2101,56 @@ export class Matcher {
               }
             }
           } else {
-            nodes = matched;
+            const n = [...nodes];
+            const m = [...matched];
+            nodes = new Set([...n, ...m]);
+          }
+        } else if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+          let { combo } = branch[0];
+          const startNodes = this.#matrix[i][0];
+          for (const node of startNodes) {
+            let nextNodes = new Set([node]);
+            for (let j = 1; j < branchLen; j++) {
+              const { combo: nextCombo, leaves } = branch[j];
+              const arr = [];
+              for (const nextNode of nextNodes) {
+                const twig = {
+                  combo,
+                  leaves
+                };
+                const m = this._matchCombinator(twig, nextNode, {
+                  find: 'next'
+                });
+                if (m.size) {
+                  arr.push(...m);
+                }
+              }
+              const matched = new Set(arr);
+              if (matched.size) {
+                if (j === lastIndex) {
+                  if (targetType === TARGET_FIRST) {
+                    const [matchedNode] = this._sortNodes(matched);
+                    nodes.add(matchedNode);
+                  } else {
+                    const n = [...nodes];
+                    const m = [...matched];
+                    nodes = new Set([...n, ...m]);
+                  }
+                  break;
+                } else {
+                  combo = nextCombo;
+                  nextNodes = matched;
+                }
+              } else {
+                break;
+              }
+            }
           }
         } else {
           const startNodes = this.#matrix[i][lastIndex];
           for (const node of startNodes) {
-            let bool;
             let nextNodes = new Set([node]);
+            let bool;
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
               const arr = [];
@@ -2113,17 +2166,8 @@ export class Matcher {
               if (matched.size) {
                 bool = true;
                 if (j === 0) {
-                  if ((targetType === TARGET_ALL ||
-                       targetType === TARGET_FIRST) &&
-                      this.#node.nodeType === ELEMENT_NODE) {
-                    if (isSameOrDescendant(node, this.#node)) {
-                      nodes.add(node);
-                      break;
-                    }
-                  } else {
-                    nodes.add(node);
-                    break;
-                  }
+                  nodes.add(node);
+                  break;
                 } else {
                   nextNodes = matched;
                 }
@@ -2132,7 +2176,7 @@ export class Matcher {
                 break;
               }
             }
-            if (bool && targetType !== TARGET_ALL) {
+            if (bool) {
               break;
             }
           }
