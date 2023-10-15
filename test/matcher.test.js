@@ -405,13 +405,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set()
-            ],
-            [
-              new Set(),
-              new Set()
-            ]
+            new Set(),
+            new Set()
           ]
         ], 'result');
       });
@@ -7994,13 +7989,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set()
-            ],
-            [
-              new Set(),
-              new Set([node])
-            ]
+            new Set(),
+            new Set([node])
           ]
         ], 'result');
       });
@@ -8070,13 +8060,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set()
-            ],
-            [
-              new Set(),
-              new Set([node])
-            ]
+            new Set(),
+            new Set([node])
           ]
         ], 'result');
       });
@@ -8145,17 +8130,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                document.getElementById('li3')
-              ])
-            ],
-            [
-              new Set([
-                document.getElementById('li1')
-              ]),
-              new Set()
-            ]
+            new Set([document.getElementById('li3')]),
+            new Set([document.getElementById('li1')])
           ]
         ], 'result');
       });
@@ -8224,17 +8200,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                document.getElementById('li3')
-              ])
-            ],
-            [
-              new Set([
-                document.getElementById('li1')
-              ]),
-              new Set()
-            ]
+            new Set([document.getElementById('li3')]),
+            new Set([document.getElementById('li1')])
           ]
         ], 'result');
       });
@@ -8311,16 +8278,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                div2, div4
-              ])
-            ],
-            [
-              new Set([
-                div3
-              ])
-            ]
+            new Set([div2, div4]),
+            new Set([div3])
           ]
         ], 'result');
       });
@@ -8400,16 +8359,8 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                div2, div4
-              ])
-            ],
-            [
-              new Set([
-                div3
-              ])
-            ]
+            new Set([div2, div4]),
+            new Set([div3])
           ]
         ], 'result');
       });
@@ -8447,11 +8398,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                div2
-              ])
-            ]
+            new Set([div2])
           ]
         ], 'result');
       });
@@ -8489,11 +8436,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            [
-              new Set([
-                root
-              ])
-            ]
+            new Set([root])
           ]
         ], 'result');
       });
