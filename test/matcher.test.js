@@ -8534,7 +8534,7 @@ describe('match AST leaf and DOM node', () => {
         matcher._collectNodes('first');
         const res = matcher._matchNodes('first');
         assert.deepEqual([...res], [
-          span, span2
+          span
         ], 'result');
       });
     });

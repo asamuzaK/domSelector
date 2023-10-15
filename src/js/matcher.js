@@ -2031,7 +2031,7 @@ export class Matcher {
       const iterator = document.createNodeIterator(root, SHOW_ELEMENT);
       let nextNode = iterator.nextNode();
       while (nextNode) {
-        let bool;
+        let bool = false;
         if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
           if (this.#node.nodeType === ELEMENT_NODE) {
             bool = isSameOrDescendant(nextNode, this.#node);
@@ -2096,24 +2096,32 @@ export class Matcher {
       if (skip) {
         continue;
       } else if (branchLen) {
-        const startNodes = this.#nodes[i];
+        const matched = this.#nodes[i];
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
-            for (const node of startNodes) {
-              if (isSameOrDescendant(node, this.#node)) {
-                nodes.add(node);
+            for (const node of matched) {
+              if (node !== this.#node) {
+                if (isSameOrDescendant(node, this.#node)) {
+                  nodes.add(node);
+                  if (targetType === TARGET_FIRST) {
+                    break;
+                  }
+                }
               }
             }
+          } else if (targetType === TARGET_FIRST) {
+            const [node] = [...matched];
+            nodes.add(node);
           } else {
             const n = [...nodes];
-            const s = [...startNodes];
-            nodes = new Set([...n, ...s]);
+            const m = [...matched];
+            nodes = new Set([...n, ...m]);
           }
         } else if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
           let { combo } = branch[0];
-          for (const node of startNodes) {
+          for (const node of matched) {
             let nextNodes = new Set([node]);
             for (let j = 1; j < branchLen; j++) {
               const { combo: nextCombo, leaves } = branch[j];
@@ -2130,21 +2138,21 @@ export class Matcher {
                   arr.push(...m);
                 }
               }
-              const matched = new Set(arr);
-              if (matched.size) {
+              const matchedNodes = new Set(arr);
+              if (matchedNodes.size) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_FIRST) {
-                    const [matchedNode] = this._sortNodes(matched);
-                    nodes.add(matchedNode);
+                    const [node] = [...matchedNodes];
+                    nodes.add(node);
                   } else {
                     const n = [...nodes];
-                    const m = [...matched];
+                    const m = [...matchedNodes];
                     nodes = new Set([...n, ...m]);
                   }
                   break;
                 } else {
                   combo = nextCombo;
-                  nextNodes = matched;
+                  nextNodes = matchedNodes;
                 }
               } else {
                 break;
@@ -2152,7 +2160,7 @@ export class Matcher {
             }
           }
         } else {
-          for (const node of startNodes) {
+          for (const node of matched) {
             let nextNodes = new Set([node]);
             let bool;
             for (let j = lastIndex - 1; j >= 0; j--) {
@@ -2166,14 +2174,14 @@ export class Matcher {
                   arr.push(...m);
                 }
               }
-              const matched = new Set(arr);
-              if (matched.size) {
+              const matchedNodes = new Set(arr);
+              if (matchedNodes.size) {
                 bool = true;
                 if (j === 0) {
                   nodes.add(node);
                   break;
                 } else {
-                  nextNodes = matched;
+                  nextNodes = matchedNodes;
                 }
               } else {
                 bool = false;
