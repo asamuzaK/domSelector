@@ -164,14 +164,11 @@ export const walkAST = (ast = {}) => {
           const { name, type } = i;
           return type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name);
         });
-        for (const i of itemList) {
-          const { children } = i;
+        for (const { children } of itemList) {
           // SelectorList
-          for (const j of children) {
-            const { children: grandChildren } = j;
+          for (const { children: grandChildren } of children) {
             // Selector
-            for (const k of grandChildren) {
-              const { children: greatGrandChildren } = k;
+            for (const { children: greatGrandChildren } of grandChildren) {
               if (branches.has(greatGrandChildren)) {
                 branches.delete(greatGrandChildren);
               }
