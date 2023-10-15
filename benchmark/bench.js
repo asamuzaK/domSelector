@@ -11,15 +11,18 @@ import {
   closest, matches, querySelector, querySelectorAll
 } from '../src/index.js';
 
-const { window } = new JSDOM('', {
+const doctype = '<!doctype html>';
+const html = '<html lang="en"><head></head><body></body></html>';
+const { window } = new JSDOM(`${doctype}${html}`, {
   runScripts: 'dangerously',
   url: 'http://localhost'
 });
 const { XMLSerializer, document } = window;
 
 /* create dom */
-const x = 32;
-const y = 32;
+const x = 10;
+const y = 10;
+const z = 10;
 const xyFrag = document.createDocumentFragment();
 for (let i = 0; i < x; i++) {
   const xNode = document.createElement('div');
@@ -30,7 +33,14 @@ for (let i = 0; i < x; i++) {
     const yNode = document.createElement('div');
     yNode.id = `div${i}-${j}`;
     yNode.classList.add('div');
-    yNode.textContent = `${i}-${j}`;
+    for (let k = 0; k < z; k++) {
+      const zNode = document.createElement('div');
+      zNode.id = `div${i}-${j}-${k}`;
+      zNode.classList.add('div');
+      zNode.classList.add('inner');
+      zNode.textContent = `${i}-${j}-${k}`;
+      yNode.append(zNode);
+    }
     yFrag.append(yNode);
   }
   xNode.append(yFrag);
@@ -43,26 +53,20 @@ container.classList.add('container');
 container.append(xyFrag);
 document.body.append(container);
 
-const docBox = document.getElementById(`box${x - 1}`);
-const docDiv = document.getElementById(`div${x - 1}-${y - 1}`);
+const docDiv = document.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
 
 const fragment = document.createDocumentFragment();
 fragment.append(container.cloneNode(true));
-const fragBox = fragment.getElementById(`box${x - 1}`);
-const fragDiv = fragment.getElementById(`div${x - 1}-${y - 1}`);
+const fragDiv = fragment.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
 
 const element = document.createElement('div');
 element.append(container.cloneNode(true));
 const elmIterator = document.createNodeIterator(element, 1);
 let elmNode = elmIterator.nextNode();
-let elmBox, elmDiv;
+let elmDiv;
 while (elmNode) {
-  if (elmNode.id === `box${x - 1}`) {
-    elmBox = elmNode;
-  } else if (elmNode.id === `div${x - 1}-${y - 1}`) {
+  if (elmNode.id === `div${x - 1}-${y - 1}-${z - 1}`) {
     elmDiv = elmNode;
-  }
-  if (elmBox && elmDiv) {
     break;
   }
   elmNode = elmIterator.nextNode();
@@ -102,187 +106,161 @@ const { window: domWin } = new JSDOM(domstr, {
 });
 const { document: domDoc } = domWin;
 
-const domBox = domDoc.getElementById(`box${x - 1}`);
-const domDiv = domDoc.getElementById(`div${x - 1}-${y - 1}`);
+const domDiv = domDoc.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
 const domContainer = domDoc.getElementById('container');
 
 const domFrag = domDoc.createDocumentFragment();
 domFrag.append(domContainer.cloneNode(true));
-const domFragBox = domFrag.getElementById(`box${x - 1}`);
-const domFragDiv = domFrag.getElementById(`div${x - 1}-${y - 1}`);
+const domFragDiv = domFrag.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
 
 const domElm = domDoc.createElement('div');
 domElm.append(domContainer.cloneNode(true));
 const domElmIterator = domDoc.createNodeIterator(domElm, 1);
 let domElmNode = domElmIterator.nextNode();
-let domElmBox, domElmDiv;
+let domElmDiv;
 while (domElmNode) {
-  if (domElmNode.id === `box${x - 1}`) {
-    domElmBox = domElmNode;
-  } else if (domElmNode.id === `div${x - 1}-${y - 1}`) {
+  if (domElmNode.id === `div${x - 1}-${y - 1}-${z - 1}`) {
     domElmDiv = domElmNode;
-  }
-  if (domElmBox && domElmDiv) {
     break;
   }
   domElmNode = domElmIterator.nextNode();
 }
 
+/* selectors */
+const selectors = [
+  'div',
+  'div.box',
+  '.box > .div',
+  '.box .div',
+  '.div + .div',
+  '.div ~ .div',
+  '.box ~ .box .div'
+];
+
 /* matcher tests */
 const elementMatches = (type, api, selector) => {
-  let box;
-  let div;
-  let patchedBox;
-  let patchedDiv;
+  let refPoint;
   switch (type) {
-    case 'document': {
-      box = docBox;
-      div = docDiv;
-      patchedBox = domBox;
-      patchedDiv = domDiv;
+    case 'element': {
+      if (api === 'jsdom') {
+        refPoint = elmDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domElmDiv;
+      }
       break;
     }
     case 'fragment': {
-      box = fragBox;
-      div = fragDiv;
-      patchedBox = domFragBox;
-      patchedDiv = domFragDiv;
+      if (api === 'jsdom') {
+        refPoint = fragDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domFragDiv;
+      }
       break;
     }
-    case 'element':
+    case 'document':
     default: {
-      box = elmBox;
-      div = elmDiv;
-      patchedBox = domElmBox;
-      patchedDiv = domElmDiv;
+      if (api === 'jsdom') {
+        refPoint = docDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domDiv;
+      }
     }
   }
-  const [key, value] = selector;
-  if (api === 'jsdom') {
-    if (value === 'box') {
-      box.matches(key);
-    } else if (value === 'div') {
-      div.matches(key);
-    }
-  } else if (api === 'patched-jsdom') {
-    if (value === 'box') {
-      patchedBox.matches(key);
-    } else if (value === 'div') {
-      patchedDiv.matches(key);
-    }
-  }
+  refPoint.matches(selector);
 };
 
 const elementClosest = (type, api, selector) => {
-  let box;
-  let div;
-  let patchedBox;
-  let patchedDiv;
+  let refPoint;
   switch (type) {
-    case 'document': {
-      box = docBox;
-      div = docDiv;
-      patchedBox = domBox;
-      patchedDiv = domDiv;
+    case 'element': {
+      if (api === 'jsdom') {
+        refPoint = elmDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domElmDiv;
+      }
       break;
     }
     case 'fragment': {
-      box = fragBox;
-      div = fragDiv;
-      patchedBox = domFragBox;
-      patchedDiv = domFragDiv;
+      if (api === 'jsdom') {
+        refPoint = fragDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domFragDiv;
+      }
       break;
     }
-    case 'element':
+    case 'document':
     default: {
-      box = elmBox;
-      div = elmDiv;
-      patchedBox = domElmBox;
-      patchedDiv = domElmDiv;
+      if (api === 'jsdom') {
+        refPoint = docDiv;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domDiv;
+      }
     }
   }
-  const [key, value] = selector;
-  if (api === 'jsdom') {
-    if (value === 'box') {
-      box.closest(key);
-    } else if (value === 'div') {
-      div.closest(key);
-    }
-  } else if (api === 'patched-jsdom') {
-    if (value === 'box') {
-      patchedBox.closest(key);
-    } else if (value === 'div') {
-      patchedDiv.closest(key);
-    }
-  }
+  refPoint.closest(selector);
 };
 
 const refPointQuerySelector = (type, api, selector) => {
   let refPoint;
-  let patchedRefPoint;
   switch (type) {
-    case 'document': {
-      refPoint = document;
-      patchedRefPoint = domDoc;
+    case 'element': {
+      if (api === 'jsdom') {
+        refPoint = element;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domElm;
+      }
       break;
     }
     case 'fragment': {
-      refPoint = fragment;
-      patchedRefPoint = domFrag;
+      if (api === 'jsdom') {
+        refPoint = fragment;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domFrag;
+      }
       break;
     }
-    case 'element':
+    case 'document':
     default: {
-      refPoint = element;
-      patchedRefPoint = domElm;
+      if (api === 'jsdom') {
+        refPoint = document;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domDoc;
+      }
     }
   }
-  const [key] = selector;
-  if (api === 'jsdom') {
-    refPoint.querySelector(key);
-  } else if (api === 'patched-jsdom') {
-    patchedRefPoint.querySelector(key);
-  }
+  refPoint.querySelector(selector);
 };
 
 const refPointQuerySelectorAll = (type, api, selector) => {
   let refPoint;
-  let patchedRefPoint;
   switch (type) {
-    case 'document': {
-      refPoint = document;
-      patchedRefPoint = domDoc;
+    case 'element': {
+      if (api === 'jsdom') {
+        refPoint = element;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domElm;
+      }
       break;
     }
     case 'fragment': {
-      refPoint = fragment;
-      patchedRefPoint = domFrag;
+      if (api === 'jsdom') {
+        refPoint = fragment;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domFrag;
+      }
       break;
     }
-    case 'element':
+    case 'document':
     default: {
-      refPoint = element;
-      patchedRefPoint = domElm;
+      if (api === 'jsdom') {
+        refPoint = document;
+      } else if (api === 'patched-jsdom') {
+        refPoint = domDoc;
+      }
     }
   }
-  const [key] = selector;
-  if (api === 'jsdom') {
-    refPoint.querySelectorAll(key);
-  } else if (api === 'patched-jsdom') {
-    patchedRefPoint.querySelectorAll(key);
-  }
+  refPoint.querySelectorAll(selector);
 };
-
-/* selectors */
-const selectors = [
-  ['div', 'div'],
-  ['div.box', 'div'],
-  ['.box > .div', 'div'],
-  ['.box .div', 'div'],
-  ['.box + .box', 'box'],
-  ['.box ~ .box', 'box'],
-  ['.box ~ .box .div', 'div']
-];
 
 /* benchmark */
 const suite = new Benchmark.Suite();
@@ -295,149 +273,149 @@ suite.on('start', async () => {
   });
   const { name: pkgName, version } = JSON.parse(value);
   console.log(`benchmark ${pkgName} v${version}`);
-}).add(`jsdom matches - document - ${selectors[0][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[0]}`, () => {
   elementMatches('document', 'jsdom', selectors[0]);
-}).add(`patched-jsdom matches - document - ${selectors[0][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[0]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[0]);
-}).add(`jsdom matches - document - ${selectors[1][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[1]}`, () => {
   elementMatches('document', 'jsdom', selectors[1]);
-}).add(`patched-jsdom matches - document - ${selectors[1][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[1]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[1]);
-}).add(`jsdom matches - document - ${selectors[2][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[2]}`, () => {
   elementMatches('document', 'jsdom', selectors[2]);
-}).add(`patched-jsdom matches - document - ${selectors[2][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[2]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[2]);
-}).add(`jsdom matches - document - ${selectors[3][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[3]}`, () => {
   elementMatches('document', 'jsdom', selectors[3]);
-}).add(`patched-jsdom matches - document - ${selectors[3][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[3]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[3]);
-}).add(`jsdom matches - document - ${selectors[4][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[4]}`, () => {
   elementMatches('document', 'jsdom', selectors[4]);
-}).add(`patched-jsdom matches - document - ${selectors[4][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[4]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[4]);
-}).add(`jsdom matches - document - ${selectors[5][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[5]}`, () => {
   elementMatches('document', 'jsdom', selectors[5]);
-}).add(`patched-jsdom matches - document - ${selectors[5][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[5]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[5]);
-}).add(`jsdom matches - document - ${selectors[6][0]}`, () => {
+}).add(`jsdom matches - document - ${selectors[6]}`, () => {
   elementMatches('document', 'jsdom', selectors[6]);
-}).add(`patched-jsdom matches - document - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom matches - document - ${selectors[6]}`, () => {
   elementMatches('document', 'patched-jsdom', selectors[6]);
-}).add(`jsdom matches - fragment - ${selectors[6][0]}`, () => {
+}).add(`jsdom matches - fragment - ${selectors[6]}`, () => {
   elementMatches('fragment', 'jsdom', selectors[6]);
-}).add(`patched-jsdom matches - fragment - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom matches - fragment - ${selectors[6]}`, () => {
   elementMatches('fragment', 'patched-jsdom', selectors[6]);
-}).add(`jsdom matches - element - ${selectors[6][0]}`, () => {
+}).add(`jsdom matches - element - ${selectors[6]}`, () => {
   elementMatches('element', 'jsdom', selectors[6]);
-}).add(`patched-jsdom matches - element - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom matches - element - ${selectors[6]}`, () => {
   elementMatches('element', 'patched-jsdom', selectors[6]);
-}).add(`jsdom closest - document - ${selectors[0][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[0]}`, () => {
   elementClosest('document', 'jsdom', selectors[0]);
-}).add(`patched-jsdom closest - document - ${selectors[0][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[0]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[0]);
-}).add(`jsdom closest - document - ${selectors[1][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[1]}`, () => {
   elementClosest('document', 'jsdom', selectors[1]);
-}).add(`patched-jsdom closest - document - ${selectors[1][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[1]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[1]);
-}).add(`jsdom closest - document - ${selectors[2][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[2]}`, () => {
   elementClosest('document', 'jsdom', selectors[2]);
-}).add(`patched-jsdom closest - document - ${selectors[2][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[2]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[2]);
-}).add(`jsdom closest - document - ${selectors[3][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[3]}`, () => {
   elementClosest('document', 'jsdom', selectors[3]);
-}).add(`patched-jsdom closest - document - ${selectors[3][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[3]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[3]);
-}).add(`jsdom closest - document - ${selectors[4][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[4]}`, () => {
   elementClosest('document', 'jsdom', selectors[4]);
-}).add(`patched-jsdom closest - document - ${selectors[4][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[4]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[4]);
-}).add(`jsdom closest - document - ${selectors[5][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[5]}`, () => {
   elementClosest('document', 'jsdom', selectors[5]);
-}).add(`patched-jsdom closest - document - ${selectors[5][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[5]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[5]);
-}).add(`jsdom closest - document - ${selectors[6][0]}`, () => {
+}).add(`jsdom closest - document - ${selectors[6]}`, () => {
   elementClosest('document', 'jsdom', selectors[6]);
-}).add(`patched-jsdom closest - document - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom closest - document - ${selectors[6]}`, () => {
   elementClosest('document', 'patched-jsdom', selectors[6]);
-}).add(`jsdom closest - fragment - ${selectors[6][0]}`, () => {
+}).add(`jsdom closest - fragment - ${selectors[6]}`, () => {
   elementClosest('fragment', 'jsdom', selectors[6]);
-}).add(`patched-jsdom closest - fragment - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom closest - fragment - ${selectors[6]}`, () => {
   elementClosest('fragment', 'patched-jsdom', selectors[6]);
-}).add(`jsdom closest - element - ${selectors[6][0]}`, () => {
+}).add(`jsdom closest - element - ${selectors[6]}`, () => {
   elementClosest('element', 'jsdom', selectors[6]);
-}).add(`patched-jsdom closest - element - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom closest - element - ${selectors[6]}`, () => {
   elementClosest('element', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelector - document - ${selectors[0][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[0]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[0]);
-}).add(`patched-jsdom querySelector - document - ${selectors[0][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[0]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[0]);
-}).add(`jsdom querySelector - document - ${selectors[1][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[1]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[1]);
-}).add(`patched-jsdom querySelector - document - ${selectors[1][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[1]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[1]);
-}).add(`jsdom querySelector - document - ${selectors[2][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[2]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[2]);
-}).add(`patched-jsdom querySelector - document - ${selectors[2][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[2]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[2]);
-}).add(`jsdom querySelector - document - ${selectors[3][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[3]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[3]);
-}).add(`patched-jsdom querySelector - document - ${selectors[3][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[3]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[3]);
-}).add(`jsdom querySelector - document - ${selectors[4][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[4]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[4]);
-}).add(`patched-jsdom querySelector - document - ${selectors[4][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[4]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[4]);
-}).add(`jsdom querySelector - document - ${selectors[5][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[5]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[5]);
-}).add(`patched-jsdom querySelector - document - ${selectors[5][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[5]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[5]);
-}).add(`jsdom querySelector - document - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelector - document - ${selectors[6]}`, () => {
   refPointQuerySelector('document', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelector - document - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelector - document - ${selectors[6]}`, () => {
   refPointQuerySelector('document', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelector - fragment - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelector - fragment - ${selectors[6]}`, () => {
   refPointQuerySelector('fragment', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelector - fragment - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelector - fragment - ${selectors[6]}`, () => {
   refPointQuerySelector('fragment', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelector - element - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelector - element - ${selectors[6]}`, () => {
   refPointQuerySelector('element', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelector - element - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelector - element - ${selectors[6]}`, () => {
   refPointQuerySelector('element', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelectorAll - document - ${selectors[0][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[0]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[0]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[0][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[0]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[0]);
-}).add(`jsdom querySelectorAll - document - ${selectors[1][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[1]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[1]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[1][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[1]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[1]);
-}).add(`jsdom querySelectorAll - document - ${selectors[2][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[2]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[2]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[2][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[2]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[2]);
-}).add(`jsdom querySelectorAll - document - ${selectors[3][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[3]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[3]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[3][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[3]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[3]);
-}).add(`jsdom querySelectorAll - document - ${selectors[4][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[4]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[4]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[4][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[4]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[4]);
-}).add(`jsdom querySelectorAll - document - ${selectors[5][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[5]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[5]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[5][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[5]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[5]);
-}).add(`jsdom querySelectorAll - document - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelectorAll - document - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('document', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelectorAll - document - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - document - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('document', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelectorAll - fragment - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelectorAll - fragment - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('fragment', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelectorAll - fragment - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - fragment - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('fragment', 'patched-jsdom', selectors[6]);
-}).add(`jsdom querySelectorAll - element - ${selectors[6][0]}`, () => {
+}).add(`jsdom querySelectorAll - element - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('element', 'jsdom', selectors[6]);
-}).add(`patched-jsdom querySelectorAll - element - ${selectors[6][0]}`, () => {
+}).add(`patched-jsdom querySelectorAll - element - ${selectors[6]}`, () => {
   refPointQuerySelectorAll('element', 'patched-jsdom', selectors[6]);
 }).on('cycle', evt => {
   const str = String(evt.target);
