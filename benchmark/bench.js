@@ -128,13 +128,13 @@ while (domElmNode) {
 
 /* selectors */
 const selectors = [
-  'div',
-  'div.box',
+  '.div.inner',
+  '.div:not(.inner)',
   '.box > .div',
-  '.box .div',
-  '.div + .div',
-  '.div ~ .div',
-  '.box ~ .box .div'
+  '.box .div.inner',
+  '.div.inner + .div',
+  '.div.inner ~ .div',
+  '.box + .box .div.inner'
 ];
 
 /* matcher tests */
