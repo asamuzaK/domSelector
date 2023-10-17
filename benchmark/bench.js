@@ -27,17 +27,16 @@ const xyFrag = document.createDocumentFragment();
 for (let i = 0; i < x; i++) {
   const xNode = document.createElement('div');
   xNode.id = `box${i}`;
-  xNode.classList.add('box');
+  xNode.classList.add('box', 'container');
   const yFrag = document.createDocumentFragment();
   for (let j = 0; j < y; j++) {
     const yNode = document.createElement('div');
     yNode.id = `div${i}-${j}`;
-    yNode.classList.add('div');
+    yNode.classList.add('block', 'outer');
     for (let k = 0; k < z; k++) {
       const zNode = document.createElement('div');
       zNode.id = `div${i}-${j}-${k}`;
-      zNode.classList.add('div');
-      zNode.classList.add('inner');
+      zNode.classList.add('block', 'inner');
       zNode.textContent = `${i}-${j}-${k}`;
       yNode.append(zNode);
     }
@@ -128,13 +127,13 @@ while (domElmNode) {
 
 /* selectors */
 const selectors = [
-  '.div.inner',
-  '.div:not(.inner)',
-  '.box > .div',
-  '.box .div.inner',
-  '.div.inner + .div',
-  '.div.inner ~ .div',
-  '.box + .box .div.inner'
+  '.container.box',
+  '.container:not(.box)',
+  '.box + .box',
+  '.box ~ .box',
+  '.box > .block',
+  '.box .block.inner',
+  '.box:nth-child(odd) + .box .block.inner'
 ];
 
 /* matcher tests */
