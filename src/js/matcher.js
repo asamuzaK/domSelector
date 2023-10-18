@@ -536,7 +536,7 @@ export class Matcher {
       if (!node.hasAttribute('lang')) {
         res = node;
       }
-    } else if (/[A-Za-z\d-]+/.test(astName)) {
+    } else if (/[A-Z\d-]+/i.test(astName)) {
       const codePart = '(?:-[A-Za-z\\d]+)?';
       let reg;
       if (/-/.test(astName)) {
@@ -1996,60 +1996,60 @@ export class Matcher {
    * @returns {Array} - matrix
    */
   _collectNodes(targetType) {
-    const pendingItems = new Set();
     const ast = this.#ast.values();
-    let i = 0;
-    for (const { branch } of ast) {
-      if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+      const pendingItems = new Set();
+      let i = 0;
+      for (const { branch } of ast) {
         const twig = branch[0];
         const { nodes, pending } = this._findNodes(twig, targetType);
         if (nodes.size) {
           this.#nodes[i] = nodes;
         } else if (pending) {
           pendingItems.add(new Map([
-            ['i', i],
+            ['index', i],
             ['twig', twig]
           ]));
         } else {
           this.#ast[i].skip = true;
         }
-      } else {
-        const branchLen = branch.length;
-        const lastIndex = branchLen - 1;
-        const twig = branch[lastIndex];
+        i++;
+      }
+      if (pendingItems.size) {
+        const { document, root } = this.#root;
+        const iterator = document.createNodeIterator(root, SHOW_ELEMENT);
+        let nextNode = iterator.nextNode();
+        while (nextNode) {
+          let bool = false;
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            bool = isSameOrDescendant(nextNode, this.#node);
+          } else {
+            bool = true;
+          }
+          if (bool) {
+            for (const pendingItem of pendingItems) {
+              const { leaves } = pendingItem.get('twig');
+              const matched = this._matchLeaves(leaves, nextNode);
+              if (matched) {
+                const index = pendingItem.get('index');
+                this.#nodes[index].add(nextNode);
+              }
+            }
+          }
+          nextNode = iterator.nextNode();
+        }
+      }
+    } else {
+      let i = 0;
+      for (const { branch } of ast) {
+        const twig = branch[branch.length - 1];
         const { nodes } = this._findNodes(twig, targetType);
         if (nodes.size) {
           this.#nodes[i] = nodes;
         } else {
           this.#ast[i].skip = true;
         }
-      }
-      i++;
-    }
-    if (pendingItems.size) {
-      const { document, root } = this.#root;
-      const iterator = document.createNodeIterator(root, SHOW_ELEMENT);
-      let nextNode = iterator.nextNode();
-      while (nextNode) {
-        let bool = false;
-        if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-          if (this.#node.nodeType === ELEMENT_NODE) {
-            bool = isSameOrDescendant(nextNode, this.#node);
-          } else {
-            bool = true;
-          }
-        }
-        if (bool) {
-          for (const pendingItem of pendingItems) {
-            const { leaves } = pendingItem.get('twig');
-            const matched = this._matchLeaves(leaves, nextNode);
-            if (matched) {
-              const indexI = pendingItem.get('i');
-              this.#nodes[indexI].add(nextNode);
-            }
-          }
-        }
-        nextNode = iterator.nextNode();
+        i++;
       }
     }
     return [
