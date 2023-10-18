@@ -123,7 +123,7 @@ export class Matcher {
         root = node;
         break;
       }
-      default: {
+      case ELEMENT_NODE: {
         if (isSameOrDescendant(node)) {
           document = node.ownerDocument;
           root = node.ownerDocument;
@@ -139,6 +139,10 @@ export class Matcher {
           document = parent.ownerDocument;
           root = parent;
         }
+        break;
+      }
+      default: {
+        throw new TypeError(`Unexpected node type ${node.nodeName}.`);
       }
     }
     return {
@@ -2214,6 +2218,9 @@ export class Matcher {
    * @returns {boolean} - `true` if matched `false` otherwise
    */
   matches() {
+    if (this.#node.nodeType !== ELEMENT_NODE) {
+      throw new TypeError(`Unexpected node type ${this.#node.nodeName}.`);
+    }
     let res;
     try {
       const nodes = this._find(TARGET_SELF);
@@ -2229,6 +2236,9 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   closest() {
+    if (this.#node.nodeType !== ELEMENT_NODE) {
+      throw new TypeError(`Unexpected node type ${this.#node.nodeName}.`);
+    }
     let res;
     try {
       const nodes = this._find(TARGET_LINEAL);

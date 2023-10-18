@@ -103,6 +103,17 @@ describe('match AST leaf and DOM node', () => {
     });
 
     it('should throw', () => {
+      assert.throws(() => new Matcher('*', 'foo'), TypeError,
+        'Unexpected node type undefined');
+    });
+
+    it('should throw', () => {
+      const text = document.createTextNode('foo');
+      assert.throws(() => new Matcher('*', text), TypeError,
+        'Unexpected node type #text');
+    });
+
+    it('should throw', () => {
       assert.throws(() => new Matcher('#ul1 ++ #li1', document),
         DOMException);
     });
@@ -8607,6 +8618,11 @@ describe('match AST leaf and DOM node', () => {
 
     describe('matches', () => {
       it('should throw', () => {
+        assert.throws(() => new Matcher('body', document).matches(), TypeError,
+          'Unexpected node type #document.');
+      });
+
+      it('should throw', () => {
         assert.throws(() =>
           new Matcher('[foo=bar baz]', document.body).matches(), DOMException);
       });
@@ -8699,6 +8715,11 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('closest', () => {
+      it('should throw', () => {
+        assert.throws(() => new Matcher('body', document).closest(), TypeError,
+          'Unexpected node type #document.');
+      });
+
       it('should throw', () => {
         assert.throws(() =>
           new Matcher('[foo=bar baz]', document.getElementById('div0'))
