@@ -43,7 +43,8 @@
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
-    "tsc": "npx tsc"
+    "tsc": "npx tsc",
+    "update-wpt": "git submodule update --init --recursive"
   },
   "version": "0.20.2"
 }
