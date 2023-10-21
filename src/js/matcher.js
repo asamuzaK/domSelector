@@ -80,10 +80,10 @@ export class Matcher {
    */
   constructor(selector, node, opt = {}) {
     const { sort, warn } = opt;
-    [this.#ast, this.#nodes] = this._prepare(selector);
-    this.#node = node;
-    this.#root = this._getRoot(node);
     this.#selector = selector;
+    this.#node = node;
+    [this.#ast, this.#nodes] = this._prepare(selector);
+    this.#root = this._getRoot(node);
     this.#sort = !!sort;
     this.#warn = !!warn;
   }
@@ -1964,7 +1964,7 @@ export class Matcher {
         } else if (targetType === TARGET_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
-            const bool = this._matchLeaves([leaf], refNode); ;
+            const bool = this._matchLeaves([leaf], refNode);
             if (bool) {
               arr.push(refNode);
             }
