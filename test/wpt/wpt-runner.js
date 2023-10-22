@@ -94,9 +94,20 @@ await wptRunner(testsPath, {
     return res;
   }
 }).then(failures => {
-  const msg = `\n${failures} failures.`;
+  let msg;
+  switch (failures) {
+    case 0:
+      msg = '\npassed.';
+      break;
+    case 1:
+      msg = '\n1 failure.';
+      break;
+    default:
+      msg = `\n${failures} failures.`;
+  }
   console.log(msg);
   process.exit(failures);
 }).catch(e => {
   console.error(e);
+  process.exit(1);
 });
