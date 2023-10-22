@@ -63,6 +63,7 @@ const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 export class Matcher {
   /* private fields */
   #ast;
+  #branches;
   #node;
   #nodes;
   #root;
@@ -84,6 +85,7 @@ export class Matcher {
     this.#node = node;
     [this.#ast, this.#nodes] = this._prepare(selector);
     this.#root = this._getRoot(node);
+    this.#branches = new WeakMap();
     this.#sort = !!sort;
     this.#warn = !!warn;
   }
@@ -193,7 +195,7 @@ export class Matcher {
    */
   _prepare(selector = this.#selector) {
     const ast = parseSelector(selector);
-    const branches = walkAST(ast).values();
+    const branches = walkAST(ast);
     const tree = [];
     const nodes = [];
     let i = 0;
@@ -631,59 +633,60 @@ export class Matcher {
 
   /**
    * match logical pseudo-class functions - :has(), :is(), :not(), :where()
-   * @param {object} ast - AST
+   * @param {Array} branches - AST branches
    * @param {object} node - Element node
+   * @param {string} funcName - pseudo class function name
    * @returns {?object} - matched node
    */
-  _matchLogicalPseudoFunc(ast, node) {
-    const branches = walkAST(ast);
-    const branchLen = branches.length;
-    const branchSelectors = [];
-    for (let i = 0; i < branchLen; i++) {
-      const leaves = branches[i].values();
-      for (const leaf of leaves) {
-        const css = generateCSS(leaf);
-        branchSelectors.push(css);
-      }
-    }
-    const branchSelector = branchSelectors.join(',');
-    const astName = unescapeSelector(ast.name);
+  _matchLogicalPseudoFunc(branches, node, funcName) {
     let res;
-    if (astName === 'has') {
-      if (branchSelector.includes(':has(')) {
+    if (Array.isArray(branches) && branches.length) {
+      const branchLen = branches.length;
+      const branchSelectors = [];
+      for (let i = 0; i < branchLen; i++) {
+        const leaves = branches[i].values();
+        for (const leaf of leaves) {
+          const css = generateCSS(leaf);
+          branchSelectors.push(css);
+        }
+      }
+      const branchSelector = branchSelectors.join(',');
+      if (funcName === 'has') {
+        if (branchSelector.includes(':has(')) {
+          res = null;
+        } else {
+          let bool;
+          for (let i = 0; i < branchLen; i++) {
+            const leaves = branches[i];
+            bool = this._matchHasPseudoFunc(Object.assign([], leaves), node);
+            if (bool) {
+              break;
+            }
+          }
+          if (bool) {
+            res = node;
+          }
+        }
+      // NOTE: according to MDN, :not() can not contain :not()
+      // but spec says nothing about that?
+      } else if (funcName === 'not' && branchSelector.includes(':not(')) {
         res = null;
       } else {
         let bool;
         for (let i = 0; i < branchLen; i++) {
           const leaves = branches[i];
-          bool = this._matchHasPseudoFunc(leaves, node);
+          bool = this._matchLeaves(leaves, node);
           if (bool) {
             break;
           }
         }
-        if (bool) {
+        if (funcName === 'not') {
+          if (!bool) {
+            res = node;
+          }
+        } else if (bool) {
           res = node;
         }
-      }
-    // NOTE: according to MDN, :not() can not contain :not()
-    // but spec says nothing about that?
-    } else if (astName === 'not' && branchSelector.includes(':not(')) {
-      res = null;
-    } else {
-      let bool;
-      for (let i = 0; i < branchLen; i++) {
-        const leaves = branches[i];
-        bool = this._matchLeaves(leaves, node);
-        if (bool) {
-          break;
-        }
-      }
-      if (astName === 'not') {
-        if (!bool) {
-          res = node;
-        }
-      } else if (bool) {
-        res = node;
       }
     }
     return res ?? null;
@@ -703,7 +706,15 @@ export class Matcher {
     let matched = new Set();
     // :has(), :is(), :not(), :where()
     if (PSEUDO_FUNC.test(astName)) {
-      const res = this._matchLogicalPseudoFunc(ast, node);
+      let branches;
+      if (this.#branches.has(ast)) {
+        branches = this.#branches.get(ast);
+      } else {
+        branches = walkAST(ast);
+        this.#branches.set(ast, branches);
+      }
+      const astName = unescapeSelector(ast.name);
+      const res = this._matchLogicalPseudoFunc(branches, node, astName);
       if (res) {
         matched.add(res);
       }

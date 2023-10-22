@@ -1854,152 +1854,92 @@ describe('match AST leaf and DOM node', () => {
 
     describe('match logical pseudo-class function', () => {
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: '>',
-                      type: COMBINATOR
-                    },
-                    {
-                      loc: null,
-                      name: 'li',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'has',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(> li)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: '>',
-                      type: COMBINATOR
-                    },
-                    {
-                      loc: null,
-                      name: 'li',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'has',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':has(> li)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
         assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'li',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'li',
+              type: TYPE_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'has',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(li)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dd',
-                      type: TYPE_SELECTOR
-                    },
-                    {
-                      loc: null,
-                      name: '>',
-                      type: COMBINATOR
-                    },
-                    {
-                      loc: null,
-                      name: 'span',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'dd',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'span',
+              type: TYPE_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'has',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':has(dd > span)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
               children: [
                 {
@@ -2007,133 +1947,80 @@ describe('match AST leaf and DOM node', () => {
                     {
                       children: [
                         {
-                          children: [
-                            {
-                              children: [
-                                {
-                                  loc: null,
-                                  name: 'li',
-                                  type: TYPE_SELECTOR
-                                }
-                              ],
-                              loc: null,
-                              type: SELECTOR
-                            }
-                          ],
                           loc: null,
-                          type: SELECTOR_LIST
+                          name: 'li',
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
-                      name: 'has',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR
                     }
                   ],
                   loc: null,
-                  type: SELECTOR
+                  type: SELECTOR_LIST
                 }
               ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'has',
+              type: PSEUDO_CLASS_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'has',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(:has(li))', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
         assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ol',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ol',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'not',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':not(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ul',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ul',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'not',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':not(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
         assert.isNull(res, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
               children: [
                 {
@@ -2141,228 +2028,133 @@ describe('match AST leaf and DOM node', () => {
                     {
                       children: [
                         {
-                          children: [
-                            {
-                              children: [
-                                {
-                                  loc: null,
-                                  name: 'ol',
-                                  type: TYPE_SELECTOR
-                                }
-                              ],
-                              loc: null,
-                              type: SELECTOR
-                            }
-                          ],
                           loc: null,
-                          type: SELECTOR_LIST
+                          name: 'ol',
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
-                      name: 'not',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR
                     }
                   ],
                   loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ul',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
+                  type: SELECTOR_LIST
                 }
               ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'not',
+              type: PSEUDO_CLASS_SELECTOR
             }
           ],
-          loc: null,
-          name: 'not',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('dl1');
-        const matcher = new Matcher(':not(ul, :not(ol))', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const matcher = new Matcher(':not(:not(ol), ul)', node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
         assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ul',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ul',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'is',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'is');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ol',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ol',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'is',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'is');
         assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ul',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ul',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'where',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':where(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'where');
         assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'ol',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                },
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'dl',
-                      type: TYPE_SELECTOR
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'ol',
+              type: TYPE_SELECTOR
             }
           ],
-          loc: null,
-          name: 'where',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':where(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'where');
         assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
-        const leaf = {
-          children: [
+        const branches = [
+          [
             {
               children: [
                 {
@@ -2370,54 +2162,39 @@ describe('match AST leaf and DOM node', () => {
                     {
                       children: [
                         {
-                          children: [
-                            {
-                              children: [
-                                {
-                                  loc: null,
-                                  name: 'li',
-                                  type: TYPE_SELECTOR
-                                }
-                              ],
-                              loc: null,
-                              type: SELECTOR
-                            },
-                            {
-                              children: [
-                                {
-                                  loc: null,
-                                  name: 'dd',
-                                  type: TYPE_SELECTOR
-                                }
-                              ],
-                              loc: null,
-                              type: SELECTOR
-                            }
-                          ],
                           loc: null,
-                          type: SELECTOR_LIST
+                          name: 'li',
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
-                      name: 'is',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR
+                    },
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: 'dd',
+                          type: TYPE_SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
                     }
                   ],
                   loc: null,
-                  type: SELECTOR
+                  type: SELECTOR_LIST
                 }
               ],
               loc: null,
-              type: SELECTOR_LIST
+              name: 'is',
+              type: PSEUDO_CLASS_SELECTOR
             }
-          ],
-          loc: null,
-          name: 'not',
-          type: PSEUDO_CLASS_SELECTOR
-        };
+          ]
+        ];
         const node = document.getElementById('dt2');
         const matcher = new Matcher(':not(:is(li, dd))', node);
-        const res = matcher._matchLogicalPseudoFunc(leaf, node);
+        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
         assert.deepEqual(res, node, 'result');
       });
     });
@@ -8782,11 +8559,11 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
-      it('should not match', () => {
+      it('should get matched node', () => {
         const node = document.getElementById('li2');
         const matcher = new Matcher(':has(:scope)', node);
         const res = matcher.closest();
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, document.getElementById('ul1'), 'result');
       });
     });
 

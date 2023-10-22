@@ -1136,8 +1136,8 @@ describe('exported api', () => {
       </div>`;
       document.body.innerHTML = domStr;
       const node = document.getElementById('test4');
-      const res = closest(':has(:scope)', node);
-      assert.isNull(res, 'result');
+      const res = closest(':has(> :scope)', node);
+      assert.deepEqual(res, document.getElementById('test3'), 'result');
     });
   });
 
