@@ -259,7 +259,13 @@ export class Matcher {
     const { parentNode } = node;
     const selectorNodes = new Set();
     if (selector) {
-      const branches = walkAST(selector);
+      let branches;
+      if (this.#cache.has(selector)) {
+        branches = this.#cache.get(selector);
+      } else {
+        branches = walkAST(selector);
+        this.#cache.set(selector, branches);
+      }
       const branchLen = branches.length;
       const iterator = [...parentNode.children].values();
       for (const refNode of iterator) {
@@ -293,7 +299,7 @@ export class Matcher {
               break;
             }
           }
-        } else {
+        } else if (!selector) {
           const current = arr[b - 1];
           matched.add(current);
         }
@@ -324,7 +330,9 @@ export class Matcher {
               }
             }
           } else if (i === nth) {
-            matched.add(current);
+            if (!selector) {
+              matched.add(current);
+            }
             nth += a;
           }
         }
