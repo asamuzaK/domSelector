@@ -188,14 +188,10 @@ export class Matcher {
 
   /**
    * prepare ast and nodes
-   * @param {Array} args - arguments
+   * @param {string} selector - CSS selector
    * @returns {Array} - list and matrix
    */
-  _prepare(...args) {
-    if (!args.length) {
-      throw new TypeError('1 argument required, but only 0 present');
-    }
-    const [selector] = args;
+  _prepare(selector = this.#selector) {
     const ast = parseSelector(selector);
     const branches = walkAST(ast).values();
     const tree = [];

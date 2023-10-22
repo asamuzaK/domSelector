@@ -352,11 +352,6 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('prepare list and matrix', () => {
-      it('should throw', () => {
-        assert.throws(() => new Matcher(null, document)._prepare(), TypeError,
-          '1 argument required, but only 0 present');
-      });
-
       it('should get list and matrix', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
