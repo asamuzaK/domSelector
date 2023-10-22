@@ -1870,7 +1870,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(> li)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: '> li'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -1891,7 +1895,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':has(> li)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: '> li'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -1907,7 +1915,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(li)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: 'li'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -1933,7 +1945,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':has(dd > span)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: 'dd > span'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -1968,7 +1984,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':has(:has(li))', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'has');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: ':has(li)'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -1991,7 +2011,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':not(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'not',
+          branches,
+          selector: 'ol,dl'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -2014,7 +2038,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':not(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'not',
+          branches,
+          selector: 'ul,dl'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -2056,7 +2084,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('dl1');
         const matcher = new Matcher(':not(:not(ol), ul)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'not',
+          branches,
+          selector: ':not(ol),ul'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -2079,7 +2111,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'is');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'is',
+          branches,
+          selector: 'ul,dl'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -2102,7 +2138,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'is');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'is',
+          branches,
+          selector: 'ol,dl'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -2125,7 +2165,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':where(ul, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'where');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'where',
+          branches,
+          selector: 'ul,dl'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
 
@@ -2148,7 +2192,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':where(ol, dl)', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'where');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'where',
+          branches,
+          selector: 'ol,dl'
+        }, node);
         assert.isNull(res, 'result');
       });
 
@@ -2194,7 +2242,11 @@ describe('match AST leaf and DOM node', () => {
         ];
         const node = document.getElementById('dt2');
         const matcher = new Matcher(':not(:is(li, dd))', node);
-        const res = matcher._matchLogicalPseudoFunc(branches, node, 'not');
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'not',
+          branches,
+          selector: ':is(li, dd)'
+        }, node);
         assert.deepEqual(res, node, 'result');
       });
     });
