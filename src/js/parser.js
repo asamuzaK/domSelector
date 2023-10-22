@@ -72,7 +72,7 @@ export const unescapeSelector = (selector = '') => {
  */
 export const preprocess = (...args) => {
   if (!args.length) {
-    throw new TypeError('1 argument required, but only 0 present');
+    throw new TypeError('1 argument required, but only 0 present.');
   }
   let [selector] = args;
   if (typeof selector === 'string') {

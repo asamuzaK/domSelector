@@ -129,7 +129,8 @@ describe('preprocess', () => {
   const func = parser.preprocess;
 
   it('should throw', () => {
-    assert.throws(() => func(), TypeError);
+    assert.throws(() => func(), TypeError,
+      '1 argument required, but only 0 present.');
   });
 
   it('should throw', () => {
