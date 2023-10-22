@@ -2354,28 +2354,60 @@ const jsdom = (str = '') => {
     runScripts: 'dangerously',
     url: 'http://localhost/',
     beforeParse: window => {
-      window.Element.prototype.matches = function (selector) {
+      window.Element.prototype.matches = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return matches(selector, this);
       };
-      window.Element.prototype.closest = function (selector) {
+      window.Element.prototype.closest = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return closest(selector, this);
       };
-      window.Document.prototype.querySelector = function (selector) {
+      window.Document.prototype.querySelector = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelector(selector, this);
       };
-      window.DocumentFragment.prototype.querySelector = function (selector) {
+      window.DocumentFragment.prototype.querySelector = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelector(selector, this);
       };
-      window.Element.prototype.querySelector = function (selector) {
+      window.Element.prototype.querySelector = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelector(selector, this);
       };
-      window.Document.prototype.querySelectorAll = function (selector) {
+      window.Document.prototype.querySelectorAll = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelectorAll(selector, this);
       };
-      window.DocumentFragment.prototype.querySelectorAll = function (selector) {
+      window.DocumentFragment.prototype.querySelectorAll = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelectorAll(selector, this);
       };
-      window.Element.prototype.querySelectorAll = function (selector) {
+      window.Element.prototype.querySelectorAll = function (...args) {
+        if (!args.length) {
+          throw new window.TypeError('1 argument required, but only 0 present');
+        }
+        const [selector] = args;
         return querySelectorAll(selector, this);
       };
     }
