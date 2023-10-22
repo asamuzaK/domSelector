@@ -319,6 +319,7 @@ suite.on('start', async () => {
   } else {
     const jsdomHz = hz.get('jsdom');
     const patchedHz = evt.target.hz;
+    const elapsed = `patched-jsdom took ${(1000 / patchedHz).toFixed(3)}msec.`
     let msg;
     if (jsdomHz > patchedHz) {
       msg = `jsdom is ${(jsdomHz / patchedHz).toFixed(1)} times faster.`;
@@ -328,7 +329,7 @@ suite.on('start', async () => {
     }
     hz.clear();
     console.log(`* ${str}`);
-    console.log(`* ${msg}`);
+    console.log(`* ${msg} ${elapsed}`);
   }
 }).run({
   async: true
