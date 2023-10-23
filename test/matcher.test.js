@@ -7000,6 +7000,349 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('find descendant nodes', () => {
+      it('should be pended', () => {
+        const leaves = [
+          {
+            name: 'foobar',
+            type: ID_SELECTOR
+          }
+        ];
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        node.id = 'foobar';
+        parent.appendChild(node);
+        const matcher = new Matcher('div #foobar', parent);
+        const res = matcher._findDescendantNodes(leaves, parent);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li3',
+            type: ID_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const node = document.getElementById('li3');
+        const matcher = new Matcher('ul #li3', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'foobar',
+            type: ID_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul #foobar', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'ul1',
+            type: ID_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('div #ul1', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li3',
+            type: ID_SELECTOR
+          },
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const node = document.getElementById('li3');
+        const matcher = new Matcher('ul li#li3', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          node
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'li3',
+            type: ID_SELECTOR
+          },
+          {
+            name: 'foobar',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul #li3.foobar', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'foobar',
+            type: CLASS_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul .foobar', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: CLASS_SELECTOR
+          },
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: CLASS_SELECTOR
+          },
+          {
+            flags: null,
+            matcher: null,
+            name: {
+              name: 'hidden',
+              type: IDENTIFIER
+            },
+            type: ATTRIBUTE_SELECTOR,
+            value: null
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li[hidden]', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const leaves = [
+          {
+            name: 'div',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const doc = new DOMParser().parseFromString('<foo></foo>', 'text/xml');
+        const root = document.createElement('root');
+        const div1 = document.createElement('div');
+        const div2 = document.createElement('div');
+        const div3 = document.createElement('div');
+        const div4 = document.createElement('div');
+        root.appendChild(div1);
+        root.appendChild(div2);
+        root.appendChild(div3);
+        root.appendChild(div4);
+        doc.documentElement.appendChild(root);
+        const matcher = new Matcher('root div', root);
+        const res = matcher._findDescendantNodes(leaves, root);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const leaves = [
+          {
+            name: '*|li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul *|li', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul li', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'ol',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('div1');
+        const matcher = new Matcher('div ol', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul li', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            children: null,
+            name: 'first-child',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul li:first-child', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: TYPE_SELECTOR
+          },
+          {
+            flags: null,
+            matcher: null,
+            name: {
+              name: 'hidden',
+              type: IDENTIFIER
+            },
+            type: ATTRIBUTE_SELECTOR,
+            value: null
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul li[hidden]', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
+        const leaves = [
+          {
+            name: 'before',
+            type: PSEUDO_ELEMENT_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul ::before', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const leaves = [
+          {
+            children: null,
+            name: 'first-child',
+            type: PSEUDO_CLASS_SELECTOR
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul :first-child', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
+      });
+    });
+
     describe('match combinator', () => {
       it('should get matched node(s)', () => {
         const twig = {

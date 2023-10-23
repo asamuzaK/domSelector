@@ -155,8 +155,8 @@ export class Matcher {
 
   /**
    * sort AST leaves
-   * @param {Array} leaves - AST leaves
-   * @returns {Array} - sorted leaves
+   * @param {Array.<object>} leaves - AST leaves
+   * @returns {Array.<object>} - sorted leaves
    */
   _sortLeaves(leaves) {
     const arr = [...leaves];
@@ -191,7 +191,7 @@ export class Matcher {
   /**
    * prepare ast and nodes
    * @param {string} selector - CSS selector
-   * @returns {Array} - list and matrix
+   * @returns {Array.<Array.<object|undefined>>} - list and matrix
    */
   _prepare(selector = this.#selector) {
     const ast = parseSelector(selector);
@@ -588,7 +588,7 @@ export class Matcher {
 
   /**
    * match :has() pseudo-class function
-   * @param {Array} leaves - AST leaves
+   * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - Element node
    * @returns {boolean} - result
    */
@@ -1677,7 +1677,7 @@ export class Matcher {
 
   /**
    * match leaves
-   * @param {Array} leaves - AST leaves
+   * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node
    * @returns {boolean} - result
    */
@@ -1690,6 +1690,95 @@ export class Matcher {
       }
     }
     return !!bool;
+  }
+
+  /**
+   * find descendant nodes
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} refNode - reference node
+   * @returns {object} - result
+   */
+  _findDescendantNodes(leaves, refNode) {
+    const [leaf, ...items] = leaves;
+    const { type: leafType } = leaf;
+    const leafName = unescapeSelector(leaf.name);
+    const matchItems = items.length > 0;
+    const { document, root } = this.#root;
+    let nodes = new Set();
+    let pending = false;
+    switch (leafType) {
+      case ID_SELECTOR: {
+        if (root.nodeType === ELEMENT_NODE) {
+          pending = true;
+        } else {
+          const elm = root.getElementById(leafName);
+          if (elm && elm !== refNode) {
+            const bool = isSameOrDescendant(elm, refNode);
+            let node;
+            if (bool) {
+              node = elm;
+            }
+            if (node) {
+              if (matchItems) {
+                const bool = this._matchLeaves(items, node);
+                if (bool) {
+                  nodes.add(node);
+                }
+              } else {
+                nodes.add(node);
+              }
+            }
+          }
+        }
+        break;
+      }
+      case CLASS_SELECTOR: {
+        const arr = [...refNode.getElementsByClassName(leafName)];
+        if (arr.length) {
+          if (matchItems) {
+            for (const node of arr) {
+              const bool = this._matchLeaves(items, node);
+              if (bool) {
+                nodes.add(node);
+              }
+            }
+          } else {
+            nodes = new Set(arr);
+          }
+        }
+        break;
+      }
+      case TYPE_SELECTOR: {
+        if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
+          pending = true;
+        } else {
+          const arr = [...refNode.getElementsByTagName(leafName)];
+          if (arr.length) {
+            if (matchItems) {
+              for (const node of arr) {
+                const bool = this._matchLeaves(items, node);
+                if (bool) {
+                  nodes.add(node);
+                }
+              }
+            } else {
+              nodes = new Set(arr);
+            }
+          }
+        }
+        break;
+      }
+      case PSEUDO_ELEMENT_SELECTOR: {
+        break;
+      }
+      default: {
+        pending = true;
+      }
+    }
+    return {
+      nodes,
+      pending
+    };
   }
 
   /**
@@ -1740,18 +1829,23 @@ export class Matcher {
         }
         case ' ':
         default: {
-          const { document } = this.#root;
-          const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
-          let refNode = iterator.nextNode();
-          if (refNode === node) {
-            refNode = iterator.nextNode();
-          }
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
-            if (bool) {
-              matched.add(refNode);
+          const { nodes, pending } = this._findDescendantNodes(leaves, node);
+          if (nodes.size) {
+            matched = nodes;
+          } else if (pending) {
+            const { document } = this.#root;
+            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            let refNode = iterator.nextNode();
+            if (refNode === node) {
+              refNode = iterator.nextNode();
             }
-            refNode = iterator.nextNode();
+            while (refNode) {
+              const bool = this._matchLeaves(leaves, refNode);
+              if (bool) {
+                matched.add(refNode);
+              }
+              refNode = iterator.nextNode();
+            }
           }
         }
       }
@@ -2016,7 +2110,7 @@ export class Matcher {
   /**
    * collect nodes
    * @param {string} targetType - target type
-   * @returns {Array} - matrix
+   * @returns {Array.<Array.<object|undefined>>} - matrix
    */
   _collectNodes(targetType) {
     const ast = this.#ast.values();
@@ -2084,7 +2178,7 @@ export class Matcher {
   /**
    * sort nodes
    * @param {object} nodes - collection of nodes
-   * @returns {Array} - collection of sorted nodes
+   * @returns {Array.<object|undefined>} - collection of sorted nodes
    */
   _sortNodes(nodes) {
     const arr = [...nodes];
