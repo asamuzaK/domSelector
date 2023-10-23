@@ -155,7 +155,7 @@ export class Matcher {
 
   /**
    * sort AST leaves
-   * @param {object} leaves - leaves
+   * @param {Array} leaves - AST leaves
    * @returns {Array} - sorted leaves
    */
   _sortLeaves(leaves) {
@@ -588,7 +588,7 @@ export class Matcher {
 
   /**
    * match :has() pseudo-class function
-   * @param {Array} leaves - leaves
+   * @param {Array} leaves - AST leaves
    * @param {object} node - Element node
    * @returns {boolean} - result
    */
@@ -711,7 +711,7 @@ export class Matcher {
         const branchLen = branches.length;
         const branchSelectors = [];
         for (let i = 0; i < branchLen; i++) {
-          const leaves = branches[i].values();
+          const leaves = branches[i];
           for (const leaf of leaves) {
             const css = generateCSS(leaf);
             branchSelectors.push(css);
@@ -984,7 +984,7 @@ export class Matcher {
             if (!parent) {
               parent = root;
             }
-            const nodes = [...parent.getElementsByTagName('input')].values();
+            const nodes = [...parent.getElementsByTagName('input')];
             let checked;
             for (const item of nodes) {
               if (item.getAttribute('type') === 'radio') {
@@ -1190,8 +1190,9 @@ export class Matcher {
           if (node.hasChildNodes()) {
             const nodes = node.childNodes.values();
             let bool;
-            for (const n of nodes) {
-              bool = n.nodeType !== ELEMENT_NODE && n.nodeType !== TEXT_NODE;
+            for (const refNode of nodes) {
+              bool = refNode.nodeType !== ELEMENT_NODE &&
+                refNode.nodeType !== TEXT_NODE;
               if (!bool) {
                 break;
               }
@@ -1676,14 +1677,13 @@ export class Matcher {
 
   /**
    * match leaves
-   * @param {Array} leaves - leaves
+   * @param {Array} leaves - AST leaves
    * @param {object} node - node
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node) {
-    const iterator = leaves.values();
     let bool;
-    for (const leaf of iterator) {
+    for (const leaf of leaves) {
       bool = this._matchSelector(leaf, node).has(node);
       if (!bool) {
         break;
@@ -1729,8 +1729,8 @@ export class Matcher {
           break;
         }
         case '>': {
-          const iterator = [...node.children].values();
-          for (const refNode of iterator) {
+          const childNodes = [...node.children];
+          for (const refNode of childNodes) {
             const bool = this._matchLeaves(leaves, refNode);
             if (bool) {
               matched.add(refNode);
@@ -1881,8 +1881,8 @@ export class Matcher {
             }
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const iterator = [...root.children].values();
-          for (const node of iterator) {
+          const childNodes = [...root.children];
+          for (const node of childNodes) {
             if (node.classList.contains(leafName)) {
               arr.push(node);
             }
@@ -1899,8 +1899,7 @@ export class Matcher {
         }
         if (arr.length) {
           if (matchItems) {
-            const iterator = arr.values();
-            for (const node of iterator) {
+            for (const node of arr) {
               const bool = this._matchLeaves(items, node);
               if (bool) {
                 nodes.add(node);
@@ -1942,8 +1941,8 @@ export class Matcher {
             const a = [...document.getElementsByTagName(leafName)];
             arr.push(...a);
           } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const iterator = [...root.children].values();
-            for (const node of iterator) {
+            const childNodes = [...root.children];
+            for (const node of childNodes) {
               if (node.localName === tagName) {
                 arr.push(node);
               }
@@ -1960,8 +1959,7 @@ export class Matcher {
         }
         if (arr.length) {
           if (matchItems) {
-            const iterator = arr.values();
-            for (const node of iterator) {
+            for (const node of arr) {
               const bool = this._matchLeaves(items, node);
               if (bool) {
                 nodes.add(node);
@@ -1997,8 +1995,7 @@ export class Matcher {
         }
         if (arr.length) {
           if (matchItems) {
-            const iterator = arr.values();
-            for (const node of iterator) {
+            for (const node of arr) {
               const bool = this._matchLeaves(items, node);
               if (bool) {
                 nodes.add(node);
