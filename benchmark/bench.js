@@ -40,7 +40,10 @@ const prepareDom = () => {
         const zNode = document.createElement('div');
         zNode.id = `div${i}-${j}-${k}`;
         zNode.classList.add('block', 'inner');
-        zNode.textContent = `${i}-${j}-${k}`;
+        const p = document.createElement('p');
+        p.classList.add('content');
+        p.textContent = `${i}-${j}-${k}`;
+        zNode.append(p);
         yNode.append(zNode);
       }
       yFrag.append(yNode);
@@ -140,8 +143,8 @@ const selectors = [
   '.box + .box',
   '.box ~ .box',
   '.box > .block',
-  '.box .block.inner',
-  '.box:nth-child(odd) + .box .block.inner'
+  '.box .content',
+  '.box:nth-child(odd) + .box .content'
 ];
 
 /* matcher tests */
@@ -319,7 +322,7 @@ suite.on('start', async () => {
   } else {
     const jsdomHz = hz.get('jsdom');
     const patchedHz = evt.target.hz;
-    const elapsed = `patched-jsdom took ${(1000 / patchedHz).toFixed(3)}msec.`
+    const elapsed = `patched-jsdom took ${(1000 / patchedHz).toFixed(3)}msec.`;
     let msg;
     if (jsdomHz > patchedHz) {
       msg = `jsdom is ${(jsdomHz / patchedHz).toFixed(1)} times faster.`;
