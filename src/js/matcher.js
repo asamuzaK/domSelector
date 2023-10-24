@@ -1694,10 +1694,10 @@ export class Matcher {
   /**
    * find descendant nodes
    * @param {Array.<object>} leaves - AST leaves
-   * @param {object} refNode - reference node
+   * @param {object} baseNode - base Element node
    * @returns {object} - result
    */
-  _findDescendantNodes(leaves, refNode) {
+  _findDescendantNodes(leaves, baseNode) {
     const [leaf, ...items] = leaves;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
@@ -1711,8 +1711,8 @@ export class Matcher {
           pending = true;
         } else {
           const elm = root.getElementById(leafName);
-          if (elm && elm !== refNode) {
-            const bool = isSameOrDescendant(elm, refNode);
+          if (elm && elm !== baseNode) {
+            const bool = isSameOrDescendant(elm, baseNode);
             let node;
             if (bool) {
               node = elm;
@@ -1732,7 +1732,7 @@ export class Matcher {
         break;
       }
       case CLASS_SELECTOR: {
-        const arr = [...refNode.getElementsByClassName(leafName)];
+        const arr = [...baseNode.getElementsByClassName(leafName)];
         if (arr.length) {
           if (matchItems) {
             for (const node of arr) {
@@ -1751,7 +1751,7 @@ export class Matcher {
         if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
           pending = true;
         } else {
-          const arr = [...refNode.getElementsByTagName(leafName)];
+          const arr = [...baseNode.getElementsByTagName(leafName)];
           if (arr.length) {
             if (matchItems) {
               for (const node of arr) {
