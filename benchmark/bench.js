@@ -144,7 +144,7 @@ const selectors = [
   '.box ~ .box',
   '.box > .block',
   '.box .content',
-  '.box:nth-child(odd) + .box .content'
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content'
 ];
 
 /* matcher tests */
