@@ -17,7 +17,8 @@ const setup = window => {
       const [selector] = args;
       res = matches(selector, this);
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -35,7 +36,8 @@ const setup = window => {
       const [selector] = args;
       res = closest(selector, this);
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -53,7 +55,8 @@ const setup = window => {
       const [selector] = args;
       res = querySelector(selector, this);
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -71,7 +74,8 @@ const setup = window => {
       const [selector] = args;
       res = querySelector(selector, this);
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -89,7 +93,8 @@ const setup = window => {
       const [selector] = args;
       res = querySelector(selector, this);
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -110,7 +115,8 @@ const setup = window => {
         res.push(...arr);
       }
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -131,7 +137,8 @@ const setup = window => {
         res.push(...arr);
       }
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
@@ -152,7 +159,8 @@ const setup = window => {
         res.push(...arr);
       }
     } catch (e) {
-      if (e instanceof globalThis.DOMException) {
+      if (e instanceof globalThis.DOMException &&
+          !(e instanceof window.DOMException)) {
         const { message, name } = e;
         throw new window.DOMException(message, name);
       } else {
