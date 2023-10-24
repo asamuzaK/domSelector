@@ -208,7 +208,7 @@ export class Matcher {
           if (item.type === COMBINATOR) {
             const [nextItem] = items;
             if (nextItem.type === COMBINATOR) {
-              const msg = `invalid combinator, ${item.name}${nextItem.name}`;
+              const msg = `invalid combinator ${item.name}${nextItem.name}`;
               throw new DOMException(msg, SYNTAX_ERR);
             }
             branch.push({
@@ -242,6 +242,42 @@ export class Matcher {
       tree,
       nodes
     ];
+  }
+
+  /**
+   * throw DOMExeption on pseudo element selector
+   * @param {object} astName - AST name
+   * @throws {DOMException}
+   * @returns {void}
+   */
+  _throwOnPseudoElementSelector(astName) {
+    let msg;
+    let type;
+    switch (astName) {
+      case 'after':
+      case 'backdrop':
+      case 'before':
+      case 'cue':
+      case 'cue-region':
+      case 'first-letter':
+      case 'first-line':
+      case 'file-selector-button':
+      case 'marker':
+      case 'part':
+      case 'placeholder':
+      case 'selection':
+      case 'slotted':
+      case 'target-text': {
+        msg = `Unsupported pseudo-element ::${astName}`;
+        type = NOT_SUPPORTED_ERR;
+        break;
+      }
+      default: {
+        msg = `Unknown pseudo-element ::${astName}`;
+        type = SYNTAX_ERR;
+      }
+    }
+    throw new DOMException(msg, type);
   }
 
   /**
@@ -1539,44 +1575,6 @@ export class Matcher {
   }
 
   /**
-   * match pseudo-element selector
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @throws {DOMException}
-   * @returns {void}
-   */
-  _matchPseudoElementSelector(ast, node) {
-    const astName = unescapeSelector(ast.name);
-    let msg;
-    let type;
-    switch (astName) {
-      case 'after':
-      case 'backdrop':
-      case 'before':
-      case 'cue':
-      case 'cue-region':
-      case 'first-letter':
-      case 'first-line':
-      case 'file-selector-button':
-      case 'marker':
-      case 'part':
-      case 'placeholder':
-      case 'selection':
-      case 'slotted':
-      case 'target-text': {
-        msg = `Unsupported pseudo-element ::${astName}`;
-        type = NOT_SUPPORTED_ERR;
-        break;
-      }
-      default: {
-        msg = `Unknown pseudo-element ::${astName}`;
-        type = SYNTAX_ERR;
-      }
-    }
-    throw new DOMException(msg, type);
-  }
-
-  /**
    * match type selector
    * @param {object} ast - AST
    * @param {object} node - Element node
@@ -1660,7 +1658,8 @@ export class Matcher {
           break;
         }
         case PSEUDO_ELEMENT_SELECTOR: {
-          this._matchPseudoElementSelector(ast, node);
+          const astName = unescapeSelector(ast.name);
+          this._throwOnPseudoElementSelector(astName);
           break;
         }
         case TYPE_SELECTOR:
@@ -1769,6 +1768,7 @@ export class Matcher {
         break;
       }
       case PSEUDO_ELEMENT_SELECTOR: {
+        this._throwOnPseudoElementSelector(leafName);
         break;
       }
       default: {
@@ -2066,6 +2066,7 @@ export class Matcher {
         break;
       }
       case PSEUDO_ELEMENT_SELECTOR: {
+        this._throwOnPseudoElementSelector(leafName);
         break;
       }
       default: {

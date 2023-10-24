@@ -423,6 +423,24 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('throw on pseudo-element selector', () => {
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::after', node);
+        assert.throws(() => matcher._throwOnPseudoElementSelector('after'),
+          DOMException, 'Unsupported pseudo-element ::after');
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::foo', node);
+        assert.throws(() => matcher._throwOnPseudoElementSelector('foo'),
+          DOMException, 'Unknown pseudo-element ::foo');
+      });
+    });
+
     describe('collect nth child', () => {
       it('should not match', () => {
         const anb = {
@@ -4978,6 +4996,19 @@ describe('match AST leaf and DOM node', () => {
           DOMException);
       });
 
+      it('should throw', () => {
+        const leaf = {
+          children: null,
+          name: 'slotted',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::slotted', node);
+        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
+          DOMException);
+      });
+
       // unknown
       it('should throw', () => {
         const leaf = {
@@ -6531,34 +6562,6 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('match pseudo-element selector', () => {
-      it('should throw', () => {
-        const leaf = {
-          children: null,
-          name: 'after',
-          type: PSEUDO_ELEMENT_SELECTOR
-        };
-        const node = document.createElement('div');
-        document.getElementById('div0').appendChild(node);
-        const matcher = new Matcher('::after', node);
-        assert.throws(() => matcher._matchPseudoElementSelector(leaf, node),
-          DOMException);
-      });
-
-      it('should throw', () => {
-        const leaf = {
-          children: null,
-          name: 'foo',
-          type: PSEUDO_ELEMENT_SELECTOR
-        };
-        const node = document.createElement('div');
-        document.getElementById('div0').appendChild(node);
-        const matcher = new Matcher('::foo', node);
-        assert.throws(() => matcher._matchPseudoElementSelector(leaf, node),
-          DOMException);
-      });
-    });
-
     describe('match type selector', () => {
       it('should get matched node(s)', () => {
         const leaf = {
@@ -7313,7 +7316,7 @@ describe('match AST leaf and DOM node', () => {
         assert.isFalse(res.pending, 'pending');
       });
 
-      it('should not match', () => {
+      it('should throw', () => {
         const leaves = [
           {
             name: 'before',
@@ -7322,9 +7325,8 @@ describe('match AST leaf and DOM node', () => {
         ];
         const refNode = document.getElementById('ul1');
         const matcher = new Matcher('ul ::before', document);
-        const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isFalse(res.pending, 'pending');
+        assert.throws(() => matcher._findDescendantNodes(leaves, refNode),
+          DOMException, 'Unsupported pseudo-element ::before');
       });
 
       it('should be pended', () => {
@@ -7688,12 +7690,11 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('find nodes', () => {
-      it('should not match', () => {
+      it('should throw', () => {
         const matcher = new Matcher('::before', document);
         const [[{ branch: [twig] }]] = matcher._prepare('::before');
-        const res = matcher._findNodes(twig);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isFalse(res.pending, 'pending');
+        assert.throws(() => matcher._findNodes(twig), DOMException,
+          'Unsupported pseudo-element ::before');
       });
 
       it('should get matched node(s)', () => {
@@ -9175,6 +9176,18 @@ describe('match AST leaf and DOM node', () => {
           document.getElementById('li2'),
           document.getElementById('li3')
         ], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('::slotted(foo)', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('::slotted(foo', document);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [], 'result');
       });
     });
   });
