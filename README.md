@@ -55,21 +55,21 @@ closest - same functionality as [Element.closest()][65]
 Returns **[object][60]?** matched node
 
 
-### querySelector(selector, refPoint, opt)
+### querySelector(selector, node, opt)
 
 querySelector - same functionality as [Document.querySelector()][66], [DocumentFragment.querySelector()][67], [Element.querySelector()][68]
 
 #### Parameters
 
 - `selector` **[string][59]** CSS selector
-- `refPoint` **[object][60]** Document, DocumentFragment or Element node
+- `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[object][60]?** matched node
 
 
-### querySelectorAll(selector, refPoint, opt)
+### querySelectorAll(selector, node, opt)
 
 querySelectorAll - same functionality as [Document.querySelectorAll()][69], [DocumentFragment.querySelectorAll()][70], [Element.querySelectorAll()][71]  
 **NOTE**: returns Array, not NodeList
@@ -77,7 +77,7 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 #### Parameters
 
 - `selector` **[string][59]** CSS selector
-- `refPoint` **[object][60]** Document, DocumentFragment or Element node
+- `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
   - `opt.sort` **[boolean][61]?** sort matched nodes
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
