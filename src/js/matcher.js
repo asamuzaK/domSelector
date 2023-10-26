@@ -145,7 +145,7 @@ export class Matcher {
         break;
       }
       default: {
-        throw new TypeError(`Unexpected node type: ${node.nodeName}`);
+        throw new TypeError(`Unexpected node ${node.nodeName}.`);
       }
     }
     return {
@@ -2372,7 +2372,7 @@ export class Matcher {
    */
   matches() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node type: ${this.#node.nodeName}`);
+      throw new TypeError(`Unexpected node ${this.#node.nodeName}.`);
     }
     let res;
     try {
@@ -2390,7 +2390,7 @@ export class Matcher {
    */
   closest() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node type: ${this.#node.nodeName}`);
+      throw new TypeError(`Unexpected node ${this.#node.nodeName}.`);
     }
     let res;
     try {
