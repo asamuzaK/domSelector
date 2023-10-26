@@ -7,6 +7,7 @@ export class Matcher {
     _getRoot(node?: object): object;
     _sortLeaves(leaves: Array<object>): Array<object>;
     _prepare(selector?: string): Array<Array<object | undefined>>;
+    _throwOnPseudoElementSelector(astName: object): void;
     _collectNthChild(anb: {
         a: number;
         b: number;
@@ -27,11 +28,10 @@ export class Matcher {
     _matchAttributeSelector(ast: object, node: object): object | null;
     _matchClassSelector(ast: object, node: object): object | null;
     _matchIDSelector(ast: object, node: object): object | null;
-    _matchPseudoElementSelector(ast: object, node: object): void;
     _matchTypeSelector(ast: object, node: object): object | null;
     _matchSelector(ast: object, node: object): object;
     _matchLeaves(leaves: Array<object>, node: object): boolean;
-    _findDescendantNodes(leaves: Array<object>, refNode: object): object;
+    _findDescendantNodes(leaves: Array<object>, baseNode: object): object;
     _matchCombinator(twig: object, node: object, opt?: {
         find?: string;
     }): object;
