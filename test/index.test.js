@@ -676,8 +676,7 @@ describe('exported api', () => {
       assert.isTrue(res, 'result');
     });
 
-    // FIXME: matches(':invalid', fieldset) returns true
-    xit('should match', () => {
+    it('should match', () => {
       const domStr = `<div>
         <fieldset id=fieldset1>
           <input id=input1>
@@ -1059,8 +1058,7 @@ describe('exported api', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    // FIXME: fieldset.checkValidity() returns true
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       const domStr = `<div id="test8" class="div3" style="display:none">
         <div id="test7" class="div2">
           <div id="test6" class="div1">
@@ -3263,18 +3261,12 @@ describe('jsdom issues tagged with `selectors` label', () => {
       assert.isTrue(res, 'result');
     });
 
-    // FIXME: throws AssertionError for some reason
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       const node = document.getElementById('target');
       const item = document.getElementById('item');
       item.focus();
       const res = node.parentNode.querySelector(':focus-within');
-      // these pass
-      assert.strictEqual(res.id, 'target', 'id');
-      assert.isTrue(res.classList.contains('container'), 'classList');
-      assert.strictEqual(res.localName, 'div', 'localName');
-      // but this fails, reports res !== node, why?
-      assert.deepEqual(res, [node], 'result');
+      assert.deepEqual(res, node, 'result');
     });
   });
 
