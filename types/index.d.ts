@@ -4,10 +4,10 @@ export function matches(selector: string, node: object, opt?: {
 export function closest(selector: string, node: object, opt?: {
     warn?: boolean;
 }): object | null;
-export function querySelector(selector: string, refPoint: object, opt?: {
+export function querySelector(selector: string, node: object, opt?: {
     warn?: boolean;
 }): object | null;
-export function querySelectorAll(selector: string, refPoint: object, opt?: {
+export function querySelectorAll(selector: string, node: object, opt?: {
     sort?: boolean;
     warn?: boolean;
 }): Array<object | undefined>;
