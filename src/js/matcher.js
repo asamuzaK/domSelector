@@ -28,6 +28,7 @@ const TARGET_SELF = 'self';
 const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
 const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
 const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
+const HTML_FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
 const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
 const INPUT_TEXT = /^(?:(?:emai|te|ur)l|password|search|text)$/;
@@ -1122,18 +1123,56 @@ export class Matcher {
           break;
         }
         case 'valid': {
-          if (HTML_FORM_INPUT.test(localName) ||
-              /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
+          if (HTML_FORM_VALIDITY.test(localName)) {
             if (node.checkValidity()) {
+              matched.add(node);
+            }
+          } else if (/^fieldset$/.test(localName)) {
+            const { document } = this.#root;
+            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            let refNode = iterator.nextNode();
+            if (refNode === node) {
+              refNode = iterator.nextNode();
+            }
+            let bool;
+            while (refNode) {
+              if (HTML_FORM_VALIDITY.test(refNode.localName)) {
+                bool = refNode.checkValidity();
+                if (!bool) {
+                  break;
+                }
+              }
+              refNode = iterator.nextNode();
+            }
+            if (bool) {
               matched.add(node);
             }
           }
           break;
         }
         case 'invalid': {
-          if (HTML_FORM_INPUT.test(localName) ||
-              /^(?:f(?:ieldset|orm)|button)$/.test(localName)) {
+          if (HTML_FORM_VALIDITY.test(localName)) {
             if (!node.checkValidity()) {
+              matched.add(node);
+            }
+          } else if (/^fieldset$/.test(localName)) {
+            const { document } = this.#root;
+            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            let refNode = iterator.nextNode();
+            if (refNode === node) {
+              refNode = iterator.nextNode();
+            }
+            let bool;
+            while (refNode) {
+              if (HTML_FORM_VALIDITY.test(refNode.localName)) {
+                bool = refNode.checkValidity();
+                if (!bool) {
+                  break;
+                }
+              }
+              refNode = iterator.nextNode();
+            }
+            if (!bool) {
               matched.add(node);
             }
           }

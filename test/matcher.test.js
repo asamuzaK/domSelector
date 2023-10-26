@@ -4033,6 +4033,46 @@ describe('match AST leaf and DOM node', () => {
           name: 'valid',
           type: PSEUDO_CLASS_SELECTOR
         };
+        const node = document.createElement('fieldset');
+        const input = document.createElement('input');
+        input.setAttribute('type', 'text');
+        input.setAttribute('required', 'required');
+        input.value = 'foo';
+        node.appendChild(input);
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':valid', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'valid',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('fieldset');
+        const input = document.createElement('input');
+        input.setAttribute('type', 'text');
+        input.setAttribute('required', 'required');
+        input.value = '';
+        node.appendChild(input);
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':valid', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'valid',
+          type: PSEUDO_CLASS_SELECTOR
+        };
         const node = document.createElement('form');
         const input = document.createElement('input');
         input.setAttribute('type', 'text');
@@ -4103,8 +4143,7 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual([...res], [], 'result');
       });
 
-      // FIXME: fieldset.checkValidity() returns true
-      xit('should get matched node(s)', () => {
+      it('should get matched node(s)', () => {
         const leaf = {
           children: null,
           name: 'invalid',
@@ -4120,7 +4159,6 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':invalid', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
-        assert.isFalse(node.checkValidity(), 'validity');
         assert.deepEqual([...res], [
           node
         ], 'result');
@@ -4142,7 +4180,6 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':invalid', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
-        assert.isTrue(node.checkValidity(), 'validity');
         assert.deepEqual([...res], [], 'result');
       });
 
