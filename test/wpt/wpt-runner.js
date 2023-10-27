@@ -175,13 +175,16 @@ const setup = window => {
 };
 
 const filter = (testPath) => {
-  // currently unsupported
+  // currently unsupported or fails due to upstream issues
   const skipList = [
     'invalidation/is-pseudo-containing-complex-in-has.html',
     'invalidation/lang-pseudo-class-in-has-multiple-document-elements.html',
     'invalidation/not-pseudo-containing-complex-in-has.html',
+    'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
+    'placeholder-shown.html',
     'user-invalid.html',
+    'user-valid-user-invalid-invalidation.html',
     'user-valid.html',
     'valid-invalid-form-fieldset.html'
   ];
@@ -190,10 +193,13 @@ const filter = (testPath) => {
     'Element-webkitMatchesSelector.html',
     'query-target-in-load-event.html',
     // css/selectors
+    'attribute-selectors/attribute-case/semantics.html',
+    'attribute-selectors/attribute-case/syntax.html',
     'child-indexed-pseudo-class.html',
     'dir-pseudo-on-bdi-element.html',
     'dir-pseudo-on-input-element.html',
     'dir-selector-auto.html',
+    'dir-selector-querySelector.html',
     'first-child.html',
     'first-of-type.html',
     'focus-display-none-001.html',
@@ -219,7 +225,8 @@ const filter = (testPath) => {
     'only-of-type.html',
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
-    'selector-placeholder-shown-emptify-placeholder.html'
+    'selector-placeholder-shown-emptify-placeholder.html',
+    'webkit-pseudo-element.html'
   ];
   const excludeList = [
     'ParentNode-querySelector-All-content.html',
