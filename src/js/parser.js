@@ -102,7 +102,7 @@ export const preprocess = (...args) => {
     selector = Object.prototype.toString.call(selector)
       .slice(TYPE_FROM, TYPE_TO).toLowerCase();
   } else {
-    throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
+    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   return selector;
 };
@@ -116,7 +116,7 @@ export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
   if (/^$|^\s*>|,\s*$/.test(selector)) {
-    throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
+    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   let res;
   try {

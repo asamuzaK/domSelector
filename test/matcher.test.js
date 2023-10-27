@@ -104,22 +104,23 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       assert.throws(() => new Matcher('*', 'foo'), TypeError,
-        'Unexpected node undefined.');
+        'Unexpected node undefined');
     });
 
     it('should throw', () => {
       const text = document.createTextNode('foo');
       assert.throws(() => new Matcher('*', text), TypeError,
-        'Unexpected node #text.');
+        'Unexpected node #text');
     });
 
     it('should throw', () => {
       assert.throws(() => new Matcher('#ul1 ++ #li1', document),
-        DOMException);
+        DOMException, 'Invalid combinator ++');
     });
 
     it('should throw', () => {
-      assert.throws(() => new Matcher('[foo==bar]', document), DOMException);
+      assert.throws(() => new Matcher('[foo==bar]', document), DOMException,
+        'Identifier is expected');
     });
 
     // FIXME: CSSTree throws
@@ -438,6 +439,36 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('::foo', node);
         assert.throws(() => matcher._throwOnPseudoElementSelector('foo'),
           DOMException, 'Unknown pseudo-element ::foo');
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::-webkit-foo', node);
+        assert.throws(
+          () => matcher._throwOnPseudoElementSelector('-webkit-foo'),
+          DOMException, 'Unsupported pseudo-element ::-webkit-foo'
+        );
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::webkit-foo', node);
+        assert.throws(
+          () => matcher._throwOnPseudoElementSelector('webkit-foo'),
+          DOMException, 'Unknown pseudo-element ::webkit-foo'
+        );
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::-webkitfoo', node);
+        assert.throws(
+          () => matcher._throwOnPseudoElementSelector('-webkitfoo'),
+          DOMException, 'Unknown pseudo-element ::-webkitfoo'
+        );
       });
     });
 
@@ -1517,7 +1548,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1531,7 +1562,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1545,7 +1576,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1560,7 +1591,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1574,7 +1605,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1587,7 +1618,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should throw', () => {
@@ -1601,7 +1632,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should get matched node', () => {
@@ -2400,7 +2431,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':current(foo)', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :current()');
       });
 
       it('should throw', () => {
@@ -2420,7 +2451,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':foobar(foo)', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unknown pseudo-class :foobar()');
       });
 
       it('should get matched node(s)', () => {
@@ -3854,7 +3885,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(container);
         const matcher = new Matcher(':default', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :default');
       });
 
       it('should get matched node(s)', () => {
@@ -5016,7 +5047,7 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('div0').appendChild(node);
         const matcher = new Matcher(':after', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-element ::after');
       });
 
       // not supported
@@ -5030,20 +5061,7 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('div0').appendChild(node);
         const matcher = new Matcher(':active', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
-      });
-
-      it('should throw', () => {
-        const leaf = {
-          children: null,
-          name: 'slotted',
-          type: PSEUDO_CLASS_SELECTOR
-        };
-        const node = document.createElement('div');
-        document.getElementById('div0').appendChild(node);
-        const matcher = new Matcher('::slotted', node);
-        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unsupported pseudo-class :active');
       });
 
       // unknown
@@ -5057,7 +5075,46 @@ describe('match AST leaf and DOM node', () => {
         document.getElementById('div0').appendChild(node);
         const matcher = new Matcher(':foo', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException);
+          DOMException, 'Unknown pseudo-class :foo');
+      });
+
+      it('should throw', () => {
+        const leaf = {
+          children: null,
+          name: '-webkit-foo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':-webkit-foo', node);
+        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
+          DOMException, 'Unsupported pseudo-class :-webkit-foo');
+      });
+
+      it('should throw', () => {
+        const leaf = {
+          children: null,
+          name: 'webkit-foo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':webkit-foo', node);
+        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
+          DOMException, 'Unknown pseudo-class :webkit-foo');
+      });
+
+      it('should throw', () => {
+        const leaf = {
+          children: null,
+          name: '-webkitfoo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':-webkitfoo', node);
+        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
+          DOMException, 'Unknown pseudo-class :-webkitfoo');
       });
     });
 
@@ -5082,7 +5139,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher('[foo=bar baz]', node);
         assert.throws(() => matcher._matchAttributeSelector(leaf, node),
-          DOMException);
+          DOMException, 'Invalid attribute selector');
       });
 
       it('should get matched node', () => {
@@ -8857,7 +8914,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should throw', () => {
         assert.throws(() => new Matcher('body', document).matches(), TypeError,
-          'Unexpected node #document.');
+          'Unexpected node #document');
       });
 
       it('should throw', () => {
@@ -8955,7 +9012,7 @@ describe('match AST leaf and DOM node', () => {
     describe('closest', () => {
       it('should throw', () => {
         assert.throws(() => new Matcher('body', document).closest(), TypeError,
-          'Unexpected node #document.');
+          'Unexpected node #document');
       });
 
       it('should throw', () => {

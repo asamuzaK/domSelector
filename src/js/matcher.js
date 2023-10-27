@@ -150,7 +150,7 @@ export class Matcher {
         break;
       }
       default: {
-        throw new TypeError(`Unexpected node ${node.nodeName}.`);
+        throw new TypeError(`Unexpected node ${node.nodeName}`);
       }
     }
     return {
@@ -214,7 +214,7 @@ export class Matcher {
           if (item.type === COMBINATOR) {
             const [nextItem] = items;
             if (nextItem.type === COMBINATOR) {
-              const msg = `invalid combinator ${item.name}${nextItem.name}`;
+              const msg = `Invalid combinator ${item.name}${nextItem.name}`;
               throw new DOMException(msg, SYNTAX_ERR);
             }
             branch.push({
@@ -279,8 +279,13 @@ export class Matcher {
         break;
       }
       default: {
-        msg = `Unknown pseudo-element ::${astName}`;
-        type = SYNTAX_ERR;
+        if (astName.startsWith('-webkit-')) {
+          msg = `Unsupported pseudo-element ::${astName}`;
+          type = NOT_SUPPORTED_ERR;
+        } else {
+          msg = `Unknown pseudo-element ::${astName}`;
+          type = SYNTAX_ERR;
+        }
       }
     }
     throw new DOMException(msg, type);
@@ -1379,8 +1384,15 @@ export class Matcher {
             NOT_SUPPORTED_ERR);
         }
         default: {
-          throw new DOMException(`Unknown pseudo-class :${astName}`,
-            SYNTAX_ERR);
+          let msg, type;
+          if (astName.startsWith('-webkit-')) {
+            msg = `Unsupported pseudo-class :${astName}`;
+            type = NOT_SUPPORTED_ERR;
+          } else {
+            msg = `Unknown pseudo-class :${astName}`;
+            type = SYNTAX_ERR;
+          }
+          throw new DOMException(msg, type);
         }
       }
     }
@@ -1398,7 +1410,7 @@ export class Matcher {
       flags: astFlags, matcher: astMatcher, name: astName, value: astValue
     } = ast;
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
-      throw new DOMException('invalid attribute selector', SYNTAX_ERR);
+      throw new DOMException('Invalid attribute selector', SYNTAX_ERR);
     }
     const { attributes } = node;
     let res;
@@ -2375,7 +2387,7 @@ export class Matcher {
    */
   matches() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node ${this.#node.nodeName}.`);
+      throw new TypeError(`Unexpected node ${this.#node.nodeName}`);
     }
     let res;
     try {
@@ -2393,7 +2405,7 @@ export class Matcher {
    */
   closest() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node ${this.#node.nodeName}.`);
+      throw new TypeError(`Unexpected node ${this.#node.nodeName}`);
     }
     let res;
     try {
