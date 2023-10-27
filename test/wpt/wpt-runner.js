@@ -175,100 +175,104 @@ const setup = window => {
 };
 
 const filter = (testPath) => {
-  const filters = [
-    'DOMImplementation-createDocument-with-null-browsing-context-crash.html',
-    'DOMImplementation-createHTMLDocument-with-null-browsing-context-crash.html',
-    'Document-URL.html',
-    'Document-characterSet-normalization-1.html',
-    'Document-characterSet-normalization-2.html',
-    'Document-contentType/contentType/contenttype_mimeheader_01.html',
-    'Document-contentType/contentType/contenttype_mimeheader_02.html',
-    'Document-createElement-namespace-tests/bare_mathml.html',
-    'Document-createElement-namespace-tests/bare_mathml.xhtml',
-    'Document-createElement-namespace-tests/bare_svg.html',
-    'Document-createElement-namespace-tests/bare_svg.xhtml',
-    'Document-createElement-namespace-tests/bare_xhtml.html',
-    'Document-createElement-namespace-tests/bare_xhtml.xhtml',
-    'Document-createElement-namespace-tests/empty.html',
-    'Document-createElement-namespace-tests/empty.xhtml',
-    'Document-createElement-namespace-tests/mathml.html',
-    'Document-createElement-namespace-tests/mathml.xhtml',
-    'Document-createElement-namespace-tests/minimal_html.html',
-    'Document-createElement-namespace-tests/minimal_html.xhtml',
-    'Document-createElement-namespace-tests/svg.html',
-    'Document-createElement-namespace-tests/svg.xhtml',
-    'Document-createElement-namespace-tests/xhtml.html',
-    'Document-createElement-namespace-tests/xhtml.xhtml',
-    'Document-createElement-namespace-tests/xhtml_ns_changed.html',
-    'Document-createElement-namespace-tests/xhtml_ns_changed.xhtml',
-    'Document-createElement-namespace-tests/xhtml_ns_removed.html',
-    'Document-createElement-namespace-tests/xhtml_ns_removed.xhtml',
-    'Document-createElement.html',
-    'Document-createElementNS.html',
-    'Document-createEvent-touchevent.window.html',
-    'Document-createEvent.https.html',
-    'Document-getElementById.html',
-    'Element-classlist.html',
-    'Element-firstElementChild-entity-xhtml.xhtml',
-    'Element-getElementsByTagName-change-document-HTMLNess.html',
-    'MutationObserver-cross-realm-callback-report-exception.html',
-    'MutationObserver-document.html',
-    'MutationObserver-sanity.html',
-    'Node-appendChild-cereactions-vs-script.window.html',
-    'Node-cloneNode-on-inactive-document-crash.html',
-    'Node-compareDocumentPosition.html',
-    'Node-constants.html',
-    'Node-contains.html',
-    'Node-isConnected.html',
-    'Node-lookupNamespaceURI.html',
-    'Node-parentNode-iframe.html',
-    'Node-properties.html',
-    'NodeList-live-mutations.window.html',
-    'NodeList-static-length-getter-tampered-1.html',
-    'NodeList-static-length-getter-tampered-2.html',
-    'NodeList-static-length-getter-tampered-3.html',
-    'NodeList-static-length-getter-tampered-indexOf-1.html',
-    'NodeList-static-length-getter-tampered-indexOf-2.html',
-    'NodeList-static-length-getter-tampered-indexOf-3.html',
+  // currently unsupported
+  const skipList = [
+    'invalidation/is-pseudo-containing-complex-in-has.html',
+    'invalidation/lang-pseudo-class-in-has-multiple-document-elements.html',
+    'invalidation/not-pseudo-containing-complex-in-has.html',
+    'nth-of-type-namespace.html',
+    'user-invalid.html',
+    'user-valid.html',
+    'valid-invalid-form-fieldset.html'
+  ];
+  const includeList = [
+    // dom/nodes
+    'Element-webkitMatchesSelector.html',
+    'query-target-in-load-event.html',
+    // css/selectors
+    'child-indexed-pseudo-class.html',
+    'dir-pseudo-on-bdi-element.html',
+    'dir-pseudo-on-input-element.html',
+    'dir-selector-auto.html',
+    'first-child.html',
+    'first-of-type.html',
+    'focus-display-none-001.html',
+    'focus-in-focus-event-001.html',
+    'focus-in-focusin-event-001.html',
+    'focus-within-009.html',
+    'focus-within-display-none-001.html',
+    'has-argument-with-explicit-scope.html',
+    'has-basic.html',
+    'has-matches-to-uninserted-elements.html',
+    'has-relative-argument.html',
+    'i18n/lang-pseudo-class-disconnected.html',
+    'invalidation/link-pseudo-in-has.html',
+    'invalidation/target-pseudo-in-has.html',
+    'is-where-basic.html',
+    'is-where-error-recovery.html',
+    'is-where-not.html',
+    'last-child.html',
+    'last-of-type.html',
+    'missing-right-token.html',
+    'not-complex.html',
+    'only-child.html',
+    'only-of-type.html',
+    'pseudo-enabled-disabled.html',
+    'scope-selector.html',
+    'selector-placeholder-shown-emptify-placeholder.html'
+  ];
+  const excludeList = [
     'ParentNode-querySelector-All-content.html',
-    'ProcessingInstruction-escapes-1.xhtml',
-    'adoption.window.html',
-    'node-appendchild-crash.html',
-    'query-target-in-load-event.part.html',
-    'remove-and-adopt-thcrash.html',
-    'remove-from-shadow-host-and-adopt-into-iframe-ref.html',
-    'remove-from-shadow-host-and-adopt-into-iframe.html'
   ];
   let res;
-  if (filters.includes(testPath)) {
+  if (skipList.includes(testPath)) {
     res = false;
-  } else {
+  } else if (includeList.includes(testPath)) {
     res = true;
+  } else if (/(:closest|matches|querySelector(?:All)?)/.test(testPath)) {
+    if (excludeList.includes(testPath)) {
+      res = false;
+    } else {
+      res = true;
+    }
+  } else {
+    res = false;
   }
   return res;
 };
 
-const rootURL = 'dom/nodes/';
+const rootURLs = [
+  'dom/nodes/',
+  'css/selectors/'
+];
 
-await wptRunner(`test/wpt/wpt/${rootURL}`, {
-  rootURL,
-  setup,
-  filter
-}).then(failures => {
-  let msg;
-  switch (failures) {
-    case 0:
-      msg = `\npassed ${rootURL}.`;
-      break;
-    case 1:
-      msg = `\n1 failure in ${rootURL}.`;
-      break;
-    default:
-      msg = `\n${failures} failures in ${rootURL}.`;
+(async () => {
+  const res = [];
+  for (const rootURL of rootURLs) {
+    await wptRunner(`test/wpt/wpt/${rootURL}`, {
+      rootURL,
+      setup,
+      filter
+    }).then(failures => {
+      let msg;
+      switch (failures) {
+        case 0:
+          msg = `\npassed ${rootURL}.`;
+          break;
+        case 1:
+          msg = `\n1 failure in ${rootURL}.`;
+          break;
+        default:
+          msg = `\n${failures} failures in ${rootURL}.`;
+      }
+      res.push(msg);
+    }).catch(e => {
+      console.error(e);
+      process.exit(1);
+    });
   }
-  console.log(msg);
-  process.exit(failures);
-}).catch(e => {
-  console.error(e);
-  process.exit(1);
-});
+  for (const msg of res) {
+    console.log(msg);
+  }
+  process.exit();
+})();
