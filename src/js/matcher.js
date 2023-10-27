@@ -26,11 +26,16 @@ const TARGET_SELF = 'self';
 
 /* regexp */
 const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
-const HTML_FORM_INPUT = /^(?:(?:inpu|selec)t|textarea)$/;
-const HTML_FORM_PARTS = /^(?:button|fieldset|opt(?:group|ion))$/;
-const HTML_FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
+const FORM_INPUT = /^(?:input|textarea)$/;
+const FORM_PARTS =
+  /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
+const FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
+const HTML_ANCHOR = /^a(?:rea)?$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
+const INPUT_CHECK = /^(?:checkbox|radio)$/;
 const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
+const INPUT_RESET = /^(?:button|reset)$/;
+const INPUT_SUBMIT = /^(?:image|submit)$/;
 const INPUT_TEXT = /^(?:(?:emai|te|ur)l|password|search|text)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
@@ -537,8 +542,7 @@ export class Matcher {
       } else if (nodeDir === 'auto' &&
                  (localName === 'textarea' ||
                   (localName === 'input' &&
-                   (!inputType ||
-                    /^(?:(?:emai|te|ur)l|search|text)$/.test(inputType))))) {
+                   (!inputType || INPUT_TEXT.test(inputType))))) {
         throw new DOMException('Unsupported pseudo-class :dir()',
           NOT_SUPPORTED_ERR);
       // FIXME:
@@ -808,13 +812,13 @@ export class Matcher {
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
+          if (HTML_ANCHOR.test(localName) && node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (/^a(?:rea)?$/.test(localName) && node.hasAttribute('href')) {
+          if (HTML_ANCHOR.test(localName) && node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
                 attrURL.pathname === docURL.pathname) {
@@ -888,9 +892,7 @@ export class Matcher {
           break;
         }
         case 'disabled': {
-          if (HTML_FORM_INPUT.test(localName) ||
-              HTML_FORM_PARTS.test(localName) ||
-              isCustomElementName(localName)) {
+          if (FORM_PARTS.test(localName) || isCustomElementName(localName)) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -910,16 +912,14 @@ export class Matcher {
           break;
         }
         case 'enabled': {
-          if ((HTML_FORM_INPUT.test(localName) ||
-               HTML_FORM_PARTS.test(localName) ||
-               isCustomElementName(localName)) &&
+          if ((FORM_PARTS.test(localName) || isCustomElementName(localName)) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
           break;
         }
         case 'read-only': {
-          if (/^(?:input|textarea)$/.test(localName)) {
+          if (FORM_INPUT.test(localName)) {
             let targetNode;
             if (localName === 'input') {
               if (node.hasAttribute('type')) {
@@ -933,7 +933,7 @@ export class Matcher {
               } else {
                 targetNode = node;
               }
-            } else if (localName === 'textarea') {
+            } else {
               targetNode = node;
             }
             if (targetNode) {
@@ -948,7 +948,7 @@ export class Matcher {
           break;
         }
         case 'read-write': {
-          if (/^(?:input|textarea)$/.test(localName)) {
+          if (FORM_INPUT.test(localName)) {
             let targetNode;
             if (localName === 'input') {
               if (node.hasAttribute('type')) {
@@ -962,7 +962,7 @@ export class Matcher {
               } else {
                 targetNode = node;
               }
-            } else if (localName === 'textarea') {
+            } else {
               targetNode = node;
             }
             if (targetNode) {
@@ -999,7 +999,7 @@ export class Matcher {
         }
         case 'checked': {
           if ((localName === 'input' && node.hasAttribute('type') &&
-               /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
+               INPUT_CHECK.test(node.getAttribute('type')) &&
                node.checked) ||
               (localName === 'option' && node.selected)) {
             matched.add(node);
@@ -1050,9 +1050,9 @@ export class Matcher {
           // button[type="submit"], input[type="submit"], input[type="image"]
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
-                 /^(?:button|reset)$/.test(node.getAttribute('type')))) ||
+                 INPUT_RESET.test(node.getAttribute('type')))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               /^(?:image|submit)$/.test(node.getAttribute('type')))) {
+               INPUT_SUBMIT.test(node.getAttribute('type')))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1068,10 +1068,10 @@ export class Matcher {
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    /^(?:button|reset)$/.test(nextNode.getAttribute('type')));
+                    INPUT_RESET.test(nextNode.getAttribute('type')));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    /^(?:image|submit)$/.test(nextNode.getAttribute('type'));
+                    INPUT_SUBMIT.test(nextNode.getAttribute('type'));
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1084,7 +1084,7 @@ export class Matcher {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     /^(?:checkbox|radio)$/.test(node.getAttribute('type')) &&
+                     INPUT_CHECK.test(node.getAttribute('type')) &&
                      node.hasAttribute('checked')) {
             matched.add(node);
           // option
@@ -1126,7 +1126,7 @@ export class Matcher {
           break;
         }
         case 'valid': {
-          if (HTML_FORM_VALIDITY.test(localName)) {
+          if (FORM_VALIDITY.test(localName)) {
             if (node.checkValidity()) {
               matched.add(node);
             }
@@ -1139,7 +1139,7 @@ export class Matcher {
             }
             let bool;
             while (refNode) {
-              if (HTML_FORM_VALIDITY.test(refNode.localName)) {
+              if (FORM_VALIDITY.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
@@ -1154,7 +1154,7 @@ export class Matcher {
           break;
         }
         case 'invalid': {
-          if (HTML_FORM_VALIDITY.test(localName)) {
+          if (FORM_VALIDITY.test(localName)) {
             if (!node.checkValidity()) {
               matched.add(node);
             }
@@ -1167,7 +1167,7 @@ export class Matcher {
             }
             let bool;
             while (refNode) {
-              if (HTML_FORM_VALIDITY.test(refNode.localName)) {
+              if (FORM_VALIDITY.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
