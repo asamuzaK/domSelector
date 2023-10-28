@@ -1927,6 +1927,36 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual(res, node, 'result');
       });
 
+      it('should get matched node', () => {
+        const branches = [
+          [
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: CLASS_SELECTOR
+            }
+          ]
+        ];
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher(':has(> li.li)', node);
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'has',
+          branches,
+          selector: '> li.li'
+        }, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
       it('should not match', () => {
         const branches = [
           [
@@ -2090,7 +2120,33 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'not',
           branches,
-          selector: 'ul,dl'
+          selector: 'ul,dl',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.isNull(res, 'result');
       });
@@ -2136,9 +2192,145 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'not',
           branches,
-          selector: ':not(ol),ul'
+          selector: ':not(ol),ul',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'ol',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'not',
+                    type: PSEUDO_CLASS_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const branches = [
+          [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: 'dl',
+                          type: TYPE_SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                }
+              ],
+              loc: null,
+              name: 'not',
+              type: PSEUDO_CLASS_SELECTOR
+            }
+          ],
+          [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
+        const node = document.getElementById('dl1');
+        const matcher = new Matcher(':not(:not(dl), ul)', node);
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'not',
+          branches,
+          selector: ':not(dl),ul',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'dl',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'not',
+                    type: PSEUDO_CLASS_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
+        }, node);
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should get matched node', () => {
@@ -2163,7 +2355,185 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'is',
           branches,
-          selector: 'ul,dl'
+          selector: 'ul,dl',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
+        }, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const branches = [
+          [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            }
+          ],
+          [
+            {
+              loc: null,
+              name: 'dl',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher(':is(ul#ul1, dl#dl1)', node);
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'is',
+          branches,
+          selector: 'ul#ul1,dl#dl1',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  },
+                  {
+                    loc: null,
+                    name: 'ul1',
+                    type: ID_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  },
+                  {
+                    loc: null,
+                    name: 'dl1',
+                    type: ID_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
+        }, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const branches = [
+          [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: ' ',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '~',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          [
+            {
+              loc: null,
+              name: 'dd',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ];
+        const node = document.getElementById('li3');
+        const matcher = new Matcher(':is(ul li ~ li)', node);
+        const res = matcher._matchLogicalPseudoFunc({
+          astName: 'is',
+          branches,
+          selector: 'li~li',
+          twigBranches: [
+            [
+              {
+                combo: {
+                  loc: null,
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: {
+                  loc: null,
+                  name: '~',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.deepEqual(res, node, 'result');
       });
@@ -2190,7 +2560,33 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'is',
           branches,
-          selector: 'ol,dl'
+          selector: 'ol,dl',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ol',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.isNull(res, 'result');
       });
@@ -2217,7 +2613,33 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'where',
           branches,
-          selector: 'ul,dl'
+          selector: 'ul,dl',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.deepEqual(res, node, 'result');
       });
@@ -2244,7 +2666,33 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'where',
           branches,
-          selector: 'ol,dl'
+          selector: 'ol,dl',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ol',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'dl',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.isNull(res, 'result');
       });
@@ -2294,7 +2742,51 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchLogicalPseudoFunc({
           astName: 'not',
           branches,
-          selector: ':is(li, dd)'
+          selector: ':is(li, dd)',
+          twigBranches: [
+            [
+              {
+                combo: null,
+                leaves: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          },
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'dd',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'is',
+                    type: PSEUDO_CLASS_SELECTOR
+                  }
+                ]
+              }
+            ]
+          ]
         }, node);
         assert.deepEqual(res, node, 'result');
       });

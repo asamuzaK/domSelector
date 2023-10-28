@@ -317,10 +317,10 @@ export class Matcher {
           branches = walkAST(selector);
           this.#cache.set(selector, branches);
         }
-        const branchLen = branches.length;
+        const branchesLen = branches.length;
         for (const refNode of arr) {
           let bool;
-          for (let i = 0; i < branchLen; i++) {
+          for (let i = 0; i < branchesLen; i++) {
             const leaves = branches[i];
             bool = this._matchLeaves(leaves, refNode);
             if (!bool) {
@@ -695,15 +695,17 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   _matchLogicalPseudoFunc(astOpt = {}, node) {
-    const { astName = '', branches = [], selector = '' } = astOpt;
+    const {
+      astName = '', branches = [], selector = '', twigBranches = []
+    } = astOpt;
     let res;
-    const branchLen = branches.length;
     if (astName === 'has') {
       if (selector.includes(':has(')) {
         res = null;
       } else {
         let bool;
-        for (let i = 0; i < branchLen; i++) {
+        const l = branches.length;
+        for (let i = 0; i < l; i++) {
           const leaves = branches[i];
           bool = this._matchHasPseudoFunc(Object.assign([], leaves), node);
           if (bool) {
@@ -714,15 +716,41 @@ export class Matcher {
           res = node;
         }
       }
-    // NOTE: according to MDN, :not() can not contain :not()
-    // but spec says nothing about that?
-    } else if (astName === 'not' && selector.includes(':not(')) {
-      res = null;
     } else {
       let bool;
-      for (let i = 0; i < branchLen; i++) {
-        const leaves = branches[i];
+      const l = twigBranches.length;
+      for (let i = 0; i < l; i++) {
+        const branch = twigBranches[i];
+        const lastIndex = branch.length - 1;
+        const { leaves } = branch[lastIndex];
         bool = this._matchLeaves(leaves, node);
+        if (bool && lastIndex > 0) {
+          let nextNodes = new Set([node]);
+          for (let j = lastIndex - 1; j >= 0; j--) {
+            const twig = branch[j];
+            const arr = [];
+            for (const nextNode of nextNodes) {
+              const m = this._matchCombinator(twig, nextNode, {
+                find: 'prev'
+              });
+              if (m.size) {
+                arr.push(...m);
+              }
+            }
+            const matchedNodes = new Set(arr);
+            if (matchedNodes.size) {
+              if (j === 0) {
+                bool = true;
+                break;
+              } else {
+                nextNodes = matchedNodes;
+              }
+            } else {
+              bool = false;
+              break;
+            }
+          }
+        }
         if (bool) {
           break;
         }
@@ -757,20 +785,48 @@ export class Matcher {
         opt = this.#cache.get(ast);
       } else {
         const branches = walkAST(ast);
-        const branchLen = branches.length;
-        const branchSelectors = [];
-        for (let i = 0; i < branchLen; i++) {
+        const twigBranches = [];
+        for (const [...items] of branches) {
+          const branch = [];
+          const leaves = new Set();
+          let item = items.shift();
+          while (item) {
+            if (item.type === COMBINATOR) {
+              branch.push({
+                combo: item,
+                leaves: [...leaves]
+              });
+              leaves.clear();
+            } else if (item) {
+              leaves.add(item);
+            }
+            if (items.length) {
+              item = items.shift();
+            } else {
+              branch.push({
+                combo: null,
+                leaves: [...leaves]
+              });
+              leaves.clear();
+              break;
+            }
+          }
+          twigBranches.push(branch);
+        }
+        const selectors = [];
+        const l = branches.length;
+        for (let i = 0; i < l; i++) {
           const leaves = branches[i];
           for (const leaf of leaves) {
             const css = generateCSS(leaf);
-            branchSelectors.push(css);
+            selectors.push(css);
           }
         }
-        const selector = branchSelectors.join(',');
         opt = {
           astName,
           branches,
-          selector
+          twigBranches,
+          selector: selectors.join(',')
         };
         this.#cache.set(ast, opt);
       }
