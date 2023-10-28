@@ -248,12 +248,16 @@ describe('DOM utility functions', () => {
       });
     });
 
-    it('should throw', () => {
+    it('should get value', () => {
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func('foo|div', node), DOMException);
+      const res = func('foo|div', node);
+      assert.deepEqual(res, {
+        prefix: 'foo',
+        tagName: 'div'
+      }, 'result');
     });
 
     it('should get value', () => {

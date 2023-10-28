@@ -5805,6 +5805,8 @@ describe('match AST leaf and DOM node', () => {
           type: ATTRIBUTE_SELECTOR,
           value: null
         };
+        document.documentElement.setAttribute('xmlns:baz',
+          'https://example.com/baz');
         const node = document.createElement('div');
         node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
         const parent = document.getElementById('div0');
@@ -5814,7 +5816,49 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual(res, node, 'result');
       });
 
+      it('should not match', () => {
+        const leaf = {
+          flags: null,
+          matcher: null,
+          name: {
+            name: 'baz|foo',
+            type: IDENTIFIER
+          },
+          type: ATTRIBUTE_SELECTOR,
+          value: null
+        };
+        const node = document.createElement('div');
+        node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher('[baz|foo]', node);
+        const res = matcher._matchAttributeSelector(leaf, node);
+        assert.isNull(res, 'result');
+      });
+
       it('should get matched node', () => {
+        const leaf = {
+          flags: 's',
+          matcher: null,
+          name: {
+            name: 'Baz|Foo',
+            type: IDENTIFIER
+          },
+          type: ATTRIBUTE_SELECTOR,
+          value: null
+        };
+        document.documentElement.setAttribute('xmlns:Baz',
+          'https://example.com/baz');
+        const node = document.createElement('div');
+        node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher('[Baz|Foo s]', node);
+        const res = matcher._matchAttributeSelector(leaf, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should not match', () => {
         const leaf = {
           flags: 's',
           matcher: null,
@@ -5831,7 +5875,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher('[Baz|Foo s]', node);
         const res = matcher._matchAttributeSelector(leaf, node);
-        assert.deepEqual(res, node, 'result');
+        assert.isNull(res, 'result');
       });
 
       it('should get matched node', () => {
@@ -5845,6 +5889,8 @@ describe('match AST leaf and DOM node', () => {
           type: ATTRIBUTE_SELECTOR,
           value: null
         };
+        document.documentElement.setAttribute('xmlns:baz',
+          'https://example.com/baz');
         const node = document.createElement('div');
         node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
         const parent = document.getElementById('div0');
@@ -6192,6 +6238,8 @@ describe('match AST leaf and DOM node', () => {
             value: 'qux'
           }
         };
+        document.documentElement.setAttribute('xmlns:baz',
+          'https://example.com/baz');
         const node = document.createElement('div');
         node.setAttribute('foo', 'bar');
         node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
@@ -7212,20 +7260,6 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual(res, node, 'result');
       });
 
-      it('should throw', () => {
-        const leaf = {
-          name: 'foo|*',
-          type: TYPE_SELECTOR
-        };
-        const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher('foo|*', node);
-        assert.throws(() => matcher._matchTypeSelector(leaf, node),
-          DOMException);
-      });
-
       it('should get matched node', () => {
         const leaf = {
           name: 'foo|*',
@@ -7239,6 +7273,20 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('foo|*', node);
         const res = matcher._matchTypeSelector(leaf, node);
         assert.deepEqual(res, node, 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          name: 'foo|*',
+          type: TYPE_SELECTOR
+        };
+        const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher('foo|*', node);
+        const res = matcher._matchTypeSelector(leaf, node);
+        assert.isNull(res, 'result');
       });
 
       it('should not match', () => {

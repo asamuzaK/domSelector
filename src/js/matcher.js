@@ -5,7 +5,8 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import {
-  isContentEditable, isSameOrDescendant, selectorToNodeProps
+  isContentEditable, isNamespaceDeclared, isSameOrDescendant,
+  selectorToNodeProps
 } from './dom-util.js';
 import {
   generateCSS, parseSelector, unescapeSelector, walkAST
@@ -1521,7 +1522,8 @@ export class Matcher {
               if (/:/.test(itemName)) {
                 const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
                 if (astAttrPrefix === itemNamePrefix &&
-                    astAttrLocalName === itemNameLocalName) {
+                    astAttrLocalName === itemNameLocalName &&
+                    isNamespaceDeclared(astAttrPrefix, node)) {
                   attrValues.add(itemValue);
                 }
               }
@@ -1720,7 +1722,8 @@ export class Matcher {
       if (astNodeName === '*' || astNodeName === nodeName) {
         res = node;
       }
-    } else if (astPrefix === nodePrefix) {
+    } else if (astPrefix === nodePrefix &&
+               isNamespaceDeclared(astPrefix, node)) {
       if (astNodeName === '*' || astNodeName === nodeName) {
         res = node;
       }

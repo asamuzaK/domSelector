@@ -98,10 +98,6 @@ export const selectorToNodeProps = (selector, node) => {
   if (selector && typeof selector === 'string') {
     if (/\|/.test(selector)) {
       [prefix, tagName] = selector.split('|');
-      if (prefix && prefix !== '*' &&
-          node && !isNamespaceDeclared(prefix, node)) {
-        throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
-      }
     } else {
       prefix = '*';
       tagName = selector;
