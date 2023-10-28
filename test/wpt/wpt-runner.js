@@ -186,7 +186,8 @@ const filter = (testPath) => {
     'user-invalid.html',
     'user-valid-user-invalid-invalidation.html',
     'user-valid.html',
-    'valid-invalid-form-fieldset.html'
+    'webkit-pseudo-element.html',
+    'valid-invalid-form-fieldset.html',
   ];
   const includeList = [
     // dom/nodes
@@ -211,6 +212,7 @@ const filter = (testPath) => {
     'has-basic.html',
     'has-matches-to-uninserted-elements.html',
     'has-relative-argument.html',
+    'has-sibling-insertion-removal.html',
     'i18n/lang-pseudo-class-disconnected.html',
     'invalidation/link-pseudo-in-has.html',
     'invalidation/target-pseudo-in-has.html',
@@ -226,7 +228,6 @@ const filter = (testPath) => {
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
     'selector-placeholder-shown-emptify-placeholder.html',
-    'webkit-pseudo-element.html'
   ];
   const excludeList = [
     'ParentNode-querySelector-All-content.html',
