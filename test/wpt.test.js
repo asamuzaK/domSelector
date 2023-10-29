@@ -396,4 +396,16 @@ describe('local wpt test cases', () => {
       assert.strictEqual(res.length, 1, 'result');
     });
   });
+
+  describe('dom/nodes/ParentNode-querySelector-All.js', () => {
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo)');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo');
+      assert.deepEqual(res, [], 'result');
+    });
+  });
 });
