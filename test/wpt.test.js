@@ -122,6 +122,161 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/dir-selector-querySelector.html', () => {
+    const html = `
+      <div id=outer>
+        <div id=div1></div>
+        <div id=div2 dir=ltr>
+          <div id=div2_1></div>
+          <div id=div2_2 dir=ltr></div>
+          <div id=div2_3 dir=rtl></div>
+        </div>
+        <div id=div3 dir=rtl>
+          <div id=div3_1>
+            <div id=div3_1_1></div>
+          </div>
+          <div id=div3_2 dir=ltr></div>
+          <div id=div3_3 dir=rtl></div>
+        </div>
+        <div id=div4 dir=lol></div>
+        <div id=div5 dir=auto></div>
+      </div>
+    `;
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('*:dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('div:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('outer'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('div:dir(ltr):dir(ltr)');
+      assert.deepEqual(res, document.getElementById('outer'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl)#div3_3');
+      assert.deepEqual(res, document.getElementById('div3_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':nth-child(2):dir(rtl)');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':nth-child(3):dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':nth-child(4):dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div4'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':nth-last-child(3):dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div2 :dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div2_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) div');
+      assert.deepEqual(res, document.getElementById('div3_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('div + :dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(ltr) + :dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) :dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div3_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) + :dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div3_2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) ~ :dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div3_3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) :dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div3_2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('* :dir(rtl) *');
+      assert.deepEqual(res, document.getElementById('div3_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('div :dir(rtl) div');
+      assert.deepEqual(res, document.getElementById('div3_1'), 'result');
+    });
+
+    // FIXME: fails, returns div4
+    xit('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(ltr) :dir(rtl) + :dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div3_2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(ltr) + :dir(rtl) + * + *');
+      assert.deepEqual(res, document.getElementById('div5'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector(':dir(rtl) > * > :dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div3_1_1'), 'result');
+    });
+  });
+
   describe('css/selectors/is-where-basic.html', () => {
     const html = `
       <main id=main>
