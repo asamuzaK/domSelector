@@ -146,8 +146,7 @@ describe('local wpt test cases', () => {
       ]), 'result');
     });
 
-    // fails, not supported
-    xit('should get matched node(s)', () => {
+    it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':not(:hover div)');
@@ -185,7 +184,7 @@ describe('local wpt test cases', () => {
         document.getElementById('f')
       ]), 'result');
     });
-  })
+  });
 
   describe('css/selectors/missing-right-token.html', () => {
     const html = `

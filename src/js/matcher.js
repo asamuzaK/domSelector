@@ -252,47 +252,6 @@ export class Matcher {
   }
 
   /**
-   * throw DOMExeption on pseudo element selector
-   * @param {object} astName - AST name
-   * @throws {DOMException}
-   * @returns {void}
-   */
-  _throwOnPseudoElementSelector(astName) {
-    let msg;
-    let type;
-    switch (astName) {
-      case 'after':
-      case 'backdrop':
-      case 'before':
-      case 'cue':
-      case 'cue-region':
-      case 'first-letter':
-      case 'first-line':
-      case 'file-selector-button':
-      case 'marker':
-      case 'part':
-      case 'placeholder':
-      case 'selection':
-      case 'slotted':
-      case 'target-text': {
-        msg = `Unsupported pseudo-element ::${astName}`;
-        type = NOT_SUPPORTED_ERR;
-        break;
-      }
-      default: {
-        if (astName.startsWith('-webkit-')) {
-          msg = `Unsupported pseudo-element ::${astName}`;
-          type = NOT_SUPPORTED_ERR;
-        } else {
-          msg = `Unknown pseudo-element ::${astName}`;
-          type = SYNTAX_ERR;
-        }
-      }
-    }
-    throw new DOMException(msg, type);
-  }
-
-  /**
    * collect nth child
    * @param {object} anb - An+B options
    * @param {number} anb.a - a
@@ -525,6 +484,48 @@ export class Matcher {
   }
 
   /**
+   * match pseudo element selector
+   * @param {object} astName - AST name
+   * @throws {DOMException}
+   * @returns {void}
+   */
+  _matchPseudoElementSelector(astName) {
+    switch (astName) {
+      case 'after':
+      case 'backdrop':
+      case 'before':
+      case 'cue':
+      case 'cue-region':
+      case 'first-letter':
+      case 'first-line':
+      case 'file-selector-button':
+      case 'marker':
+      case 'part':
+      case 'placeholder':
+      case 'selection':
+      case 'slotted':
+      case 'target-text': {
+        if (this.#warn) {
+          throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+            NOT_SUPPORTED_ERR);
+        }
+        break;
+      }
+      default: {
+        if (astName.startsWith('-webkit-')) {
+          if (this.#warn) {
+            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+              NOT_SUPPORTED_ERR);
+          }
+        } else {
+          throw new DOMException(`Unknown pseudo-element ::${astName}`,
+            SYNTAX_ERR);
+        }
+      }
+    }
+  }
+
+  /**
    * match directionality pseudo-class - :dir()
    * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
    * @param {object} ast - AST
@@ -549,12 +550,16 @@ export class Matcher {
                  (localName === 'textarea' ||
                   (localName === 'input' &&
                    (!inputType || INPUT_TEXT.test(inputType))))) {
-        throw new DOMException('Unsupported pseudo-class :dir()',
-          NOT_SUPPORTED_ERR);
+        if (this.#warn) {
+          throw new DOMException('Unsupported pseudo-class :dir()',
+            NOT_SUPPORTED_ERR);
+        }
       // FIXME:
       } else if (nodeDir === 'auto' || (localName === 'bdi' && !nodeDir)) {
-        throw new DOMException('Unsupported pseudo-class :dir()',
-          NOT_SUPPORTED_ERR);
+        if (this.#warn) {
+          throw new DOMException('Unsupported pseudo-class :dir()',
+            NOT_SUPPORTED_ERR);
+        }
       } else if (!nodeDir) {
         let parent = node.parentNode;
         while (parent) {
@@ -859,9 +864,13 @@ export class Matcher {
         switch (astName) {
           case 'current':
           case 'nth-col':
-          case 'nth-last-col':
-            throw new DOMException(`Unsupported pseudo-class :${astName}()`,
-              NOT_SUPPORTED_ERR);
+          case 'nth-last-col': {
+            if (this.#warn) {
+              throw new DOMException(`Unsupported pseudo-class :${astName}()`,
+                NOT_SUPPORTED_ERR);
+            }
+            break;
+          }
           default:
             throw new DOMException(`Unknown pseudo-class :${astName}()`,
               SYNTAX_ERR);
@@ -1164,8 +1173,10 @@ export class Matcher {
             }
             // FIXME:
             if (isMultiple) {
-              throw new DOMException(`Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR);
+              if (this.#warn) {
+                throw new DOMException(`Unsupported pseudo-class :${astName}`,
+                  NOT_SUPPORTED_ERR);
+              }
             } else {
               const firstOpt = parentNode.firstElementChild;
               const defaultOpt = new Set();
@@ -1413,8 +1424,11 @@ export class Matcher {
         case 'before':
         case 'first-letter':
         case 'first-line': {
-          throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-            NOT_SUPPORTED_ERR);
+          if (this.#warn) {
+            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+              NOT_SUPPORTED_ERR);
+          }
+          break;
         }
         case 'active':
         case 'autofill':
@@ -1437,19 +1451,22 @@ export class Matcher {
         case 'user-valid':
         case 'volume-locked':
         case '-webkit-autofill': {
-          throw new DOMException(`Unsupported pseudo-class :${astName}`,
-            NOT_SUPPORTED_ERR);
+          if (this.#warn) {
+            throw new DOMException(`Unsupported pseudo-class :${astName}`,
+              NOT_SUPPORTED_ERR);
+          }
+          break;
         }
         default: {
-          let msg, type;
           if (astName.startsWith('-webkit-')) {
-            msg = `Unsupported pseudo-class :${astName}`;
-            type = NOT_SUPPORTED_ERR;
+            if (this.#warn) {
+              throw new DOMException(`Unsupported pseudo-class :${astName}`,
+                NOT_SUPPORTED_ERR);
+            }
           } else {
-            msg = `Unknown pseudo-class :${astName}`;
-            type = SYNTAX_ERR;
+            throw new DOMException(`Unknown pseudo-class :${astName}`,
+              SYNTAX_ERR);
           }
-          throw new DOMException(msg, type);
         }
       }
     }
@@ -1772,7 +1789,7 @@ export class Matcher {
         }
         case PSEUDO_ELEMENT_SELECTOR: {
           const astName = unescapeSelector(ast.name);
-          this._throwOnPseudoElementSelector(astName);
+          this._matchPseudoElementSelector(astName);
           break;
         }
         case TYPE_SELECTOR:
@@ -1881,7 +1898,7 @@ export class Matcher {
         break;
       }
       case PSEUDO_ELEMENT_SELECTOR: {
-        this._throwOnPseudoElementSelector(leafName);
+        this._matchPseudoElementSelector(leafName);
         break;
       }
       default: {
@@ -2179,7 +2196,7 @@ export class Matcher {
         break;
       }
       case PSEUDO_ELEMENT_SELECTOR: {
-        this._throwOnPseudoElementSelector(leafName);
+        this._matchPseudoElementSelector(leafName);
         break;
       }
       default: {
