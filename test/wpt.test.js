@@ -110,6 +110,18 @@ describe('local wpt test cases', () => {
     }
   });
 
+  describe('dom/nodes/ParentNode-querySelector-All.html', () => {
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo)');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo');
+      assert.deepEqual(res, [], 'result');
+    });
+  });
+
   describe('css/selectors/is-where-basic.html', () => {
     const html = `
       <main id=main>
@@ -394,18 +406,6 @@ describe('local wpt test cases', () => {
       const container = document.getElementById('container');
       const res = container.querySelectorAll('span:not([class');
       assert.strictEqual(res.length, 1, 'result');
-    });
-  });
-
-  describe('dom/nodes/ParentNode-querySelector-All.js', () => {
-    it('should not match', () => {
-      const res = document.querySelectorAll('::slotted(foo)');
-      assert.deepEqual(res, [], 'result');
-    });
-
-    it('should not match', () => {
-      const res = document.querySelectorAll('::slotted(foo');
-      assert.deepEqual(res, [], 'result');
     });
   });
 });
