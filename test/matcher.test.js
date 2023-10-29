@@ -1437,6 +1437,16 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::foo', node);
+        const res = matcher._matchPseudoElementSelector('foo', {
+          forgive: true
+        });
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
         const matcher = new Matcher('::-webkit-foo', node);
         const res = matcher._matchPseudoElementSelector('-webkit-foo');
         assert.isUndefined(res, 'result');
@@ -1464,6 +1474,16 @@ describe('match AST leaf and DOM node', () => {
         );
       });
 
+      it('should not match', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::webkit-foo', node);
+        const res = matcher._matchPseudoElementSelector('webkit-foo', {
+          forgive: true
+        });
+        assert.isUndefined(res, 'result');
+      });
+
       it('should throw', () => {
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -1472,6 +1492,16 @@ describe('match AST leaf and DOM node', () => {
           () => matcher._matchPseudoElementSelector('-webkitfoo'),
           DOMException, 'Unknown pseudo-element ::-webkitfoo'
         );
+      });
+
+      it('should not match', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::-webkitfoo', node);
+        const res = matcher._matchPseudoElementSelector('-webkitfoo', {
+          forgive: true
+        });
+        assert.isUndefined(res, 'result');
       });
     });
 
@@ -3099,6 +3129,28 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':foobar(foo)', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
           DOMException, 'Unknown pseudo-class :foobar()');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: [
+            {
+              type: RAW,
+              value: 'foo'
+            }
+          ],
+          loc: null,
+          name: 'foobar',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':foobar(foo)', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node, {
+          forgive: true
+        });
+        assert.deepEqual([...res], [], 'result');
       });
 
       it('should get matched node(s)', () => {
@@ -5735,7 +5787,7 @@ describe('match AST leaf and DOM node', () => {
       });
 
       // not supported
-      it('should throw', () => {
+      it('should not match', () => {
         const leaf = {
           children: null,
           name: 'active',
@@ -5780,6 +5832,21 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           children: null,
+          name: 'foo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':foo', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node, {
+          forgive: true
+        });
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
           name: '-webkit-foo',
           type: PSEUDO_CLASS_SELECTOR
         };
@@ -5818,6 +5885,21 @@ describe('match AST leaf and DOM node', () => {
           DOMException, 'Unknown pseudo-class :webkit-foo');
       });
 
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'webkit-foo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':webkit-foo', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node, {
+          forgive: true
+        });
+        assert.deepEqual([...res], [], 'result');
+      });
+
       it('should throw', () => {
         const leaf = {
           children: null,
@@ -5829,6 +5911,21 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':-webkitfoo', node);
         assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
           DOMException, 'Unknown pseudo-class :-webkitfoo');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: '-webkitfoo',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':-webkitfoo', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node, {
+          forgive: true
+        });
+        assert.deepEqual([...res], [], 'result');
       });
     });
 

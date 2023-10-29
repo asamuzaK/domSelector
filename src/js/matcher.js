@@ -485,11 +485,13 @@ export class Matcher {
 
   /**
    * match pseudo element selector
-   * @param {object} astName - AST name
+   * @param {string} astName - AST name
+   * @param {object} opt - options
    * @throws {DOMException}
    * @returns {void}
    */
-  _matchPseudoElementSelector(astName) {
+  _matchPseudoElementSelector(astName, opt = {}) {
+    const { forgive } = opt;
     switch (astName) {
       case 'after':
       case 'backdrop':
@@ -517,7 +519,7 @@ export class Matcher {
             throw new DOMException(`Unsupported pseudo-element ::${astName}`,
               NOT_SUPPORTED_ERR);
           }
-        } else {
+        } else if (!forgive) {
           throw new DOMException(`Unknown pseudo-element ::${astName}`,
             SYNTAX_ERR);
         }
@@ -696,14 +698,14 @@ export class Matcher {
 
   /**
    * match logical pseudo-class functions - :has(), :is(), :not(), :where()
-   * @param {object} astOpt - AST options
+   * @param {object} astData - AST data
    * @param {object} node - Element node
    * @returns {?object} - matched node
    */
-  _matchLogicalPseudoFunc(astOpt = {}, node) {
+  _matchLogicalPseudoFunc(astData, node) {
     const {
       astName = '', branches = [], selector = '', twigBranches = []
-    } = astOpt;
+    } = astData;
     let res;
     if (astName === 'has') {
       if (selector.includes(':has(')) {
@@ -723,13 +725,16 @@ export class Matcher {
         }
       }
     } else {
+      const forgive = /^(?:is|where)$/.test(astName);
       let bool;
       const l = twigBranches.length;
       for (let i = 0; i < l; i++) {
         const branch = twigBranches[i];
         const lastIndex = branch.length - 1;
         const { leaves } = branch[lastIndex];
-        bool = this._matchLeaves(leaves, node);
+        bool = this._matchLeaves(leaves, node, {
+          forgive
+        });
         if (bool && lastIndex > 0) {
           let nextNodes = new Set([node]);
           for (let j = lastIndex - 1; j >= 0; j--) {
@@ -737,6 +742,7 @@ export class Matcher {
             const arr = [];
             for (const nextNode of nextNodes) {
               const m = this._matchCombinator(twig, nextNode, {
+                forgive,
                 find: 'prev'
               });
               if (m.size) {
@@ -777,18 +783,20 @@ export class Matcher {
    * @see https://html.spec.whatwg.org/#pseudo-classes
    * @param {object} ast - AST
    * @param {object} node - Element node
+   * @param {object} opt - options
    * @returns {object} - collection of matched nodes
    */
-  _matchPseudoClassSelector(ast, node) {
+  _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren } = ast;
     const { localName, parentNode } = node;
+    const { forgive } = opt;
     const astName = unescapeSelector(ast.name);
     let matched = new Set();
     // :has(), :is(), :not(), :where()
     if (PSEUDO_FUNC.test(astName)) {
-      let opt;
+      let astData;
       if (this.#cache.has(ast)) {
-        opt = this.#cache.get(ast);
+        astData = this.#cache.get(ast);
       } else {
         const branches = walkAST(ast);
         const twigBranches = [];
@@ -828,15 +836,15 @@ export class Matcher {
             selectors.push(css);
           }
         }
-        opt = {
+        astData = {
           astName,
           branches,
           twigBranches,
           selector: selectors.join(',')
         };
-        this.#cache.set(ast, opt);
+        this.#cache.set(ast, astData);
       }
-      const res = this._matchLogicalPseudoFunc(opt, node);
+      const res = this._matchLogicalPseudoFunc(astData, node);
       if (res) {
         matched.add(res);
       }
@@ -871,9 +879,12 @@ export class Matcher {
             }
             break;
           }
-          default:
-            throw new DOMException(`Unknown pseudo-class :${astName}()`,
-              SYNTAX_ERR);
+          default: {
+            if (!forgive) {
+              throw new DOMException(`Unknown pseudo-class :${astName}()`,
+                SYNTAX_ERR);
+            }
+          }
         }
       }
     } else {
@@ -1463,7 +1474,7 @@ export class Matcher {
               throw new DOMException(`Unsupported pseudo-class :${astName}`,
                 NOT_SUPPORTED_ERR);
             }
-          } else {
+          } else if (!forgive) {
             throw new DOMException(`Unknown pseudo-class :${astName}`,
               SYNTAX_ERR);
           }
@@ -1752,9 +1763,10 @@ export class Matcher {
    * match selector
    * @param {object} ast - AST
    * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} opt - options
    * @returns {object} - collection of matched nodes
    */
-  _matchSelector(ast, node) {
+  _matchSelector(ast, node, opt) {
     const { type } = ast;
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
@@ -1781,7 +1793,7 @@ export class Matcher {
           break;
         }
         case PSEUDO_CLASS_SELECTOR: {
-          const nodes = this._matchPseudoClassSelector(ast, node);
+          const nodes = this._matchPseudoClassSelector(ast, node, opt);
           if (nodes.size) {
             matched = nodes;
           }
@@ -1789,7 +1801,7 @@ export class Matcher {
         }
         case PSEUDO_ELEMENT_SELECTOR: {
           const astName = unescapeSelector(ast.name);
-          this._matchPseudoElementSelector(astName);
+          this._matchPseudoElementSelector(astName, opt);
           break;
         }
         case TYPE_SELECTOR:
@@ -1808,12 +1820,13 @@ export class Matcher {
    * match leaves
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node
+   * @param {object} opt - options
    * @returns {boolean} - result
    */
-  _matchLeaves(leaves, node) {
+  _matchLeaves(leaves, node, opt) {
     let bool;
     for (const leaf of leaves) {
-      bool = this._matchSelector(leaf, node).has(node);
+      bool = this._matchSelector(leaf, node, opt).has(node);
       if (!bool) {
         break;
       }
@@ -1922,7 +1935,7 @@ export class Matcher {
   _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
-    const { find } = opt;
+    const { find, forgive } = opt;
     let matched = new Set();
     if (find === 'next') {
       switch (comboName) {
@@ -1984,7 +1997,9 @@ export class Matcher {
         case '+': {
           const refNode = node.previousElementSibling;
           if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, {
+              forgive
+            });
             if (bool) {
               matched.add(refNode);
             }
@@ -1995,7 +2010,9 @@ export class Matcher {
           const arr = [];
           let refNode = node.previousElementSibling;
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, {
+              forgive
+            });
             if (bool) {
               arr.push(refNode);
             }
@@ -2009,7 +2026,9 @@ export class Matcher {
         case '>': {
           const refNode = node.parentNode;
           if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, {
+              forgive
+            });
             if (bool) {
               matched.add(refNode);
             }
@@ -2021,7 +2040,9 @@ export class Matcher {
           const arr = [];
           let refNode = node.parentNode;
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, {
+              forgive
+            });
             if (bool) {
               arr.push(refNode);
             }
