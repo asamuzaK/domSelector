@@ -50,5 +50,5 @@
     "update": "npm-run-all -s update-*",
     "update-wpt": "git submodule update --init --recursive"
   },
-  "version": "0.21.2"
+  "version": "0.22.0"
 }
