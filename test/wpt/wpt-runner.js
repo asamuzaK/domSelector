@@ -175,11 +175,15 @@ const setup = window => {
 };
 
 const filter = (testPath) => {
-  // currently unsupported or fails due to upstream issues
+  // fails due to upstream issues and/or not yet supported
   const skipList = [
     'invalidation/is-pseudo-containing-complex-in-has.html',
     'invalidation/lang-pseudo-class-in-has-multiple-document-elements.html',
+    'invalidation/link-pseudo-in-has.html',
     'invalidation/not-pseudo-containing-complex-in-has.html',
+    'invalidation/target-pseudo-in-has.html',
+    'is-where-basic.html',
+    'is-where-error-recovery.html',
     'missing-right-token.html',
     'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
@@ -217,8 +221,6 @@ const filter = (testPath) => {
     'i18n/lang-pseudo-class-disconnected.html',
     'invalidation/link-pseudo-in-has.html',
     'invalidation/target-pseudo-in-has.html',
-    'is-where-basic.html',
-    'is-where-error-recovery.html',
     'is-where-not.html',
     'last-child.html',
     'last-of-type.html',
