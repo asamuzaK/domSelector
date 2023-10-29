@@ -800,42 +800,38 @@ export class Matcher {
         astData = this.#cache.get(ast);
       } else {
         const branches = walkAST(ast);
-        const twigBranches = [];
-        for (const [...items] of branches) {
-          const branch = [];
-          const leaves = new Set();
-          let item = items.shift();
-          while (item) {
-            if (item.type === COMBINATOR) {
-              branch.push({
-                combo: item,
-                leaves: [...leaves]
-              });
-              leaves.clear();
-            } else if (item) {
-              leaves.add(item);
-            }
-            if (items.length) {
-              item = items.shift();
-            } else {
-              branch.push({
-                combo: null,
-                leaves: [...leaves]
-              });
-              leaves.clear();
-              break;
-            }
-          }
-          twigBranches.push(branch);
-        }
         const selectors = [];
-        const l = branches.length;
-        for (let i = 0; i < l; i++) {
-          const leaves = branches[i];
+        const twigBranches = [];
+        for (const [...leaves] of branches) {
           for (const leaf of leaves) {
             const css = generateCSS(leaf);
             selectors.push(css);
           }
+          const branch = [];
+          const leavesSet = new Set();
+          let item = leaves.shift();
+          while (item) {
+            if (item.type === COMBINATOR) {
+              branch.push({
+                combo: item,
+                leaves: [...leavesSet]
+              });
+              leavesSet.clear();
+            } else if (item) {
+              leavesSet.add(item);
+            }
+            if (leaves.length) {
+              item = leaves.shift();
+            } else {
+              branch.push({
+                combo: null,
+                leaves: [...leavesSet]
+              });
+              leavesSet.clear();
+              break;
+            }
+          }
+          twigBranches.push(branch);
         }
         astData = {
           astName,
