@@ -9682,7 +9682,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            new Set([root, div2, div4]),
+            new Set([div2, div4]),
             new Set([div3])
           ]
         ], 'result');
@@ -10422,7 +10422,7 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [
           node
-        ], 'result')
+        ], 'result');
       });
     });
   });

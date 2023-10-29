@@ -351,8 +351,7 @@ export class Matcher {
       }
     } else {
       const { root } = this.#root;
-      if (root.nodeType === ELEMENT_NODE && node === root &&
-          ((a === 0 && b === 1) || b === 0)) {
+      if (root.nodeType === ELEMENT_NODE && node === root && (a + b) === 1) {
         if (selectorBranches) {
           const branchesLen = selectorBranches.length;
           let bool;
@@ -442,8 +441,7 @@ export class Matcher {
       }
     } else {
       const { root } = this.#root;
-      if (root.nodeType === ELEMENT_NODE && node === root &&
-          ((a === 0 && b === 1) || b === 0)) {
+      if (root.nodeType === ELEMENT_NODE && node === root && (a + b) === 1) {
         matched.add(node);
       }
     }
