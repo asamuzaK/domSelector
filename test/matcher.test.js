@@ -872,6 +872,146 @@ describe('match AST leaf and DOM node', () => {
           l7
         ], 'result');
       });
+
+      it('should get matched node(s)', () => {
+        const node = document.createElement('div');
+        const anb = {
+          a: 0,
+          b: 1,
+          selector: null
+        };
+        const matcher = new Matcher(':nth-child(1)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const node = document.createElement('div');
+        const anb = {
+          a: 1,
+          b: 0,
+          selector: null
+        };
+        const matcher = new Matcher(':nth-child(n)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.createElement('div');
+        const anb = {
+          a: 2,
+          b: 1,
+          selector: null
+        };
+        const matcher = new Matcher(':nth-child(2n+1)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 0, 'size');
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const node = document.createElement('div');
+        node.classList.add('noted');
+        const anb = {
+          a: 0,
+          b: 1,
+          selector: {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'noted',
+                    type: CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        };
+        const matcher = new Matcher(':nth-child(1 of .noted)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const node = document.createElement('div');
+        node.classList.add('noted');
+        const anb = {
+          a: 0,
+          b: 1,
+          selector: {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'noted',
+                    type: CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        };
+        const matcher = new Matcher(':nth-child(1 of .noted)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+      it('should get matched node(s)', () => {
+        const node = document.createElement('div');
+        node.classList.add('noted');
+        const anb = {
+          a: 0,
+          b: 1,
+          selector: {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'noted',
+                    type: CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        };
+        const matcher =
+          new Matcher(':nth-child(1 of .noted), :nth-last-child(n of .noted',
+            node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
     });
 
     describe('collect nth of type', () => {
@@ -1066,6 +1206,46 @@ describe('match AST leaf and DOM node', () => {
           node,
           document.getElementById('dt2')
         ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const anb = {
+          a: 1,
+          b: 0
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':nth-of-type(n)', node);
+        const res = matcher._collectNthOfType(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const anb = {
+          a: 0,
+          b: 1
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':nth-of-type(1)', node);
+        const res = matcher._collectNthOfType(anb, node);
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const anb = {
+          a: 2,
+          b: 1
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':nth-of-type(2n+1)', node);
+        const res = matcher._collectNthOfType(anb, node);
+        assert.strictEqual(res.size, 0, 'size');
+        assert.deepEqual([...res], [], 'result');
       });
     });
 
@@ -5642,6 +5822,20 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual([...res], [], 'result');
       });
 
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'first-child',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':first-child', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
       it('should not match', () => {
         const leaf = {
           children: null,
@@ -5669,6 +5863,20 @@ describe('match AST leaf and DOM node', () => {
         const parent = document.getElementById('div0');
         parent.appendChild(prev);
         parent.appendChild(node);
+        const matcher = new Matcher(':last-child', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'last-child',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
         const matcher = new Matcher(':last-child', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
         assert.deepEqual([...res], [
@@ -5708,6 +5916,20 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':only-child', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
         assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'only-child',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':only-child', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
       });
 
       it('should get matched node(s)', () => {
@@ -5721,6 +5943,20 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchPseudoClassSelector(leaf, node);
         assert.deepEqual([...res], [
           document.getElementById('dt1')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'first-of-type',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':first-of-type', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
         ], 'result');
       });
 
@@ -5741,6 +5977,20 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const leaf = {
           children: null,
+          name: 'last-of-type',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':last-of-type', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
           name: 'only-of-type',
           type: PSEUDO_CLASS_SELECTOR
         };
@@ -5754,6 +6004,20 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchPseudoClassSelector(leaf, node1);
         assert.deepEqual([...res], [
           node1
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'only-of-type',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('div');
+        const matcher = new Matcher(':only-of-type', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
         ], 'result');
       });
 
@@ -9418,7 +9682,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            new Set([div2, div4]),
+            new Set([root, div2, div4]),
             new Set([div3])
           ]
         ], 'result');
@@ -10144,6 +10408,21 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('::slotted(foo', document);
         const res = matcher.querySelectorAll();
         assert.deepEqual(res, [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const root = document.createElement('div');
+        const node = document.createElement('div');
+        root.id = 'root';
+        root.classList.add('div');
+        node.id = 'div';
+        node.classList.add('div');
+        root.append(node);
+        const matcher = new Matcher(':nth-child(n of .div)', root);
+        const res = matcher.querySelectorAll();
+        assert.deepEqual(res, [
+          node
+        ], 'result')
       });
     });
   });
