@@ -177,16 +177,28 @@ const setup = window => {
 const filter = (testPath) => {
   // fails due to upstream issues and/or not yet supported
   const skipList = [
-    'invalidation/is-pseudo-containing-complex-in-has.html',
-    'invalidation/lang-pseudo-class-in-has-multiple-document-elements.html',
-    'invalidation/link-pseudo-in-has.html',
-    'invalidation/not-pseudo-containing-complex-in-has.html',
-    'invalidation/target-pseudo-in-has.html',
+    'has-sibling-chrome-crash.html',
+    'has-specificity.html',
+    'has-style-sharing-001-ref.html',
+    'has-style-sharing-001.html',
+    'has-style-sharing-002-ref.html',
+    'has-style-sharing-002.html',
+    'has-style-sharing-003-ref.html',
+    'has-style-sharing-003.html',
+    'has-style-sharing-004-ref.html',
+    'has-style-sharing-004.html',
+    'has-style-sharing-005-ref.html',
+    'has-style-sharing-005.html',
+    'has-style-sharing-006-ref.html',
+    'has-style-sharing-006.html',
+    'has-visited-ref.html',
+    'has-visited.html',
     'is-where-basic.html',
     'is-where-error-recovery.html',
     'missing-right-token.html',
     'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
+    'parsing/parse-has-disallow-nesting-has-inside-has.html',
     'placeholder-shown.html',
     'user-invalid.html',
     'user-valid-user-invalid-invalidation.html',
@@ -199,8 +211,6 @@ const filter = (testPath) => {
     'Element-webkitMatchesSelector.html',
     'query-target-in-load-event.html',
     // css/selectors
-    'attribute-selectors/attribute-case/semantics.html',
-    'attribute-selectors/attribute-case/syntax.html',
     'child-indexed-pseudo-class.html',
     'dir-pseudo-on-bdi-element.html',
     'dir-pseudo-on-input-element.html',
@@ -218,9 +228,6 @@ const filter = (testPath) => {
     'has-matches-to-uninserted-elements.html',
     'has-relative-argument.html',
     'has-sibling-insertion-removal.html',
-    'i18n/lang-pseudo-class-disconnected.html',
-    'invalidation/link-pseudo-in-has.html',
-    'invalidation/target-pseudo-in-has.html',
     'is-where-not.html',
     'last-child.html',
     'last-of-type.html',
@@ -239,8 +246,10 @@ const filter = (testPath) => {
     res = false;
   } else if (includeList.includes(testPath)) {
     res = true;
-  } else if (/(:closest|matches|querySelector(?:All)?)/.test(testPath)) {
+  } else if (/(:closest|matches|querySelector(?:All)?|has-)/.test(testPath)) {
     if (excludeList.includes(testPath)) {
+      res = false;
+    } else if (testPath.startsWith('invalidation/')) {
       res = false;
     } else {
       res = true;

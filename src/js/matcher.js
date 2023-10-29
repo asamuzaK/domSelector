@@ -683,7 +683,8 @@ export class Matcher {
       if (nodes.size) {
         if (leaves.length) {
           for (const nextNode of nodes) {
-            bool = this._matchHasPseudoFunc(leaves, nextNode);
+            bool =
+              this._matchHasPseudoFunc(Object.assign([], leaves), nextNode);
             if (bool) {
               break;
             }
