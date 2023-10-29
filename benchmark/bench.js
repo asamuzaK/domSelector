@@ -201,117 +201,117 @@ suite.on('start', async () => {
   const { name: pkgName, version } = JSON.parse(value);
   console.log(`benchmark ${pkgName} v${version}`);
   prepareDom();
-}).add(`jsdom matches - ${selectors[0]}`, () => {
+}).add(`jsdom matches('${selectors[0]}')`, () => {
   elementMatches('jsdom', selectors[0]);
-}).add(`patched-jsdom matches - ${selectors[0]}`, () => {
+}).add(`patched-jsdom matches('${selectors[0]}')`, () => {
   elementMatches('patched-jsdom', selectors[0]);
-}).add(`jsdom matches - ${selectors[1]}`, () => {
+}).add(`jsdom matches('${selectors[1]}')`, () => {
   elementMatches('jsdom', selectors[1]);
-}).add(`patched-jsdom matches - ${selectors[1]}`, () => {
+}).add(`patched-jsdom matches('${selectors[1]}')`, () => {
   elementMatches('patched-jsdom', selectors[1]);
-}).add(`jsdom matches - ${selectors[2]}`, () => {
+}).add(`jsdom matches('${selectors[2]}')`, () => {
   elementMatches('jsdom', selectors[2]);
-}).add(`patched-jsdom matches - ${selectors[2]}`, () => {
+}).add(`patched-jsdom matches('${selectors[2]}')`, () => {
   elementMatches('patched-jsdom', selectors[2]);
-}).add(`jsdom matches - ${selectors[3]}`, () => {
+}).add(`jsdom matches('${selectors[3]}')`, () => {
   elementMatches('jsdom', selectors[3]);
-}).add(`patched-jsdom matches - ${selectors[3]}`, () => {
+}).add(`patched-jsdom matches('${selectors[3]}')`, () => {
   elementMatches('patched-jsdom', selectors[3]);
-}).add(`jsdom matches - ${selectors[4]}`, () => {
+}).add(`jsdom matches('${selectors[4]}')`, () => {
   elementMatches('jsdom', selectors[4]);
-}).add(`patched-jsdom matches - ${selectors[4]}`, () => {
+}).add(`patched-jsdom matches('${selectors[4]}')`, () => {
   elementMatches('patched-jsdom', selectors[4]);
-}).add(`jsdom matches - ${selectors[5]}`, () => {
+}).add(`jsdom matches('${selectors[5]}')`, () => {
   elementMatches('jsdom', selectors[5]);
-}).add(`patched-jsdom matches - ${selectors[5]}`, () => {
+}).add(`patched-jsdom matches('${selectors[5]}')`, () => {
   elementMatches('patched-jsdom', selectors[5]);
-}).add(`jsdom matches - ${selectors[6]}`, () => {
+}).add(`jsdom matches('${selectors[6]}')`, () => {
   elementMatches('jsdom', selectors[6]);
-}).add(`patched-jsdom matches - ${selectors[6]}`, () => {
+}).add(`patched-jsdom matches('${selectors[6]}')`, () => {
   elementMatches('patched-jsdom', selectors[6]);
-}).add(`jsdom closest - ${selectors[0]}`, () => {
+}).add(`jsdom closest('${selectors[0]}')`, () => {
   elementClosest('jsdom', selectors[0]);
-}).add(`patched-jsdom closest - ${selectors[0]}`, () => {
+}).add(`patched-jsdom closest('${selectors[0]}')`, () => {
   elementClosest('patched-jsdom', selectors[0]);
-}).add(`jsdom closest - ${selectors[1]}`, () => {
+}).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosest('jsdom', selectors[1]);
-}).add(`patched-jsdom closest - ${selectors[1]}`, () => {
+}).add(`patched-jsdom closest('${selectors[1]}')`, () => {
   elementClosest('patched-jsdom', selectors[1]);
-}).add(`jsdom closest - ${selectors[2]}`, () => {
+}).add(`jsdom closest('${selectors[2]}')`, () => {
   elementClosest('jsdom', selectors[2]);
-}).add(`patched-jsdom closest - ${selectors[2]}`, () => {
+}).add(`patched-jsdom closest('${selectors[2]}')`, () => {
   elementClosest('patched-jsdom', selectors[2]);
-}).add(`jsdom closest - ${selectors[3]}`, () => {
+}).add(`jsdom closest('${selectors[3]}')`, () => {
   elementClosest('jsdom', selectors[3]);
-}).add(`patched-jsdom closest - ${selectors[3]}`, () => {
+}).add(`patched-jsdom closest('${selectors[3]}')`, () => {
   elementClosest('patched-jsdom', selectors[3]);
-}).add(`jsdom closest - ${selectors[4]}`, () => {
+}).add(`jsdom closest('${selectors[4]}')`, () => {
   elementClosest('jsdom', selectors[4]);
-}).add(`patched-jsdom closest - ${selectors[4]}`, () => {
+}).add(`patched-jsdom closest('${selectors[4]}')`, () => {
   elementClosest('patched-jsdom', selectors[4]);
-}).add(`jsdom closest - ${selectors[5]}`, () => {
+}).add(`jsdom closest('${selectors[5]}')`, () => {
   elementClosest('jsdom', selectors[5]);
-}).add(`patched-jsdom closest - ${selectors[5]}`, () => {
+}).add(`patched-jsdom closest('${selectors[5]}')`, () => {
   elementClosest('patched-jsdom', selectors[5]);
-}).add(`jsdom closest - ${selectors[6]}`, () => {
+}).add(`jsdom closest('${selectors[6]}')`, () => {
   elementClosest('jsdom', selectors[6]);
-}).add(`patched-jsdom closest - ${selectors[6]}`, () => {
+}).add(`patched-jsdom closest('${selectors[6]}')`, () => {
   elementClosest('patched-jsdom', selectors[6]);
-}).add(`jsdom querySelector - ${selectors[0]}`, () => {
+}).add(`jsdom querySelector('${selectors[0]}')`, () => {
   refPointQuerySelector('jsdom', selectors[0]);
-}).add(`patched-jsdom querySelector - ${selectors[0]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[0]);
-}).add(`jsdom querySelector - ${selectors[1]}`, () => {
+}).add(`jsdom querySelector('${selectors[1]}')`, () => {
   refPointQuerySelector('jsdom', selectors[1]);
-}).add(`patched-jsdom querySelector - ${selectors[1]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[1]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[1]);
-}).add(`jsdom querySelector - ${selectors[2]}`, () => {
+}).add(`jsdom querySelector('${selectors[2]}')`, () => {
   refPointQuerySelector('jsdom', selectors[2]);
-}).add(`patched-jsdom querySelector - ${selectors[2]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[2]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[2]);
-}).add(`jsdom querySelector - ${selectors[3]}`, () => {
+}).add(`jsdom querySelector('${selectors[3]}')`, () => {
   refPointQuerySelector('jsdom', selectors[3]);
-}).add(`patched-jsdom querySelector - ${selectors[3]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[3]);
-}).add(`jsdom querySelector - ${selectors[4]}`, () => {
+}).add(`jsdom querySelector('${selectors[4]}')`, () => {
   refPointQuerySelector('jsdom', selectors[4]);
-}).add(`patched-jsdom querySelector - ${selectors[4]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[4]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[4]);
-}).add(`jsdom querySelector - ${selectors[5]}`, () => {
+}).add(`jsdom querySelector('${selectors[5]}')`, () => {
   refPointQuerySelector('jsdom', selectors[5]);
-}).add(`patched-jsdom querySelector - ${selectors[5]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[5]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[5]);
-}).add(`jsdom querySelector - ${selectors[6]}`, () => {
+}).add(`jsdom querySelector('${selectors[6]}')`, () => {
   refPointQuerySelector('jsdom', selectors[6]);
-}).add(`patched-jsdom querySelector - ${selectors[6]}`, () => {
+}).add(`patched-jsdom querySelector('${selectors[6]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[6]);
-}).add(`jsdom querySelectorAll - ${selectors[0]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[0]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[0]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[0]);
-}).add(`jsdom querySelectorAll - ${selectors[1]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[1]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[1]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[1]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[1]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[1]);
-}).add(`jsdom querySelectorAll - ${selectors[2]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[2]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[2]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[2]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[2]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[2]);
-}).add(`jsdom querySelectorAll - ${selectors[3]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[3]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[3]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[3]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[3]);
-}).add(`jsdom querySelectorAll - ${selectors[4]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[4]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[4]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[4]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[4]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[4]);
-}).add(`jsdom querySelectorAll - ${selectors[5]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[5]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[5]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[5]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[5]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[5]);
-}).add(`jsdom querySelectorAll - ${selectors[6]}`, () => {
+}).add(`jsdom querySelectorAll('${selectors[6]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[6]);
-}).add(`patched-jsdom querySelectorAll - ${selectors[6]}`, () => {
+}).add(`patched-jsdom querySelectorAll('${selectors[6]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[6]);
 }).on('cycle', evt => {
   const { target } = evt;
