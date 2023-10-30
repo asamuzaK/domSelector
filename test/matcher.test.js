@@ -1686,7 +1686,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('match directionality pseudo-class', () => {
-      it('should not match', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
@@ -1695,7 +1695,7 @@ describe('match AST leaf and DOM node', () => {
         node.setAttribute('dir', 'ltr');
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should get matched node', () => {
@@ -1778,27 +1778,10 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
-      it('should throw', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('input');
-        node.setAttribute('type', 'tel');
-        node.setAttribute('dir', 'auto');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
-      });
-
-      it('should not match', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
@@ -1809,56 +1792,10 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
-      it('should throw', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('textarea');
-        node.setAttribute('dir', 'auto');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
-      });
-
-      it('should not match', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('input');
-        node.setAttribute('dir', 'auto');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node);
-        const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
-      });
-
-      it('should throw', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('input');
-        node.setAttribute('dir', 'auto');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
-      });
-
-      it('should not match', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
@@ -1870,27 +1807,10 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
-      it('should throw', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('input');
-        node.setAttribute('type', 'text');
-        node.setAttribute('dir', 'auto');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
-      });
-
-      it('should not match', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
@@ -1901,23 +1821,35 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
-      it('should throw', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
         };
-        const node = document.createElement('div');
-        node.setAttribute('dir', 'auto');
+        const node = document.createElement('bdi');
+        node.textContent = 'foo';
         const parent = document.getElementById('div0');
         parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
+        const matcher = new Matcher(':dir(ltr)', node);
+        const res = matcher._matchDirectionPseudoClass(leaf, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          name: 'rtl',
+          type: IDENTIFIER
+        };
+        const node = document.createElement('bdi');
+        node.textContent = '\u05EA';
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':dir(rtl)', node);
+        const res = matcher._matchDirectionPseudoClass(leaf, node);
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should not match', () => {
@@ -1938,7 +1870,8 @@ describe('match AST leaf and DOM node', () => {
           name: 'ltr',
           type: IDENTIFIER
         };
-        const node = document.createElement('bdi');
+        const node = document.createElement('slot');
+        node.dir = 'auto';
         const parent = document.getElementById('div0');
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node, {
@@ -1953,29 +1886,13 @@ describe('match AST leaf and DOM node', () => {
           name: 'ltr',
           type: IDENTIFIER
         };
-        const node = document.createElement('bdi');
+        const node = document.createElement('slot');
         node.setAttribute('dir', 'foo');
         const parent = document.getElementById('div0');
         parent.appendChild(node);
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
         assert.isNull(res, 'result');
-      });
-
-      it('should throw', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
-        };
-        const node = document.createElement('bdi');
-        node.setAttribute('dir', 'foo');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
       });
 
       it('should get matched node', () => {

@@ -122,6 +122,186 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/dir-pseudo-on-bdi-element.html', () => {
+    it('should get matched node', () => {
+      const bdi = document.createElement('bdi');
+      assert.isTrue(bdi.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(bdi.matches(':dir(rtl)'), 'rtl');
+    });
+  });
+
+  describe('css/selectors/dir-pseudo-on-input-element.html', () => {
+    const inputText = ['text', 'search', 'url', 'email'];
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'foo');
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'rtl');
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'RTL');
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'rtl');
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+
+      input.setAttribute('dir', 'ltr');
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'LTR');
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'auto');
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'auto');
+      input.value = '\u05EA';
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'AUTO');
+      input.value = '\u05EA';
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      input.setAttribute('dir', 'rtl');
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+
+      input.removeAttribute('dir');
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      const container = document.createElement('div');
+      container.setAttribute('dir', 'rtl');
+      container.appendChild(input);
+      document.body.appendChild(container);
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+
+      input.type = 'text';
+      assert.isFalse(input.matches(':dir(ltr)'), 'ltr');
+      assert.isTrue(input.matches(':dir(rtl)'), 'rtl');
+
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'), 'ltr');
+      assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtr`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'ltr');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtr`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'foo');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'rtl');
+        assert.isFalse(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isTrue(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'auto');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of inputText) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'auto');
+        input.value = '\u05EA';
+        assert.isFalse(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isTrue(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+  });
+
   describe('css/selectors/dir-selector-querySelector.html', () => {
     const html = `
       <div id=outer>
