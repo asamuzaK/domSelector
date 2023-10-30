@@ -26,7 +26,6 @@ const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
 
 /* regexp */
-const DIR_VALUE = /^(?:auto|ltr|rtl)$/;
 const FORM_INPUT = /^(?:input|textarea)$/;
 const FORM_PARTS =
   /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
