@@ -5,7 +5,7 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import {
-  isContentEditable, isNamespaceDeclared, isSameOrDescendant,
+  getDirectionality, isContentEditable, isNamespaceDeclared, isSameOrDescendant,
   selectorToNodeProps
 } from './dom-util.js';
 import {
@@ -560,60 +560,23 @@ export class Matcher {
 
   /**
    * match directionality pseudo-class - :dir()
-   * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @returns {?object} - matched node
    */
   _matchDirectionPseudoClass(ast, node) {
-    const { dir: nodeDir, localName, type: inputType } = node;
+    const astName = unescapeSelector(ast.name);
+    let dir;
+    try {
+      dir = getDirectionality(node);
+    } catch (e) {
+      if (this.#warn) {
+        throw e;
+      }
+    }
     let res;
-    if (isSameOrDescendant(node)) {
-      const astName = unescapeSelector(ast.name);
-      const { document } = this.#root;
-      let dir;
-      if (/^(?:ltr|rtl)$/.test(nodeDir)) {
-        dir = nodeDir;
-      } else if ((node === document.documentElement ||
-                  (localName === 'input' && inputType === 'tel')) &&
-                 !(nodeDir && DIR_VALUE.test(nodeDir))) {
-        dir = 'ltr';
-      // FIXME:
-      } else if (nodeDir === 'auto' &&
-                 (localName === 'textarea' ||
-                  (localName === 'input' &&
-                   (!inputType || INPUT_TEXT.test(inputType))))) {
-        if (this.#warn) {
-          throw new DOMException('Unsupported pseudo-class :dir()',
-            NOT_SUPPORTED_ERR);
-        }
-      // FIXME:
-      } else if (nodeDir === 'auto' || (localName === 'bdi' && !nodeDir)) {
-        if (this.#warn) {
-          throw new DOMException('Unsupported pseudo-class :dir()',
-            NOT_SUPPORTED_ERR);
-        }
-      } else if (!nodeDir) {
-        let parent = node.parentNode;
-        while (parent) {
-          const { dir: parentDir } = parent;
-          if (parent === document.documentElement) {
-            if (parentDir) {
-              dir = parentDir;
-            } else {
-              dir = 'ltr';
-            }
-            break;
-          } else if (parentDir && /^(?:ltr|rtl)$/.test(parentDir)) {
-            dir = parentDir;
-            break;
-          }
-          parent = parent.parentNode;
-        }
-      }
-      if (dir === astName) {
-        res = node;
-      }
+    if (dir === astName) {
+      res = node;
     }
     return res ?? null;
   }
