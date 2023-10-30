@@ -33,6 +33,249 @@ describe('DOM utility functions', () => {
     document = null;
   });
 
+  describe('get directionality of node', () => {
+    const func = domUtil.getDirectionality;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'ltr';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'LTR';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'rtl';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'RTL';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('textarea');
+      node.dir = 'auto';
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('textarea');
+      node.dir = 'AUTO';
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('textarea');
+      node.dir = 'auto';
+      node.value = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('textarea');
+      node.dir = 'auto';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('input');
+      node.type = 'text';
+      node.dir = 'auto';
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('input');
+      node.type = 'text';
+      node.dir = 'auto';
+      node.value = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('input');
+      node.type = 'text';
+      node.dir = 'auto';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('input');
+      node.dir = 'auto';
+      node.value = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('slot');
+      node.dir = 'auto';
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func(node), DOMException,
+        'Unsupported pseudo-class :dir()');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'auto';
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'auto';
+      node.textContent = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'auto';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'auto';
+      const frag = document.createDocumentFragment();
+      frag.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.dir = 'auto';
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('bdi');
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('bdi');
+      node.textContent = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('input');
+      node.type = 'tel';
+      node.value = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('slot');
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func(node), DOMException,
+        'Unsupported pseudo-class :dir()');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.textContent = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.textContent = '\u05EA';
+      const frag = document.createDocumentFragment();
+      frag.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      node.textContent = '\u05EA';
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+  });
+
   describe('is content editable', () => {
     const func = domUtil.isContentEditable;
 
