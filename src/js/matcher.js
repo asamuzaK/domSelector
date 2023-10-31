@@ -26,17 +26,17 @@ const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
 
 /* regexp */
-const FORM_INPUT = /^(?:input|textarea)$/;
 const FORM_PARTS =
   /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
 const FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
 const HTML_ANCHOR = /^a(?:rea)?$/;
 const HTML_INTERACT = /^d(?:etails|ialog)$/;
 const INPUT_CHECK = /^(?:checkbox|radio)$/;
+const INPUT_EDIT = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
 const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
 const INPUT_RESET = /^(?:button|reset)$/;
 const INPUT_SUBMIT = /^(?:image|submit)$/;
-const INPUT_TEXT = /^(?:(?:emai|te|ur)l|password|search|text)$/;
+const INPUT_TIME = /^(?:date(?:time-local)?|month|time|week)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 
@@ -991,76 +991,69 @@ export class Matcher {
           break;
         }
         case 'read-only': {
-          if (FORM_INPUT.test(localName)) {
-            let targetNode;
-            if (localName === 'input') {
-              if (node.hasAttribute('type')) {
-                const inputType = node.getAttribute('type');
-                if (INPUT_TEXT.test(inputType)) {
-                  targetNode = node;
-                } else if (INPUT_RANGE.test(inputType) &&
-                           inputType !== 'range') {
-                  targetNode = node;
-                }
-              } else {
-                targetNode = node;
-              }
-            } else {
-              targetNode = node;
-            }
-            if (targetNode) {
+          switch (localName) {
+            case 'textarea': {
               if (node.readonly || node.hasAttribute('readonly') ||
                   node.disabled || node.hasAttribute('disabled')) {
                 matched.add(node);
               }
+              break;
             }
-          } else if (!isContentEditable(node)) {
-            matched.add(node);
+            case 'input': {
+              if ((!node.type ||
+                   INPUT_EDIT.test(node.type) || INPUT_TIME.test(node.type)) &&
+                  (node.readonly || node.hasAttribute('readonly') ||
+                   node.disabled || node.hasAttribute('disabled'))) {
+                matched.add(node);
+              }
+              break;
+            }
+            default: {
+              if (!isContentEditable(node)) {
+                matched.add(node);
+              }
+            }
           }
           break;
         }
         case 'read-write': {
-          if (FORM_INPUT.test(localName)) {
-            let targetNode;
-            if (localName === 'input') {
-              if (node.hasAttribute('type')) {
-                const inputType = node.getAttribute('type');
-                if (INPUT_TEXT.test(inputType)) {
-                  targetNode = node;
-                } else if (INPUT_RANGE.test(inputType) &&
-                           inputType !== 'range') {
-                  targetNode = node;
-                }
-              } else {
-                targetNode = node;
-              }
-            } else {
-              targetNode = node;
-            }
-            if (targetNode) {
+          switch (localName) {
+            case 'textarea': {
               if (!(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
               }
+              break;
             }
-          } else if (isContentEditable(node)) {
-            matched.add(node);
+            case 'input': {
+              if ((!node.type ||
+                   INPUT_EDIT.test(node.type) || INPUT_TIME.test(node.type)) &&
+                  !(node.readonly || node.hasAttribute('readonly') ||
+                    node.disabled || node.hasAttribute('disabled'))) {
+                matched.add(node);
+              }
+              break;
+            }
+            default: {
+              if (isContentEditable(node)) {
+                matched.add(node);
+              }
+            }
           }
           break;
         }
         case 'placeholder-shown': {
           let targetNode;
-          if (localName === 'input') {
+          if (localName === 'textarea') {
+            targetNode = node;
+          } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              if (INPUT_TEXT.test(node.getAttribute('type')) ||
-                  node.getAttribute('type') === 'number') {
+              if (INPUT_EDIT.test(node.getAttribute('type'))) {
                 targetNode = node;
               }
             } else {
               targetNode = node;
             }
-          } else if (localName === 'textarea') {
-            targetNode = node;
           }
           if (targetNode && node.hasAttribute('placeholder') &&
               node.getAttribute('placeholder').trim().length &&
@@ -1280,49 +1273,39 @@ export class Matcher {
         }
         case 'required': {
           let targetNode;
-          if (localName === 'input') {
+          if (/^(?:select|textarea)$/.test(localName)) {
+            targetNode = node;
+          } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (INPUT_TEXT.test(inputType)) {
-                targetNode = node;
-              } else if (INPUT_RANGE.test(inputType) &&
-                         inputType !== 'range') {
-                targetNode = node;
-              } else if (inputType === 'checkbox' || inputType === 'radio' ||
-                         inputType === 'file') {
+              if (INPUT_EDIT.test(inputType) || INPUT_CHECK.test(inputType) ||
+                  INPUT_TIME.test(inputType) || inputType === 'file') {
                 targetNode = node;
               }
             } else {
               targetNode = node;
             }
-          } else if (/^(?:select|textarea)$/.test(localName)) {
-            targetNode = node;
           }
-          if (targetNode && (node.required ||
-              node.hasAttribute('required'))) {
+          if (targetNode &&
+              (node.required || node.hasAttribute('required'))) {
             matched.add(node);
           }
           break;
         }
         case 'optional': {
           let targetNode;
-          if (localName === 'input') {
+          if (/^(?:select|textarea)$/.test(localName)) {
+            targetNode = node;
+          } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (INPUT_TEXT.test(inputType)) {
-                targetNode = node;
-              } else if (INPUT_RANGE.test(inputType) &&
-                         inputType !== 'range') {
-                targetNode = node;
-              } else if (inputType === 'checkbox' || inputType === 'radio' ||
-                         inputType === 'file') {
+              if (INPUT_EDIT.test(inputType) || INPUT_CHECK.test(inputType) ||
+                  INPUT_TIME.test(inputType) || inputType === 'file') {
                 targetNode = node;
               }
             } else {
               targetNode = node;
             }
-          } else if (/^(?:select|textarea)$/.test(localName)) {
-            targetNode = node;
           }
           if (targetNode &&
               !(node.required || node.hasAttribute('required'))) {
