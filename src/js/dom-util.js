@@ -10,7 +10,7 @@ import {
   DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
   ELEMENT_NODE, NOT_SUPPORTED_ERR, SYNTAX_ERR
 } from './constant.js';
-const INPUT_TYPES =
+const INPUT_TYPE =
   /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/i;
 
 /* bidi */
@@ -33,7 +33,7 @@ export const getDirectionality = (node = {}) => {
       if (localName === 'textarea') {
         text = node.value;
       } else if (localName === 'input' &&
-                 (!node.type || INPUT_TYPES.test(node.type))) {
+                 (!node.type || INPUT_TYPE.test(node.type))) {
         text = node.value;
       // FIXME:
       } else if (localName === 'slot') {
@@ -43,8 +43,7 @@ export const getDirectionality = (node = {}) => {
         text = node.textContent;
       }
       if (text) {
-        const { paragraphs } = bidi.getEmbeddingLevels(text);
-        const [{ level }] = paragraphs;
+        const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
           dir = 'rtl';
         } else if (level % 2 === 0) {
@@ -66,8 +65,7 @@ export const getDirectionality = (node = {}) => {
     } else if (localName === 'bdi') {
       const text = node.textContent;
       if (text) {
-        const { paragraphs } = bidi.getEmbeddingLevels(text);
-        const [{ level }] = paragraphs;
+        const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
           dir = 'rtl';
         } else if (level % 2 === 0) {
