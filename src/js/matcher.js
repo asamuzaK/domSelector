@@ -569,7 +569,10 @@ export class Matcher {
     try {
       dir = getDirectionality(node);
     } catch (e) {
-      if (this.#warn) {
+      if (e instanceof DOMException && e.name === NOT_SUPPORTED_ERR &&
+          !this.#warn) {
+        // fall through
+      } else {
         throw e;
       }
     }
