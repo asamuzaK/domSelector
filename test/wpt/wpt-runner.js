@@ -204,7 +204,7 @@ const filter = (testPath) => {
     'user-valid-user-invalid-invalidation.html',
     'user-valid.html',
     'webkit-pseudo-element.html',
-    'valid-invalid-form-fieldset.html',
+    'valid-invalid-form-fieldset.html'
   ];
   const includeList = [
     // dom/nodes
@@ -229,17 +229,17 @@ const filter = (testPath) => {
     'only-of-type.html',
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
-    'selector-placeholder-shown-emptify-placeholder.html',
+    'selector-placeholder-shown-emptify-placeholder.html'
   ];
   const excludeList = [
-    'ParentNode-querySelector-All-content.html',
+    'ParentNode-querySelector-All-content.html'
   ];
   let res;
   if (skipList.includes(testPath)) {
     res = false;
   } else if (includeList.includes(testPath)) {
     res = true;
-  } else if (/(:closest|matches|querySelector(?:All)?|has-)/.test(testPath)) {
+  } else if (/closest|matches|querySelector(?:All)?|has-/.test(testPath)) {
     if (excludeList.includes(testPath)) {
       res = false;
     } else if (testPath.startsWith('invalidation/')) {
