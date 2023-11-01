@@ -10,6 +10,8 @@ import {
   DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
   ELEMENT_NODE, NOT_SUPPORTED_ERR, SYNTAX_ERR
 } from './constant.js';
+
+/* regexp */
 const INPUT_TYPE =
   /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/i;
 
@@ -26,9 +28,9 @@ export const getDirectionality = (node = {}) => {
   let dir;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
-    if (/^(?:ltr|rtl)$/i.test(nodeDir)) {
+    if (/^(?:ltr|rtl)$/.test(nodeDir)) {
       dir = nodeDir;
-    } else if (/^auto$/i.test(nodeDir)) {
+    } else if (nodeDir === 'auto') {
       let text;
       if (localName === 'textarea') {
         text = node.value;
