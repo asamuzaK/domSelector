@@ -1,9 +1,8 @@
 name: benchmark
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  release:
+    types: [ created ]
 
 jobs:
   benchmark:
