@@ -88,6 +88,11 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 ## Monkey patch jsdom
 
 ``` javascript
+import { JSDOM } from 'jsdom';
+import {
+  closest, matches, querySelector, querySelectorAll
+} from '@asamuzakjp/dom-selector';
+
 const dom = new JSDOM('', {
   runScripts: 'dangerously',
   url: 'http://localhost/',
