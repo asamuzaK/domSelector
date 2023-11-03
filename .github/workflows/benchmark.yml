@@ -1,8 +1,10 @@
 name: benchmark
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches: [ main ]
+#  release:
+#    types: [ created ]
 
 jobs:
   benchmark:
@@ -18,4 +20,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
-      - run: npm run benchmark
+      - run: npm run bench
