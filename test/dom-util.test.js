@@ -24,13 +24,95 @@ describe('DOM utility functions', () => {
     runScripts: 'dangerously',
     url: 'http://localhost/'
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
   });
   afterEach(() => {
+    window = null;
     document = null;
+  });
+
+  describe('get slotted text content', () => {
+    const func = domUtil.getSlottedTextContent;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get null', () => {
+      const html = `
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      const node = document.getElementById('foo');
+      const res = func(node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'Foo', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">
+            Qux
+          </span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'Qux', 'result');
+    });
   });
 
   describe('get directionality of node', () => {
@@ -158,14 +240,88 @@ describe('DOM utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should throw', () => {
-      const node = document.createElement('slot');
-      node.dir = 'auto';
-      node.textContent = 'foo';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      assert.throws(() => func(node), DOMException,
-        'Unsupported pseudo-class :dir()');
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar" dir="auto">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar" dir="auto">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">${String.fromCodePoint(0x05EA)}</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar" dir="auto">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
     });
 
     it('should get value', () => {
@@ -241,13 +397,88 @@ describe('DOM utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should throw', () => {
-      const node = document.createElement('slot');
-      node.textContent = 'foo';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      assert.throws(() => func(node), DOMException,
-        'Unsupported pseudo-class :dir()');
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">${String.fromCodePoint(0x05EA)}</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'rtl', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
     });
 
     it('should get value', () => {

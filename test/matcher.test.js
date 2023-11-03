@@ -76,15 +76,17 @@ describe('match AST leaf and DOM node', () => {
     runScripts: 'dangerously',
     url: 'http://localhost/#foo'
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
+    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
@@ -1865,34 +1867,37 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
-      it('should throw', () => {
+      it('should get matched node', () => {
         const leaf = {
           name: 'ltr',
           type: IDENTIFIER
         };
-        const node = document.createElement('slot');
-        node.dir = 'auto';
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const matcher = new Matcher(':dir(ltr)', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchDirectionPseudoClass(leaf, node),
-          DOMException, 'Unsupported pseudo-class :dir()');
-      });
-
-      it('should not match', () => {
-        const leaf = {
-          name: 'ltr',
-          type: IDENTIFIER
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar" dir="auto">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="quux">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
         };
-        const node = document.createElement('slot');
-        node.setAttribute('dir', 'foo');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
+        window.customElements.define('my-element', MyElement);
+        const shadow = document.getElementById('baz');
+        const node = shadow.shadowRoot.getElementById('foo');
         const matcher = new Matcher(':dir(ltr)', node);
         const res = matcher._matchDirectionPseudoClass(leaf, node);
-        assert.isNull(res, 'result');
+        assert.deepEqual(res, node, 'result');
       });
 
       it('should get matched node', () => {

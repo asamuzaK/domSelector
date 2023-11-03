@@ -565,19 +565,9 @@ export class Matcher {
    */
   _matchDirectionPseudoClass(ast, node) {
     const astName = unescapeSelector(ast.name);
-    let dir;
-    try {
-      dir = getDirectionality(node);
-    } catch (e) {
-      if (e instanceof DOMException && e.name === NOT_SUPPORTED_ERR &&
-          !this.#warn) {
-        // fall through
-      } else {
-        throw e;
-      }
-    }
+    const dir = getDirectionality(node);
     let res;
-    if (dir === astName) {
+    if (astName === dir) {
       res = node;
     }
     return res ?? null;

@@ -8,7 +8,7 @@ import bidiFactory from 'bidi-js';
 /* constants */
 import {
   DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
-  ELEMENT_NODE, NOT_SUPPORTED_ERR, SYNTAX_ERR
+  ELEMENT_NODE, SYNTAX_ERR
 } from './constant.js';
 
 /* regexp */
@@ -17,6 +17,43 @@ const INPUT_TYPE =
 
 /* bidi */
 const bidi = bidiFactory();
+
+/**
+ * get slotted text content
+ * @param {object} node - Element node
+ * @returns {?string} - text content
+ */
+export const getSlottedTextContent = (node = {}) => {
+  let res;
+  if (node.nodeType === ELEMENT_NODE && node.localName === 'slot') {
+    let shadow;
+    let parent = node.parentNode;
+    while (parent) {
+      if (parent) {
+        if (parent.nodeType === DOCUMENT_FRAGMENT_NODE && parent.host &&
+            parent.mode && /^(?:close|open)$/.test(parent.mode)) {
+          shadow = parent;
+          break;
+        }
+        parent = parent.parentNode;
+      }
+    }
+    if (shadow) {
+      const nodes = node.assignedNodes();
+      if (nodes.length) {
+        for (const item of nodes) {
+          res = item.textContent.trim();
+          if (res) {
+            break;
+          }
+        }
+      } else {
+        res = node.textContent.trim();
+      }
+    }
+  }
+  return res ?? null;
+};
 
 /**
  * get directionality of node
@@ -37,18 +74,16 @@ export const getDirectionality = (node = {}) => {
       } else if (localName === 'input' &&
                  (!node.type || INPUT_TYPE.test(node.type))) {
         text = node.value;
-      // FIXME:
       } else if (localName === 'slot') {
-        throw new DOMException('Unsupported pseudo-class :dir()',
-          NOT_SUPPORTED_ERR);
+        text = getSlottedTextContent(node);
       } else {
-        text = node.textContent;
+        text = node.textContent.trim();
       }
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
           dir = 'rtl';
-        } else if (level % 2 === 0) {
+        } else {
           dir = 'ltr';
         }
       }
@@ -65,12 +100,12 @@ export const getDirectionality = (node = {}) => {
         }
       }
     } else if (localName === 'bdi') {
-      const text = node.textContent;
+      const text = node.textContent.trim();
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
           dir = 'rtl';
-        } else if (level % 2 === 0) {
+        } else {
           dir = 'ltr';
         }
       }
@@ -79,16 +114,25 @@ export const getDirectionality = (node = {}) => {
       }
     } else if (localName === 'input' && node.type === 'tel') {
       dir = 'ltr';
-    // FIXME:
-    } else if (localName === 'slot') {
-      throw new DOMException('Unsupported pseudo-class :dir()',
-        NOT_SUPPORTED_ERR);
     } else if (parentNode) {
-      if (parentNode.nodeType === ELEMENT_NODE) {
-        dir = getDirectionality(parentNode);
-      } else if (parentNode.nodeType === DOCUMENT_NODE ||
-                 parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
-        dir = 'ltr';
+      if (localName === 'slot') {
+        const text = getSlottedTextContent(node);
+        if (text) {
+          const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
+          if (level % 2 === 1) {
+            dir = 'rtl';
+          } else {
+            dir = 'ltr';
+          }
+        }
+      }
+      if (!dir) {
+        if (parentNode.nodeType === ELEMENT_NODE) {
+          dir = getDirectionality(parentNode);
+        } else if (parentNode.nodeType === DOCUMENT_NODE ||
+                   parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          dir = 'ltr';
+        }
       }
     } else {
       dir = 'ltr';
