@@ -32,15 +32,13 @@ export const getSlottedTextContent = (node = {}) => {
     let parent = node.parentNode;
     let bool;
     while (parent) {
-      if (parent) {
-        const { host, mode, nodeType, parentNode } = parent;
-        if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
-            mode && SHADOW_MODE.test(mode)) {
-          bool = true;
-          break;
-        }
-        parent = parentNode;
+      const { host, mode, nodeType, parentNode } = parent;
+      if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
+          mode && SHADOW_MODE.test(mode)) {
+        bool = true;
+        break;
       }
+      parent = parentNode;
     }
     if (bool) {
       const nodes = node.assignedNodes();
@@ -93,10 +91,11 @@ export const getDirectionality = (node = {}) => {
       }
       if (!res) {
         if (parentNode) {
-          if (parentNode.nodeType === ELEMENT_NODE) {
+          const { nodeType: parentNodeType } = parentNode;
+          if (parentNodeType === ELEMENT_NODE) {
             res = getDirectionality(parentNode);
-          } else if (parentNode.nodeType === DOCUMENT_NODE ||
-                     parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          } else if (parentNodeType === DOCUMENT_NODE ||
+                     parentNodeType === DOCUMENT_FRAGMENT_NODE) {
             res = LTR;
           }
         } else {
@@ -131,10 +130,11 @@ export const getDirectionality = (node = {}) => {
         }
       }
       if (!res) {
-        if (parentNode.nodeType === ELEMENT_NODE) {
+        const { nodeType: parentNodeType } = parentNode;
+        if (parentNodeType === ELEMENT_NODE) {
           res = getDirectionality(parentNode);
-        } else if (parentNode.nodeType === DOCUMENT_NODE ||
-                   parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        } else if (parentNodeType === DOCUMENT_NODE ||
+                   parentNodeType === DOCUMENT_FRAGMENT_NODE) {
           res = LTR;
         }
       }
@@ -210,11 +210,10 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
  * @returns {boolean} - result
  */
 export const isSameOrDescendant = (node = {}, root = {}) => {
-  const { nodeType, ownerDocument } = node;
   let res;
-  if (nodeType === ELEMENT_NODE && ownerDocument) {
+  if (node.nodeType === ELEMENT_NODE && node.ownerDocument) {
     if (!root || root.nodeType !== ELEMENT_NODE) {
-      root = ownerDocument;
+      root = node.ownerDocument;
     }
     if (node === root) {
       res = true;
