@@ -1,8 +1,10 @@
 name: benchmark
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches: [ main ]
+#  release:
+#    types: [ created ]
 
 jobs:
   benchmark:
