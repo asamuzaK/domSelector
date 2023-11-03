@@ -85,6 +85,87 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes
 
 
+## Monkey patch jsdom
+
+```
+const dom = new JSDOM('', {
+  runScripts: 'dangerously',
+  url: 'http://localhost/',
+  beforeParse: window => {
+    window.Element.prototype.matches = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return matches(selector, this);
+    };
+    window.Element.prototype.closest = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return closest(selector, this);
+    };
+    window.Document.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+    window.DocumentFragment.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+    window.Element.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+    window.Document.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+    window.DocumentFragment.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+    window.Element.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        const msg = '1 argument required, but only 0 present.';
+        throw new window.TypeError(msg);
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+  }
+});
+```
+
+### Performance
+
+|selector          ||jsdom             ||patched-jsdom     ||result            |
+|:-----------------||:-----------------||:-----------------||:-----------------|
+|matches('.container.box')||1,704,793 ops/sec ±2.10% (86 runs sampled)||95,691 ops/sec ±2.40% (87 runs sampled)||jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
+
 ## Acknowledgments
 
 The following resources have been of great help in the development of the DOM Selector.
