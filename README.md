@@ -162,9 +162,9 @@ const dom = new JSDOM('', {
 
 ### Performance
 
-|selector          ||jsdom             ||patched-jsdom     ||result            |
-|:-----------------||:-----------------||:-----------------||:-----------------|
-|matches('.container.box')||1,704,793 ops/sec ±2.10% (86 runs sampled)||95,691 ops/sec ±2.40% (87 runs sampled)||jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
+|selector          |jsdom             |patched-jsdom     |result            |
+|:-----------------|:-----------------|:-----------------|:-----------------|
+|matches('.container.box')|1,704,793 ops/sec ±2.10% (86 runs sampled)|95,691 ops/sec ±2.40% (87 runs sampled)|jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
 
 ## Acknowledgments
 
