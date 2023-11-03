@@ -163,7 +163,7 @@ const dom = new JSDOM('', {
 ### Performance
 
 |selector          |jsdom             |patched-jsdom     |result            |
-|:-----------------|:-----------------|:-----------------|:-----------------|
+|:------------|:-----------------|:-----------------|:----------------------|
 |matches('.container.box')|1,704,793 ops/sec ±2.10%|95,691 ops/sec ±2.40%|jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
 |matches('.container:not(.box)')|906,712 ops/sec ±2.02%|57,603 ops/sec ±4.57%|jsdom is 15.7 times faster. patched-jsdom took 0.017msec.|
 |matches('.box + .box')|1,566,175 ops/sec ±2.17%|90,759 ops/sec ±5.32%|jsdom is 17.3 times faster. patched-jsdom took 0.011msec.|
