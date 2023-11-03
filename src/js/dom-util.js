@@ -10,10 +10,13 @@ import {
   DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
   ELEMENT_NODE, SYNTAX_ERR
 } from './constant.js';
+const LTR = 'ltr';
+const RTL = 'rtl';
 
 /* regexp */
 const INPUT_TYPE =
-  /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/i;
+  /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/;
+const SHADOW_MODE = /^(?:close|open)$/;
 
 /* bidi */
 const bidi = bidiFactory();
@@ -26,19 +29,20 @@ const bidi = bidiFactory();
 export const getSlottedTextContent = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE && node.localName === 'slot') {
-    let shadow;
     let parent = node.parentNode;
+    let bool;
     while (parent) {
       if (parent) {
-        if (parent.nodeType === DOCUMENT_FRAGMENT_NODE && parent.host &&
-            parent.mode && /^(?:close|open)$/.test(parent.mode)) {
-          shadow = parent;
+        const { host, mode, nodeType, parentNode } = parent;
+        if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
+            mode && SHADOW_MODE.test(mode)) {
+          bool = true;
           break;
         }
-        parent = parent.parentNode;
+        parent = parentNode;
       }
     }
-    if (shadow) {
+    if (bool) {
       const nodes = node.assignedNodes();
       if (nodes.length) {
         for (const item of nodes) {
@@ -62,11 +66,11 @@ export const getSlottedTextContent = (node = {}) => {
  * @returns {?string} - result
  */
 export const getDirectionality = (node = {}) => {
-  let dir;
+  let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
-      dir = nodeDir;
+      res = nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
       if (localName === 'textarea') {
@@ -82,21 +86,21 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          dir = 'rtl';
+          res = RTL;
         } else {
-          dir = 'ltr';
+          res = LTR;
         }
       }
-      if (!dir) {
+      if (!res) {
         if (parentNode) {
           if (parentNode.nodeType === ELEMENT_NODE) {
-            dir = getDirectionality(parentNode);
+            res = getDirectionality(parentNode);
           } else if (parentNode.nodeType === DOCUMENT_NODE ||
                      parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            dir = 'ltr';
+            res = LTR;
           }
         } else {
-          dir = 'ltr';
+          res = LTR;
         }
       }
     } else if (localName === 'bdi') {
@@ -104,41 +108,41 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          dir = 'rtl';
+          res = RTL;
         } else {
-          dir = 'ltr';
+          res = LTR;
         }
       }
-      if (!(dir || parentNode)) {
-        dir = 'ltr';
+      if (!(res || parentNode)) {
+        res = LTR;
       }
     } else if (localName === 'input' && node.type === 'tel') {
-      dir = 'ltr';
+      res = LTR;
     } else if (parentNode) {
       if (localName === 'slot') {
         const text = getSlottedTextContent(node);
         if (text) {
           const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
           if (level % 2 === 1) {
-            dir = 'rtl';
+            res = RTL;
           } else {
-            dir = 'ltr';
+            res = LTR;
           }
         }
       }
-      if (!dir) {
+      if (!res) {
         if (parentNode.nodeType === ELEMENT_NODE) {
-          dir = getDirectionality(parentNode);
+          res = getDirectionality(parentNode);
         } else if (parentNode.nodeType === DOCUMENT_NODE ||
                    parentNode.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          dir = 'ltr';
+          res = LTR;
         }
       }
     } else {
-      dir = 'ltr';
+      res = LTR;
     }
   }
-  return dir ?? null;
+  return res ?? null;
 };
 
 /**
