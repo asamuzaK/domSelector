@@ -617,7 +617,7 @@ export class Matcher {
         }
       } else {
         let target = node;
-        while (target.parentNode) {
+        while (target) {
           if (reg.test(target.lang)) {
             res = node;
             break;
