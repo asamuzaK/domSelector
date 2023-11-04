@@ -2150,24 +2150,19 @@ export class Matcher {
         } else if (document.contentType !== 'text/html' ||
                    /[*|]/.test(leafName)) {
           pending = true;
-        } else {
+        } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
-          if (root.nodeType === DOCUMENT_NODE) {
-            const a = [...document.getElementsByTagName(leafName)];
-            arr.push(...a);
-          } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const childNodes = [...root.children];
-            for (const node of childNodes) {
-              if (node.localName === tagName) {
-                arr.push(node);
-              }
-              const a = [...node.getElementsByTagName(leafName)];
-              arr.push(...a);
+          const childNodes = [...root.children];
+          for (const node of childNodes) {
+            if (node.localName === tagName) {
+              arr.push(node);
             }
-          } else if (root.nodeType === ELEMENT_NODE) {
-            const a = [...root.getElementsByTagName(leafName)];
+            const a = [...node.getElementsByTagName(leafName)];
             arr.push(...a);
           }
+        } else {
+          const a = [...root.getElementsByTagName(leafName)];
+          arr.push(...a);
         }
         if (arr.length) {
           if (matchItems) {
