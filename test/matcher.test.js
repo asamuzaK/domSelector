@@ -9187,7 +9187,7 @@ describe('match AST leaf and DOM node', () => {
         const [[{ branch: [twig] }]] = matcher._prepare('div');
         const res = matcher._findNodes(twig);
         assert.deepEqual([...res.nodes], [
-          parent, node
+          node
         ], 'nodes');
         assert.isFalse(res.pending, 'pending');
       });
@@ -9202,7 +9202,7 @@ describe('match AST leaf and DOM node', () => {
         const [[{ branch: [twig] }]] = matcher._prepare('.foo');
         const res = matcher._findNodes(twig);
         assert.deepEqual([...res.nodes], [
-          parent, node
+          node
         ], 'nodes');
         assert.isFalse(res.pending, 'pending');
       });

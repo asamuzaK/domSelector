@@ -2109,10 +2109,6 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          if (root.nodeType === ELEMENT_NODE &&
-              root.classList.contains(leafName)) {
-            arr.push(root);
-          }
           const a = [...root.getElementsByClassName(leafName)];
           arr.push(...a);
         }
@@ -2169,9 +2165,6 @@ export class Matcher {
               arr.push(...a);
             }
           } else if (root.nodeType === ELEMENT_NODE) {
-            if (root.localName === tagName) {
-              arr.push(root);
-            }
             const a = [...root.getElementsByTagName(leafName)];
             arr.push(...a);
           }
