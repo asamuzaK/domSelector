@@ -2290,29 +2290,6 @@ export class Matcher {
   }
 
   /**
-   * sort nodes
-   * @param {object} nodes - collection of nodes
-   * @returns {Array.<object|undefined>} - collection of sorted nodes
-   */
-  _sortNodes(nodes) {
-    const arr = [...nodes];
-    if (arr.length > 1) {
-      arr.sort((a, b) => {
-        let res;
-        const posBit = a.compareDocumentPosition(b);
-        if (posBit & DOCUMENT_POSITION_PRECEDING ||
-            posBit & DOCUMENT_POSITION_CONTAINS) {
-          res = 1;
-        } else {
-          res = -1;
-        }
-        return res;
-      });
-    }
-    return arr;
-  }
-
-  /**
    * match nodes
    * @param {string} targetType - target type
    * @returns {object} - collection of matched nodes
@@ -2438,6 +2415,29 @@ export class Matcher {
     this._collectNodes(targetType);
     const nodes = this._matchNodes(targetType);
     return nodes;
+  }
+
+  /**
+   * sort nodes
+   * @param {object} nodes - collection of nodes
+   * @returns {Array.<object|undefined>} - collection of sorted nodes
+   */
+  _sortNodes(nodes) {
+    const arr = [...nodes];
+    if (arr.length > 1) {
+      arr.sort((a, b) => {
+        let res;
+        const posBit = a.compareDocumentPosition(b);
+        if (posBit & DOCUMENT_POSITION_PRECEDING ||
+            posBit & DOCUMENT_POSITION_CONTAINS) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
+    return arr;
   }
 
   /**
