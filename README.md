@@ -110,7 +110,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
 |E:dir(ltr)|✓| |
-|E:lang(zh, "\*-hant")|Partially supported|Some patterns e.g. `:lang("*-Latn")`, `:lang("")` are not supported.|
+|E:lang(zh, "\*-hant")|Partially supported|Patterns with quotes e.g. `:lang("*-Latn")`, `:lang("")` are not supported.|
 |E:any-link|✓| |
 |E:link|✓| |
 |E:visited|✓|Do not match to prevent fingerprinting.|
