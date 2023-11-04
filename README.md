@@ -102,8 +102,8 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E#myid|✓| |
 |E\[foo\]|✓| |
 |E\[foo="bar"\]|✓| |
-|E\[foo="bar" i\]|✓| |
-|E\[foo="bar" s\]|✓| |
+|E\[foo="bar"&nbsp;i\]|✓| |
+|E\[foo="bar"&nbsp;s\]|✓| |
 |E\[foo~="bar"\]|✓| |
 |E\[foo^="bar"\]|✓| |
 |E\[foo$="bar"\]|✓| |
@@ -139,8 +139,8 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:user-invalid|Unsupported| |
 |E:root|✓| |
 |E:empty|✓| |
-|E:nth-child(n [of S]?)|✓| |
-|E:nth-last-child(n [of S]?)|✓| |
+|E:nth-child(n&nbsp;[of&nbsp;S]?)|✓| |
+|E:nth-last-child(n&nbsp;[of&nbsp;S]?)|✓| |
 |E:first-child|✓| |
 |E:last-child|✓| |
 |E:only-child|✓| |
@@ -149,7 +149,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:first-of-type|✓| |
 |E:last-of-type|✓| |
 |E:only-of-type|✓| |
-|E F|✓| |
+|E&nbsp;F|✓| |
 |E > F|✓| |
 |E + F|✓| |
 |E ~ F|✓| |
