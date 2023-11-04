@@ -115,7 +115,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:lang(zh, "\*-hant")|partially supported|some patterns e.g. `:lang("*-Latn")` are not supported|
 |E:any-link|✓| |
 |E:link|✓| |
-|E:visited|✓|always do not match to prevent fingerprinting|
+|E:visited|✓|do not match to prevent fingerprinting|
 |E:local-link|✓| |
 |E:target|✓| |
 |E:target-within|✓| |
