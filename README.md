@@ -85,7 +85,7 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes
 
 
-## Supported selectors
+## Supported CSS selectors
 
 |Pattern|Supported|Note|
 |:--------|:-------:|:--------|
@@ -232,7 +232,7 @@ const dom = new JSDOM('', {
 
 ### Performance
 
-|Selector|Jsdom|Patched-jsdom|Result|
+|Method and CSS selector|Jsdom|Patched-jsdom|Result|
 |:------------|:------------|:------------|:------------|
 |matches('.container.box')|1,704,793 ops/sec ±2.10%|95,691 ops/sec ±2.40%|jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
 |matches('.container:not(.box)')|906,712 ops/sec ±2.02%|57,603 ops/sec ±4.57%|jsdom is 15.7 times faster. patched-jsdom took 0.017msec.|
