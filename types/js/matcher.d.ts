@@ -37,9 +37,9 @@ export class Matcher {
     }): object;
     _findNodes(twig: object, targetType: string): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
-    _sortNodes(nodes: object): Array<object | undefined>;
     _matchNodes(targetType: string): object;
     _find(targetType: string): object;
+    _sortNodes(nodes: object): Array<object | undefined>;
     matches(): boolean;
     closest(): object | null;
     querySelector(): object | null;
