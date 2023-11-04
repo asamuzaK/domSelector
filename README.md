@@ -87,7 +87,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 
 ## Supported selectors
 
-|pattern|supported|note|
+|Pattern|Supported|Note|
 |:--------|:-------:|:--------|
 |\*|✓| |
 |\*\|*|✓| |
@@ -112,33 +112,33 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
 |E:dir(ltr)|✓| |
-|E:lang(zh, "\*-hant")|partially supported|some patterns e.g. `:lang("*-Latn")` are not supported|
+|E:lang(zh, "\*-hant")|Partially supported|Some patterns e.g. `:lang("*-Latn")` are not supported.|
 |E:any-link|✓| |
 |E:link|✓| |
-|E:visited|✓|do not match to prevent fingerprinting|
+|E:visited|✓|Do not match to prevent fingerprinting.|
 |E:local-link|✓| |
 |E:target|✓| |
 |E:target-within|✓| |
 |E:scope|✓| |
-|E:current|unsupported| |
-|E:current(s)|unsupported| |
-|E:past|unsupported| |
-|E:future|unsupported| |
-|E:active|unsupported| |
-|E:hover|unsupported| |
+|E:current|Unsupported| |
+|E:current(s)|Unsupported| |
+|E:past|Unsupported| |
+|E:future|Unsupported| |
+|E:active|Unsupported| |
+|E:hover|Unsupported| |
 |E:focus|✓| |
 |E:focus-within|✓| |
-|E:focus-visible|unsupported| |
+|E:focus-visible|Unsupported| |
 |E:enabled<br>E:disabled|✓| |
 |E:read-write<br>E:read-only|✓| |
 |E:placeholder-shown|✓| |
-|E:default|partially supported|&lt;option&gt; within &lt;select multiple&gt; is not supported|
+|E:default|Partially supported|&lt;option&gt; within &lt;select multiple&gt; is not supported.|
 |E:checked|✓| |
 |E:indeterminate|✓| |
 |E:valid<br>E:invalid|✓| |
 |E:required<br>E:optional|✓| |
-|E:blank|unsupported| |
-|E:user-invalid|unsupported| |
+|E:blank|Unsupported| |
+|E:user-invalid|Unsupported| |
 |E:root|✓| |
 |E:empty|✓| |
 |E:nth-child(n [of S]?)|✓| |
@@ -155,9 +155,9 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E > F|✓| |
 |E + F|✓| |
 |E ~ F|✓| |
-|F \|\| E|unsupported| |
-|E:nth-col(n)|unsupported| |
-|E:nth-last-col(n)|unsupported| |
+|F \|\| E|Unsupported| |
+|E:nth-col(n)|Unsupported| |
+|E:nth-last-col(n)|Unsupported| |
 
 
 ## Monkey patch jsdom
@@ -234,7 +234,7 @@ const dom = new JSDOM('', {
 
 ### Performance
 
-|selector|jsdom|patched-jsdom|result|
+|Selector|Jsdom|Patched-jsdom|Result|
 |:------------|:------------|:------------|:------------|
 |matches('.container.box')|1,704,793 ops/sec ±2.10%|95,691 ops/sec ±2.40%|jsdom is 17.8 times faster. patched-jsdom took 0.010msec.|
 |matches('.container:not(.box)')|906,712 ops/sec ±2.02%|57,603 ops/sec ±4.57%|jsdom is 15.7 times faster. patched-jsdom took 0.017msec.|
