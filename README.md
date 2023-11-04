@@ -110,13 +110,13 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
 |E:dir(ltr)|✓| |
-|E:lang(zh, "\*-hant")|Partially supported|Quoted keys e.g. `:lang("*-Latn")` fails. It succeeds if escaped e.g. `:lang(\*-Latn)`.|
-|E:any-link|✓| |
+|E:lang(zh, "\*&#8209;hant")|Partially supported|Quoted keys e.g. `:lang("*&#8209;Latn")` fails. It succeeds if escaped e.g. `:lang(\*&#8209;Latn)`.|
+|E:any&#8209;link|✓| |
 |E:link|✓| |
 |E:visited|✓|Do not match to prevent fingerprinting.|
-|E:local-link|✓| |
+|E:local&#8209;link|✓| |
 |E:target|✓| |
-|E:target-within|✓| |
+|E:target&#8209;within|✓| |
 |E:scope|✓| |
 |E:current|Unsupported| |
 |E:current(s)|Unsupported| |
@@ -125,37 +125,37 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:active|Unsupported| |
 |E:hover|Unsupported| |
 |E:focus|✓| |
-|E:focus-within|✓| |
-|E:focus-visible|Unsupported| |
+|E:focus&#8209;within|✓| |
+|E:focus&#8209;visible|Unsupported| |
 |E:enabled<br>E:disabled|✓| |
-|E:read-write<br>E:read-only|✓| |
-|E:placeholder-shown|✓| |
+|E:read&#8209;write<br>E:read&#8209;only|✓| |
+|E:placeholder&#8209;shown|✓| |
 |E:default|Partially supported|&lt;option&gt; within &lt;select multiple&gt; is not supported.|
 |E:checked|✓| |
 |E:indeterminate|✓| |
 |E:valid<br>E:invalid|✓| |
 |E:required<br>E:optional|✓| |
 |E:blank|Unsupported| |
-|E:user-invalid|Unsupported| |
+|E:user&#8209;invalid|Unsupported| |
 |E:root|✓| |
 |E:empty|✓| |
-|E:nth-child(n&nbsp;[of&nbsp;S]?)|✓| |
-|E:nth-last-child(n&nbsp;[of&nbsp;S]?)|✓| |
-|E:first-child|✓| |
-|E:last-child|✓| |
-|E:only-child|✓| |
-|E:nth-of-type(n)|✓| |
-|E:nth-last-of-type(n)|✓| |
-|E:first-of-type|✓| |
-|E:last-of-type|✓| |
-|E:only-of-type|✓| |
+|E:nth&#8209;child(n&nbsp;[of&nbsp;S]?)|✓| |
+|E:nth&#8209;last&#8209;child(n&nbsp;[of&nbsp;S]?)|✓| |
+|E:first&#8209;child|✓| |
+|E:last&#8209;child|✓| |
+|E:only&#8209;child|✓| |
+|E:nth&#8209;of&#8209;type(n)|✓| |
+|E:nth&#8209;last&#8209;of&#8209;type(n)|✓| |
+|E:first&#8209;of&#8209;type|✓| |
+|E:last&#8209;of&#8209;type|✓| |
+|E:only&#8209;of&#8209;type|✓| |
 |E&nbsp;F|✓| |
 |E > F|✓| |
 |E + F|✓| |
 |E ~ F|✓| |
 |F \|\| E|Unsupported| |
-|E:nth-col(n)|Unsupported| |
-|E:nth-last-col(n)|Unsupported| |
+|E:nth&#8209;col(n)|Unsupported| |
+|E:nth&#8209;last&#8209;col(n)|Unsupported| |
 
 
 ## Monkey patch jsdom
