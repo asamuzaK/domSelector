@@ -90,8 +90,6 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |Pattern|Supported|Note|
 |:--------|:-------:|:--------|
 |\*|✓| |
-|\*\|*|✓| |
-|\|\*|✓| |
 |ns\|E|✓| |
 |\*\|E|✓| |
 |\|E|✓| |
