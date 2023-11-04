@@ -85,6 +85,81 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes
 
 
+## Supported selectors
+
+|pattern|supported|note|
+|:--------|:-------:|:--------|
+|\*|✓| |
+|\*\|*|✓| |
+|\|\*|✓| |
+|ns\|E|✓| |
+|\*\|E|✓| |
+|\|E|✓| |
+|E|✓| |
+|E:not(s1, s2, …)|✓| |
+|E:is(s1, s2, …)|✓| |
+|E:where(s1, s2, …)|✓| |
+|E:has(rs1, rs2, …)|✓| |
+|E.warning|✓| |
+|E#myid|✓| |
+|E\[foo\]|✓| |
+|E\[foo="bar"\]|✓| |
+|E\[foo="bar" i\]|✓| |
+|E\[foo="bar" s\]|✓| |
+|E\[foo~="bar"\]|✓| |
+|E\[foo^="bar"\]|✓| |
+|E\[foo$="bar"\]|✓| |
+|E\[foo*="bar"\]|✓| |
+|E\[foo|="en"\]|✓| |
+|E:dir(ltr)|✓| |
+|E:lang(zh, "*-hant")|partially supported| |
+|E:any-link|✓| |
+|E:link|✓| |
+|E:visited|✓|does not match to prevent fingerprinting|
+|E:local-link|✓| |
+|E:target|✓| |
+|E:target-within|✓| |
+|E:scope|✓| |
+|E:current|unsupported| |
+|E:current(s)|unsupported| |
+|E:past|unsupported| |
+|E:future|unsupported| |
+|E:active|unsupported| |
+|E:hover|unsupported| |
+|E:focus|✓| |
+|E:focus-within|✓| |
+|E:focus-visible|unsupported| |
+|E:enabled<br>E:disabled|✓| |
+|E:read-write<br>E:read-only|✓| |
+|E:placeholder-shown|✓| |
+|E:default|✓| |
+|E:checked|✓| |
+|E:indeterminate|✓| |
+|E:valid<br>E:invalid|✓| |
+|E:required<br>E:optional|✓| |
+|E:blank|unsupported| |
+|E:user-invalid|unsupported| |
+|E:root|✓| |
+|E:empty|✓| |
+|E:nth-child(n [of S]?)|✓| |
+|E:nth-last-child(n [of S]?)|✓| |
+|E:first-child|✓| |
+|E:last-child|✓| |
+|E:only-child|✓| |
+|E:nth-of-type(n)|✓| |
+|E:nth-last-of-type(n)|✓| |
+|E:first-of-type|✓| |
+|E:last-of-type|✓| |
+|E:only-of-type|✓| |
+|E F|✓| |
+|E > F|✓| |
+|E + F|✓| |
+|E ~ F|✓| |
+|F \|\| E|unsupported| |
+|E:nth-col(n)|unsupported| |
+|E:nth-last-col(n)|unsupported| |
+
+
 ## Monkey patch jsdom
 
 ``` javascript
