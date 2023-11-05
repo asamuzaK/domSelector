@@ -57,5 +57,5 @@
     "update": "npm-run-all -s update-*",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "0.24.0"
+  "version": "1.0.0"
 }
