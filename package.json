@@ -49,7 +49,7 @@
   "scripts": {
     "bench": "node benchmark/bench.js",
     "build": "npm run tsc && npm run lint && npm test && npm run bundle",
-    "bundle": "esbuild --platform=node --format=cjs --minify --sourcemap --outdir=dist/cjs/ src/**/*.js",
+    "bundle": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test-wpt": "npm run update-wpt && node test/wpt/wpt-runner.js",
@@ -57,5 +57,5 @@
     "update": "npm-run-all -s update-*",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "0.23.2"
+  "version": "0.24.0"
 }
