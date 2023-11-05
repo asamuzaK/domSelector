@@ -4538,6 +4538,24 @@ describe('match AST leaf and DOM node', () => {
         ], 'result');
       });
 
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('input');
+        node.setAttribute('type', 'checkbox');
+        node.checked = true;
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
       it('should not match', () => {
         const leaf = {
           children: null,
@@ -4551,6 +4569,24 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':default', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
         assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const node = document.createElement('input');
+        node.setAttribute('type', 'radio');
+        node.checked = true;
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
       });
 
       it('should get matched node(s)', () => {
@@ -4578,7 +4614,7 @@ describe('match AST leaf and DOM node', () => {
           type: PSEUDO_CLASS_SELECTOR
         };
         const node = document.createElement('input');
-        node.setAttribute('type', 'redio');
+        node.setAttribute('type', 'radio');
         const parent = document.getElementById('div0');
         parent.appendChild(node);
         const matcher = new Matcher(':default', node);
@@ -4615,12 +4651,14 @@ describe('match AST leaf and DOM node', () => {
           name: 'default',
           type: PSEUDO_CLASS_SELECTOR
         };
-        const container = document.createElement('datalist');
+        const container = document.createElement('select');
+        const group = document.createElement('optgroup');
         const prev = document.createElement('option');
         const node = document.createElement('option');
-        node.setAttribute('selected', 'selected');
-        container.appendChild(prev);
-        container.appendChild(node);
+        node.selected = true;
+        group.appendChild(prev);
+        group.appendChild(node);
+        container.appendChild(group);
         const parent = document.getElementById('div0');
         parent.appendChild(container);
         const matcher = new Matcher(':default', node);
@@ -4628,6 +4666,48 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual([...res], [
           node
         ], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const container = document.createElement('select');
+        const group = document.createElement('optgroup');
+        const prev = document.createElement('option');
+        const node = document.createElement('option');
+        prev.setAttribute('selected', 'selected');
+        node.setAttribute('selected', 'selected');
+        group.appendChild(prev);
+        group.appendChild(node);
+        container.appendChild(group);
+        const parent = document.getElementById('div0');
+        parent.appendChild(container);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const container = document.createElement('select');
+        const group = document.createElement('optgroup');
+        const prev = document.createElement('option');
+        const node = document.createElement('option');
+        group.appendChild(prev);
+        group.appendChild(node);
+        container.appendChild(group);
+        const parent = document.getElementById('div0');
+        parent.appendChild(container);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
       });
 
       it('should get matched node(s)', () => {
@@ -4679,7 +4759,6 @@ describe('match AST leaf and DOM node', () => {
         container.setAttribute('multiple', 'multiple');
         const prev = document.createElement('option');
         const node = document.createElement('option');
-        node.setAttribute('selected', 'selected');
         container.appendChild(prev);
         container.appendChild(node);
         const parent = document.getElementById('div0');
@@ -4689,7 +4768,7 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual([...res], [], 'result');
       });
 
-      it('should throw', () => {
+      it('should get matched node(s)', () => {
         const leaf = {
           children: null,
           name: 'default',
@@ -4699,16 +4778,56 @@ describe('match AST leaf and DOM node', () => {
         container.setAttribute('multiple', 'multiple');
         const prev = document.createElement('option');
         const node = document.createElement('option');
+        prev.setAttribute('selected', 'selected');
         node.setAttribute('selected', 'selected');
         container.appendChild(prev);
         container.appendChild(node);
         const parent = document.getElementById('div0');
         parent.appendChild(container);
-        const matcher = new Matcher(':default', node, {
-          warn: true
-        });
-        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
-          DOMException, 'Unsupported pseudo-class :default');
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const container = document.createElement('datalist');
+        const prev = document.createElement('option');
+        const node = document.createElement('option');
+        node.setAttribute('selected', 'selected');
+        container.appendChild(prev);
+        container.appendChild(node);
+        const parent = document.getElementById('div0');
+        parent.appendChild(container);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'default',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const container = document.createElement('datalist');
+        const prev = document.createElement('option');
+        const node = document.createElement('option');
+        container.appendChild(prev);
+        container.appendChild(node);
+        const parent = document.getElementById('div0');
+        parent.appendChild(container);
+        const matcher = new Matcher(':default', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
       });
 
       it('should get matched node(s)', () => {

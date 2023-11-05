@@ -1143,7 +1143,7 @@ export class Matcher {
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
                      INPUT_CHECK.test(node.getAttribute('type')) &&
-                     node.hasAttribute('checked')) {
+                     (node.checked || node.hasAttribute('checked'))) {
             matched.add(node);
           // option
           } else if (localName === 'option') {
@@ -1153,23 +1153,23 @@ export class Matcher {
               if (parent.localName === 'datalist') {
                 break;
               } else if (parent.localName === 'select') {
-                isMultiple = !!parent.multiple;
+                if (parent.multiple || parent.hasAttribute('multiple')) {
+                  isMultiple = true;
+                }
                 break;
               }
               parent = parent.parentNode;
             }
-            // FIXME:
             if (isMultiple) {
-              if (this.#warn) {
-                throw new DOMException(`Unsupported pseudo-class :${astName}`,
-                  NOT_SUPPORTED_ERR);
+              if (node.selected || node.hasAttribute('selected')) {
+                matched.add(node);
               }
             } else {
               const firstOpt = parentNode.firstElementChild;
               const defaultOpt = new Set();
               let opt = firstOpt;
               while (opt) {
-                if (opt.hasAttribute('selected')) {
+                if (opt.selected || opt.hasAttribute('selected')) {
                   defaultOpt.add(opt);
                   break;
                 }

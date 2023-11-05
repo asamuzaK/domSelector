@@ -130,7 +130,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:enabled<br>E:disabled|✓| |
 |E:read&#8209;write<br>E:read&#8209;only|✓| |
 |E:placeholder&#8209;shown|✓| |
-|E:default|Partially supported|&lt;option&gt; within &lt;select multiple&gt; is not supported.|
+|E:default|✓| |
 |E:checked|✓| |
 |E:indeterminate|✓| |
 |E:valid<br>E:invalid|✓| |
