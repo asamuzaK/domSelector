@@ -19,21 +19,27 @@ export class Matcher {
         reverse?: boolean;
     }, node: object): object;
     _matchAnPlusB(ast: object, node: object, nthName: string): object;
-    _matchPseudoElementSelector(astName: string, opt?: object): void;
+    _matchPseudoElementSelector(astName: string, opt?: {
+        forgive?: boolean;
+    }): void;
     _matchDirectionPseudoClass(ast: object, node: object): object | null;
     _matchLanguagePseudoClass(ast: object, node: object): object | null;
     _matchHasPseudoFunc(leaves: Array<object>, node: object): boolean;
     _matchLogicalPseudoFunc(astData: object, node: object): object | null;
-    _matchPseudoClassSelector(ast: object, node: object, opt?: object): object;
+    _matchPseudoClassSelector(ast: object, node: object, opt?: {
+        forgive?: boolean;
+    }): object;
     _matchAttributeSelector(ast: object, node: object): object | null;
     _matchClassSelector(ast: object, node: object): object | null;
     _matchIDSelector(ast: object, node: object): object | null;
     _matchTypeSelector(ast: object, node: object): object | null;
-    _matchSelector(ast: object, node: object, opt: object): object;
-    _matchLeaves(leaves: Array<object>, node: object, opt: object): boolean;
+    _matchSelector(ast: object, node: object, opt?: object): object;
+    _matchLeaves(leaves: Array<object>, node: object, opt?: object): boolean;
     _findDescendantNodes(leaves: Array<object>, baseNode: object): object;
     _matchCombinator(twig: object, node: object, opt?: {
         find?: string;
+        forgive?: boolean;
+        targetType?: string;
     }): object;
     _findNodes(twig: object, targetType: string): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
