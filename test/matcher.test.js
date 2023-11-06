@@ -380,6 +380,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: null,
               skip: false
             },
             {
@@ -415,6 +416,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: null,
               skip: false
             }
           ],
@@ -8947,6 +8949,56 @@ describe('match AST leaf and DOM node', () => {
         });
         assert.deepEqual([...res], [], 'result');
       });
+
+      it('should get matched node(s)', () => {
+        const twig = {
+          combo: {
+            name: ' ',
+            type: COMBINATOR
+          },
+          leaves: [
+            {
+              name: 'ul',
+              type: TYPE_SELECTOR
+            }
+          ]
+        };
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li', node.parentNode);
+        const target = document.getElementById('li1');
+        const res = matcher._matchCombinator(twig, target, {
+          find: 'prev',
+          targetType: 'first'
+        });
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const twig = {
+          combo: {
+            name: ' ',
+            type: COMBINATOR
+          },
+          leaves: [
+            {
+              name: 'ul',
+              type: TYPE_SELECTOR
+            }
+          ]
+        };
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li', node.parentNode);
+        const target = document.getElementById('li1');
+        const res = matcher._matchCombinator(twig, target, {
+          find: 'prev',
+          targetType: 'all'
+        });
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
     });
 
     describe('find nodes', () => {
@@ -9395,6 +9447,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: true
             },
             {
@@ -9430,6 +9483,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: false
             }
           ],
@@ -9466,6 +9520,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: true
             },
             {
@@ -9501,6 +9556,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: false
             }
           ],
@@ -9536,6 +9592,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             },
             {
@@ -9571,6 +9628,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             }
           ],
@@ -9606,6 +9664,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             },
             {
@@ -9641,6 +9700,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             }
           ],
@@ -9691,6 +9751,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             },
             {
@@ -9719,6 +9780,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             }
           ],
@@ -9772,6 +9834,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             },
             {
@@ -9800,6 +9863,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'next',
               skip: false
             }
           ],
@@ -9839,6 +9903,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: false
             }
           ],
@@ -9877,6 +9942,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
+              find: 'prev',
               skip: false
             }
           ],
