@@ -8949,56 +8949,6 @@ describe('match AST leaf and DOM node', () => {
         });
         assert.deepEqual([...res], [], 'result');
       });
-
-      it('should get matched node(s)', () => {
-        const twig = {
-          combo: {
-            name: ' ',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: TYPE_SELECTOR
-            }
-          ]
-        };
-        const node = document.getElementById('ul1');
-        const matcher = new Matcher('ul .li', node.parentNode);
-        const target = document.getElementById('li1');
-        const res = matcher._matchCombinator(twig, target, {
-          find: 'prev',
-          targetType: 'first'
-        });
-        assert.deepEqual([...res], [
-          node
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const twig = {
-          combo: {
-            name: ' ',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: TYPE_SELECTOR
-            }
-          ]
-        };
-        const node = document.getElementById('ul1');
-        const matcher = new Matcher('ul .li', node.parentNode);
-        const target = document.getElementById('li1');
-        const res = matcher._matchCombinator(twig, target, {
-          find: 'prev',
-          targetType: 'all'
-        });
-        assert.deepEqual([...res], [
-          node
-        ], 'result');
-      });
     });
 
     describe('find nodes', () => {
@@ -9420,6 +9370,168 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('get first twig', () => {
+      it('should get value', () => {
+        const branch = [
+          {
+            leaves: [
+              {
+                name: 'li',
+                type: TYPE_SELECTOR
+              }
+            ]
+          }
+        ];
+        const matcher = new Matcher('li', document);
+        const res = matcher._getFirstTwig(branch);
+        assert.deepEqual(res, {
+          find: 'prev',
+          twig: {
+            leaves: [
+              {
+                name: 'li',
+                type: TYPE_SELECTOR
+              }
+            ]
+          }
+        }, 'result');
+      });
+
+      it('should get value', () => {
+        const branch = [
+          {
+            leaves: [
+              {
+                name: 'ul',
+                type: TYPE_SELECTOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: '>',
+                type: COMBINATOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: 'li',
+                type: TYPE_SELECTOR
+              }
+            ]
+          }
+        ];
+        const matcher = new Matcher('ul > li', document);
+        const res = matcher._getFirstTwig(branch);
+        assert.deepEqual(res, {
+          find: 'next',
+          twig: {
+            leaves: [
+              {
+                name: 'ul',
+                type: TYPE_SELECTOR
+              }
+            ]
+          }
+        }, 'result');
+      });
+
+      it('should get value', () => {
+        const branch = [
+          {
+            leaves: [
+              {
+                name: 'ul',
+                type: TYPE_SELECTOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: '>',
+                type: COMBINATOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: 'li1',
+                type: ID_SELECTOR
+              }
+            ]
+          }
+        ];
+        const matcher = new Matcher('ul > #li1', document);
+        const res = matcher._getFirstTwig(branch);
+        assert.deepEqual(res, {
+          find: 'prev',
+          twig: {
+            leaves: [
+              {
+                name: 'li1',
+                type: ID_SELECTOR
+              }
+            ]
+          }
+        }, 'result');
+      });
+
+      it('should get value', () => {
+        const branch = [
+          {
+            leaves: [
+              {
+                name: 'ul',
+                type: TYPE_SELECTOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: '>',
+                type: COMBINATOR
+              }
+            ]
+          },
+          {
+            leaves: [
+              {
+                name: 'after',
+                type: PSEUDO_ELEMENT_SELECTOR
+              },
+              {
+                name: 'li',
+                type: CLASS_SELECTOR
+              }
+            ]
+          }
+        ];
+        const matcher = new Matcher('ul > .li::after', document);
+        const res = matcher._getFirstTwig(branch);
+        assert.deepEqual(res, {
+          find: 'prev',
+          twig: {
+            leaves: [
+              {
+                name: 'after',
+                type: PSEUDO_ELEMENT_SELECTOR
+              },
+              {
+                name: 'li',
+                type: CLASS_SELECTOR
+              }
+            ]
+          }
+        }, 'result');
+      });
+    });
+
     describe('collect nodes', () => {
       it('should get list and matrix', () => {
         const node = document.getElementById('li1');
@@ -9592,7 +9704,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             },
             {
@@ -9664,7 +9776,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             },
             {
@@ -9751,7 +9863,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             },
             {
@@ -9780,7 +9892,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             }
           ],
@@ -9834,7 +9946,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             },
             {
@@ -9863,7 +9975,7 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              find: 'next',
+              find: 'prev',
               skip: false
             }
           ],

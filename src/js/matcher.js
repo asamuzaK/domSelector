@@ -69,6 +69,7 @@ const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
 export class Matcher {
   /* private fields */
   #ast;
+  #bit;
   #cache;
   #node;
   #nodes;
@@ -87,13 +88,21 @@ export class Matcher {
    */
   constructor(selector, node, opt = {}) {
     const { sort, warn } = opt;
+    this.#bit = new Map([
+      [ATTRIBUTE_SELECTOR, BIT_10000],
+      [CLASS_SELECTOR, BIT_100],
+      [ID_SELECTOR, BIT_10],
+      [PSEUDO_CLASS_SELECTOR, BIT_100000],
+      [PSEUDO_ELEMENT_SELECTOR, BIT_1],
+      [TYPE_SELECTOR, BIT_1000]
+    ]);
+    this.#cache = new WeakMap();
     this.#selector = selector;
     this.#node = node;
-    [this.#ast, this.#nodes] = this._prepare(selector);
-    this.#root = this._getRoot(node);
-    this.#cache = new WeakMap();
     this.#sort = !!sort;
     this.#warn = !!warn;
+    [this.#ast, this.#nodes] = this._prepare(selector);
+    this.#root = this._getRoot(node);
   }
 
   /**
@@ -167,19 +176,11 @@ export class Matcher {
   _sortLeaves(leaves) {
     const arr = [...leaves];
     if (arr.length > 1) {
-      const bitMap = new Map([
-        [ATTRIBUTE_SELECTOR, BIT_10000],
-        [CLASS_SELECTOR, BIT_100],
-        [ID_SELECTOR, BIT_10],
-        [PSEUDO_CLASS_SELECTOR, BIT_100000],
-        [PSEUDO_ELEMENT_SELECTOR, BIT_1],
-        [TYPE_SELECTOR, BIT_1000]
-      ]);
       arr.sort((a, b) => {
         const { type: typeA } = a;
         const { type: typeB } = b;
-        const bitA = bitMap.get(typeA);
-        const bitB = bitMap.get(typeB);
+        const bitA = this.#bit.get(typeA);
+        const bitB = this.#bit.get(typeB);
         let res;
         if (bitA === bitB) {
           res = 0;
@@ -1908,13 +1909,12 @@ export class Matcher {
    * @param {object} [opt] - option
    * @param {string} [opt.find] - 'prev'|'next', which nodes to find
    * @param {boolean} [opt.forgive] - is forgiving selector list
-   * @param {string} [opt.targetType] - target type
    * @returns {object} - collection of matched nodes
    */
   _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
-    const { find, forgive, targetType } = opt;
+    const { find, forgive } = opt;
     let matched = new Set();
     if (find === 'next') {
       switch (comboName) {
@@ -2019,18 +2019,13 @@ export class Matcher {
           const arr = [];
           let refNode = node.parentNode;
           while (refNode) {
-            if ((targetType === TARGET_FIRST || targetType === TARGET_ALL) &&
-                refNode === this.#node) {
-              break;
-            } else {
-              const bool = this._matchLeaves(leaves, refNode, {
-                forgive
-              });
-              if (bool) {
-                arr.push(refNode);
-              }
-              refNode = refNode.parentNode;
+            const bool = this._matchLeaves(leaves, refNode, {
+              forgive
+            });
+            if (bool) {
+              arr.push(refNode);
             }
+            refNode = refNode.parentNode;
           }
           if (arr.length) {
             matched = new Set(arr.reverse());
@@ -2232,6 +2227,36 @@ export class Matcher {
   }
 
   /**
+   * get first twig
+   * @param {Array.<object>} branch - AST branch
+   * @returns {object} - result
+   */
+  _getFirstTwig(branch) {
+    const lastIndex = branch.length - 1;
+    const firstTwig = branch[0];
+    let find;
+    let twig;
+    if (lastIndex) {
+      const lastTwig = branch[lastIndex];
+      const { leaves: [{ type: lastType }] } = lastTwig;
+      if (lastType === PSEUDO_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
+        find = 'prev';
+        twig = lastTwig;
+      } else {
+        find = 'next';
+        twig = firstTwig;
+      }
+    } else {
+      find = 'prev';
+      twig = firstTwig;
+    }
+    return {
+      find,
+      twig
+    };
+  }
+
+  /**
    * collect nodes
    * @param {string} targetType - target type
    * @returns {Array.<Array.<object|undefined>>} - matrix
@@ -2242,19 +2267,34 @@ export class Matcher {
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
-        const twig = branch[0];
-        const { nodes, pending } = this._findNodes(twig, targetType);
-        if (nodes.size) {
-          this.#nodes[i] = nodes;
-        } else if (pending) {
-          pendingItems.add(new Map([
-            ['index', i],
-            ['twig', twig]
-          ]));
+        const { find, twig } = this._getFirstTwig(branch);
+        if (find === 'next') {
+          const { nodes, pending } = this._findNodes(twig, targetType);
+          if (nodes.size) {
+            this.#nodes[i] = nodes;
+          } else if (pending) {
+            pendingItems.add(new Map([
+              ['index', i],
+              ['twig', twig]
+            ]));
+          } else {
+            this.#ast[i].skip = true;
+          }
+          this.#ast[i].find = find;
         } else {
-          this.#ast[i].skip = true;
+          const { nodes, pending } = this._findNodes(twig, targetType);
+          if (nodes.size) {
+            this.#nodes[i] = nodes;
+          } else if (pending) {
+            pendingItems.add(new Map([
+              ['index', i],
+              ['twig', twig]
+            ]));
+          } else {
+            this.#ast[i].skip = true;
+          }
+          this.#ast[i].find = find;
         }
-        this.#ast[i].find = 'next';
         i++;
       }
       if (pendingItems.size) {
@@ -2351,10 +2391,7 @@ export class Matcher {
                   combo,
                   leaves
                 };
-                const m = this._matchCombinator(twig, nextNode, {
-                  find,
-                  targetType
-                });
+                const m = this._matchCombinator(twig, nextNode, { find });
                 if (m.size) {
                   arr.push(...m);
                 }
@@ -2388,10 +2425,7 @@ export class Matcher {
               const twig = branch[j];
               const arr = [];
               for (const nextNode of nextNodes) {
-                const m = this._matchCombinator(twig, nextNode, {
-                  find,
-                  targetType
-                });
+                const m = this._matchCombinator(twig, nextNode, { find });
                 if (m.size) {
                   arr.push(...m);
                 }
@@ -2410,7 +2444,7 @@ export class Matcher {
                 break;
               }
             }
-            if (bool) {
+            if (bool && targetType !== TARGET_ALL) {
               break;
             }
           }
