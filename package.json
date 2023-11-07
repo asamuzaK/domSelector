@@ -28,7 +28,7 @@
     "is-potential-custom-element-name": "^1.0.1"
   },
   "devDependencies": {
-    "@types/css-tree": "^2.3.3",
+    "@types/css-tree": "^2.3.4",
     "benchmark": "^2.1.4",
     "c8": "^8.0.1",
     "chai": "^4.3.10",
@@ -57,5 +57,5 @@
     "update": "npm-run-all -s update-*",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "1.0.1-b.1"
+  "version": "1.0.1"
 }
