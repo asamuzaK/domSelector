@@ -2268,33 +2268,18 @@ export class Matcher {
       let i = 0;
       for (const { branch } of ast) {
         const { find, twig } = this._getFirstTwig(branch);
-        if (find === 'next') {
-          const { nodes, pending } = this._findNodes(twig, targetType);
-          if (nodes.size) {
-            this.#nodes[i] = nodes;
-          } else if (pending) {
-            pendingItems.add(new Map([
-              ['index', i],
-              ['twig', twig]
-            ]));
-          } else {
-            this.#ast[i].skip = true;
-          }
-          this.#ast[i].find = find;
+        const { nodes, pending } = this._findNodes(twig, targetType);
+        if (nodes.size) {
+          this.#nodes[i] = nodes;
+        } else if (pending) {
+          pendingItems.add(new Map([
+            ['index', i],
+            ['twig', twig]
+          ]));
         } else {
-          const { nodes, pending } = this._findNodes(twig, targetType);
-          if (nodes.size) {
-            this.#nodes[i] = nodes;
-          } else if (pending) {
-            pendingItems.add(new Map([
-              ['index', i],
-              ['twig', twig]
-            ]));
-          } else {
-            this.#ast[i].skip = true;
-          }
-          this.#ast[i].find = find;
+          this.#ast[i].skip = true;
         }
+        this.#ast[i].find = find;
         i++;
       }
       if (pendingItems.size) {
