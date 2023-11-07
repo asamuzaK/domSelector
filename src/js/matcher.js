@@ -55,7 +55,7 @@ const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
  * ]
  * #nodes: [
  *   Set([node{}, node{}]),
- *   Set([node{}, node, node{}])
+ *   Set([node{}, node{}, node{}])
  * ]
  * branch[]: [twig{}, twig{}]
  * twig{}: {
@@ -89,12 +89,12 @@ export class Matcher {
   constructor(selector, node, opt = {}) {
     const { sort, warn } = opt;
     this.#bit = new Map([
-      [ATTRIBUTE_SELECTOR, BIT_10000],
-      [CLASS_SELECTOR, BIT_100],
-      [ID_SELECTOR, BIT_10],
-      [PSEUDO_CLASS_SELECTOR, BIT_100000],
       [PSEUDO_ELEMENT_SELECTOR, BIT_1],
-      [TYPE_SELECTOR, BIT_1000]
+      [ID_SELECTOR, BIT_10],
+      [CLASS_SELECTOR, BIT_100],
+      [TYPE_SELECTOR, BIT_1000],
+      [ATTRIBUTE_SELECTOR, BIT_10000],
+      [PSEUDO_CLASS_SELECTOR, BIT_100000]
     ]);
     this.#cache = new WeakMap();
     this.#selector = selector;
@@ -198,7 +198,7 @@ export class Matcher {
   /**
    * prepare ast and nodes
    * @param {string} selector - CSS selector
-   * @returns {Array.<Array.<object|undefined>>} - list and matrix
+   * @returns {Array.<Array.<object|undefined>>} - array of ast and nodes
    */
   _prepare(selector = this.#selector) {
     const ast = parseSelector(selector);
@@ -2040,7 +2040,7 @@ export class Matcher {
    * find nodes
    * @param {object} twig - twig
    * @param {string} targetType - target type
-   * @returns {object} - result
+   * @returns {object} - collection of nodes and pending state
    */
   _findNodes(twig, targetType) {
     const { leaves: [leaf, ...items] } = twig;
@@ -2229,7 +2229,7 @@ export class Matcher {
   /**
    * get first twig
    * @param {Array.<object>} branch - AST branch
-   * @returns {object} - result
+   * @returns {object} - find direction and twig
    */
   _getFirstTwig(branch) {
     const lastIndex = branch.length - 1;
@@ -2259,7 +2259,7 @@ export class Matcher {
   /**
    * collect nodes
    * @param {string} targetType - target type
-   * @returns {Array.<Array.<object|undefined>>} - matrix
+   * @returns {Array.<Array.<object|undefined>>} - #ast and #nodes
    */
   _collectNodes(targetType) {
     const ast = this.#ast.values();
