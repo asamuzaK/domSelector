@@ -144,7 +144,8 @@ const selectors = [
   '.box ~ .box',
   '.box > .block',
   '.box .content',
-  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content'
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content',
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(> .content)'
 ];
 
 /* matcher tests */
@@ -229,6 +230,10 @@ suite.on('start', async () => {
   elementMatches('jsdom', selectors[6]);
 }).add(`patched-jsdom matches('${selectors[6]}')`, () => {
   elementMatches('patched-jsdom', selectors[6]);
+}).add(`jsdom matches('${selectors[7]}')`, () => {
+  elementMatches('jsdom', selectors[7]);
+}).add(`patched-jsdom matches('${selectors[7]}')`, () => {
+  elementMatches('patched-jsdom', selectors[7]);
 }).add(`jsdom closest('${selectors[0]}')`, () => {
   elementClosest('jsdom', selectors[0]);
 }).add(`patched-jsdom closest('${selectors[0]}')`, () => {
@@ -257,6 +262,10 @@ suite.on('start', async () => {
   elementClosest('jsdom', selectors[6]);
 }).add(`patched-jsdom closest('${selectors[6]}')`, () => {
   elementClosest('patched-jsdom', selectors[6]);
+}).add(`jsdom closest('${selectors[7]}')`, () => {
+  elementClosest('jsdom', selectors[7]);
+}).add(`patched-jsdom closest('${selectors[7]}')`, () => {
+  elementClosest('patched-jsdom', selectors[7]);
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   refPointQuerySelector('jsdom', selectors[0]);
 }).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
@@ -285,6 +294,10 @@ suite.on('start', async () => {
   refPointQuerySelector('jsdom', selectors[6]);
 }).add(`patched-jsdom querySelector('${selectors[6]}')`, () => {
   refPointQuerySelector('patched-jsdom', selectors[6]);
+}).add(`jsdom querySelector('${selectors[7]}')`, () => {
+  refPointQuerySelector('jsdom', selectors[7]);
+}).add(`patched-jsdom querySelector('${selectors[7]}')`, () => {
+  refPointQuerySelector('patched-jsdom', selectors[7]);
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   refPointQuerySelectorAll('jsdom', selectors[0]);
 }).add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
@@ -313,6 +326,10 @@ suite.on('start', async () => {
   refPointQuerySelectorAll('jsdom', selectors[6]);
 }).add(`patched-jsdom querySelectorAll('${selectors[6]}')`, () => {
   refPointQuerySelectorAll('patched-jsdom', selectors[6]);
+}).add(`jsdom querySelectorAll('${selectors[7]}')`, () => {
+  refPointQuerySelectorAll('jsdom', selectors[7]);
+}).add(`patched-jsdom querySelectorAll('${selectors[7]}')`, () => {
+  refPointQuerySelectorAll('patched-jsdom', selectors[7]);
 }).on('cycle', evt => {
   const { target } = evt;
   const str = String(target);
