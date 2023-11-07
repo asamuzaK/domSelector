@@ -39,9 +39,9 @@ export class Matcher {
     _matchCombinator(twig: object, node: object, opt?: {
         find?: string;
         forgive?: boolean;
-        targetType?: string;
     }): object;
     _findNodes(twig: object, targetType: string): object;
+    _getFirstTwig(branch: Array<object>): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
     _matchNodes(targetType: string): object;
     _find(targetType: string): object;
