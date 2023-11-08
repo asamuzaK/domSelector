@@ -317,11 +317,10 @@ export class Matcher {
           }
         // :nth-child()
         } else {
-          let n = 0;
           let nth = b - 1;
           if (a > 0) {
             while (nth < 0) {
-              nth += (++n * a);
+              nth += a;
             }
           }
           if (nth >= 0 && nth < l) {
