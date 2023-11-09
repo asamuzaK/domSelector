@@ -587,44 +587,59 @@ export class Matcher {
     const astName = unescapeSelector(ast.name);
     let res;
     // TBD: what about xml:lang?
-    if (astName === '') {
-      if (node.getAttribute('lang') === '') {
-        res = node;
-      }
-    } else if (astName === '*') {
-      if (!node.hasAttribute('lang')) {
-        res = node;
-      }
-    } else if (/[A-Z\d-]+/i.test(astName)) {
-      const codePart = '(?:-[A-Za-z\\d]+)?';
-      let reg;
-      if (/-/.test(astName)) {
-        const [langMain, langSub, ...langRest] = astName.split('-');
-        const extendedMain = `${langMain}${codePart}`;
-        const extendedSub = `-${langSub}${codePart}`;
-        const len = langRest.length;
-        let extendedRest = '';
-        if (len) {
-          for (let i = 0; i < len; i++) {
-            extendedRest += `-${langRest[i]}${codePart}`;
-          }
-        }
-        reg = new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
-      } else {
-        reg = new RegExp(`^${astName}${codePart}$`, 'i');
-      }
-      if (lang) {
-        if (reg.test(lang)) {
-          res = node;
-        }
-      } else {
-        let target = node;
-        while (target) {
-          if (reg.test(target.lang)) {
+    if (astName) {
+      if (astName === '*') {
+        if (node.hasAttribute('lang')) {
+          if (node.getAttribute('lang')) {
             res = node;
-            break;
           }
-          target = target.parentNode;
+        } else {
+          let parent = node.parentNode;
+          while (parent) {
+            if (parent.hasAttribute('lang')) {
+              if (parent.getAttribute('lang')) {
+                res = node;
+              }
+              break;
+            }
+            parent = parent.parentNode;
+          }
+        }
+      } else if (/[A-Z\d-]+/i.test(astName)) {
+        const codePart = '(?:-[A-Za-z\\d]+)?';
+        let reg;
+        if (/-/.test(astName)) {
+          const [langMain, langSub, ...langRest] = astName.split('-');
+          const extendedMain = `${langMain}${codePart}`;
+          const extendedSub = `-${langSub}${codePart}`;
+          const len = langRest.length;
+          let extendedRest = '';
+          if (len) {
+            for (let i = 0; i < len; i++) {
+              extendedRest += `-${langRest[i]}${codePart}`;
+            }
+          }
+          reg =
+            new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
+        } else {
+          reg = new RegExp(`^${astName}${codePart}$`, 'i');
+        }
+        if (lang) {
+          if (reg.test(lang)) {
+            res = node;
+          }
+        } else {
+          let parent = node.parentNode;
+          while (parent) {
+            if (parent.hasAttribute('lang')) {
+              const value = parent.getAttribute('lang');
+              if (reg.test(value)) {
+                res = node;
+              }
+              break;
+            }
+            parent = parent.parentNode;
+          }
         }
       }
     }

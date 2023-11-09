@@ -4,7 +4,7 @@
 
 /* api */
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, xit } from 'mocha';
 
 /* test */
 import * as parser from '../src/js/parser.js';
@@ -4820,11 +4820,6 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    // FIXME: expect to parse
-    it('should throw', () => {
-      assert.throws(() => func(':lang("en-US")'), DOMException);
-    });
-
     it('should get selector list', () => {
       const res = func(':lang(de-DE)');
       assert.deepEqual(res, {
@@ -4836,6 +4831,40 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'de-DE',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    // CSSTree throws
+    xit('should get selector list', () => {
+      const res = func(':lang(de, fr)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'de',
+                    type: IDENTIFIER
+                  },
+                  {
+                    loc: null,
+                    name: 'fr',
                     type: IDENTIFIER
                   }
                 ],
@@ -4881,9 +4910,88 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    // FIXME: expect to parse
-    it('should throw', () => {
-      assert.throws(() => func(':lang("*-Latn")'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':lang("*")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '\\*',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang("en-US")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'en-US',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang("*-Latn")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '\\*-Latn',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     // FIXME: expect to parse
