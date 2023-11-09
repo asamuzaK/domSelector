@@ -4848,7 +4848,7 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    // FIXME: CSSTree throws
+    // FIXME: expect to parse
     xit('should get selector list', () => {
       const res = func(':lang(de, fr)');
       assert.deepEqual(res, {
