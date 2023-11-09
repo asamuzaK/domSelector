@@ -16,6 +16,7 @@ const PAIR = 2;
 /* regexp */
 const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
+const QUOTED_LANG = /(:lang\(\s*("[A-Z\d\-*]+")\s*\))/i;
 const WHITESPACE = /^[\n\r\f]/;
 
 /**
@@ -126,7 +127,15 @@ export const parseSelector = selector => {
     });
     res = toPlainObject(ast);
   } catch (e) {
-    if (e.message === '"]" is expected' && !selector.endsWith(']')) {
+    // workaround for https://github.com/csstree/csstree/issues/265
+    // NOTE: still throws on `:lang("")`;
+    if (e.message === 'Identifier is expected' && QUOTED_LANG.test(selector)) {
+      const [, lang, range] = QUOTED_LANG.exec(selector);
+      const escapedRange =
+        range.replace(/\s*\*/g, '\\*').replace(/^"/, '').replace(/"$/, '');
+      const escapedLang = lang.replace(range, escapedRange);
+      res = parseSelector(selector.replace(lang, escapedLang));
+    } else if (e.message === '"]" is expected' && !selector.endsWith(']')) {
       res = parseSelector(`${selector}]`);
     } else if (e.message === '")" is expected' && !selector.endsWith(')')) {
       res = parseSelector(`${selector})`);

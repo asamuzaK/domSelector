@@ -130,11 +130,6 @@ describe('match AST leaf and DOM node', () => {
       assert.throws(() => new Matcher(':lang("")', document), DOMException);
     });
 
-    // FIXME: CSSTree throws
-    it('should throw', () => {
-      assert.throws(() => new Matcher(':lang("*")', document), DOMException);
-    });
-
     it('should be instance of Matcher', () => {
       const matcher = new Matcher('*', document.body);
       assert.instanceOf(matcher, Matcher, 'instance');
@@ -1946,7 +1941,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('match language pseudo-class', () => {
-      it('should get matched node', () => {
+      it('should not match', () => {
         const leaf = {
           name: '',
           type: IDENTIFIER
@@ -1957,6 +1952,34 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         // new Matcher(':lang("")', node) throws
         const matcher = new Matcher(':lang(en)', node);
+        const res = matcher._matchLanguagePseudoClass(leaf, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          name: '*',
+          type: IDENTIFIER
+        };
+        const node = document.createElement('div');
+        node.lang = 'en';
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':lang("*")', node);
+        const res = matcher._matchLanguagePseudoClass(leaf, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          name: '*',
+          type: IDENTIFIER
+        };
+        const node = document.createElement('div');
+        node.setAttribute('lang', 'en');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':lang("*")', node);
         const res = matcher._matchLanguagePseudoClass(leaf, node);
         assert.deepEqual(res, node, 'result');
       });
@@ -1969,8 +1992,21 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
         parent.appendChild(node);
-        // new Matcher(':lang("*")', node) throws
-        const matcher = new Matcher(':lang(en)', node);
+        const matcher = new Matcher(':lang("*")', node);
+        const res = matcher._matchLanguagePseudoClass(leaf, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          name: '\\*',
+          type: IDENTIFIER
+        };
+        const node = document.createElement('div');
+        node.lang = 'en';
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':lang(\\*)', node);
         const res = matcher._matchLanguagePseudoClass(leaf, node);
         assert.deepEqual(res, node, 'result');
       });
@@ -1984,8 +2020,7 @@ describe('match AST leaf and DOM node', () => {
         node.setAttribute('lang', '');
         const parent = document.getElementById('div0');
         parent.appendChild(node);
-        // new Matcher(':lang("*")', node) throws
-        const matcher = new Matcher(':lang(en)', node);
+        const matcher = new Matcher(':lang("*")', node);
         const res = matcher._matchLanguagePseudoClass(leaf, node);
         assert.isNull(res, 'result');
       });
