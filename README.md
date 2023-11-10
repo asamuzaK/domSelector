@@ -231,8 +231,8 @@ const dom = new JSDOM('', {
 
 ### Performance
 
-|Method and selector|Jsdom|Patched-jsdom|Result|
-|:------------------|:------------------|:------------------|:------------------|
+|Method / Selector|Jsdom|Patched-jsdom|Result|
+|:----------------|:----------------|:----------------|:----------------|
 |matches('.container.box')|1,642,216 ops/sec ±3.43%|64,823 ops/sec ±8.74%|jsdom is 25.3 times faster. patched-jsdom took 0.015msec.|
 |matches('.container:not(.box)')|829,464 ops/sec ±3.61%|39,531 ops/sec ±4.15%|jsdom is 21.0 times faster. patched-jsdom took 0.025msec.|
 |matches('.box + .box')|1,598,580 ops/sec ±1.44%|66,518 ops/sec ±2.04%|jsdom is 24.0 times faster. patched-jsdom took 0.015msec.|
