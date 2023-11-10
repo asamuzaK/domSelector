@@ -604,11 +604,16 @@ export class Matcher {
           }
         }
       } else if (/[A-Z\d-]+/i.test(astName)) {
-        const codePart = '(?:-[A-Za-z\\d]+)?';
+        const codePart = '(?:-[A-Z\\d]+)*';
         let reg;
         if (/-/.test(astName)) {
           const [langMain, langSub, ...langRest] = astName.split('-');
-          const extendedMain = `${langMain}${codePart}`;
+          let extendedMain;
+          if (langMain === '*') {
+            extendedMain = `[A-Z\\d]+${codePart}`;
+          } else {
+            extendedMain = `${langMain}${codePart}`;
+          }
           const extendedSub = `-${langSub}${codePart}`;
           const len = langRest.length;
           let extendedRest = '';
@@ -1557,7 +1562,7 @@ export class Matcher {
           if (/:/.test(itemName)) {
             const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
             // ignore xml:lang
-            if (itemNamePrefix ==='xml' && itemNameLocalName === 'lang') {
+            if (itemNamePrefix === 'xml' && itemNameLocalName === 'lang') {
               continue;
             } else if (astAttrName === itemNameLocalName) {
               attrValues.add(itemValue);
