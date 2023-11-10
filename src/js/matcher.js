@@ -583,10 +583,8 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   _matchLanguagePseudoClass(ast, node) {
-    const { lang } = node;
     const astName = unescapeSelector(ast.name);
     let res;
-    // TBD: what about xml:lang?
     if (astName) {
       if (astName === '*') {
         if (node.hasAttribute('lang')) {
@@ -624,8 +622,8 @@ export class Matcher {
         } else {
           reg = new RegExp(`^${astName}${codePart}$`, 'i');
         }
-        if (lang) {
-          if (reg.test(lang)) {
+        if (node.hasAttribute('lang')) {
+          if (reg.test(node.getAttribute('lang'))) {
             res = node;
           }
         } else {
@@ -1557,8 +1555,11 @@ export class Matcher {
             itemValue = itemValue.toLowerCase();
           }
           if (/:/.test(itemName)) {
-            const [, itemNameLocalName] = itemName.split(':');
-            if (astAttrName === itemNameLocalName) {
+            const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
+            // ignore xml:lang
+            if (itemNamePrefix ==='xml' && itemNameLocalName === 'lang') {
+              continue;
+            } else if (astAttrName === itemNameLocalName) {
               attrValues.add(itemValue);
             }
           } else if (astAttrName === itemName) {

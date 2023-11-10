@@ -6914,6 +6914,29 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           flags: null,
+          matcher: '=',
+          name: {
+            name: 'xml|lang',
+            type: IDENTIFIER
+          },
+          type: ATTRIBUTE_SELECTOR,
+          value: {
+            type: STRING,
+            value: 'en'
+          }
+        };
+        const node = document.createElement('div');
+        node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang', 'en');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher('[lang=en]', node);
+        const res = matcher._matchAttributeSelector(leaf, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const leaf = {
+          flags: null,
           matcher: '~=',
           name: {
             name: 'foo',
