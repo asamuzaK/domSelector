@@ -11,7 +11,7 @@ import {
   closest, matches, querySelector, querySelectorAll
 } from '../src/index.js';
 
-let document, divElm, patchedDoc, patchedDivElm;
+let document, targetNode, patchedDoc, patchedTargetNode;
 
 const prepareDom = () => {
   const doctype = '<!doctype html>';
@@ -41,6 +41,7 @@ const prepareDom = () => {
         zNode.id = `div${i}-${j}-${k}`;
         zNode.classList.add('block', 'inner');
         const p = document.createElement('p');
+        p.id = `p${i}-${j}-${k}`;
         p.classList.add('content');
         p.textContent = `${i}-${j}-${k}`;
         zNode.append(p);
@@ -57,7 +58,7 @@ const prepareDom = () => {
   container.append(xFrag);
   document.body.append(container);
 
-  divElm = document.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
+  targetNode = document.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
 
   /* create patched dom */
   const domstr = new window.XMLSerializer().serializeToString(document);
@@ -133,7 +134,7 @@ const prepareDom = () => {
   });
 
   patchedDoc = patchedWin.document;
-  patchedDivElm = patchedDoc.getElementById(`div${x - 1}-${y - 1}-${z - 1}`);
+  patchedTargetNode = patchedDoc.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
 };
 
 /* selectors */
@@ -152,9 +153,9 @@ const selectors = [
 const elementMatches = (api, selector) => {
   let refPoint;
   if (api === 'patched-jsdom') {
-    refPoint = patchedDivElm;
+    refPoint = patchedTargetNode;
   } else {
-    refPoint = divElm;
+    refPoint = targetNode;
   }
   refPoint.matches(selector);
 };
@@ -162,9 +163,9 @@ const elementMatches = (api, selector) => {
 const elementClosest = (api, selector) => {
   let refPoint;
   if (api === 'patched-jsdom') {
-    refPoint = patchedDivElm;
+    refPoint = patchedTargetNode;
   } else {
-    refPoint = divElm;
+    refPoint = targetNode;
   }
   refPoint.closest(selector);
 };
