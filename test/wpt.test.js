@@ -932,4 +932,386 @@ describe('local wpt test cases', () => {
       assert.strictEqual(res.length, 1, 'result');
     });
   });
+
+  describe('css/selectors/i18n/', () => {
+    describe('css3-selectors-lang-001.html ~ -056.html', () => {
+      it('001.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('002.html, should match', () => {
+        const html =
+          `<div class="test" lang="es"><div id="box">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('004.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="ES">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('005.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('006.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es-MX)');
+        assert.isFalse(res, 'result');
+      });
+
+      it('007.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es-MX)');
+        assert.isFalse(res, 'result');
+      });
+
+      it('008.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(en-GB)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('009.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(en-GB)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('010.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(en-GB)');
+        assert.isFalse(res, 'result');
+      });
+
+      it('011.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(az-Arab-IR)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('012.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(az-Arab-IR)');
+        assert.isFalse(res, 'result');
+      });
+
+      it('014.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(cs-CZ)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('015.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(az-Arab-IR)');
+        assert.isTrue(res, 'result');
+      });
+
+      it('016.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches('#box:lang(es)');
+        assert.isFalse(res, 'result');
+      });
+
+      it('021.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('022.html, should not match', () => {
+        const html =
+          `<div class="test" lang="es"><div id="box">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('024.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="ES">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('025.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('026.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es-MX']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('027.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('028.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='en-GB']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('029.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='en-GB']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('030.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='en-GB']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('031.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='az-Arab-IR']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('032.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='az-Arab-IR']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('034.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='cs-CZ']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('035.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='az-Arab-IR']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('036.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang|='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('041.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('042.html, should not match', () => {
+        const html =
+          `<div class="test" lang="es"><div id="box">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('044.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="ES">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('045.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('046.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es-MX']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('047.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('048.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='en-GB']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('049.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='en-GB']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('050.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='en-GB']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('051.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='az-Arab-IR']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('052.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='az-Arab-IR']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('054.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='cs-CZ']");
+        assert.isFalse(res, 'result');
+      });
+
+      it('055.html, should match', () => {
+        const html =
+          `<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='az-Arab-IR']");
+        assert.isTrue(res, 'result');
+      });
+
+      it('056.html, should not match', () => {
+        const html =
+          `<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>`;
+        document.body.innerHTML = html;
+        const node = document.getElementById('box');
+        const res = node.matches("#box[lang='es']");
+        assert.isFalse(res, 'result');
+      });
+    });
+  });
 });
