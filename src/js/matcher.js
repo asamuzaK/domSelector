@@ -1844,11 +1844,11 @@ export class Matcher {
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
     const matchItems = items.length > 0;
-    const { document, root } = this.#root;
-    let nodes = new Set();
+    const nodes = new Set();
     let pending = false;
     switch (leafType) {
       case ID_SELECTOR: {
+        const { root } = this.#root;
         if (root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
@@ -1868,42 +1868,6 @@ export class Matcher {
               } else {
                 nodes.add(node);
               }
-            }
-          }
-        }
-        break;
-      }
-      case CLASS_SELECTOR: {
-        const arr = [...baseNode.getElementsByClassName(leafName)];
-        if (arr.length) {
-          if (matchItems) {
-            for (const node of arr) {
-              const bool = this._matchLeaves(items, node);
-              if (bool) {
-                nodes.add(node);
-              }
-            }
-          } else {
-            nodes = new Set(arr);
-          }
-        }
-        break;
-      }
-      case TYPE_SELECTOR: {
-        if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
-          pending = true;
-        } else {
-          const arr = [...baseNode.getElementsByTagName(leafName)];
-          if (arr.length) {
-            if (matchItems) {
-              for (const node of arr) {
-                const bool = this._matchLeaves(items, node);
-                if (bool) {
-                  nodes.add(node);
-                }
-              }
-            } else {
-              nodes = new Set(arr);
             }
           }
         }
