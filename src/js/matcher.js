@@ -604,13 +604,14 @@ export class Matcher {
           }
         }
       } else if (/[A-Z\d-]+/i.test(astName)) {
-        const codePart = '(?:-[A-Z\\d]+)*';
+        const alphaNum = '[A-Z\\d]+';
+        const codePart = `(?:-${alphaNum})*`;
         let reg;
         if (/-/.test(astName)) {
           const [langMain, langSub, ...langRest] = astName.split('-');
           let extendedMain;
           if (langMain === '*') {
-            extendedMain = `[A-Z\\d]+${codePart}`;
+            extendedMain = `${alphaNum}${codePart}`;
           } else {
             extendedMain = `${langMain}${codePart}`;
           }
