@@ -275,6 +275,10 @@ The following resources have been of great help in the development of the DOM Se
 - [selery](https://github.com/danburzo/selery)
 
 
+---
+Copyright (c) 2023 [asamuzaK (Kazz)](https://github.com/asamuzaK/)
+
+
 [1]: #matches
 [2]: #parameters
 [3]: #closest
