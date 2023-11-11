@@ -146,48 +146,48 @@ const selectors = [
   '.box > .block',
   '.box .content',
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content',
-  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(> .content)'
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)'
 ];
 
 /* matcher tests */
 const elementMatches = (api, selector) => {
-  let refPoint;
+  let node;
   if (api === 'patched-jsdom') {
-    refPoint = patchedTargetNode;
+    node = patchedTargetNode;
   } else {
-    refPoint = targetNode;
+    node = targetNode;
   }
-  refPoint.matches(selector);
+  node.matches(selector);
 };
 
 const elementClosest = (api, selector) => {
-  let refPoint;
+  let node;
   if (api === 'patched-jsdom') {
-    refPoint = patchedTargetNode;
+    node = patchedTargetNode;
   } else {
-    refPoint = targetNode;
+    node = targetNode;
   }
-  refPoint.closest(selector);
+  node.closest(selector);
 };
 
-const refPointQuerySelector = (api, selector) => {
-  let refPoint;
+const parentNodeQuerySelector = (api, selector) => {
+  let node;
   if (api === 'patched-jsdom') {
-    refPoint = patchedDoc;
+    node = patchedDoc;
   } else {
-    refPoint = document;
+    node = document;
   }
-  refPoint.querySelector(selector);
+  node.querySelector(selector);
 };
 
-const refPointQuerySelectorAll = (api, selector) => {
-  let refPoint;
+const parentNodeQuerySelectorAll = (api, selector) => {
+  let node;
   if (api === 'patched-jsdom') {
-    refPoint = patchedDoc;
+    node = patchedDoc;
   } else {
-    refPoint = document;
+    node = document;
   }
-  refPoint.querySelectorAll(selector);
+  node.querySelectorAll(selector);
 };
 
 /* benchmark */
@@ -268,69 +268,69 @@ suite.on('start', async () => {
 }).add(`patched-jsdom closest('${selectors[7]}')`, () => {
   elementClosest('patched-jsdom', selectors[7]);
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[0]);
+  parentNodeQuerySelector('jsdom', selectors[0]);
 }).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[0]);
+  parentNodeQuerySelector('patched-jsdom', selectors[0]);
 }).add(`jsdom querySelector('${selectors[1]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[1]);
+  parentNodeQuerySelector('jsdom', selectors[1]);
 }).add(`patched-jsdom querySelector('${selectors[1]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[1]);
+  parentNodeQuerySelector('patched-jsdom', selectors[1]);
 }).add(`jsdom querySelector('${selectors[2]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[2]);
+  parentNodeQuerySelector('jsdom', selectors[2]);
 }).add(`patched-jsdom querySelector('${selectors[2]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[2]);
+  parentNodeQuerySelector('patched-jsdom', selectors[2]);
 }).add(`jsdom querySelector('${selectors[3]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[3]);
+  parentNodeQuerySelector('jsdom', selectors[3]);
 }).add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[3]);
+  parentNodeQuerySelector('patched-jsdom', selectors[3]);
 }).add(`jsdom querySelector('${selectors[4]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[4]);
+  parentNodeQuerySelector('jsdom', selectors[4]);
 }).add(`patched-jsdom querySelector('${selectors[4]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[4]);
+  parentNodeQuerySelector('patched-jsdom', selectors[4]);
 }).add(`jsdom querySelector('${selectors[5]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[5]);
+  parentNodeQuerySelector('jsdom', selectors[5]);
 }).add(`patched-jsdom querySelector('${selectors[5]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[5]);
+  parentNodeQuerySelector('patched-jsdom', selectors[5]);
 }).add(`jsdom querySelector('${selectors[6]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[6]);
+  parentNodeQuerySelector('jsdom', selectors[6]);
 }).add(`patched-jsdom querySelector('${selectors[6]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[6]);
+  parentNodeQuerySelector('patched-jsdom', selectors[6]);
 }).add(`jsdom querySelector('${selectors[7]}')`, () => {
-  refPointQuerySelector('jsdom', selectors[7]);
+  parentNodeQuerySelector('jsdom', selectors[7]);
 }).add(`patched-jsdom querySelector('${selectors[7]}')`, () => {
-  refPointQuerySelector('patched-jsdom', selectors[7]);
+  parentNodeQuerySelector('patched-jsdom', selectors[7]);
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[0]);
+  parentNodeQuerySelectorAll('jsdom', selectors[0]);
 }).add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[0]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[0]);
 }).add(`jsdom querySelectorAll('${selectors[1]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[1]);
+  parentNodeQuerySelectorAll('jsdom', selectors[1]);
 }).add(`patched-jsdom querySelectorAll('${selectors[1]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[1]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[1]);
 }).add(`jsdom querySelectorAll('${selectors[2]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[2]);
+  parentNodeQuerySelectorAll('jsdom', selectors[2]);
 }).add(`patched-jsdom querySelectorAll('${selectors[2]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[2]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[2]);
 }).add(`jsdom querySelectorAll('${selectors[3]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[3]);
+  parentNodeQuerySelectorAll('jsdom', selectors[3]);
 }).add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[3]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[3]);
 }).add(`jsdom querySelectorAll('${selectors[4]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[4]);
+  parentNodeQuerySelectorAll('jsdom', selectors[4]);
 }).add(`patched-jsdom querySelectorAll('${selectors[4]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[4]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[4]);
 }).add(`jsdom querySelectorAll('${selectors[5]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[5]);
+  parentNodeQuerySelectorAll('jsdom', selectors[5]);
 }).add(`patched-jsdom querySelectorAll('${selectors[5]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[5]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[5]);
 }).add(`jsdom querySelectorAll('${selectors[6]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[6]);
+  parentNodeQuerySelectorAll('jsdom', selectors[6]);
 }).add(`patched-jsdom querySelectorAll('${selectors[6]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[6]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[6]);
 }).add(`jsdom querySelectorAll('${selectors[7]}')`, () => {
-  refPointQuerySelectorAll('jsdom', selectors[7]);
+  parentNodeQuerySelectorAll('jsdom', selectors[7]);
 }).add(`patched-jsdom querySelectorAll('${selectors[7]}')`, () => {
-  refPointQuerySelectorAll('patched-jsdom', selectors[7]);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[7]);
 }).on('cycle', evt => {
   const { target } = evt;
   const str = String(target);
