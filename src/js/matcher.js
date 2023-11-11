@@ -1906,7 +1906,7 @@ export class Matcher {
         case '+': {
           const refNode = node.nextElementSibling;
           if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
@@ -1916,7 +1916,7 @@ export class Matcher {
         case '~': {
           let refNode = node.nextElementSibling;
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
@@ -1927,7 +1927,7 @@ export class Matcher {
         case '>': {
           const childNodes = [...node.children];
           for (const refNode of childNodes) {
-            const bool = this._matchLeaves(leaves, refNode);
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
@@ -1947,7 +1947,7 @@ export class Matcher {
               refNode = iterator.nextNode();
             }
             while (refNode) {
-              const bool = this._matchLeaves(leaves, refNode);
+              const bool = this._matchLeaves(leaves, refNode, { forgive });
               if (bool) {
                 matched.add(refNode);
               }
@@ -1961,9 +1961,7 @@ export class Matcher {
         case '+': {
           const refNode = node.previousElementSibling;
           if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, {
-              forgive
-            });
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
@@ -1974,9 +1972,7 @@ export class Matcher {
           const arr = [];
           let refNode = node.previousElementSibling;
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, {
-              forgive
-            });
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               arr.push(refNode);
             }
@@ -1990,9 +1986,7 @@ export class Matcher {
         case '>': {
           const refNode = node.parentNode;
           if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, {
-              forgive
-            });
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
@@ -2004,9 +1998,7 @@ export class Matcher {
           const arr = [];
           let refNode = node.parentNode;
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, {
-              forgive
-            });
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               arr.push(refNode);
             }
