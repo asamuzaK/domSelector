@@ -122,6 +122,219 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/any-link-dynamic-001.html', () => {
+    it('should get results', () => {
+      const elm = document.createElement('a');
+      const node = document.createElement('span');
+      elm.href = '';
+      document.body.appendChild(elm);
+      document.body.appendChild(node);
+      const res1 = node.matches(':any-link + span');
+      assert.isTrue(res1, 'result 1');
+      elm.removeAttribute('href');
+      const res2 = node.matches(':any-link + span');
+      assert.isFalse(res2, 'result 2');
+    });
+  });
+
+  describe('css/selectors/child-indexed-no-parent.html', () => {
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:first-child #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-child(n) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-child(1) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:first-of-type #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-of-type(n) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-of-type(1) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:last-child #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-last-child(1) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-last-child(n) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:last-of-type #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-last-of-type(n) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-last-of-type(1) #a');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('p');
+      node.id = 'a';
+      document.body.appendChild(node);
+      const res = node.matches(':root:nth-last-child(2) #a');
+      assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('css/selectors/dir-pseudo-in-has.html', () => {
+    it('should match', () => {
+      const html =
+        '<section><div id="test" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(ltr))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html =
+        '<section><div id="test" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(rtl))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const html =
+        '<section><div id="test" dir="ltr" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(ltr))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html =
+        '<section><div id="test" dir="ltr" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(rtl))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const html =
+        '<section dir="ltr"><div id="test" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(ltr))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html =
+        '<section dir="ltr"><div id="test" class="ltr"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.ltr:has(*:dir(rtl))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const html =
+        '<section><div id="test" dir="rtl" class="rtl"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.rtl:has(*:dir(rtl))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html =
+        '<section><div id="test" dir="rtl" class="rtl"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.rtl:has(*:dir(ltr))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const html =
+        '<section dir="rtl"><div id="test" class="rtl"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.rtl:has(*:dir(rtl))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html =
+        '<section dir="rtl"><div id="test" class="rtl"><span></span></div></section>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('test');
+      const res = node.matches('.rtl:has(*:dir(ltr))');
+      assert.isFalse(res, 'result');
+    });
+  });
+
   describe('css/selectors/dir-pseudo-on-bdi-element.html', () => {
     it('should get matched node', () => {
       const bdi = document.createElement('bdi');
@@ -457,234 +670,6 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('css/selectors/is-where-basic.html', () => {
-    const html = `
-      <main id=main>
-        <div id=a><div id=d></div></div>
-        <div id=b><div id=e></div></div>
-        <div id=c><div id=f></div></div>
-      </main>
-    `;
-    const sortNodes = arr => arr.map(elm => elm.id).sort();
-
-    // css-tree throws
-    xit('should get empty array', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is()');
-      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(#a)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(#a, #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(#a, #c) :where(#a #d, #c #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll('#c > :is(#c > #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll('#c > :is(#b > #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll('#a div:is(#d)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(div) > div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(*) > div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll('div > :where(#e, #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll('div > :where(*)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(*) > :where(*)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(#a + #b) + :is(#c)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('c')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':is(#a, #b) + div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('b'),
-        document.getElementById('c')
-      ]), 'result');
-    });
-  });
-
-  describe('css/selectors/is-where-not.html', () => {
-    const html = `
-      <main id=main>
-        <div id=a><div id=d></div></div>
-        <div id=b><div id=e></div></div>
-        <div id=c><div id=f></div></div>
-      </main>
-    `;
-    const sortNodes = arr => arr.map(elm => elm.id).sort();
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':not(:is(svg|div))');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-  });
-
-  describe('css/selectors/not-complex.html', () => {
-    const html = `
-      <main id=main>
-        <div id=a><div id=d></div></div>
-        <div id=b><div id=e></div></div>
-        <div id=c><div id=f></div></div>
-      </main>
-    `;
-    const sortNodes = arr => arr.map(elm => elm.id).sort();
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res =
-        main.querySelectorAll(':not(div + div + div, div + div > div)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('d')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':not(:not(div))');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const res = main.querySelectorAll(':not(:hover div)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
-    });
-  });
-
   describe('css/selectors/has-relative-argument.html', () => {
     const html = `
       <main id=main>
@@ -874,6 +859,183 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/is-where-basic.html', () => {
+    const html = `
+      <main id=main>
+        <div id=a><div id=d></div></div>
+        <div id=b><div id=e></div></div>
+        <div id=c><div id=f></div></div>
+      </main>
+    `;
+    const sortNodes = arr => arr.map(elm => elm.id).sort();
+
+    // css-tree throws
+    xit('should get empty array', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is()');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(#a)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(#a, #f)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(#a, #c) :where(#a #d, #c #f)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll('#c > :is(#c > #f)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll('#c > :is(#b > #f)');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll('#a div:is(#d)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(div) > div');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(*) > div');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll('div > :where(#e, #f)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll('div > :where(*)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(*) > :where(*)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(#a + #b) + :is(#c)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('c')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':is(#a, #b) + div');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('b'),
+        document.getElementById('c')
+      ]), 'result');
+    });
+  });
+
+  describe('css/selectors/is-where-not.html', () => {
+    const html = `
+      <main id=main>
+        <div id=a><div id=d></div></div>
+        <div id=b><div id=e></div></div>
+        <div id=c><div id=f></div></div>
+      </main>
+    `;
+    const sortNodes = arr => arr.map(elm => elm.id).sort();
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':not(:is(svg|div))');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+  });
+
   describe('css/selectors/missing-right-token.html', () => {
     const html = `
       <div id="container">
@@ -930,6 +1092,57 @@ describe('local wpt test cases', () => {
       const container = document.getElementById('container');
       const res = container.querySelectorAll('span:not([class');
       assert.strictEqual(res.length, 1, 'result');
+    });
+  });
+
+  describe('css/selectors/not-complex.html', () => {
+    const html = `
+      <main id=main>
+        <div id=a><div id=d></div></div>
+        <div id=b><div id=e></div></div>
+        <div id=c><div id=f></div></div>
+      </main>
+    `;
+    const sortNodes = arr => arr.map(elm => elm.id).sort();
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res =
+        main.querySelectorAll(':not(div + div + div, div + div > div)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('d')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':not(:not(div))');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const res = main.querySelectorAll(':not(:hover div)');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('d'),
+        document.getElementById('e'),
+        document.getElementById('f')
+      ]), 'result');
     });
   });
 
