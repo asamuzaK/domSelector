@@ -8,7 +8,7 @@
 [![release](https://img.shields.io/github/v/release/asamuzaK/domSelector)](https://github.com/asamuzaK/domSelector/releases)
 -->
 
-Retrieve DOM node from the given CSS selector.
+Gets the DOM node that matches the CSS selector.
 
 ## Install
 
