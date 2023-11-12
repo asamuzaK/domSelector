@@ -720,8 +720,8 @@ export class Matcher {
       if (selector.includes(':has(')) {
         res = null;
       } else {
-        let bool;
         const l = branches.length;
+        let bool;
         for (let i = 0; i < l; i++) {
           const leaves = branches[i];
           bool = this._matchHasPseudoFunc(Object.assign([], leaves), node);
@@ -735,8 +735,8 @@ export class Matcher {
       }
     } else {
       const forgive = /^(?:is|where)$/.test(astName);
-      let bool;
       const l = twigBranches.length;
+      let bool;
       for (let i = 0; i < l; i++) {
         const branch = twigBranches[i];
         const lastIndex = branch.length - 1;
@@ -2437,8 +2437,8 @@ export class Matcher {
     const arr = [...nodes];
     if (arr.length > 1) {
       arr.sort((a, b) => {
-        let res;
         const posBit = a.compareDocumentPosition(b);
+        let res;
         if (posBit & DOCUMENT_POSITION_PRECEDING ||
             posBit & DOCUMENT_POSITION_CONTAINS) {
           res = 1;
