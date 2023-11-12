@@ -20,13 +20,15 @@ import {
   ID_SELECTOR, NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR,
   PSEUDO_ELEMENT_SELECTOR, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE, TYPE_SELECTOR
 } from './constant.js';
+const ALPHA_NUM = '[A-Z\\d]+';
+const LANG_PART = `(?:-${ALPHA_NUM})*`;
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
 
 /* regexp */
-const FORM_PARTS =
+const FORM_ITEM =
   /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
 const FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
 const HTML_ANCHOR = /^a(?:rea)?$/;
@@ -39,6 +41,7 @@ const INPUT_SUBMIT = /^(?:image|submit)$/;
 const INPUT_TIME = /^(?:date(?:time-local)?|month|time|week)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
+const LANG_CODE = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**
  * Matcher
@@ -603,30 +606,28 @@ export class Matcher {
             parent = parent.parentNode;
           }
         }
-      } else if (/[A-Z\d-]+/i.test(astName)) {
-        const alphaNum = '[A-Z\\d]+';
-        const codePart = `(?:-${alphaNum})*`;
+      } else if (LANG_CODE.test(astName)) {
         let reg;
         if (/-/.test(astName)) {
           const [langMain, langSub, ...langRest] = astName.split('-');
           let extendedMain;
           if (langMain === '*') {
-            extendedMain = `${alphaNum}${codePart}`;
+            extendedMain = `${ALPHA_NUM}${LANG_PART}`;
           } else {
-            extendedMain = `${langMain}${codePart}`;
+            extendedMain = `${langMain}${LANG_PART}`;
           }
-          const extendedSub = `-${langSub}${codePart}`;
+          const extendedSub = `-${langSub}${LANG_PART}`;
           const len = langRest.length;
           let extendedRest = '';
           if (len) {
             for (let i = 0; i < len; i++) {
-              extendedRest += `-${langRest[i]}${codePart}`;
+              extendedRest += `-${langRest[i]}${LANG_PART}`;
             }
           }
           reg =
             new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
         } else {
-          reg = new RegExp(`^${astName}${codePart}$`, 'i');
+          reg = new RegExp(`^${astName}${LANG_PART}$`, 'i');
         }
         if (node.hasAttribute('lang')) {
           if (reg.test(node.getAttribute('lang'))) {
@@ -979,7 +980,7 @@ export class Matcher {
           break;
         }
         case 'disabled': {
-          if (FORM_PARTS.test(localName) || isCustomElementName(localName)) {
+          if (FORM_ITEM.test(localName) || isCustomElementName(localName)) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -999,7 +1000,7 @@ export class Matcher {
           break;
         }
         case 'enabled': {
-          if ((FORM_PARTS.test(localName) || isCustomElementName(localName)) &&
+          if ((FORM_ITEM.test(localName) || isCustomElementName(localName)) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
