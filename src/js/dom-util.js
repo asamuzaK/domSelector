@@ -231,7 +231,8 @@ export const isSameOrDescendant = (node = {}, root = {}) => {
  * @returns {object} - node properties
  */
 export const selectorToNodeProps = (selector, node) => {
-  let prefix, tagName;
+  let prefix;
+  let tagName;
   if (selector && typeof selector === 'string') {
     if (/\|/.test(selector)) {
       [prefix, tagName] = selector.split('|');
