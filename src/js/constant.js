@@ -35,9 +35,9 @@ export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 3;
 export const DOCUMENT_NODE = 9;
 export const DOCUMENT_FRAGMENT_NODE = 11;
-export const DOCUMENT_POSITION_PRECEDING = 0x02;
-export const DOCUMENT_POSITION_CONTAINS = 0x08;
+export const DOCUMENT_POSITION_PRECEDING = 0x2;
+export const DOCUMENT_POSITION_CONTAINS = 0x8;
 export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
-export const SHOW_ELEMENT = 0x00000001;
+export const SHOW_ELEMENT = 0x1;
