@@ -21,12 +21,12 @@ export const SYNTAX_ERR = 'SyntaxError';
 export const TYPE_SELECTOR = 'TypeSelector';
 
 /* numeric */
-export const BIT_1 = 1;
-export const BIT_10 = 2;
-export const BIT_100 = 4;
-export const BIT_1000 = 8;
-export const BIT_10000 = 16;
-export const BIT_100000 = 32;
+export const BIT_1 = 0x1;
+export const BIT_10 = 0x2;
+export const BIT_100 = 0x4;
+export const BIT_1000 = 0x8;
+export const BIT_10000 = 0x10;
+export const BIT_100000 = 0x20;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 
