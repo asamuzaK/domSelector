@@ -2305,6 +2305,29 @@ export class Matcher {
   }
 
   /**
+   * sort nodes
+   * @param {object} nodes - collection of nodes
+   * @returns {Array.<object|undefined>} - collection of sorted nodes
+   */
+  _sortNodes(nodes) {
+    const arr = [...nodes];
+    if (arr.length > 1) {
+      arr.sort((a, b) => {
+        const posBit = a.compareDocumentPosition(b);
+        let res;
+        if (posBit & DOCUMENT_POSITION_PRECEDING ||
+            posBit & DOCUMENT_POSITION_CONTAINS) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
+    return arr;
+  }
+
+  /**
    * match nodes
    * @param {string} targetType - target type
    * @returns {object} - collection of matched nodes
@@ -2335,7 +2358,7 @@ export class Matcher {
               }
             }
           } else if (targetType === TARGET_FIRST) {
-            const [node] = [...matched];
+            const [node] = this._sortNodes(matched);
             nodes.add(node);
           } else {
             const n = [...nodes];
@@ -2363,7 +2386,7 @@ export class Matcher {
               if (matchedNodes.size) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_FIRST) {
-                    const [node] = [...matchedNodes];
+                    const [node] = this._sortNodes(matchedNodes);
                     nodes.add(node);
                   } else {
                     const n = [...nodes];
@@ -2426,29 +2449,6 @@ export class Matcher {
     this._collectNodes(targetType);
     const nodes = this._matchNodes(targetType);
     return nodes;
-  }
-
-  /**
-   * sort nodes
-   * @param {object} nodes - collection of nodes
-   * @returns {Array.<object|undefined>} - collection of sorted nodes
-   */
-  _sortNodes(nodes) {
-    const arr = [...nodes];
-    if (arr.length > 1) {
-      arr.sort((a, b) => {
-        const posBit = a.compareDocumentPosition(b);
-        let res;
-        if (posBit & DOCUMENT_POSITION_PRECEDING ||
-            posBit & DOCUMENT_POSITION_CONTAINS) {
-          res = 1;
-        } else {
-          res = -1;
-        }
-        return res;
-      });
-    }
-    return arr;
   }
 
   /**

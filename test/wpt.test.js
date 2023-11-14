@@ -650,8 +650,7 @@ describe('local wpt test cases', () => {
       assert.deepEqual(res, document.getElementById('div3_1'), 'result');
     });
 
-    // FIXME: fails, returns div4
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       document.body.innerHTML = html;
       const res = document.querySelector(':dir(ltr) :dir(rtl) + :dir(ltr)');
       assert.deepEqual(res, document.getElementById('div3_2'), 'result');
