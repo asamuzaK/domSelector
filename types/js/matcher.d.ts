@@ -12,13 +12,13 @@ export class Matcher {
         b: number;
         reverse?: boolean;
         selector?: object;
-    }, node: object): object;
+    }, node: object): Set<object>;
     _collectNthOfType(anb: {
         a: number;
         b: number;
         reverse?: boolean;
-    }, node: object): object;
-    _matchAnPlusB(ast: object, node: object, nthName: string): object;
+    }, node: object): Set<object>;
+    _matchAnPlusB(ast: object, node: object, nthName: string): Set<object>;
     _matchPseudoElementSelector(astName: string, opt?: {
         forgive?: boolean;
     }): void;
@@ -28,24 +28,24 @@ export class Matcher {
     _matchLogicalPseudoFunc(astData: object, node: object): object | null;
     _matchPseudoClassSelector(ast: object, node: object, opt?: {
         forgive?: boolean;
-    }): object;
+    }): Set<object>;
     _matchAttributeSelector(ast: object, node: object): object | null;
     _matchClassSelector(ast: object, node: object): object | null;
     _matchIDSelector(ast: object, node: object): object | null;
     _matchTypeSelector(ast: object, node: object): object | null;
-    _matchSelector(ast: object, node: object, opt?: object): object;
+    _matchSelector(ast: object, node: object, opt?: object): Set<object>;
     _matchLeaves(leaves: Array<object>, node: object, opt?: object): boolean;
     _findDescendantNodes(leaves: Array<object>, baseNode: object): object;
     _matchCombinator(twig: object, node: object, opt?: {
         find?: string;
         forgive?: boolean;
-    }): object;
+    }): Set<object>;
     _findNodes(twig: object, targetType: string): object;
     _getFirstTwig(branch: Array<object>): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
-    _sortNodes(nodes: object): Array<object | undefined>;
-    _matchNodes(targetType: string): object;
-    _find(targetType: string): object;
+    _sortNodes(nodes: Array<object> | Set<object>): Array<object | undefined>;
+    _matchNodes(targetType: string): Set<object>;
+    _find(targetType: string): Set<object>;
     matches(): boolean;
     closest(): object | null;
     querySelector(): object | null;
