@@ -1647,4 +1647,50 @@ describe('local wpt test cases', () => {
       assert.isFalse(res, 'result');
     });
   });
+
+  describe('css/css-scoping/host-dom-001.html', () => {
+    it('should not match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = node.matches(':host');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.firstElementChild.matches(':host div');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.querySelector(':host div');
+      assert.deepEqual(res, root.firstElementChild, 'result');
+    });
+  });
+
+  describe('css/css-scoping/slotted-matches.html', () => {
+    it('should not match', () => {
+      const host = document.createElement('div');
+      const node = document.createElement('div');
+      node.id = 'slotted';
+      host.id = 'host';
+      host.appendChild(node);
+      document.body.appendChild(host);
+      host.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
+      const res = node.matches('::slotted(div)');
+      assert.isFalse(res, 'result');
+    });
+  });
 });

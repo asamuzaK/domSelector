@@ -4998,6 +4998,104 @@ describe('create AST from CSS selector', () => {
     it('should throw', () => {
       assert.throws(() => func(':lang("")'), DOMException);
     });
+
+    it('should get selector list', () => {
+      const res = func(':host');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: null,
+                loc: null,
+                name: 'host',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(':host()'), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(':host(.foo, .bar)'), DOMException);
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host(.foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'foo',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                name: 'host',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host-context(.foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'foo',
+                        type: CLASS_SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                name: 'host-context',
+                type: PSEUDO_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('pseudo-element', () => {
@@ -5789,6 +5887,62 @@ describe('walk AST', () => {
           loc: null,
           name: 'not',
           type: PSEUDO_CLASS_SELECTOR
+        }
+      ]
+    ], 'result');
+  });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: 'foo',
+                      type: TYPE_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              name: 'slotted',
+              type: PSEUDO_ELEMENT_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, [
+      [
+        {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: TYPE_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          name: 'slotted',
+          type: PSEUDO_ELEMENT_SELECTOR
         }
       ]
     ], 'result');

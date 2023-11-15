@@ -182,7 +182,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(document);
         assert.deepEqual(res, {
           document,
-          root: document
+          root: document,
+          shadow: false
         }, 'result');
       });
 
@@ -195,7 +196,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
           document,
-          root: document
+          root: document,
+          shadow: false
         }, 'result');
       });
 
@@ -208,7 +210,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
           document,
-          root: document
+          root: document,
+          shadow: false
         }, 'result');
       });
 
@@ -223,7 +226,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(doc);
         assert.deepEqual(res, {
           document: doc,
-          root: doc
+          root: doc,
+          shadow: false
         }, 'result');
       });
 
@@ -238,7 +242,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
           document: doc,
-          root: doc
+          root: doc,
+          shadow: false
         }, 'result');
       });
 
@@ -253,7 +258,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
           document: doc,
-          root: doc
+          root: doc,
+          shadow: false
         }, 'result');
       });
 
@@ -267,7 +273,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(frag);
         assert.deepEqual(res, {
           document,
-          root: frag
+          root: frag,
+          shadow: false
         }, 'result');
       });
 
@@ -281,7 +288,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
           document,
-          root: frag
+          root: frag,
+          shadow: false
         }, 'result');
       });
 
@@ -295,7 +303,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
           document,
-          root: frag
+          root: frag,
+          shadow: false
         }, 'result');
       });
 
@@ -307,7 +316,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(parent);
         assert.deepEqual(res, {
           document,
-          root: parent
+          root: parent,
+          shadow: false
         }, 'result');
       });
 
@@ -319,7 +329,41 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._getRoot(node);
         assert.deepEqual(res, {
           document,
-          root: parent
+          root: parent,
+          shadow: false
+        }, 'result');
+      });
+
+      it('should get matched node', () => {
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host div', node);
+        const res = matcher._getRoot(node);
+        assert.deepEqual(res, {
+          document,
+          root: node,
+          shadow: true
         }, 'result');
       });
     });
@@ -1876,7 +1920,7 @@ describe('match AST leaf and DOM node', () => {
             </div>
           </template>
           <my-element id="baz">
-            <span id="qux" slot="quux">Qux</span>
+            <span id="qux" slot="foo">Qux</span>
           </my-element>
         `;
         const container = document.getElementById('div0');
@@ -6292,7 +6336,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher('[foo=bar baz]', node);
         assert.throws(() => matcher._matchAttributeSelector(leaf, node),
-          DOMException, 'Invalid attribute selector');
+          DOMException, 'Invalid selector [foo=bar baz]');
       });
 
       it('should get matched node', () => {
@@ -8193,6 +8237,410 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('match shadow host pseudo class', () => {
+      it('should not match', () => {
+        const ast = {
+          children: null,
+          name: 'foobar',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: null,
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should throw', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  name: 'baz',
+                  type: ID_SELECTOR
+                },
+                {
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  name: 'foobar',
+                  type: ID_SELECTOR
+                }
+              ],
+              type: SELECTOR
+            }
+          ],
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host(#baz #foobar) div', node);
+        assert.throws(() => matcher._matchShadowHostPseudoClass(ast, node),
+          DOMException, 'Invalid selector :host(#baz #foobar)');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host(#baz) div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should not match', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foobar',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host(#foobar) div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should throw', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  name: 'baz',
+                  type: ID_SELECTOR
+                },
+                {
+                  name: ' ',
+                  type: COMBINATOR
+                },
+                {
+                  name: 'foobar',
+                  type: ID_SELECTOR
+                }
+              ],
+              type: SELECTOR
+            }
+          ],
+          name: 'host-context',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host-context(#baz #foobar) div', node);
+        assert.throws(() => matcher._matchShadowHostPseudoClass(ast, node),
+          DOMException, 'Invalid selector :host-context(#baz #foobar)');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host-context',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host-context(#baz) div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host-context',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host-context(#div0) div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should not match', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foobar',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host-context',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host-context(#foobar) div', node);
+        const res = matcher._matchShadowHostPseudoClass(ast, node);
+        assert.isNull(res, 'result');
+      });
+    });
+
     describe('match selector', () => {
       it('should get matched node(s)', () => {
         const ast = {
@@ -8282,6 +8730,100 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('::before', document);
         const res = matcher._matchSelector(ast, node);
         assert.strictEqual(res.size, 0, 'size');
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should get matched node', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'baz',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host(#baz) div', node);
+        const res = matcher._matchSelector(ast, node);
+        assert.deepEqual([...res], [
+          node
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const ast = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foobar',
+                  type: ID_SELECTOR
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          name: 'host',
+          type: PSEUDO_CLASS_SELECTOR
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host(#foobar) div', node);
+        const res = matcher._matchSelector(ast, node);
         assert.deepEqual([...res], [], 'result');
       });
     });

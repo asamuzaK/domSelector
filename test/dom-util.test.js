@@ -35,6 +35,84 @@ describe('DOM utility functions', () => {
     document = null;
   });
 
+  describe('is in shadow tree', () => {
+    const func = domUtil.isInShadowTree;
+
+    it('should not match', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html = `
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      const node = document.getElementById('foo');
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('get slotted text content', () => {
     const func = domUtil.getSlottedTextContent;
 
@@ -78,8 +156,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'Foo', 'result');
     });
@@ -108,8 +186,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'Qux', 'result');
     });
@@ -262,8 +340,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'ltr', 'result');
     });
@@ -290,8 +368,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'rtl', 'result');
     });
@@ -318,8 +396,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'ltr', 'result');
     });
@@ -419,8 +497,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'ltr', 'result');
     });
@@ -447,8 +525,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'rtl', 'result');
     });
@@ -475,8 +553,8 @@ describe('DOM utility functions', () => {
         }
       };
       window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
       assert.strictEqual(res, 'ltr', 'result');
     });
