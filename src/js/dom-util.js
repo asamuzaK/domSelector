@@ -22,36 +22,46 @@ const SHADOW_MODE = /^(?:close|open)$/;
 const bidi = bidiFactory();
 
 /**
+ * is in shadow tree
+ * @param {object} node - node
+ * @returns {boolean} - result;
+ */
+export const isInShadowTree = (node = {}) => {
+  let bool;
+  if (node.nodeType === ELEMENT_NODE ||
+      node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+    let refNode = node;
+    while (refNode) {
+      const { host, mode, nodeType, parentNode } = refNode;
+      if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
+          mode && SHADOW_MODE.test(mode)) {
+        bool = true;
+        break;
+      }
+      refNode = parentNode;
+    }
+  }
+  return !!bool;
+};
+
+/**
  * get slotted text content
  * @param {object} node - Element node
  * @returns {?string} - text content
  */
 export const getSlottedTextContent = (node = {}) => {
   let res;
-  if (node.nodeType === ELEMENT_NODE && node.localName === 'slot') {
-    let parent = node.parentNode;
-    let bool;
-    while (parent) {
-      const { host, mode, nodeType, parentNode } = parent;
-      if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
-          mode && SHADOW_MODE.test(mode)) {
-        bool = true;
-        break;
-      }
-      parent = parentNode;
-    }
-    if (bool) {
-      const nodes = node.assignedNodes();
-      if (nodes.length) {
-        for (const item of nodes) {
-          res = item.textContent.trim();
-          if (res) {
-            break;
-          }
+  if (node.localName === 'slot' && isInShadowTree(node)) {
+    const nodes = node.assignedNodes();
+    if (nodes.length) {
+      for (const item of nodes) {
+        res = item.textContent.trim();
+        if (res) {
+          break;
         }
-      } else {
-        res = node.textContent.trim();
       }
+    } else {
+      res = node.textContent.trim();
     }
   }
   return res ?? null;
