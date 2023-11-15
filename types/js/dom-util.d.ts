@@ -1,3 +1,4 @@
+export function isInShadowTree(node?: object): boolean;
 export function getSlottedTextContent(node?: object): string | null;
 export function getDirectionality(node?: object): string | null;
 export function isContentEditable(node?: object): boolean;
