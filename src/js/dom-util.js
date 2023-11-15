@@ -61,7 +61,7 @@ export const getSlottedTextContent = (node = {}) => {
  * get directionality of node
  * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
  * @param {object} node - Element node
- * @returns {?string} - result
+ * @returns {?string} - 'ltr' / 'rtl'
  */
 export const getDirectionality = (node = {}) => {
   let res;
