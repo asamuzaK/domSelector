@@ -17,6 +17,7 @@ const PAIR = 2;
 /* regexp */
 const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
+const PSEUDO_SHADOW = /^part|slotted$/;
 const QUOTED_LANG = /(:lang\(\s*("[A-Z\d\-*]+")\s*\))/i;
 const WHITESPACE = /^[\n\r\f]/;
 
@@ -162,7 +163,7 @@ export const walkAST = (ast = {}) => {
       } else if ((node.type === PSEUDO_CLASS_SELECTOR &&
                   PSEUDO_FUNC.test(node.name)) ||
                  (node.type === PSEUDO_ELEMENT_SELECTOR &&
-                  node.name === 'slotted')) {
+                  PSEUDO_SHADOW.test(node.name))) {
         hasPseudoFunc = true;
       }
     }
@@ -189,10 +190,10 @@ export const walkAST = (ast = {}) => {
             }
           }
         } else if (node.type === PSEUDO_ELEMENT_SELECTOR &&
-                   node.name === 'slotted') {
+                   PSEUDO_SHADOW.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PSEUDO_ELEMENT_SELECTOR && name === 'slotted';
+            return type === PSEUDO_ELEMENT_SELECTOR && PSEUDO_SHADOW.test(name);
           });
           for (const { children } of itemList) {
             // Selector
