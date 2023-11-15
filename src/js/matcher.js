@@ -263,7 +263,7 @@ export class Matcher {
    * @param {boolean} [anb.reverse] - reverse order
    * @param {object} [anb.selector] - AST
    * @param {object} node - Element node
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _collectNthChild(anb, node) {
     const { a, b, reverse, selector } = anb;
@@ -383,7 +383,7 @@ export class Matcher {
    * @param {number} anb.b - b
    * @param {boolean} [anb.reverse] - reverse order
    * @param {object} node - Element node
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _collectNthOfType(anb, node) {
     const { a, b, reverse } = anb;
@@ -456,7 +456,7 @@ export class Matcher {
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @param {string} nthName - nth pseudo-class name
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _matchAnPlusB(ast, node, nthName) {
     const {
@@ -758,13 +758,12 @@ export class Matcher {
                 arr.push(...m);
               }
             }
-            const matchedNodes = new Set(arr);
-            if (matchedNodes.size) {
+            if (arr.length) {
               if (j === 0) {
                 bool = true;
                 break;
               } else {
-                nextNodes = matchedNodes;
+                nextNodes = new Set(arr);
               }
             } else {
               bool = false;
@@ -794,7 +793,7 @@ export class Matcher {
    * @param {object} node - Element node
    * @param {object} [opt] - options
    * @param {boolean} [opt.forgive] - is forgiving selector list
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren } = ast;
@@ -1764,7 +1763,7 @@ export class Matcher {
    * @param {object} ast - AST
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _matchSelector(ast, node, opt) {
     const { type } = ast;
@@ -1838,7 +1837,7 @@ export class Matcher {
    * find descendant nodes
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} baseNode - base Element node
-   * @returns {object} - result
+   * @returns {object} - collection of nodes and pending state
    */
   _findDescendantNodes(leaves, baseNode) {
     const [leaf, ...items] = leaves;
@@ -1895,7 +1894,7 @@ export class Matcher {
    * @param {object} [opt] - option
    * @param {string} [opt.find] - 'prev'|'next', which nodes to find
    * @param {boolean} [opt.forgive] - is forgiving selector list
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
@@ -2306,7 +2305,7 @@ export class Matcher {
 
   /**
    * sort nodes
-   * @param {object} nodes - collection of nodes
+   * @param {Array.<object>|Set.<object>} nodes - collection of nodes
    * @returns {Array.<object|undefined>} - collection of sorted nodes
    */
   _sortNodes(nodes) {
@@ -2330,7 +2329,7 @@ export class Matcher {
   /**
    * match nodes
    * @param {string} targetType - target type
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _matchNodes(targetType) {
     const [...branches] = this.#ast;
@@ -2382,21 +2381,19 @@ export class Matcher {
                   arr.push(...m);
                 }
               }
-              const matchedNodes = new Set(arr);
-              if (matchedNodes.size) {
+              if (arr.length) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_FIRST) {
-                    const [node] = this._sortNodes(matchedNodes);
+                    const [node] = this._sortNodes(arr);
                     nodes.add(node);
                   } else {
                     const n = [...nodes];
-                    const m = [...matchedNodes];
-                    nodes = new Set([...n, ...m]);
+                    nodes = new Set([...n, ...arr]);
                   }
                   break;
                 } else {
                   combo = nextCombo;
-                  nextNodes = matchedNodes;
+                  nextNodes = new Set(arr);
                 }
               } else {
                 break;
@@ -2416,14 +2413,13 @@ export class Matcher {
                   arr.push(...m);
                 }
               }
-              const matchedNodes = new Set(arr);
-              if (matchedNodes.size) {
+              if (arr.length) {
                 bool = true;
                 if (j === 0) {
                   nodes.add(node);
                   break;
                 } else {
-                  nextNodes = matchedNodes;
+                  nextNodes = new Set(arr);
                 }
               } else {
                 bool = false;
@@ -2443,7 +2439,7 @@ export class Matcher {
   /**
    * find matched nodes
    * @param {string} targetType - target type
-   * @returns {object} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _find(targetType) {
     this._collectNodes(targetType);
