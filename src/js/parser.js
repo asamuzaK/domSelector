@@ -7,7 +7,8 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  PSEUDO_CLASS_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR,
+  TYPE_FROM, TYPE_TO
 } from './constant.js';
 const CODE_POINT_UNIT = parseInt('10000', 16);
 const HEX = 16;
@@ -158,8 +159,10 @@ export const walkAST = (ast = {}) => {
     enter: node => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
-      } else if (node.type === PSEUDO_CLASS_SELECTOR &&
-                 PSEUDO_FUNC.test(node.name)) {
+      } else if ((node.type === PSEUDO_CLASS_SELECTOR &&
+                  PSEUDO_FUNC.test(node.name)) ||
+                 (node.type === PSEUDO_ELEMENT_SELECTOR &&
+                  node.name === 'slotted')) {
         hasPseudoFunc = true;
       }
     }
@@ -167,19 +170,35 @@ export const walkAST = (ast = {}) => {
   walk(ast, opt);
   if (hasPseudoFunc) {
     findAll(ast, (node, item, list) => {
-      if (node.type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(node.name) &&
-          list) {
-        const itemList = list.filter(i => {
-          const { name, type } = i;
-          return type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name);
-        });
-        for (const { children } of itemList) {
-          // SelectorList
-          for (const { children: grandChildren } of children) {
+      if (list) {
+        if (node.type === PSEUDO_CLASS_SELECTOR &&
+            PSEUDO_FUNC.test(node.name)) {
+          const itemList = list.filter(i => {
+            const { name, type } = i;
+            return type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name);
+          });
+          for (const { children } of itemList) {
+            // SelectorList
+            for (const { children: grandChildren } of children) {
+              // Selector
+              for (const { children: greatGrandChildren } of grandChildren) {
+                if (branches.has(greatGrandChildren)) {
+                  branches.delete(greatGrandChildren);
+                }
+              }
+            }
+          }
+        } else if (node.type === PSEUDO_ELEMENT_SELECTOR &&
+                   node.name === 'slotted') {
+          const itemList = list.filter(i => {
+            const { name, type } = i;
+            return type === PSEUDO_ELEMENT_SELECTOR && name === 'slotted';
+          });
+          for (const { children } of itemList) {
             // Selector
-            for (const { children: greatGrandChildren } of grandChildren) {
-              if (branches.has(greatGrandChildren)) {
-                branches.delete(greatGrandChildren);
+            for (const { children: grandChildren } of children) {
+              if (branches.has(grandChildren)) {
+                branches.delete(grandChildren);
               }
             }
           }
