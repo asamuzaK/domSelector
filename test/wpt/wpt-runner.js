@@ -229,10 +229,13 @@ const filter = (testPath) => {
     'only-of-type.html',
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
-    'selector-placeholder-shown-emptify-placeholder.html'
+    'selector-placeholder-shown-emptify-placeholder.html',
+    // css/css-scoping
+    'host-dom-001.html'
   ];
   const excludeList = [
-    'ParentNode-querySelector-All-content.html'
+    'ParentNode-querySelector-All-content.html',
+    //'slotted-matches.html'
   ];
   let res;
   if (skipList.includes(testPath)) {
@@ -255,7 +258,8 @@ const filter = (testPath) => {
 
 const rootURLs = [
   'dom/nodes/',
-  'css/selectors/'
+  'css/selectors/',
+  'css/css-scoping/'
 ];
 
 (async () => {
