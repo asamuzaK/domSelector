@@ -5,8 +5,8 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import {
-  getDirectionality, isContentEditable, isNamespaceDeclared, isSameOrDescendant,
-  selectorToNodeProps
+  getDirectionality, isContentEditable, isInShadowTree, isNamespaceDeclared,
+  isSameOrDescendant, selectorToNodeProps
 } from './dom-util.js';
 import {
   generateCSS, parseSelector, unescapeSelector, walkAST
@@ -41,6 +41,7 @@ const INPUT_SUBMIT = /^(?:image|submit)$/;
 const INPUT_TIME = /^(?:date(?:time-local)?|month|time|week)$/;
 const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
 const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
+const SHADOW_HOST = /^host(?:-context)?$/;
 const LANG_CODE = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**
@@ -165,9 +166,11 @@ export class Matcher {
         throw new TypeError(`Unexpected node ${node.nodeName}`);
       }
     }
+    const shadow = isInShadowTree(node);
     return {
       document,
-      root
+      root,
+      shadow
     };
   }
 
@@ -1491,7 +1494,8 @@ export class Matcher {
       flags: astFlags, matcher: astMatcher, name: astName, value: astValue
     } = ast;
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
-      throw new DOMException('Invalid attribute selector', SYNTAX_ERR);
+      const css = generateCSS(ast);
+      throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
     }
     const { attributes } = node;
     let res;
@@ -1704,8 +1708,8 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   _matchIDSelector(ast, node) {
-    const { id } = node;
     const astName = unescapeSelector(ast.name);
+    const { id } = node;
     let res;
     if (astName === id) {
       res = node;
@@ -1759,6 +1763,67 @@ export class Matcher {
   };
 
   /**
+   * match shadow host pseudo class
+   * @param {object} ast - AST
+   * @param {object} node - DocumentFragment node
+   * @returns {?object} - matched node
+   */
+  _matchShadowHostPseudoClass(ast, node) {
+    const { children: astChildren } = ast;
+    const astName = unescapeSelector(ast.name);
+    let res;
+    if (Array.isArray(astChildren)) {
+      const [branch] = walkAST(astChildren[0]);
+      const [...leaves] = branch;
+      const { host } = node;
+      if (astName === 'host') {
+        let bool;
+        for (const leaf of leaves) {
+          const { type: leafType } = leaf;
+          if (leafType === COMBINATOR) {
+            const css = generateCSS(ast);
+            throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+          }
+          bool = this._matchSelector(leaf, host).has(host);
+          if (!bool) {
+            break;
+          }
+        }
+        if (bool) {
+          res = node;
+        }
+      } else if (astName === 'host-context') {
+        let parent = host;
+        let bool;
+        while (parent) {
+          for (const leaf of leaves) {
+            const { type: leafType } = leaf;
+            if (leafType === COMBINATOR) {
+              const css = generateCSS(ast);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            }
+            bool = this._matchSelector(leaf, parent).has(parent);
+            if (!bool) {
+              break;
+            }
+          }
+          if (bool) {
+            break;
+          } else {
+            parent = parent.parentNode;
+          }
+        }
+        if (bool) {
+          res = node;
+        }
+      }
+    } else if (astName === 'host') {
+      res = node;
+    }
+    return res ?? null;
+  }
+
+  /**
    * match selector
    * @param {object} ast - AST
    * @param {object} node - Document, DocumentFragment, Element node
@@ -1767,6 +1832,8 @@ export class Matcher {
    */
   _matchSelector(ast, node, opt) {
     const { type } = ast;
+    const astName = unescapeSelector(ast.name);
+    const { shadow } = this.#root;
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (type) {
@@ -1799,7 +1866,6 @@ export class Matcher {
           break;
         }
         case PSEUDO_ELEMENT_SELECTOR: {
-          const astName = unescapeSelector(ast.name);
           this._matchPseudoElementSelector(astName, opt);
           break;
         }
@@ -1810,6 +1876,12 @@ export class Matcher {
             matched.add(res);
           }
         }
+      }
+    } else if (node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow &&
+               SHADOW_HOST.test(astName)) {
+      const res = this._matchShadowHostPseudoClass(ast, node);
+      if (res) {
+        matched.add(res);
       }
     }
     return matched;
@@ -2024,7 +2096,7 @@ export class Matcher {
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
     const matchItems = items.length > 0;
-    const { document, root } = this.#root;
+    const { document, root, shadow } = this.#root;
     let nodes = new Set();
     let pending = false;
     switch (leafType) {
@@ -2166,7 +2238,14 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (targetType === TARGET_SELF) {
+        if (SHADOW_HOST.test(leafName)) {
+          if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow) {
+            const node = this._matchShadowHostPseudoClass(leaf, this.#node);
+            if (node) {
+              arr.push(node);
+            }
+          }
+        } else if (targetType === TARGET_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
             arr.push(this.#node);
