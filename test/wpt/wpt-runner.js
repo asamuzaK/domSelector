@@ -234,8 +234,7 @@ const filter = (testPath) => {
     'host-dom-001.html'
   ];
   const excludeList = [
-    'ParentNode-querySelector-All-content.html',
-    //'slotted-matches.html'
+    'ParentNode-querySelector-All-content.html'
   ];
   let res;
   if (skipList.includes(testPath)) {
