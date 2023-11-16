@@ -1680,6 +1680,42 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/css-scoping/host-is-001.html', () => {
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.attachShadow({mode: "open"}).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host) .nested');
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-is-003.html', () => {
+    it('should not match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({mode: "open"}).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host(#not-host), #host) .nested');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({mode: "open"}).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host(#host)) .nested');
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('css/css-scoping/slotted-matches.html', () => {
     it('should not match', () => {
       const host = document.createElement('div');
