@@ -1525,6 +1525,39 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/', () => {
+    it('host-pseudo-class-in-has.html, should match', () => {
+      const parent = document.createElement('div');
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.classList.add('a');
+      parent.id = 'host_parent';
+      parent.appendChild(host);
+      document.body.appendChild(parent);
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <div class="foo">
+          <div id="subject1" class="subject">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="foo">
+            <div id="subject2" class="subject">
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const node1 = shadow.getElementById('subject1');
+      const node2 = shadow.getElementById('subject2');
+      assert.isTrue(node1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
+        'result1');
+      assert.isTrue(node2.matches('.subject:has(:is(:host(.a) .bar))'),
+        'result2');
+    });
+  });
+
   describe('css/selectors/selectors-4/', () => {
     it('lang-007.html, should match', () => {
       const html =
@@ -1713,6 +1746,19 @@ describe('local wpt test cases', () => {
       const node = host.shadowRoot.firstElementChild;
       const res = node.matches(':is(:host(#host)) .nested');
       assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-multiple-001.html', () => {
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({mode: "open"}).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.closest(':host:host');
+      assert.deepEqual(res, host.shadowRoot, 'result');
     });
   });
 

@@ -1435,6 +1435,10 @@ export class Matcher {
           }
           break;
         }
+        case 'host': {
+          // should not match
+          break;
+        }
         // legacy pseudo-elements
         case 'after':
         case 'before':
@@ -2251,7 +2255,7 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (SHADOW_HOST.test(leafName)) {
+        if (SHADOW_HOST.test(leafName) && targetType !== TARGET_LINEAL) {
           if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
             if (node) {
