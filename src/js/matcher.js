@@ -1435,7 +1435,8 @@ export class Matcher {
           }
           break;
         }
-        case 'host': {
+        case 'host':
+        case 'host-context': {
           // should not match
           break;
         }
