@@ -1877,11 +1877,17 @@ export class Matcher {
           }
         }
       }
-    } else if (node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow &&
-               SHADOW_HOST.test(astName)) {
-      const res = this._matchShadowHostPseudoClass(ast, node);
-      if (res) {
-        matched.add(res);
+    } else if (node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow) {
+      if (PSEUDO_FUNC.test(astName) && astName !== 'has') {
+        const nodes = this._matchPseudoClassSelector(ast, node, opt);
+        if (nodes.size) {
+          matched = nodes;
+        }
+      } else if (type === PSEUDO_CLASS_SELECTOR && SHADOW_HOST.test(astName)) {
+        const res = this._matchShadowHostPseudoClass(ast, node);
+        if (res) {
+          matched.add(res);
+        }
       }
     }
     return matched;
