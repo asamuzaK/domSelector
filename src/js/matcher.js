@@ -540,13 +540,19 @@ export class Matcher {
       case 'first-line':
       case 'file-selector-button':
       case 'marker':
-      case 'part':
       case 'placeholder':
       case 'selection':
-      case 'slotted':
       case 'target-text': {
         if (this.#warn) {
           throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+            NOT_SUPPORTED_ERR);
+        }
+        break;
+      }
+      case 'part':
+      case 'slotted': {
+        if (this.#warn) {
+          throw new DOMException(`Unsupported pseudo-element ::${astName}()`,
             NOT_SUPPORTED_ERR);
         }
         break;
@@ -1877,13 +1883,14 @@ export class Matcher {
           }
         }
       }
-    } else if (node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow) {
+    } else if (shadow && type === PSEUDO_CLASS_SELECTOR &&
+               node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       if (PSEUDO_FUNC.test(astName) && astName !== 'has') {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         if (nodes.size) {
           matched = nodes;
         }
-      } else if (type === PSEUDO_CLASS_SELECTOR && SHADOW_HOST.test(astName)) {
+      } else if (SHADOW_HOST.test(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node);
         if (res) {
           matched.add(res);

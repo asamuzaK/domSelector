@@ -1649,6 +1649,42 @@ describe('match AST leaf and DOM node', () => {
           DOMException, 'Unsupported pseudo-element ::after');
       });
 
+      it('should not match', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::part(div)', node);
+        const res = matcher._matchPseudoElementSelector('part');
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::part(div)', node, {
+          warn: true
+        });
+        assert.throws(() => matcher._matchPseudoElementSelector('part'),
+          DOMException, 'Unsupported pseudo-element ::part()');
+      });
+
+      it('should not match', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::slotted(div)', node);
+        const res = matcher._matchPseudoElementSelector('slotted');
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should throw', () => {
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher('::slotted(div)', node, {
+          warn: true
+        });
+        assert.throws(() => matcher._matchPseudoElementSelector('slotted'),
+          DOMException, 'Unsupported pseudo-element ::slotted()');
+      });
+
       it('should throw', () => {
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
