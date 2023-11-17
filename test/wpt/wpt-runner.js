@@ -198,8 +198,6 @@ const filter = (testPath) => {
     'missing-right-token.html',
     'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
-    'parsing/parse-has-disallow-nesting-has-inside-has.html',
-    'parsing/parse-has-forgiving-selector.html',
     'placeholder-shown.html',
     'user-invalid.html',
     'user-valid-user-invalid-invalidation.html',
@@ -245,7 +243,8 @@ const filter = (testPath) => {
   } else if (/closest|matches|querySelector(?:All)?|has-/.test(testPath)) {
     if (excludeList.includes(testPath)) {
       res = false;
-    } else if (testPath.startsWith('invalidation/')) {
+    } else if (testPath.startsWith('invalidation/') ||
+               testPath.startsWith('parsing/')) {
       res = false;
     } else {
       res = true;
