@@ -1716,7 +1716,7 @@ describe('local wpt test cases', () => {
   describe('css/css-scoping/host-is-001.html', () => {
     it('should match', () => {
       const host = document.createElement('div');
-      host.attachShadow({mode: "open"}).innerHTML = `
+      host.attachShadow({ mode: 'open' }).innerHTML = `
         <div class="nested"></div>
       `;
       const node = host.shadowRoot.firstElementChild;
@@ -1729,7 +1729,7 @@ describe('local wpt test cases', () => {
     it('should not match', () => {
       const host = document.createElement('div');
       host.id = 'host';
-      host.attachShadow({mode: "open"}).innerHTML = `
+      host.attachShadow({ mode: 'open' }).innerHTML = `
         <div class="nested"></div>
       `;
       const node = host.shadowRoot.firstElementChild;
@@ -1740,7 +1740,7 @@ describe('local wpt test cases', () => {
     it('should match', () => {
       const host = document.createElement('div');
       host.id = 'host';
-      host.attachShadow({mode: "open"}).innerHTML = `
+      host.attachShadow({ mode: 'open' }).innerHTML = `
         <div class="nested"></div>
       `;
       const node = host.shadowRoot.firstElementChild;
@@ -1753,7 +1753,7 @@ describe('local wpt test cases', () => {
     it('should match', () => {
       const host = document.createElement('div');
       host.id = 'host';
-      host.attachShadow({mode: "open"}).innerHTML = `
+      host.attachShadow({ mode: 'open' }).innerHTML = `
         <div class="nested"></div>
       `;
       const node = host.shadowRoot.firstElementChild;
