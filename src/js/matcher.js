@@ -357,7 +357,7 @@ export class Matcher {
       }
     } else {
       const { root } = this.#root;
-      if (root.nodeType === ELEMENT_NODE && node === root && (a + b) === 1) {
+      if (node === root && root.nodeType === ELEMENT_NODE && (a + b) === 1) {
         if (selectorBranches) {
           const branchesLen = selectorBranches.length;
           let bool;
@@ -447,7 +447,7 @@ export class Matcher {
       }
     } else {
       const { root } = this.#root;
-      if (root.nodeType === ELEMENT_NODE && node === root && (a + b) === 1) {
+      if (node === root && root.nodeType === ELEMENT_NODE && (a + b) === 1) {
         matched.add(node);
       }
     }
@@ -928,8 +928,8 @@ export class Matcher {
           break;
         }
         case 'target': {
-          if (isSameOrDescendant(node) && docURL.hash &&
-              node.id && docURL.hash === `#${node.id}`) {
+          if (node.id && docURL.hash && docURL.hash === `#${node.id}` &&
+              isSameOrDescendant(node)) {
             matched.add(node);
           }
           break;
@@ -999,8 +999,8 @@ export class Matcher {
                 }
                 parent = parent.parentNode;
               }
-              if (parent && parent.hasAttribute('disabled') &&
-                  parentNode.localName !== 'legend') {
+              if (parent && parentNode.localName !== 'legend' &&
+                  parent.hasAttribute('disabled')) {
                 matched.add(node);
               }
             }
@@ -1079,25 +1079,25 @@ export class Matcher {
               targetNode = node;
             }
           }
-          if (targetNode && node.hasAttribute('placeholder') &&
-              node.getAttribute('placeholder').trim().length &&
-              node.value === '') {
+          if (targetNode && node.value === '' &&
+              node.hasAttribute('placeholder') &&
+              node.getAttribute('placeholder').trim().length) {
             matched.add(node);
           }
           break;
         }
         case 'checked': {
-          if ((localName === 'input' && node.hasAttribute('type') &&
-               INPUT_CHECK.test(node.getAttribute('type')) &&
-               node.checked) ||
-              (localName === 'option' && node.selected)) {
+          if ((node.checked && localName === 'input' &&
+               node.hasAttribute('type') &&
+               INPUT_CHECK.test(node.getAttribute('type'))) ||
+              (node.selected && localName === 'option')) {
             matched.add(node);
           }
           break;
         }
         case 'indeterminate': {
-          if ((localName === 'input' && node.type === 'checkbox' &&
-               node.indeterminate) ||
+          if ((node.indeterminate && localName === 'input' &&
+               node.type === 'checkbox') ||
               (localName === 'progress' && !node.hasAttribute('value'))) {
             matched.add(node);
           } else if (localName === 'input' && node.type === 'radio' &&
@@ -1302,8 +1302,8 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (INPUT_EDIT.test(inputType) || INPUT_CHECK.test(inputType) ||
-                  INPUT_TIME.test(inputType) || inputType === 'file') {
+              if (inputType === 'file' || INPUT_EDIT.test(inputType) ||
+                  INPUT_CHECK.test(inputType) || INPUT_TIME.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1323,8 +1323,8 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (INPUT_EDIT.test(inputType) || INPUT_CHECK.test(inputType) ||
-                  INPUT_TIME.test(inputType) || inputType === 'file') {
+              if (inputType === 'file' || INPUT_EDIT.test(inputType) ||
+                  INPUT_CHECK.test(inputType) || INPUT_TIME.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1364,14 +1364,14 @@ export class Matcher {
         }
         case 'first-child': {
           if ((parentNode && node === parentNode.firstElementChild) ||
-              (root.nodeType === ELEMENT_NODE && node === root)) {
+              (node === root && root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
         }
         case 'last-child': {
           if ((parentNode && node === parentNode.lastElementChild) ||
-              (root.nodeType === ELEMENT_NODE && node === root)) {
+              (node === root && root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
@@ -1380,7 +1380,7 @@ export class Matcher {
           if ((parentNode &&
                node === parentNode.firstElementChild &&
                node === parentNode.lastElementChild) ||
-              (root.nodeType === ELEMENT_NODE && node === root)) {
+              (node === root && root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
@@ -1394,7 +1394,7 @@ export class Matcher {
             if (node1) {
               matched.add(node1);
             }
-          } else if (root.nodeType === ELEMENT_NODE && node === root) {
+          } else if (node === root && root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1409,7 +1409,7 @@ export class Matcher {
             if (node1) {
               matched.add(node1);
             }
-          } else if (root.nodeType === ELEMENT_NODE && node === root) {
+          } else if (node === root && root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1430,7 +1430,7 @@ export class Matcher {
                 matched.add(node);
               }
             }
-          } else if (root.nodeType === ELEMENT_NODE && node === root) {
+          } else if (node === root && root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1890,7 +1890,7 @@ export class Matcher {
       }
     } else if (shadow && type === PSEUDO_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (PSEUDO_FUNC.test(astName) && astName !== 'has') {
+      if (astName !== 'has' && PSEUDO_FUNC.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         if (nodes.size) {
           matched = nodes;
@@ -2256,8 +2256,8 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (SHADOW_HOST.test(leafName) && targetType !== TARGET_LINEAL) {
-          if (this.#node.nodeType === DOCUMENT_FRAGMENT_NODE && shadow) {
+        if (targetType !== TARGET_LINEAL && SHADOW_HOST.test(leafName)) {
+          if (shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
             if (node) {
               arr.push(node);

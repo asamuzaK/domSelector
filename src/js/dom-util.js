@@ -33,8 +33,8 @@ export const isInShadowTree = (node = {}) => {
     let refNode = node;
     while (refNode) {
       const { host, mode, nodeType, parentNode } = refNode;
-      if (nodeType === DOCUMENT_FRAGMENT_NODE && host &&
-          mode && SHADOW_MODE.test(mode)) {
+      if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
+          SHADOW_MODE.test(mode)) {
         bool = true;
         break;
       }
@@ -170,7 +170,7 @@ export const isContentEditable = (node = {}) => {
       res = true;
     } else if (node.hasAttribute('contenteditable')) {
       const attr = node.getAttribute('contenteditable');
-      if (/^(?:plaintext-only|true)$/.test(attr) || attr === '') {
+      if (attr === '' || /^(?:plaintext-only|true)$/.test(attr)) {
         res = true;
       } else if (attr === 'inherit') {
         let parent = node.parentNode;
@@ -221,7 +221,7 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
  */
 export const isSameOrDescendant = (node = {}, root = {}) => {
   let res;
-  if (node.nodeType === ELEMENT_NODE && node.ownerDocument) {
+  if (node.ownerDocument && node.nodeType === ELEMENT_NODE) {
     if (!root || root.nodeType !== ELEMENT_NODE) {
       root = node.ownerDocument;
     }

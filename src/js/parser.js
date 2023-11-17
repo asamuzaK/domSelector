@@ -32,7 +32,7 @@ export const unescapeSelector = (selector = '') => {
     const l = arr.length;
     for (let i = 1; i < l; i++) {
       let item = arr[i];
-      if (i === l - 1 && item === '') {
+      if (item === '' && i === l - 1) {
         item = '\uFFFD';
       } else {
         const hexExists = HEX_CAPTURE.exec(item);
