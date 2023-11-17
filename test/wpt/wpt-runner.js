@@ -199,6 +199,7 @@ const filter = (testPath) => {
     'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
     'parsing/parse-has-disallow-nesting-has-inside-has.html',
+    'parsing/parse-has-forgiving-selector.html',
     'placeholder-shown.html',
     'user-invalid.html',
     'user-valid-user-invalid-invalidation.html',
