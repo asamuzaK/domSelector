@@ -892,27 +892,27 @@ export class Matcher {
       const { documentElement } = document;
       const docURL = new URL(document.URL);
       /* regexp */
+      const regAnchor = /^a(?:rea)?$/;
       const regFormItem =
         /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
       const regFormValidity =
         /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
-      const regHtmlAnchor = /^a(?:rea)?$/;
-      const regHtmlInteract = /^d(?:etails|ialog)$/;
-      const regInputCheck = /^(?:checkbox|radio)$/;
-      const regInputEdit = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
-      const regInputRange =
+      const regInteract = /^d(?:etails|ialog)$/;
+      const regTypeCheck = /^(?:checkbox|radio)$/;
+      const regTypeDate = /^(?:date(?:time-local)?|month|time|week)$/;
+      const regTypeRange =
         /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
-      const regInputTime = /^(?:date(?:time-local)?|month|time|week)$/;
+      const regTypeText = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (regHtmlAnchor.test(localName) && node.hasAttribute('href')) {
+          if (regAnchor.test(localName) && node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (regHtmlAnchor.test(localName) && node.hasAttribute('href')) {
+          if (regAnchor.test(localName) && node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
                 attrURL.pathname === docURL.pathname) {
@@ -974,13 +974,13 @@ export class Matcher {
           break;
         }
         case 'open': {
-          if (regHtmlInteract.test(localName) && node.hasAttribute('open')) {
+          if (regInteract.test(localName) && node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
         }
         case 'closed': {
-          if (regHtmlInteract.test(localName) && !node.hasAttribute('open')) {
+          if (regInteract.test(localName) && !node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
@@ -1022,8 +1022,8 @@ export class Matcher {
               break;
             }
             case 'input': {
-              if ((!node.type || regInputEdit.test(node.type) ||
-                   regInputTime.test(node.type)) &&
+              if ((!node.type || regTypeDate.test(node.type) ||
+                   regTypeText.test(node.type)) &&
                   (node.readonly || node.hasAttribute('readonly') ||
                    node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1048,8 +1048,8 @@ export class Matcher {
               break;
             }
             case 'input': {
-              if ((!node.type || regInputEdit.test(node.type) ||
-                   regInputTime.test(node.type)) &&
+              if ((!node.type || regTypeDate.test(node.type) ||
+                   regTypeText.test(node.type)) &&
                   !(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1070,7 +1070,7 @@ export class Matcher {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              if (regInputEdit.test(node.getAttribute('type'))) {
+              if (regTypeText.test(node.getAttribute('type'))) {
                 targetNode = node;
               }
             } else {
@@ -1087,7 +1087,7 @@ export class Matcher {
         case 'checked': {
           if ((node.checked && localName === 'input' &&
                node.hasAttribute('type') &&
-               regInputCheck.test(node.getAttribute('type'))) ||
+               regTypeCheck.test(node.getAttribute('type'))) ||
               (node.selected && localName === 'option')) {
             matched.add(node);
           }
@@ -1134,14 +1134,14 @@ export class Matcher {
           break;
         }
         case 'default': {
-          const regInputReset = /^(?:button|reset)$/;
-          const regInputSubmit = /^(?:image|submit)$/;
+          const regTypeReset = /^(?:button|reset)$/;
+          const regTypeSubmit = /^(?:image|submit)$/;
           // button[type="submit"], input[type="submit"], input[type="image"]
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
-                 regInputReset.test(node.getAttribute('type')))) ||
+                 regTypeReset.test(node.getAttribute('type')))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               regInputSubmit.test(node.getAttribute('type')))) {
+               regTypeSubmit.test(node.getAttribute('type')))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1157,10 +1157,10 @@ export class Matcher {
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    regInputReset.test(nextNode.getAttribute('type')));
+                    regTypeReset.test(nextNode.getAttribute('type')));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    regInputSubmit.test(nextNode.getAttribute('type'));
+                    regTypeSubmit.test(nextNode.getAttribute('type'));
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1173,7 +1173,7 @@ export class Matcher {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     regInputCheck.test(node.getAttribute('type')) &&
+                     regTypeCheck.test(node.getAttribute('type')) &&
                      (node.checked || node.hasAttribute('checked'))) {
             matched.add(node);
           // option
@@ -1275,7 +1275,7 @@ export class Matcher {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              regInputRange.test(node.getAttribute('type')) &&
+              regTypeRange.test(node.getAttribute('type')) &&
               !(node.validity.rangeUnderflow ||
                 node.validity.rangeOverflow) &&
               (node.hasAttribute('min') || node.hasAttribute('max') ||
@@ -1289,7 +1289,7 @@ export class Matcher {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              regInputRange.test(node.getAttribute('type')) &&
+              regTypeRange.test(node.getAttribute('type')) &&
               (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
             matched.add(node);
           }
@@ -1302,9 +1302,8 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || regInputCheck.test(inputType) ||
-                  regInputEdit.test(inputType) ||
-                  regInputTime.test(inputType)) {
+              if (inputType === 'file' || regTypeCheck.test(inputType) ||
+                  regTypeDate.test(inputType) || regTypeText.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1324,9 +1323,8 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || regInputCheck.test(inputType) ||
-                  regInputEdit.test(inputType) ||
-                  regInputTime.test(inputType)) {
+              if (inputType === 'file' || regTypeCheck.test(inputType) ||
+                  regTypeDate.test(inputType) || regTypeText.test(inputType)) {
                 targetNode = node;
               }
             } else {
