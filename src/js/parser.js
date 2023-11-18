@@ -80,7 +80,7 @@ export const preprocess = (...args) => {
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
       const codePoint = postHash.codePointAt(0);
-      if (codePoint >= MAX_BIT_16) {
+      if (codePoint > MAX_BIT_16) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
           postHash = str;

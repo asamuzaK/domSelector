@@ -31,7 +31,7 @@ export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
 export const DUO = 2;
 export const HEX = 16;
-export const MAX_BIT_16 = Math.pow(2, 0x10);
+export const MAX_BIT_16 = 0xFFFF;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 
