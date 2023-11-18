@@ -14,35 +14,17 @@ import {
 
 /* constants */
 import {
-  ATTRIBUTE_SELECTOR, BIT_1, BIT_10, BIT_100, BIT_1000, BIT_10000, BIT_100000,
+  ALPHA_NUM, ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32,
   CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
   ID_SELECTOR, NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR,
-  PSEUDO_ELEMENT_SELECTOR, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE, TYPE_SELECTOR
+  PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SHOW_ELEMENT,
+  SYNTAX_ERR, TEXT_NODE, TYPE_SELECTOR
 } from './constant.js';
-const ALPHA_NUM = '[A-Z\\d]+';
-const LANG_PART = `(?:-${ALPHA_NUM})*`;
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
-
-/* regexp */
-const FORM_ITEM =
-  /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
-const FORM_VALIDITY = /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
-const HTML_ANCHOR = /^a(?:rea)?$/;
-const HTML_INTERACT = /^d(?:etails|ialog)$/;
-const INPUT_CHECK = /^(?:checkbox|radio)$/;
-const INPUT_EDIT = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
-const INPUT_RANGE = /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
-const INPUT_RESET = /^(?:button|reset)$/;
-const INPUT_SUBMIT = /^(?:image|submit)$/;
-const INPUT_TIME = /^(?:date(?:time-local)?|month|time|week)$/;
-const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
-const PSEUDO_NTH = /^nth-(?:last-)?(?:child|of-type)$/;
-const SHADOW_HOST = /^host(?:-context)?$/;
-const LANG_CODE = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**
  * Matcher
@@ -93,12 +75,12 @@ export class Matcher {
   constructor(selector, node, opt = {}) {
     const { sort, warn } = opt;
     this.#bit = new Map([
-      [PSEUDO_ELEMENT_SELECTOR, BIT_1],
-      [ID_SELECTOR, BIT_10],
-      [CLASS_SELECTOR, BIT_100],
-      [TYPE_SELECTOR, BIT_1000],
-      [ATTRIBUTE_SELECTOR, BIT_10000],
-      [PSEUDO_CLASS_SELECTOR, BIT_100000]
+      [PSEUDO_ELEMENT_SELECTOR, BIT_01],
+      [ID_SELECTOR, BIT_02],
+      [CLASS_SELECTOR, BIT_04],
+      [TYPE_SELECTOR, BIT_08],
+      [ATTR_SELECTOR, BIT_16],
+      [PSEUDO_CLASS_SELECTOR, BIT_32]
     ]);
     this.#cache = new WeakMap();
     this.#selector = selector;
@@ -615,44 +597,48 @@ export class Matcher {
             parent = parent.parentNode;
           }
         }
-      } else if (LANG_CODE.test(astName)) {
-        let reg;
-        if (/-/.test(astName)) {
-          const [langMain, langSub, ...langRest] = astName.split('-');
-          let extendedMain;
-          if (langMain === '*') {
-            extendedMain = `${ALPHA_NUM}${LANG_PART}`;
-          } else {
-            extendedMain = `${langMain}${LANG_PART}`;
-          }
-          const extendedSub = `-${langSub}${LANG_PART}`;
-          const len = langRest.length;
-          let extendedRest = '';
-          if (len) {
-            for (let i = 0; i < len; i++) {
-              extendedRest += `-${langRest[i]}${LANG_PART}`;
+      } else {
+        const langPart = `(?:-${ALPHA_NUM})*`;
+        const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
+        if (regLang.test(astName)) {
+          let regExtendedLang;
+          if (/-/.test(astName)) {
+            const [langMain, langSub, ...langRest] = astName.split('-');
+            let extendedMain;
+            if (langMain === '*') {
+              extendedMain = `${ALPHA_NUM}${langPart}`;
+            } else {
+              extendedMain = `${langMain}${langPart}`;
             }
-          }
-          reg =
-            new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
-        } else {
-          reg = new RegExp(`^${astName}${LANG_PART}$`, 'i');
-        }
-        if (node.hasAttribute('lang')) {
-          if (reg.test(node.getAttribute('lang'))) {
-            res = node;
-          }
-        } else {
-          let parent = node.parentNode;
-          while (parent) {
-            if (parent.hasAttribute('lang')) {
-              const value = parent.getAttribute('lang');
-              if (reg.test(value)) {
-                res = node;
+            const extendedSub = `-${langSub}${langPart}`;
+            const len = langRest.length;
+            let extendedRest = '';
+            if (len) {
+              for (let i = 0; i < len; i++) {
+                extendedRest += `-${langRest[i]}${langPart}`;
               }
-              break;
             }
-            parent = parent.parentNode;
+            regExtendedLang =
+              new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
+          } else {
+            regExtendedLang = new RegExp(`^${astName}${langPart}$`, 'i');
+          }
+          if (node.hasAttribute('lang')) {
+            if (regExtendedLang.test(node.getAttribute('lang'))) {
+              res = node;
+            }
+          } else {
+            let parent = node.parentNode;
+            while (parent) {
+              if (parent.hasAttribute('lang')) {
+                const value = parent.getAttribute('lang');
+                if (regExtendedLang.test(value)) {
+                  res = node;
+                }
+                break;
+              }
+              parent = parent.parentNode;
+            }
           }
         }
       }
@@ -811,7 +797,7 @@ export class Matcher {
     const astName = unescapeSelector(ast.name);
     let matched = new Set();
     // :has(), :is(), :not(), :where()
-    if (PSEUDO_FUNC.test(astName)) {
+    if (REG_LOGICAL_PSEUDO.test(astName)) {
       let astData;
       if (this.#cache.has(ast)) {
         astData = this.#cache.get(ast);
@@ -865,7 +851,7 @@ export class Matcher {
     } else if (Array.isArray(astChildren)) {
       const [branch] = astChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (PSEUDO_NTH.test(astName)) {
+      if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         const nodes = this._matchAnPlusB(branch, node, astName);
         if (nodes.size) {
           matched = nodes;
@@ -905,16 +891,28 @@ export class Matcher {
       const { document, root } = this.#root;
       const { documentElement } = document;
       const docURL = new URL(document.URL);
+      /* regexp */
+      const regFormItem =
+        /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
+      const regFormValidity =
+        /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
+      const regHtmlAnchor = /^a(?:rea)?$/;
+      const regHtmlInteract = /^d(?:etails|ialog)$/;
+      const regInputCheck = /^(?:checkbox|radio)$/;
+      const regInputEdit = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
+      const regInputRange =
+        /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
+      const regInputTime = /^(?:date(?:time-local)?|month|time|week)$/;
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (HTML_ANCHOR.test(localName) && node.hasAttribute('href')) {
+          if (regHtmlAnchor.test(localName) && node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (HTML_ANCHOR.test(localName) && node.hasAttribute('href')) {
+          if (regHtmlAnchor.test(localName) && node.hasAttribute('href')) {
             const attrURL = new URL(node.getAttribute('href'), docURL.href);
             if (attrURL.origin === docURL.origin &&
                 attrURL.pathname === docURL.pathname) {
@@ -976,19 +974,19 @@ export class Matcher {
           break;
         }
         case 'open': {
-          if (HTML_INTERACT.test(localName) && node.hasAttribute('open')) {
+          if (regHtmlInteract.test(localName) && node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
         }
         case 'closed': {
-          if (HTML_INTERACT.test(localName) && !node.hasAttribute('open')) {
+          if (regHtmlInteract.test(localName) && !node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
         }
         case 'disabled': {
-          if (FORM_ITEM.test(localName) || isCustomElementName(localName)) {
+          if (regFormItem.test(localName) || isCustomElementName(localName)) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -1008,7 +1006,7 @@ export class Matcher {
           break;
         }
         case 'enabled': {
-          if ((FORM_ITEM.test(localName) || isCustomElementName(localName)) &&
+          if ((regFormItem.test(localName) || isCustomElementName(localName)) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
@@ -1024,8 +1022,8 @@ export class Matcher {
               break;
             }
             case 'input': {
-              if ((!node.type ||
-                   INPUT_EDIT.test(node.type) || INPUT_TIME.test(node.type)) &&
+              if ((!node.type || regInputEdit.test(node.type) ||
+                   regInputTime.test(node.type)) &&
                   (node.readonly || node.hasAttribute('readonly') ||
                    node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1050,8 +1048,8 @@ export class Matcher {
               break;
             }
             case 'input': {
-              if ((!node.type ||
-                   INPUT_EDIT.test(node.type) || INPUT_TIME.test(node.type)) &&
+              if ((!node.type || regInputEdit.test(node.type) ||
+                   regInputTime.test(node.type)) &&
                   !(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1072,7 +1070,7 @@ export class Matcher {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              if (INPUT_EDIT.test(node.getAttribute('type'))) {
+              if (regInputEdit.test(node.getAttribute('type'))) {
                 targetNode = node;
               }
             } else {
@@ -1089,7 +1087,7 @@ export class Matcher {
         case 'checked': {
           if ((node.checked && localName === 'input' &&
                node.hasAttribute('type') &&
-               INPUT_CHECK.test(node.getAttribute('type'))) ||
+               regInputCheck.test(node.getAttribute('type'))) ||
               (node.selected && localName === 'option')) {
             matched.add(node);
           }
@@ -1136,12 +1134,14 @@ export class Matcher {
           break;
         }
         case 'default': {
+          const regInputReset = /^(?:button|reset)$/;
+          const regInputSubmit = /^(?:image|submit)$/;
           // button[type="submit"], input[type="submit"], input[type="image"]
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
-                 INPUT_RESET.test(node.getAttribute('type')))) ||
+                 regInputReset.test(node.getAttribute('type')))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               INPUT_SUBMIT.test(node.getAttribute('type')))) {
+               regInputSubmit.test(node.getAttribute('type')))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1157,10 +1157,10 @@ export class Matcher {
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    INPUT_RESET.test(nextNode.getAttribute('type')));
+                    regInputReset.test(nextNode.getAttribute('type')));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    INPUT_SUBMIT.test(nextNode.getAttribute('type'));
+                    regInputSubmit.test(nextNode.getAttribute('type'));
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1173,7 +1173,7 @@ export class Matcher {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     INPUT_CHECK.test(node.getAttribute('type')) &&
+                     regInputCheck.test(node.getAttribute('type')) &&
                      (node.checked || node.hasAttribute('checked'))) {
             matched.add(node);
           // option
@@ -1217,7 +1217,7 @@ export class Matcher {
           break;
         }
         case 'valid': {
-          if (FORM_VALIDITY.test(localName)) {
+          if (regFormValidity.test(localName)) {
             if (node.checkValidity()) {
               matched.add(node);
             }
@@ -1229,7 +1229,7 @@ export class Matcher {
             }
             let bool;
             while (refNode) {
-              if (FORM_VALIDITY.test(refNode.localName)) {
+              if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
@@ -1244,7 +1244,7 @@ export class Matcher {
           break;
         }
         case 'invalid': {
-          if (FORM_VALIDITY.test(localName)) {
+          if (regFormValidity.test(localName)) {
             if (!node.checkValidity()) {
               matched.add(node);
             }
@@ -1256,7 +1256,7 @@ export class Matcher {
             }
             let bool;
             while (refNode) {
-              if (FORM_VALIDITY.test(refNode.localName)) {
+              if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
@@ -1275,7 +1275,7 @@ export class Matcher {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              INPUT_RANGE.test(node.getAttribute('type')) &&
+              regInputRange.test(node.getAttribute('type')) &&
               !(node.validity.rangeUnderflow ||
                 node.validity.rangeOverflow) &&
               (node.hasAttribute('min') || node.hasAttribute('max') ||
@@ -1289,7 +1289,7 @@ export class Matcher {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              INPUT_RANGE.test(node.getAttribute('type')) &&
+              regInputRange.test(node.getAttribute('type')) &&
               (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
             matched.add(node);
           }
@@ -1302,8 +1302,9 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || INPUT_EDIT.test(inputType) ||
-                  INPUT_CHECK.test(inputType) || INPUT_TIME.test(inputType)) {
+              if (inputType === 'file' || regInputCheck.test(inputType) ||
+                  regInputEdit.test(inputType) ||
+                  regInputTime.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1323,8 +1324,9 @@ export class Matcher {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || INPUT_EDIT.test(inputType) ||
-                  INPUT_CHECK.test(inputType) || INPUT_TIME.test(inputType)) {
+              if (inputType === 'file' || regInputCheck.test(inputType) ||
+                  regInputEdit.test(inputType) ||
+                  regInputTime.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1848,7 +1850,7 @@ export class Matcher {
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (type) {
-        case ATTRIBUTE_SELECTOR: {
+        case ATTR_SELECTOR: {
           const res = this._matchAttributeSelector(ast, node);
           if (res) {
             matched.add(res);
@@ -1890,12 +1892,12 @@ export class Matcher {
       }
     } else if (shadow && type === PSEUDO_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (astName !== 'has' && PSEUDO_FUNC.test(astName)) {
+      if (astName !== 'has' && REG_LOGICAL_PSEUDO.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         if (nodes.size) {
           matched = nodes;
         }
-      } else if (SHADOW_HOST.test(astName)) {
+      } else if (REG_SHADOW_HOST.test(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node);
         if (res) {
           matched.add(res);
@@ -2256,7 +2258,7 @@ export class Matcher {
       }
       default: {
         const arr = [];
-        if (targetType !== TARGET_LINEAL && SHADOW_HOST.test(leafName)) {
+        if (targetType !== TARGET_LINEAL && REG_SHADOW_HOST.test(leafName)) {
           if (shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
             if (node) {
