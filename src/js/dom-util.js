@@ -8,15 +8,8 @@ import bidiFactory from 'bidi-js';
 /* constants */
 import {
   DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
-  ELEMENT_NODE, SYNTAX_ERR
+  ELEMENT_NODE, REG_SHADOW_MODE, SYNTAX_ERR
 } from './constant.js';
-const LTR = 'ltr';
-const RTL = 'rtl';
-
-/* regexp */
-const INPUT_TYPE =
-  /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/;
-const SHADOW_MODE = /^(?:close|open)$/;
 
 /* bidi */
 const bidi = bidiFactory();
@@ -34,7 +27,7 @@ export const isInShadowTree = (node = {}) => {
     while (refNode) {
       const { host, mode, nodeType, parentNode } = refNode;
       if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
-          SHADOW_MODE.test(mode)) {
+          REG_SHADOW_MODE.test(mode)) {
         bool = true;
         break;
       }
@@ -77,6 +70,8 @@ export const getDirectionality = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
+    const ltr = 'ltr';
+    const rtl = 'rtl';
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
       res = nodeDir;
     } else if (nodeDir === 'auto') {
@@ -84,7 +79,8 @@ export const getDirectionality = (node = {}) => {
       if (localName === 'textarea') {
         text = node.value;
       } else if (localName === 'input' &&
-                 (!node.type || INPUT_TYPE.test(node.type))) {
+                 (!node.type ||
+                  /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type))) {
         text = node.value;
       } else if (localName === 'slot') {
         text = getSlottedTextContent(node);
@@ -94,9 +90,9 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = RTL;
+          res = rtl;
         } else {
-          res = LTR;
+          res = ltr;
         }
       }
       if (!res) {
@@ -106,10 +102,10 @@ export const getDirectionality = (node = {}) => {
             res = getDirectionality(parentNode);
           } else if (parentNodeType === DOCUMENT_NODE ||
                      parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-            res = LTR;
+            res = ltr;
           }
         } else {
-          res = LTR;
+          res = ltr;
         }
       }
     } else if (localName === 'bdi') {
@@ -117,25 +113,25 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = RTL;
+          res = rtl;
         } else {
-          res = LTR;
+          res = ltr;
         }
       }
       if (!(res || parentNode)) {
-        res = LTR;
+        res = ltr;
       }
     } else if (localName === 'input' && node.type === 'tel') {
-      res = LTR;
+      res = ltr;
     } else if (parentNode) {
       if (localName === 'slot') {
         const text = getSlottedTextContent(node);
         if (text) {
           const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
           if (level % 2 === 1) {
-            res = RTL;
+            res = rtl;
           } else {
-            res = LTR;
+            res = ltr;
           }
         }
       }
@@ -145,11 +141,11 @@ export const getDirectionality = (node = {}) => {
           res = getDirectionality(parentNode);
         } else if (parentNodeType === DOCUMENT_NODE ||
                    parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-          res = LTR;
+          res = ltr;
         }
       }
     } else {
-      res = LTR;
+      res = ltr;
     }
   }
   return res ?? null;
