@@ -7,8 +7,8 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  DUO, HEX, MAX_BIT_16, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR,
-  REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SYNTAX_ERR, TYPE_FROM,
+  DUO, HEX, MAX_BIT_16, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SYNTAX_ERR, TYPE_FROM,
   TYPE_TO, U_FFFD
 } from './constant.js';
 
@@ -153,9 +153,9 @@ export const walkAST = (ast = {}) => {
     enter: node => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
-      } else if ((node.type === PSEUDO_CLASS_SELECTOR &&
+      } else if ((node.type === SELECTOR_PSEUDO_CLASS &&
                   REG_LOGICAL_PSEUDO.test(node.name)) ||
-                 (node.type === PSEUDO_ELEMENT_SELECTOR &&
+                 (node.type === SELECTOR_PSEUDO_ELEMENT &&
                   REG_SHADOW_PSEUDO.test(node.name))) {
         hasPseudoFunc = true;
       }
@@ -165,12 +165,12 @@ export const walkAST = (ast = {}) => {
   if (hasPseudoFunc) {
     findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === PSEUDO_CLASS_SELECTOR &&
+        if (node.type === SELECTOR_PSEUDO_CLASS &&
             REG_LOGICAL_PSEUDO.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
-              type === PSEUDO_CLASS_SELECTOR && REG_LOGICAL_PSEUDO.test(name);
+              type === SELECTOR_PSEUDO_CLASS && REG_LOGICAL_PSEUDO.test(name);
             return res;
           });
           for (const { children } of itemList) {
@@ -184,12 +184,12 @@ export const walkAST = (ast = {}) => {
               }
             }
           }
-        } else if (node.type === PSEUDO_ELEMENT_SELECTOR &&
+        } else if (node.type === SELECTOR_PSEUDO_ELEMENT &&
                    REG_SHADOW_PSEUDO.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
-              type === PSEUDO_ELEMENT_SELECTOR && REG_SHADOW_PSEUDO.test(name);
+              type === SELECTOR_PSEUDO_ELEMENT && REG_SHADOW_PSEUDO.test(name);
             return res;
           });
           for (const { children } of itemList) {

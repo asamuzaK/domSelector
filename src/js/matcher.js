@@ -14,12 +14,12 @@ import {
 
 /* constants */
 import {
-  ALPHA_NUM, ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32,
-  CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  ID_SELECTOR, NOT_SUPPORTED_ERR, PSEUDO_CLASS_SELECTOR,
-  PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SHOW_ELEMENT,
-  SYNTAX_ERR, TEXT_NODE, TYPE_SELECTOR
+  ALPHA_NUM, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, COMBINATOR,
+  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, NOT_SUPPORTED_ERR,
+  REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
+  SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
+  SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
@@ -75,12 +75,12 @@ export class Matcher {
   constructor(selector, node, opt = {}) {
     const { sort, warn } = opt;
     this.#bit = new Map([
-      [PSEUDO_ELEMENT_SELECTOR, BIT_01],
-      [ID_SELECTOR, BIT_02],
-      [CLASS_SELECTOR, BIT_04],
-      [TYPE_SELECTOR, BIT_08],
-      [ATTR_SELECTOR, BIT_16],
-      [PSEUDO_CLASS_SELECTOR, BIT_32]
+      [SELECTOR_PSEUDO_ELEMENT, BIT_01],
+      [SELECTOR_ID, BIT_02],
+      [SELECTOR_CLASS, BIT_04],
+      [SELECTOR_TYPE, BIT_08],
+      [SELECTOR_ATTR, BIT_16],
+      [SELECTOR_PSEUDO_CLASS, BIT_32]
     ]);
     this.#cache = new WeakMap();
     this.#selector = selector;
@@ -1842,45 +1842,45 @@ export class Matcher {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchSelector(ast, node, opt) {
-    const { type } = ast;
+    const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
     const { shadow } = this.#root;
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
-      switch (type) {
-        case ATTR_SELECTOR: {
+      switch (astType) {
+        case SELECTOR_ATTR: {
           const res = this._matchAttributeSelector(ast, node);
           if (res) {
             matched.add(res);
           }
           break;
         }
-        case CLASS_SELECTOR: {
+        case SELECTOR_CLASS: {
           const res = this._matchClassSelector(ast, node);
           if (res) {
             matched.add(res);
           }
           break;
         }
-        case ID_SELECTOR: {
+        case SELECTOR_ID: {
           const res = this._matchIDSelector(ast, node);
           if (res) {
             matched.add(res);
           }
           break;
         }
-        case PSEUDO_CLASS_SELECTOR: {
+        case SELECTOR_PSEUDO_CLASS: {
           const nodes = this._matchPseudoClassSelector(ast, node, opt);
           if (nodes.size) {
             matched = nodes;
           }
           break;
         }
-        case PSEUDO_ELEMENT_SELECTOR: {
+        case SELECTOR_PSEUDO_ELEMENT: {
           this._matchPseudoElementSelector(astName, opt);
           break;
         }
-        case TYPE_SELECTOR:
+        case SELECTOR_TYPE:
         default: {
           const res = this._matchTypeSelector(ast, node);
           if (res) {
@@ -1888,7 +1888,7 @@ export class Matcher {
           }
         }
       }
-    } else if (shadow && type === PSEUDO_CLASS_SELECTOR &&
+    } else if (shadow && astType === SELECTOR_PSEUDO_CLASS &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       if (astName !== 'has' && REG_LOGICAL_PSEUDO.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
@@ -1937,7 +1937,7 @@ export class Matcher {
     const nodes = new Set();
     let pending = false;
     switch (leafType) {
-      case ID_SELECTOR: {
+      case SELECTOR_ID: {
         const { root } = this.#root;
         if (root.nodeType === ELEMENT_NODE) {
           pending = true;
@@ -1963,7 +1963,7 @@ export class Matcher {
         }
         break;
       }
-      case PSEUDO_ELEMENT_SELECTOR: {
+      case SELECTOR_PSEUDO_ELEMENT: {
         this._matchPseudoElementSelector(leafName);
         break;
       }
@@ -2118,7 +2118,7 @@ export class Matcher {
     let nodes = new Set();
     let pending = false;
     switch (leafType) {
-      case ID_SELECTOR: {
+      case SELECTOR_ID: {
         let node;
         if (targetType === TARGET_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
@@ -2152,7 +2152,7 @@ export class Matcher {
         }
         break;
       }
-      case CLASS_SELECTOR: {
+      case SELECTOR_CLASS: {
         const arr = [];
         if (targetType === TARGET_SELF) {
           if (this.#node.nodeType === ELEMENT_NODE &&
@@ -2198,7 +2198,7 @@ export class Matcher {
         }
         break;
       }
-      case TYPE_SELECTOR: {
+      case SELECTOR_TYPE: {
         const arr = [];
         if (targetType === TARGET_SELF) {
           const bool = this.#node.nodeType === ELEMENT_NODE &&
@@ -2250,7 +2250,7 @@ export class Matcher {
         }
         break;
       }
-      case PSEUDO_ELEMENT_SELECTOR: {
+      case SELECTOR_PSEUDO_ELEMENT: {
         this._matchPseudoElementSelector(leafName);
         break;
       }
@@ -2313,7 +2313,7 @@ export class Matcher {
     if (lastIndex) {
       const lastTwig = branch[lastIndex];
       const { leaves: [{ type: lastType }] } = lastTwig;
-      if (lastType === PSEUDO_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
+      if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
         find = 'prev';
         twig = lastTwig;
       } else {

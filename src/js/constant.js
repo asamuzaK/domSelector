@@ -5,21 +5,21 @@
 /* string */
 export const ALPHA_NUM = '[A-Z\\d]+';
 export const AN_PLUS_B = 'AnPlusB';
-export const ATTR_SELECTOR = 'AttributeSelector';
-export const CLASS_SELECTOR = 'ClassSelector';
 export const COMBINATOR = 'Combinator';
-export const ID_SELECTOR = 'IdSelector';
 export const IDENTIFIER = 'Identifier';
 export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
-export const PSEUDO_CLASS_SELECTOR = 'PseudoClassSelector';
-export const PSEUDO_ELEMENT_SELECTOR = 'PseudoElementSelector';
 export const RAW = 'Raw';
 export const SELECTOR = 'Selector';
+export const SELECTOR_ATTR = 'AttributeSelector';
+export const SELECTOR_CLASS = 'ClassSelector';
+export const SELECTOR_ID = 'IdSelector';
 export const SELECTOR_LIST = 'SelectorList';
+export const SELECTOR_PSEUDO_CLASS = 'PseudoClassSelector';
+export const SELECTOR_PSEUDO_ELEMENT = 'PseudoElementSelector';
+export const SELECTOR_TYPE = 'TypeSelector';
 export const STRING = 'String';
 export const SYNTAX_ERR = 'SyntaxError';
-export const TYPE_SELECTOR = 'TypeSelector';
 export const U_FFFD = '\uFFFD';
 
 /* numeric */

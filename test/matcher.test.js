@@ -13,9 +13,9 @@ import * as matcherJs from '../src/js/matcher.js';
 
 /* constants */
 import {
-  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
-  ID_SELECTOR, NOT_SUPPORTED_ERR, NTH, PSEUDO_CLASS_SELECTOR,
-  PSEUDO_ELEMENT_SELECTOR, RAW, SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
+  AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
+  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, STRING
 } from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
@@ -371,24 +371,24 @@ describe('match AST leaf and DOM node', () => {
     describe('sort AST leaves', () => {
       it('should get sorted leaves', () => {
         const leaves = [
-          { type: ATTR_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'bar' },
-          { type: ID_SELECTOR },
-          { type: PSEUDO_CLASS_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'foo' },
-          { type: PSEUDO_ELEMENT_SELECTOR },
-          { type: TYPE_SELECTOR }
+          { type: SELECTOR_ATTR },
+          { type: SELECTOR_CLASS, name: 'bar' },
+          { type: SELECTOR_ID },
+          { type: SELECTOR_PSEUDO_CLASS },
+          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_PSEUDO_ELEMENT },
+          { type: SELECTOR_TYPE }
         ];
         const matcher = new Matcher('*', document);
         const res = matcher._sortLeaves(leaves);
         assert.deepEqual(res, [
-          { type: PSEUDO_ELEMENT_SELECTOR },
-          { type: ID_SELECTOR },
-          { type: CLASS_SELECTOR, name: 'bar' },
-          { type: CLASS_SELECTOR, name: 'foo' },
-          { type: TYPE_SELECTOR },
-          { type: ATTR_SELECTOR },
-          { type: PSEUDO_CLASS_SELECTOR }
+          { type: SELECTOR_PSEUDO_ELEMENT },
+          { type: SELECTOR_ID },
+          { type: SELECTOR_CLASS, name: 'bar' },
+          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_TYPE },
+          { type: SELECTOR_ATTR },
+          { type: SELECTOR_PSEUDO_CLASS }
         ], 'result');
       });
     });
@@ -408,13 +408,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'last-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -434,13 +434,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'first-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 },
@@ -450,7 +450,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -692,7 +692,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -759,7 +759,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -827,7 +827,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -895,7 +895,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -972,7 +972,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -1004,7 +1004,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -1035,7 +1035,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'noted',
-                    type: CLASS_SELECTOR
+                    type: SELECTOR_CLASS
                   }
                 ],
                 loc: null,
@@ -1349,7 +1349,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dt',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ],
                 loc: null,
@@ -2223,7 +2223,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':has(li)', node);
         const leaves = [{
           name: 'li',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         }];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isFalse(res, 'result');
@@ -2234,7 +2234,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':has(dd)', node);
         const leaves = [{
           name: 'dd',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         }];
         const res = matcher._matchHasPseudoFunc(leaves, node);
         assert.isTrue(res, 'result');
@@ -2246,7 +2246,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'dd',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           },
           {
             name: ' ',
@@ -2254,7 +2254,7 @@ describe('match AST leaf and DOM node', () => {
           },
           {
             name: 'p',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const res = matcher._matchHasPseudoFunc(leaves, node);
@@ -2267,7 +2267,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'dd',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           },
           {
             name: ' ',
@@ -2275,7 +2275,7 @@ describe('match AST leaf and DOM node', () => {
           },
           {
             name: 'span',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const res = matcher._matchHasPseudoFunc(leaves, node);
@@ -2295,7 +2295,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2320,12 +2320,12 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             },
             {
               loc: null,
               name: 'li',
-              type: CLASS_SELECTOR
+              type: SELECTOR_CLASS
             }
           ]
         ];
@@ -2350,7 +2350,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2370,7 +2370,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2390,7 +2390,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'dd',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             },
             {
               loc: null,
@@ -2400,7 +2400,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'span',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2426,7 +2426,7 @@ describe('match AST leaf and DOM node', () => {
                         {
                           loc: null,
                           name: 'li',
-                          type: TYPE_SELECTOR
+                          type: SELECTOR_TYPE
                         }
                       ],
                       loc: null,
@@ -2439,7 +2439,7 @@ describe('match AST leaf and DOM node', () => {
               ],
               loc: null,
               name: 'has',
-              type: PSEUDO_CLASS_SELECTOR
+              type: SELECTOR_PSEUDO_CLASS
             }
           ]
         ];
@@ -2459,14 +2459,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ol',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2486,14 +2486,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2511,7 +2511,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2523,7 +2523,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2545,7 +2545,7 @@ describe('match AST leaf and DOM node', () => {
                         {
                           loc: null,
                           name: 'ol',
-                          type: TYPE_SELECTOR
+                          type: SELECTOR_TYPE
                         }
                       ],
                       loc: null,
@@ -2558,14 +2558,14 @@ describe('match AST leaf and DOM node', () => {
               ],
               loc: null,
               name: 'not',
-              type: PSEUDO_CLASS_SELECTOR
+              type: SELECTOR_PSEUDO_CLASS
             }
           ],
           [
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2589,7 +2589,7 @@ describe('match AST leaf and DOM node', () => {
                               {
                                 loc: null,
                                 name: 'ol',
-                                type: TYPE_SELECTOR
+                                type: SELECTOR_TYPE
                               }
                             ],
                             loc: null,
@@ -2602,7 +2602,7 @@ describe('match AST leaf and DOM node', () => {
                     ],
                     loc: null,
                     name: 'not',
-                    type: PSEUDO_CLASS_SELECTOR
+                    type: SELECTOR_PSEUDO_CLASS
                   }
                 ]
               }
@@ -2614,7 +2614,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2636,7 +2636,7 @@ describe('match AST leaf and DOM node', () => {
                         {
                           loc: null,
                           name: 'dl',
-                          type: TYPE_SELECTOR
+                          type: SELECTOR_TYPE
                         }
                       ],
                       loc: null,
@@ -2649,14 +2649,14 @@ describe('match AST leaf and DOM node', () => {
               ],
               loc: null,
               name: 'not',
-              type: PSEUDO_CLASS_SELECTOR
+              type: SELECTOR_PSEUDO_CLASS
             }
           ],
           [
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2680,7 +2680,7 @@ describe('match AST leaf and DOM node', () => {
                               {
                                 loc: null,
                                 name: 'dl',
-                                type: TYPE_SELECTOR
+                                type: SELECTOR_TYPE
                               }
                             ],
                             loc: null,
@@ -2693,7 +2693,7 @@ describe('match AST leaf and DOM node', () => {
                     ],
                     loc: null,
                     name: 'not',
-                    type: PSEUDO_CLASS_SELECTOR
+                    type: SELECTOR_PSEUDO_CLASS
                   }
                 ]
               }
@@ -2705,7 +2705,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2721,14 +2721,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2746,7 +2746,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2758,7 +2758,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2774,14 +2774,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2799,12 +2799,12 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   },
                   {
                     loc: null,
                     name: 'ul1',
-                    type: ID_SELECTOR
+                    type: SELECTOR_ID
                   }
                 ]
               }
@@ -2816,12 +2816,12 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   },
                   {
                     loc: null,
                     name: 'dl1',
-                    type: ID_SELECTOR
+                    type: SELECTOR_ID
                   }
                 ]
               }
@@ -2837,7 +2837,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             },
             {
               loc: null,
@@ -2847,7 +2847,7 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             },
             {
               loc: null,
@@ -2857,14 +2857,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dd',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2886,7 +2886,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               },
@@ -2900,7 +2900,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               },
@@ -2910,7 +2910,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2926,14 +2926,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ol',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -2951,7 +2951,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ol',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2963,7 +2963,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -2979,14 +2979,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -3004,7 +3004,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -3016,7 +3016,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -3032,14 +3032,14 @@ describe('match AST leaf and DOM node', () => {
             {
               loc: null,
               name: 'ol',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ],
           [
             {
               loc: null,
               name: 'dl',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         ];
@@ -3057,7 +3057,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'ol',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -3069,7 +3069,7 @@ describe('match AST leaf and DOM node', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: TYPE_SELECTOR
+                    type: SELECTOR_TYPE
                   }
                 ]
               }
@@ -3091,7 +3091,7 @@ describe('match AST leaf and DOM node', () => {
                         {
                           loc: null,
                           name: 'li',
-                          type: TYPE_SELECTOR
+                          type: SELECTOR_TYPE
                         }
                       ],
                       loc: null,
@@ -3102,7 +3102,7 @@ describe('match AST leaf and DOM node', () => {
                         {
                           loc: null,
                           name: 'dd',
-                          type: TYPE_SELECTOR
+                          type: SELECTOR_TYPE
                         }
                       ],
                       loc: null,
@@ -3115,7 +3115,7 @@ describe('match AST leaf and DOM node', () => {
               ],
               loc: null,
               name: 'is',
-              type: PSEUDO_CLASS_SELECTOR
+              type: SELECTOR_PSEUDO_CLASS
             }
           ]
         ];
@@ -3139,7 +3139,7 @@ describe('match AST leaf and DOM node', () => {
                               {
                                 loc: null,
                                 name: 'li',
-                                type: TYPE_SELECTOR
+                                type: SELECTOR_TYPE
                               }
                             ],
                             loc: null,
@@ -3150,7 +3150,7 @@ describe('match AST leaf and DOM node', () => {
                               {
                                 loc: null,
                                 name: 'dd',
-                                type: TYPE_SELECTOR
+                                type: SELECTOR_TYPE
                               }
                             ],
                             loc: null,
@@ -3163,7 +3163,7 @@ describe('match AST leaf and DOM node', () => {
                     ],
                     loc: null,
                     name: 'is',
-                    type: PSEUDO_CLASS_SELECTOR
+                    type: SELECTOR_PSEUDO_CLASS
                   }
                 ]
               }
@@ -3185,7 +3185,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'ul',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ],
                   loc: null,
@@ -3196,7 +3196,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'dl',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ],
                   loc: null,
@@ -3209,7 +3209,7 @@ describe('match AST leaf and DOM node', () => {
           ],
           loc: null,
           name: 'is',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ul, dl)', node);
@@ -3232,7 +3232,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'nth-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.getElementById('dt1');
         const matcher = new Matcher(':nth-child(even)', node);
@@ -3253,7 +3253,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'dir',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.setAttribute('dir', 'ltr');
@@ -3275,7 +3275,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'lang',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.setAttribute('lang', 'en');
@@ -3298,7 +3298,7 @@ describe('match AST leaf and DOM node', () => {
           ],
           loc: null,
           name: 'current',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -3318,7 +3318,7 @@ describe('match AST leaf and DOM node', () => {
           ],
           loc: null,
           name: 'current',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -3340,7 +3340,7 @@ describe('match AST leaf and DOM node', () => {
           ],
           loc: null,
           name: 'foobar',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -3360,7 +3360,7 @@ describe('match AST leaf and DOM node', () => {
           ],
           loc: null,
           name: 'foobar',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -3376,7 +3376,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'any-link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.setAttribute('href', 'https://example.com/');
@@ -3394,7 +3394,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'any-link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href',
@@ -3412,7 +3412,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'any-link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         const parent = document.getElementById('div0');
@@ -3426,7 +3426,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.setAttribute('href', 'https://example.com/');
@@ -3443,7 +3443,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'local-link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.setAttribute('href', './#foo');
@@ -3460,7 +3460,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'local-link',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.setAttribute('href', 'https://example.com');
@@ -3475,7 +3475,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'visited',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('a');
         node.href = 'https://example.com';
@@ -3490,7 +3490,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'foo';
@@ -3507,7 +3507,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'bar';
@@ -3522,7 +3522,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const frag = document.createDocumentFragment();
         const node = document.createElement('div');
@@ -3537,7 +3537,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'foo';
@@ -3554,7 +3554,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'foo';
@@ -3571,7 +3571,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'target-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'bar';
@@ -3586,7 +3586,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'scope',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'foo';
@@ -3603,7 +3603,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'scope',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const refPoint = document.createElement('div');
         const node = document.createElement('div');
@@ -3620,7 +3620,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'scope',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.documentElement;
         const matcher = new Matcher(':scope', document);
@@ -3634,7 +3634,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'scope',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.id = 'foo';
@@ -3649,7 +3649,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3666,7 +3666,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3680,7 +3680,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3697,7 +3697,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3711,7 +3711,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3728,7 +3728,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'focus-within',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -3742,7 +3742,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'open',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('details');
         node.setAttribute('open', 'open');
@@ -3759,7 +3759,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'open',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('details');
         const parent = document.getElementById('div0');
@@ -3773,7 +3773,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'closed',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('details');
         const parent = document.getElementById('div0');
@@ -3789,7 +3789,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'closed',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('details');
         node.setAttribute('open', 'open');
@@ -3804,7 +3804,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'disabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('disabled', 'disabled');
@@ -3821,7 +3821,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'disabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -3835,7 +3835,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'disabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('x-input');
         node.setAttribute('disabled', 'disabled');
@@ -3852,7 +3852,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'disabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node1 = document.createElement('input');
         const node2 = document.createElement('fieldset');
@@ -3871,7 +3871,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'disabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node1 = document.createElement('input');
         const node2 = document.createElement('legend');
@@ -3890,7 +3890,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'enabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -3906,7 +3906,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'enabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('x-input');
         const parent = document.getElementById('div0');
@@ -3922,7 +3922,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'enabled',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('disabled', 'disabled');
@@ -3937,7 +3937,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('readonly', 'readonly');
@@ -3954,7 +3954,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -3972,7 +3972,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -3990,7 +3990,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'range');
@@ -4006,7 +4006,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('disabled', 'disabled');
@@ -4023,7 +4023,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -4037,7 +4037,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('readonly', 'readonly');
@@ -4054,7 +4054,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('disabled', 'disabled');
@@ -4071,7 +4071,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         const parent = document.getElementById('div0');
@@ -4085,7 +4085,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -4101,7 +4101,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-only',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.setAttribute('contenteditable', 'true');
@@ -4116,7 +4116,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -4132,7 +4132,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -4149,7 +4149,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -4166,7 +4166,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'range');
@@ -4181,7 +4181,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('readonly', 'readonly');
@@ -4196,7 +4196,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('disabled', 'disabled');
@@ -4211,7 +4211,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         const parent = document.getElementById('div0');
@@ -4227,7 +4227,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('readonly', 'readonly');
@@ -4242,7 +4242,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('disabled', 'disabled');
@@ -4257,7 +4257,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         node.setAttribute('contenteditable', 'true');
@@ -4274,7 +4274,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'read-write',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -4288,7 +4288,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('placeholder', 'foo');
@@ -4306,7 +4306,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -4325,7 +4325,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'hidden');
@@ -4342,7 +4342,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('placeholder', 'foo');
@@ -4358,7 +4358,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('placeholder', ' ');
@@ -4374,7 +4374,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'placeholder-shown',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('placeholder', 'foo');
@@ -4392,7 +4392,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'checked',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4410,7 +4410,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'checked',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -4428,7 +4428,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'checked',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -4444,7 +4444,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'checked',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const node = document.createElement('option');
@@ -4463,7 +4463,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4481,7 +4481,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4496,7 +4496,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('progress');
         const parent = document.getElementById('div0');
@@ -4512,7 +4512,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('progress');
         node.setAttribute('value', '0');
@@ -4527,7 +4527,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node1 = document.createElement('input');
@@ -4555,7 +4555,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node1 = document.createElement('input');
@@ -4582,7 +4582,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node1 = document.createElement('input');
@@ -4607,7 +4607,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'indeterminate',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         form.id = 'form1';
@@ -4641,7 +4641,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4659,7 +4659,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4677,7 +4677,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -4692,7 +4692,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -4710,7 +4710,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -4728,7 +4728,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -4743,7 +4743,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const group = document.createElement('optgroup');
@@ -4766,7 +4766,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const group = document.createElement('optgroup');
@@ -4789,7 +4789,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const group = document.createElement('optgroup');
@@ -4811,7 +4811,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const group = document.createElement('optgroup');
@@ -4831,7 +4831,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const node = document.createElement('option');
@@ -4851,7 +4851,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         const node = document.createElement('option');
@@ -4870,7 +4870,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         container.setAttribute('multiple', 'multiple');
@@ -4889,7 +4889,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('select');
         container.setAttribute('multiple', 'multiple');
@@ -4912,7 +4912,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('datalist');
         const prev = document.createElement('option');
@@ -4933,7 +4933,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const container = document.createElement('datalist');
         const prev = document.createElement('option');
@@ -4951,7 +4951,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node = document.createElement('button');
@@ -4969,7 +4969,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         const parent = document.getElementById('div0');
@@ -4983,7 +4983,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node = document.createElement('button');
@@ -5002,7 +5002,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('button');
         node.setAttribute('type', 'submit');
@@ -5017,7 +5017,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node = document.createElement('input');
@@ -5036,7 +5036,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'submit');
@@ -5051,7 +5051,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const form = document.createElement('form');
         const node = document.createElement('input');
@@ -5070,7 +5070,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'default',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'image');
@@ -5085,7 +5085,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5104,7 +5104,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5121,7 +5121,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('fieldset');
         const input = document.createElement('input');
@@ -5142,7 +5142,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('fieldset');
         const input = document.createElement('input');
@@ -5161,7 +5161,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('form');
         const input = document.createElement('input');
@@ -5182,7 +5182,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'valid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('form');
         const input = document.createElement('input');
@@ -5201,7 +5201,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5220,7 +5220,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5237,7 +5237,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('fieldset');
         const input = document.createElement('input');
@@ -5258,7 +5258,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('fieldset');
         const input = document.createElement('input');
@@ -5277,7 +5277,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('form');
         const input = document.createElement('input');
@@ -5298,7 +5298,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'invalid',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('form');
         const input = document.createElement('input');
@@ -5317,7 +5317,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.readonly = true;
@@ -5336,7 +5336,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.disabled = true;
@@ -5355,7 +5355,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('hidden', 'hidden');
@@ -5373,7 +5373,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5391,7 +5391,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('min', '1');
@@ -5408,7 +5408,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5428,7 +5428,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5446,7 +5446,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'in-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5464,7 +5464,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'out-of-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.readonly = true;
@@ -5479,7 +5479,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'out-of-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('hidden', 'hidden');
@@ -5494,7 +5494,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'out-of-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5514,7 +5514,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'out-of-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5534,7 +5534,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'out-of-range',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5552,7 +5552,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('required', 'required');
@@ -5569,7 +5569,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5587,7 +5587,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5605,7 +5605,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'range');
@@ -5621,7 +5621,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -5639,7 +5639,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -5657,7 +5657,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'file');
@@ -5675,7 +5675,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         node.setAttribute('required', 'required');
@@ -5692,7 +5692,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('select');
         node.setAttribute('required', 'required');
@@ -5709,7 +5709,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'required',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -5723,7 +5723,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         const parent = document.getElementById('div0');
@@ -5739,7 +5739,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'text');
@@ -5756,7 +5756,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'number');
@@ -5773,7 +5773,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'range');
@@ -5788,7 +5788,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'checkbox');
@@ -5805,7 +5805,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('type', 'radio');
@@ -5822,7 +5822,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('select');
         const parent = document.getElementById('div0');
@@ -5838,7 +5838,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('textarea');
         const parent = document.getElementById('div0');
@@ -5854,7 +5854,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'optional',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('input');
         node.setAttribute('required', 'required');
@@ -5869,7 +5869,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'root',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.documentElement;
         const matcher = new Matcher(':root', document);
@@ -5883,7 +5883,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'root',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -5897,7 +5897,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'empty',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const d1 = document.createElement('div');
         const p1 = document.createElement('p');
@@ -5950,7 +5950,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'first-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const next = document.createElement('div');
@@ -5968,7 +5968,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'first-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const prev = document.createElement('div');
         const node = document.createElement('div');
@@ -5984,7 +5984,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'first-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':first-child', node);
@@ -5998,7 +5998,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'last-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const next = document.createElement('div');
@@ -6014,7 +6014,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'last-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const prev = document.createElement('div');
         const node = document.createElement('div');
@@ -6032,7 +6032,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'last-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':last-child', node);
@@ -6046,7 +6046,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'only-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const parent = document.getElementById('div0');
@@ -6062,7 +6062,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'only-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const prev = document.createElement('div');
         const node = document.createElement('div');
@@ -6080,7 +6080,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'only-child',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':only-child', node);
@@ -6094,7 +6094,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'first-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.getElementById('dt2');
         const matcher = new Matcher(':first-of-type', node);
@@ -6108,7 +6108,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'first-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':first-of-type', node);
@@ -6122,7 +6122,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'last-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.getElementById('dt2');
         const matcher = new Matcher(':last-of-type', node);
@@ -6136,7 +6136,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'last-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':last-of-type', node);
@@ -6150,7 +6150,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'only-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const parent = document.createElement('dl');
         const node1 = document.createElement('dt');
@@ -6169,7 +6169,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'only-of-type',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         const matcher = new Matcher(':only-of-type', node);
@@ -6184,7 +6184,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'after',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6197,7 +6197,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'after',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6213,7 +6213,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'active',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6226,7 +6226,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'active',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6242,7 +6242,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6255,7 +6255,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6270,7 +6270,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: '-webkit-foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6283,7 +6283,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: '-webkit-foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6298,7 +6298,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'webkit-foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6311,7 +6311,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: 'webkit-foo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6326,7 +6326,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: '-webkitfoo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6339,7 +6339,7 @@ describe('match AST leaf and DOM node', () => {
         const leaf = {
           children: null,
           name: '-webkitfoo',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.createElement('div');
         document.getElementById('div0').appendChild(node);
@@ -6360,7 +6360,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6383,7 +6383,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6403,7 +6403,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6423,7 +6423,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|Foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6443,7 +6443,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6463,7 +6463,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6483,7 +6483,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6503,7 +6503,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6523,7 +6523,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6543,7 +6543,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:baz',
@@ -6565,7 +6565,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6585,7 +6585,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:Baz',
@@ -6607,7 +6607,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6627,7 +6627,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:baz',
@@ -6649,7 +6649,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6669,7 +6669,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6689,7 +6689,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6709,7 +6709,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6729,7 +6729,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6749,7 +6749,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6769,7 +6769,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.createElement('div');
@@ -6789,7 +6789,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6812,7 +6812,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             name: 'Bar',
             type: IDENTIFIER
@@ -6835,7 +6835,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6858,7 +6858,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6881,7 +6881,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -6904,7 +6904,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -6927,7 +6927,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -6950,7 +6950,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar baz'
@@ -6973,7 +6973,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'qux'
@@ -6999,7 +6999,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'xml|lang',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'en'
@@ -7022,7 +7022,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7045,7 +7045,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7068,7 +7068,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7091,7 +7091,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7114,7 +7114,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7137,7 +7137,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: ''
@@ -7160,7 +7160,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7183,7 +7183,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7206,7 +7206,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7229,7 +7229,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7252,7 +7252,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7275,7 +7275,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7298,7 +7298,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7321,7 +7321,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: ''
@@ -7344,7 +7344,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7367,7 +7367,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7390,7 +7390,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7413,7 +7413,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7436,7 +7436,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7459,7 +7459,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7482,7 +7482,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: ''
@@ -7505,7 +7505,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7528,7 +7528,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7551,7 +7551,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7574,7 +7574,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7597,7 +7597,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7620,7 +7620,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7643,7 +7643,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: ''
@@ -7666,7 +7666,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7689,7 +7689,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7712,7 +7712,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7735,7 +7735,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7758,7 +7758,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7781,7 +7781,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7804,7 +7804,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: ''
@@ -7827,7 +7827,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'qux'
@@ -7851,7 +7851,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'qux'
@@ -7875,7 +7875,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: {
             type: STRING,
             value: 'qux'
@@ -7896,7 +7896,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'foo',
-          type: CLASS_SELECTOR
+          type: SELECTOR_CLASS
         };
         const node = document.createElement('div');
         node.classList.add('foo');
@@ -7910,7 +7910,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: 'bar',
-          type: CLASS_SELECTOR
+          type: SELECTOR_CLASS
         };
         const node = document.createElement('div');
         node.classList.add('foo');
@@ -7926,7 +7926,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'div0',
-          type: ID_SELECTOR
+          type: SELECTOR_ID
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('#div0', node);
@@ -7937,7 +7937,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: 'foo',
-          type: ID_SELECTOR
+          type: SELECTOR_ID
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('#foo', node);
@@ -7948,7 +7948,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'foo\\ bar',
-          type: ID_SELECTOR
+          type: SELECTOR_ID
         };
         const node = document.createElement('div');
         node.setAttribute('id', 'foo bar');
@@ -7964,7 +7964,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const leaf = {
           name: '|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('', 'div');
         const parent = document.getElementById('div0');
@@ -7977,7 +7977,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: '|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('|*', node);
@@ -7988,7 +7988,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: '|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('https://example.com/foo', 'div');
         const parent = document.getElementById('div0');
@@ -8001,7 +8001,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('*|*', node);
@@ -8012,7 +8012,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -8027,7 +8027,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'foo|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -8042,7 +8042,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: 'foo|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -8056,7 +8056,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: 'foo|*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         node.setAttribute('xmlns:foo', 'https://example.com/foo');
@@ -8068,7 +8068,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'foo|bar',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const nsroot = document.createElement('div');
         nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
@@ -8086,7 +8086,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: 'foo|bar',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:baz');
@@ -8101,7 +8101,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '|div',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('', 'div');
         const parent = document.getElementById('div0');
@@ -8114,7 +8114,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const leaf = {
           name: '|div',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('|div', node);
@@ -8125,7 +8125,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'foo',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('', 'foo');
         const parent = document.getElementById('div0');
@@ -8138,7 +8138,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'h',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('urn:ns', 'h');
         const parent = document.getElementById('div0');
@@ -8151,7 +8151,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*|h',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElementNS('urn:ns', 'h');
         const parent = document.getElementById('div0');
@@ -8164,7 +8164,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('*', node);
@@ -8175,7 +8175,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -8189,7 +8189,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'div',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('div0');
         const matcher = new Matcher('div', node);
@@ -8200,7 +8200,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'div',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:div');
@@ -8214,7 +8214,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: '*|div',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node =
           document.createElementNS('https://example.com/foo', 'foo:div');
@@ -8238,7 +8238,7 @@ describe('match AST leaf and DOM node', () => {
         const doc = new DOMParser().parseFromString(domStr, 'text/html');
         const leaf = {
           name: 'foo|bar',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = doc.getElementById('foobar');
         const matcher = new Matcher('foo|bar', node);
@@ -8249,7 +8249,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'null',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElement('null');
         const parent = document.getElementById('div0');
@@ -8262,7 +8262,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const leaf = {
           name: 'undefined',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.createElement('undefined');
         const parent = document.getElementById('div0');
@@ -8278,7 +8278,7 @@ describe('match AST leaf and DOM node', () => {
         const ast = {
           children: null,
           name: 'foobar',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8312,7 +8312,7 @@ describe('match AST leaf and DOM node', () => {
         const ast = {
           children: null,
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8349,7 +8349,7 @@ describe('match AST leaf and DOM node', () => {
               children: [
                 {
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 },
                 {
                   name: ' ',
@@ -8357,14 +8357,14 @@ describe('match AST leaf and DOM node', () => {
                 },
                 {
                   name: 'foobar',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               type: SELECTOR
             }
           ],
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8402,7 +8402,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8410,7 +8410,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8448,7 +8448,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'foobar',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8456,7 +8456,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8493,7 +8493,7 @@ describe('match AST leaf and DOM node', () => {
               children: [
                 {
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 },
                 {
                   name: ' ',
@@ -8501,14 +8501,14 @@ describe('match AST leaf and DOM node', () => {
                 },
                 {
                   name: 'foobar',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               type: SELECTOR
             }
           ],
           name: 'host-context',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8546,7 +8546,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8554,7 +8554,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host-context',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8592,7 +8592,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8600,7 +8600,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host-context',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8638,7 +8638,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'foobar',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8646,7 +8646,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host-context',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8681,7 +8681,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const ast = {
           name: 'dt',
-          type: TYPE_SELECTOR
+          type: SELECTOR_TYPE
         };
         const node = document.getElementById('dt1');
         const matcher = new Matcher('dt', document);
@@ -8695,7 +8695,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const ast = {
           name: 'foo',
-          type: CLASS_SELECTOR
+          type: SELECTOR_CLASS
         };
         const node = document.getElementById('div5');
         const matcher = new Matcher('.foo', document);
@@ -8714,7 +8714,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'hidden',
             type: IDENTIFIER
           },
-          type: ATTR_SELECTOR,
+          type: SELECTOR_ATTR,
           value: null
         };
         const node = document.getElementById('span3');
@@ -8735,7 +8735,7 @@ describe('match AST leaf and DOM node', () => {
                   children: [
                     {
                       name: 'ul',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ],
                   type: SELECTOR
@@ -8745,7 +8745,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'is',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const node = document.getElementById('ul1');
         const matcher = new Matcher(':is(ul)', document);
@@ -8760,7 +8760,7 @@ describe('match AST leaf and DOM node', () => {
         const ast = {
           children: null,
           name: 'before',
-          type: PSEUDO_ELEMENT_SELECTOR
+          type: SELECTOR_PSEUDO_ELEMENT
         };
         const node = document.documentElement;
         const matcher = new Matcher('::before', document);
@@ -8777,7 +8777,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'baz',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8785,7 +8785,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8825,7 +8825,7 @@ describe('match AST leaf and DOM node', () => {
                 {
                   loc: null,
                   name: 'foobar',
-                  type: ID_SELECTOR
+                  type: SELECTOR_ID
                 }
               ],
               loc: null,
@@ -8833,7 +8833,7 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           name: 'host',
-          type: PSEUDO_CLASS_SELECTOR
+          type: SELECTOR_PSEUDO_CLASS
         };
         const html = `
           <template id="template">
@@ -8869,11 +8869,11 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li1',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           },
           {
             name: 'li',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           }
         ];
         const node = document.getElementById('li1');
@@ -8886,11 +8886,11 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li1',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           },
           {
             name: 'foobar',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           }
         ];
         const node = document.getElementById('li1');
@@ -8905,7 +8905,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'foobar',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           }
         ];
         const parent = document.createElement('div');
@@ -8922,7 +8922,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li3',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -8939,7 +8939,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'foobar',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -8953,7 +8953,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'ul1',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -8967,11 +8967,11 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li3',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           },
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -8988,11 +8988,11 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li3',
-            type: ID_SELECTOR
+            type: SELECTOR_ID
           },
           {
             name: 'foobar',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9006,7 +9006,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9020,7 +9020,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'foobar',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9034,11 +9034,11 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           },
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9052,7 +9052,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: CLASS_SELECTOR
+            type: SELECTOR_CLASS
           },
           {
             flags: null,
@@ -9061,7 +9061,7 @@ describe('match AST leaf and DOM node', () => {
               name: 'hidden',
               type: IDENTIFIER
             },
-            type: ATTR_SELECTOR,
+            type: SELECTOR_ATTR,
             value: null
           }
         ];
@@ -9076,7 +9076,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'div',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const doc = new DOMParser().parseFromString('<foo></foo>', 'text/xml');
@@ -9100,7 +9100,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: '*|li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9114,7 +9114,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9128,7 +9128,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'ol',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('div1');
@@ -9142,7 +9142,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9156,12 +9156,12 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           },
           {
             children: null,
             name: 'first-child',
-            type: PSEUDO_CLASS_SELECTOR
+            type: SELECTOR_PSEUDO_CLASS
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9175,7 +9175,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'li',
-            type: TYPE_SELECTOR
+            type: SELECTOR_TYPE
           },
           {
             flags: null,
@@ -9184,7 +9184,7 @@ describe('match AST leaf and DOM node', () => {
               name: 'hidden',
               type: IDENTIFIER
             },
-            type: ATTR_SELECTOR,
+            type: SELECTOR_ATTR,
             value: null
           }
         ];
@@ -9199,7 +9199,7 @@ describe('match AST leaf and DOM node', () => {
         const leaves = [
           {
             name: 'before',
-            type: PSEUDO_ELEMENT_SELECTOR
+            type: SELECTOR_PSEUDO_ELEMENT
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9214,7 +9214,7 @@ describe('match AST leaf and DOM node', () => {
           {
             children: null,
             name: 'first-child',
-            type: PSEUDO_CLASS_SELECTOR
+            type: SELECTOR_PSEUDO_CLASS
           }
         ];
         const refNode = document.getElementById('ul1');
@@ -9235,7 +9235,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9256,7 +9256,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9275,7 +9275,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9298,7 +9298,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9319,7 +9319,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9341,7 +9341,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9360,7 +9360,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9384,7 +9384,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9405,7 +9405,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9426,7 +9426,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'ol',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9445,7 +9445,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: CLASS_SELECTOR
+              type: SELECTOR_CLASS
             }
           ]
         };
@@ -9470,7 +9470,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'foobar',
-              type: CLASS_SELECTOR
+              type: SELECTOR_CLASS
             }
           ]
         };
@@ -9491,7 +9491,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'ul',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9512,7 +9512,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'ol',
-              type: TYPE_SELECTOR
+              type: SELECTOR_TYPE
             }
           ]
         };
@@ -9531,7 +9531,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'li',
-              type: CLASS_SELECTOR
+              type: SELECTOR_CLASS
             }
           ]
         };
@@ -9556,7 +9556,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'foobar',
-              type: CLASS_SELECTOR
+              type: SELECTOR_CLASS
             }
           ]
         };
@@ -9577,7 +9577,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'dd2',
-              type: ID_SELECTOR
+              type: SELECTOR_ID
             }
           ]
         };
@@ -9600,7 +9600,7 @@ describe('match AST leaf and DOM node', () => {
           leaves: [
             {
               name: 'foobar',
-              type: ID_SELECTOR
+              type: SELECTOR_ID
             }
           ]
         };
@@ -10039,7 +10039,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'li',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           }
@@ -10052,7 +10052,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'li',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           }
@@ -10065,7 +10065,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'ul',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           },
@@ -10081,7 +10081,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'li',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           }
@@ -10094,7 +10094,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'ul',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           }
@@ -10107,7 +10107,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'ul',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           },
@@ -10123,7 +10123,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'li1',
-                type: ID_SELECTOR
+                type: SELECTOR_ID
               }
             ]
           }
@@ -10136,7 +10136,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'li1',
-                type: ID_SELECTOR
+                type: SELECTOR_ID
               }
             ]
           }
@@ -10149,7 +10149,7 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'ul',
-                type: TYPE_SELECTOR
+                type: SELECTOR_TYPE
               }
             ]
           },
@@ -10165,11 +10165,11 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'after',
-                type: PSEUDO_ELEMENT_SELECTOR
+                type: SELECTOR_PSEUDO_ELEMENT
               },
               {
                 name: 'li',
-                type: CLASS_SELECTOR
+                type: SELECTOR_CLASS
               }
             ]
           }
@@ -10182,11 +10182,11 @@ describe('match AST leaf and DOM node', () => {
             leaves: [
               {
                 name: 'after',
-                type: PSEUDO_ELEMENT_SELECTOR
+                type: SELECTOR_PSEUDO_ELEMENT
               },
               {
                 name: 'li',
-                type: CLASS_SELECTOR
+                type: SELECTOR_CLASS
               }
             ]
           }
@@ -10210,13 +10210,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'last-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10236,13 +10236,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'first-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 },
@@ -10252,7 +10252,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -10283,13 +10283,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'last-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10309,13 +10309,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'first-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 },
@@ -10325,7 +10325,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -10355,13 +10355,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'last-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10381,13 +10381,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'first-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 },
@@ -10397,7 +10397,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -10427,13 +10427,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'last-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10453,13 +10453,13 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     },
                     {
                       children: null,
                       loc: null,
                       name: 'first-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 },
@@ -10469,7 +10469,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'li',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -10520,7 +10520,7 @@ describe('match AST leaf and DOM node', () => {
                       ],
                       loc: null,
                       name: 'nth-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10549,7 +10549,7 @@ describe('match AST leaf and DOM node', () => {
                       ],
                       loc: null,
                       name: 'nth-of-type',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10603,7 +10603,7 @@ describe('match AST leaf and DOM node', () => {
                       ],
                       loc: null,
                       name: 'nth-child',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10632,7 +10632,7 @@ describe('match AST leaf and DOM node', () => {
                       ],
                       loc: null,
                       name: 'nth-of-type',
-                      type: PSEUDO_CLASS_SELECTOR
+                      type: SELECTOR_PSEUDO_CLASS
                     }
                   ]
                 }
@@ -10672,7 +10672,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'div',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
@@ -10711,7 +10711,7 @@ describe('match AST leaf and DOM node', () => {
                     {
                       loc: null,
                       name: 'root',
-                      type: TYPE_SELECTOR
+                      type: SELECTOR_TYPE
                     }
                   ]
                 }
