@@ -11,7 +11,7 @@ import * as parser from '../src/js/parser.js';
 
 /* constants */
 import {
-  AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
+  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NTH, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, RAW,
   SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
@@ -283,7 +283,7 @@ describe('create AST from CSS selector', () => {
                   name: 'align',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'center',
@@ -725,7 +725,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1099,7 +1099,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1132,7 +1132,7 @@ describe('create AST from CSS selector', () => {
                   name: 'bar',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1160,7 +1160,7 @@ describe('create AST from CSS selector', () => {
                   name: '|foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1188,7 +1188,7 @@ describe('create AST from CSS selector', () => {
                   name: '*|foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1216,7 +1216,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo|bar',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1244,7 +1244,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1276,7 +1276,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1308,7 +1308,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1340,7 +1340,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo|bar',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1372,7 +1372,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1404,7 +1404,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1436,7 +1436,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1468,7 +1468,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1500,7 +1500,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1532,7 +1532,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1564,7 +1564,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1596,7 +1596,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1628,7 +1628,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
@@ -1661,7 +1661,7 @@ describe('create AST from CSS selector', () => {
                   name: 'foo',
                   type: IDENTIFIER
                 },
-                type: ATTRIBUTE_SELECTOR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',

@@ -13,7 +13,7 @@ import * as matcherJs from '../src/js/matcher.js';
 
 /* constants */
 import {
-  AN_PLUS_B, ATTRIBUTE_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
+  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENTIFIER,
   ID_SELECTOR, NOT_SUPPORTED_ERR, NTH, PSEUDO_CLASS_SELECTOR,
   PSEUDO_ELEMENT_SELECTOR, RAW, SELECTOR, SELECTOR_LIST, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
@@ -371,7 +371,7 @@ describe('match AST leaf and DOM node', () => {
     describe('sort AST leaves', () => {
       it('should get sorted leaves', () => {
         const leaves = [
-          { type: ATTRIBUTE_SELECTOR },
+          { type: ATTR_SELECTOR },
           { type: CLASS_SELECTOR, name: 'bar' },
           { type: ID_SELECTOR },
           { type: PSEUDO_CLASS_SELECTOR },
@@ -387,7 +387,7 @@ describe('match AST leaf and DOM node', () => {
           { type: CLASS_SELECTOR, name: 'bar' },
           { type: CLASS_SELECTOR, name: 'foo' },
           { type: TYPE_SELECTOR },
-          { type: ATTRIBUTE_SELECTOR },
+          { type: ATTR_SELECTOR },
           { type: PSEUDO_CLASS_SELECTOR }
         ], 'result');
       });
@@ -6360,7 +6360,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6383,7 +6383,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6403,7 +6403,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6423,7 +6423,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|Foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6443,7 +6443,7 @@ describe('match AST leaf and DOM node', () => {
             name: '|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6463,7 +6463,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6483,7 +6483,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6503,7 +6503,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6523,7 +6523,7 @@ describe('match AST leaf and DOM node', () => {
             name: '*|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6543,7 +6543,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:baz',
@@ -6565,7 +6565,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6585,7 +6585,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:Baz',
@@ -6607,7 +6607,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6627,7 +6627,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'Baz|Foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         document.documentElement.setAttribute('xmlns:baz',
@@ -6649,7 +6649,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6669,7 +6669,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6689,7 +6689,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6709,7 +6709,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6729,7 +6729,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6749,7 +6749,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6769,7 +6769,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.createElement('div');
@@ -6789,7 +6789,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6812,7 +6812,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             name: 'Bar',
             type: IDENTIFIER
@@ -6835,7 +6835,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6858,7 +6858,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             name: 'bar',
             type: IDENTIFIER
@@ -6881,7 +6881,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -6904,7 +6904,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -6927,7 +6927,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -6950,7 +6950,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar baz'
@@ -6973,7 +6973,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz|foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'qux'
@@ -6999,7 +6999,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'xml|lang',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'en'
@@ -7022,7 +7022,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7045,7 +7045,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7068,7 +7068,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7091,7 +7091,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7114,7 +7114,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7137,7 +7137,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: ''
@@ -7160,7 +7160,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7183,7 +7183,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7206,7 +7206,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7229,7 +7229,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7252,7 +7252,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7275,7 +7275,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7298,7 +7298,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7321,7 +7321,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: ''
@@ -7344,7 +7344,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7367,7 +7367,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7390,7 +7390,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7413,7 +7413,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7436,7 +7436,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7459,7 +7459,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7482,7 +7482,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: ''
@@ -7505,7 +7505,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7528,7 +7528,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7551,7 +7551,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7574,7 +7574,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7597,7 +7597,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7620,7 +7620,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7643,7 +7643,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: ''
@@ -7666,7 +7666,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7689,7 +7689,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7712,7 +7712,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7735,7 +7735,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7758,7 +7758,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'Bar'
@@ -7781,7 +7781,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'bar'
@@ -7804,7 +7804,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'foo',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: ''
@@ -7827,7 +7827,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'qux'
@@ -7851,7 +7851,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'qux'
@@ -7875,7 +7875,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'baz',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: {
             type: STRING,
             value: 'qux'
@@ -8714,7 +8714,7 @@ describe('match AST leaf and DOM node', () => {
             name: 'hidden',
             type: IDENTIFIER
           },
-          type: ATTRIBUTE_SELECTOR,
+          type: ATTR_SELECTOR,
           value: null
         };
         const node = document.getElementById('span3');
@@ -9061,7 +9061,7 @@ describe('match AST leaf and DOM node', () => {
               name: 'hidden',
               type: IDENTIFIER
             },
-            type: ATTRIBUTE_SELECTOR,
+            type: ATTR_SELECTOR,
             value: null
           }
         ];
@@ -9184,7 +9184,7 @@ describe('match AST leaf and DOM node', () => {
               name: 'hidden',
               type: IDENTIFIER
             },
-            type: ATTRIBUTE_SELECTOR,
+            type: ATTR_SELECTOR,
             value: null
           }
         ];
