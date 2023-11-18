@@ -20,6 +20,7 @@ export const SELECTOR_LIST = 'SelectorList';
 export const STRING = 'String';
 export const SYNTAX_ERR = 'SyntaxError';
 export const TYPE_SELECTOR = 'TypeSelector';
+export const U_FFFD = '\uFFFD';
 
 /* numeric */
 export const BIT_01 = 0x1;
@@ -28,7 +29,9 @@ export const BIT_04 = 0x4;
 export const BIT_08 = 0x8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
+export const DUO = 2;
 export const HEX = 16;
+export const MAX_BIT_16 = Math.pow(2, 0x10);
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 

@@ -7,11 +7,10 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  HEX, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO,
-  REG_SHADOW_PSEUDO, SELECTOR, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  DUO, HEX, MAX_BIT_16, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR,
+  REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SYNTAX_ERR, TYPE_FROM,
+  TYPE_TO, U_FFFD
 } from './constant.js';
-const CODE_POINT_UNIT = parseInt('10000', 16);
-const PAIR = 2;
 
 /**
  * unescape selector
@@ -25,7 +24,7 @@ export const unescapeSelector = (selector = '') => {
     for (let i = 1; i < l; i++) {
       let item = arr[i];
       if (item === '' && i === l - 1) {
-        item = '\uFFFD';
+        item = U_FFFD;
       } else {
         const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
         if (hexExists) {
@@ -36,12 +35,12 @@ export const unescapeSelector = (selector = '') => {
             const high = parseInt('DFFF', 16);
             const deci = parseInt(hex, 16);
             if (deci === 0 || (deci >= low && deci <= high)) {
-              str = '\uFFFD';
+              str = U_FFFD;
             } else {
               str = String.fromCodePoint(deci);
             }
           } catch (e) {
-            str = '\uFFFD';
+            str = U_FFFD;
           }
           let postStr = '';
           if (item.length > hex.length) {
@@ -81,19 +80,19 @@ export const preprocess = (...args) => {
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
       const codePoint = postHash.codePointAt(0);
-      if (codePoint >= CODE_POINT_UNIT) {
+      if (codePoint >= MAX_BIT_16) {
         const str = `\\${codePoint.toString(HEX)} `;
-        if (postHash.length === PAIR) {
+        if (postHash.length === DUO) {
           postHash = str;
         } else {
-          postHash = `${str}${postHash.substring(PAIR)}`;
+          postHash = `${str}${postHash.substring(DUO)}`;
         }
       }
       selector = `${preHash}${postHash}`;
       index++;
     }
     selector = selector.replace(/\f|\r\n?/g, '\n')
-      .replace(/[\0\uD800-\uDFFF]|\\$/g, '\uFFFD');
+      .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD);
   } else if (selector === undefined || selector === null) {
     selector = Object.prototype.toString.call(selector)
       .slice(TYPE_FROM, TYPE_TO).toLowerCase();
