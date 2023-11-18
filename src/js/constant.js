@@ -3,8 +3,9 @@
  */
 
 /* string */
+export const ALPHA_NUM = '[A-Z\\d]+';
 export const AN_PLUS_B = 'AnPlusB';
-export const ATTRIBUTE_SELECTOR = 'AttributeSelector';
+export const ATTR_SELECTOR = 'AttributeSelector';
 export const CLASS_SELECTOR = 'ClassSelector';
 export const COMBINATOR = 'Combinator';
 export const ID_SELECTOR = 'IdSelector';
@@ -21,12 +22,12 @@ export const SYNTAX_ERR = 'SyntaxError';
 export const TYPE_SELECTOR = 'TypeSelector';
 
 /* numeric */
-export const BIT_1 = 0x1;
-export const BIT_10 = 0x2;
-export const BIT_100 = 0x4;
-export const BIT_1000 = 0x8;
-export const BIT_10000 = 0x10;
-export const BIT_100000 = 0x20;
+export const BIT_01 = 0x1;
+export const BIT_02 = 0x2;
+export const BIT_04 = 0x4;
+export const BIT_08 = 0x8;
+export const BIT_16 = 0x10;
+export const BIT_32 = 0x20;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 
@@ -41,3 +42,9 @@ export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
 export const SHOW_ELEMENT = 0x1;
+
+/* regexp */
+export const REG_LOGICAL_PSEUDO = /^(?:(?:ha|i)s|not|where)$/;
+export const REG_SHADOW_HOST = /^host(?:-context)?$/;
+export const REG_SHADOW_MODE = /^(?:close|open)$/;
+export const REG_SHADOW_PSEUDO = /^part|slotted$/;

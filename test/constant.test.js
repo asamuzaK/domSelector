@@ -12,9 +12,10 @@ import * as constant from '../src/js/constant.js';
 describe('constants', () => {
   const items = Object.entries(constant);
   for (const [key, value] of items) {
-    it('should get string or number', () => {
-      assert.isTrue(/^[A-Z][A-Z_\d]+$/.test(key));
-      assert.isTrue(typeof value === 'string' || Number.isInteger(value));
+    it('should get string or number or regexp', () => {
+      assert.isTrue(/^[A-Z][A-Z_\d]+$/.test(key), 'key');
+      assert.isTrue(typeof value === 'string' || Number.isInteger(value) ||
+        value instanceof RegExp, 'value');
     });
   }
 });
