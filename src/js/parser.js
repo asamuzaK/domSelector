@@ -156,7 +156,7 @@ export const walkAST = (ast = {}) => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
       } else if ((node.type === PSEUDO_CLASS_SELECTOR &&
-                  REG_LOGICAL_PSEUDOS.test(node.name)) ||
+                  REG_LOGICAL_PSEUDO.test(node.name)) ||
                  (node.type === PSEUDO_ELEMENT_SELECTOR &&
                   REG_SHADOW_PSEUDO.test(node.name))) {
         hasPseudoFunc = true;
