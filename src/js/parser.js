@@ -31,9 +31,9 @@ export const unescapeSelector = (selector = '') => {
           const [, hex] = hexExists;
           let str;
           try {
-            const low = parseInt('D800', 16);
-            const high = parseInt('DFFF', 16);
-            const deci = parseInt(hex, 16);
+            const low = parseInt('D800', HEX);
+            const high = parseInt('DFFF', HEX);
+            const deci = parseInt(hex, HEX);
             if (deci === 0 || (deci >= low && deci <= high)) {
               str = U_FFFD;
             } else {
