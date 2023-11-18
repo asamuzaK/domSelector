@@ -21,6 +21,7 @@ export const BIT_04: 4;
 export const BIT_08: 8;
 export const BIT_16: 16;
 export const BIT_32: 32;
+export const HEX: 16;
 export const TYPE_FROM: 8;
 export const TYPE_TO: -1;
 export const ELEMENT_NODE: 1;
