@@ -7,11 +7,10 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO,
+  HEX, PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO,
   REG_SHADOW_PSEUDO, SELECTOR, SYNTAX_ERR, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const CODE_POINT_UNIT = parseInt('10000', 16);
-const HEX = 16;
 const PAIR = 2;
 
 /**

@@ -28,6 +28,7 @@ export const BIT_04 = 0x4;
 export const BIT_08 = 0x8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
+export const HEX = 16;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 
