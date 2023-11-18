@@ -157,7 +157,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:nth&#8209;last&#8209;col(n)|Unsupported| |
 |:host|✓| |
 |:host(s)|✓| |
-|:host-context(s)|✓| |
+|:host&#8209;context(s)|✓| |
 
 
 ## Monkey patch jsdom
