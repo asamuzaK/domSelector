@@ -7,19 +7,12 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR,
-  TYPE_FROM, TYPE_TO
+  PSEUDO_CLASS_SELECTOR, PSEUDO_ELEMENT_SELECTOR, REG_LOGICAL_PSEUDO,
+  REG_SHADOW_PSEUDO, SELECTOR, SYNTAX_ERR, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const CODE_POINT_UNIT = parseInt('10000', 16);
 const HEX = 16;
 const PAIR = 2;
-
-/* regexp */
-const HEX_CAPTURE = /^([\da-f]{1,6}\s?)/i;
-const PSEUDO_FUNC = /^(?:(?:ha|i)s|not|where)$/;
-const PSEUDO_SHADOW = /^part|slotted$/;
-const QUOTED_LANG = /(:lang\(\s*("[A-Z\d\-*]+")\s*\))/i;
-const WHITESPACE = /^[\n\r\f]/;
 
 /**
  * unescape selector
@@ -35,7 +28,7 @@ export const unescapeSelector = (selector = '') => {
       if (item === '' && i === l - 1) {
         item = '\uFFFD';
       } else {
-        const hexExists = HEX_CAPTURE.exec(item);
+        const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
         if (hexExists) {
           const [, hex] = hexExists;
           let str;
@@ -56,7 +49,8 @@ export const unescapeSelector = (selector = '') => {
             postStr = item.substring(hex.length);
           }
           item = `${str}${postStr}`;
-        } else if (WHITESPACE.test(item)) {
+        // whitespace
+        } else if (/^[\n\r\f]/.test(item)) {
           item = '\\' + item;
         }
       }
@@ -131,8 +125,9 @@ export const parseSelector = selector => {
   } catch (e) {
     // workaround for https://github.com/csstree/csstree/issues/265
     // NOTE: still throws on `:lang("")`;
-    if (e.message === 'Identifier is expected' && QUOTED_LANG.test(selector)) {
-      const [, lang, range] = QUOTED_LANG.exec(selector);
+    const regLang = /(:lang\(\s*("[A-Z\d\-*]+")\s*\))/i;
+    if (e.message === 'Identifier is expected' && regLang.test(selector)) {
+      const [, lang, range] = regLang.exec(selector);
       const escapedRange =
         range.replace(/\s*\*/g, '\\*').replace(/^"/, '').replace(/"$/, '');
       const escapedLang = lang.replace(range, escapedRange);
@@ -161,9 +156,9 @@ export const walkAST = (ast = {}) => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
       } else if ((node.type === PSEUDO_CLASS_SELECTOR &&
-                  PSEUDO_FUNC.test(node.name)) ||
+                  REG_LOGICAL_PSEUDOS.test(node.name)) ||
                  (node.type === PSEUDO_ELEMENT_SELECTOR &&
-                  PSEUDO_SHADOW.test(node.name))) {
+                  REG_SHADOW_PSEUDO.test(node.name))) {
         hasPseudoFunc = true;
       }
     }
@@ -173,10 +168,12 @@ export const walkAST = (ast = {}) => {
     findAll(ast, (node, item, list) => {
       if (list) {
         if (node.type === PSEUDO_CLASS_SELECTOR &&
-            PSEUDO_FUNC.test(node.name)) {
+            REG_LOGICAL_PSEUDO.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PSEUDO_CLASS_SELECTOR && PSEUDO_FUNC.test(name);
+            const res =
+              type === PSEUDO_CLASS_SELECTOR && REG_LOGICAL_PSEUDO.test(name);
+            return res;
           });
           for (const { children } of itemList) {
             // SelectorList
@@ -190,10 +187,12 @@ export const walkAST = (ast = {}) => {
             }
           }
         } else if (node.type === PSEUDO_ELEMENT_SELECTOR &&
-                   PSEUDO_SHADOW.test(node.name)) {
+                   REG_SHADOW_PSEUDO.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PSEUDO_ELEMENT_SELECTOR && PSEUDO_SHADOW.test(name);
+            const res =
+              type === PSEUDO_ELEMENT_SELECTOR && REG_SHADOW_PSEUDO.test(name);
+            return res;
           });
           for (const { children } of itemList) {
             // Selector
