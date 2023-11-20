@@ -123,7 +123,7 @@ export const parseSelector = selector => {
   } catch (e) {
     // workaround for https://github.com/csstree/csstree/issues/265
     // NOTE: still throws on `:lang("")`;
-    const regLang = /(:lang\(\s*("[A-Z\d\-*]+")\s*\))/i;
+    const regLang = /(:lang\(\s*("[A-Za-z\d\-*]+")\s*\))/;
     if (e.message === 'Identifier is expected' && regLang.test(selector)) {
       const [, lang, range] = regLang.exec(selector);
       const escapedRange =
