@@ -29,6 +29,7 @@ export const BIT_04 = 0x4;
 export const BIT_08 = 0x8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
+export const BIT_HYPHEN = 0x2D;
 export const DUO = 2;
 export const HEX = 16;
 export const MAX_BIT_16 = 0xFFFF;

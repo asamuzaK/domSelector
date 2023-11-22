@@ -7,9 +7,9 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  DUO, HEX, MAX_BIT_16, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SYNTAX_ERR, TYPE_FROM,
-  TYPE_TO, U_FFFD
+  DUO, HEX, MAX_BIT_16, BIT_HYPHEN, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO,
+  SELECTOR, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SYNTAX_ERR,
+  TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
 /**
@@ -80,7 +80,13 @@ export const preprocess = (...args) => {
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
       const codePoint = postHash.codePointAt(0);
-      if (codePoint > MAX_BIT_16) {
+      // @see https://drafts.csswg.org/selectors/#id-selectors
+      // @see https://drafts.csswg.org/css-syntax-3/#ident-token-diagram
+      if (codePoint === BIT_HYPHEN) {
+        if (/^\d$/.test(postHash.substring(1, 2))) {
+          throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
+        }
+      } else if (codePoint > MAX_BIT_16) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
           postHash = str;

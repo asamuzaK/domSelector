@@ -841,6 +841,10 @@ describe('create AST from CSS selector', () => {
       assert.throws(() => func('.'), DOMException);
     });
 
+    it('should throw', () => {
+      assert.throws(() => func('.-123'), DOMException);
+    });
+
     it('should get selector list', () => {
       const res = func('.foo');
       assert.deepEqual(res, {
@@ -953,6 +957,10 @@ describe('create AST from CSS selector', () => {
   describe('id selector', () => {
     it('should throw', () => {
       assert.throws(() => func('#'), DOMException);
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('#-123'), DOMException);
     });
 
     it('should get selector list', () => {
