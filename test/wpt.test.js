@@ -1679,6 +1679,60 @@ describe('local wpt test cases', () => {
       const res = node.matches(':lang("fr-x-foobar")');
       assert.isFalse(res, 'result');
     });
+
+    it('lang-020.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="iw-ase-jpan-basiceng">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("iw")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-021.html, should match', () => {
+      const html =
+        '<div class="test" lang="en-GB-oed"><span><span id="target">This should be green</span></span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches('span span:lang("*-gb")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-022.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="i-navajo">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("i-navajo")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-023.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="x-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("x")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-024.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="art-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("art")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-025.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="art-x-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("art")');
+      assert.isTrue(res, 'result');
+    });
   });
 
   describe('css/css-scoping/host-dom-001.html', () => {
