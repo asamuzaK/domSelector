@@ -234,7 +234,7 @@ const dom = new JSDOM('', {
 
 ### Performance
 
-|Method / Selector|Jsdom|Patched-jsdom|Result|
+|Method / Selector|Jsdom v22.1.0|Patched-jsdom|Result|
 |:----------------|:----------------|:----------------|:----------------|
 |matches('.container.box')|2,103,531 ops/sec ±16.53%|113,370 ops/sec ±9.63%|jsdom is 18.6 times faster. patched-jsdom took 0.009msec.|
 |matches('.container:not(.box)')|1,103,421 ops/sec ±0.13%|75,746 ops/sec ±0.14%|jsdom is 14.6 times faster. patched-jsdom took 0.013msec.|
