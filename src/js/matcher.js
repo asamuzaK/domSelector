@@ -21,6 +21,8 @@ import {
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
+const FIND_NEXT = 'next';
+const FIND_PREV = 'prev';
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
@@ -681,7 +683,7 @@ export class Matcher {
         leaves: twigLeaves
       };
       const nodes = this._matchCombinator(twig, node, {
-        find: 'next'
+        find: FIND_NEXT
       });
       if (nodes.size) {
         if (leaves.length) {
@@ -747,7 +749,7 @@ export class Matcher {
             for (const nextNode of nextNodes) {
               const m = this._matchCombinator(twig, nextNode, {
                 forgive,
-                find: 'prev'
+                find: FIND_PREV
               });
               if (m.size) {
                 arr.push(...m);
@@ -1990,7 +1992,7 @@ export class Matcher {
     const { name: comboName } = combo;
     const { find, forgive } = opt;
     let matched = new Set();
-    if (find === 'next') {
+    if (find === FIND_NEXT) {
       switch (comboName) {
         case '+': {
           const refNode = node.nextElementSibling;
@@ -2313,14 +2315,14 @@ export class Matcher {
       const lastTwig = branch[lastIndex];
       const { leaves: [{ type: lastType }] } = lastTwig;
       if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
-        find = 'prev';
+        find = FIND_PREV;
         twig = lastTwig;
       } else {
-        find = 'next';
+        find = FIND_NEXT;
         twig = firstTwig;
       }
     } else {
-      find = 'prev';
+      find = FIND_PREV;
       twig = firstTwig;
     }
     return {
@@ -2389,7 +2391,7 @@ export class Matcher {
         } else {
           this.#ast[i].skip = true;
         }
-        this.#ast[i].find = 'prev';
+        this.#ast[i].find = FIND_PREV;
         i++;
       }
     }
@@ -2460,7 +2462,7 @@ export class Matcher {
             const m = [...matched];
             nodes = new Set([...n, ...m]);
           }
-        } else if (find === 'next') {
+        } else if (find === FIND_NEXT) {
           let { combo } = branch[0];
           for (const node of matched) {
             let nextNodes = new Set([node]);
