@@ -86,7 +86,7 @@ export const preprocess = (...args) => {
         if (/^\d$/.test(postHash.substring(1, 2))) {
           throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
         }
-      // escape code point above 0xFFFF
+      // escape ID string above 0xFFFF
       } else if (codePoint > MAX_BIT_16) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
