@@ -1524,8 +1524,7 @@ export class Matcher {
       } else {
         caseInsensitive = false;
       }
-      let { name: astAttrName } = astName;
-      astAttrName = unescapeSelector(astAttrName);
+      let astAttrName = unescapeSelector(astName.name);
       if (caseInsensitive) {
         astAttrName = astAttrName.toLowerCase();
       }
