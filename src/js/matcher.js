@@ -897,7 +897,7 @@ export class Matcher {
       const docURL = new URL(document.URL);
       /* regexp */
       const regAnchor = /^a(?:rea)?$/;
-      const regFormItem =
+      const regFormCtrl =
         /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
       const regFormValidity =
         /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
@@ -990,7 +990,7 @@ export class Matcher {
           break;
         }
         case 'disabled': {
-          if (regFormItem.test(localName) || isCustomElementName(localName)) {
+          if (regFormCtrl.test(localName) || isCustomElementName(localName)) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -1010,7 +1010,7 @@ export class Matcher {
           break;
         }
         case 'enabled': {
-          if ((regFormItem.test(localName) || isCustomElementName(localName)) &&
+          if ((regFormCtrl.test(localName) || isCustomElementName(localName)) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
