@@ -238,7 +238,7 @@ export const selectorToNodeProps = (selector, node) => {
   let prefix;
   let tagName;
   if (selector && typeof selector === 'string') {
-    if (/\|/.test(selector)) {
+    if (selector.indexOf('|') > -1) {
       [prefix, tagName] = selector.split('|');
     } else {
       prefix = '*';

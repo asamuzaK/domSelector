@@ -466,7 +466,7 @@ export class Matcher {
         anbMap.set('a', 2);
         anbMap.set('b', 1);
       }
-      if (/last/.test(nthName)) {
+      if (nthName.indexOf('last') > -1) {
         anbMap.set('reverse', true);
       }
     } else {
@@ -480,7 +480,7 @@ export class Matcher {
       } else {
         anbMap.set('b', 0);
       }
-      if (/last/.test(nthName)) {
+      if (nthName.indexOf('last') > -1) {
         anbMap.set('reverse', true);
       }
     }
@@ -606,7 +606,7 @@ export class Matcher {
         const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
         if (regLang.test(astName)) {
           let regExtendedLang;
-          if (/-/.test(astName)) {
+          if (astName.indexOf('-') > -1) {
             const [langMain, langSub, ...langRest] = astName.split('-');
             let extendedMain;
             if (langMain === '*') {
@@ -1225,7 +1225,7 @@ export class Matcher {
             if (node.checkValidity()) {
               matched.add(node);
             }
-          } else if (/^fieldset$/.test(localName)) {
+          } else if (localName === 'fieldset') {
             const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
             let refNode = iterator.nextNode();
             if (refNode === node) {
@@ -1252,7 +1252,7 @@ export class Matcher {
             if (!node.checkValidity()) {
               matched.add(node);
             }
-          } else if (/^fieldset$/.test(localName)) {
+          } else if (localName === 'fieldset') {
             const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
             let refNode = iterator.nextNode();
             if (refNode === node) {
@@ -1534,7 +1534,7 @@ export class Matcher {
       }
       const attrValues = new Set();
       // namespaced
-      if (/\|/.test(astAttrName)) {
+      if (astAttrName.indexOf('|') > -1) {
         const {
           prefix: astAttrPrefix, tagName: astAttrLocalName
         } = selectorToNodeProps(astAttrName);
@@ -1551,7 +1551,7 @@ export class Matcher {
               break;
             }
             case '*': {
-              if (/:/.test(itemName)) {
+              if (itemName.indexOf(':') > -1) {
                 if (itemName.endsWith(`:${astAttrLocalName}`)) {
                   attrValues.add(itemValue);
                 }
@@ -1561,7 +1561,7 @@ export class Matcher {
               break;
             }
             default: {
-              if (/:/.test(itemName)) {
+              if (itemName.indexOf(':') > -1) {
                 const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
                 if (astAttrPrefix === itemNamePrefix &&
                     astAttrLocalName === itemNameLocalName &&
@@ -1578,7 +1578,7 @@ export class Matcher {
             itemName = itemName.toLowerCase();
             itemValue = itemValue.toLowerCase();
           }
-          if (/:/.test(itemName)) {
+          if (itemName.indexOf(':') > -1) {
             const [itemNamePrefix, itemNameLocalName] = itemName.split(':');
             // ignore xml:lang
             if (itemNamePrefix === 'xml' && itemNameLocalName === 'lang') {
@@ -1751,7 +1751,7 @@ export class Matcher {
     let nodePrefix;
     let nodeName;
     // just in case that the namespaced content is parsed as text/html
-    if (/:/.test(localName)) {
+    if (localName.indexOf(':') > -1) {
       [nodePrefix, nodeName] = localName.split(':');
     } else {
       nodePrefix = prefix || '';
