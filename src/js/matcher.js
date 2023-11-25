@@ -1937,41 +1937,81 @@ export class Matcher {
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
     const matchItems = items.length > 0;
-    const nodes = new Set();
+    const { document, root, shadow } = this.#root;
+    let nodes = new Set();
     let pending = false;
-    switch (leafType) {
-      case SELECTOR_ID: {
-        const { root } = this.#root;
-        if (root.nodeType === ELEMENT_NODE) {
-          pending = true;
-        } else {
-          const elm = root.getElementById(leafName);
-          if (elm && elm !== baseNode) {
-            const bool = isSameOrDescendant(elm, baseNode);
-            let node;
-            if (bool) {
-              node = elm;
+    if (shadow) {
+      pending = true;
+    } else {
+      switch (leafType) {
+        case SELECTOR_ID: {
+          if (root.nodeType === ELEMENT_NODE) {
+            pending = true;
+          } else {
+            const elm = root.getElementById(leafName);
+            if (elm && elm !== baseNode) {
+              const bool = isSameOrDescendant(elm, baseNode);
+              let node;
+              if (bool) {
+                node = elm;
+              }
+              if (node) {
+                if (matchItems) {
+                  const bool = this._matchLeaves(items, node);
+                  if (bool) {
+                    nodes.add(node);
+                  }
+                } else {
+                  nodes.add(node);
+                }
+              }
             }
-            if (node) {
-              if (matchItems) {
+          }
+          break;
+        }
+        case SELECTOR_CLASS: {
+          const arr = [].slice.call(baseNode.getElementsByClassName(leafName));
+          if (arr.length) {
+            if (matchItems) {
+              for (const node of arr) {
                 const bool = this._matchLeaves(items, node);
                 if (bool) {
                   nodes.add(node);
                 }
+              }
+            } else {
+              nodes = new Set(arr);
+            }
+          }
+          break;
+        }
+        case SELECTOR_TYPE: {
+          if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
+            pending = true;
+          } else {
+            const arr = [].slice.call(baseNode.getElementsByTagName(leafName));
+            if (arr.length) {
+              if (matchItems) {
+                for (const node of arr) {
+                  const bool = this._matchLeaves(items, node);
+                  if (bool) {
+                    nodes.add(node);
+                  }
+                }
               } else {
-                nodes.add(node);
+                nodes = new Set(arr);
               }
             }
           }
+          break;
         }
-        break;
-      }
-      case SELECTOR_PSEUDO_ELEMENT: {
-        this._matchPseudoElementSelector(leafName);
-        break;
-      }
-      default: {
-        pending = true;
+        case SELECTOR_PSEUDO_ELEMENT: {
+          this._matchPseudoElementSelector(leafName);
+          break;
+        }
+        default: {
+          pending = true;
+        }
       }
     }
     return {
@@ -2180,11 +2220,11 @@ export class Matcher {
             if (node.classList.contains(leafName)) {
               arr.push(node);
             }
-            const a = [...node.getElementsByClassName(leafName)];
+            const a = [].slice.call(node.getElementsByClassName(leafName));
             arr.push(...a);
           }
         } else {
-          const a = [...root.getElementsByClassName(leafName)];
+          const a = [].slice.call(root.getElementsByClassName(leafName));
           arr.push(...a);
         }
         if (arr.length) {
@@ -2232,11 +2272,11 @@ export class Matcher {
             if (node.localName === tagName) {
               arr.push(node);
             }
-            const a = [...node.getElementsByTagName(leafName)];
+            const a = [].slice.call(node.getElementsByTagName(leafName));
             arr.push(...a);
           }
         } else {
-          const a = [...root.getElementsByTagName(leafName)];
+          const a = [].slice.call(root.getElementsByTagName(leafName));
           arr.push(...a);
         }
         if (arr.length) {

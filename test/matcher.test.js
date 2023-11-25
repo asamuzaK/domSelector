@@ -9002,7 +9002,7 @@ describe('match AST leaf and DOM node', () => {
         assert.isFalse(res.pending, 'pending');
       });
 
-      it('should be pended', () => {
+      it('should get matched node(s)', () => {
         const leaves = [
           {
             name: 'li',
@@ -9012,11 +9012,36 @@ describe('match AST leaf and DOM node', () => {
         const refNode = document.getElementById('ul1');
         const matcher = new Matcher('ul .li', document);
         const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
       });
 
-      it('should be pended', () => {
+      it('should get matched node(s)', () => {
+        const leaves = [
+          {
+            name: 'li',
+            type: SELECTOR_CLASS
+          },
+          {
+            children: null,
+            name: 'first-child',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ];
+        const refNode = document.getElementById('ul1');
+        const matcher = new Matcher('ul .li:first-child', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should not match', () => {
         const leaves = [
           {
             name: 'foobar',
@@ -9027,49 +9052,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul .foobar', document);
         const res = matcher._findDescendantNodes(leaves, refNode);
         assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
-      });
-
-      it('should be pended', () => {
-        const leaves = [
-          {
-            name: 'li',
-            type: SELECTOR_CLASS
-          },
-          {
-            name: 'li',
-            type: SELECTOR_TYPE
-          }
-        ];
-        const refNode = document.getElementById('ul1');
-        const matcher = new Matcher('ul .li', document);
-        const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
-      });
-
-      it('should be pended', () => {
-        const leaves = [
-          {
-            name: 'li',
-            type: SELECTOR_CLASS
-          },
-          {
-            flags: null,
-            matcher: null,
-            name: {
-              name: 'hidden',
-              type: IDENTIFIER
-            },
-            type: SELECTOR_ATTR,
-            value: null
-          }
-        ];
-        const refNode = document.getElementById('ul1');
-        const matcher = new Matcher('ul .li[hidden]', document);
-        const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
+        assert.isFalse(res.pending, 'pending');
       });
 
       it('should be pended', () => {
@@ -9110,7 +9093,7 @@ describe('match AST leaf and DOM node', () => {
         assert.isTrue(res.pending, 'pending');
       });
 
-      it('should be pended', () => {
+      it('should get matched node(s)', () => {
         const leaves = [
           {
             name: 'li',
@@ -9120,39 +9103,15 @@ describe('match AST leaf and DOM node', () => {
         const refNode = document.getElementById('ul1');
         const matcher = new Matcher('ul li', document);
         const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
       });
 
-      it('should be pended', () => {
-        const leaves = [
-          {
-            name: 'ol',
-            type: SELECTOR_TYPE
-          }
-        ];
-        const refNode = document.getElementById('div1');
-        const matcher = new Matcher('div ol', document);
-        const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
-      });
-
-      it('should be pended', () => {
-        const leaves = [
-          {
-            name: 'li',
-            type: SELECTOR_TYPE
-          }
-        ];
-        const refNode = document.getElementById('ul1');
-        const matcher = new Matcher('ul li', document);
-        const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
-      });
-
-      it('should be pended', () => {
+      it('should get matched node(s)', () => {
         const leaves = [
           {
             name: 'li',
@@ -9167,32 +9126,24 @@ describe('match AST leaf and DOM node', () => {
         const refNode = document.getElementById('ul1');
         const matcher = new Matcher('ul li:first-child', document);
         const res = matcher._findDescendantNodes(leaves, refNode);
-        assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
+        assert.deepEqual([...res.nodes], [
+          document.getElementById('li1')
+        ], 'nodes');
+        assert.isFalse(res.pending, 'pending');
       });
 
-      it('should be pended', () => {
+      it('should not match', () => {
         const leaves = [
           {
-            name: 'li',
+            name: 'ol',
             type: SELECTOR_TYPE
-          },
-          {
-            flags: null,
-            matcher: null,
-            name: {
-              name: 'hidden',
-              type: IDENTIFIER
-            },
-            type: SELECTOR_ATTR,
-            value: null
           }
         ];
-        const refNode = document.getElementById('ul1');
-        const matcher = new Matcher('ul li[hidden]', document);
+        const refNode = document.getElementById('div1');
+        const matcher = new Matcher('div ol', document);
         const res = matcher._findDescendantNodes(leaves, refNode);
         assert.deepEqual([...res.nodes], [], 'nodes');
-        assert.isTrue(res.pending, 'pending');
+        assert.isFalse(res.pending, 'pending');
       });
 
       it('should not match', () => {
@@ -9207,6 +9158,26 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._findDescendantNodes(leaves, refNode);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const leaves = [
+          {
+            flags: null,
+            matcher: null,
+            name: {
+              name: 'hidden',
+              type: IDENTIFIER
+            },
+            type: SELECTOR_ATTR,
+            value: null
+          }
+        ];
+        const refNode = document.getElementById('dl1');
+        const matcher = new Matcher('dl [hidden]', document);
+        const res = matcher._findDescendantNodes(leaves, refNode);
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
       });
 
       it('should be pended', () => {
