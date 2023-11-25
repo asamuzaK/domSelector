@@ -34,10 +34,12 @@ const TARGET_SELF = 'self';
  * #ast: [
  *   {
  *     branch: branch[],
+ *     find: string
  *     skip: boolean
  *   },
  *   {
  *     branch: branch[],
+ *     find: string
  *     skip: boolean
  *   }
  * ]
