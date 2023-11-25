@@ -134,7 +134,7 @@ export const parseSelector = selector => {
     if (e.message === 'Identifier is expected' && regLang.test(selector)) {
       const [, lang, range] = regLang.exec(selector);
       const escapedRange =
-        range.replace(/\s*\*/g, '\\*').replace(/^"/, '').replace(/"$/, '');
+        range.replaceAll('*', '\\*').replace(/^"/, '').replace(/"$/, '');
       const escapedLang = lang.replace(range, escapedRange);
       res = parseSelector(selector.replace(lang, escapedLang));
     } else if (e.message === '"]" is expected' && !selector.endsWith(']')) {
