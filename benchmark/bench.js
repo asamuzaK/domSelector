@@ -139,8 +139,8 @@ const prepareDom = () => {
 
 /* selectors */
 const selectors = [
-  '.container.box',
-  '.container:not(.box)',
+  'p.content',
+  'div.container:not(.box)',
   '.box + .box',
   '.box ~ .box',
   '.box > .block',
