@@ -23,10 +23,10 @@ export const SYNTAX_ERR = 'SyntaxError';
 export const U_FFFD = '\uFFFD';
 
 /* numeric */
-export const BIT_01 = 0x1;
-export const BIT_02 = 0x2;
-export const BIT_04 = 0x4;
-export const BIT_08 = 0x8;
+export const BIT_01 = 1;
+export const BIT_02 = 2;
+export const BIT_04 = 4;
+export const BIT_08 = 8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
 export const BIT_HYPHEN = 0x2D;
@@ -41,12 +41,12 @@ export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 3;
 export const DOCUMENT_NODE = 9;
 export const DOCUMENT_FRAGMENT_NODE = 11;
-export const DOCUMENT_POSITION_PRECEDING = 0x2;
-export const DOCUMENT_POSITION_CONTAINS = 0x8;
+export const DOCUMENT_POSITION_PRECEDING = 2;
+export const DOCUMENT_POSITION_CONTAINS = 8;
 export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
-export const SHOW_ELEMENT = 0x1;
+export const SHOW_ELEMENT = 1;
 
 /* regexp */
 export const REG_LOGICAL_PSEUDO = /^(?:(?:ha|i)s|not|where)$/;

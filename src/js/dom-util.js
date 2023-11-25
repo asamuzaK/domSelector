@@ -70,8 +70,6 @@ export const getDirectionality = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
-    const ltr = 'ltr';
-    const rtl = 'rtl';
     if (/^(?:ltr|rtl)$/.test(nodeDir)) {
       res = nodeDir;
     } else if (nodeDir === 'auto') {
@@ -90,9 +88,9 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = rtl;
+          res = 'rtl';
         } else {
-          res = ltr;
+          res = 'ltr';
         }
       }
       if (!res) {
@@ -102,10 +100,10 @@ export const getDirectionality = (node = {}) => {
             res = getDirectionality(parentNode);
           } else if (parentNodeType === DOCUMENT_NODE ||
                      parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-            res = ltr;
+            res = 'ltr';
           }
         } else {
-          res = ltr;
+          res = 'ltr';
         }
       }
     } else if (localName === 'bdi') {
@@ -113,25 +111,25 @@ export const getDirectionality = (node = {}) => {
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = rtl;
+          res = 'rtl';
         } else {
-          res = ltr;
+          res = 'ltr';
         }
       }
       if (!(res || parentNode)) {
-        res = ltr;
+        res = 'ltr';
       }
     } else if (localName === 'input' && node.type === 'tel') {
-      res = ltr;
+      res = 'ltr';
     } else if (parentNode) {
       if (localName === 'slot') {
         const text = getSlottedTextContent(node);
         if (text) {
           const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
           if (level % 2 === 1) {
-            res = rtl;
+            res = 'rtl';
           } else {
-            res = ltr;
+            res = 'ltr';
           }
         }
       }
@@ -141,11 +139,11 @@ export const getDirectionality = (node = {}) => {
           res = getDirectionality(parentNode);
         } else if (parentNodeType === DOCUMENT_NODE ||
                    parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-          res = ltr;
+          res = 'ltr';
         }
       }
     } else {
-      res = ltr;
+      res = 'ltr';
     }
   }
   return res ?? null;
