@@ -2634,10 +2634,8 @@ export class Matcher {
     try {
       const nodes = this._find(TARGET_FIRST);
       nodes.delete(this.#node);
-      if (nodes.size > 1) {
+      if (nodes.size) {
         [res] = this._sortNodes(nodes);
-      } else if (nodes.size) {
-        [res] = [...nodes];
       }
     } catch (e) {
       this._onError(e);
