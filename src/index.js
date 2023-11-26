@@ -14,7 +14,7 @@ import { Matcher } from './js/matcher.js';
  * @param {object} node - Element node
  * @param {object} [opt] - options
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
- * @returns {boolean} - `true` if matched `false` otherwise
+ * @returns {boolean} - `true` if matched, `false` otherwise
  */
 export const matches = (selector, node, opt) =>
   new Matcher(selector, node, opt).matches();
