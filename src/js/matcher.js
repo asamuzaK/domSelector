@@ -737,9 +737,7 @@ export class Matcher {
         const branch = twigBranches[i];
         const lastIndex = branch.length - 1;
         const { leaves } = branch[lastIndex];
-        bool = this._matchLeaves(leaves, node, {
-          forgive
-        });
+        bool = this._matchLeaves(leaves, node, { forgive });
         if (bool && lastIndex > 0) {
           let nextNodes = new Set([node]);
           for (let j = lastIndex - 1; j >= 0; j--) {
@@ -2240,10 +2238,11 @@ export class Matcher {
       case SELECTOR_TYPE: {
         let arr = [];
         if (targetType === TARGET_SELF) {
-          const bool = this.#node.nodeType === ELEMENT_NODE &&
-                       this._matchLeaves([leaf], this.#node);
-          if (bool) {
-            arr.push(this.#node);
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            const bool = this._matchLeaves([leaf], this.#node);
+            if (bool) {
+              arr.push(this.#node);
+            }
           }
         } else if (targetType === TARGET_LINEAL) {
           let refNode = this.#node;
