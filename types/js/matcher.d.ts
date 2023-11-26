@@ -1,6 +1,5 @@
 export class Matcher {
     constructor(selector: string, node: object, opt?: {
-        sort?: boolean;
         warn?: boolean;
     });
     _onError(e: Error): void;
