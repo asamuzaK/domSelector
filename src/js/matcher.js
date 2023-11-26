@@ -162,7 +162,7 @@ export class Matcher {
 
   /**
    * sort AST leaves
-   * @param {Array.<object>} leaves - AST leaves
+   * @param {Array.<object>} leaves - collection of AST leaves
    * @returns {Array.<object>} - sorted leaves
    */
   _sortLeaves(leaves) {
@@ -268,7 +268,7 @@ export class Matcher {
       }
     }
     if (parentNode) {
-      const arr = [...parentNode.children];
+      const arr = [].slice.call(parentNode.children);
       const l = arr.length;
       if (l) {
         const selectorNodes = new Set();
@@ -379,7 +379,7 @@ export class Matcher {
     const { localName, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
-      const arr = [...parentNode.children];
+      const arr = [].slice.call(parentNode.children);
       const l = arr.length;
       if (l) {
         if (reverse) {
@@ -1115,7 +1115,7 @@ export class Matcher {
             if (!parent) {
               parent = documentElement;
             }
-            const nodes = [...parent.getElementsByTagName('input')];
+            const nodes = [].slice.call(parent.getElementsByTagName('input'));
             let checked;
             for (const item of nodes) {
               if (item.getAttribute('type') === 'radio') {
@@ -1986,9 +1986,7 @@ export class Matcher {
           break;
         }
         case SELECTOR_TYPE: {
-          if (document.contentType !== 'text/html' || /[*|]/.test(leafName)) {
-            pending = true;
-          } else {
+          if (document.contentType === 'text/html' && !/[*|]/.test(leafName)) {
             const arr = [].slice.call(baseNode.getElementsByTagName(leafName));
             if (arr.length) {
               if (matchItems) {
@@ -2002,6 +2000,8 @@ export class Matcher {
                 nodes = new Set(arr);
               }
             }
+          } else {
+            pending = true;
           }
           break;
         }
@@ -2058,7 +2058,7 @@ export class Matcher {
           break;
         }
         case '>': {
-          const childNodes = [...node.children];
+          const childNodes = [].slice.call(node.children);
           for (const refNode of childNodes) {
             const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
@@ -2196,7 +2196,7 @@ export class Matcher {
         break;
       }
       case SELECTOR_CLASS: {
-        const arr = [];
+        let arr = [];
         if (targetType === TARGET_SELF) {
           if (this.#node.nodeType === ELEMENT_NODE &&
               this.#node.classList.contains(leafName)) {
@@ -2215,7 +2215,7 @@ export class Matcher {
             }
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const childNodes = [...root.children];
+          const childNodes = [].slice.call(root.children);
           for (const node of childNodes) {
             if (node.classList.contains(leafName)) {
               arr.push(node);
@@ -2224,8 +2224,7 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          const a = [].slice.call(root.getElementsByClassName(leafName));
-          arr.push(...a);
+          arr = [].slice.call(root.getElementsByClassName(leafName));
         }
         if (arr.length) {
           if (matchItems) {
@@ -2242,7 +2241,7 @@ export class Matcher {
         break;
       }
       case SELECTOR_TYPE: {
-        const arr = [];
+        let arr = [];
         if (targetType === TARGET_SELF) {
           const bool = this.#node.nodeType === ELEMENT_NODE &&
                        this._matchLeaves([leaf], this.#node);
@@ -2267,7 +2266,7 @@ export class Matcher {
           pending = true;
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
-          const childNodes = [...root.children];
+          const childNodes = [].slice.call(root.children);
           for (const node of childNodes) {
             if (node.localName === tagName) {
               arr.push(node);
@@ -2276,8 +2275,7 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          const a = [].slice.call(root.getElementsByTagName(leafName));
-          arr.push(...a);
+          arr = [].slice.call(root.getElementsByTagName(leafName));
         }
         if (arr.length) {
           if (matchItems) {
@@ -2656,18 +2654,18 @@ export class Matcher {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   querySelectorAll() {
-    const res = [];
+    let res;
     try {
       const nodes = this._find(TARGET_ALL);
       nodes.delete(this.#node);
       if (nodes.size > 1 && this.#sort) {
-        res.push(...this._sortNodes(nodes));
+        res = this._sortNodes(nodes);
       } else if (nodes.size) {
-        res.push(...nodes);
+        res = [...nodes];
       }
     } catch (e) {
       this._onError(e);
     }
-    return res;
+    return res ?? [];
   }
 };
