@@ -78,7 +78,6 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
-  - `opt.sort` **[boolean][61]?** sort matched nodes
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes

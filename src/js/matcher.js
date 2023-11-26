@@ -65,7 +65,6 @@ export class Matcher {
   #nodes;
   #root;
   #selector;
-  #sort;
   #warn;
 
   /**
@@ -73,11 +72,10 @@ export class Matcher {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
-   * @param {boolean} [opt.sort] - sort results of querySelectorAll()
    * @param {boolean} [opt.warn] - console warn
    */
   constructor(selector, node, opt = {}) {
-    const { sort, warn } = opt;
+    const { warn } = opt;
     this.#bit = new Map([
       [SELECTOR_PSEUDO_ELEMENT, BIT_01],
       [SELECTOR_ID, BIT_02],
@@ -89,7 +87,6 @@ export class Matcher {
     this.#cache = new WeakMap();
     this.#selector = selector;
     this.#node = node;
-    this.#sort = !!sort;
     this.#warn = !!warn;
     [this.#ast, this.#nodes] = this._prepare(selector);
     this.#root = this._getRoot(node);
@@ -2658,10 +2655,8 @@ export class Matcher {
     try {
       const nodes = this._find(TARGET_ALL);
       nodes.delete(this.#node);
-      if (nodes.size > 1 && this.#sort) {
+      if (nodes.size) {
         res = this._sortNodes(nodes);
-      } else if (nodes.size) {
-        res = [...nodes];
       }
     } catch (e) {
       this._onError(e);

@@ -47,7 +47,6 @@ export const querySelector = (selector, node, opt) =>
  * @param {string} selector - CSS selector
  * @param {object} node - Document, DocumentFragment or Element node
  * @param {object} [opt] - options
- * @param {boolean} [opt.sort] - sort matched nodes
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
