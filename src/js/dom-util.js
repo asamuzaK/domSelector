@@ -245,7 +245,7 @@ export const selectorToNodeProps = (selector, node) => {
       tagName = selector;
     }
   } else {
-    throw new DOMException(`invalid selector ${selector}`, SYNTAX_ERR);
+    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   return {
     prefix,
