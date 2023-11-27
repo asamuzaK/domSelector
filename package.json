@@ -32,14 +32,14 @@
     "benchmark": "^2.1.4",
     "c8": "^8.0.1",
     "chai": "^4.3.10",
-    "esbuild": "^0.19.7",
+    "esbuild": "^0.19.8",
     "eslint": "^8.54.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-jsdoc": "^46.9.0",
     "eslint-plugin-regexp": "^2.1.1",
     "eslint-plugin-unicorn": "^49.0.0",
-    "jsdom": "^22.1.0",
+    "jsdom": "^23.0.0",
     "mocha": "^10.2.0",
     "npm-run-all": "^4.1.5",
     "sinon": "^17.0.1",
@@ -57,5 +57,5 @@
     "update": "npm-run-all -s update-*",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "1.1.5"
+  "version": "1.1.6"
 }
