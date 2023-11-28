@@ -12,6 +12,7 @@
     "url": "git+https://github.com/asamuzaK/domSelector.git"
   },
   "files": [
+    "deno.json",
     "dist",
     "src",
     "types"
@@ -49,8 +50,10 @@
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
-    "build": "npm run tsc && npm run lint && npm test && npm run bundle",
-    "bundle": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
+    "build": "npm run tsc && npm run lint && npm test && npm run compat",
+    "compat": "npm-run-all -s compat-*",
+    "compat-cjs": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
+    "compat-deno": "node scripts/index denoconf -i",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test-wpt": "npm run update-wpt && node test/wpt/wpt-runner.js",
