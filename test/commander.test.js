@@ -12,7 +12,10 @@ import {
 } from '../scripts/commander.js';
 
 /* constants */
+const CHAR = 'utf8';
 const DIR_CWD = process.cwd();
+const INDENT = 2;
+const PERM_FILE = 0o644;
 
 describe('create deno json', () => {
   it('should throw', async () => {
@@ -26,29 +29,73 @@ describe('create deno json', () => {
   });
 
   it('should call function', async () => {
+    const pkg = {
+      dependencies: {
+        foo: '^1.2.3',
+        'is-potential-custom-element-name': '^1.0.1'
+      }
+    };
+    const stubRead =
+      sinon.stub(fsPromise, 'readFile').resolves(JSON.stringify(pkg));
+    const filePath = path.resolve(DIR_CWD, 'deno.json');
+    const content = `${JSON.stringify({
+      imports: {
+        foo: 'npm:foo@^1.2.3',
+        'is-potential-custom-element-name':
+          'https://esm.sh/is-potential-custom-element-name@1.0.1'
+      },
+      nodeModulesDir: true
+    }, null, INDENT)}\n`;
+    const opt = {
+      encoding: CHAR, flag: 'w', mode: PERM_FILE
+    };
     const stubWrite = sinon.stub(fsPromise, 'writeFile');
+    const stubWriteCond = stubWrite.withArgs(filePath, content, opt);
     const stubInfo = sinon.stub(console, 'info');
     const res = await createDenoJson();
-    const { called: writeCalled } = stubWrite;
+    const { called: writeCalled } = stubWriteCond;
     const { called: infoCalled } = stubInfo;
+    stubRead.restore();
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called');
-    assert.isFalse(infoCalled, 'called');
-    assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
+    assert.isTrue(writeCalled, 'called write');
+    assert.isFalse(infoCalled, 'not called info');
+    assert.strictEqual(res, filePath, 'result');
   });
 
   it('should call function', async () => {
+    const pkg = {
+      dependencies: {
+        foo: '^1.2.3',
+        'is-potential-custom-element-name': '^1.0.1'
+      }
+    };
+    const stubRead =
+      sinon.stub(fsPromise, 'readFile').resolves(JSON.stringify(pkg));
+    const filePath = path.resolve(DIR_CWD, 'deno.json');
+    const content = `${JSON.stringify({
+      imports: {
+        foo: 'npm:foo@^1.2.3',
+        'is-potential-custom-element-name':
+          'https://esm.sh/is-potential-custom-element-name@1.0.1'
+      },
+      nodeModulesDir: true
+    }, null, INDENT)}\n`;
+    const opt = {
+      encoding: CHAR, flag: 'w', mode: PERM_FILE
+    };
     const stubWrite = sinon.stub(fsPromise, 'writeFile');
+    const stubWriteCond = stubWrite.withArgs(filePath, content, opt);
     const stubInfo = sinon.stub(console, 'info');
     const res = await createDenoJson(true);
-    const { called: writeCalled } = stubWrite;
+    const { called: writeCalled } = stubWriteCond;
     const { called: infoCalled } = stubInfo;
+    stubRead.restore();
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called');
-    assert.isTrue(infoCalled, 'called');
-    assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
+    assert.isTrue(writeCalled, 'called write');
+    assert.isTrue(infoCalled, 'called info');
+    assert.strictEqual(res, filePath, 'result');
   });
 });
 
@@ -71,8 +118,8 @@ describe('create deno config file', () => {
     const { called: infoCalled } = stubInfo;
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called');
-    assert.isFalse(infoCalled, 'called');
+    assert.isTrue(writeCalled, 'called write');
+    assert.isFalse(infoCalled, 'not called info');
     assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
   });
 
@@ -86,8 +133,8 @@ describe('create deno config file', () => {
     const { called: infoCalled } = stubInfo;
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called');
-    assert.isTrue(infoCalled, 'called');
+    assert.isTrue(writeCalled, 'called write');
+    assert.isTrue(infoCalled, 'called info');
     assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
   });
 });
@@ -123,8 +170,8 @@ describe('parse command', () => {
     const i = stubParse.callCount;
     const j = stubVer.callCount;
     parseCommand(['foo', 'bar', '-v']);
-    assert.strictEqual(stubParse.callCount, i + 1, 'called');
-    assert.strictEqual(stubVer.callCount, j + 1, 'called');
+    assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
+    assert.strictEqual(stubVer.callCount, j + 1, 'called version');
     stubParse.restore();
     stubVer.restore();
   });
