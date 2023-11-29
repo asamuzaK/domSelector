@@ -12,6 +12,7 @@
     "url": "git+https://github.com/asamuzaK/domSelector.git"
   },
   "files": [
+    "deno.json",
     "dist",
     "src",
     "types"
