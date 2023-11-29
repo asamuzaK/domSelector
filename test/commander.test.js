@@ -31,7 +31,7 @@ describe('create deno json', () => {
   it('should call function', async () => {
     const pkg = {
       dependencies: {
-        foo: '^1.2.3',
+        'css-tree': '^1.2.3',
         'is-potential-custom-element-name': '^1.0.1'
       }
     };
@@ -40,7 +40,7 @@ describe('create deno json', () => {
     const filePath = path.resolve(DIR_CWD, 'deno.json');
     const content = `${JSON.stringify({
       imports: {
-        foo: 'npm:foo@^1.2.3',
+        'css-tree': 'https://esm.sh/css-tree@1.2.3',
         'is-potential-custom-element-name':
           'https://esm.sh/is-potential-custom-element-name@1.0.1'
       },
@@ -66,7 +66,7 @@ describe('create deno json', () => {
   it('should call function', async () => {
     const pkg = {
       dependencies: {
-        foo: '^1.2.3',
+        'css-tree': '^1.2.3',
         'is-potential-custom-element-name': '^1.0.1'
       }
     };
@@ -75,7 +75,7 @@ describe('create deno json', () => {
     const filePath = path.resolve(DIR_CWD, 'deno.json');
     const content = `${JSON.stringify({
       imports: {
-        foo: 'npm:foo@^1.2.3',
+        'css-tree': 'https://esm.sh/css-tree@1.2.3',
         'is-potential-custom-element-name':
           'https://esm.sh/is-potential-custom-element-name@1.0.1'
       },

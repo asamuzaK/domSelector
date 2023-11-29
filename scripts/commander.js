@@ -26,19 +26,10 @@ export const createDenoJson = async info => {
   });
   const { dependencies } = JSON.parse(pkg);
   const items = Object.entries(dependencies);
-  const esm = new Set([
-    'is-potential-custom-element-name'
-  ]);
   const importMap = new Map();
   for (const [key, value] of items) {
-    // import from esm.sh
-    if (esm.has(key)) {
-      const version = value.replace(/^[\^~]/, '');
-      importMap.set(key, `https://esm.sh/${key}@${version}`);
-    // import from npm
-    } else {
-      importMap.set(key, `npm:${key}@${value}`);
-    }
+    const version = value.replace(/^[\^~]/, '');
+    importMap.set(key, `https://esm.sh/${key}@${version}`);
   }
   const obj = {
     imports: Object.fromEntries(importMap),
