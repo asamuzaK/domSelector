@@ -1,5 +1,5 @@
 /*!
- * DOM Selector - Gets the DOM node that matches the CSS selector.
+ * DOM Selector - CSS selector engine.
  * @license MIT
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
