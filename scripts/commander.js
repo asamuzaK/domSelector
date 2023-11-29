@@ -71,7 +71,6 @@ export const createDenoConfigFile = (cmdOpts = {}) => {
 export const parseCommand = args => {
   const reg = /^(?:(?:--)?help|-[h|v]|--version|denoconf)$/;
   if (Array.isArray(args) && args.some(arg => reg.test(arg))) {
-    commander.exitOverride();
     commander.version(process.env.npm_package_version, '-v, --version');
     commander.command('denoconf')
       .description('create deno config file')
