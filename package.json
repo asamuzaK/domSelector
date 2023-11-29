@@ -49,7 +49,7 @@
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
-    "build": "npm run tsc && npm run lint && npm test && npm run compat-cjs",
+    "build": "npm run tsc && npm run lint && npm test && npm run compat",
     "compat": "npm-run-all -s compat-*",
     "compat-cjs": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
     "compat-deno": "node scripts/index denoconf -i",
