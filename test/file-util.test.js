@@ -51,11 +51,7 @@ describe('readFile', () => {
     const p = path.resolve('test', 'file', 'test.txt');
     const opt = { encoding: 'utf8', flag: 'r' };
     const file = await readFile(p, opt);
-    if (os.platform() === 'win32') {
-      assert.strictEqual(file, 'test file\r\n');
-    } else {
-      assert.strictEqual(file, 'test file\n');
-    }
+    assert.isTrue(/^test file\r?\n$/.test(file));
   });
 });
 
