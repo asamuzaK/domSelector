@@ -166,13 +166,15 @@ describe('parse command', () => {
 
   it('should parse', () => {
     const stubParse = sinon.stub(commander, 'parse');
-    const stubVer = sinon.stub(commander, 'version');
+    const spyCmd = sinon.spy(commander, 'command');
+    const stubAct = sinon.stub(commander, 'action');
     const i = stubParse.callCount;
-    const j = stubVer.callCount;
-    parseCommand(['foo', 'bar', '-v']);
+    const j = spyCmd.callCount;
+    parseCommand(['foo', 'bar', 'denoconf']);
     assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
-    assert.strictEqual(stubVer.callCount, j + 1, 'called version');
+    assert.strictEqual(spyCmd.callCount, j + 1, 'called command');
     stubParse.restore();
-    stubVer.restore();
+    spyCmd.restore();
+    stubAct.restore();
   });
 });
