@@ -26,12 +26,12 @@ export const createDenoJson = async info => {
   });
   const { dependencies: deps } = JSON.parse(pkgContent);
   const items = Object.entries(deps);
-  const imports = {};
+  const importMap = new Map();
   for (const [key, value] of items) {
-    imports[key] = `npm:${key}@${value}`;
+    importMap.set(key, `npm:${key}@${value}`);
   }
   const denoJson = {
-    imports,
+    imports: Object.fromEntries(importMap),
     nodeModulesDir: true
   };
   const content = `${JSON.stringify(denoJson, null, INDENT)}\n`;
