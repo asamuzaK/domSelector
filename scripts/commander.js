@@ -20,12 +20,12 @@ const INDENT = 2;
  * @returns {Promise.<string>} - file path
  */
 export const createDenoJson = async info => {
-  const pkgContent = await readFile(path.join(DIR_CWD, 'package.json'), {
+  const pkg = await readFile(path.join(DIR_CWD, 'package.json'), {
     encoding: CHAR,
     flag: 'r'
   });
-  const { dependencies: deps } = JSON.parse(pkgContent);
-  const items = Object.entries(deps);
+  const { dependencies } = JSON.parse(pkg);
+  const items = Object.entries(dependencies);
   const esm = new Set([
     'is-potential-custom-element-name'
   ]);
@@ -40,11 +40,11 @@ export const createDenoJson = async info => {
       importMap.set(key, `npm:${key}@${value}`);
     }
   }
-  const denoJson = {
+  const obj = {
     imports: Object.fromEntries(importMap),
     nodeModulesDir: true
   };
-  const content = `${JSON.stringify(denoJson, null, INDENT)}\n`;
+  const content = `${JSON.stringify(obj, null, INDENT)}\n`;
   const filePath =
     await createFile(path.resolve(DIR_CWD, 'deno.json'), content);
   if (filePath && info) {
