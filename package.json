@@ -1,6 +1,6 @@
 {
   "name": "@asamuzakjp/dom-selector",
-  "description": "Gets the DOM node that matches the CSS selector.",
+  "description": "CSS selector engine.",
   "author": "asamuzaK",
   "license": "MIT",
   "homepage": "https://github.com/asamuzaK/domSelector#readme",
