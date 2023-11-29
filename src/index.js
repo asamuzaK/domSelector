@@ -1,5 +1,5 @@
 /*!
- * DOM Selector - CSS selector engine.
+ * DOM Selector - A CSS selector engine.
  * @license MIT
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}
