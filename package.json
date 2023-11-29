@@ -1,6 +1,6 @@
 {
   "name": "@asamuzakjp/dom-selector",
-  "description": "CSS selector engine.",
+  "description": "A CSS selector engine.",
   "author": "asamuzaK",
   "license": "MIT",
   "homepage": "https://github.com/asamuzaK/domSelector#readme",
