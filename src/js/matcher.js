@@ -1729,11 +1729,14 @@ export class Matcher {
    * match type selector
    * @param {object} ast - AST
    * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.forgive] - is forgiving selector list
    * @returns {?object} - matched node
    */
-  _matchTypeSelector(ast, node) {
+  _matchTypeSelector(ast, node, opt = {}) {
     const astName = unescapeSelector(ast.name);
     const { localName, prefix } = node;
+    const { forgive } = opt;
     const { document } = this.#root;
     let {
       prefix: astPrefix, tagName: astNodeName
@@ -1766,9 +1769,11 @@ export class Matcher {
         if (astNodeName === '*' || astNodeName === nodeName) {
           res = node;
         }
-      } else {
+      } else if (!forgive) {
         throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
       }
+    } else if (astPrefix && !forgive && !isNamespaceDeclared(astPrefix, node)) {
+      throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
     }
     return res ?? null;
   };
@@ -1882,7 +1887,7 @@ export class Matcher {
         }
         case SELECTOR_TYPE:
         default: {
-          const res = this._matchTypeSelector(ast, node);
+          const res = this._matchTypeSelector(ast, node, opt);
           if (res) {
             matched.add(res);
           }
