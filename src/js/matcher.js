@@ -589,13 +589,17 @@ export class Matcher {
         } else {
           let parent = node.parentNode;
           while (parent) {
-            if (parent.hasAttribute('lang')) {
-              if (parent.getAttribute('lang')) {
-                res = node;
+            if (parent.nodeType === ELEMENT_NODE) {
+              if (parent.hasAttribute('lang')) {
+                if (parent.getAttribute('lang')) {
+                  res = node;
+                }
+                break;
               }
+              parent = parent.parentNode;
+            } else {
               break;
             }
-            parent = parent.parentNode;
           }
         }
       } else {
@@ -631,14 +635,18 @@ export class Matcher {
           } else {
             let parent = node.parentNode;
             while (parent) {
-              if (parent.hasAttribute('lang')) {
-                const value = parent.getAttribute('lang');
-                if (regExtendedLang.test(value)) {
-                  res = node;
+              if (parent.nodeType === ELEMENT_NODE) {
+                if (parent.hasAttribute('lang')) {
+                  const value = parent.getAttribute('lang');
+                  if (regExtendedLang.test(value)) {
+                    res = node;
+                  }
+                  break;
                 }
+                parent = parent.parentNode;
+              } else {
                 break;
               }
-              parent = parent.parentNode;
             }
           }
         }
@@ -1835,6 +1843,8 @@ export class Matcher {
       }
     } else if (astName === 'host') {
       res = node;
+    } else {
+      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     }
     return res ?? null;
   }
@@ -2180,7 +2190,8 @@ export class Matcher {
             }
             refNode = refNode.parentNode;
           }
-        } else if (root.nodeType === ELEMENT_NODE) {
+        } else if (targetType === TARGET_ALL ||
+                   root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
           node = root.getElementById(leafName);
@@ -2295,6 +2306,7 @@ export class Matcher {
         break;
       }
       case SELECTOR_PSEUDO_ELEMENT: {
+        // throws
         this._matchPseudoElementSelector(leafName);
         break;
       }
@@ -2336,6 +2348,20 @@ export class Matcher {
             nodes = new Set(arr);
           }
         }
+      }
+    }
+    if (matchItems && !pending && !nodes.size) {
+      const lastLeaf = items[items.length - 1];
+      const { type: lastLeafType } = lastLeaf;
+      if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
+        let node;
+        if (root.nodeType === ELEMENT_NODE) {
+          node = root;
+        } else {
+          node = root.firstElementChild;
+        }
+        // throws if unknown pseudo-class
+        this._matchPseudoClassSelector(lastLeaf, node);
       }
     }
     return {

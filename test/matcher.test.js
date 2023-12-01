@@ -2105,6 +2105,19 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
+      it('should not match', () => {
+        const leaf = {
+          name: '*',
+          type: IDENTIFIER
+        };
+        const frag = document.createDocumentFragment();
+        const node = document.createElement('div');
+        frag.appendChild(node);
+        const matcher = new Matcher(':lang("*")', node);
+        const res = matcher._matchLanguagePseudoClass(leaf, node);
+        assert.isNull(res, 'result');
+      });
+
       it('should get matched node', () => {
         const leaf = {
           name: 'en',
@@ -2155,6 +2168,19 @@ describe('match AST leaf and DOM node', () => {
         node.setAttribute('lang', 'de');
         const parent = document.getElementById('div0');
         parent.appendChild(node);
+        const matcher = new Matcher(':lang(en)', node);
+        const res = matcher._matchLanguagePseudoClass(leaf, node);
+        assert.isNull(res, 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          name: 'en',
+          type: IDENTIFIER
+        };
+        const frag = document.createDocumentFragment();
+        const node = document.createElement('div');
+        frag.appendChild(node);
         const matcher = new Matcher(':lang(en)', node);
         const res = matcher._matchLanguagePseudoClass(leaf, node);
         assert.isNull(res, 'result');
@@ -8285,7 +8311,7 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('match shadow host pseudo class', () => {
-      it('should not match', () => {
+      it('should throw', () => {
         const ast = {
           children: null,
           name: 'foobar',
@@ -8314,9 +8340,43 @@ describe('match AST leaf and DOM node', () => {
         window.customElements.define('my-element', MyElement);
         const host = document.getElementById('baz');
         const node = host.shadowRoot;
-        const matcher = new Matcher(':host div', node);
-        const res = matcher._matchShadowHostPseudoClass(ast, node);
-        assert.isNull(res, 'result');
+        const matcher = new Matcher(':foobar div', node);
+        assert.throws(() => matcher._matchShadowHostPseudoClass(ast, node),
+          DOMException, 'Invalid selector :foobar');
+      });
+
+      it('should throw', () => {
+        const ast = {
+          children: null,
+          name: 'host-context',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher(':host-context div', node);
+        assert.throws(() => matcher._matchShadowHostPseudoClass(ast, node),
+          DOMException, 'Invalid selector :host-context');
       });
 
       it('should get matched node', () => {
@@ -9693,6 +9753,18 @@ describe('match AST leaf and DOM node', () => {
           node
         ], 'nodes');
         assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should be pended', () => {
+        const node = document.createElement('div');
+        node.id = 'foobar';
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher('#foobar', node);
+        const [[{ branch: [twig] }]] = matcher._prepare('#foobar');
+        const res = matcher._findNodes(twig, 'all');
+        assert.deepEqual([...res.nodes], [], 'nodes');
+        assert.isTrue(res.pending, 'pending');
       });
 
       it('should be pended', () => {
