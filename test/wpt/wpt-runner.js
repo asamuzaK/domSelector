@@ -174,7 +174,7 @@ const setup = window => {
   };
 };
 
-const filter = (testPath) => {
+const filter = testPath => {
   // fails due to upstream issues and/or not yet supported
   const skipList = [
     'has-sibling-chrome-crash.html',
@@ -206,9 +206,8 @@ const filter = (testPath) => {
     'valid-invalid-form-fieldset.html'
   ];
   const includeList = [
-    // dom/nodes
-    'Element-webkitMatchesSelector.html',
-    'query-target-in-load-event.html',
+    // css/css-scoping
+    'host-dom-001.html',
     // css/selectors
     'child-indexed-pseudo-class.html',
     'dir-pseudo-on-bdi-element.html',
@@ -229,8 +228,9 @@ const filter = (testPath) => {
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
     'selector-placeholder-shown-emptify-placeholder.html',
-    // css/css-scoping
-    'host-dom-001.html'
+    // dom/nodes
+    'Element-webkitMatchesSelector.html',
+    'query-target-in-load-event.html'
   ];
   const excludeList = [
     'ParentNode-querySelector-All-content.html'
@@ -256,9 +256,9 @@ const filter = (testPath) => {
 };
 
 const rootURLs = [
-  'dom/nodes/',
+  'css/css-scoping/',
   'css/selectors/',
-  'css/css-scoping/'
+  'dom/nodes/'
 ];
 
 (async () => {
