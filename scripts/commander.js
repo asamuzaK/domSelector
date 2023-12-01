@@ -32,8 +32,7 @@ export const createDenoJson = async info => {
     importMap.set(key, `https://esm.sh/${key}@${version}`);
   }
   const obj = {
-    imports: Object.fromEntries(importMap),
-    nodeModulesDir: true
+    imports: Object.fromEntries(importMap)
   };
   const content = `${JSON.stringify(obj, null, INDENT)}\n`;
   const filePath =

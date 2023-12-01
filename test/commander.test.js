@@ -43,8 +43,7 @@ describe('create deno json', () => {
         'css-tree': 'https://esm.sh/css-tree@1.2.3',
         'is-potential-custom-element-name':
           'https://esm.sh/is-potential-custom-element-name@1.0.1'
-      },
-      nodeModulesDir: true
+      }
     }, null, INDENT)}\n`;
     const opt = {
       encoding: CHAR, flag: 'w', mode: PERM_FILE
@@ -78,8 +77,7 @@ describe('create deno json', () => {
         'css-tree': 'https://esm.sh/css-tree@1.2.3',
         'is-potential-custom-element-name':
           'https://esm.sh/is-potential-custom-element-name@1.0.1'
-      },
-      nodeModulesDir: true
+      }
     }, null, INDENT)}\n`;
     const opt = {
       encoding: CHAR, flag: 'w', mode: PERM_FILE
