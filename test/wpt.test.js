@@ -122,6 +122,57 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('dom/nodes/ParentNode-querySelector-All-content.xht', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <ul id="id-ul1">
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+        </ul>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('id-ul1');
+      const res = document.querySelectorAll('#id-li-duplicate');
+      assert.deepEqual(res, [
+        node.firstElementChild,
+        node.firstElementChild.nextElementSibling,
+        node.firstElementChild.nextElementSibling.nextElementSibling,
+        node.lastElementChild
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="descendant">
+          <div id="descendant-div1" class="descendant-div1">
+            <div id="descendant-div2" class="descendant-div2">
+              <div id="descendant-div3" class="descendant-div3">
+              </div>
+            </div>
+          </div>
+          <div id="descendant-div4" class="descendant-div4"></div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('descendant-div3');
+      const root = document.documentElement;
+      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+  });
+
+  describe('dom/nodes/ParentNode-querySelector-All.html', () => {
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('div:example'), DOMException,
+        'Unknown pseudo-class :example');
+    });
+  });
+
   describe('css/selectors/any-link-dynamic-001.html', () => {
     it('should get results', () => {
       const elm = document.createElement('a');
