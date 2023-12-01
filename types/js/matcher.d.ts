@@ -31,7 +31,9 @@ export class Matcher {
     _matchAttributeSelector(ast: object, node: object): object | null;
     _matchClassSelector(ast: object, node: object): object | null;
     _matchIDSelector(ast: object, node: object): object | null;
-    _matchTypeSelector(ast: object, node: object): object | null;
+    _matchTypeSelector(ast: object, node: object, opt?: {
+        forgive?: boolean;
+    }): object | null;
     _matchShadowHostPseudoClass(ast: object, node: object): object | null;
     _matchSelector(ast: object, node: object, opt?: object): Set<object>;
     _matchLeaves(leaves: Array<object>, node: object, opt?: object): boolean;
