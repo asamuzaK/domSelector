@@ -894,8 +894,7 @@ export class Matcher {
       const regAnchor = /^a(?:rea)?$/;
       const regFormCtrl =
         /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
-      const regFormValidity =
-        /^(?:(?:(?:in|out)pu|selec)t|button|form|textarea)$/;
+      const regFormValidity = /^(?:(?:inpu|selec)t|button|form|textarea)$/;
       const regInteract = /^d(?:etails|ialog)$/;
       const regTypeCheck = /^(?:checkbox|radio)$/;
       const regTypeDate = /^(?:date(?:time-local)?|month|time|week)$/;

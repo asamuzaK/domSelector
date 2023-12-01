@@ -1829,4 +1829,22 @@ describe('local wpt test cases', () => {
       assert.isFalse(res, 'result');
     });
   });
+
+  describe('html/semantics/forms/the-output-element/output-validity.html', () => {
+    it('should not match', () => {
+      const html = "<output id='output_test'></output>";
+      document.body.innerHTML = html;
+      const node = document.getElementById('output_test');
+      const res = node.matches(':valid');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should not match', () => {
+      const html = "<output id='output_test'></output>";
+      document.body.innerHTML = html;
+      const node = document.getElementById('output_test');
+      const res = node.matches(':invalid');
+      assert.isFalse(res, 'result');
+    });
+  });
 });
