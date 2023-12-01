@@ -8039,7 +8039,7 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual(res, node, 'result');
       });
 
-      it('should not match', () => {
+      it('should throw', () => {
         const leaf = {
           name: 'foo|*',
           type: SELECTOR_TYPE
@@ -8049,8 +8049,8 @@ describe('match AST leaf and DOM node', () => {
         const parent = document.getElementById('div0');
         parent.appendChild(node);
         const matcher = new Matcher('foo|*', node);
-        const res = matcher._matchTypeSelector(leaf, node);
-        assert.isNull(res, 'result');
+        assert.throws(() => matcher._matchTypeSelector(leaf, node),
+          DOMException, 'Undeclared namespace foo');
       });
 
       it('should not match', () => {

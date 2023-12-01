@@ -1762,10 +1762,13 @@ export class Matcher {
       if (astNodeName === '*' || astNodeName === nodeName) {
         res = node;
       }
-    } else if (astPrefix === nodePrefix &&
-               isNamespaceDeclared(astPrefix, node)) {
-      if (astNodeName === '*' || astNodeName === nodeName) {
-        res = node;
+    } else if (astPrefix === nodePrefix) {
+      if (isNamespaceDeclared(astPrefix, node)) {
+        if (astNodeName === '*' || astNodeName === nodeName) {
+          res = node;
+        }
+      } else {
+        throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
       }
     }
     return res ?? null;
