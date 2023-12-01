@@ -1,5 +1,5 @@
 var l=Object.defineProperty;var n=Object.getOwnPropertyDescriptor;var p=Object.getOwnPropertyNames;var m=Object.prototype.hasOwnProperty;var q=(t,e)=>{for(var o in e)l(t,o,{get:e[o],enumerable:!0})},u=(t,e,o,s)=>{if(e&&typeof e=="object"||typeof e=="function")for(let r of p(e))!m.call(t,r)&&r!==o&&l(t,r,{get:()=>e[r],enumerable:!(s=n(e,r))||s.enumerable});return t};var w=t=>u(l({},"__esModule",{value:!0}),t);var h={};q(h,{closest:()=>y,matches:()=>x,querySelector:()=>S,querySelectorAll:()=>a});module.exports=w(h);var c=require("./js/matcher.js");/*!
- * DOM Selector - Gets the DOM node that matches the CSS selector.
+ * DOM Selector - A CSS selector engine.
  * @license MIT
  * @copyright asamuzaK (Kazz)
  * @see {@link https://github.com/asamuzaK/domSelector/blob/main/LICENSE}

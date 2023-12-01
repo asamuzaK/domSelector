@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "bidi-js": "https://esm.sh/bidi-js@1.0.3",
+    "css-tree": "https://esm.sh/css-tree@2.3.1",
+    "is-potential-custom-element-name": "https://esm.sh/is-potential-custom-element-name@1.0.1"
+  },
+  "nodeModulesDir": true
+}
