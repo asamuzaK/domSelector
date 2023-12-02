@@ -3356,6 +3356,60 @@ describe('match AST leaf and DOM node', () => {
           DOMException, 'Unsupported pseudo-class :current()');
       });
 
+      it('should not match', () => {
+        const leaf = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: SELECTOR_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          name: 'host',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':host(.foo)', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'foo',
+                  type: SELECTOR_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          name: 'host-context',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        const parent = document.getElementById('div0');
+        parent.appendChild(node);
+        const matcher = new Matcher(':host-context(.foo)', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
       it('should throw', () => {
         const leaf = {
           children: [
@@ -6203,6 +6257,32 @@ describe('match AST leaf and DOM node', () => {
         assert.deepEqual([...res], [
           node
         ], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'host',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':host', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'host-context',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':host-context', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
       });
 
       // legacy pseudo-element
@@ -9790,7 +9870,7 @@ describe('match AST leaf and DOM node', () => {
       });
 
       it('should get matched node(s)', () => {
-        const node = document.getElementById('li1');
+        const node = document.getElementById('ul1');
         const matcher = new Matcher('.li', node);
         const [[{ branch: [twig] }]] = matcher._prepare('.li');
         const res = matcher._findNodes(twig, 'first');
@@ -9803,7 +9883,7 @@ describe('match AST leaf and DOM node', () => {
       });
 
       it('should get matched node(s)', () => {
-        const node = document.getElementById('li1');
+        const node = document.getElementById('ul1');
         const matcher = new Matcher('.li', node);
         const [[{ branch: [twig] }]] = matcher._prepare('.li');
         const res = matcher._findNodes(twig, 'all');

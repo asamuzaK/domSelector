@@ -15,11 +15,11 @@ import {
 /* constants */
 import {
   ALPHA_NUM, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, COMBINATOR,
-  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, NOT_SUPPORTED_ERR,
-  REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
-  SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
+  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
+  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
+  NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 const FIND_NEXT = 'next';
 const FIND_PREV = 'prev';
@@ -886,6 +886,11 @@ export class Matcher {
             }
             break;
           }
+          case 'host':
+          case 'host-context': {
+            // ignore
+            break;
+          }
           default: {
             if (!forgive) {
               throw new DOMException(`Unknown pseudo-class :${astName}()`,
@@ -1443,7 +1448,7 @@ export class Matcher {
         }
         case 'host':
         case 'host-context': {
-          // should not match
+          // ignore
           break;
         }
         // legacy pseudo-elements
@@ -2237,7 +2242,22 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          arr = [].slice.call(root.getElementsByClassName(leafName));
+          const a = [].slice.call(root.getElementsByClassName(leafName));
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            for (const node of a) {
+              if (node === this.#node) {
+                arr.push(node);
+              } else {
+                const posBit = node.compareDocumentPosition(this.#node);
+                if (posBit & DOCUMENT_POSITION_CONTAINED_BY ||
+                    posBit & DOCUMENT_POSITION_CONTAINS) {
+                  arr.push(node);
+                }
+              }
+            }
+          } else {
+            arr = a;
+          }
         }
         if (arr.length) {
           if (matchItems) {
@@ -2289,7 +2309,22 @@ export class Matcher {
             arr.push(...a);
           }
         } else {
-          arr = [].slice.call(root.getElementsByTagName(leafName));
+          const a = [].slice.call(root.getElementsByTagName(leafName));
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            for (const node of a) {
+              if (node === this.#node) {
+                arr.push(node);
+              } else {
+                const posBit = node.compareDocumentPosition(this.#node);
+                if (posBit & DOCUMENT_POSITION_CONTAINED_BY ||
+                    posBit & DOCUMENT_POSITION_CONTAINS) {
+                  arr.push(node);
+                }
+              }
+            }
+          } else {
+            arr = a;
+          }
         }
         if (arr.length) {
           if (matchItems) {
