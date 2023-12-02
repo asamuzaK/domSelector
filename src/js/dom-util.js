@@ -8,7 +8,7 @@ import bidiFactory from 'bidi-js';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
-  ELEMENT_NODE, REG_SHADOW_MODE, SYNTAX_ERR
+  ELEMENT_NODE, REG_SHADOW_MODE, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 
 /* bidi */
@@ -83,7 +83,28 @@ export const getDirectionality = (node = {}) => {
       } else if (localName === 'slot') {
         text = getSlottedTextContent(node);
       } else {
-        text = node.textContent.trim();
+        const items = [].slice.call(node.childNodes);
+        for (const item of items) {
+          const {
+            dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
+            textContent: itemTextContent
+          } = item;
+          if (itemNodeType === TEXT_NODE) {
+            text = itemTextContent.trim();
+          } else if (itemNodeType === ELEMENT_NODE) {
+            if (!/^(?:bdi|s(?:cript|tyle)|textarea)$/.test(itemLocalName) &&
+                (!itemDir || !/^(?:ltr|rtl)$/.test(itemDir))) {
+              if (itemLocalName === 'slot') {
+                text = getSlottedTextContent(item);
+              } else {
+                text = itemTextContent.trim();
+              }
+            }
+          }
+          if (text) {
+            break;
+          }
+        }
       }
       if (text) {
         const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);

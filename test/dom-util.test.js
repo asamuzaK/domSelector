@@ -349,6 +349,34 @@ describe('DOM utility functions', () => {
     it('should get value', () => {
       const html = `
         <template id="template">
+          <div id="foobar" dir="auto">
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="bar">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foobar');
+      const res = func(node);
+      assert.strictEqual(res, 'ltr', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
           <div>
             <slot id="foo" name="bar" dir="auto">Foo</slot>
           </div>
