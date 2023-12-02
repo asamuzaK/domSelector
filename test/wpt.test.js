@@ -171,6 +171,31 @@ describe('local wpt test cases', () => {
       assert.throws(() => node.querySelector('div:example'), DOMException,
         'Unknown pseudo-class :example');
     });
+
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="root">
+          <div id="descendant">
+            <div id="descendant-div1" class="descendant-div1">
+              <div id="descendant-div2" class="descendant-div2">
+                <div id="descendant-div3" class="descendant-div3">
+                </div>
+              </div>
+            </div>
+            <div id="descendant-div4" class="descendant-div4"></div>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const node = document.getElementById('descendant-div3');
+      const clone = root.cloneNode(true);
+      document.body.appendChild(clone);
+      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
   });
 
   describe('css/selectors/any-link-dynamic-001.html', () => {
@@ -563,6 +588,88 @@ describe('local wpt test cases', () => {
         assert.isFalse(input.matches(':dir(ltr)'), `${type} ltr`);
         assert.isTrue(input.matches(':dir(rtl)'), `${type} rtl`);
       }
+    });
+  });
+
+  describe('css/selectors/dir-selector-auto.html', () => {
+    const html = `
+      <div id=testDivs>
+        <div id=div1 dir=auto>
+          <div id=div1_1>a</div>
+        </div>
+        <div id=div2 dir=auto>
+          <div id=div2_1>&#1514;</div>
+        </div>
+        <div id=div3 dir=auto>
+          <div id=div3_1 dir=rtl>&#1514;</div>
+          <div id=div3_2>a</div>
+        </div>
+        <div id=div4 dir=auto>
+          <div id=div4_1>
+            <div id=div4_1_1>a</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div1:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div1_1:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div1_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div2:dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div2_1:dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div2_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div3:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div3'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div3_1:dir(rtl)');
+      assert.deepEqual(res, document.getElementById('div3_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div3_2:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div3_2'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div4:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div4'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div4_1:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div4_1'), 'result');
+    });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const res = document.querySelector('#div4_2:dir(ltr)');
+      assert.deepEqual(res, document.getElementById('div4_2'), 'result');
     });
   });
 
