@@ -1,5 +1,5 @@
 /* api */
-import { promises as fsPromise } from 'node:fs';
+import fs, { promises as fsPromise } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import sinon from 'sinon';
@@ -8,7 +8,7 @@ import { describe, it } from 'mocha';
 
 /* test */
 import {
-  commander, createDenoConfigFile, createDenoJson, parseCommand
+  cleanDirectory, commander, createDenoConfigFile, createDenoJson, parseCommand
 } from '../scripts/commander.js';
 
 /* constants */
@@ -137,6 +137,43 @@ describe('create deno config file', () => {
   });
 });
 
+describe('clean directory', () => {
+  it('should not call funtion', () => {
+    const stubRm = sinon.stub(fs, 'rmSync');
+    const dir = path.resolve('foo');
+    cleanDirectory({ dir });
+    const { called: rmCalled } = stubRm;
+    stubRm.restore();
+    assert.isFalse(rmCalled, 'not called');
+  });
+
+  it('should call funtion', () => {
+    const stubRm = sinon.stub(fs, 'rmSync');
+    const stubInfo = sinon.stub(console, 'info');
+    const dir = path.resolve('test', 'file');
+    cleanDirectory({ dir });
+    const { calledOnce: rmCalled } = stubRm;
+    const { called: infoCalled } = stubInfo;
+    stubRm.restore();
+    stubInfo.restore();
+    assert.isTrue(rmCalled, 'called');
+    assert.isFalse(infoCalled, 'not called');
+  });
+
+  it('should call funtion', () => {
+    const stubRm = sinon.stub(fs, 'rmSync');
+    const stubInfo = sinon.stub(console, 'info');
+    const dir = path.resolve('test', 'file');
+    cleanDirectory({ dir, info: true });
+    const { calledOnce: rmCalled } = stubRm;
+    const { calledOnce: infoCalled } = stubInfo;
+    stubRm.restore();
+    stubInfo.restore();
+    assert.isTrue(rmCalled, 'called');
+    assert.isTrue(infoCalled, 'not called');
+  });
+});
+
 describe('parse command', () => {
   it('should not parse', () => {
     const stubParse = sinon.stub(commander, 'parse');
@@ -168,9 +205,23 @@ describe('parse command', () => {
     const stubAct = sinon.stub(commander, 'action');
     const i = stubParse.callCount;
     const j = spyCmd.callCount;
+    parseCommand(['foo', 'bar', 'clean']);
+    assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
+    assert.strictEqual(spyCmd.callCount, j + 2, 'called command');
+    stubParse.restore();
+    spyCmd.restore();
+    stubAct.restore();
+  });
+
+  it('should parse', () => {
+    const stubParse = sinon.stub(commander, 'parse');
+    const spyCmd = sinon.spy(commander, 'command');
+    const stubAct = sinon.stub(commander, 'action');
+    const i = stubParse.callCount;
+    const j = spyCmd.callCount;
     parseCommand(['foo', 'bar', 'denoconf']);
     assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
-    assert.strictEqual(spyCmd.callCount, j + 1, 'called command');
+    assert.strictEqual(spyCmd.callCount, j + 2, 'called command');
     stubParse.restore();
     spyCmd.restore();
     stubAct.restore();

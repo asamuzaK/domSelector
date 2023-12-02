@@ -7,7 +7,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { program as commander } from 'commander';
 import { throwErr } from './common.js';
-import { createFile, readFile } from './file-util.js';
+import { createFile, isDir, readFile, removeDir } from './file-util.js';
 
 /* constants */
 const CHAR = 'utf8';
@@ -54,13 +54,33 @@ export const createDenoConfigFile = (cmdOpts = {}) => {
 };
 
 /**
+ * clean directory
+ * @param {object} cmdOpts - command options
+ * @returns {void}
+ */
+export const cleanDirectory = (cmdOpts = {}) => {
+  const { dir, info } = cmdOpts;
+  if (isDir(dir)) {
+    removeDir(dir);
+    if (info) {
+      console.info(`Removed: ${path.resolve(dir)}`);
+    }
+  }
+};
+
+/**
  * parse command
  * @param {Array} args - process.argv
  * @returns {void}
  */
 export const parseCommand = args => {
-  const reg = /^(?:(?:--)?help|-h|denoconf)$/;
+  const reg = /^(?:(?:--)?help|-h|clean|denoconf)$/;
   if (Array.isArray(args) && args.some(arg => reg.test(arg))) {
+    commander.command('clean')
+      .description('clean directory')
+      .option('-d, --dir <name>', 'specify directory')
+      .option('-i, --info', 'console info')
+      .action(cleanDirectory);
     commander.command('denoconf')
       .description('create deno config file')
       .option('-i, --info', 'console info')
