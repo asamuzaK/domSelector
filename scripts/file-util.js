@@ -19,6 +19,16 @@ export const getStat = file =>
   isString(file) && fs.existsSync(file) ? fs.statSync(file) : null;
 
 /**
+ * the directory is a directory
+ * @param {string} dir - directory path
+ * @returns {boolean} - result
+ */
+export const isDir = dir => {
+  const stat = getStat(dir);
+  return stat ? stat.isDirectory() : false;
+};
+
+/**
  * the file is a file
  * @param {string} file - file path
  * @returns {boolean} - result
@@ -26,6 +36,21 @@ export const getStat = file =>
 export const isFile = file => {
   const stat = getStat(file);
   return stat ? stat.isFile() : false;
+};
+
+/**
+ * remove the directory and it's files synchronously
+ * @param {string} dir - directory path
+ * @returns {void}
+ */
+export const removeDir = dir => {
+  if (!isDir(dir)) {
+    throw new Error(`No such directory: ${dir}`);
+  }
+  fs.rmSync(dir, {
+    force: true,
+    recursive: true
+  });
 };
 
 /**
