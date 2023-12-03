@@ -71,39 +71,48 @@ export const getDirectionality = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
-    if (/^(?:ltr|rtl)$/.test(nodeDir)) {
+    const regDir = /^(?:ltr|rtl)$/;
+    if (regDir.test(nodeDir)) {
       res = nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
-      if (localName === 'textarea') {
-        text = node.value;
-      } else if (localName === 'input' &&
-                 (!node.type ||
-                  /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type))) {
-        text = node.value;
-      } else if (localName === 'slot') {
-        text = getSlottedTextContent(node);
-      } else {
-        const items = [].slice.call(node.childNodes);
-        for (const item of items) {
-          const {
-            dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
-            textContent: itemTextContent
-          } = item;
-          if (itemNodeType === TEXT_NODE) {
-            text = itemTextContent.trim();
-          } else if (itemNodeType === ELEMENT_NODE) {
-            if (!/^(?:bdi|s(?:cript|tyle)|textarea)$/.test(itemLocalName) &&
-                (!itemDir || !/^(?:ltr|rtl)$/.test(itemDir))) {
-              if (itemLocalName === 'slot') {
-                text = getSlottedTextContent(item);
-              } else {
-                text = itemTextContent.trim();
+      switch (localName) {
+        case 'input': {
+          if(!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
+            text = node.value;
+          }
+          break;
+        }
+        case 'slot': {
+          text = getSlottedTextContent(node);
+          break;
+        }
+        case 'textarea': {
+          text = node.value;
+          break;
+        }
+        default: {
+          const items = [].slice.call(node.childNodes);
+          for (const item of items) {
+            const {
+              dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
+              textContent: itemTextContent
+            } = item;
+            if (itemNodeType === TEXT_NODE) {
+              text = itemTextContent.trim();
+            } else if (itemNodeType === ELEMENT_NODE) {
+              if (!/^(?:bdi|s(?:cript|tyle)|textarea)$/.test(itemLocalName) &&
+                  (!itemDir || !regDir.test(itemDir))) {
+                if (itemLocalName === 'slot') {
+                  text = getSlottedTextContent(item);
+                } else {
+                  text = itemTextContent.trim();
+                }
               }
             }
-          }
-          if (text) {
-            break;
+            if (text) {
+              break;
+            }
           }
         }
       }
