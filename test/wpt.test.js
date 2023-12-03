@@ -420,8 +420,6 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/dir-pseudo-on-input-element.html', () => {
-    const inputText = ['text', 'search', 'url', 'email'];
-
     it('should get matched node', () => {
       const input = document.createElement('input');
       input.type = 'tel';
@@ -530,8 +528,13 @@ describe('local wpt test cases', () => {
       assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
     });
 
+    const dirValue = [
+      'password', 'text', 'search', 'url', 'email', 'submit', 'reset',
+      'button'
+    ];
+
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
@@ -540,7 +543,7 @@ describe('local wpt test cases', () => {
     });
 
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         input.setAttribute('dir', 'ltr');
@@ -550,7 +553,7 @@ describe('local wpt test cases', () => {
     });
 
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         input.setAttribute('dir', 'foo');
@@ -560,7 +563,7 @@ describe('local wpt test cases', () => {
     });
 
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         input.setAttribute('dir', 'rtl');
@@ -570,7 +573,7 @@ describe('local wpt test cases', () => {
     });
 
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         input.setAttribute('dir', 'auto');
@@ -580,13 +583,77 @@ describe('local wpt test cases', () => {
     });
 
     it('should get matched node', () => {
-      for (const type of inputText) {
+      for (const type of dirValue) {
         const input = document.createElement('input');
         input.type = type;
         input.setAttribute('dir', 'auto');
         input.value = '\u05EA';
         assert.isFalse(input.matches(':dir(ltr)'), `${type} ltr`);
         assert.isTrue(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    const dirDefault = [
+      'date', 'time', 'number', 'range', 'color', 'checkbox', 'radio', 'image'
+    ];
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtr`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'ltr');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtr`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'foo');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'rtl');
+        assert.isFalse(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isTrue(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'auto');
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'auto');
+        input.value = '\u05EA';
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
       }
     });
   });
