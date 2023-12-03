@@ -736,8 +736,8 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('is node same or descendant of the root node', () => {
-    const func = domUtil.isSameOrDescendant;
+  describe('is descendant', () => {
+    const func = domUtil.isDescendant;
 
     it('should get result', () => {
       const node = document.documentElement;
@@ -776,7 +776,7 @@ describe('DOM utility functions', () => {
     it('should get result', () => {
       const node = document.createElement('div');
       const res = func(node, node);
-      assert.isTrue(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
     it('should get result', () => {
@@ -793,6 +793,138 @@ describe('DOM utility functions', () => {
       tmpl.appendChild(node);
       document.body.appendChild(tmpl);
       const res = func(tmpl.content);
+      assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('is inclusive', () => {
+    const func = domUtil.isInclusive;
+
+    it('should get result', () => {
+      const node = document.documentElement;
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('li');
+      const base = document.createElement('ul');
+      const parent = document.getElementById('div0');
+      base.appendChild(node);
+      parent.appendChild(base);
+      const res = func(node, base);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const nodeA = document.createElement('li');
+      const nodeB = document.createElement('li');
+      const base = document.createElement('ul');
+      const parent = document.getElementById('div0');
+      base.appendChild(nodeA);
+      base.appendChild(nodeB);
+      parent.appendChild(base);
+      const res = func(nodeA, nodeB);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const base = document.documentElement;
+      const res = func(node, base);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const res = func(node, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const tmpl = document.createElement('template');
+      const node = document.createElement('div');
+      tmpl.appendChild(node);
+      document.body.appendChild(tmpl);
+      const base = document.documentElement;
+      const res = func(tmpl.content, base);
+      assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('is preceding', () => {
+    const func = domUtil.isPreceding;
+
+    it('should get result', () => {
+      const node = document.documentElement;
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const nodeA = document.createElement('ul');
+      const nodeB = document.createElement('li');
+      const parent = document.getElementById('div0');
+      nodeA.appendChild(nodeB);
+      parent.appendChild(nodeA);
+      const res = func(nodeA, nodeB);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const nodeA = document.createElement('li');
+      const nodeB = document.createElement('ul');
+      const parent = document.getElementById('div0');
+      nodeB.appendChild(nodeA);
+      parent.appendChild(nodeB);
+      const res = func(nodeA, nodeB);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const nodeA = document.createElement('li');
+      const nodeB = document.createElement('li');
+      const base = document.createElement('ul');
+      const parent = document.getElementById('div0');
+      base.appendChild(nodeA);
+      base.appendChild(nodeB);
+      parent.appendChild(base);
+      const res = func(nodeA, nodeB);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const nodeA = document.createElement('li');
+      const nodeB = document.createElement('li');
+      const base = document.createElement('ul');
+      const parent = document.getElementById('div0');
+      base.appendChild(nodeA);
+      base.appendChild(nodeB);
+      parent.appendChild(base);
+      const res = func(nodeB, nodeA);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const base = document.documentElement;
+      const res = func(node, base);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const res = func(node, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const tmpl = document.createElement('template');
+      const node = document.createElement('div');
+      tmpl.appendChild(node);
+      document.body.appendChild(tmpl);
+      const base = document.documentElement;
+      const res = func(tmpl.content, base);
       assert.isFalse(res, 'result');
     });
   });

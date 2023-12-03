@@ -7,8 +7,9 @@ import bidiFactory from 'bidi-js';
 
 /* constants */
 import {
-  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
-  ELEMENT_NODE, REG_SHADOW_MODE, SYNTAX_ERR, TEXT_NODE
+  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
+  DOCUMENT_POSITION_CONTAINED_BY, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
+  REG_SHADOW_MODE, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 
 /* bidi */
@@ -229,22 +230,50 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
 };
 
 /**
- * is node same or descendant of the root node
+ * is descendant
  * @param {object} node - Element node
- * @param {object} root - Document, DocumentFragment, Element node
+ * @param {object} base - Document, DocumentFragment, Element node
  * @returns {boolean} - result
  */
-export const isSameOrDescendant = (node = {}, root = {}) => {
+export const isDescendant = (node = {}, base = {}) => {
   let res;
   if (node.ownerDocument && node.nodeType === ELEMENT_NODE) {
-    if (!root || root.nodeType !== ELEMENT_NODE) {
-      root = node.ownerDocument;
+    if (base.nodeType !== ELEMENT_NODE) {
+      base = node.ownerDocument;
     }
-    if (node === root) {
-      res = true;
-    } else if (root) {
-      res = root.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY;
-    }
+    res = base.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY;
+  }
+  return !!res;
+};
+
+/**
+ * is inclusive - nodeA and nodeB are in inclusive relation
+ * @param {object} nodeA - Element node
+ * @param {object} nodeB - Element node
+ * @returns {boolean} - result
+ */
+export const isInclusive = (nodeA = {}, nodeB = {}) => {
+  let res;
+  if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
+    const posBit = nodeB.compareDocumentPosition(nodeA);
+    res = posBit & DOCUMENT_POSITION_CONTAINS ||
+          posBit & DOCUMENT_POSITION_CONTAINED_BY;
+  }
+  return !!res;
+};
+
+/**
+ * is preceding - nodeA precedes and/or contains nodeB
+ * @param {object} nodeA - Element node
+ * @param {object} nodeB - Element node
+ * @returns {boolean} - result
+ */
+export const isPreceding = (nodeA = {}, nodeB = {}) => {
+  let res;
+  if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
+    const posBit = nodeB.compareDocumentPosition(nodeA);
+    res = posBit & DOCUMENT_POSITION_PRECEDING ||
+          posBit & DOCUMENT_POSITION_CONTAINS;
   }
   return !!res;
 };

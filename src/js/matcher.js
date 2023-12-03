@@ -5,8 +5,8 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import {
-  getDirectionality, isContentEditable, isInShadowTree, isNamespaceDeclared,
-  isSameOrDescendant, selectorToNodeProps
+  getDirectionality, isContentEditable, isDescendant, isInclusive,
+  isInShadowTree, isNamespaceDeclared, isPreceding, selectorToNodeProps
 } from './dom-util.js';
 import {
   generateCSS, parseSelector, unescapeSelector, walkAST
@@ -15,11 +15,10 @@ import {
 /* constants */
 import {
   ALPHA_NUM, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, COMBINATOR,
-  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINED_BY,
-  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
+  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE, NOT_SUPPORTED_ERR,
+  REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
+  SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
+  SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 const FIND_NEXT = 'next';
 const FIND_PREV = 'prev';
@@ -128,7 +127,7 @@ export class Matcher {
         break;
       }
       case ELEMENT_NODE: {
-        if (isSameOrDescendant(node)) {
+        if (isDescendant(node)) {
           document = node.ownerDocument;
           root = node.ownerDocument;
         } else {
@@ -938,7 +937,7 @@ export class Matcher {
         }
         case 'target': {
           if (node.id && docURL.hash && docURL.hash === `#${node.id}` &&
-              isSameOrDescendant(node)) {
+              isDescendant(node)) {
             matched.add(node);
           }
           break;
@@ -1967,7 +1966,7 @@ export class Matcher {
           } else {
             const elm = root.getElementById(leafName);
             if (elm && elm !== baseNode) {
-              const bool = isSameOrDescendant(elm, baseNode);
+              const bool = isDescendant(elm, baseNode);
               let node;
               if (bool) {
                 node = elm;
@@ -2245,14 +2244,8 @@ export class Matcher {
           const a = [].slice.call(root.getElementsByClassName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
             for (const node of a) {
-              if (node === this.#node) {
+              if (node === this.#node || isInclusive(node, this.#node)) {
                 arr.push(node);
-              } else {
-                const posBit = node.compareDocumentPosition(this.#node);
-                if (posBit & DOCUMENT_POSITION_CONTAINED_BY ||
-                    posBit & DOCUMENT_POSITION_CONTAINS) {
-                  arr.push(node);
-                }
               }
             }
           } else {
@@ -2312,14 +2305,8 @@ export class Matcher {
           const a = [].slice.call(root.getElementsByTagName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
             for (const node of a) {
-              if (node === this.#node) {
+              if (node === this.#node || isInclusive(node, this.#node)) {
                 arr.push(node);
-              } else {
-                const posBit = node.compareDocumentPosition(this.#node);
-                if (posBit & DOCUMENT_POSITION_CONTAINED_BY ||
-                    posBit & DOCUMENT_POSITION_CONTAINS) {
-                  arr.push(node);
-                }
               }
             }
           } else {
@@ -2468,7 +2455,11 @@ export class Matcher {
         while (nextNode) {
           let bool = false;
           if (this.#node.nodeType === ELEMENT_NODE) {
-            bool = isSameOrDescendant(nextNode, this.#node);
+            if (nextNode === this.#node) {
+              bool = true;
+            } else {
+              bool = isDescendant(nextNode, this.#node);
+            }
           } else {
             bool = true;
           }
@@ -2514,10 +2505,8 @@ export class Matcher {
     const arr = [...nodes];
     if (arr.length > 1) {
       arr.sort((a, b) => {
-        const posBit = a.compareDocumentPosition(b);
         let res;
-        if (posBit & DOCUMENT_POSITION_PRECEDING ||
-            posBit & DOCUMENT_POSITION_CONTAINS) {
+        if (isPreceding(b, a)) {
           res = 1;
         } else {
           res = -1;
@@ -2549,12 +2538,10 @@ export class Matcher {
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of matched) {
-              if (node !== this.#node) {
-                if (isSameOrDescendant(node, this.#node)) {
-                  nodes.add(node);
-                  if (targetType === TARGET_FIRST) {
-                    break;
-                  }
+              if (node !== this.#node && isDescendant(node, this.#node)) {
+                nodes.add(node);
+                if (targetType === TARGET_FIRST) {
+                  break;
                 }
               }
             }
