@@ -78,7 +78,7 @@ export const getDirectionality = (node = {}) => {
       let text;
       switch (localName) {
         case 'input': {
-          if(!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
+          if (!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
             text = node.value;
           }
           break;
@@ -234,23 +234,6 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
       }
       parent = parent.parentNode;
     }
-  }
-  return !!res;
-};
-
-/**
- * is descendant
- * @param {object} node - Element node
- * @param {object} base - Document, DocumentFragment, Element node
- * @returns {boolean} - result
- */
-export const isDescendant = (node = {}, base = {}) => {
-  let res;
-  if (node.ownerDocument && node.nodeType === ELEMENT_NODE) {
-    if (base.nodeType !== ELEMENT_NODE) {
-      base = node.ownerDocument;
-    }
-    res = base.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY;
   }
   return !!res;
 };

@@ -736,67 +736,6 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('is descendant', () => {
-    const func = domUtil.isDescendant;
-
-    it('should get result', () => {
-      const node = document.documentElement;
-      const res = func(node);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.documentElement;
-      const res = func(node, document);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(node);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(node, document.body);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const res = func(node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const res = func(node, node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      frag.appendChild(node);
-      const res = func(node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const tmpl = document.createElement('template');
-      const node = document.createElement('div');
-      tmpl.appendChild(node);
-      document.body.appendChild(tmpl);
-      const res = func(tmpl.content);
-      assert.isFalse(res, 'result');
-    });
-  });
-
   describe('is inclusive', () => {
     const func = domUtil.isInclusive;
 

@@ -5,8 +5,8 @@
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
 import {
-  getDirectionality, isContentEditable, isDescendant, isInclusive,
-  isInShadowTree, isNamespaceDeclared, isPreceding, selectorToNodeProps
+  getDirectionality, isContentEditable, isInclusive, isInShadowTree,
+  isNamespaceDeclared, isPreceding, selectorToNodeProps
 } from './dom-util.js';
 import {
   generateCSS, parseSelector, unescapeSelector, walkAST
@@ -127,7 +127,7 @@ export class Matcher {
         break;
       }
       case ELEMENT_NODE: {
-        if (isDescendant(node)) {
+        if (node.ownerDocument.contains(node)) {
           document = node.ownerDocument;
           root = node.ownerDocument;
         } else {
@@ -937,7 +937,7 @@ export class Matcher {
         }
         case 'target': {
           if (node.id && docURL.hash && docURL.hash === `#${node.id}` &&
-              isDescendant(node)) {
+              document.contains(node)) {
             matched.add(node);
           }
           break;
@@ -1964,22 +1964,15 @@ export class Matcher {
           if (root.nodeType === ELEMENT_NODE) {
             pending = true;
           } else {
-            const elm = root.getElementById(leafName);
-            if (elm && elm !== baseNode) {
-              const bool = isDescendant(elm, baseNode);
-              let node;
-              if (bool) {
-                node = elm;
-              }
-              if (node) {
-                if (matchItems) {
-                  const bool = this._matchLeaves(items, node);
-                  if (bool) {
-                    nodes.add(node);
-                  }
-                } else {
+            const node = root.getElementById(leafName);
+            if (node && node !== baseNode && baseNode.contains(node)) {
+              if (matchItems) {
+                const bool = this._matchLeaves(items, node);
+                if (bool) {
                   nodes.add(node);
                 }
+              } else {
+                nodes.add(node);
               }
             }
           }
@@ -2458,7 +2451,7 @@ export class Matcher {
             if (nextNode === this.#node) {
               bool = true;
             } else {
-              bool = isDescendant(nextNode, this.#node);
+              bool = this.#node.contains(nextNode);
             }
           } else {
             bool = true;
@@ -2538,7 +2531,7 @@ export class Matcher {
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of matched) {
-              if (node !== this.#node && isDescendant(node, this.#node)) {
+              if (node !== this.#node && this.#node.contains(node)) {
                 nodes.add(node);
                 if (targetType === TARGET_FIRST) {
                   break;
