@@ -191,6 +191,8 @@ const filter = testPath => {
     'has-style-sharing-005.html',
     'has-style-sharing-006-ref.html',
     'has-style-sharing-006.html',
+    'has-style-sharing-007-ref.html',
+    'has-style-sharing-007.html',
     'has-visited-ref.html',
     'has-visited.html',
     'is-where-error-recovery.html',
