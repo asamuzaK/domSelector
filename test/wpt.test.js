@@ -111,6 +111,37 @@ describe('local wpt test cases', () => {
   });
 
   describe('dom/nodes/ParentNode-querySelector-All.html', () => {
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('div:example'), DOMException,
+        'Unknown pseudo-class :example');
+    });
+
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="root">
+          <div id="descendant">
+            <div id="descendant-div1" class="descendant-div1">
+              <div id="descendant-div2" class="descendant-div2">
+                <div id="descendant-div3" class="descendant-div3">
+                </div>
+              </div>
+            </div>
+            <div id="descendant-div4" class="descendant-div4"></div>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const node = document.getElementById('descendant-div3');
+      const clone = root.cloneNode(true);
+      document.body.appendChild(clone);
+      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
     it('should not match', () => {
       const res = document.querySelectorAll('::slotted(foo)');
       assert.deepEqual(res, [], 'result');
@@ -158,39 +189,6 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const node = document.getElementById('descendant-div3');
       const root = document.documentElement;
-      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
-    });
-  });
-
-  describe('dom/nodes/ParentNode-querySelector-All.html', () => {
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelector('div:example'), DOMException,
-        'Unknown pseudo-class :example');
-    });
-
-    it('should get matched node(s)', () => {
-      const html = `
-        <div id="root">
-          <div id="descendant">
-            <div id="descendant-div1" class="descendant-div1">
-              <div id="descendant-div2" class="descendant-div2">
-                <div id="descendant-div3" class="descendant-div3">
-                </div>
-              </div>
-            </div>
-            <div id="descendant-div4" class="descendant-div4"></div>
-          </div>
-        </div>
-      `;
-      document.body.innerHTML = html;
-      const root = document.getElementById('root');
-      const node = document.getElementById('descendant-div3');
-      const clone = root.cloneNode(true);
-      document.body.appendChild(clone);
       const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
       assert.deepEqual(res, [
         node
