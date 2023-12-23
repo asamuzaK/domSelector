@@ -12,9 +12,6 @@ import {
   REG_SHADOW_MODE, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 
-/* bidi */
-const bidi = bidiFactory();
-
 /**
  * is in shadow tree
  * @param {object} node - node
@@ -71,6 +68,7 @@ export const getDirectionality = (node = {}) => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
+    const { getEmbeddingLevels } = bidiFactory();
     const regDir = /^(?:ltr|rtl)$/;
     if (regDir.test(nodeDir)) {
       res = nodeDir;
@@ -117,7 +115,7 @@ export const getDirectionality = (node = {}) => {
         }
       }
       if (text) {
-        const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
+        const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
           res = 'rtl';
         } else {
@@ -140,7 +138,7 @@ export const getDirectionality = (node = {}) => {
     } else if (localName === 'bdi') {
       const text = node.textContent.trim();
       if (text) {
-        const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
+        const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
           res = 'rtl';
         } else {
@@ -156,7 +154,7 @@ export const getDirectionality = (node = {}) => {
       if (localName === 'slot') {
         const text = getSlottedTextContent(node);
         if (text) {
-          const { paragraphs: [{ level }] } = bidi.getEmbeddingLevels(text);
+          const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
           if (level % 2 === 1) {
             res = 'rtl';
           } else {
