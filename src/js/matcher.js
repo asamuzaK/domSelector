@@ -579,10 +579,55 @@ export class Matcher {
   _matchLanguagePseudoClass(ast, node) {
     const astName = unescapeSelector(ast.name);
     let res;
-    if (astName) {
-      if (astName === '*') {
+    if (astName === '*') {
+      if (node.hasAttribute('lang')) {
+        if (node.getAttribute('lang')) {
+          res = node;
+        }
+      } else {
+        let parent = node.parentNode;
+        while (parent) {
+          if (parent.nodeType === ELEMENT_NODE) {
+            if (parent.hasAttribute('lang')) {
+              if (parent.getAttribute('lang')) {
+                res = node;
+              }
+              break;
+            }
+            parent = parent.parentNode;
+          } else {
+            break;
+          }
+        }
+      }
+    } else if (astName) {
+      const langPart = `(?:-${ALPHA_NUM})*`;
+      const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
+      if (regLang.test(astName)) {
+        let regExtendedLang;
+        if (astName.indexOf('-') > -1) {
+          const [langMain, langSub, ...langRest] = astName.split('-');
+          let extendedMain;
+          if (langMain === '*') {
+            extendedMain = `${ALPHA_NUM}${langPart}`;
+          } else {
+            extendedMain = `${langMain}${langPart}`;
+          }
+          const extendedSub = `-${langSub}${langPart}`;
+          const len = langRest.length;
+          let extendedRest = '';
+          if (len) {
+            for (let i = 0; i < len; i++) {
+              extendedRest += `-${langRest[i]}${langPart}`;
+            }
+          }
+          regExtendedLang =
+            new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
+        } else {
+          regExtendedLang = new RegExp(`^${astName}${langPart}$`, 'i');
+        }
         if (node.hasAttribute('lang')) {
-          if (node.getAttribute('lang')) {
+          if (regExtendedLang.test(node.getAttribute('lang'))) {
             res = node;
           }
         } else {
@@ -590,7 +635,8 @@ export class Matcher {
           while (parent) {
             if (parent.nodeType === ELEMENT_NODE) {
               if (parent.hasAttribute('lang')) {
-                if (parent.getAttribute('lang')) {
+                const value = parent.getAttribute('lang');
+                if (regExtendedLang.test(value)) {
                   res = node;
                 }
                 break;
@@ -598,54 +644,6 @@ export class Matcher {
               parent = parent.parentNode;
             } else {
               break;
-            }
-          }
-        }
-      } else {
-        const langPart = `(?:-${ALPHA_NUM})*`;
-        const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
-        if (regLang.test(astName)) {
-          let regExtendedLang;
-          if (astName.indexOf('-') > -1) {
-            const [langMain, langSub, ...langRest] = astName.split('-');
-            let extendedMain;
-            if (langMain === '*') {
-              extendedMain = `${ALPHA_NUM}${langPart}`;
-            } else {
-              extendedMain = `${langMain}${langPart}`;
-            }
-            const extendedSub = `-${langSub}${langPart}`;
-            const len = langRest.length;
-            let extendedRest = '';
-            if (len) {
-              for (let i = 0; i < len; i++) {
-                extendedRest += `-${langRest[i]}${langPart}`;
-              }
-            }
-            regExtendedLang =
-              new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
-          } else {
-            regExtendedLang = new RegExp(`^${astName}${langPart}$`, 'i');
-          }
-          if (node.hasAttribute('lang')) {
-            if (regExtendedLang.test(node.getAttribute('lang'))) {
-              res = node;
-            }
-          } else {
-            let parent = node.parentNode;
-            while (parent) {
-              if (parent.nodeType === ELEMENT_NODE) {
-                if (parent.hasAttribute('lang')) {
-                  const value = parent.getAttribute('lang');
-                  if (regExtendedLang.test(value)) {
-                    res = node;
-                  }
-                  break;
-                }
-                parent = parent.parentNode;
-              } else {
-                break;
-              }
             }
           }
         }
@@ -900,9 +898,6 @@ export class Matcher {
       }
     } else {
       const { document, root } = this.#root;
-      const { documentElement } = document;
-      const docURL = new URL(document.URL);
-      /* regexp */
       const regAnchor = /^a(?:rea)?$/;
       const regFormCtrl =
         /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
@@ -923,9 +918,9 @@ export class Matcher {
         }
         case 'local-link': {
           if (regAnchor.test(localName) && node.hasAttribute('href')) {
-            const attrURL = new URL(node.getAttribute('href'), docURL.href);
-            if (attrURL.origin === docURL.origin &&
-                attrURL.pathname === docURL.pathname) {
+            const { href, origin, pathname } = new URL(document.URL);
+            const attrURL = new URL(node.getAttribute('href'), href);
+            if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
             }
           }
@@ -936,16 +931,17 @@ export class Matcher {
           break;
         }
         case 'target': {
-          if (node.id && docURL.hash && docURL.hash === `#${node.id}` &&
-              document.contains(node)) {
+          const { hash } = new URL(document.URL);
+          if (node.id && hash === `#${node.id}` && document.contains(node)) {
             matched.add(node);
           }
           break;
         }
         case 'target-within': {
-          if (docURL.hash) {
-            const hash = docURL.hash.replace(/^#/, '');
-            let current = document.getElementById(hash);
+          const { hash } = new URL(document.URL);
+          if (hash) {
+            const id = hash.replace(/^#/, '');
+            let current = document.getElementById(id);
             while (current) {
               if (current === node) {
                 matched.add(node);
@@ -961,7 +957,7 @@ export class Matcher {
             if (node === this.#node) {
               matched.add(node);
             }
-          } else if (node === documentElement) {
+          } else if (node === document.documentElement) {
             matched.add(node);
           }
           break;
@@ -1119,7 +1115,7 @@ export class Matcher {
               parent = parent.parentNode;
             }
             if (!parent) {
-              parent = documentElement;
+              parent = document.documentElement;
             }
             const nodes = [].slice.call(parent.getElementsByTagName('input'));
             let checked;
@@ -1348,7 +1344,7 @@ export class Matcher {
           break;
         }
         case 'root': {
-          if (node === documentElement) {
+          if (node === document.documentElement) {
             matched.add(node);
           }
           break;
