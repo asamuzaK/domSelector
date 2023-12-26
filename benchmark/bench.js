@@ -31,6 +31,7 @@ const prepareDom = () => {
   const x = 10;
   const y = 10;
   const z = 10;
+  const targetId = `p${x - 1}-${y - 1}-${z - 1}`;
   const xFrag = document.createDocumentFragment();
   for (let i = 0; i < x; i++) {
     const xNode = document.createElement('div');
@@ -63,7 +64,7 @@ const prepareDom = () => {
   container.append(xFrag);
   document.body.append(container);
 
-  targetNode = document.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
+  targetNode = document.getElementById(targetId);
 
   /* dom string */
   const domstr = new window.XMLSerializer().serializeToString(document);
@@ -76,11 +77,11 @@ const prepareDom = () => {
   });
 
   happyDoc = new happyWin.DOMParser().parseFromString(domstr, 'text/html');
-  happyTarget = happyDoc.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
+  happyTarget = happyDoc.getElementById(targetId);
 
   /* prepare linkedom */
   linkedDoc = linkedom.parseHTML(domstr).document;
-  linkedTarget = linkedDoc.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
+  linkedTarget = linkedDoc.getElementById(targetId);
 
   /* prepare patched jsdom */
   const { window: patchedWin } = new JSDOM(domstr, {
@@ -155,7 +156,7 @@ const prepareDom = () => {
   });
 
   patchedDoc = patchedWin.document;
-  patchedTarget = patchedDoc.getElementById(`p${x - 1}-${y - 1}-${z - 1}`);
+  patchedTarget = patchedDoc.getElementById(targetId);
 };
 
 /* selectors */
