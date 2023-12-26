@@ -43,7 +43,7 @@ export class Matcher {
         forgive?: boolean;
     }): Set<object>;
     _findNodes(twig: object, targetType: string): object;
-    _getFirstTwig(branch: Array<object>): object;
+    _getEntryTwig(branch: Array<object>, targetType: string): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
     _sortNodes(nodes: Array<object> | Set<object>): Array<object | undefined>;
     _matchNodes(targetType: string): Set<object>;
