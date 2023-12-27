@@ -2324,9 +2324,9 @@ export class Matcher {
         }
       }
     }
-    if (items.length && !pending && !nodes.size) {
-      const lastLeaf = items[items.length - 1];
-      const { type: lastLeafType } = lastLeaf;
+    // check last leaf if node not found, not pending and leaves left
+    if (!nodes.size && !pending && items.length) {
+      const { type: lastLeafType } = items[items.length - 1];
       if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
         let node;
         if (root.nodeType === ELEMENT_NODE) {
@@ -2339,7 +2339,7 @@ export class Matcher {
       }
     }
     return {
-      compound: !!items.length,
+      compound: items.length > 0,
       nodes,
       pending
     };
