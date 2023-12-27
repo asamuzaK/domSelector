@@ -2169,18 +2169,17 @@ export class Matcher {
     let pending = false;
     switch (leafType) {
       case SELECTOR_ID: {
-        let node;
         if (targetType === TARGET_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
-            node = this.#node;
+            nodes.add(this.#node);
           }
         } else if (targetType === TARGET_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode);
             if (bool) {
-              node = refNode;
+              nodes.add(refNode);
               break;
             }
             refNode = refNode.parentNode;
@@ -2189,26 +2188,25 @@ export class Matcher {
                    root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
-          node = root.getElementById(leafName);
-        }
-        if (node) {
-          nodes.add(node);
+          const node = root.getElementById(leafName);
+          if (node) {
+            nodes.add(node);
+          }
         }
         break;
       }
       case SELECTOR_CLASS: {
-        let arr = [];
         if (targetType === TARGET_SELF) {
           if (this.#node.nodeType === ELEMENT_NODE &&
               this.#node.classList.contains(leafName)) {
-            arr.push(this.#node);
+            nodes.add(this.#node);
           }
         } else if (targetType === TARGET_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             if (refNode.nodeType === ELEMENT_NODE) {
               if (refNode.classList.contains(leafName)) {
-                arr.push(refNode);
+                nodes.add(refNode);
               }
               refNode = refNode.parentNode;
             } else {
@@ -2217,6 +2215,7 @@ export class Matcher {
           }
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const childNodes = [].slice.call(root.children);
+          const arr = [];
           for (const node of childNodes) {
             if (node.classList.contains(leafName)) {
               arr.push(node);
@@ -2224,30 +2223,29 @@ export class Matcher {
             const a = [].slice.call(node.getElementsByClassName(leafName));
             arr.push(...a);
           }
+          if (arr.length) {
+            nodes = new Set(arr);
+          }
         } else {
-          const a = [].slice.call(root.getElementsByClassName(leafName));
+          const arr = [].slice.call(root.getElementsByClassName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
-            for (const node of a) {
+            for (const node of arr) {
               if (node === this.#node || isInclusive(node, this.#node)) {
-                arr.push(node);
+                nodes.add(node);
               }
             }
-          } else {
-            arr = a;
+          } else if (arr.length) {
+            nodes = new Set(arr);
           }
-        }
-        if (arr.length) {
-          nodes = new Set(arr);
         }
         break;
       }
       case SELECTOR_TYPE: {
-        let arr = [];
         if (targetType === TARGET_SELF) {
           if (this.#node.nodeType === ELEMENT_NODE) {
             const bool = this._matchLeaves([leaf], this.#node);
             if (bool) {
-              arr.push(this.#node);
+              nodes.add(this.#node);
             }
           }
         } else if (targetType === TARGET_LINEAL) {
@@ -2256,7 +2254,7 @@ export class Matcher {
             if (refNode.nodeType === ELEMENT_NODE) {
               const bool = this._matchLeaves([leaf], refNode);
               if (bool) {
-                arr.push(refNode);
+                nodes.add(refNode);
               }
               refNode = refNode.parentNode;
             } else {
@@ -2269,6 +2267,7 @@ export class Matcher {
         } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
           const childNodes = [].slice.call(root.children);
+          const arr = [];
           for (const node of childNodes) {
             if (node.localName === tagName) {
               arr.push(node);
@@ -2276,20 +2275,20 @@ export class Matcher {
             const a = [].slice.call(node.getElementsByTagName(leafName));
             arr.push(...a);
           }
+          if (arr.length) {
+            nodes = new Set(arr);
+          }
         } else {
-          const a = [].slice.call(root.getElementsByTagName(leafName));
+          const arr = [].slice.call(root.getElementsByTagName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
-            for (const node of a) {
+            for (const node of arr) {
               if (node === this.#node || isInclusive(node, this.#node)) {
-                arr.push(node);
+                nodes.add(node);
               }
             }
-          } else {
-            arr = a;
+          } else if (arr.length) {
+            nodes = new Set(arr);
           }
-        }
-        if (arr.length) {
-          nodes = new Set(arr);
         }
         break;
       }
@@ -2299,33 +2298,29 @@ export class Matcher {
         break;
       }
       default: {
-        const arr = [];
         if (targetType !== TARGET_LINEAL && REG_SHADOW_HOST.test(leafName)) {
           if (shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
             if (node) {
-              arr.push(node);
+              nodes.add(node);
             }
           }
         } else if (targetType === TARGET_SELF) {
           const bool = this._matchLeaves([leaf], this.#node);
           if (bool) {
-            arr.push(this.#node);
+            nodes.add(this.#node);
           }
         } else if (targetType === TARGET_LINEAL) {
           let refNode = this.#node;
           while (refNode) {
             const bool = this._matchLeaves([leaf], refNode);
             if (bool) {
-              arr.push(refNode);
+              nodes.add(refNode);
             }
             refNode = refNode.parentNode;
           }
         } else {
           pending = true;
-        }
-        if (arr.length) {
-          nodes = new Set(arr);
         }
       }
     }
