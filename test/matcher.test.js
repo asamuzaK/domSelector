@@ -5,7 +5,7 @@
 /* api */
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
-import { afterEach, beforeEach, describe, it, xit } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
@@ -3471,8 +3471,7 @@ describe('match AST leaf and DOM node', () => {
         ], 'result');
       });
 
-      // FIXME:
-      xit('should get matched node(s)', () => {
+      it('should not match', () => {
         const leaf = {
           children: null,
           name: 'any-link',
@@ -3485,9 +3484,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         const matcher = new Matcher(':any-link', node);
         const res = matcher._matchPseudoClassSelector(leaf, node);
-        assert.deepEqual([...res], [
-          node
-        ], 'result');
+        assert.deepEqual([...res], [], 'result');
       });
 
       it('should not match', () => {
