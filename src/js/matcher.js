@@ -2326,7 +2326,8 @@ export class Matcher {
     }
     // check last leaf if node not found, not pending and leaves left
     if (!nodes.size && !pending && items.length) {
-      const { type: lastLeafType } = items[items.length - 1];
+      const lastLeaf = items[items.length - 1];
+      const { type: lastLeafType } = lastLeaf;
       if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
         let node;
         if (root.nodeType === ELEMENT_NODE) {
