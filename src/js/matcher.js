@@ -2504,7 +2504,7 @@ export class Matcher {
         const collectedNodes = this.#nodes[i];
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
-          const { leaves: filterLeaves } = branch[0];
+          const { leaves: [, ...filterLeaves] } = branch[0];
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (const node of collectedNodes) {
@@ -2515,6 +2515,13 @@ export class Matcher {
                   break;
                 }
               }
+            }
+          } else if (!filterLeaves.length) {
+            if (targetType === TARGET_ALL) {
+              nodes = collectedNodes;
+            } else {
+              const [node] = [...collectedNodes];
+              nodes.add(node);
             }
           } else {
             for (const node of collectedNodes) {
@@ -2528,7 +2535,7 @@ export class Matcher {
             }
           }
         } else if (find === FIND_NEXT) {
-          let { combo, leaves: filterLeaves } = branch[0];
+          let { combo, leaves: [, ...filterLeaves] } = branch[0];
           for (const node of collectedNodes) {
             const bool = filtered || this._matchLeaves(filterLeaves, node);
             let matched;
@@ -2576,7 +2583,7 @@ export class Matcher {
             }
           }
         } else {
-          const { leaves: filterLeaves } = branch[lastIndex];
+          const { leaves: [, ...filterLeaves] } = branch[lastIndex];
           for (const node of collectedNodes) {
             const bool = filtered || this._matchLeaves(filterLeaves, node);
             let matched;
