@@ -10256,6 +10256,66 @@ describe('match AST leaf and DOM node', () => {
         assert.isFalse(res.compound, 'compound');
         assert.isTrue(res.pending, 'pending');
       });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        const node4 = document.createElement('div');
+        const node5 = document.createElement('div');
+        const node6 = document.createElement('div');
+        node1.classList.add('foo');
+        node2.classList.add('foo');
+        node3.classList.add('foo');
+        node4.classList.add('foo');
+        node5.classList.add('foo');
+        node6.classList.add('foo');
+        node1.append(node2, node3);
+        node4.append(node5, node6);
+        frag.append(node1, node4);
+        const matcher = new Matcher('.foo', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare('.foo');
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          node1,
+          node2,
+          node3,
+          node4,
+          node5,
+          node6
+        ], 'nodes');
+        assert.isFalse(res.compound, 'compound');
+        assert.isFalse(res.pending, 'pending');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        const node4 = document.createElement('div');
+        const node5 = document.createElement('div');
+        const node6 = document.createElement('div');
+        node2.classList.add('foo');
+        node3.classList.add('foo');
+        node4.classList.add('foo');
+        node6.classList.add('foo');
+        node1.append(node2, node3);
+        node4.append(node5, node6);
+        frag.append(node1, node4);
+        const matcher = new Matcher('.foo', frag);
+        const [[{ branch: [twig] }]] = matcher._prepare('.foo');
+        const res = matcher._findNodes(twig);
+        assert.deepEqual([...res.nodes], [
+          node2,
+          node3,
+          node4,
+          node6
+        ], 'nodes');
+        assert.isFalse(res.compound, 'compound');
+        assert.isFalse(res.pending, 'pending');
+      });
     });
 
     describe('get entry twig', () => {
