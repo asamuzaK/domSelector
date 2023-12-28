@@ -2155,6 +2155,27 @@ export class Matcher {
   }
 
   /**
+   * sort nodes
+   * @param {Array.<object>|Set.<object>} nodes - collection of nodes
+   * @returns {Array.<object|undefined>} - collection of sorted nodes
+   */
+  _sortNodes(nodes) {
+    const arr = [...nodes];
+    if (arr.length > 1) {
+      arr.sort((a, b) => {
+        let res;
+        if (isPreceding(b, a)) {
+          res = 1;
+        } else {
+          res = -1;
+        }
+        return res;
+      });
+    }
+    return arr;
+  }
+
+  /**
    * find nodes
    * @param {object} twig - twig
    * @param {string} targetType - target type
@@ -2224,7 +2245,7 @@ export class Matcher {
             arr.push(...a);
           }
           if (arr.length) {
-            nodes = new Set(arr);
+            nodes = new Set(this._sortNodes(arr));
           }
         } else {
           const arr = [].slice.call(root.getElementsByClassName(leafName));
@@ -2276,7 +2297,7 @@ export class Matcher {
             arr.push(...a);
           }
           if (arr.length) {
-            nodes = new Set(arr);
+            nodes = new Set(this._sortNodes(arr));
           }
         } else {
           const arr = [].slice.call(root.getElementsByTagName(leafName));
@@ -2463,27 +2484,6 @@ export class Matcher {
       this.#ast,
       this.#nodes
     ];
-  }
-
-  /**
-   * sort nodes
-   * @param {Array.<object>|Set.<object>} nodes - collection of nodes
-   * @returns {Array.<object|undefined>} - collection of sorted nodes
-   */
-  _sortNodes(nodes) {
-    const arr = [...nodes];
-    if (arr.length > 1) {
-      arr.sort((a, b) => {
-        let res;
-        if (isPreceding(b, a)) {
-          res = 1;
-        } else {
-          res = -1;
-        }
-        return res;
-      });
-    }
-    return arr;
   }
 
   /**

@@ -9734,6 +9734,53 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('sort nodes', () => {
+      it('should get matched node(s)', () => {
+        const node1 = document.getElementById('li1');
+        const node2 = document.getElementById('li2');
+        const node3 = document.getElementById('li3');
+        const nodes = new Set([node3, node2, node1]);
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        const res = matcher._sortNodes(nodes);
+        assert.deepEqual([...res], [
+          node1, node2, node3
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        frag.appendChild(node1);
+        frag.appendChild(node2);
+        frag.appendChild(node3);
+        const nodes = new Set([node2, node3, node1]);
+        const matcher = new Matcher('div', frag);
+        const res = matcher._sortNodes(nodes);
+        assert.deepEqual([...res], [
+          node1, node2, node3
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const frag = document.createDocumentFragment();
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        frag.appendChild(node1);
+        frag.appendChild(node2);
+        frag.appendChild(node3);
+        const nodes = new Set([node2, node1, node3, node1]);
+        const matcher = new Matcher('div', frag);
+        const res = matcher._sortNodes(nodes);
+        assert.deepEqual([...res], [
+          node1, node2, node3
+        ], 'result');
+      });
+    });
+
     describe('find nodes', () => {
       it('should not match', () => {
         const matcher = new Matcher('::before', document);
@@ -11166,53 +11213,6 @@ describe('match AST leaf and DOM node', () => {
           [
             new Set([root])
           ]
-        ], 'result');
-      });
-    });
-
-    describe('sort nodes', () => {
-      it('should get matched node(s)', () => {
-        const node1 = document.getElementById('li1');
-        const node2 = document.getElementById('li2');
-        const node3 = document.getElementById('li3');
-        const nodes = new Set([node3, node2, node1]);
-        const matcher =
-          new Matcher('li:last-child, li:first-child + li', document);
-        const res = matcher._sortNodes(nodes);
-        assert.deepEqual([...res], [
-          node1, node2, node3
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const frag = document.createDocumentFragment();
-        const node1 = document.createElement('div');
-        const node2 = document.createElement('div');
-        const node3 = document.createElement('div');
-        frag.appendChild(node1);
-        frag.appendChild(node2);
-        frag.appendChild(node3);
-        const nodes = new Set([node2, node3, node1]);
-        const matcher = new Matcher('div', frag);
-        const res = matcher._sortNodes(nodes);
-        assert.deepEqual([...res], [
-          node1, node2, node3
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const frag = document.createDocumentFragment();
-        const node1 = document.createElement('div');
-        const node2 = document.createElement('div');
-        const node3 = document.createElement('div');
-        frag.appendChild(node1);
-        frag.appendChild(node2);
-        frag.appendChild(node3);
-        const nodes = new Set([node2, node1, node3, node1]);
-        const matcher = new Matcher('div', frag);
-        const res = matcher._sortNodes(nodes);
-        assert.deepEqual([...res], [
-          node1, node2, node3
         ], 'result');
       });
     });
