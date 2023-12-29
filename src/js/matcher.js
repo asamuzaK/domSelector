@@ -340,7 +340,6 @@ export class Matcher {
       const { root } = this.#root;
       if (node === root && root.nodeType === ELEMENT_NODE && (a + b) === 1) {
         if (selectorBranches) {
-          const branchesLen = selectorBranches.length;
           let bool;
           for (const leaves of selectorBranches) {
             bool = this._matchLeaves(leaves, node);
