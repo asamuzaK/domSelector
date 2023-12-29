@@ -103,6 +103,10 @@ export const preprocess = (...args) => {
   } else if (selector === undefined || selector === null) {
     selector = Object.prototype.toString.call(selector)
       .slice(TYPE_FROM, TYPE_TO).toLowerCase();
+  } else if (Array.isArray(selector)) {
+    selector = selector.join(',');
+  } else if (Object.prototype.hasOwnProperty.call(selector, 'toString')) {
+    selector = selector.toString();
   } else {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
