@@ -10226,6 +10226,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: false,
           find: 'prev',
           twig: {
             leaves: [
@@ -10268,6 +10269,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
             leaves: [
@@ -10310,6 +10312,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li', document);
         const res = matcher._getEntryTwig(branch, 'first');
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
             leaves: [
@@ -10368,6 +10371,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li + li', document);
         const res = matcher._getEntryTwig(branch, 'first');
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
             leaves: [
@@ -10410,6 +10414,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('#ul1 > #li1', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
             leaves: [
@@ -10452,6 +10457,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('#ul1 > li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
             leaves: [
@@ -10494,6 +10500,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > #li1', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
             leaves: [
@@ -10540,6 +10547,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > .li::after', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
             leaves: [
@@ -10590,6 +10598,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul::after > .li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
             leaves: [
@@ -10826,16 +10835,16 @@ describe('match AST leaf and DOM node', () => {
             }
           ],
           [
-            new Set([
+            [
               document.getElementById('li1'),
               document.getElementById('li2'),
               document.getElementById('li3')
-            ]),
-            new Set([
+            ][Symbol.iterator](),
+            [
               document.getElementById('li1'),
               document.getElementById('li2'),
               document.getElementById('li3')
-            ])
+            ][Symbol.iterator]()
           ]
         ], 'result');
       });
@@ -10913,11 +10922,11 @@ describe('match AST leaf and DOM node', () => {
               document.getElementById('li2'),
               document.getElementById('li3')
             ]),
-            new Set([
+            [
               document.getElementById('li1'),
               document.getElementById('li2'),
               document.getElementById('li3')
-            ])
+            ][Symbol.iterator]()
           ]
         ], 'result');
       });
@@ -11318,7 +11327,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
-        const res = matcher._find();
+        const res = matcher._find('all');
         assert.deepEqual([...res], [
           document.getElementById('li3'),
           document.getElementById('li2')
