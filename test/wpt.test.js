@@ -2096,7 +2096,6 @@ describe('local wpt test cases', () => {
           return 'p';
         }
       };
-      const node = document.getElementById('output_test');
       const res = document.querySelectorAll(stringifiableObj);
       assert.strictEqual(res.length, 1, 'length');
       assert.strictEqual(res[0].localName, 'p', 'node');
