@@ -2518,7 +2518,8 @@ export class Matcher {
             }
           } else if (!filterLeaves.length) {
             if (targetType === TARGET_ALL) {
-              nodes = collectedNodes;
+              const n = [...nodes];
+              nodes = new Set([...n, ...collectedNodes]);
             } else {
               const [node] = [...collectedNodes];
               nodes.add(node);

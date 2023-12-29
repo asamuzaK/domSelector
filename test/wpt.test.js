@@ -2070,4 +2070,35 @@ describe('local wpt test cases', () => {
       assert.isFalse(res, 'result');
     });
   });
+
+  describe('jsdom: to-port-to-wpts/query-selector-all.js', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <span>Hello!<strong>Goodbye!</strong><strong>Hello Again</strong></span>
+        <p>This is an <em>Important</em> paragraph</p>
+      `;
+      document.body.innerHTML = html;
+      const res = document.querySelectorAll(['strong', 'em']);
+      assert.strictEqual(res.length, 3, 'length');
+      assert.strictEqual(res[0].localName, 'strong', 'node');
+      assert.strictEqual(res[1].localName, 'strong', 'node');
+      assert.strictEqual(res[2].localName, 'em', 'node');
+    });
+
+    it('should get matched node(s)', () => {
+      const html = `
+        <span>Hello!<strong>Goodbye!</strong><strong>Hello Again</strong></span>
+        <p>This is an <em>Important</em> paragraph</p>
+      `;
+      document.body.innerHTML = html;
+      const stringifiableObj = {
+        toString() {
+          return 'p';
+        }
+      };
+      const res = document.querySelectorAll(stringifiableObj);
+      assert.strictEqual(res.length, 1, 'length');
+      assert.strictEqual(res[0].localName, 'p', 'node');
+    });
+  });
 });
