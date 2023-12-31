@@ -18,7 +18,7 @@ import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE, NOT_SUPPORTED_ERR,
   REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
+  SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
 } from './constant.js';
 const FIND_NEXT = 'next';
 const FIND_PREV = 'prev';
@@ -62,10 +62,12 @@ export class Matcher {
   #ast;
   #bit;
   #cache;
+  #document;
   #node;
   #nodes;
+  #walker;
   #root;
-  #selector;
+  #shadow;
   #warn;
 
   /**
@@ -86,11 +88,11 @@ export class Matcher {
       [SELECTOR_PSEUDO_CLASS, BIT_32]
     ]);
     this.#cache = new WeakMap();
-    this.#selector = selector;
-    this.#node = node;
-    this.#warn = !!warn;
     [this.#ast, this.#nodes] = this._prepare(selector);
-    this.#root = this._getRoot(node);
+    this.#node = node;
+    [this.#document, this.#root, this.#walker] = this._setup(node);
+    this.#shadow = isInShadowTree(node);
+    this.#warn = !!warn;
   }
 
   /**
@@ -110,11 +112,11 @@ export class Matcher {
   }
 
   /**
-   * get root
+   * set up document, root, walker
    * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {object} - root object
+   * @returns {Array.<object>} - document, root, walker
    */
-  _getRoot(node = this.#node) {
+  _setup(node) {
     let document;
     let root;
     switch (node.nodeType) {
@@ -150,12 +152,13 @@ export class Matcher {
         throw new TypeError(`Unexpected node ${node.nodeName}`);
       }
     }
-    const shadow = isInShadowTree(node);
-    return {
+    const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
+    const walker = document.createTreeWalker(root, filter);
+    return [
       document,
       root,
-      shadow
-    };
+      walker
+    ];
   }
 
   /**
@@ -190,7 +193,7 @@ export class Matcher {
    * @param {string} selector - CSS selector
    * @returns {Array.<Array.<object|undefined>>} - array of ast and nodes
    */
-  _prepare(selector = this.#selector) {
+  _prepare(selector) {
     const ast = parseSelector(selector);
     const branches = walkAST(ast);
     const tree = [];
@@ -341,8 +344,8 @@ export class Matcher {
         }
       }
     } else {
-      const { root } = this.#root;
-      if (node === root && root.nodeType === ELEMENT_NODE && (a + b) === 1) {
+      if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
+          (a + b) === 1) {
         if (selectorBranches) {
           const branchesLen = selectorBranches.length;
           let bool;
@@ -431,8 +434,8 @@ export class Matcher {
         }
       }
     } else {
-      const { root } = this.#root;
-      if (node === root && root.nodeType === ELEMENT_NODE && (a + b) === 1) {
+      if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
+          (a + b) === 1) {
         matched.add(node);
       }
     }
@@ -900,7 +903,6 @@ export class Matcher {
         }
       }
     } else {
-      const { document, root } = this.#root;
       const regAnchor = /^a(?:rea)?$/;
       const regFormCtrl =
         /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
@@ -921,7 +923,7 @@ export class Matcher {
         }
         case 'local-link': {
           if (regAnchor.test(localName) && node.hasAttribute('href')) {
-            const { href, origin, pathname } = new URL(document.URL);
+            const { href, origin, pathname } = new URL(this.#document.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
@@ -934,17 +936,18 @@ export class Matcher {
           break;
         }
         case 'target': {
-          const { hash } = new URL(document.URL);
-          if (node.id && hash === `#${node.id}` && document.contains(node)) {
+          const { hash } = new URL(this.#document.URL);
+          if (node.id && hash === `#${node.id}` &&
+              this.#document.contains(node)) {
             matched.add(node);
           }
           break;
         }
         case 'target-within': {
-          const { hash } = new URL(document.URL);
+          const { hash } = new URL(this.#document.URL);
           if (hash) {
             const id = hash.replace(/^#/, '');
-            let current = document.getElementById(id);
+            let current = this.#document.getElementById(id);
             while (current) {
               if (current === node) {
                 matched.add(node);
@@ -960,19 +963,19 @@ export class Matcher {
             if (node === this.#node) {
               matched.add(node);
             }
-          } else if (node === document.documentElement) {
+          } else if (node === this.#document.documentElement) {
             matched.add(node);
           }
           break;
         }
         case 'focus': {
-          if (node === document.activeElement) {
+          if (node === this.#document.activeElement) {
             matched.add(node);
           }
           break;
         }
         case 'focus-within': {
-          let current = document.activeElement;
+          let current = this.#document.activeElement;
           while (current) {
             if (current === node) {
               matched.add(node);
@@ -1118,7 +1121,7 @@ export class Matcher {
               parent = parent.parentNode;
             }
             if (!parent) {
-              parent = document.documentElement;
+              parent = this.#document.documentElement;
             }
             const nodes = [].slice.call(parent.getElementsByTagName('input'));
             let checked;
@@ -1159,7 +1162,8 @@ export class Matcher {
               form = form.parentNode;
             }
             if (form) {
-              const iterator = document.createNodeIterator(form, SHOW_ELEMENT);
+              const iterator =
+                this.#document.createNodeIterator(form, SHOW_ELEMENT);
               let nextNode = iterator.nextNode();
               while (nextNode) {
                 const nodeName = nextNode.localName;
@@ -1231,7 +1235,8 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            const iterator =
+              this.#document.createNodeIterator(node, SHOW_ELEMENT);
             let refNode = iterator.nextNode();
             if (refNode === node) {
               refNode = iterator.nextNode();
@@ -1258,7 +1263,8 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            const iterator =
+              this.#document.createNodeIterator(node, SHOW_ELEMENT);
             let refNode = iterator.nextNode();
             if (refNode === node) {
               refNode = iterator.nextNode();
@@ -1347,7 +1353,7 @@ export class Matcher {
           break;
         }
         case 'root': {
-          if (node === document.documentElement) {
+          if (node === this.#document.documentElement) {
             matched.add(node);
           }
           break;
@@ -1373,14 +1379,14 @@ export class Matcher {
         }
         case 'first-child': {
           if ((parentNode && node === parentNode.firstElementChild) ||
-              (node === root && root.nodeType === ELEMENT_NODE)) {
+              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
         }
         case 'last-child': {
           if ((parentNode && node === parentNode.lastElementChild) ||
-              (node === root && root.nodeType === ELEMENT_NODE)) {
+              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
@@ -1389,7 +1395,7 @@ export class Matcher {
           if ((parentNode &&
                node === parentNode.firstElementChild &&
                node === parentNode.lastElementChild) ||
-              (node === root && root.nodeType === ELEMENT_NODE)) {
+              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
             matched.add(node);
           }
           break;
@@ -1403,7 +1409,8 @@ export class Matcher {
             if (node1) {
               matched.add(node1);
             }
-          } else if (node === root && root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root &&
+                     this.#root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1418,7 +1425,8 @@ export class Matcher {
             if (node1) {
               matched.add(node1);
             }
-          } else if (node === root && root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root &&
+                     this.#root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1439,7 +1447,8 @@ export class Matcher {
                 matched.add(node);
               }
             }
-          } else if (node === root && root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root &&
+                     this.#root.nodeType === ELEMENT_NODE) {
             matched.add(node);
           }
           break;
@@ -1520,9 +1529,8 @@ export class Matcher {
     const { attributes } = node;
     let res;
     if (attributes && attributes.length) {
-      const { document } = this.#root;
       let caseInsensitive;
-      if (document.contentType === 'text/html') {
+      if (this.#document.contentType === 'text/html') {
         if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
           caseInsensitive = false;
         } else {
@@ -1748,11 +1756,10 @@ export class Matcher {
     const astName = unescapeSelector(ast.name);
     const { localName, prefix } = node;
     const { forgive } = opt;
-    const { document } = this.#root;
     let {
       prefix: astPrefix, tagName: astNodeName
     } = selectorToNodeProps(astName, node);
-    if (document.contentType === 'text/html') {
+    if (this.#document.contentType === 'text/html') {
       astPrefix = astPrefix.toLowerCase();
       astNodeName = astNodeName.toLowerCase();
     }
@@ -1862,7 +1869,6 @@ export class Matcher {
   _matchSelector(ast, node, opt) {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
-    const { shadow } = this.#root;
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
@@ -1906,7 +1912,7 @@ export class Matcher {
           }
         }
       }
-    } else if (shadow && astType === SELECTOR_PSEUDO_CLASS &&
+    } else if (this.#shadow && astType === SELECTOR_PSEUDO_CLASS &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       if (astName !== 'has' && REG_LOGICAL_PSEUDO.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
@@ -1952,18 +1958,17 @@ export class Matcher {
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
     const matchItems = items.length > 0;
-    const { document, root, shadow } = this.#root;
     let nodes = new Set();
     let pending = false;
-    if (shadow) {
+    if (this.#shadow) {
       pending = true;
     } else {
       switch (leafType) {
         case SELECTOR_ID: {
-          if (root.nodeType === ELEMENT_NODE) {
+          if (this.#root.nodeType === ELEMENT_NODE) {
             pending = true;
           } else {
-            const node = root.getElementById(leafName);
+            const node = this.#root.getElementById(leafName);
             if (node && node !== baseNode && baseNode.contains(node)) {
               if (matchItems) {
                 const bool = this._matchLeaves(items, node);
@@ -1994,7 +1999,8 @@ export class Matcher {
           break;
         }
         case SELECTOR_TYPE: {
-          if (document.contentType === 'text/html' && !/[*|]/.test(leafName)) {
+          if (this.#document.contentType === 'text/html' &&
+              !/[*|]/.test(leafName)) {
             const arr = [].slice.call(baseNode.getElementsByTagName(leafName));
             if (arr.length) {
               if (matchItems) {
@@ -2081,8 +2087,8 @@ export class Matcher {
           if (nodes.size) {
             matched = nodes;
           } else if (pending) {
-            const { document } = this.#root;
-            const iterator = document.createNodeIterator(node, SHOW_ELEMENT);
+            const iterator =
+              this.#document.createNodeIterator(node, SHOW_ELEMENT);
             let refNode = iterator.nextNode();
             if (refNode === node) {
               refNode = iterator.nextNode();
@@ -2161,10 +2167,10 @@ export class Matcher {
    * @returns {object} - collection of nodes etc.
    */
   _findNodes(twig, targetType) {
-    const { leaves: [leaf, ...items] } = twig;
+    const { leaves: [leaf, ...filterLeaves] } = twig;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    const { document, root, shadow } = this.#root;
+    const compound = filterLeaves.length > 0;
     let nodes = new Set();
     let pending = false;
     switch (leafType) {
@@ -2185,10 +2191,10 @@ export class Matcher {
             refNode = refNode.parentNode;
           }
         } else if (targetType === TARGET_ALL ||
-                   root.nodeType === ELEMENT_NODE) {
+                   this.#root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
-          const node = root.getElementById(leafName);
+          const node = this.#root.getElementById(leafName);
           if (node) {
             nodes.add(node);
           }
@@ -2213,8 +2219,8 @@ export class Matcher {
               break;
             }
           }
-        } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const childNodes = [].slice.call(root.children);
+        } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          const childNodes = [].slice.call(this.#root.children);
           const arr = [];
           for (const node of childNodes) {
             if (node.classList.contains(leafName)) {
@@ -2227,7 +2233,8 @@ export class Matcher {
             nodes = new Set(arr);
           }
         } else {
-          const arr = [].slice.call(root.getElementsByClassName(leafName));
+          const arr =
+            [].slice.call(this.#root.getElementsByClassName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
             for (const node of arr) {
               if (node === this.#node || isInclusive(node, this.#node)) {
@@ -2261,12 +2268,12 @@ export class Matcher {
               break;
             }
           }
-        } else if (document.contentType !== 'text/html' ||
+        } else if (this.#document.contentType !== 'text/html' ||
                    /[*|]/.test(leafName)) {
           pending = true;
-        } else if (root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
-          const childNodes = [].slice.call(root.children);
+          const childNodes = [].slice.call(this.#root.children);
           const arr = [];
           for (const node of childNodes) {
             if (node.localName === tagName) {
@@ -2279,7 +2286,7 @@ export class Matcher {
             nodes = new Set(arr);
           }
         } else {
-          const arr = [].slice.call(root.getElementsByTagName(leafName));
+          const arr = [].slice.call(this.#root.getElementsByTagName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
             for (const node of arr) {
               if (node === this.#node || isInclusive(node, this.#node)) {
@@ -2299,7 +2306,7 @@ export class Matcher {
       }
       default: {
         if (targetType !== TARGET_LINEAL && REG_SHADOW_HOST.test(leafName)) {
-          if (shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
             if (node) {
               nodes.add(node);
@@ -2324,24 +2331,23 @@ export class Matcher {
         }
       }
     }
-    const itemsLen = items.length;
     // check last leaf if node not found, not pending and leaves left
-    if (!nodes.size && !pending && itemsLen) {
-      const lastLeaf = items[itemsLen - 1];
+    if (!nodes.size && !pending && compound) {
+      const lastLeaf = filterLeaves[filterLeaves.length - 1];
       const { type: lastLeafType } = lastLeaf;
       if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
         let node;
-        if (root.nodeType === ELEMENT_NODE) {
-          node = root;
+        if (this.#root.nodeType === ELEMENT_NODE) {
+          node = this.#root;
         } else {
-          node = root.firstElementChild;
+          node = this.#root.firstElementChild;
         }
         // throws if unknown pseudo-class
         this._matchPseudoClassSelector(lastLeaf, node);
       }
     }
     return {
-      compound: itemsLen > 0,
+      compound,
       nodes,
       pending
     };
@@ -2355,10 +2361,11 @@ export class Matcher {
    */
   _getEntryTwig(branch, targetType) {
     const branchLen = branch.length;
+    const complex = branchLen > 1;
     const firstTwig = branch[0];
     let find;
     let twig;
-    if (branchLen > 1) {
+    if (complex) {
       const { leaves: [{ type: firstType }] } = firstTwig;
       const lastTwig = branch[branchLen - 1];
       const { leaves: [{ type: lastType }] } = lastTwig;
@@ -2369,6 +2376,7 @@ export class Matcher {
                  firstType === SELECTOR_ID) {
         find = FIND_NEXT;
         twig = firstTwig;
+      // TBD:
       } else if (targetType === TARGET_FIRST && branchLen < BIT_04) {
         find = FIND_PREV;
         twig = lastTwig;
@@ -2381,6 +2389,7 @@ export class Matcher {
       twig = firstTwig;
     }
     return {
+      complex,
       find,
       twig
     };
@@ -2414,8 +2423,8 @@ export class Matcher {
         i++;
       }
       if (pendingItems.size) {
-        const { document, root } = this.#root;
-        const iterator = document.createNodeIterator(root, SHOW_ELEMENT);
+        const iterator =
+          this.#document.createNodeIterator(this.#root, SHOW_ELEMENT);
         let nextNode = iterator.nextNode();
         while (nextNode) {
           let bool = false;

@@ -15,7 +15,8 @@ import * as matcherJs from '../src/js/matcher.js';
 import {
   AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, STRING
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
+  SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, STRING
 } from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
@@ -176,15 +177,17 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
-    describe('get root node', () => {
+    describe('set up settings', () => {
+      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
+
       it('should get matched node', () => {
         const matcher = new Matcher('*', document);
-        const res = matcher._getRoot(document);
-        assert.deepEqual(res, {
+        const res = matcher._setup(document);
+        assert.deepEqual(res, [
           document,
-          root: document,
-          shadow: false
-        }, 'result');
+          document,
+          document.createTreeWalker(document, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -193,12 +196,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         document.body.appendChild(parent);
         const matcher = new Matcher('*', parent);
-        const res = matcher._getRoot(parent);
-        assert.deepEqual(res, {
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
           document,
-          root: document,
-          shadow: false
-        }, 'result');
+          document,
+          document.createTreeWalker(document, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -207,12 +210,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         document.body.appendChild(parent);
         const matcher = new Matcher('*', node);
-        const res = matcher._getRoot(node);
-        assert.deepEqual(res, {
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
           document,
-          root: document,
-          shadow: false
-        }, 'result');
+          document,
+          document.createTreeWalker(document, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -223,12 +226,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         doc.documentElement.appendChild(parent);
         const matcher = new Matcher('*', doc);
-        const res = matcher._getRoot(doc);
-        assert.deepEqual(res, {
-          document: doc,
-          root: doc,
-          shadow: false
-        }, 'result');
+        const res = matcher._setup(doc);
+        assert.deepEqual(res, [
+          doc,
+          doc,
+          document.createTreeWalker(doc, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -239,12 +242,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         doc.documentElement.appendChild(parent);
         const matcher = new Matcher('*', parent);
-        const res = matcher._getRoot(parent);
-        assert.deepEqual(res, {
-          document: doc,
-          root: doc,
-          shadow: false
-        }, 'result');
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
+          doc,
+          doc,
+          document.createTreeWalker(doc, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -255,12 +258,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         doc.documentElement.appendChild(parent);
         const matcher = new Matcher('*', node);
-        const res = matcher._getRoot(node);
-        assert.deepEqual(res, {
-          document: doc,
-          root: doc,
-          shadow: false
-        }, 'result');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          doc,
+          doc,
+          document.createTreeWalker(doc, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -270,12 +273,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         frag.appendChild(parent);
         const matcher = new Matcher('*', frag);
-        const res = matcher._getRoot(frag);
-        assert.deepEqual(res, {
+        const res = matcher._setup(frag);
+        assert.deepEqual(res, [
           document,
-          root: frag,
-          shadow: false
-        }, 'result');
+          frag,
+          document.createTreeWalker(frag, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -285,12 +288,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         frag.appendChild(parent);
         const matcher = new Matcher('*', parent);
-        const res = matcher._getRoot(parent);
-        assert.deepEqual(res, {
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
           document,
-          root: frag,
-          shadow: false
-        }, 'result');
+          frag,
+          document.createTreeWalker(frag, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -300,12 +303,12 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         frag.appendChild(parent);
         const matcher = new Matcher('*', node);
-        const res = matcher._getRoot(node);
-        assert.deepEqual(res, {
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
           document,
-          root: frag,
-          shadow: false
-        }, 'result');
+          frag,
+          document.createTreeWalker(frag, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -313,12 +316,12 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         parent.appendChild(node);
         const matcher = new Matcher('*', parent);
-        const res = matcher._getRoot(parent);
-        assert.deepEqual(res, {
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
           document,
-          root: parent,
-          shadow: false
-        }, 'result');
+          parent,
+          document.createTreeWalker(parent, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -326,12 +329,12 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         parent.appendChild(node);
         const matcher = new Matcher('*', node);
-        const res = matcher._getRoot(node);
-        assert.deepEqual(res, {
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
           document,
-          root: parent,
-          shadow: false
-        }, 'result');
+          parent,
+          document.createTreeWalker(parent, filter)
+        ], 'result');
       });
 
       it('should get matched node', () => {
@@ -359,12 +362,12 @@ describe('match AST leaf and DOM node', () => {
         const host = document.getElementById('baz');
         const node = host.shadowRoot;
         const matcher = new Matcher(':host div', node);
-        const res = matcher._getRoot(node);
-        assert.deepEqual(res, {
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
           document,
-          root: node,
-          shadow: true
-        }, 'result');
+          node,
+          document.createTreeWalker(node, filter)
+        ], 'result');
       });
     });
 
@@ -10215,6 +10218,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10226,8 +10230,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: false,
           find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10241,6 +10247,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10249,14 +10259,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10268,8 +10271,13 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10283,6 +10291,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10291,14 +10303,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10310,8 +10315,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li', document);
         const res = matcher._getEntryTwig(branch, 'first');
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10325,6 +10332,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10333,14 +10344,10 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: {
+              name: '+',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'li',
@@ -10349,14 +10356,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '+',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10368,11 +10368,13 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > li + li', document);
         const res = matcher._getEntryTwig(branch, 'first');
         assert.deepEqual(res, {
-          find: 'next',
+          complex: true,
+          find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
-                name: 'ul',
+                name: 'li',
                 type: SELECTOR_TYPE
               }
             ]
@@ -10383,6 +10385,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul1',
@@ -10391,14 +10397,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li1',
@@ -10410,8 +10409,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('#ul1 > #li1', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
                 name: 'li1',
@@ -10425,6 +10426,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul1',
@@ -10433,14 +10438,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10452,8 +10450,13 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('#ul1 > li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul1',
@@ -10467,6 +10470,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10475,14 +10482,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li1',
@@ -10494,8 +10494,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > #li1', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
                 name: 'li1',
@@ -10509,6 +10511,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'ul',
@@ -10517,14 +10523,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'after',
@@ -10540,8 +10539,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul > .li::after', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'prev',
           twig: {
+            combo: null,
             leaves: [
               {
                 name: 'after',
@@ -10559,6 +10560,10 @@ describe('match AST leaf and DOM node', () => {
       it('should get value', () => {
         const branch = [
           {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'after',
@@ -10571,14 +10576,7 @@ describe('match AST leaf and DOM node', () => {
             ]
           },
           {
-            leaves: [
-              {
-                name: '>',
-                type: COMBINATOR
-              }
-            ]
-          },
-          {
+            combo: null,
             leaves: [
               {
                 name: 'li',
@@ -10590,8 +10588,13 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('ul::after > .li', document);
         const res = matcher._getEntryTwig(branch);
         assert.deepEqual(res, {
+          complex: true,
           find: 'next',
           twig: {
+            combo: {
+              name: '>',
+              type: COMBINATOR
+            },
             leaves: [
               {
                 name: 'after',
