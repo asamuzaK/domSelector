@@ -9737,6 +9737,129 @@ describe('match AST leaf and DOM node', () => {
       });
     });
 
+    describe('move current node position of tree walker', () => {
+      it('should get matched node', () => {
+        const matcher = new Matcher('ul', document);
+        const res = matcher._moveTreeNode();
+        assert.deepEqual(res, document, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher('ul', document);
+        const res = matcher._moveTreeNode(node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher('ul', document);
+        matcher._moveTreeNode(node);
+        const res = matcher._moveTreeNode(node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.getElementById('ul1');
+        const matcher = new Matcher('ul', document);
+        matcher._moveTreeNode(document.getElementById('li1'));
+        const res = matcher._moveTreeNode(node);
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should not match', () => {
+        const node = document.createElement('ol');
+        const matcher = new Matcher('ol', document);
+        const res = matcher._moveTreeNode(node);
+        assert.isNull(res, null, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.createElement('ol');
+        const matcher = new Matcher('ol', node);
+        const res = matcher._moveTreeNode(node);
+        assert.deepEqual(res, node, 'result');
+      });
+    });
+
+    describe('traverse tree walker', () => {
+      it('should get matched node', () => {
+        const matcher = new Matcher('ul', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const res = matcher._traverse(leaves, 'self');
+        assert.deepEqual(res, document.getElementById('ul1'), 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ol', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ol');
+        const res = matcher._traverse(leaves, 'self');
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.createElement('ul');
+        const child = document.createElement('li');
+        node.appendChild(child);
+        const matcher = new Matcher('ul', node);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const res = matcher._traverse(leaves, 'self');
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.createElement('ul');
+        const child = document.createElement('li');
+        node.appendChild(child);
+        const matcher = new Matcher('li', node);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const res = matcher._traverse(leaves, 'self');
+        assert.deepEqual(res, child, 'result');
+      });
+
+      it('should get matched node', () => {
+        const node = document.createElement('ul');
+        const child = document.createElement('li');
+        node.appendChild(child);
+        const matcher = new Matcher('ul', node);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const res = matcher._traverse(leaves, 'self');
+        assert.deepEqual(res, node, 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('li', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const res =
+          matcher._traverse(leaves, 'self', document.getElementById('li1'));
+        assert.deepEqual(res, document.getElementById('li2'), 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('li', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const res =
+          matcher._traverse(leaves, 'self', document.getElementById('li3'));
+        assert.isNull(res, 'result');
+      });
+
+      it('should get matched node', () => {
+        const matcher = new Matcher('ul', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const res =
+          matcher._traverse(leaves, 'lineal', document.getElementById('li1'));
+        assert.deepEqual(res, document.getElementById('ul1'), 'result');
+      });
+
+      it('should not match', () => {
+        const matcher = new Matcher('ol', document);
+        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ol');
+        const res =
+          matcher._traverse(leaves, 'lineal', document.getElementById('li1'));
+        assert.isNull(res, 'result');
+      });
+    });
+
     describe('find nodes', () => {
       it('should not match', () => {
         const matcher = new Matcher('::before', document);

@@ -1235,11 +1235,9 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const iterator =
-              this.#document.createNodeIterator(node, SHOW_ELEMENT);
-            let refNode = iterator.nextNode();
+            let refNode = this._moveTreeNode(node);
             if (refNode === node) {
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
             let bool;
             while (refNode) {
@@ -1249,7 +1247,7 @@ export class Matcher {
                   break;
                 }
               }
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
             if (bool) {
               matched.add(node);
@@ -1263,11 +1261,9 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const iterator =
-              this.#document.createNodeIterator(node, SHOW_ELEMENT);
-            let refNode = iterator.nextNode();
+            let refNode = this._moveTreeNode(node);
             if (refNode === node) {
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
             let bool;
             while (refNode) {
@@ -1277,7 +1273,7 @@ export class Matcher {
                   break;
                 }
               }
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
             if (!bool) {
               matched.add(node);
@@ -2087,18 +2083,16 @@ export class Matcher {
           if (nodes.size) {
             matched = nodes;
           } else if (pending) {
-            const iterator =
-              this.#document.createNodeIterator(node, SHOW_ELEMENT);
-            let refNode = iterator.nextNode();
+            let refNode = this._moveTreeNode(node);
             if (refNode === node) {
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
             while (refNode) {
               const bool = this._matchLeaves(leaves, refNode, { forgive });
               if (bool) {
                 matched.add(refNode);
               }
-              refNode = iterator.nextNode();
+              refNode = this.#walker.nextNode();
             }
           }
         }
@@ -2158,6 +2152,84 @@ export class Matcher {
       }
     }
     return matched;
+  }
+
+  /**
+   * move current node position of tree walker
+   * @param {object} [node] - Element node
+   * @returns {?object} - node
+   */
+  _moveTreeNode(node = {}) {
+    let current;
+    let refNode = this.#walker.currentNode;
+    if (node.nodeType === ELEMENT_NODE && refNode === node) {
+      current = refNode;
+    } else {
+      if (refNode !== this.#walker.root) {
+        while (refNode) {
+          if (refNode === this.#walker.root ||
+              (node.nodeType === ELEMENT_NODE && refNode === node)) {
+            break;
+          }
+          refNode = this.#walker.parentNode();
+        }
+      }
+      if (node.nodeType === ELEMENT_NODE) {
+        while (refNode) {
+          if (refNode === node) {
+            current = refNode;
+            break;
+          }
+          refNode = this.#walker.nextNode();
+        }
+      } else {
+        current = refNode;
+      }
+    }
+    return current ?? null;
+  }
+
+  /**
+   * traverse tree walker
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {string} targetType - target type
+   * @param {object} [node] - Element node
+   * @returns {?object} - node
+   */
+  _traverse(leaves, targetType, node) {
+    let ready;
+    let refNode = this._moveTreeNode(node);
+    let matchedNode;
+    while (refNode) {
+      if (!node || refNode === node) {
+        ready = true;
+      }
+      if (ready && refNode !== node) {
+        let bool = false;
+        if (this.#node.nodeType === ELEMENT_NODE) {
+          if (refNode === this.#node) {
+            bool = true;
+          } else {
+            bool = this.#node.contains(refNode);
+          }
+        } else {
+          bool = true;
+        }
+        if (bool) {
+          const matched = this._matchLeaves(leaves, refNode);
+          if (matched) {
+            matchedNode = refNode;
+            break;
+          }
+        }
+      }
+      if (ready && targetType === TARGET_LINEAL) {
+        refNode = this.#walker.parentNode();
+      } else {
+        refNode = this.#walker.nextNode();
+      }
+    }
+    return matchedNode ?? null;
   }
 
   /**
@@ -2423,9 +2495,7 @@ export class Matcher {
         i++;
       }
       if (pendingItems.size) {
-        const iterator =
-          this.#document.createNodeIterator(this.#root, SHOW_ELEMENT);
-        let nextNode = iterator.nextNode();
+        let nextNode = this._moveTreeNode();
         while (nextNode) {
           let bool = false;
           if (this.#node.nodeType === ELEMENT_NODE) {
@@ -2450,7 +2520,7 @@ export class Matcher {
               }
             }
           }
-          nextNode = iterator.nextNode();
+          nextNode = this.#walker.nextNode();
         }
       }
     } else {
