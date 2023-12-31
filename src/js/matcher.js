@@ -2156,7 +2156,6 @@ export class Matcher {
     const { leaves: [leaf, ...items] } = twig;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    const compound = items.length > 0;
     const { document, root, shadow } = this.#root;
     let nodes = new Set();
     let pending = false;
@@ -2329,9 +2328,10 @@ export class Matcher {
         }
       }
     }
+    const itemsLen = items.length;
     // check last leaf if node not found, not pending and leaves left
-    if (nodes instanceof Set && !nodes.size && !pending && compound) {
-      const lastLeaf = items[items.length - 1];
+    if (nodes instanceof Set && !nodes.size && !pending && itemsLen) {
+      const lastLeaf = items[itemsLen - 1];
       const { type: lastLeafType } = lastLeaf;
       if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
         let node;
@@ -2345,7 +2345,7 @@ export class Matcher {
       }
     }
     return {
-      compound,
+      compound: itemsLen > 0,
       nodes,
       pending
     };
@@ -2374,23 +2374,9 @@ export class Matcher {
                  firstType === SELECTOR_ID) {
         find = FIND_NEXT;
         twig = firstTwig;
-      } else if (targetType === TARGET_FIRST) {
-        let bool;
-        for (const { combo } of branch) {
-          if (combo) {
-            const { name: comboName } = combo;
-            if (/^[+~]$/.test(comboName)) {
-              find = FIND_NEXT;
-              twig = firstTwig;
-              bool = true;
-              break;
-            }
-          }
-        }
-        if (!bool) {
-          find = FIND_PREV;
-          twig = lastTwig;
-        }
+      } else if (targetType === TARGET_FIRST && branchLen < BIT_04) {
+        find = FIND_PREV;
+        twig = lastTwig;
       } else {
         find = FIND_NEXT;
         twig = firstTwig;
