@@ -270,7 +270,8 @@ export class Matcher {
       }
     }
     if (parentNode) {
-      const arr = [].slice.call(parentNode.children);
+      const arr = [].slice.call(parentNode.childNodes)
+        .filter(n => n.nodeType === ELEMENT_NODE);
       const l = arr.length;
       if (l) {
         const selectorNodes = new Set();
@@ -381,7 +382,8 @@ export class Matcher {
     const { localName, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
-      const arr = [].slice.call(parentNode.children);
+      const arr = [].slice.call(parentNode.childNodes)
+        .filter(n => n.nodeType === ELEMENT_NODE);
       const l = arr.length;
       if (l) {
         if (reverse) {
@@ -2068,11 +2070,13 @@ export class Matcher {
           break;
         }
         case '>': {
-          const childNodes = [].slice.call(node.children);
+          const childNodes = node.childNodes[Symbol.iterator]();
           for (const refNode of childNodes) {
-            const bool = this._matchLeaves(leaves, refNode, { forgive });
-            if (bool) {
-              matched.add(refNode);
+            if (refNode.nodeType === ELEMENT_NODE) {
+              const bool = this._matchLeaves(leaves, refNode, { forgive });
+              if (bool) {
+                matched.add(refNode);
+              }
             }
           }
           break;
@@ -2292,14 +2296,16 @@ export class Matcher {
             }
           }
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const childNodes = [].slice.call(this.#root.children);
+          const childNodes = this.#root.childNodes[Symbol.iterator]();
           const arr = [];
           for (const node of childNodes) {
-            if (node.classList.contains(leafName)) {
-              arr.push(node);
+            if (node.nodeType === ELEMENT_NODE) {
+              if (node.classList.contains(leafName)) {
+                arr.push(node);
+              }
+              const a = [].slice.call(node.getElementsByClassName(leafName));
+              arr.push(...a);
             }
-            const a = [].slice.call(node.getElementsByClassName(leafName));
-            arr.push(...a);
           }
           if (arr.length) {
             nodes = new Set(arr);
@@ -2345,14 +2351,16 @@ export class Matcher {
           pending = true;
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
-          const childNodes = [].slice.call(this.#root.children);
+          const childNodes = this.#root.children[Symbol.iterator]();
           const arr = [];
           for (const node of childNodes) {
-            if (node.localName === tagName) {
-              arr.push(node);
+            if (node.nodeType === ELEMENT_NODE) {
+              if (node.localName === tagName) {
+                arr.push(node);
+              }
+              const a = [].slice.call(node.getElementsByTagName(leafName));
+              arr.push(...a);
             }
-            const a = [].slice.call(node.getElementsByTagName(leafName));
-            arr.push(...a);
           }
           if (arr.length) {
             nodes = new Set(arr);
