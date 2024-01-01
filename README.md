@@ -262,7 +262,7 @@ const dom = new JSDOM('', {
 |querySelectorAll('.box > .block')|1,367 ops/sec ±1.18%|3,167 ops/sec ±1.59%|patched-jsdom is 2.3 times faster than jsdom. patched-jsdom took 0.316msec.|
 |querySelectorAll('.box .content')|676 ops/sec ±1.29%|726 ops/sec ±0.40%|patched-jsdom is 1.1 times faster than jsdom. patched-jsdom took 1.378msec.|
 |querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|273 ops/sec ±0.23%|822 ops/sec ±1.48%|patched-jsdom is 3.0 times faster than jsdom. patched-jsdom took 1.217msec.|
-|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|655 ops/sec ±1.80% |patched-jsdom took 1.527msec.|
+|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|655 ops/sec ±1.80% |jsdom throws. patched-jsdom took 1.527msec.|
 
 
 ## Acknowledgments
