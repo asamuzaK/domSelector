@@ -2596,9 +2596,7 @@ export class Matcher {
               if (matched) {
                 const index = pendingItem.get('index');
                 this.#nodes[index].add(nextNode);
-                if (!this.#ast[index].filtered) {
-                  this.#ast[index].filtered = true;
-                }
+                this.#ast[index].filtered = true;
               }
             }
           }
