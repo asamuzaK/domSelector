@@ -3,9 +3,10 @@ export class Matcher {
         warn?: boolean;
     });
     _onError(e: Error): void;
-    _getRoot(node?: object): object;
+    _setup(node: object): Array<object>;
     _sortLeaves(leaves: Array<object>): Array<object>;
-    _prepare(selector?: string): Array<Array<object | undefined>>;
+    _prepare(selector: string): Array<Array<object | undefined>>;
+    _traverse(node?: object, tree?: object): object | null;
     _collectNthChild(anb: {
         a: number;
         b: number;
@@ -42,7 +43,12 @@ export class Matcher {
         find?: string;
         forgive?: boolean;
     }): Set<object>;
-    _findNodes(twig: object, targetType: string): object;
+    _findNode(leaves: Array<object>, opt?: {
+        node?: object;
+        targetType?: string;
+        tree?: object;
+    }): object | null;
+    _findEntryNodes(twig: object, targetType: string): object;
     _getEntryTwig(branch: Array<object>, targetType: string): object;
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
     _sortNodes(nodes: Array<object> | Set<object>): Array<object | undefined>;

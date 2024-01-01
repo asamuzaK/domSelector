@@ -35,6 +35,8 @@ export const DOCUMENT_FRAGMENT_NODE: 11;
 export const DOCUMENT_POSITION_PRECEDING: 2;
 export const DOCUMENT_POSITION_CONTAINS: 8;
 export const DOCUMENT_POSITION_CONTAINED_BY: 16;
+export const SHOW_DOCUMENT: 256;
+export const SHOW_DOCUMENT_FRAGMENT: 1024;
 export const SHOW_ELEMENT: 1;
 export const REG_LOGICAL_PSEUDO: RegExp;
 export const REG_SHADOW_HOST: RegExp;

@@ -33,11 +33,11 @@
     "c8": "^8.0.1",
     "chai": "^5.0.0",
     "commander": "^11.1.0",
-    "esbuild": "^0.19.10",
+    "esbuild": "^0.19.11",
     "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsdoc": "^46.9.1",
+    "eslint-plugin-jsdoc": "^47.0.2",
     "eslint-plugin-regexp": "^2.1.2",
     "eslint-plugin-unicorn": "^50.0.1",
     "happy-dom": "^12.10.3",
@@ -58,5 +58,5 @@
     "tsc": "npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "1.2.2"
+  "version": "1.2.3"
 }
