@@ -2876,11 +2876,7 @@ export class Matcher {
                 node: refNode,
                 tree: this.#subtree
               });
-              if (refNode) {
-                nextNodes = new Set([refNode]);
-              } else {
-                break;
-              }
+              nextNodes = new Set([refNode]);
             }
           }
         }
