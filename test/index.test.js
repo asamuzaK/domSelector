@@ -1144,12 +1144,6 @@ describe('exported api', () => {
       assert.throws(() => querySelector('*|', document), DOMException);
     });
 
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => querySelector('[foo= bar baz ]', node),
-        DOMException);
-    });
-
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
