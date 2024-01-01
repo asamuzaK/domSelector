@@ -313,11 +313,9 @@ export class Matcher {
       if (l) {
         const selectorNodes = new Set();
         if (selectorBranches) {
-          const branchesLen = selectorBranches.length;
           for (const refNode of arr) {
             let bool;
-            for (let i = 0; i < branchesLen; i++) {
-              const leaves = selectorBranches[i];
+            for (const leaves of selectorBranches) {
               bool = this._matchLeaves(leaves, refNode);
               if (!bool) {
                 break;
@@ -335,8 +333,7 @@ export class Matcher {
         if (a === 0) {
           if (b > 0 && b <= l) {
             if (selectorNodes.size) {
-              for (let i = 0; i < l; i++) {
-                const current = arr[i];
+              for (const current of arr) {
                 if (selectorNodes.has(current)) {
                   matched.add(current);
                   break;
@@ -385,10 +382,8 @@ export class Matcher {
       if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
           (a + b) === 1) {
         if (selectorBranches) {
-          const branchesLen = selectorBranches.length;
           let bool;
-          for (let i = 0; i < branchesLen; i++) {
-            const leaves = selectorBranches[i];
+          for (const leaves of selectorBranches) {
             bool = this._matchLeaves(leaves, node);
             if (bool) {
               break;
@@ -430,8 +425,7 @@ export class Matcher {
         if (a === 0) {
           if (b > 0 && b <= l) {
             let j = 0;
-            for (let i = 0; i < l; i++) {
-              const current = arr[i];
+            for (const current of arr) {
               const { localName: itemLocalName, prefix: itemPrefix } = current;
               if (itemLocalName === localName && itemPrefix === prefix) {
                 if (j === b - 1) {
@@ -452,8 +446,7 @@ export class Matcher {
           }
           if (nth >= 0 && nth < l) {
             let j = a > 0 ? 0 : b - 1;
-            for (let i = 0; i < l; i++) {
-              const current = arr[i];
+            for (const current of arr) {
               const { localName: itemLocalName, prefix: itemPrefix } = current;
               if (itemLocalName === localName && itemPrefix === prefix) {
                 if (j === nth) {
@@ -2107,7 +2100,7 @@ export class Matcher {
           break;
         }
         case '>': {
-          const childNodes = node.childNodes[Symbol.iterator]();
+          const childNodes = node.childNodes.values();
           for (const refNode of childNodes) {
             if (refNode.nodeType === ELEMENT_NODE) {
               const bool = this._matchLeaves(leaves, refNode, { forgive });
@@ -2316,7 +2309,7 @@ export class Matcher {
             break;
           }
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const childNodes = this.#root.childNodes[Symbol.iterator]();
+          const childNodes = this.#root.childNodes.values();
           const arr = [];
           for (const node of childNodes) {
             if (node.nodeType === ELEMENT_NODE) {
@@ -2384,7 +2377,7 @@ export class Matcher {
           pending = true;
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
           const tagName = leafName.toLowerCase();
-          const childNodes = this.#root.children[Symbol.iterator]();
+          const childNodes = this.#root.childNodes.values();
           const arr = [];
           for (const node of childNodes) {
             if (node.nodeType === ELEMENT_NODE) {
