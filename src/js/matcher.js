@@ -2494,7 +2494,8 @@ export class Matcher {
         find = FIND_PREV;
         twig = lastTwig;
       } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
-                 firstType === SELECTOR_ID) {
+                 firstType === SELECTOR_ID ||
+                 targetType === TARGET_ALL) {
         find = FIND_NEXT;
         twig = firstTwig;
       } else {
@@ -2508,8 +2509,9 @@ export class Matcher {
           }
           if (combo) {
             const { name: comboName } = combo;
-            if (targetType === TARGET_ALL || /^[+~]$/.test(comboName)) {
+            if (/^[+~]$/.test(comboName)) {
               bool = true;
+              break;
             }
           }
         }
