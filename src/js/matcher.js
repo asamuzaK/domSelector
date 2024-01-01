@@ -2548,7 +2548,7 @@ export class Matcher {
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       if (targetType === TARGET_FIRST) {
-        if (this.#node === ELEMENT_NODE) {
+        if (this.#node.nodeType === ELEMENT_NODE) {
           this.#subtree =
             this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
         } else {
@@ -2791,11 +2791,7 @@ export class Matcher {
                 node: refNode,
                 tree: this.#subtree
               });
-              if (refNode) {
-                nextNodes = new Set([refNode]);
-              } else {
-                break;
-              }
+              nextNodes = new Set([refNode]);
             }
           }
         } else {

@@ -11867,6 +11867,29 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher.querySelector();
         assert.deepEqual(res, root.lastElementChild, 'result');
       });
+
+      it('should get matched node', () => {
+        const node1 = document.createElement('div');
+        const node2 = document.createElement('div');
+        const node3 = document.createElement('div');
+        const node4 = document.createElement('div');
+        const node5 = document.createElement('div');
+        const parent = document.getElementById('div0');
+        node1.classList.add('foo');
+        node2.classList.add('foo');
+        node3.classList.add('foo');
+        node4.classList.add('foo');
+        node5.classList.add('foo');
+        parent.appendChild(node1);
+        parent.appendChild(node2);
+        parent.appendChild(node3);
+        parent.appendChild(node4);
+        parent.appendChild(node5);
+        const matcher =
+          new Matcher('.foo + .foo + .foo:last-child', parent);
+        const res = matcher.querySelector();
+        assert.deepEqual(res, node5, 'result');
+      });
     });
 
     describe('querySelectorAll', () => {
