@@ -513,7 +513,7 @@ suite.on('start', () => {
   const { target } = evt;
   const str = String(target);
   if (str.startsWith('patched-jsdom')) {
-    const patchedHz = evt.target.hz;
+    const patchedHz = target.hz;
     const jsdomHz = hz.get('jsdom');
     const fastest = {
       key: 'patched-jsdom',
