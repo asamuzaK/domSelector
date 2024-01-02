@@ -9845,14 +9845,14 @@ describe('match AST leaf and DOM node', () => {
         assert.isNull(res, 'result');
       });
 
-      it('should get matched node', () => {
+      it('should not match', () => {
         const matcher = new Matcher('ul', document);
         const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
         const res = matcher._findNode(leaves, {
           node: document.getElementById('li1'),
           targetType: 'lineal'
         });
-        assert.deepEqual(res, document.getElementById('ul1'), 'result');
+        assert.isNull(res, 'result');
       });
 
       it('should not match', () => {

@@ -63,11 +63,11 @@ export class Matcher {
   #bit;
   #cache;
   #document;
+  #finder;
   #node;
   #nodes;
   #root;
   #shadow;
-  #subtree;
   #tree;
   #warn;
 
@@ -190,14 +190,14 @@ export class Matcher {
   }
 
   /**
-   * prepare ast and nodes
+   * prepare #ast and #nodes
    * @param {string} selector - CSS selector
-   * @returns {Array.<Array.<object|undefined>>} - array of ast and nodes
+   * @returns {Array.<Array.<object|undefined>>} - array of #ast and #nodes
    */
   _prepare(selector) {
-    const ast = parseSelector(selector);
-    const branches = walkAST(ast);
-    const tree = [];
+    const cssAst = parseSelector(selector);
+    const branches = walkAST(cssAst);
+    const ast = [];
     const nodes = [];
     let i = 0;
     for (const [...items] of branches) {
@@ -232,7 +232,7 @@ export class Matcher {
           }
         }
       }
-      tree.push({
+      ast.push({
         branch,
         filtered: false,
         find: null,
@@ -242,7 +242,7 @@ export class Matcher {
       i++;
     }
     return [
-      tree,
+      ast,
       nodes
     ];
   }
@@ -250,22 +250,22 @@ export class Matcher {
   /**
    * traverse tree walker
    * @param {object} [node] - Element node
-   * @param {object} [tree] - tree walker
+   * @param {object} [walker] - tree walker
    * @returns {?object} - node
    */
-  _traverse(node = {}, tree = this.#tree) {
+  _traverse(node = {}, walker = this.#tree) {
     let current;
-    let refNode = tree.currentNode;
+    let refNode = walker.currentNode;
     if (node.nodeType === ELEMENT_NODE && refNode === node) {
       current = refNode;
     } else {
-      if (refNode !== tree.root) {
+      if (refNode !== walker.root) {
         while (refNode) {
-          if (refNode === tree.root ||
+          if (refNode === walker.root ||
               (node.nodeType === ELEMENT_NODE && refNode === node)) {
             break;
           }
-          refNode = tree.parentNode();
+          refNode = walker.parentNode();
         }
       }
       if (node.nodeType === ELEMENT_NODE) {
@@ -274,7 +274,7 @@ export class Matcher {
             current = refNode;
             break;
           }
-          refNode = tree.nextNode();
+          refNode = walker.nextNode();
         }
       } else {
         current = refNode;
@@ -1194,9 +1194,9 @@ export class Matcher {
               form = form.parentNode;
             }
             if (form) {
-              const iterator =
-                this.#document.createNodeIterator(form, SHOW_ELEMENT);
-              let nextNode = iterator.nextNode();
+              const walker =
+                this.#document.createTreeWalker(form, SHOW_ELEMENT);
+              let nextNode = walker.nextNode();
               while (nextNode) {
                 const nodeName = nextNode.localName;
                 let m;
@@ -1213,7 +1213,7 @@ export class Matcher {
                   }
                   break;
                 }
-                nextNode = iterator.nextNode();
+                nextNode = walker.nextNode();
               }
             }
           // input[type="checkbox"], input[type="radio"]
@@ -1267,10 +1267,8 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            let refNode = this._traverse(node);
-            if (refNode === node) {
-              refNode = this.#tree.nextNode();
-            }
+            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+            let refNode = walker.nextNode();
             let bool;
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
@@ -1279,7 +1277,7 @@ export class Matcher {
                   break;
                 }
               }
-              refNode = this.#tree.nextNode();
+              refNode = walker.nextNode();
             }
             if (bool) {
               matched.add(node);
@@ -1293,10 +1291,8 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            let refNode = this._traverse(node);
-            if (refNode === node) {
-              refNode = this.#tree.nextNode();
-            }
+            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+            let refNode = walker.nextNode();
             let bool;
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
@@ -1305,7 +1301,7 @@ export class Matcher {
                   break;
                 }
               }
-              refNode = this.#tree.nextNode();
+              refNode = walker.nextNode();
             }
             if (!bool) {
               matched.add(node);
@@ -2117,16 +2113,14 @@ export class Matcher {
           if (nodes.size) {
             matched = nodes;
           } else if (pending) {
-            let refNode = this._traverse(node);
-            if (refNode === node) {
-              refNode = this.#tree.nextNode();
-            }
+            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+            let refNode = walker.nextNode();
             while (refNode) {
               const bool = this._matchLeaves(leaves, refNode, { forgive });
               if (bool) {
                 matched.add(refNode);
               }
-              refNode = this.#tree.nextNode();
+              refNode = walker.nextNode();
             }
           }
         }
@@ -2198,13 +2192,13 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   _findNode(leaves, opt = {}) {
-    let { node, targetType, tree } = opt;
-    if (!tree) {
-      tree = this.#tree;
+    let { node, walker } = opt;
+    if (!walker) {
+      walker = this.#tree;
     }
-    let refNode = this._traverse(node);
+    let refNode = this._traverse(node, walker);
     if (refNode.nodeType !== ELEMENT_NODE || refNode === node) {
-      refNode = tree.nextNode();
+      refNode = walker.nextNode();
     }
     let matchedNode;
     while (refNode) {
@@ -2225,11 +2219,7 @@ export class Matcher {
           break;
         }
       }
-      if (targetType === TARGET_LINEAL) {
-        refNode = tree.parentNode();
-      } else {
-        refNode = tree.nextNode();
-      }
+      refNode = walker.nextNode();
     }
     return matchedNode ?? null;
   }
@@ -2300,8 +2290,7 @@ export class Matcher {
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
             node: this.#node,
-            targetType,
-            tree: this.#subtree
+            walker: this.#finder
           });
           if (node) {
             nodes.add(node);
@@ -2364,8 +2353,7 @@ export class Matcher {
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
             node: this.#node,
-            targetType,
-            tree: this.#subtree
+            walker: this.#finder
           });
           if (node) {
             nodes.add(node);
@@ -2437,8 +2425,7 @@ export class Matcher {
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
             node: this.#node,
-            targetType,
-            tree: this.#subtree
+            walker: this.#finder
           });
           if (node) {
             nodes.add(node);
@@ -2542,14 +2529,6 @@ export class Matcher {
   _collectNodes(targetType) {
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      if (targetType === TARGET_FIRST) {
-        if (this.#node.nodeType === ELEMENT_NODE) {
-          this.#subtree =
-            this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
-        } else {
-          this.#subtree = this.#tree;
-        }
-      }
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
@@ -2714,12 +2693,12 @@ export class Matcher {
                 }
                 if (arr.length) {
                   if (j === lastIndex) {
-                    if (targetType === TARGET_FIRST) {
-                      const [node] = this._sortNodes(arr);
-                      nodes.add(node);
-                    } else {
+                    if (targetType === TARGET_ALL) {
                       const n = [...nodes];
                       nodes = new Set([...n, ...arr]);
+                    } else {
+                      const [node] = this._sortNodes(arr);
+                      nodes.add(node);
                     }
                     matched = true;
                     break;
@@ -2743,9 +2722,8 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              targetType,
               node: entryNode,
-              tree: this.#subtree
+              walker: this.#finder
             });
             while (refNode) {
               let nextNodes = new Set([refNode]);
@@ -2782,9 +2760,8 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                targetType,
                 node: refNode,
-                tree: this.#subtree
+                walker: this.#finder
               });
               nextNodes = new Set([refNode]);
             }
@@ -2828,9 +2805,8 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              targetType,
               node: entryNode,
-              tree: this.#subtree
+              walker: this.#finder
             });
             while (refNode) {
               let nextNodes = new Set([refNode]);
@@ -2861,9 +2837,8 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                targetType,
                 node: refNode,
-                tree: this.#subtree
+                walker: this.#finder
               });
               nextNodes = new Set([refNode]);
             }
@@ -2880,6 +2855,9 @@ export class Matcher {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _find(targetType) {
+    if (targetType === TARGET_FIRST) {
+      this.#finder = this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
+    }
     this._collectNodes(targetType);
     const nodes = this._matchNodes(targetType);
     return nodes;
