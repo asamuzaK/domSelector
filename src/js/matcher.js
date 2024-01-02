@@ -2197,29 +2197,31 @@ export class Matcher {
       walker = this.#tree;
     }
     let refNode = this._traverse(node, walker);
-    if (refNode.nodeType !== ELEMENT_NODE || refNode === node) {
-      refNode = walker.nextNode();
-    }
     let matchedNode;
-    while (refNode) {
-      let bool;
-      if (this.#node.nodeType === ELEMENT_NODE) {
-        if (refNode === this.#node) {
-          bool = true;
+    if (refNode) {
+      if (refNode.nodeType !== ELEMENT_NODE || refNode === node) {
+        refNode = walker.nextNode();
+      }
+      while (refNode) {
+        let bool;
+        if (this.#node.nodeType === ELEMENT_NODE) {
+          if (refNode === this.#node) {
+            bool = true;
+          } else {
+            bool = this.#node.contains(refNode);
+          }
         } else {
-          bool = this.#node.contains(refNode);
+          bool = true;
         }
-      } else {
-        bool = true;
-      }
-      if (bool) {
-        const matched = this._matchLeaves(leaves, refNode);
-        if (matched) {
-          matchedNode = refNode;
-          break;
+        if (bool) {
+          const matched = this._matchLeaves(leaves, refNode);
+          if (matched) {
+            matchedNode = refNode;
+            break;
+          }
         }
+        refNode = walker.nextNode();
       }
-      refNode = walker.nextNode();
     }
     return matchedNode ?? null;
   }
