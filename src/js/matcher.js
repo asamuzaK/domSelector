@@ -2192,7 +2192,7 @@ export class Matcher {
    * @returns {?object} - matched node
    */
   _findNode(leaves, opt = {}) {
-    let { node, targetType, walker } = opt;
+    let { node, walker } = opt;
     if (!walker) {
       walker = this.#tree;
     }
@@ -2289,7 +2289,6 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            targetType,
             node: this.#node,
             walker: this.#finder
           });
@@ -2353,7 +2352,6 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            targetType,
             node: this.#node,
             walker: this.#finder
           });
@@ -2426,7 +2424,6 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            targetType,
             node: this.#node,
             walker: this.#finder
           });
@@ -2725,7 +2722,6 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              targetType,
               node: entryNode,
               walker: this.#finder
             });
@@ -2764,7 +2760,6 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                targetType,
                 node: refNode,
                 walker: this.#finder
               });
@@ -2810,7 +2805,6 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              targetType,
               node: entryNode,
               walker: this.#finder
             });
@@ -2843,7 +2837,6 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                targetType,
                 node: refNode,
                 walker: this.#finder
               });
