@@ -759,10 +759,8 @@ export class Matcher {
       if (selector.includes(':has(')) {
         res = null;
       } else {
-        const l = branches.length;
         let bool;
-        for (let i = 0; i < l; i++) {
-          const leaves = branches[i];
+        for (const leaves of branches) {
           bool = this._matchHasPseudoFunc(Object.assign([], leaves), node);
           if (bool) {
             break;
@@ -798,7 +796,6 @@ export class Matcher {
             if (arr.length) {
               if (j === 0) {
                 bool = true;
-                break;
               } else {
                 nextNodes = new Set(arr);
               }
@@ -1155,8 +1152,8 @@ export class Matcher {
             if (!parent) {
               parent = this.#document.documentElement;
             }
-            const nodes = [].slice.call(parent.getElementsByTagName('input'));
             let checked;
+            const nodes = [].slice.call(parent.getElementsByTagName('input'));
             for (const item of nodes) {
               if (item.getAttribute('type') === 'radio') {
                 if (nodeName) {
@@ -1268,8 +1265,8 @@ export class Matcher {
             }
           } else if (localName === 'fieldset') {
             const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
-            let refNode = walker.nextNode();
             let bool;
+            let refNode = walker.nextNode();
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -1292,8 +1289,8 @@ export class Matcher {
             }
           } else if (localName === 'fieldset') {
             const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
-            let refNode = walker.nextNode();
             let bool;
+            let refNode = walker.nextNode();
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -1384,8 +1381,8 @@ export class Matcher {
         }
         case 'empty': {
           if (node.hasChildNodes()) {
-            const nodes = node.childNodes.values();
             let bool;
+            const nodes = node.childNodes.values();
             for (const refNode of nodes) {
               bool = refNode.nodeType !== ELEMENT_NODE &&
                 refNode.nodeType !== TEXT_NODE;
@@ -1851,8 +1848,8 @@ export class Matcher {
           res = node;
         }
       } else if (astName === 'host-context') {
-        let parent = host;
         let bool;
+        let parent = host;
         while (parent) {
           for (const leaf of leaves) {
             const { type: leafType } = leaf;
@@ -1978,10 +1975,10 @@ export class Matcher {
    * @returns {object} - collection of nodes and pending state
    */
   _findDescendantNodes(leaves, baseNode) {
-    const [leaf, ...items] = leaves;
+    const [leaf, ...filterLeaves] = leaves;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    const matchItems = items.length > 0;
+    const compound = filterLeaves.length > 0;
     let nodes = new Set();
     let pending = false;
     if (this.#shadow) {
@@ -1994,8 +1991,8 @@ export class Matcher {
           } else {
             const node = this.#root.getElementById(leafName);
             if (node && node !== baseNode && baseNode.contains(node)) {
-              if (matchItems) {
-                const bool = this._matchLeaves(items, node);
+              if (compound) {
+                const bool = this._matchLeaves(filterLeaves, node);
                 if (bool) {
                   nodes.add(node);
                 }
@@ -2009,9 +2006,9 @@ export class Matcher {
         case SELECTOR_CLASS: {
           const arr = [].slice.call(baseNode.getElementsByClassName(leafName));
           if (arr.length) {
-            if (matchItems) {
+            if (compound) {
               for (const node of arr) {
-                const bool = this._matchLeaves(items, node);
+                const bool = this._matchLeaves(filterLeaves, node);
                 if (bool) {
                   nodes.add(node);
                 }
@@ -2027,9 +2024,9 @@ export class Matcher {
               !/[*|]/.test(leafName)) {
             const arr = [].slice.call(baseNode.getElementsByTagName(leafName));
             if (arr.length) {
-              if (matchItems) {
+              if (compound) {
                 for (const node of arr) {
-                  const bool = this._matchLeaves(items, node);
+                  const bool = this._matchLeaves(filterLeaves, node);
                   if (bool) {
                     nodes.add(node);
                   }
@@ -2300,8 +2297,8 @@ export class Matcher {
             break;
           }
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const childNodes = this.#root.childNodes.values();
           const arr = [];
+          const childNodes = this.#root.childNodes.values();
           for (const node of childNodes) {
             if (node.nodeType === ELEMENT_NODE) {
               if (node.classList.contains(leafName)) {
@@ -2366,9 +2363,9 @@ export class Matcher {
                    /[*|]/.test(leafName)) {
           pending = true;
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          const arr = [];
           const tagName = leafName.toLowerCase();
           const childNodes = this.#root.childNodes.values();
-          const arr = [];
           for (const node of childNodes) {
             if (node.nodeType === ELEMENT_NODE) {
               if (node.localName === tagName) {
