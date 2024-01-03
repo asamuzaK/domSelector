@@ -46,6 +46,7 @@ export const DOCUMENT_POSITION_CONTAINS = 8;
 export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
+export const SHOW_ALL = 0xffffffff;
 export const SHOW_DOCUMENT = 0x100;
 export const SHOW_DOCUMENT_FRAGMENT = 0x400;
 export const SHOW_ELEMENT = 1;
