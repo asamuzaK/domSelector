@@ -11216,8 +11216,8 @@ describe('match AST leaf and DOM node', () => {
                   ]
                 }
               ],
-              filtered: false,
-              find: 'next',
+              filtered: true,
+              find: 'prev',
               skip: false
             }
           ],
@@ -11541,6 +11541,33 @@ describe('match AST leaf and DOM node', () => {
           document.getElementById('li3'),
           document.getElementById('li2')
         ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const matcher =
+          new Matcher('li:last-child, li:first-child + li', document);
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('all');
+        assert.deepEqual([...res], [
+          document.getElementById('li3'),
+          document.getElementById('li2')
+        ], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher =
+          new Matcher('ul:nth-child(2) > li, li:nth-child(4) + li', document);
+        matcher._collectNodes('first');
+        const res = matcher._matchNodes('first');
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should not match', () => {
+        const matcher =
+          new Matcher('ul:nth-child(2) > li, li:nth-child(4) + li', document);
+        matcher._collectNodes('all');
+        const res = matcher._matchNodes('all');
+        assert.deepEqual([...res], [], 'result');
       });
 
       it('should get matched node(s)', () => {
