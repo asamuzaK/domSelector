@@ -113,8 +113,26 @@ describe('local wpt test cases', () => {
   describe('dom/nodes/ParentNode-querySelector-All.html', () => {
     it('should throw', () => {
       const node = document.createElement('div');
+      assert.throws(() => node.querySelector('[class= space unquoted ]'),
+        DOMException, 'Invalid selector [class=space unquoted]');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
       assert.throws(() => node.querySelector('div:example'), DOMException,
         'Unknown pseudo-class :example');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('ns|div'), DOMException,
+        'Undeclared namespace ns');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector(':not(ns|div)'), DOMException,
+        'Undeclared namespace ns');
     });
 
     it('should get matched node(s)', () => {
@@ -889,6 +907,15 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const res = document.querySelector(':dir(rtl) > * > :dir(rtl)');
       assert.deepEqual(res, document.getElementById('div3_1_1'), 'result');
+    });
+  });
+
+  describe('css/selectors/has-matches-to-uninserted-elements.html', () => {
+    it('should not match', () => {
+      const subject = document.createElement('subject');
+      subject.innerHTML = '<child></child><direct_sibling></direct_sibling><indirect_sibling></indirect_sibling>';
+      const res = subject.matches(':has(~ *)');
+      assert.isFalse(res, 'result');
     });
   });
 

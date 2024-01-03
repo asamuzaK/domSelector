@@ -2168,18 +2168,21 @@ export class Matcher {
           break;
         }
         case '~': {
-          const walker =
-            this.#document.createTreeWalker(node.parentNode, SHOW_ELEMENT);
-          let refNode = this._traverse(node, walker);
-          if (refNode === node) {
-            refNode = walker.nextSibling();
-          }
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, { forgive });
-            if (bool) {
-              matched.add(refNode);
+          const { parentNode } = node;
+          if (parentNode) {
+            const walker =
+              this.#document.createTreeWalker(node.parentNode, SHOW_ELEMENT);
+            let refNode = this._traverse(node, walker);
+            if (refNode === node) {
+              refNode = walker.nextSibling();
             }
-            refNode = walker.nextSibling();
+            while (refNode) {
+              const bool = this._matchLeaves(leaves, refNode, { forgive });
+              if (bool) {
+                matched.add(refNode);
+              }
+              refNode = walker.nextSibling();
+            }
           }
           break;
         }
@@ -2289,8 +2292,12 @@ export class Matcher {
     let refNode = this._traverse(node, walker);
     let matchedNode;
     if (refNode) {
-      if (refNode.nodeType !== ELEMENT_NODE || refNode === node) {
+      if (refNode.nodeType !== ELEMENT_NODE) {
         refNode = walker.nextNode();
+      } else if (refNode === node) {
+        if (refNode !== this.#root) {
+          refNode = walker.nextNode();
+        }
       }
       while (refNode) {
         let bool;
@@ -2389,7 +2396,8 @@ export class Matcher {
             filtered = true;
             break;
           }
-        } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE ||
+                   this.#root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
           const arr =
@@ -2440,9 +2448,9 @@ export class Matcher {
             break;
           }
         } else if (this.#document.contentType !== 'text/html' ||
-                   /[*|]/.test(leafName)) {
-          pending = true;
-        } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
+                   /[*|]/.test(leafName) ||
+                   this.#root.nodeType === DOCUMENT_FRAGMENT_NODE ||
+                   this.#root.nodeType === ELEMENT_NODE) {
           pending = true;
         } else {
           const arr = [].slice.call(this.#root.getElementsByTagName(leafName));
@@ -2502,21 +2510,6 @@ export class Matcher {
         }
       }
     }
-    // check last leaf if node not found, not pending and leaves left
-    if (!nodes.size && !pending && compound) {
-      const lastLeaf = filterLeaves[filterLeaves.length - 1];
-      const { type: lastLeafType } = lastLeaf;
-      if (lastLeafType === SELECTOR_PSEUDO_CLASS) {
-        let node;
-        if (this.#root.nodeType === ELEMENT_NODE) {
-          node = this.#root;
-        } else {
-          node = this.#root.firstElementChild;
-        }
-        // throws if unknown pseudo-class
-        this._matchPseudoClassSelector(lastLeaf, node);
-      }
-    }
     return {
       compound,
       filtered,
@@ -2573,7 +2566,6 @@ export class Matcher {
             const { name: comboName } = combo;
             if (/^[+~]$/.test(comboName)) {
               bool = true;
-              break;
             }
           }
         }
