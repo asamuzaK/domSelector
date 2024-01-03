@@ -313,12 +313,20 @@ export class Matcher {
       }
     }
     if (parentNode) {
-      const arr = [].slice.call(parentNode.childNodes)
-        .filter(n => n.nodeType === ELEMENT_NODE);
-      const l = arr.length;
+      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
+      const walker = this.#document.createTreeWalker(parentNode, filter);
+      let l = 0;
+      let refNode = walker.firstChild();
+      while (refNode) {
+        l++;
+        refNode = walker.nextSibling();
+      }
+      refNode = this._traverse(parentNode, walker);
       const selectorNodes = new Set();
       if (selectorBranches) {
-        for (const refNode of arr) {
+        refNode = this._traverse(parentNode, walker);
+        refNode = walker.firstChild();
+        while (refNode) {
           let bool;
           for (const leaves of selectorBranches) {
             bool = this._matchLeaves(leaves, refNode);
@@ -329,24 +337,54 @@ export class Matcher {
           if (bool) {
             selectorNodes.add(refNode);
           }
+          refNode = walker.nextSibling();
         }
       }
-      if (reverse) {
-        arr.reverse();
-      }
-      // :first-child, :last-child, :nth-child(0 of S)
+      // :first-child, :last-child, :nth-child(b of S), :nth-last-child(b of S)
       if (a === 0) {
         if (b > 0 && b <= l) {
           if (selectorNodes.size) {
-            for (const current of arr) {
-              if (selectorNodes.has(current)) {
-                matched.add(current);
-                break;
+            let i = 0;
+            refNode = this._traverse(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
+            while (refNode) {
+              if (selectorNodes.has(refNode)) {
+                if (i === b - 1) {
+                  matched.add(refNode);
+                  break;
+                }
+                i++;
+              }
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
               }
             }
           } else if (!selector) {
-            const current = arr[b - 1];
-            matched.add(current);
+            let i = 0;
+            refNode = this._traverse(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
+            while (refNode) {
+              if (i === b - 1) {
+                matched.add(refNode);
+                break;
+              }
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
+              }
+              i++;
+            }
           }
         }
       // :nth-child()
@@ -358,26 +396,42 @@ export class Matcher {
           }
         }
         if (nth >= 0 && nth < l) {
+          let i = 0;
           let j = a > 0 ? 0 : b - 1;
-          for (let i = 0; i < l && nth >= 0 && nth < l; i++) {
-            const current = arr[i];
-            if (selectorNodes.size) {
-              if (selectorNodes.has(current)) {
-                if (j === nth) {
-                  matched.add(current);
-                  nth += a;
+          refNode = this._traverse(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
+          while (refNode) {
+            if (refNode && nth >= 0 && nth < l) {
+              if (selectorNodes.size) {
+                if (selectorNodes.has(refNode)) {
+                  if (j === nth) {
+                    matched.add(refNode);
+                    nth += a;
+                  }
+                  if (a > 0) {
+                    j++;
+                  } else {
+                    j--;
+                  }
                 }
-                if (a > 0) {
-                  j++;
-                } else {
-                  j--;
+              } else if (i === nth) {
+                if (!selector) {
+                  matched.add(refNode);
                 }
+                nth += a;
               }
-            } else if (i === nth) {
-              if (!selector) {
-                matched.add(current);
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
               }
-              nth += a;
+              i++;
+            } else {
+              break;
             }
           }
         }
@@ -386,23 +440,21 @@ export class Matcher {
         const m = [...matched];
         matched = new Set(m.reverse());
       }
-    } else {
-      if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
-          (a + b) === 1) {
-        if (selectorBranches) {
-          let bool;
-          for (const leaves of selectorBranches) {
-            bool = this._matchLeaves(leaves, node);
-            if (bool) {
-              break;
-            }
-          }
+    } else if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
+               (a + b) === 1) {
+      if (selectorBranches) {
+        let bool;
+        for (const leaves of selectorBranches) {
+          bool = this._matchLeaves(leaves, node);
           if (bool) {
-            matched.add(node);
+            break;
           }
-        } else {
+        }
+        if (bool) {
           matched.add(node);
         }
+      } else {
+        matched.add(node);
       }
     }
     return matched;
@@ -430,16 +482,16 @@ export class Matcher {
         l++;
         refNode = walker.nextSibling();
       }
-      refNode = this._traverse(parentNode, walker);
-      if (reverse) {
-        refNode = walker.lastChild();
-      } else {
-        refNode = walker.firstChild();
-      }
       // :first-of-type, :last-of-type
       if (a === 0) {
         if (b > 0 && b <= l) {
           let j = 0;
+          refNode = this._traverse(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
           while (refNode) {
             const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
@@ -466,6 +518,12 @@ export class Matcher {
         }
         if (nth >= 0 && nth < l) {
           let j = a > 0 ? 0 : b - 1;
+          refNode = this._traverse(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
           while (refNode) {
             const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
