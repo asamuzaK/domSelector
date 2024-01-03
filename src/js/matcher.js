@@ -422,24 +422,37 @@ export class Matcher {
     const { localName, parentNode, prefix } = node;
     let matched = new Set();
     if (parentNode) {
-      const arr = [].slice.call(parentNode.childNodes)
-        .filter(n => n.nodeType === ELEMENT_NODE);
-      const l = arr.length;
+      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
+      const walker = this.#document.createTreeWalker(parentNode, filter);
+      let l = 0;
+      let refNode = walker.firstChild();
+      while (refNode) {
+        l++;
+        refNode = walker.nextSibling();
+      }
+      refNode = this._traverse(parentNode, walker);
       if (reverse) {
-        arr.reverse();
+        refNode = walker.lastChild();
+      } else {
+        refNode = walker.firstChild();
       }
       // :first-of-type, :last-of-type
       if (a === 0) {
         if (b > 0 && b <= l) {
           let j = 0;
-          for (const current of arr) {
-            const { localName: itemLocalName, prefix: itemPrefix } = current;
+          while (refNode) {
+            const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
               if (j === b - 1) {
-                matched.add(current);
+                matched.add(refNode);
                 break;
               }
               j++;
+            }
+            if (reverse) {
+              refNode = walker.previousSibling();
+            } else {
+              refNode = walker.nextSibling();
             }
           }
         }
@@ -453,11 +466,11 @@ export class Matcher {
         }
         if (nth >= 0 && nth < l) {
           let j = a > 0 ? 0 : b - 1;
-          for (const current of arr) {
-            const { localName: itemLocalName, prefix: itemPrefix } = current;
+          while (refNode) {
+            const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
               if (j === nth) {
-                matched.add(current);
+                matched.add(refNode);
                 nth += a;
               }
               if (nth < 0 || nth >= l) {
@@ -468,6 +481,11 @@ export class Matcher {
                 j--;
               }
             }
+            if (reverse) {
+              refNode = walker.previousSibling();
+            } else {
+              refNode = walker.nextSibling();
+            }
           }
         }
       }
@@ -475,11 +493,9 @@ export class Matcher {
         const m = [...matched];
         matched = new Set(m.reverse());
       }
-    } else {
-      if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
-          (a + b) === 1) {
-        matched.add(node);
-      }
+    } else if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
+               (a + b) === 1) {
+      matched.add(node);
     }
     return matched;
   }
