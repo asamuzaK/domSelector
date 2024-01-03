@@ -18,7 +18,8 @@ import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE, NOT_SUPPORTED_ERR,
   REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE
+  SHOW_ALL, SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR,
+  TEXT_NODE
 } from './constant.js';
 const FIND_NEXT = 'next';
 const FIND_PREV = 'prev';
@@ -1395,13 +1396,15 @@ export class Matcher {
         case 'empty': {
           if (node.hasChildNodes()) {
             let bool;
-            const nodes = node.childNodes.values();
-            for (const refNode of nodes) {
+            const walker = this.#document.createTreeWalker(node, SHOW_ALL);
+            let refNode = walker.firstChild();
+            while (refNode) {
               bool = refNode.nodeType !== ELEMENT_NODE &&
                 refNode.nodeType !== TEXT_NODE;
               if (!bool) {
                 break;
               }
+              refNode = walker.nextSibling();
             }
             if (bool) {
               matched.add(node);
@@ -2111,14 +2114,14 @@ export class Matcher {
           break;
         }
         case '>': {
-          const childNodes = node.childNodes.values();
-          for (const refNode of childNodes) {
-            if (refNode.nodeType === ELEMENT_NODE) {
-              const bool = this._matchLeaves(leaves, refNode, { forgive });
-              if (bool) {
-                matched.add(refNode);
-              }
+          const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+          let refNode = walker.firstChild();
+          while (refNode) {
+            const bool = this._matchLeaves(leaves, refNode, { forgive });
+            if (bool) {
+              matched.add(refNode);
             }
+            refNode = walker.nextSibling();
           }
           break;
         }
@@ -2317,20 +2320,7 @@ export class Matcher {
             break;
           }
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const arr = [];
-          const childNodes = this.#root.childNodes.values();
-          for (const node of childNodes) {
-            if (node.nodeType === ELEMENT_NODE) {
-              if (node.classList.contains(leafName)) {
-                arr.push(node);
-              }
-              const a = [].slice.call(node.getElementsByClassName(leafName));
-              arr.push(...a);
-            }
-          }
-          if (arr.length) {
-            nodes = new Set(arr);
-          }
+          pending = true;
         } else {
           const arr =
             [].slice.call(this.#root.getElementsByClassName(leafName));
@@ -2383,21 +2373,7 @@ export class Matcher {
                    /[*|]/.test(leafName)) {
           pending = true;
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const arr = [];
-          const tagName = leafName.toLowerCase();
-          const childNodes = this.#root.childNodes.values();
-          for (const node of childNodes) {
-            if (node.nodeType === ELEMENT_NODE) {
-              if (node.localName === tagName) {
-                arr.push(node);
-              }
-              const a = [].slice.call(node.getElementsByTagName(leafName));
-              arr.push(...a);
-            }
-          }
-          if (arr.length) {
-            nodes = new Set(arr);
-          }
+          pending = true;
         } else {
           const arr = [].slice.call(this.#root.getElementsByTagName(leafName));
           if (this.#node.nodeType === ELEMENT_NODE) {
