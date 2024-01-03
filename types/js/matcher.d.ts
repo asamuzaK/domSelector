@@ -6,7 +6,7 @@ export class Matcher {
     _setup(node: object): Array<object>;
     _sortLeaves(leaves: Array<object>): Array<object>;
     _prepare(selector: string): Array<Array<object | undefined>>;
-    _traverse(node?: object, tree?: object): object | null;
+    _traverse(node?: object, walker?: object): object | null;
     _collectNthChild(anb: {
         a: number;
         b: number;
