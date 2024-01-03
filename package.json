@@ -50,7 +50,6 @@
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
-    "bench-sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test && npm run compat",
     "compat": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
     "lint": "eslint --fix .",
