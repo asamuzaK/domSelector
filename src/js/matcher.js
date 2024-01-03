@@ -2538,15 +2538,26 @@ export class Matcher {
     let find;
     let twig;
     if (complex) {
-      const { leaves: [{ type: firstType }] } = firstTwig;
+      const { combo: firstCombo, leaves: [{ type: firstType }] } = firstTwig;
       const lastTwig = branch[branchLen - 1];
       const { leaves: [{ type: lastType }] } = lastTwig;
       if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
         find = FIND_PREV;
         twig = lastTwig;
       } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
-                 firstType === SELECTOR_ID ||
-                 targetType === TARGET_ALL) {
+                 firstType === SELECTOR_ID) {
+        find = FIND_NEXT;
+        twig = firstTwig;
+      } else if (targetType === TARGET_ALL && branchLen === BIT_02) {
+        const { name: comboName } = firstCombo;
+        if (/^[+~]$/.test(comboName)) {
+          find = FIND_PREV;
+          twig = lastTwig;
+        } else {
+          find = FIND_NEXT;
+          twig = firstTwig;
+        }
+      } else if (targetType === TARGET_ALL) {
         find = FIND_NEXT;
         twig = firstTwig;
       } else {
@@ -2765,11 +2776,10 @@ export class Matcher {
                       nodes.add(node);
                     }
                     matched = true;
-                    break;
                   } else {
-                    matched = false;
                     combo = nextCombo;
                     nextNodes = new Set(arr);
+                    matched = false;
                   }
                 } else {
                   matched = false;
@@ -2809,11 +2819,10 @@ export class Matcher {
                     const [node] = this._sortNodes(arr);
                     nodes.add(node);
                     matched = true;
-                    break;
                   } else {
-                    matched = false;
                     combo = nextCombo;
                     nextNodes = new Set(arr);
+                    matched = false;
                   }
                 } else {
                   matched = false;
@@ -2851,10 +2860,9 @@ export class Matcher {
                   if (j === 0) {
                     nodes.add(node);
                     matched = true;
-                    break;
                   } else {
-                    matched = false;
                     nextNodes = new Set(arr);
+                    matched = false;
                   }
                 } else {
                   matched = false;
@@ -2887,10 +2895,9 @@ export class Matcher {
                   if (j === 0) {
                     nodes.add(refNode);
                     matched = true;
-                    break;
                   } else {
-                    matched = false;
                     nextNodes = new Set(arr);
+                    matched = false;
                   }
                 } else {
                   matched = false;
