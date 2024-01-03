@@ -168,7 +168,7 @@ export class Matcher {
    * @returns {Array.<object>} - sorted leaves
    */
   _sortLeaves(leaves) {
-    const arr = [...leaves];
+    let arr = [...leaves];
     if (arr.length > 1) {
       arr.sort((a, b) => {
         const { type: typeA } = a;
@@ -185,6 +185,11 @@ export class Matcher {
         }
         return res;
       });
+      if (arr.length > 2) {
+        const s = arr.shift();
+        const r = arr.reverse();
+        arr = [s, ...r];
+      }
     }
     return arr;
   }
@@ -296,7 +301,7 @@ export class Matcher {
   _collectNthChild(anb, node) {
     const { a, b, reverse, selector } = anb;
     const { parentNode } = node;
-    const matched = new Set();
+    let matched = new Set();
     let selectorBranches;
     if (selector) {
       if (this.#cache.has(selector)) {
@@ -377,6 +382,10 @@ export class Matcher {
             }
           }
         }
+        if (reverse && matched.size > 1) {
+          const m = [...matched];
+          matched = new Set(m.reverse());
+        }
       }
     } else {
       if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
@@ -412,7 +421,7 @@ export class Matcher {
   _collectNthOfType(anb, node) {
     const { a, b, reverse } = anb;
     const { localName, parentNode, prefix } = node;
-    const matched = new Set();
+    let matched = new Set();
     if (parentNode) {
       const arr = [].slice.call(parentNode.childNodes)
         .filter(n => n.nodeType === ELEMENT_NODE);
@@ -463,6 +472,10 @@ export class Matcher {
               }
             }
           }
+        }
+        if (reverse && matched.size > 1) {
+          const m = [...matched];
+          matched = new Set(m.reverse());
         }
       }
     } else {
@@ -1193,7 +1206,7 @@ export class Matcher {
             if (form) {
               const walker =
                 this.#document.createTreeWalker(form, SHOW_ELEMENT);
-              let nextNode = walker.nextNode();
+              let nextNode = walker.firstChild();
               while (nextNode) {
                 const nodeName = nextNode.localName;
                 let m;
@@ -1238,21 +1251,21 @@ export class Matcher {
                 matched.add(node);
               }
             } else {
-              const firstOpt = parentNode.firstElementChild;
               const defaultOpt = new Set();
-              let opt = firstOpt;
-              while (opt) {
-                if (opt.selected || opt.hasAttribute('selected')) {
-                  defaultOpt.add(opt);
+              const walker =
+                this.#document.createTreeWalker(parentNode, SHOW_ELEMENT);
+              let refNode = walker.firstChild();
+              while (refNode) {
+                if (refNode.selected || refNode.hasAttribute('selected')) {
+                  defaultOpt.add(refNode);
                   break;
                 }
-                opt = opt.nextElementSibling;
+                refNode = walker.nextSibling();
               }
-              if (!defaultOpt.size) {
-                defaultOpt.add(firstOpt);
-              }
-              if (defaultOpt.has(node)) {
-                matched.add(node);
+              if (defaultOpt.size) {
+                if (defaultOpt.has(node)) {
+                  matched.add(node);
+                }
               }
             }
           }
@@ -1264,9 +1277,9 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
             let bool;
-            let refNode = walker.nextNode();
+            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+            let refNode = walker.firstChild();
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -1288,9 +1301,9 @@ export class Matcher {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
             let bool;
-            let refNode = walker.nextNode();
+            const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
+            let refNode = walker.firstChild();
             while (refNode) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -2082,13 +2095,18 @@ export class Matcher {
           break;
         }
         case '~': {
-          let refNode = node.nextElementSibling;
+          const walker =
+            this.#document.createTreeWalker(node.parentNode, SHOW_ELEMENT);
+          let refNode = this._traverse(node, walker);
+          if (refNode === node) {
+            refNode = walker.nextSibling();
+          }
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode, { forgive });
             if (bool) {
               matched.add(refNode);
             }
-            refNode = refNode.nextElementSibling;
+            refNode = walker.nextSibling();
           }
           break;
         }
@@ -2135,17 +2153,19 @@ export class Matcher {
           break;
         }
         case '~': {
-          const arr = [];
-          let refNode = node.previousElementSibling;
+          const walker =
+            this.#document.createTreeWalker(node.parentNode, SHOW_ELEMENT);
+          let refNode = walker.firstChild();
           while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, { forgive });
-            if (bool) {
-              arr.push(refNode);
+            if (refNode === node) {
+              break;
+            } else {
+              const bool = this._matchLeaves(leaves, refNode, { forgive });
+              if (bool) {
+                matched.add(refNode);
+              }
             }
-            refNode = refNode.previousElementSibling;
-          }
-          if (arr.length) {
-            matched = new Set(arr.reverse());
+            refNode = walker.nextSibling();
           }
           break;
         }
@@ -2475,8 +2495,7 @@ export class Matcher {
       const { leaves: [{ type: firstType }] } = firstTwig;
       const lastTwig = branch[branchLen - 1];
       const { leaves: [{ type: lastType }] } = lastTwig;
-      if (lastType === SELECTOR_PSEUDO_ELEMENT ||
-                 lastType === SELECTOR_ID) {
+      if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
         find = FIND_PREV;
         twig = lastTwig;
       } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||

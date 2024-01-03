@@ -372,6 +372,30 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('sort AST leaves', () => {
+      it('should get leaves', () => {
+        const leaves = [
+          { type: SELECTOR_ATTR }
+        ];
+        const matcher = new Matcher('*', document);
+        const res = matcher._sortLeaves(leaves);
+        assert.deepEqual(res, [
+          { type: SELECTOR_ATTR }
+        ], 'result');
+      });
+
+      it('should get sorted leaves', () => {
+        const leaves = [
+          { type: SELECTOR_ATTR },
+          { type: SELECTOR_CLASS, name: 'foo' }
+        ];
+        const matcher = new Matcher('*', document);
+        const res = matcher._sortLeaves(leaves);
+        assert.deepEqual(res, [
+          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_ATTR }
+        ], 'result');
+      });
+
       it('should get sorted leaves', () => {
         const leaves = [
           { type: SELECTOR_ATTR },
@@ -386,12 +410,12 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._sortLeaves(leaves);
         assert.deepEqual(res, [
           { type: SELECTOR_PSEUDO_ELEMENT },
-          { type: SELECTOR_ID },
-          { type: SELECTOR_CLASS, name: 'bar' },
-          { type: SELECTOR_CLASS, name: 'foo' },
-          { type: SELECTOR_TYPE },
+          { type: SELECTOR_PSEUDO_CLASS },
           { type: SELECTOR_ATTR },
-          { type: SELECTOR_PSEUDO_CLASS }
+          { type: SELECTOR_TYPE },
+          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_CLASS, name: 'bar' },
+          { type: SELECTOR_ID }
         ], 'result');
       });
     });
@@ -667,14 +691,29 @@ describe('match AST leaf and DOM node', () => {
           a: 2,
           b: 1
         };
-        const node = document.getElementById('dt1');
+        const node = document.getElementById('li1');
         const matcher = new Matcher(':nth-child(2n+1)', node);
         const res = matcher._collectNthChild(anb, node);
-        assert.strictEqual(res.size, 3, 'size');
+        assert.strictEqual(res.size, 2, 'size');
         assert.deepEqual([...res], [
           node,
-          document.getElementById('dt2'),
-          document.getElementById('dt3')
+          document.getElementById('li3')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const anb = {
+          a: 2,
+          b: 1,
+          reverse: true
+        };
+        const node = document.getElementById('li1');
+        const matcher = new Matcher(':nth-last-child(2n+1)', node);
+        const res = matcher._collectNthChild(anb, node);
+        assert.strictEqual(res.size, 2, 'size');
+        assert.deepEqual([...res], [
+          node,
+          document.getElementById('li3')
         ], 'result');
       });
 
@@ -1288,6 +1327,22 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const anb = {
+          a: 2,
+          b: 1,
+          reverse: true
+        };
+        const node = document.getElementById('dt1');
+        const matcher = new Matcher(':nth-last-of-type(2n+1)', node);
+        const res = matcher._collectNthOfType(anb, node);
+        assert.strictEqual(res.size, 2, 'size');
+        assert.deepEqual([...res], [
+          node,
+          document.getElementById('dt3')
+        ], 'result');
+      });
+
+      it('should get matched node(s)', () => {
+        const anb = {
           a: -1,
           b: 2
         };
@@ -1436,9 +1491,9 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchAnPlusB(leaf, node, leafName);
         assert.strictEqual(res.size, 3, 'size');
         assert.deepEqual([...res], [
-          document.getElementById('dt3'),
+          node,
           document.getElementById('dt2'),
-          node
+          document.getElementById('dt3'),
         ], 'result');
       });
 
@@ -1538,8 +1593,8 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._matchAnPlusB(leaf, node, leafName);
         assert.strictEqual(res.size, 2, 'size');
         assert.deepEqual([...res], [
+          document.getElementById('dt2'),
           document.getElementById('dd3'),
-          document.getElementById('dt2')
         ], 'result');
       });
 
