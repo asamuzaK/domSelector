@@ -231,38 +231,38 @@ const dom = new JSDOM('', {
 
 |method('selector')|jsdom v23.0.1 (nwsapi)|patched-jsdom (dom-selector)|Result|
 |:-----------------|:-----------------|:-----------------|:-----------------|
-|matches('.content')|2,790,387 ops/sec ±0.56%|137,454 ops/sec ±0.73%|jsdom is 20.3 times faster than patched-jsdom. patched-jsdom took 0.007msec.|
-|matches('div.container:not(.box)')|1,408,783 ops/sec ±1.28%|59,217 ops/sec ±1.37%|jsdom is 23.8 times faster than patched-jsdom. patched-jsdom took 0.017msec.|
-|matches('.box + .box')|2,343,468 ops/sec ±1.28%|112,352 ops/sec ±1.81%|jsdom is 20.9 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
-|matches('.box ~ .box')|2,343,341 ops/sec ±1.96%|113,174 ops/sec ±1.63%|jsdom is 20.7 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
-|matches('.box > .block')|2,373,157 ops/sec ±1.68%|113,522 ops/sec ±1.53%|jsdom is 20.9 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
-|matches('.box .content')|395,436 ops/sec ±1.41%|62,201 ops/sec ±1.59%|jsdom is 6.4 times faster than patched-jsdom. patched-jsdom took 0.016msec.|
-|matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|183,889 ops/sec ±1.55%|17,327 ops/sec ±1.86%|jsdom is 10.6 times faster than patched-jsdom. patched-jsdom took 0.058msec.|
-|matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|25,581 ops/sec ±2.03%|jsdom throws. patched-jsdom took 0.039msec.|
-|closest('.content')|1,797,866 ops/sec ±1.68%|72,823 ops/sec ±1.67%|jsdom is 24.7 times faster than patched-jsdom. patched-jsdom took 0.014msec.|
-|closest('div.container:not(.box)')|277,238 ops/sec ±1.42%|36,770 ops/sec ±1.72%|jsdom is 7.5 times faster than patched-jsdom. patched-jsdom took 0.027msec.|
-|closest('.box + .box')|453,371 ops/sec ±0.20%|56,315 ops/sec ±1.48%|jsdom is 8.1 times faster than patched-jsdom. patched-jsdom took 0.018msec.|
-|closest('.box ~ .box')|178,393 ops/sec ±1.40%|36,132 ops/sec ±1.43%|jsdom is 4.9 times faster than patched-jsdom. patched-jsdom took 0.028msec.|
-|closest('.box > .block')|474,044 ops/sec ±1.50%|53,002 ops/sec ±1.48%|jsdom is 8.9 times faster than patched-jsdom. patched-jsdom took 0.019msec.|
-|closest('.box .content')|369,162 ops/sec ±1.49%|44,192 ops/sec ±1.44%|jsdom is 8.4 times faster than patched-jsdom. patched-jsdom took 0.023msec.|
-|closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|177,932 ops/sec ±1.35%|15,526 ops/sec ±1.50%|jsdom is 11.5 times faster than patched-jsdom. patched-jsdom took 0.064msec.|
-|closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|12,109 ops/sec ±1.60%|jsdom throws. patched-jsdom took 0.083msec.|
-|querySelector('.content')|3,370 ops/sec ±1.29%|66,269 ops/sec ±1.55%|patched-jsdom is 19.7 times faster than jsdom. patched-jsdom took 0.015msec.|
-|querySelector('div.container:not(.box)')|85,849 ops/sec ±1.47%|45,952 ops/sec ±1.76%|jsdom is 1.9 times faster than patched-jsdom. patched-jsdom took 0.022msec.|
-|querySelector('.box + .box')|85,336 ops/sec ±0.65%|63,882 ops/sec ±1.76%|jsdom is 1.3 times faster than patched-jsdom. patched-jsdom took 0.016msec.|
-|querySelector('.box ~ .box')|86,825 ops/sec ±0.33%|32,031 ops/sec ±1.65%|jsdom is 2.7 times faster than patched-jsdom. patched-jsdom took 0.031msec.|
-|querySelector('.box > .block')|1,442 ops/sec ±1.17%|61,146 ops/sec ±0.16%|patched-jsdom is 42.4 times faster than jsdom. patched-jsdom took 0.016msec.|
-|querySelector('.box .content')|729 ops/sec ±0.12%|41,451 ops/sec ±1.62%|patched-jsdom is 56.9 times faster than jsdom. patched-jsdom took 0.024msec.|
-|querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|272 ops/sec ±1.15%|839 ops/sec ±1.20%|patched-jsdom is 3.1 times faster than jsdom. patched-jsdom took 1.192msec.|
-|querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|667 ops/sec ±1.28%|jsdom throws. patched-jsdom took 1.498msec.|
-|querySelectorAll('.content')|3,171 ops/sec ±1.16%|847 ops/sec ±1.43%|jsdom is 3.7 times faster than patched-jsdom. patched-jsdom took 1.181msec.|
-|querySelectorAll('div.container:not(.box)')|99,610 ops/sec ±1.61%|23,436 ops/sec ±1.57%|jsdom is 4.3 times faster than patched-jsdom. patched-jsdom took 0.043msec.|
-|querySelectorAll('.box + .box')|101,854 ops/sec ±1.38%|28,117 ops/sec ±1.77%|jsdom is 3.6 times faster than patched-jsdom. patched-jsdom took 0.036msec.|
-|querySelectorAll('.box ~ .box')|101,097 ops/sec ±1.35%|12,068 ops/sec ±1.62%|jsdom is 8.4 times faster than patched-jsdom. patched-jsdom took 0.083msec.|
-|querySelectorAll('.box > .block')|1,367 ops/sec ±1.18%|3,167 ops/sec ±1.59%|patched-jsdom is 2.3 times faster than jsdom. patched-jsdom took 0.316msec.|
-|querySelectorAll('.box .content')|676 ops/sec ±1.29%|726 ops/sec ±0.40%|patched-jsdom is 1.1 times faster than jsdom. patched-jsdom took 1.378msec.|
-|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|273 ops/sec ±0.23%|822 ops/sec ±1.48%|patched-jsdom is 3.0 times faster than jsdom. patched-jsdom took 1.217msec.|
-|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|655 ops/sec ±1.80% |jsdom throws. patched-jsdom took 1.527msec.|
+|matches('.content')|2,665,526 ops/sec ±1.57%|134,479 ops/sec ±0.21%|jsdom is 19.8 times faster than patched-jsdom. patched-jsdom took 0.007msec.|
+|matches('div.container:not(.box)')|1,403,481 ops/sec ±0.23%|79,730 ops/sec ±0.89%|jsdom is 17.6 times faster than patched-jsdom. patched-jsdom took 0.013msec.|
+|matches('.box + .box')|2,210,744 ops/sec ±0.26%|113,816 ops/sec ±1.77%|jsdom is 19.4 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
+|matches('.box ~ .box')|2,235,390 ops/sec ±1.83%|113,640 ops/sec ±1.66%|jsdom is 19.7 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
+|matches('.box > .block')|2,339,709 ops/sec ±1.65%|113,939 ops/sec ±1.60%|jsdom is 20.5 times faster than patched-jsdom. patched-jsdom took 0.009msec.|
+|matches('.box .content')|390,485 ops/sec ±0.24%|64,054 ops/sec ±1.69%|jsdom is 6.1 times faster than patched-jsdom. patched-jsdom took 0.016msec.|
+|matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|181,649 ops/sec ±1.35%|18,982 ops/sec ±1.70%|jsdom is 9.6 times faster than patched-jsdom. patched-jsdom took 0.053msec.|
+|matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|42,351 ops/sec ±1.58%|jsdom failed. patched-jsdom took 0.024msec.|
+|closest('.content')|1,778,148 ops/sec ±1.71%|74,838 ops/sec ±0.11%|jsdom is 23.8 times faster than patched-jsdom. patched-jsdom took 0.013msec.|
+|closest('div.container:not(.box)')|282,244 ops/sec ±1.46%|37,870 ops/sec ±1.76%|jsdom is 7.5 times faster than patched-jsdom. patched-jsdom took 0.026msec.|
+|closest('.box + .box')|439,431 ops/sec ±1.46%|57,669 ops/sec ±1.47%|jsdom is 7.6 times faster than patched-jsdom. patched-jsdom took 0.017msec.|
+|closest('.box ~ .box')|182,991 ops/sec ±1.46%|36,574 ops/sec ±0.22%|jsdom is 5.0 times faster than patched-jsdom. patched-jsdom took 0.027msec.|
+|closest('.box > .block')|483,835 ops/sec ±0.23%|54,883 ops/sec ±1.44%|jsdom is 8.8 times faster than patched-jsdom. patched-jsdom took 0.018msec.|
+|closest('.box .content')|365,327 ops/sec ±1.53%|44,971 ops/sec ±1.45%|jsdom is 8.1 times faster than patched-jsdom. patched-jsdom took 0.022msec.|
+|closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|174,977 ops/sec ±1.39%|16,955 ops/sec ±1.53%|jsdom is 10.3 times faster than patched-jsdom. patched-jsdom took 0.059msec.|
+|closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|13,080 ops/sec ±1.63%|jsdom failed. patched-jsdom took 0.076msec.|
+|querySelector('.content')|3,370 ops/sec ±1.08%|63,372 ops/sec ±3.87%|patched-jsdom is 18.8 times faster than jsdom. patched-jsdom took 0.016msec.|
+|querySelector('div.container:not(.box)')|87,832 ops/sec ±1.41%|45,937 ops/sec ±1.78%|jsdom is 1.9 times faster than patched-jsdom. patched-jsdom took 0.022msec.|
+|querySelector('.box + .box')|88,421 ops/sec ±1.59%|64,544 ops/sec ±1.75%|jsdom is 1.4 times faster than patched-jsdom. patched-jsdom took 0.015msec.|
+|querySelector('.box ~ .box')|87,079 ops/sec ±1.40%|31,106 ops/sec ±1.65%|jsdom is 2.8 times faster than patched-jsdom. patched-jsdom took 0.032msec.|
+|querySelector('.box > .block')|1,424 ops/sec ±0.17%|60,996 ops/sec ±1.49%|patched-jsdom is 42.8 times faster than jsdom. patched-jsdom took 0.016msec.|
+|querySelector('.box .content')|720 ops/sec ±1.24%|41,259 ops/sec ±1.58%|patched-jsdom is 57.3 times faster than jsdom. patched-jsdom took 0.024msec.|
+|querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|270 ops/sec ±1.59%|1,011 ops/sec ±1.65%|patched-jsdom is 3.7 times faster than jsdom. patched-jsdom took 0.989msec.|
+|querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|671 ops/sec ±0.24%|jsdom failed. patched-jsdom took 1.491msec.|
+|querySelectorAll('.content')|2,980 ops/sec ±0.35%|825 ops/sec ±1.51%|jsdom is 3.6 times faster than patched-jsdom. patched-jsdom took 1.212msec.|
+|querySelectorAll('div.container:not(.box)')|101,740 ops/sec ±1.40%|26,090 ops/sec ±1.81%|jsdom is 3.9 times faster than patched-jsdom. patched-jsdom took 0.038msec.|
+|querySelectorAll('.box + .box')|104,259 ops/sec ±1.44%|30,788 ops/sec ±0.18%|jsdom is 3.4 times faster than patched-jsdom. patched-jsdom took 0.032msec.|
+|querySelectorAll('.box ~ .box')|102,413 ops/sec ±0.19%|12,042 ops/sec ±1.68%|jsdom is 8.5 times faster than patched-jsdom. patched-jsdom took 0.083msec.|
+|querySelectorAll('.box > .block')|1,392 ops/sec ±0.18%|4,261 ops/sec ±1.89%|patched-jsdom is 3.1 times faster than jsdom. patched-jsdom took 0.235msec.|
+|querySelectorAll('.box .content')|689 ops/sec ±1.37%|707 ops/sec ±1.55%|patched-jsdom is 1.0 times faster than jsdom. patched-jsdom took 1.414msec.|
+|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content')|276 ops/sec ±1.21%|1,007 ops/sec ±1.44%|patched-jsdom is 3.7 times faster than jsdom. patched-jsdom took 0.993msec.|
+|querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)')|N/A|656 ops/sec ±1.47% |jsdom failed. patched-jsdom took 1.526msec.|
 
 
 ## Acknowledgments
