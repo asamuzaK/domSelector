@@ -237,11 +237,11 @@ const filter = testPath => {
     res = false;
   } else if (includeList.includes(testPath)) {
     res = true;
+  } else if (testPath.startsWith('invalidation/') ||
+             testPath.startsWith('parsing/')) {
+    res = false;
   } else if (/closest|matches|querySelector(?:All)?|has-/.test(testPath)) {
     if (excludeList.includes(testPath)) {
-      res = false;
-    } else if (testPath.startsWith('invalidation/') ||
-               testPath.startsWith('parsing/')) {
       res = false;
     } else {
       res = true;
