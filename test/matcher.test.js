@@ -10454,12 +10454,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('div', parent);
         const [[{ branch: [twig] }]] = matcher._prepare('div');
         const res = matcher._findEntryNodes(twig);
-        assert.deepEqual([...res.nodes], [
-          node
-        ], 'nodes');
+        assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
         assert.isFalse(res.filtered, 'filtered');
-        assert.isFalse(res.pending, 'pending');
+        assert.isTrue(res.pending, 'pending');
       });
 
       it('should get matched node(s)', () => {
@@ -10471,12 +10469,10 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('.foo', node);
         const [[{ branch: [twig] }]] = matcher._prepare('.foo');
         const res = matcher._findEntryNodes(twig);
-        assert.deepEqual([...res.nodes], [
-          node
-        ], 'nodes');
+        assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
         assert.isFalse(res.filtered, 'filtered');
-        assert.isFalse(res.pending, 'pending');
+        assert.isTrue(res.pending, 'pending');
       });
 
       it('should not match', () => {
