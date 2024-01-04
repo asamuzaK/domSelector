@@ -169,7 +169,7 @@ export class Matcher {
    * @returns {Array.<object>} - sorted leaves
    */
   _sortLeaves(leaves) {
-    let arr = [...leaves];
+    const arr = [...leaves];
     if (arr.length > 1) {
       arr.sort((a, b) => {
         const { type: typeA } = a;
@@ -186,11 +186,6 @@ export class Matcher {
         }
         return res;
       });
-      if (arr.length > 2) {
-        const s = arr.shift();
-        const r = arr.reverse();
-        arr = [s, ...r];
-      }
     }
     return arr;
   }
@@ -2618,7 +2613,16 @@ export class Matcher {
         i++;
       }
       if (pendingItems.size) {
-        let nextNode = this._traverse();
+        let node;
+        let walker;
+        if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+          node = this.#node;
+          walker = this.#finder;
+        } else {
+          node = this.#root;
+          walker = this.#tree;
+        }
+        let nextNode = this._traverse(node, walker);
         while (nextNode) {
           let bool = false;
           if (this.#node.nodeType === ELEMENT_NODE) {
@@ -2641,7 +2645,7 @@ export class Matcher {
               }
             }
           }
-          nextNode = this.#tree.nextNode();
+          nextNode = walker.nextNode();
         }
       }
     } else {
@@ -2918,7 +2922,7 @@ export class Matcher {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _find(targetType) {
-    if (targetType === TARGET_FIRST) {
+    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this.#finder = this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
     }
     this._collectNodes(targetType);
