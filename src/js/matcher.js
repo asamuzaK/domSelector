@@ -114,9 +114,9 @@ export class Matcher {
   }
 
   /**
-   * set up document, root, walker
+   * set up #document, #root, #walker
    * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array.<object>} - document, root, walker
+   * @returns {Array.<object>} - array of #document, #root, #walker
    */
   _setup(node) {
     let document;
@@ -252,7 +252,7 @@ export class Matcher {
    * traverse tree walker
    * @param {object} [node] - Element node
    * @param {object} [walker] - tree walker
-   * @returns {?object} - node
+   * @returns {?object} - current node
    */
   _traverse(node = {}, walker = this.#tree) {
     let current;
