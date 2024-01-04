@@ -410,12 +410,12 @@ describe('match AST leaf and DOM node', () => {
         const res = matcher._sortLeaves(leaves);
         assert.deepEqual(res, [
           { type: SELECTOR_PSEUDO_ELEMENT },
-          { type: SELECTOR_PSEUDO_CLASS },
-          { type: SELECTOR_ATTR },
-          { type: SELECTOR_TYPE },
-          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_ID },
           { type: SELECTOR_CLASS, name: 'bar' },
-          { type: SELECTOR_ID }
+          { type: SELECTOR_CLASS, name: 'foo' },
+          { type: SELECTOR_TYPE },
+          { type: SELECTOR_ATTR },
+          { type: SELECTOR_PSEUDO_CLASS }
         ], 'result');
       });
     });

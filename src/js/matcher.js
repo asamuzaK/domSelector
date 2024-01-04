@@ -169,7 +169,7 @@ export class Matcher {
    * @returns {Array.<object>} - sorted leaves
    */
   _sortLeaves(leaves) {
-    let arr = [...leaves];
+    const arr = [...leaves];
     if (arr.length > 1) {
       arr.sort((a, b) => {
         const { type: typeA } = a;
@@ -186,11 +186,6 @@ export class Matcher {
         }
         return res;
       });
-      if (arr.length > 2) {
-        const s = arr.shift();
-        const r = arr.reverse();
-        arr = [s, ...r];
-      }
     }
     return arr;
   }
