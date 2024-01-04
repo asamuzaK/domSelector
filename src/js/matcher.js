@@ -2613,7 +2613,16 @@ export class Matcher {
         i++;
       }
       if (pendingItems.size) {
-        let nextNode = this._traverse();
+        let node;
+        let walker;
+        if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+          node = this.#node;
+          walker = this.#finder;
+        } else {
+          node = this.#root;
+          walker = this.#tree;
+        }
+        let nextNode = this._traverse(node, walker);
         while (nextNode) {
           let bool = false;
           if (this.#node.nodeType === ELEMENT_NODE) {
@@ -2636,7 +2645,7 @@ export class Matcher {
               }
             }
           }
-          nextNode = this.#tree.nextNode();
+          nextNode = walker.nextNode();
         }
       }
     } else {
@@ -2913,7 +2922,7 @@ export class Matcher {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _find(targetType) {
-    if (targetType === TARGET_FIRST) {
+    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this.#finder = this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
     }
     this._collectNodes(targetType);
