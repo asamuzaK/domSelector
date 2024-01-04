@@ -271,6 +271,7 @@ The following resources have been of great help in the development of the DOM Se
 
 - [CSSTree](https://github.com/csstree/csstree)
 - [selery](https://github.com/danburzo/selery)
+- [jsdom](https://github.com/jsdom/jsdom)
 
 
 ---
