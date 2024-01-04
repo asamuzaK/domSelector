@@ -40,7 +40,7 @@ export class Matcher {
     _matchLeaves(leaves: Array<object>, node: object, opt?: object): boolean;
     _findDescendantNodes(leaves: Array<object>, baseNode: object): object;
     _matchCombinator(twig: object, node: object, opt?: {
-        find?: string;
+        dir?: string;
         forgive?: boolean;
     }): Set<object>;
     _findNode(leaves: Array<object>, opt?: {

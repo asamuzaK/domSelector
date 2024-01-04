@@ -21,8 +21,8 @@ import {
   SHOW_ALL, SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR,
   TEXT_NODE
 } from './constant.js';
-const FIND_NEXT = 'next';
-const FIND_PREV = 'prev';
+const DIR_NEXT = 'next';
+const DIR_PREV = 'prev';
 const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
@@ -34,15 +34,15 @@ const TARGET_SELF = 'self';
  * #ast: [
  *   {
  *     branch: branch[],
+ *     dir: string|null,
  *     filtered: boolean,
- *     find: string,
- *     skip: boolean
+ *     find: boolean
  *   },
  *   {
  *     branch: branch[],
+ *     dir: string|null,
  *     filtered: boolean,
- *     find: string,
- *     skip: boolean
+ *     find: boolean
  *   }
  * ]
  * #nodes: [
@@ -55,7 +55,7 @@ const TARGET_SELF = 'self';
  *   leaves: leaves[]
  * }
  * leaves[]: [leaf{}, leaf{}, leaf{}]
- * leaf{}: AST leaf
+ * leaf{}: CSSTree AST object
  * node{}: Element node
  */
 export class Matcher {
@@ -235,9 +235,9 @@ export class Matcher {
       }
       ast.push({
         branch,
+        dir: null,
         filtered: false,
-        find: null,
-        skip: false
+        find: false
       });
       nodes[i] = new Set();
       i++;
@@ -804,7 +804,7 @@ export class Matcher {
         leaves: twigLeaves
       };
       const nodes = this._matchCombinator(twig, node, {
-        find: FIND_NEXT
+        dir: DIR_NEXT
       });
       if (nodes.size) {
         if (leaves.length) {
@@ -866,7 +866,7 @@ export class Matcher {
             for (const nextNode of nextNodes) {
               const m = this._matchCombinator(twig, nextNode, {
                 forgive,
-                find: FIND_PREV
+                dir: DIR_PREV
               });
               if (m.size) {
                 arr.push(...m);
@@ -2141,16 +2141,16 @@ export class Matcher {
    * @param {object} twig - twig
    * @param {object} node - Element node
    * @param {object} [opt] - option
-   * @param {string} [opt.find] - 'prev'|'next', which nodes to find
+   * @param {string} [opt.dir] - direction to find
    * @param {boolean} [opt.forgive] - is forgiving selector list
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
-    const { find, forgive } = opt;
+    const { dir, forgive } = opt;
     let matched = new Set();
-    if (find === FIND_NEXT) {
+    if (dir === DIR_NEXT) {
       switch (comboName) {
         case '+': {
           const refNode = node.nextElementSibling;
@@ -2517,36 +2517,36 @@ export class Matcher {
    * get entry twig
    * @param {Array.<object>} branch - AST branch
    * @param {string} targetType - target type
-   * @returns {object} - find direction and twig
+   * @returns {object} - direction and twig
    */
   _getEntryTwig(branch, targetType) {
     const branchLen = branch.length;
     const complex = branchLen > 1;
     const firstTwig = branch[0];
-    let find;
+    let dir;
     let twig;
     if (complex) {
       const { combo: firstCombo, leaves: [{ type: firstType }] } = firstTwig;
       const lastTwig = branch[branchLen - 1];
       const { leaves: [{ type: lastType }] } = lastTwig;
       if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
-        find = FIND_PREV;
+        dir = DIR_PREV;
         twig = lastTwig;
       } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
                  firstType === SELECTOR_ID) {
-        find = FIND_NEXT;
+        dir = DIR_NEXT;
         twig = firstTwig;
       } else if (targetType === TARGET_ALL && branchLen === BIT_02) {
         const { name: comboName } = firstCombo;
         if (/^[+~]$/.test(comboName)) {
-          find = FIND_PREV;
+          dir = DIR_PREV;
           twig = lastTwig;
         } else {
-          find = FIND_NEXT;
+          dir = DIR_NEXT;
           twig = firstTwig;
         }
       } else if (targetType === TARGET_ALL) {
-        find = FIND_NEXT;
+        dir = DIR_NEXT;
         twig = firstTwig;
       } else {
         let bool;
@@ -2565,20 +2565,20 @@ export class Matcher {
           }
         }
         if (bool) {
-          find = FIND_NEXT;
+          dir = DIR_NEXT;
           twig = firstTwig;
         } else {
-          find = FIND_PREV;
+          dir = DIR_PREV;
           twig = lastTwig;
         }
       }
     } else {
-      find = FIND_PREV;
+      dir = DIR_PREV;
       twig = firstTwig;
     }
     return {
       complex,
-      find,
+      dir,
       twig
     };
   }
@@ -2594,22 +2594,21 @@ export class Matcher {
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
-        const { find, twig } = this._getEntryTwig(branch, targetType);
+        const { dir, twig } = this._getEntryTwig(branch, targetType);
         const {
           compound, filtered, nodes, pending
         } = this._findEntryNodes(twig, targetType);
         if (nodes.size) {
+          this.#ast[i].find = true;
           this.#nodes[i] = nodes;
         } else if (pending) {
           pendingItems.add(new Map([
             ['index', i],
             ['twig', twig]
           ]));
-        } else {
-          this.#ast[i].skip = true;
         }
+        this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
-        this.#ast[i].find = find;
         i++;
       }
       if (pendingItems.size) {
@@ -2640,8 +2639,9 @@ export class Matcher {
               const matched = this._matchLeaves(leaves, nextNode);
               if (matched) {
                 const index = pendingItem.get('index');
-                this.#nodes[index].add(nextNode);
                 this.#ast[index].filtered = true;
+                this.#ast[index].find = true;
+                this.#nodes[index].add(nextNode);
               }
             }
           }
@@ -2656,12 +2656,11 @@ export class Matcher {
           compound, filtered, nodes
         } = this._findEntryNodes(twig, targetType);
         if (nodes.size) {
+          this.#ast[i].find = true;
           this.#nodes[i] = nodes;
-        } else {
-          this.#ast[i].skip = true;
         }
+        this.#ast[i].dir = DIR_PREV;
         this.#ast[i].filtered = filtered || !compound;
-        this.#ast[i].find = FIND_PREV;
         i++;
       }
     }
@@ -2702,11 +2701,9 @@ export class Matcher {
     const l = branches.length;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, filtered, find, skip } = branches[i];
+      const { branch, dir, filtered, find } = branches[i];
       const branchLen = branch.length;
-      if (skip) {
-        continue;
-      } else if (branchLen) {
+      if (branchLen && find) {
         const entryNodes = this.#nodes[i];
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
@@ -2741,7 +2738,7 @@ export class Matcher {
               }
             }
           }
-        } else if (find === FIND_NEXT) {
+        } else if (dir === DIR_NEXT) {
           let { combo, leaves: entryLeaves } = branch[0];
           const [, ...filterLeaves] = entryLeaves;
           let matched;
@@ -2757,7 +2754,7 @@ export class Matcher {
                     combo,
                     leaves
                   };
-                  const m = this._matchCombinator(twig, nextNode, { find });
+                  const m = this._matchCombinator(twig, nextNode, { dir });
                   if (m.size) {
                     arr.push(...m);
                   }
@@ -2805,7 +2802,7 @@ export class Matcher {
                     combo,
                     leaves
                   };
-                  const m = this._matchCombinator(twig, nextNode, { find });
+                  const m = this._matchCombinator(twig, nextNode, { dir });
                   if (m.size) {
                     arr.push(...m);
                   }
@@ -2847,7 +2844,7 @@ export class Matcher {
                 const twig = branch[j];
                 const arr = [];
                 for (const nextNode of nextNodes) {
-                  const m = this._matchCombinator(twig, nextNode, { find });
+                  const m = this._matchCombinator(twig, nextNode, { dir });
                   if (m.size) {
                     arr.push(...m);
                   }
@@ -2882,7 +2879,7 @@ export class Matcher {
                 const twig = branch[j];
                 const arr = [];
                 for (const nextNode of nextNodes) {
-                  const m = this._matchCombinator(twig, nextNode, { find });
+                  const m = this._matchCombinator(twig, nextNode, { dir });
                   if (m.size) {
                     arr.push(...m);
                   }
