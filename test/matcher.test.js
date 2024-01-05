@@ -6595,6 +6595,34 @@ describe('match AST leaf and DOM node', () => {
           DOMException, 'Unsupported pseudo-class :active');
       });
 
+      it('should not match', () => {
+        const leaf = {
+          children: null,
+          name: 'defined',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':defined', node);
+        const res = matcher._matchPseudoClassSelector(leaf, node);
+        assert.deepEqual([...res], [], 'result');
+      });
+
+      it('should throw', () => {
+        const leaf = {
+          children: null,
+          name: 'defined',
+          type: SELECTOR_PSEUDO_CLASS
+        };
+        const node = document.createElement('div');
+        document.getElementById('div0').appendChild(node);
+        const matcher = new Matcher(':defined', node, {
+          warn: true
+        });
+        assert.throws(() => matcher._matchPseudoClassSelector(leaf, node),
+          DOMException, 'Unsupported pseudo-class :defined');
+      });
+
       // unknown
       it('should throw', () => {
         const leaf = {

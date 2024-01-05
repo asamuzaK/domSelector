@@ -1585,6 +1585,7 @@ export class Matcher {
         case 'blank':
         case 'buffering':
         case 'current':
+        case 'defined':
         case 'focus-visible':
         case 'fullscreen':
         case 'future':
