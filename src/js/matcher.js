@@ -71,6 +71,7 @@ export class Matcher {
   #shadow;
   #tree;
   #warn;
+  #window;
 
   /**
    * construct
@@ -92,7 +93,7 @@ export class Matcher {
     this.#cache = new WeakMap();
     [this.#ast, this.#nodes] = this._prepare(selector);
     this.#node = node;
-    [this.#document, this.#root, this.#tree] = this._setup(node);
+    [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
     this.#shadow = isInShadowTree(node);
     this.#warn = !!warn;
   }
@@ -104,10 +105,16 @@ export class Matcher {
    * @returns {void}
    */
   _onError(e) {
-    if (e instanceof DOMException && e.name === NOT_SUPPORTED_ERR) {
+    if ((e instanceof DOMException ||
+         e instanceof this.#window.DOMException) &&
+        e.name === NOT_SUPPORTED_ERR) {
       if (this.#warn) {
         console.warn(e.message);
       }
+    } else if (e instanceof DOMException) {
+      throw new this.#window.DOMException(e.message, e.name);
+    } else if (e instanceof TypeError) {
+      throw new this.#window.TypeError(e.message);
     } else {
       throw e;
     }
@@ -116,7 +123,7 @@ export class Matcher {
   /**
    * set up #document, #root, #walker
    * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array.<object>} - array of #document, #root, #walker
+   * @returns {Array.<object>} - array of #window, #document, #root, #walker
    */
   _setup(node) {
     let document;
@@ -156,7 +163,9 @@ export class Matcher {
     }
     const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
     const walker = document.createTreeWalker(root, filter);
+    const window = document.defaultView;
     return [
+      window,
       document,
       root,
       walker
@@ -643,28 +652,28 @@ export class Matcher {
       case 'selection':
       case 'target-text': {
         if (this.#warn) {
-          throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-            NOT_SUPPORTED_ERR);
+          const msg = `Unsupported pseudo-element ::${astName}`;
+          throw new DOMException(msg, NOT_SUPPORTED_ERR);
         }
         break;
       }
       case 'part':
       case 'slotted': {
         if (this.#warn) {
-          throw new DOMException(`Unsupported pseudo-element ::${astName}()`,
-            NOT_SUPPORTED_ERR);
+          const msg = `Unsupported pseudo-element ::${astName}()`;
+          throw new DOMException(msg, NOT_SUPPORTED_ERR);
         }
         break;
       }
       default: {
         if (astName.startsWith('-webkit-')) {
           if (this.#warn) {
-            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-              NOT_SUPPORTED_ERR);
+            const msg = `Unsupported pseudo-element ::${astName}`;
+            throw new DOMException(msg, NOT_SUPPORTED_ERR);
           }
         } else if (!forgive) {
-          throw new DOMException(`Unknown pseudo-element ::${astName}`,
-            SYNTAX_ERR);
+          const msg = `Unknown pseudo-element ::${astName}`;
+          throw new DOMException(msg, SYNTAX_ERR);
         }
       }
     }
@@ -992,8 +1001,8 @@ export class Matcher {
           case 'nth-col':
           case 'nth-last-col': {
             if (this.#warn) {
-              throw new DOMException(`Unsupported pseudo-class :${astName}()`,
-                NOT_SUPPORTED_ERR);
+              const msg = `Unsupported pseudo-class :${astName}()`;
+              throw new DOMException(msg, NOT_SUPPORTED_ERR);
             }
             break;
           }
@@ -1004,8 +1013,8 @@ export class Matcher {
           }
           default: {
             if (!forgive) {
-              throw new DOMException(`Unknown pseudo-class :${astName}()`,
-                SYNTAX_ERR);
+              const msg = `Unknown pseudo-class :${astName}()`;
+              throw new DOMException(msg, SYNTAX_ERR);
             }
           }
         }
@@ -1566,8 +1575,8 @@ export class Matcher {
         case 'first-letter':
         case 'first-line': {
           if (this.#warn) {
-            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-              NOT_SUPPORTED_ERR);
+            const msg = `Unsupported pseudo-element ::${astName}`;
+            throw new DOMException(msg, NOT_SUPPORTED_ERR);
           }
           break;
         }
@@ -1593,20 +1602,20 @@ export class Matcher {
         case 'volume-locked':
         case '-webkit-autofill': {
           if (this.#warn) {
-            throw new DOMException(`Unsupported pseudo-class :${astName}`,
-              NOT_SUPPORTED_ERR);
+            const msg = `Unsupported pseudo-class :${astName}`;
+            throw new DOMException(msg, NOT_SUPPORTED_ERR);
           }
           break;
         }
         default: {
           if (astName.startsWith('-webkit-')) {
             if (this.#warn) {
-              throw new DOMException(`Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR);
+              const msg = `Unsupported pseudo-class :${astName}`;
+              throw new DOMException(msg, NOT_SUPPORTED_ERR);
             }
           } else if (!forgive) {
-            throw new DOMException(`Unknown pseudo-class :${astName}`,
-              SYNTAX_ERR);
+            const msg = `Unknown pseudo-class :${astName}`;
+            throw new DOMException(msg, SYNTAX_ERR);
           }
         }
       }
@@ -1626,7 +1635,8 @@ export class Matcher {
     } = ast;
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
       const css = generateCSS(ast);
-      throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      const msg = `Invalid selector ${css}`;
+      throw new DOMException(msg, SYNTAX_ERR);
     }
     const { attributes } = node;
     let res;
@@ -1890,10 +1900,12 @@ export class Matcher {
           res = node;
         }
       } else if (!forgive) {
-        throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
+        const msg = `Undeclared namespace ${astPrefix}`;
+        throw new DOMException(msg, SYNTAX_ERR);
       }
     } else if (astPrefix && !forgive && !isNamespaceDeclared(astPrefix, node)) {
-      throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
+      const msg = `Undeclared namespace ${astPrefix}`;
+      throw new DOMException(msg, SYNTAX_ERR);
     }
     return res ?? null;
   };
@@ -1918,7 +1930,8 @@ export class Matcher {
           const { type: leafType } = leaf;
           if (leafType === COMBINATOR) {
             const css = generateCSS(ast);
-            throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            const msg = `Invalid selector ${css}`;
+            throw new DOMException(msg, SYNTAX_ERR);
           }
           bool = this._matchSelector(leaf, host).has(host);
           if (!bool) {
@@ -1936,7 +1949,8 @@ export class Matcher {
             const { type: leafType } = leaf;
             if (leafType === COMBINATOR) {
               const css = generateCSS(ast);
-              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+              const msg = `Invalid selector ${css}`;
+              throw new DOMException(msg, SYNTAX_ERR);
             }
             bool = this._matchSelector(leaf, parent).has(parent);
             if (!bool) {
@@ -1956,7 +1970,8 @@ export class Matcher {
     } else if (astName === 'host') {
       res = node;
     } else {
-      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
+      const msg = `Invalid selector :${astName}`;
+      throw new DOMException(msg, SYNTAX_ERR);
     }
     return res ?? null;
   }
@@ -2166,7 +2181,7 @@ export class Matcher {
           const { parentNode } = node;
           if (parentNode) {
             const walker =
-              this.#document.createTreeWalker(node.parentNode, SHOW_ELEMENT);
+              this.#document.createTreeWalker(parentNode, SHOW_ELEMENT);
             let refNode = this._traverse(node, walker);
             if (refNode === node) {
               refNode = walker.nextSibling();
@@ -2275,7 +2290,6 @@ export class Matcher {
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} [opt] - options
    * @param {object} [opt.node] - node to start from
-   * @param {string} [opt.targetType] - target type
    * @param {object} [opt.tree] - tree walker
    * @returns {?object} - matched node
    */
@@ -2284,8 +2298,8 @@ export class Matcher {
     if (!walker) {
       walker = this.#tree;
     }
-    let refNode = this._traverse(node, walker);
     let matchedNode;
+    let refNode = this._traverse(node, walker);
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
         refNode = walker.nextNode();
@@ -2536,7 +2550,7 @@ export class Matcher {
                  firstType === SELECTOR_ID) {
         dir = DIR_NEXT;
         twig = firstTwig;
-      } else if (targetType === TARGET_ALL && branchLen === BIT_02) {
+      } else if (targetType === TARGET_ALL && branchLen === 2) {
         const { name: comboName } = firstCombo;
         if (/^[+~]$/.test(comboName)) {
           dir = DIR_PREV;
@@ -2933,7 +2947,8 @@ export class Matcher {
    */
   matches() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node ${this.#node.nodeName}`);
+      const msg = `Unexpected node ${this.#node.nodeName}`;
+      this._onError(new TypeError(msg));
     }
     let res;
     try {
@@ -2953,7 +2968,8 @@ export class Matcher {
    */
   closest() {
     if (this.#node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node ${this.#node.nodeName}`);
+      const msg = `Unexpected node ${this.#node.nodeName}`;
+      this._onError(new TypeError(msg));
     }
     let res;
     try {

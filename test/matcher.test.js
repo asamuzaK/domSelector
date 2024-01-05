@@ -16,7 +16,7 @@ import {
   AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, STRING
+  SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, STRING, SYNTAX_ERR
 } from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser', 'NodeIterator'];
@@ -150,12 +150,6 @@ describe('match AST leaf and DOM node', () => {
     });
 
     describe('handle error', () => {
-      it('should throw', () => {
-        const e = new Error('error');
-        const matcher = new Matcher('*', document);
-        assert.throws(() => matcher._onError(e), Error);
-      });
-
       it('should not throw', () => {
         const e = new DOMException('error', NOT_SUPPORTED_ERR);
         const matcher = new Matcher('*', document);
@@ -175,6 +169,82 @@ describe('match AST leaf and DOM node', () => {
         assert.isTrue(called, 'called');
         assert.isUndefined(res, 'result');
       });
+
+      it('should not throw', () => {
+        const e = new window.DOMException('error', NOT_SUPPORTED_ERR);
+        const matcher = new Matcher('*', document);
+        const res = matcher._onError(e);
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const e = new window.DOMException('error', NOT_SUPPORTED_ERR);
+        const matcher = new Matcher('*', document, {
+          warn: true
+        });
+        const res = matcher._onError(e);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'called');
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should throw', async () => {
+        const e = new DOMException('error', SYNTAX_ERR);
+        const matcher = new Matcher('*', document);
+        try {
+          matcher._onError(e);
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        };
+      });
+
+      it('should throw', async () => {
+        const e = new window.DOMException('error', SYNTAX_ERR);
+        const matcher = new Matcher('*', document);
+        try {
+          matcher._onError(e);
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        };
+      });
+
+      it('should throw', async () => {
+        const e = new TypeError('error');
+        const matcher = new Matcher('*', document);
+        try {
+          matcher._onError(e);
+        } catch (e) {
+          assert.instanceOf(e, window.TypeError, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        };
+      });
+
+      it('should throw', async () => {
+        const e = new window.TypeError('error');
+        const matcher = new Matcher('*', document);
+        try {
+          matcher._onError(e);
+        } catch (e) {
+          assert.instanceOf(e, window.TypeError, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        };
+      });
+
+      it('should throw', () => {
+        const e = new Error('error');
+        const matcher = new Matcher('*', document);
+        try {
+          matcher._onError(e);
+        } catch (e) {
+          assert.instanceOf(e, Error, 'error');
+          assert.notInstanceOf(e, window.Error, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        };
+      });
     });
 
     describe('set up settings', () => {
@@ -184,6 +254,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', document);
         const res = matcher._setup(document);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           document,
           document.createTreeWalker(document, filter)
@@ -198,6 +269,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._setup(parent);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           document,
           document.createTreeWalker(document, filter)
@@ -212,6 +284,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._setup(node);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           document,
           document.createTreeWalker(document, filter)
@@ -228,6 +301,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', doc);
         const res = matcher._setup(doc);
         assert.deepEqual(res, [
+          doc.defaultView,
           doc,
           doc,
           document.createTreeWalker(doc, filter)
@@ -244,6 +318,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._setup(parent);
         assert.deepEqual(res, [
+          doc.defaultView,
           doc,
           doc,
           document.createTreeWalker(doc, filter)
@@ -260,6 +335,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._setup(node);
         assert.deepEqual(res, [
+          doc.defaultView,
           doc,
           doc,
           document.createTreeWalker(doc, filter)
@@ -275,6 +351,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', frag);
         const res = matcher._setup(frag);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           frag,
           document.createTreeWalker(frag, filter)
@@ -290,6 +367,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._setup(parent);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           frag,
           document.createTreeWalker(frag, filter)
@@ -305,6 +383,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._setup(node);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           frag,
           document.createTreeWalker(frag, filter)
@@ -318,6 +397,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', parent);
         const res = matcher._setup(parent);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           parent,
           document.createTreeWalker(parent, filter)
@@ -331,6 +411,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher('*', node);
         const res = matcher._setup(node);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           parent,
           document.createTreeWalker(parent, filter)
@@ -364,6 +445,7 @@ describe('match AST leaf and DOM node', () => {
         const matcher = new Matcher(':host div', node);
         const res = matcher._setup(node);
         assert.deepEqual(res, [
+          document.defaultView,
           document,
           node,
           document.createTreeWalker(node, filter)
@@ -11672,7 +11754,11 @@ describe('match AST leaf and DOM node', () => {
 
     describe('matches', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher().matches(), TypeError);
+        try {
+          new Matcher().matches();
+        } catch (e) {
+          assert.instanceOf(e, TypeError, 'error');
+        };
       });
 
       it('should get true', () => {
@@ -11700,13 +11786,20 @@ describe('match AST leaf and DOM node', () => {
       });
 
       it('should throw', () => {
-        assert.throws(() => new Matcher('body', document).matches(), TypeError,
-          'Unexpected node #document');
+        try {
+          new Matcher('body', document).matches();
+        } catch (e) {
+          assert.instanceOf(e, window.TypeError, 'error');
+          assert.strictEqual(e.message, 'Unexpected node #document', 'message');
+        }
       });
 
       it('should throw', () => {
-        assert.throws(() =>
-          new Matcher('[foo=bar baz]', document.body).matches(), DOMException);
+        try {
+          new Matcher('[foo=bar baz]', document.body).matches();
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+        }
       });
 
       it('should warn', () => {
@@ -11798,14 +11891,21 @@ describe('match AST leaf and DOM node', () => {
 
     describe('closest', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher('body', document).closest(), TypeError,
-          'Unexpected node #document');
+        try {
+          new Matcher('body', document).closest();
+        } catch (e) {
+          assert.instanceOf(e, window.TypeError, 'error');
+          assert.strictEqual(e.message, 'Unexpected node #document', 'message');
+        }
       });
 
       it('should throw', () => {
-        assert.throws(() =>
+        try {
           new Matcher('[foo=bar baz]', document.getElementById('div0'))
-            .closest(), DOMException);
+            .closest();
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+        }
       });
 
       it('should warn', () => {
@@ -11916,8 +12016,11 @@ describe('match AST leaf and DOM node', () => {
 
     describe('querySelector', () => {
       it('should throw', () => {
-        assert.throws(() =>
-          new Matcher('[foo=bar baz]', document).querySelector(), DOMException);
+        try {
+          new Matcher('[foo=bar baz]', document).querySelector();
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+        }
       });
 
       it('should warn', () => {
@@ -12033,8 +12136,11 @@ describe('match AST leaf and DOM node', () => {
 
     describe('querySelectorAll', () => {
       it('should throw', () => {
-        assert.throws(() => new Matcher('[foo=bar baz]', document)
-          .querySelectorAll(), DOMException);
+        try {
+          new Matcher('[foo=bar baz]', document).querySelectorAll();
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+        }
       });
 
       it('should warn', () => {
