@@ -162,7 +162,7 @@ const prepareDom = () => {
 /* selectors */
 const selectors = [
   '.content',
-  'div.container:not(.box)',
+  'p.content[id]:not(.box, :is(.inner, .outer))',
   '.box + .box',
   '.box ~ .box',
   '.box > .block',
@@ -262,13 +262,13 @@ suite.on('start', () => {
 }).add(`patched-jsdom matches('${selectors[0]}')`, () => {
   elementMatches('patched-jsdom', selectors[0], true);
 }).add(`jsdom matches('${selectors[1]}')`, () => {
-  elementMatches('jsdom', selectors[1], false);
+  elementMatches('jsdom', selectors[1], true);
 }).add(`happydom matches('${selectors[1]}')`, () => {
-  elementMatches('happydom', selectors[1], false);
+  elementMatches('happydom', selectors[1], true);
 }).add(`linkedom matches('${selectors[1]}')`, () => {
-  elementMatches('linkedom', selectors[1], false);
+  elementMatches('linkedom', selectors[1], true);
 }).add(`patched-jsdom matches('${selectors[1]}')`, () => {
-  elementMatches('patched-jsdom', selectors[1], false);
+  elementMatches('patched-jsdom', selectors[1], true);
 }).add(`jsdom matches('${selectors[2]}')`, () => {
   elementMatches('jsdom', selectors[2], false);
 }).add(`happydom matches('${selectors[2]}')`, () => {
@@ -326,13 +326,13 @@ suite.on('start', () => {
 }).add(`patched-jsdom closest('${selectors[0]}')`, () => {
   elementClosest('patched-jsdom', selectors[0], 'p9-9-9');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
-  elementClosest('jsdom', selectors[1], 'container');
+  elementClosest('jsdom', selectors[1], 'p9-9-9');
 }).add(`happydom closest('${selectors[1]}')`, () => {
-  elementClosest('happydom', selectors[1], 'container');
+  elementClosest('happydom', selectors[1], 'p9-9-9');
 }).add(`linkedom closest('${selectors[1]}')`, () => {
-  elementClosest('linkedom', selectors[1], 'container');
+  elementClosest('linkedom', selectors[1], 'p9-9-9');
 }).add(`patched-jsdom closest('${selectors[1]}')`, () => {
-  elementClosest('patched-jsdom', selectors[1], 'container');
+  elementClosest('patched-jsdom', selectors[1], 'p9-9-9');
 }).add(`jsdom closest('${selectors[2]}')`, () => {
   elementClosest('jsdom', selectors[2], 'box9');
 }).add(`happydom closest('${selectors[2]}')`, () => {
@@ -390,13 +390,13 @@ suite.on('start', () => {
 }).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelector('patched-jsdom', selectors[0], 'p0-0-0');
 }).add(`jsdom querySelector('${selectors[1]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[1], 'container');
+  parentNodeQuerySelector('jsdom', selectors[1], 'p0-0-0');
 }).add(`happydom querySelector('${selectors[1]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[1], 'container');
+  parentNodeQuerySelector('happydom', selectors[1], 'p0-0-0');
 }).add(`linkedom querySelector('${selectors[1]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[1], 'container');
+  parentNodeQuerySelector('linkedom', selectors[1], 'p0-0-0');
 }).add(`patched-jsdom querySelector('${selectors[1]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[1], 'container');
+  parentNodeQuerySelector('patched-jsdom', selectors[1], 'p0-0-0');
 }).add(`jsdom querySelector('${selectors[2]}')`, () => {
   parentNodeQuerySelector('jsdom', selectors[2], 'box1');
 }).add(`happydom querySelector('${selectors[2]}')`, () => {
@@ -454,13 +454,13 @@ suite.on('start', () => {
 }).add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[0], 1000);
 }).add(`jsdom querySelectorAll('${selectors[1]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[1], 1);
+  parentNodeQuerySelectorAll('jsdom', selectors[1], 1000);
 }).add(`happydom querySelectorAll('${selectors[1]}')`, () => {
-  parentNodeQuerySelectorAll('happydom', selectors[1], 1);
+  parentNodeQuerySelectorAll('happydom', selectors[1], 1000);
 }).add(`linkedom querySelectorAll('${selectors[1]}')`, () => {
-  parentNodeQuerySelectorAll('linkedom', selectors[1], 1);
+  parentNodeQuerySelectorAll('linkedom', selectors[1], 1000);
 }).add(`patched-jsdom querySelectorAll('${selectors[1]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[1], 1);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[1], 1000);
 }).add(`jsdom querySelectorAll('${selectors[2]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[2], 9);
 }).add(`happydom querySelectorAll('${selectors[2]}')`, () => {
