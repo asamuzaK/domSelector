@@ -536,7 +536,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get list and matrix', () => {
         const matcher =
           new Matcher('li:last-child, li:first-child + li', document);
-        const res = matcher._prepare('li:last-child, li:first-child + li');
+        const res = matcher._correspond('li:last-child, li:first-child + li');
         assert.deepEqual(res, [
           [
             {
@@ -10048,14 +10048,14 @@ describe('match AST leaf and DOM node', () => {
     describe('find matched node from tree walker', () => {
       it('should get matched node', () => {
         const matcher = new Matcher('ul', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ul');
         const res = matcher._findNode(leaves);
         assert.deepEqual(res, document.getElementById('ul1'), 'result');
       });
 
       it('should not match', () => {
         const matcher = new Matcher('ol', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ol');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ol');
         const res = matcher._findNode(leaves);
         assert.isNull(res, 'result');
       });
@@ -10065,7 +10065,7 @@ describe('match AST leaf and DOM node', () => {
         const child = document.createElement('li');
         node.appendChild(child);
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ul');
         const res = matcher._findNode(leaves);
         assert.deepEqual(res, node, 'result');
       });
@@ -10075,7 +10075,7 @@ describe('match AST leaf and DOM node', () => {
         const child = document.createElement('li');
         node.appendChild(child);
         const matcher = new Matcher('li', node);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('li');
         const res = matcher._findNode(leaves);
         assert.deepEqual(res, child, 'result');
       });
@@ -10085,14 +10085,14 @@ describe('match AST leaf and DOM node', () => {
         const child = document.createElement('li');
         node.appendChild(child);
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ul');
         const res = matcher._findNode(leaves);
         assert.deepEqual(res, node, 'result');
       });
 
       it('should get matched node', () => {
         const matcher = new Matcher('li', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('li');
         const res = matcher._findNode(leaves, {
           node: document.getElementById('li1')
         });
@@ -10101,7 +10101,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('li', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('li');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('li');
         const res = matcher._findNode(leaves, {
           node: document.getElementById('li3')
         });
@@ -10110,7 +10110,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('ul', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ul');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ul');
         const res = matcher._findNode(leaves, {
           node: document.getElementById('li1'),
           targetType: 'lineal'
@@ -10120,7 +10120,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('ol', document);
-        const [[{ branch: [{ leaves }] }]] = matcher._prepare('ol');
+        const [[{ branch: [{ leaves }] }]] = matcher._correspond('ol');
         const res = matcher._findNode(leaves, {
           node: document.getElementById('li1'),
           targetType: 'lineal'
@@ -10132,7 +10132,7 @@ describe('match AST leaf and DOM node', () => {
     describe('find entry nodes', () => {
       it('should not match', () => {
         const matcher = new Matcher('::before', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('::before');
+        const [[{ branch: [twig] }]] = matcher._correspond('::before');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10142,7 +10142,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('#ul1', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('#ul1');
+        const [[{ branch: [twig] }]] = matcher._correspond('#ul1');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('ul1')
@@ -10155,7 +10155,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('#ul1', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('#ul1');
+        const [[{ branch: [twig] }]] = matcher._correspond('#ul1');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [
           node
@@ -10168,7 +10168,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('#ul1', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('#ul1');
+        const [[{ branch: [twig] }]] = matcher._correspond('#ul1');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10179,7 +10179,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('#ul1', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('#ul1');
+        const [[{ branch: [twig] }]] = matcher._correspond('#ul1');
         const res = matcher._findEntryNodes(twig, 'lineal');
         assert.deepEqual([...res.nodes], [
           document.getElementById('ul1')
@@ -10191,7 +10191,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('#li1.li', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('#li1.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('#li1.li');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1')
@@ -10203,7 +10203,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('#li1.foobar', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('#li1.foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('#li1.foobar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1')
@@ -10215,7 +10215,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('ul#ul1', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('ul#ul1');
+        const [[{ branch: [twig] }]] = matcher._correspond('ul#ul1');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('ul1')
@@ -10227,7 +10227,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('#foobar', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('#foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('#foobar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10241,7 +10241,7 @@ describe('match AST leaf and DOM node', () => {
         node.id = 'foobar';
         frag.appendChild(node);
         const matcher = new Matcher('#foobar', frag);
-        const [[{ branch: [twig] }]] = matcher._prepare('#foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('#foobar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           node
@@ -10257,7 +10257,7 @@ describe('match AST leaf and DOM node', () => {
         const parent = document.getElementById('div0');
         parent.appendChild(node);
         const matcher = new Matcher('#foobar', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('#foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('#foobar');
         const res = matcher._findEntryNodes(twig, 'all');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10271,7 +10271,7 @@ describe('match AST leaf and DOM node', () => {
         node.id = 'foobar';
         parent.appendChild(node);
         const matcher = new Matcher('#foobar', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('#foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('#foobar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10281,7 +10281,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('#li1:first-child', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('#li1:first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('#li1:first-child');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1')
@@ -10294,7 +10294,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('.li', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('.li');
         const res = matcher._findEntryNodes(twig, 'first');
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1')
@@ -10307,7 +10307,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('.li', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('.li');
         const res = matcher._findEntryNodes(twig, 'all');
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1'),
@@ -10321,7 +10321,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('.li', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('.li');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1'),
@@ -10342,7 +10342,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         frag.appendChild(parent);
         const matcher = new Matcher('.foo', frag);
-        const [[{ branch: [twig] }]] = matcher._prepare('.foo');
+        const [[{ branch: [twig] }]] = matcher._correspond('.foo');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10352,7 +10352,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('li.li', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('li.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('li.li');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1'),
@@ -10367,7 +10367,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('dd2');
         const matcher = new Matcher('.dd', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.dd');
+        const [[{ branch: [twig] }]] = matcher._correspond('.dd');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [
           node
@@ -10380,7 +10380,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('span2');
         const matcher = new Matcher('.dd', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.dd');
+        const [[{ branch: [twig] }]] = matcher._correspond('.dd');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10391,7 +10391,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('span2');
         const matcher = new Matcher('.dd', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.dd');
+        const [[{ branch: [twig] }]] = matcher._correspond('.dd');
         const res = matcher._findEntryNodes(twig, 'lineal');
         assert.deepEqual([...res.nodes], [
           document.getElementById('dd2')
@@ -10404,7 +10404,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('span2');
         const matcher = new Matcher('.li', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.li');
+        const [[{ branch: [twig] }]] = matcher._correspond('.li');
         const res = matcher._findEntryNodes(twig, 'lineal');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10415,7 +10415,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('dd1');
         const matcher = new Matcher('.dd', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.dd');
+        const [[{ branch: [twig] }]] = matcher._correspond('.dd');
         const res = matcher._findEntryNodes(twig, 'first');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10426,7 +10426,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('ul');
+        const [[{ branch: [twig] }]] = matcher._correspond('ul');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [
           node
@@ -10439,7 +10439,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('ul');
+        const [[{ branch: [twig] }]] = matcher._correspond('ul');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10450,7 +10450,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('ul');
+        const [[{ branch: [twig] }]] = matcher._correspond('ul');
         const res = matcher._findEntryNodes(twig, 'lineal');
         assert.deepEqual([...res.nodes], [
           document.getElementById('ul1')
@@ -10463,7 +10463,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('ol', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('ol');
+        const [[{ branch: [twig] }]] = matcher._correspond('ol');
         const res = matcher._findEntryNodes(twig, 'lineal');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10474,7 +10474,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('ul', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('ul');
+        const [[{ branch: [twig] }]] = matcher._correspond('ul');
         const res = matcher._findEntryNodes(twig, 'first');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10485,7 +10485,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('li:first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('li:first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('li:first-child');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           node
@@ -10498,7 +10498,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('ul1');
         const matcher = new Matcher('li:first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('li:first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('li:first-child');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1'),
@@ -10513,7 +10513,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('li:first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('li:first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('li:first-child');
         const res = matcher._findEntryNodes(twig, 'first');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isTrue(res.compound, 'compound');
@@ -10524,7 +10524,7 @@ describe('match AST leaf and DOM node', () => {
       it('should not match', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('dd:first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('dd:first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('dd:first-child');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isTrue(res.compound, 'compound');
@@ -10534,7 +10534,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should get matched node(s)', () => {
         const matcher = new Matcher('li.li:last-child', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('li.li:last-child');
+        const [[{ branch: [twig] }]] = matcher._correspond('li.li:last-child');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [
           document.getElementById('li1'),
@@ -10556,7 +10556,7 @@ describe('match AST leaf and DOM node', () => {
         parent.appendChild(node);
         frag.appendChild(parent);
         const matcher = new Matcher('.foo.bar', frag);
-        const [[{ branch: [twig] }]] = matcher._prepare('.foo.bar');
+        const [[{ branch: [twig] }]] = matcher._correspond('.foo.bar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isTrue(res.compound, 'compound');
@@ -10566,7 +10566,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should not match', () => {
         const matcher = new Matcher('.foobar', document);
-        const [[{ branch: [twig] }]] = matcher._prepare('.foobar');
+        const [[{ branch: [twig] }]] = matcher._correspond('.foobar');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10579,7 +10579,7 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         frag.appendChild(node);
         const matcher = new Matcher('div', frag);
-        const [[{ branch: [twig] }]] = matcher._prepare('div');
+        const [[{ branch: [twig] }]] = matcher._correspond('div');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10592,7 +10592,7 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         parent.appendChild(node);
         const matcher = new Matcher('div', parent);
-        const [[{ branch: [twig] }]] = matcher._prepare('div');
+        const [[{ branch: [twig] }]] = matcher._correspond('div');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10607,7 +10607,7 @@ describe('match AST leaf and DOM node', () => {
         node.classList.add('foo');
         parent.appendChild(node);
         const matcher = new Matcher('.foo', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('.foo');
+        const [[{ branch: [twig] }]] = matcher._correspond('.foo');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10620,7 +10620,7 @@ describe('match AST leaf and DOM node', () => {
         const node = document.createElement('div');
         frag.appendChild(node);
         const matcher = new Matcher('p', frag);
-        const [[{ branch: [twig] }]] = matcher._prepare('p');
+        const [[{ branch: [twig] }]] = matcher._correspond('p');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');
@@ -10631,7 +10631,7 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher(':first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare(':first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond(':first-child');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [
           node
@@ -10644,7 +10644,8 @@ describe('match AST leaf and DOM node', () => {
       it('should get matched node(s)', () => {
         const node = document.getElementById('li1');
         const matcher = new Matcher('[class]:first-child', node);
-        const [[{ branch: [twig] }]] = matcher._prepare('[class]:first-child');
+        const [[{ branch: [twig] }]] =
+          matcher._correspond('[class]:first-child');
         const res = matcher._findEntryNodes(twig, 'self');
         assert.deepEqual([...res.nodes], [
           node
@@ -10656,7 +10657,7 @@ describe('match AST leaf and DOM node', () => {
 
       it('should be pended', () => {
         const matcher = new Matcher(':first-child', document);
-        const [[{ branch: [twig] }]] = matcher._prepare(':first-child');
+        const [[{ branch: [twig] }]] = matcher._correspond(':first-child');
         const res = matcher._findEntryNodes(twig);
         assert.deepEqual([...res.nodes], [], 'nodes');
         assert.isFalse(res.compound, 'compound');

@@ -94,7 +94,7 @@ export class Matcher {
     this.#node = node;
     [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
     this.#shadow = isInShadowTree(node);
-    [this.#ast, this.#nodes] = this._prepare(selector);
+    [this.#ast, this.#nodes] = this._correspond(selector);
     this.#warn = !!warn;
   }
 
@@ -208,11 +208,11 @@ export class Matcher {
   }
 
   /**
-   * prepare #ast and #nodes
+   * correspond #ast and #nodes
    * @param {string} selector - CSS selector
    * @returns {Array.<Array.<object|undefined>>} - array of #ast and #nodes
    */
-  _prepare(selector) {
+  _correspond(selector) {
     let cssAst;
     try {
       cssAst = parseSelector(selector);
