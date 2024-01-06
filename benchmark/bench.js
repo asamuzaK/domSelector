@@ -167,8 +167,8 @@ const selectors = [
   '.box ~ .box',
   '.box > .block',
   '.box .content',
-  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > .content',
-  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)'
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner > p.content[id]:not(.box, :is(.inner, .outer))',
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>p.content[id]:not(.box, :is(.inner, .outer)))'
 ];
 
 /* matcher tests */
