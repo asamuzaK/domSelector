@@ -19,7 +19,7 @@ import {
   REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_ATTR, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_ALL, SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR,
-  TEXT_NODE
+  TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -91,10 +91,10 @@ export class Matcher {
       [SELECTOR_PSEUDO_CLASS, BIT_32]
     ]);
     this.#cache = new WeakMap();
-    [this.#ast, this.#nodes] = this._prepare(selector);
     this.#node = node;
     [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
     this.#shadow = isInShadowTree(node);
+    [this.#ast, this.#nodes] = this._prepare(selector);
     this.#warn = !!warn;
   }
 
@@ -128,7 +128,7 @@ export class Matcher {
   _setup(node) {
     let document;
     let root;
-    switch (node.nodeType) {
+    switch (node?.nodeType) {
       case DOCUMENT_NODE: {
         document = node;
         root = node;
@@ -158,7 +158,15 @@ export class Matcher {
         break;
       }
       default: {
-        throw new TypeError(`Unexpected node ${node.nodeName}`);
+        let msg;
+        if (node?.nodeName) {
+          msg = `Unexpected node ${node.nodeName}`;
+        } else {
+          const nodeType =
+            Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+          msg = `Unexpected node ${nodeType}`;
+        }
+        throw new TypeError(msg);
       }
     }
     const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
@@ -205,7 +213,12 @@ export class Matcher {
    * @returns {Array.<Array.<object|undefined>>} - array of #ast and #nodes
    */
   _prepare(selector) {
-    const cssAst = parseSelector(selector);
+    let cssAst;
+    try {
+      cssAst = parseSelector(selector);
+    } catch (e) {
+      this._onError(e);
+    }
     const branches = walkAST(cssAst);
     const ast = [];
     const nodes = [];
@@ -220,7 +233,7 @@ export class Matcher {
             const [nextItem] = items;
             if (nextItem.type === COMBINATOR) {
               const msg = `Invalid combinator ${item.name}${nextItem.name}`;
-              throw new DOMException(msg, SYNTAX_ERR);
+              throw new this.#window.DOMException(msg, SYNTAX_ERR);
             }
             branch.push({
               combo: item,

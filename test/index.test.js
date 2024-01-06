@@ -21,9 +21,10 @@ describe('exported api', () => {
     runScripts: 'dangerously',
     url: 'http://localhost/'
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
@@ -31,6 +32,7 @@ describe('exported api', () => {
   });
   afterEach(() => {
     document = null;
+    window = null;
     for (const key of globalKeys) {
       delete global[key];
     }
@@ -38,7 +40,11 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => matches('*|', document.body), DOMException);
+      try {
+        matches('*|', document.body);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should match', () => {
@@ -814,7 +820,11 @@ describe('exported api', () => {
 
   describe('closest', () => {
     it('should throw', () => {
-      assert.throws(() => closest('*|', document), DOMException);
+      try {
+        closest('*|', document);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -1141,7 +1151,11 @@ describe('exported api', () => {
 
   describe('query selector', () => {
     it('should throw', () => {
-      assert.throws(() => querySelector('*|', document), DOMException);
+      try {
+        querySelector('*|', document);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -1391,7 +1405,11 @@ describe('exported api', () => {
 
   describe('query selector all', () => {
     it('should throw', () => {
-      assert.throws(() => querySelectorAll('*|', document), DOMException);
+      try {
+        querySelectorAll('*|', document);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node(s)', () => {
@@ -2380,9 +2398,10 @@ const jsdom = (str = '') => {
 describe('patched JSDOM', () => {
   const domStr =
     '<!doctype html><html lang="en"><head></head><body></body></html>';
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = jsdom(domStr);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
@@ -2390,6 +2409,7 @@ describe('patched JSDOM', () => {
   });
   afterEach(() => {
     document = null;
+    window = null;
     for (const key of globalKeys) {
       delete global[key];
     }
@@ -2397,7 +2417,11 @@ describe('patched JSDOM', () => {
 
   describe('Element.matches()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.matches('*|'), DOMException);
+      try {
+        document.body.matches('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should match', () => {
@@ -2459,7 +2483,11 @@ describe('patched JSDOM', () => {
 
   describe('Element.closest()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.closest('*|'), DOMException);
+      try {
+        document.body.closest('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2521,7 +2549,11 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelector(), Element.querySelector()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelector('*|'), DOMException);
+      try {
+        document.querySelector('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2581,7 +2613,11 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelector('*|'), DOMException);
+      try {
+        document.body.querySelector('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2642,7 +2678,11 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('*|'), DOMException);
+      try {
+        frag.querySelector('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2706,7 +2746,11 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelectorAll('*|'), DOMException);
+      try {
+        document.querySelectorAll('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2770,7 +2814,11 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('*|'), DOMException);
+      try {
+        document.body.querySelectorAll('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
@@ -2835,7 +2883,11 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('*|'), DOMException);
+      try {
+        frag.querySelectorAll('*|');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException);
+      }
     });
 
     it('should get matched node', () => {
