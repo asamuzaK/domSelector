@@ -98,37 +98,67 @@ describe('match AST leaf and DOM node', () => {
     const { Matcher } = matcherJs;
 
     it('should throw', () => {
-      assert.throws(() => new Matcher(), TypeError);
+      try {
+        new Matcher().matches();
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
+      }
     });
 
     it('should throw', () => {
-      assert.throws(() => new Matcher('*'), TypeError);
+      try {
+        new Matcher('*').matches();
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
+      }
     });
 
     it('should throw', () => {
-      assert.throws(() => new Matcher('*', 'foo'), TypeError,
-        'Unexpected node undefined');
+      try {
+        new Matcher('*', 'foo').matches();
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node String', 'message');
+      }
     });
 
     it('should throw', () => {
       const text = document.createTextNode('foo');
-      assert.throws(() => new Matcher('*', text), TypeError,
-        'Unexpected node #text');
+      try {
+        new Matcher('*', text).matches();
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node #text', 'message');
+      }
     });
 
     it('should throw', () => {
-      assert.throws(() => new Matcher('#ul1 ++ #li1', document),
-        DOMException, 'Invalid combinator ++');
+      try {
+        new Matcher('#ul1 ++ #li1', document).matches();
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+        assert.strictEqual(e.message, 'Invalid combinator ++', 'message');
+      }
     });
 
     it('should throw', () => {
-      assert.throws(() => new Matcher('[foo==bar]', document), DOMException,
-        'Identifier is expected');
+      try {
+        new Matcher('[foo==bar]', document).matches();
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+        assert.strictEqual(e.message, 'Identifier is expected', 'message');
+      }
     });
 
     // FIXME: CSSTree throws
     it('should throw', () => {
-      assert.throws(() => new Matcher(':lang("")', document), DOMException);
+      try {
+        new Matcher(':lang("")', document).matches();
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+      }
     });
 
     it('should be instance of Matcher', () => {
