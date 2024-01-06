@@ -121,7 +121,7 @@ export class Matcher {
   }
 
   /**
-   * set up #document, #root, #walker
+   * set up #window, #document, #root, #walker
    * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array.<object>} - array of #window, #document, #root, #walker
    */
