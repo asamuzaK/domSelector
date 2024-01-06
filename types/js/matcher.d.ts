@@ -45,7 +45,6 @@ export class Matcher {
     }): Set<object>;
     _findNode(leaves: Array<object>, opt?: {
         node?: object;
-        targetType?: string;
         tree?: object;
     }): object | null;
     _findEntryNodes(twig: object, targetType: string): object;
