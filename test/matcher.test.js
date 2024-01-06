@@ -99,7 +99,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher();
+        new Matcher().matches();
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
@@ -108,7 +108,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('*');
+        new Matcher('*').matches();
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
@@ -117,7 +117,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('*', 'foo');
+        new Matcher('*', 'foo').matches();
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node String', 'message');
@@ -127,8 +127,8 @@ describe('match AST leaf and DOM node', () => {
     it('should throw', () => {
       const text = document.createTextNode('foo');
       try {
-        new Matcher('*', text);
-      } catch(e) {
+        new Matcher('*', text).matches();
+      } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node #text', 'message');
       }
@@ -136,7 +136,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('#ul1 ++ #li1', document);
+        new Matcher('#ul1 ++ #li1', document).matches();
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
         assert.strictEqual(e.message, 'Invalid combinator ++', 'message');
@@ -145,7 +145,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('[foo==bar]', document);
+        new Matcher('[foo==bar]', document).matches();
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
         assert.strictEqual(e.message, 'Identifier is expected', 'message');
@@ -155,7 +155,7 @@ describe('match AST leaf and DOM node', () => {
     // FIXME: CSSTree throws
     it('should throw', () => {
       try {
-        new Matcher(':lang("")', document);
+        new Matcher(':lang("")', document).matches();
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
       }
