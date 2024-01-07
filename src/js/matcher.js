@@ -2564,14 +2564,22 @@ export class Matcher {
                  firstType === SELECTOR_ID) {
         dir = DIR_NEXT;
         twig = firstTwig;
-      } else if (targetType === TARGET_ALL && branchLen === 2) {
+      } else if (branchLen === 2) {
         const { name: comboName } = firstCombo;
         if (/^[+~]$/.test(comboName)) {
-          dir = DIR_PREV;
-          twig = lastTwig;
-        } else {
+          if (targetType === TARGET_ALL) {
+            dir = DIR_PREV;
+            twig = lastTwig;
+          } else {
+            dir = DIR_NEXT;
+            twig = firstTwig;
+          }
+        } else if (targetType === TARGET_ALL) {
           dir = DIR_NEXT;
           twig = firstTwig;
+        } else {
+          dir = DIR_PREV;
+          twig = lastTwig;
         }
       } else if (targetType === TARGET_ALL) {
         dir = DIR_NEXT;
