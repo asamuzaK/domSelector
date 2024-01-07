@@ -2580,6 +2580,7 @@ export class Matcher {
         }
       } else {
         let bool;
+        let sibling;
         for (const { combo, leaves: [leaf] } of branch) {
           const { type: leafType } = leaf;
           const leafName = unescapeSelector(leaf.name);
@@ -2587,10 +2588,11 @@ export class Matcher {
             bool = false;
             break;
           }
-          if (combo) {
+          if (combo && !sibling) {
             const { name: comboName } = combo;
             if (/^[+~]$/.test(comboName)) {
               bool = true;
+              sibling = true;
             }
           }
         }
