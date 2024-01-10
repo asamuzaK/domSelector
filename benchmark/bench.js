@@ -172,6 +172,26 @@ const selectors = [
 ];
 
 /* matcher tests */
+const elementMatchesRandom = (api, selector, result) => {
+  let doc;
+  if (api === 'jsdom') {
+    doc = document;
+  } else if (api === 'happydom') {
+    doc = happyDoc;
+  } else if (api === 'linkedom') {
+    doc = linkedDoc;
+  } else {
+    doc = patchedDoc;
+  }
+  for (let i = 0; i < 10; i++) {
+    const id = `p${Math.floor(Math.random()*10)}-${Math.floor(Math.random()*10)}-${Math.floor(Math.random()*10)}`;
+    const res = doc.getElementById(id).matches(selector);
+    if (res !== result) {
+      throw new Error('result does not match.');
+    }
+  }
+};
+
 const elementMatches = (api, selector, result) => {
   let node;
   if (api === 'jsdom') {
@@ -253,6 +273,14 @@ suite.on('start', () => {
   const { name: pkgName, version } = JSON.parse(value);
   console.log(`benchmark ${pkgName} v${version}`);
   prepareDom();
+}).add(`jsdom at random matches('${selectors[0]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[0], true);
+}).add(`happydom at random matches('${selectors[0]}')`, () => {
+  elementMatchesRandom('happydom', selectors[0], true);
+}).add(`linkedom at random matches('${selectors[0]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[0], true);
+}).add(`patched-jsdom at random matches('${selectors[0]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[0], true);
 }).add(`jsdom matches('${selectors[0]}')`, () => {
   elementMatches('jsdom', selectors[0], true);
 }).add(`happydom matches('${selectors[0]}')`, () => {
