@@ -27,6 +27,7 @@ const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
+const WALKER_FILTER = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
 
 /**
  * Matcher
@@ -68,20 +69,17 @@ export class Matcher {
   #node;
   #nodes;
   #root;
+  #selector;
   #shadow;
+  #sort;
   #tree;
   #warn;
   #window;
 
   /**
    * construct
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @param {boolean} [opt.warn] - console warn
    */
-  constructor(selector, node, opt = {}) {
-    const { warn } = opt;
+  constructor() {
     this.#bit = new Map([
       [SELECTOR_PSEUDO_ELEMENT, BIT_01],
       [SELECTOR_ID, BIT_02],
@@ -91,11 +89,6 @@ export class Matcher {
       [SELECTOR_PSEUDO_CLASS, BIT_32]
     ]);
     this.#cache = new WeakMap();
-    this.#node = node;
-    [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
-    this.#shadow = isInShadowTree(node);
-    [this.#ast, this.#nodes] = this._correspond(selector);
-    this.#warn = !!warn;
   }
 
   /**
@@ -105,16 +98,17 @@ export class Matcher {
    * @returns {void}
    */
   _onError(e) {
-    if ((e instanceof DOMException ||
-         e instanceof this.#window.DOMException) &&
-        e.name === NOT_SUPPORTED_ERR) {
-      if (this.#warn) {
-        console.warn(e.message);
+    if (e instanceof DOMException ||
+        (this.#window && e instanceof this.#window.DOMException)) {
+      if (e.name === NOT_SUPPORTED_ERR) {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
+      } else if (this.#window) {
+        throw new this.#window.DOMException(e.message, e.name);
+      } else {
+        throw new DOMException(e.message, e.name);
       }
-    } else if (e instanceof DOMException) {
-      throw new this.#window.DOMException(e.message, e.name);
-    } else if (e instanceof TypeError) {
-      throw new this.#window.TypeError(e.message);
     } else {
       throw e;
     }
@@ -169,8 +163,7 @@ export class Matcher {
         throw new TypeError(msg);
       }
     }
-    const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
-    const walker = document.createTreeWalker(root, filter);
+    const walker = document.createTreeWalker(root, WALKER_FILTER);
     const window = document.defaultView;
     return [
       window,
@@ -330,8 +323,7 @@ export class Matcher {
       }
     }
     if (parentNode) {
-      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
-      const walker = this.#document.createTreeWalker(parentNode, filter);
+      const walker = this.#document.createTreeWalker(parentNode, WALKER_FILTER);
       let l = 0;
       let refNode = walker.firstChild();
       while (refNode) {
@@ -491,8 +483,7 @@ export class Matcher {
     const { localName, parentNode, prefix } = node;
     let matched = new Set();
     if (parentNode) {
-      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
-      const walker = this.#document.createTreeWalker(parentNode, filter);
+      const walker = this.#document.createTreeWalker(parentNode, WALKER_FILTER);
       let l = 0;
       let refNode = walker.firstChild();
       while (refNode) {
@@ -2417,7 +2408,6 @@ export class Matcher {
           if (node) {
             nodes.add(node);
             filtered = true;
-            break;
           }
         } else if (this.#root.nodeType === DOCUMENT_FRAGMENT_NODE ||
                    this.#root.nodeType === ELEMENT_NODE) {
@@ -2468,7 +2458,6 @@ export class Matcher {
           if (node) {
             nodes.add(node);
             filtered = true;
-            break;
           }
         } else if (this.#document.contentType !== 'text/html' ||
                    /[*|]/.test(leafName) ||
@@ -2526,7 +2515,6 @@ export class Matcher {
           if (node) {
             nodes.add(node);
             filtered = true;
-            break;
           }
         } else {
           pending = true;
@@ -2753,8 +2741,13 @@ export class Matcher {
             }
           } else if (!filterLeaves.length) {
             if (targetType === TARGET_ALL) {
-              const n = [...nodes];
-              nodes = new Set([...n, ...entryNodes]);
+              if (nodes.size) {
+                const n = [...nodes];
+                nodes = new Set([...n, ...entryNodes]);
+                this.#sort = true;
+              } else {
+                nodes = new Set([...entryNodes]);
+              }
             } else {
               const [node] = [...entryNodes];
               nodes.add(node);
@@ -2794,8 +2787,13 @@ export class Matcher {
                 if (arr.length) {
                   if (j === lastIndex) {
                     if (targetType === TARGET_ALL) {
-                      const n = [...nodes];
-                      nodes = new Set([...n, ...arr]);
+                      if (nodes.size) {
+                        const n = [...nodes];
+                        nodes = new Set([...n, ...arr]);
+                        this.#sort = true;
+                      } else {
+                        nodes = new Set([...arr]);
+                      }
                     } else {
                       const [node] = this._sortNodes(arr);
                       nodes.add(node);
@@ -2948,11 +2946,45 @@ export class Matcher {
   /**
    * find matched nodes
    * @param {string} targetType - target type
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {string} selector - CSS selector
+   * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _find(targetType) {
+  _find(targetType, node, selector, opt = {}) {
+    const { warn } = opt;
+    this.#warn = !!warn;
+    if (!node) {
+      const nodeType =
+        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+      const msg = `Unexpected node ${nodeType}`;
+      throw new TypeError(msg);
+    } else if (node.nodeType !== DOCUMENT_NODE &&
+               node.nodeType !== DOCUMENT_FRAGMENT_NODE &&
+               node.nodeType !== ELEMENT_NODE) {
+      const msg = `Unexpected node ${node.nodeName}`;
+      throw new TypeError(msg);
+    } else if ((targetType === TARGET_SELF || targetType === TARGET_LINEAL) &&
+               node.nodeType !== ELEMENT_NODE) {
+      const msg = `Unexpected node ${node.nodeName}`;
+      throw new TypeError(msg);
+    }
+    this.#cache = new WeakMap();
+    this.#node = node;
+    [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
+    this.#shadow = isInShadowTree(node);
+    if (selector && selector === this.#selector) {
+      for (const i of this.#nodes) {
+        i.clear();
+      }
+    } else {
+      this.#selector = selector;
+      [this.#ast, this.#nodes] = this._correspond(selector);
+    }
+    // prepare #finder
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this.#finder = this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
+      this.#sort = false;
     }
     this._collectNodes(targetType);
     const nodes = this._matchNodes(targetType);
@@ -2961,16 +2993,15 @@ export class Matcher {
 
   /**
    * matches
+   * @param {object} node - Element node
+   * @param {string} selector - CSS selector
+   * @param {object} opt - options
    * @returns {boolean} - `true` if matched `false` otherwise
    */
-  matches() {
-    if (this.#node.nodeType !== ELEMENT_NODE) {
-      const msg = `Unexpected node ${this.#node.nodeName}`;
-      this._onError(new TypeError(msg));
-    }
+  matches(node, selector, opt) {
     let res;
     try {
-      const nodes = this._find(TARGET_SELF);
+      const nodes = this._find(TARGET_SELF, node, selector, opt);
       if (nodes.size) {
         res = nodes.has(this.#node);
       }
@@ -2982,23 +3013,22 @@ export class Matcher {
 
   /**
    * closest
+   * @param {object} node - Element node
+   * @param {string} selector - CSS selector
+   * @param {object} opt - options
    * @returns {?object} - matched node
    */
-  closest() {
-    if (this.#node.nodeType !== ELEMENT_NODE) {
-      const msg = `Unexpected node ${this.#node.nodeName}`;
-      this._onError(new TypeError(msg));
-    }
+  closest(node, selector, opt) {
     let res;
     try {
-      const nodes = this._find(TARGET_LINEAL);
-      let node = this.#node;
-      while (node) {
-        if (nodes.has(node)) {
-          res = node;
+      const nodes = this._find(TARGET_LINEAL, node, selector, opt);
+      let refNode = this.#node;
+      while (refNode) {
+        if (nodes.has(refNode)) {
+          res = refNode;
           break;
         }
-        node = node.parentNode;
+        refNode = refNode.parentNode;
       }
     } catch (e) {
       this._onError(e);
@@ -3008,12 +3038,15 @@ export class Matcher {
 
   /**
    * query selector
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {string} selector - CSS selector
+   * @param {object} opt - options
    * @returns {?object} - matched node
    */
-  querySelector() {
+  querySelector(node, selector, opt) {
     let res;
     try {
-      const nodes = this._find(TARGET_FIRST);
+      const nodes = this._find(TARGET_FIRST, node, selector, opt);
       nodes.delete(this.#node);
       if (nodes.size) {
         [res] = this._sortNodes(nodes);
@@ -3027,15 +3060,22 @@ export class Matcher {
   /**
    * query selector all
    * NOTE: returns Array, not NodeList
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {string} selector - CSS selector
+   * @param {object} opt - options
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
-  querySelectorAll() {
+  querySelectorAll(node, selector, opt) {
     let res;
     try {
-      const nodes = this._find(TARGET_ALL);
+      const nodes = this._find(TARGET_ALL, node, selector, opt);
       nodes.delete(this.#node);
       if (nodes.size) {
-        res = this._sortNodes(nodes);
+        if (this.#sort) {
+          res = this._sortNodes(nodes);
+        } else {
+          res = [...nodes];
+        }
       }
     } catch (e) {
       this._onError(e);

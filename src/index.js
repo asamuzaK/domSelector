@@ -8,6 +8,9 @@
 /* import */
 import { Matcher } from './js/matcher.js';
 
+/* instance */
+let matcher = new Matcher();
+
 /**
  * matches
  * @param {string} selector - CSS selector
@@ -16,8 +19,19 @@ import { Matcher } from './js/matcher.js';
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {boolean} - `true` if matched, `false` otherwise
  */
-export const matches = (selector, node, opt) =>
-  new Matcher(selector, node, opt).matches();
+export const matches = (selector, node, opt) => {
+  let res;
+  try {
+    if (!matcher) {
+      matcher = new Matcher();
+    }
+    res = matcher.matches(node, selector, opt);
+  } catch (e) {
+    matcher = null;
+    throw e;
+  }
+  return res;
+};
 
 /**
  * closest
@@ -27,8 +41,19 @@ export const matches = (selector, node, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
-export const closest = (selector, node, opt) =>
-  new Matcher(selector, node, opt).closest();
+export const closest = (selector, node, opt) => {
+  let res;
+  try {
+    if (!matcher) {
+      matcher = new Matcher();
+    }
+    res = matcher.closest(node, selector, opt);
+  } catch (e) {
+    matcher = null;
+    throw e;
+  }
+  return res;
+};
 
 /**
  * querySelector
@@ -38,8 +63,19 @@ export const closest = (selector, node, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
-export const querySelector = (selector, node, opt) =>
-  new Matcher(selector, node, opt).querySelector();
+export const querySelector = (selector, node, opt) => {
+  let res;
+  try {
+    if (!matcher) {
+      matcher = new Matcher();
+    }
+    res = matcher.querySelector(node, selector, opt);
+  } catch (e) {
+    matcher = null;
+    throw e;
+  }
+  return res;
+};
 
 /**
  * querySelectorAll
@@ -50,5 +86,16 @@ export const querySelector = (selector, node, opt) =>
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
-export const querySelectorAll = (selector, node, opt) =>
-  new Matcher(selector, node, opt).querySelectorAll();
+export const querySelectorAll = (selector, node, opt) => {
+  let res;
+  try {
+    if (!matcher) {
+      matcher = new Matcher();
+    }
+    res = matcher.querySelectorAll(node, selector, opt);
+  } catch (e) {
+    matcher = null;
+    throw e;
+  }
+  return res;
+};

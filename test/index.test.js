@@ -40,6 +40,10 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
+      assert.throws(() => matches('*|', document), TypeError);
+    });
+
+    it('should throw', () => {
       try {
         matches('*|', document.body);
       } catch (e) {
@@ -820,8 +824,12 @@ describe('exported api', () => {
 
   describe('closest', () => {
     it('should throw', () => {
+      assert.throws(() => closest('*|', document), TypeError);
+    });
+
+    it('should throw', () => {
       try {
-        closest('*|', document);
+        closest('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
       }
