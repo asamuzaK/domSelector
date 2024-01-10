@@ -171,6 +171,59 @@ const selectors = [
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(>.content)'
 ];
 
+const matrix = [
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ],
+  [
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10),
+    Math.floor(Math.random()*10)
+  ]
+];
+
 /* matcher tests */
 const elementMatchesRandom = (api, selector, result) => {
   let doc;
@@ -183,8 +236,8 @@ const elementMatchesRandom = (api, selector, result) => {
   } else {
     doc = patchedDoc;
   }
-  for (let i = 0; i < 10; i++) {
-    const id = `p${Math.floor(Math.random()*10)}-${Math.floor(Math.random()*10)}-${Math.floor(Math.random()*10)}`;
+  for (const i of matrix) {
+    const id = `p${i[0]}-${i[1]}-${i[2]}`;
     const res = doc.getElementById(id).matches(selector);
     if (res !== result) {
       throw new Error('result does not match.');
