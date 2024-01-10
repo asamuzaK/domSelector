@@ -163,13 +163,11 @@ export class Matcher {
         throw new TypeError(msg);
       }
     }
-    const walker = document.createTreeWalker(root, WALKER_FILTER);
     const window = document.defaultView;
     return [
       window,
       document,
-      root,
-      walker
+      root
     ];
   }
 
@@ -2291,26 +2289,22 @@ export class Matcher {
   }
 
   /**
-   * find matched node from tree walker
+   * find matched node from finder
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} [opt] - options
    * @param {object} [opt.node] - node to start from
-   * @param {object} [opt.tree] - tree walker
    * @returns {?object} - matched node
    */
   _findNode(leaves, opt = {}) {
-    let { node, walker } = opt;
-    if (!walker) {
-      walker = this.#tree;
-    }
+    const { node } = opt;
     let matchedNode;
-    let refNode = this._traverse(node, walker);
+    let refNode = this._traverse(node, this.#finder);
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = walker.nextNode();
+        refNode = this.#finder.nextNode();
       } else if (refNode === node) {
         if (refNode !== this.#root) {
-          refNode = walker.nextNode();
+          refNode = this.#finder.nextNode();
         }
       }
       while (refNode) {
@@ -2331,7 +2325,7 @@ export class Matcher {
             break;
           }
         }
-        refNode = walker.nextNode();
+        refNode = this.#finder.nextNode();
       }
     }
     return matchedNode ?? null;
@@ -2402,8 +2396,7 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            node: this.#node,
-            walker: this.#finder
+            node: this.#node
           });
           if (node) {
             nodes.add(node);
@@ -2452,8 +2445,7 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            node: this.#node,
-            walker: this.#finder
+            node: this.#node
           });
           if (node) {
             nodes.add(node);
@@ -2509,8 +2501,7 @@ export class Matcher {
           }
         } else if (targetType === TARGET_FIRST) {
           const node = this._findNode(leaves, {
-            node: this.#node,
-            walker: this.#finder
+            node: this.#node
           });
           if (node) {
             nodes.add(node);
@@ -2819,8 +2810,7 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              node: entryNode,
-              walker: this.#finder
+              node: entryNode
             });
             while (refNode) {
               let nextNodes = new Set([refNode]);
@@ -2856,8 +2846,7 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                node: refNode,
-                walker: this.#finder
+                node: refNode
               });
               nextNodes = new Set([refNode]);
             }
@@ -2900,8 +2889,7 @@ export class Matcher {
           if (!matched && targetType === TARGET_FIRST) {
             const [entryNode] = [...entryNodes];
             let refNode = this._findNode(entryLeaves, {
-              node: entryNode,
-              walker: this.#finder
+              node: entryNode
             });
             while (refNode) {
               let nextNodes = new Set([refNode]);
@@ -2931,8 +2919,7 @@ export class Matcher {
                 break;
               }
               refNode = this._findNode(entryLeaves, {
-                node: refNode,
-                walker: this.#finder
+                node: refNode
               });
               nextNodes = new Set([refNode]);
             }
@@ -2969,9 +2956,8 @@ export class Matcher {
       const msg = `Unexpected node ${node.nodeName}`;
       throw new TypeError(msg);
     }
-    this.#cache = new WeakMap();
     this.#node = node;
-    [this.#window, this.#document, this.#root, this.#tree] = this._setup(node);
+    [this.#window, this.#document, this.#root] = this._setup(node);
     this.#shadow = isInShadowTree(node);
     if (selector && selector === this.#selector) {
       for (const i of this.#nodes) {
@@ -2981,8 +2967,8 @@ export class Matcher {
       this.#selector = selector;
       [this.#ast, this.#nodes] = this._correspond(selector);
     }
-    // prepare #finder
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+      this.#tree = this.#document.createTreeWalker(this.#root, WALKER_FILTER);
       this.#finder = this.#document.createTreeWalker(this.#node, SHOW_ELEMENT);
       this.#sort = false;
     }
