@@ -107,7 +107,7 @@ export class Matcher {
       } else if (this.#window) {
         throw new this.#window.DOMException(e.message, e.name);
       } else {
-        throw new DOMException(e.message, e.name);
+        throw e;
       }
     } else {
       throw e;
@@ -115,9 +115,9 @@ export class Matcher {
   }
 
   /**
-   * set up #window, #document, #root, #walker
+   * set up #window, #document, #root
    * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array.<object>} - array of #window, #document, #root, #walker
+   * @returns {Array.<object>} - array of #window, #document, #root
    */
   _setup(node) {
     let document;
@@ -146,7 +146,11 @@ export class Matcher {
               break;
             }
           }
-          document = parent.ownerDocument;
+          if (parent.nodeType === DOCUMENT_NODE) {
+            document = parent;
+          } else {
+            document = parent.ownerDocument;
+          }
           root = parent;
         }
         break;
