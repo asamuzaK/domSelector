@@ -2781,10 +2781,10 @@ export class Matcher {
                       if (nodes.size) {
                         const n = [...nodes];
                         nodes = new Set([...n, ...arr]);
-                        this.#sort = true;
                       } else {
                         nodes = new Set([...arr]);
                       }
+                      this.#sort = true;
                     } else {
                       const [node] = this._sortNodes(arr);
                       nodes.add(node);
@@ -2872,6 +2872,10 @@ export class Matcher {
                   if (j === 0) {
                     nodes.add(node);
                     matched = true;
+                    if (targetType === TARGET_ALL &&
+                        branchLen > 1 && nodes.size > 1) {
+                      this.#sort = true;
+                    }
                   } else {
                     nextNodes = new Set(arr);
                     matched = false;
