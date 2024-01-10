@@ -173,54 +173,54 @@ const selectors = [
 
 const matrix = [
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ],
   [
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10),
-    Math.floor(Math.random()*10)
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4),
+    Math.floor(Math.random() * 4)
   ]
 ];
 
@@ -237,7 +237,7 @@ const elementMatchesRandom = (api, selector, result) => {
     doc = patchedDoc;
   }
   for (const i of matrix) {
-    const id = `p${i[0]}-${i[1]}-${i[2]}`;
+    const id = `p${i[0] * 2 + 2}-${i[1] * 2 + 2}-${i[2] * 2 + 2}`;
     const res = doc.getElementById(id).matches(selector);
     if (res !== result) {
       throw new Error('result does not match.');
