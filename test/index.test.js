@@ -2553,6 +2553,48 @@ describe('patched JSDOM', () => {
       const res = li3.closest('div.foobar');
       assert.isNull(res, 'result');
     });
+
+    it('should not match, should not throw', () => {
+      const domstr = '<div><button id="test"></button></div>';
+      document.body.innerHTML = domstr;
+      const node = document.getElementById('test');
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
+      assert.isTrue(typeof document.createTreeWalker === 'function',
+        'TreeWalker');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
+
+    it('should not match, should not throw', () => {
+      const domstr =
+        '<html><body><div><button id="test"></button></div></body></html>';
+      const doc = new DOMParser().parseFromString(domstr, 'text/html');
+      const node = doc.getElementById('test');
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, doc, 'ownerDocument');
+      assert.isTrue(typeof doc.createTreeWalker === 'function', 'TreeWalker');
+      assert.isNull(doc.defaultView, 'defaultView');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
+
+    it('should not match, should not throw', () => {
+      const html = document.createElement('html');
+      const body = document.createElement('body');
+      const div = document.createElement('div');
+      const node = document.createElement('button');
+      div.appendChild(node);
+      body.appendChild(div);
+      html.appendChild(body);
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
+      assert.deepEqual(html.ownerDocument, document, 'ownerDocument');
+      assert.isTrue(typeof document.createTreeWalker === 'function',
+        'TreeWalker');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
   });
 
   describe('Document.querySelector(), Element.querySelector()', () => {

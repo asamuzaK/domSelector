@@ -3,30 +3,24 @@
  */
 
 /* api */
-/*
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
-*/
 
 /* test */
-/*
-import * as matcherJs from '../src/js/matcher.js';
-*/
+import { Matcher } from '../src/js/matcher.js';
 
 /* constants */
-/*
 import {
   AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, STRING, SYNTAX_ERR
 } from '../src/js/constant.js';
-*/
 
-/*
 const globalKeys = ['DOMParser', 'NodeIterator'];
+
 describe('match AST leaf and DOM node', () => {
   const domStr = `<!doctype html>
     <html lang="en">
@@ -101,44 +95,320 @@ describe('match AST leaf and DOM node', () => {
   });
 
   describe('Matcher', () => {
-    const { Matcher } = matcherJs;
-
-    it('should throw', () => {
-      try {
-        new Matcher().matches();
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
-      }
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher();
+      assert.instanceOf(matcher, Matcher, 'result');
     });
 
-    it('should throw', () => {
-      try {
-        new Matcher().matches('*');
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
-      }
+    describe('handle error', () => {
+      it('should throw', () => {
+        const err = new DOMException('error', SYNTAX_ERR);
+        const matcher = new Matcher();
+        assert.throws(() => matcher._onError(err), DOMException, 'error');
+      });
+
+      it('should throw', () => {
+        const err = new TypeError('error');
+        const matcher = new Matcher();
+        assert.throws(() => matcher._onError(err), TypeError, 'error');
+      });
+
+      it('should throw', () => {
+        try {
+          const err = new DOMException('error', SYNTAX_ERR);
+          const matcher = new Matcher();
+          matcher._find('all', document, '*');
+          matcher._onError(err);
+        } catch (e) {
+          assert.instanceOf(e, window.DOMException, 'error');
+          assert.strictEqual(e.message, 'error', 'message');
+        }
+      });
+
+      it('should not throw', () => {
+        const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
+        const matcher = new Matcher();
+        matcher._find('all', document, '*');
+        const res = matcher._onError(err);
+        assert.isUndefined(res, 'result');
+      });
+
+      it('should warn', () => {
+        const stubWarn = sinon.stub(console, 'warn');
+        const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
+        const matcher = new Matcher();
+        matcher._find('all', document, '*', {
+          warn: true
+        });
+        const res = matcher._onError(err);
+        const { called } = stubWarn;
+        stubWarn.restore();
+        assert.isTrue(called, 'called');
+        assert.isUndefined(res, 'result');
+      });
     });
 
-    it('should throw', () => {
-      try {
-        new Matcher().matches('*', 'foo');
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node String', 'message');
-      }
-    });
+    describe('set up #window, #document, #root', () => {
+      it('should get result', () => {
+        const matcher = new Matcher();
+        matcher._find('all', document, '*');
+        const res = matcher._setup(document);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          document
+        ], 'result');
+      });
 
-    it('should throw', () => {
-      const text = document.createTextNode('foo');
-      try {
-        new Matcher().matches('*', text);
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node #text', 'message');
-      }
+      it('should get result', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        document.body.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', parent, '*');
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          document
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        document.body.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', node, '*');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          document
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', doc, '*');
+        const res = matcher._setup(doc);
+        assert.deepEqual(res, [
+          doc.defaultView,
+          doc,
+          doc
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', parent, '*');
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
+          doc.defaultView,
+          doc,
+          doc
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const domStr = '<foo></foo>';
+        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        doc.documentElement.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', node, '*');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          doc.defaultView,
+          doc,
+          doc
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', frag, '*');
+        const res = matcher._setup(frag);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          frag
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', parent, '*');
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          frag
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const frag = document.createDocumentFragment();
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        frag.appendChild(parent);
+        const matcher = new Matcher();
+        matcher._find('all', node, '*');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          frag
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        const matcher = new Matcher();
+        matcher._find('all', parent, '*');
+        const res = matcher._setup(parent);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          parent
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('div');
+        parent.appendChild(node);
+        const matcher = new Matcher();
+        matcher._find('all', node, '*');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          parent
+        ], 'result');
+      });
+
+      it('should get result', () => {
+        const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+        const container = document.getElementById('div0');
+        container.innerHTML = html;
+        class MyElement extends window.HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = document.getElementById('template');
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        };
+        window.customElements.define('my-element', MyElement);
+        const host = document.getElementById('baz');
+        const node = host.shadowRoot;
+        const matcher = new Matcher();
+        matcher._find('all', node, ':host div');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          document.defaultView,
+          document,
+          node
+        ], 'result');
+      });
+
+      it('should throw', () => {
+        try {
+          const matcher = new Matcher();
+          matcher._setup('foo');
+        } catch (e) {
+          assert.instanceOf(e, TypeError, 'error');
+          assert.strictEqual(e.message, 'Unexpected node String', 'message');
+        }
+      });
+
+      it('should throw', () => {
+        try {
+          const text = document.createTextNode('foo');
+          const matcher = new Matcher();
+          matcher._setup(text);
+        } catch (e) {
+          assert.instanceOf(e, TypeError, 'error');
+          assert.strictEqual(e.message, 'Unexpected node #text', 'message');
+        }
+      });
+
+      it('should get result', () => {
+        const domstr =
+          '<html><body><div><button id="test"></button></div></body></html>';
+        const doc = new DOMParser().parseFromString(domstr, 'text/html');
+        const node = doc.getElementById('test');
+        const matcher = new Matcher();
+        matcher._find('lineal', node, '.foo');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          null,
+          doc,
+          doc
+        ]);
+      });
+
+      it('should not match, should not throw', () => {
+        const html = document.createElement('html');
+        const body = document.createElement('body');
+        const div = document.createElement('div');
+        const node = document.createElement('button');
+        div.appendChild(node);
+        body.appendChild(div);
+        html.appendChild(body);
+        const matcher = new Matcher();
+        matcher._find('lineal', node, '.foo');
+        const res = matcher._setup(node);
+        assert.deepEqual(res, [
+          window,
+          document,
+          html
+        ]);
+      });
     });
+  });
+});
+
+/*
 
     it('should throw', () => {
       try {
@@ -216,26 +486,6 @@ describe('match AST leaf and DOM node', () => {
         assert.isUndefined(res, 'result');
       });
 
-      it('should not throw', () => {
-        const e = new window.DOMException('error', NOT_SUPPORTED_ERR);
-        const matcher = new Matcher('*', document);
-        const res = matcher._onError(e);
-        assert.isUndefined(res, 'result');
-      });
-
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
-        const e = new window.DOMException('error', NOT_SUPPORTED_ERR);
-        const matcher = new Matcher('*', document, {
-          warn: true
-        });
-        const res = matcher._onError(e);
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'called');
-        assert.isUndefined(res, 'result');
-      });
-
       it('should throw', async () => {
         const e = new DOMException('error', SYNTAX_ERR);
         const matcher = new Matcher('*', document);
@@ -290,212 +540,6 @@ describe('match AST leaf and DOM node', () => {
           assert.notInstanceOf(e, window.Error, 'error');
           assert.strictEqual(e.message, 'error', 'message');
         };
-      });
-    });
-
-    describe('set up settings', () => {
-      const filter = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
-
-      it('should get matched node', () => {
-        const matcher = new Matcher('*', document);
-        const res = matcher._setup(document);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          document,
-          document.createTreeWalker(document, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        document.body.appendChild(parent);
-        const matcher = new Matcher('*', parent);
-        const res = matcher._setup(parent);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          document,
-          document.createTreeWalker(document, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        document.body.appendChild(parent);
-        const matcher = new Matcher('*', node);
-        const res = matcher._setup(node);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          document,
-          document.createTreeWalker(document, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const domStr = '<foo></foo>';
-        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        doc.documentElement.appendChild(parent);
-        const matcher = new Matcher('*', doc);
-        const res = matcher._setup(doc);
-        assert.deepEqual(res, [
-          doc.defaultView,
-          doc,
-          doc,
-          document.createTreeWalker(doc, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const domStr = '<foo></foo>';
-        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        doc.documentElement.appendChild(parent);
-        const matcher = new Matcher('*', parent);
-        const res = matcher._setup(parent);
-        assert.deepEqual(res, [
-          doc.defaultView,
-          doc,
-          doc,
-          document.createTreeWalker(doc, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const domStr = '<foo></foo>';
-        const doc = new DOMParser().parseFromString(domStr, 'text/xml');
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        doc.documentElement.appendChild(parent);
-        const matcher = new Matcher('*', node);
-        const res = matcher._setup(node);
-        assert.deepEqual(res, [
-          doc.defaultView,
-          doc,
-          doc,
-          document.createTreeWalker(doc, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const frag = document.createDocumentFragment();
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        frag.appendChild(parent);
-        const matcher = new Matcher('*', frag);
-        const res = matcher._setup(frag);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          frag,
-          document.createTreeWalker(frag, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const frag = document.createDocumentFragment();
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        frag.appendChild(parent);
-        const matcher = new Matcher('*', parent);
-        const res = matcher._setup(parent);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          frag,
-          document.createTreeWalker(frag, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const frag = document.createDocumentFragment();
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        frag.appendChild(parent);
-        const matcher = new Matcher('*', node);
-        const res = matcher._setup(node);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          frag,
-          document.createTreeWalker(frag, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        const matcher = new Matcher('*', parent);
-        const res = matcher._setup(parent);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          parent,
-          document.createTreeWalker(parent, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const parent = document.createElement('div');
-        const node = document.createElement('div');
-        parent.appendChild(node);
-        const matcher = new Matcher('*', node);
-        const res = matcher._setup(node);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          parent,
-          document.createTreeWalker(parent, filter)
-        ], 'result');
-      });
-
-      it('should get matched node', () => {
-        const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
-        const container = document.getElementById('div0');
-        container.innerHTML = html;
-        class MyElement extends window.HTMLElement {
-          constructor() {
-            super();
-            const shadowRoot = this.attachShadow({ mode: 'open' });
-            const template = document.getElementById('template');
-            shadowRoot.appendChild(template.content.cloneNode(true));
-          }
-        };
-        window.customElements.define('my-element', MyElement);
-        const host = document.getElementById('baz');
-        const node = host.shadowRoot;
-        const matcher = new Matcher(':host div', node);
-        const res = matcher._setup(node);
-        assert.deepEqual(res, [
-          document.defaultView,
-          document,
-          node,
-          document.createTreeWalker(node, filter)
-        ], 'result');
       });
     });
 
