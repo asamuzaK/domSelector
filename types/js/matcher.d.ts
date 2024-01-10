@@ -1,7 +1,4 @@
 export class Matcher {
-    constructor(selector: string, node: object, opt?: {
-        warn?: boolean;
-    });
     _onError(e: Error): void;
     _setup(node: object): Array<object>;
     _sortLeaves(leaves: Array<object>): Array<object>;
@@ -52,10 +49,10 @@ export class Matcher {
     _collectNodes(targetType: string): Array<Array<object | undefined>>;
     _sortNodes(nodes: Array<object> | Set<object>): Array<object | undefined>;
     _matchNodes(targetType: string): Set<object>;
-    _find(targetType: string): Set<object>;
-    matches(): boolean;
-    closest(): object | null;
-    querySelector(): object | null;
-    querySelectorAll(): Array<object | undefined>;
+    _find(targetType: string, node: object, selector: string, opt?: object): Set<object>;
+    matches(node: object, selector: string, opt: object): boolean;
+    closest(node: object, selector: string, opt: object): object | null;
+    querySelector(node: object, selector: string, opt: object): object | null;
+    querySelectorAll(node: object, selector: string, opt: object): Array<object | undefined>;
     #private;
 }
