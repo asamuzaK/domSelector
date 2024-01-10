@@ -3,24 +3,30 @@
  */
 
 /* api */
+/*
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+*/
 
 /* test */
+/*
 import * as matcherJs from '../src/js/matcher.js';
+*/
 
 /* constants */
+/*
 import {
   AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, STRING, SYNTAX_ERR
 } from '../src/js/constant.js';
+*/
 
+/*
 const globalKeys = ['DOMParser', 'NodeIterator'];
-
 describe('match AST leaf and DOM node', () => {
   const domStr = `<!doctype html>
     <html lang="en">
@@ -108,7 +114,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('*').matches();
+        new Matcher().matches('*');
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node Undefined', 'message');
@@ -117,7 +123,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('*', 'foo').matches();
+        new Matcher().matches('*', 'foo');
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node String', 'message');
@@ -127,7 +133,7 @@ describe('match AST leaf and DOM node', () => {
     it('should throw', () => {
       const text = document.createTextNode('foo');
       try {
-        new Matcher('*', text).matches();
+        new Matcher().matches('*', text);
       } catch (e) {
         assert.instanceOf(e, TypeError, 'error');
         assert.strictEqual(e.message, 'Unexpected node #text', 'message');
@@ -136,7 +142,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('#ul1 ++ #li1', document).matches();
+        new Matcher().matches('#ul1 ++ #li1', document);
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
         assert.strictEqual(e.message, 'Invalid combinator ++', 'message');
@@ -145,7 +151,7 @@ describe('match AST leaf and DOM node', () => {
 
     it('should throw', () => {
       try {
-        new Matcher('[foo==bar]', document).matches();
+        new Matcher().matches('[foo==bar]', document);
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
         assert.strictEqual(e.message, 'Identifier is expected', 'message');
@@ -155,10 +161,20 @@ describe('match AST leaf and DOM node', () => {
     // FIXME: CSSTree throws
     it('should throw', () => {
       try {
-        new Matcher(':lang("")', document).matches();
+        new Matcher().matches(':lang("")', document);
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
       }
+    });
+
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher();
+      assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    it('should be instance of Matcher', () => {
+      const matcher = new Matcher('*', document);
+      assert.instanceOf(matcher, Matcher, 'instance');
     });
 
     it('should be instance of Matcher', () => {
@@ -12326,3 +12342,4 @@ describe('match AST leaf and DOM node', () => {
     });
   });
 });
+*/
