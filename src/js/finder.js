@@ -221,6 +221,7 @@ export class Finder {
 
   /**
    * prepare tree walkers
+   * @private
    * @returns {Array} - [#tree, #finder]
    */
   _prepareTreeWalkers() {
@@ -1722,6 +1723,7 @@ export class Finder {
 
   /**
    * match HTML collection
+   * @private
    * @param {object} items - HTML collection
    * @param {object} opt - options
    * @returns {Set.<object>} - matched nodes

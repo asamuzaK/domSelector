@@ -1745,16 +1745,6 @@ describe('matcher', () => {
       assert.isNull(res, 'result');
     });
 
-    it('should throw', () => {
-      const leaf = {
-        name: 'foo|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      assert.throws(() => func(leaf, node),
-        DOMException, 'Undeclared namespace foo');
-    });
-
     it('should get matched node', () => {
       const leaf = {
         name: 'foo|bar',

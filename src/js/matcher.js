@@ -232,9 +232,8 @@ export const _matchAttributeSelector = (ast, node) => {
  */
 export const _matchClassSelector = (ast, node) => {
   const astName = unescapeSelector(ast.name);
-  const { classList } = node;
   let res;
-  if (classList.contains(astName)) {
+  if (node.classList.contains(astName)) {
     res = node;
   }
   return res ?? null;
@@ -249,9 +248,8 @@ export const _matchClassSelector = (ast, node) => {
  */
 export const _matchIDSelector = (ast, node) => {
   const astName = unescapeSelector(ast.name);
-  const { id } = node;
   let res;
-  if (astName === id) {
+  if (astName === node.id) {
     res = node;
   }
   return res ?? null;
@@ -273,8 +271,7 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
   let {
     prefix: astPrefix, localName: astLocalName
   } = parseAstName(astName, node);
-  const contentType = node.ownerDocument.contentType;
-  if (contentType === 'text/html') {
+  if (node.ownerDocument.contentType === 'text/html') {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
   }
@@ -288,7 +285,7 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
     nodeLocalName = localName;
   }
   let res;
-  const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+  const namespaceDeclared = isNamespaceDeclared(nodePrefix, node);
   if (astPrefix === '' && nodePrefix === '') {
     if (namespaceURI === null &&
         (astLocalName === '*' || astLocalName === nodeLocalName)) {
@@ -298,20 +295,15 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
     if (astLocalName === '*' || astLocalName === nodeLocalName) {
       res = node;
     }
-  } else if (astPrefix && nodePrefix) {
-    if (astPrefix === nodePrefix) {
-      if (namespaceDeclared) {
-        if (astLocalName === '*' || astLocalName === nodeLocalName) {
-          res = node;
-        }
-      } else if (!forgive) {
-        const msg = `Undeclared namespace ${astPrefix}`;
-        throw new DOMException(msg, SYNTAX_ERR);
+  } else if (astPrefix === nodePrefix) {
+    if (namespaceDeclared) {
+      if (astLocalName === '*' || astLocalName === nodeLocalName) {
+        res = node;
       }
+    } else if (!forgive) {
+      const msg = `Undeclared namespace ${astPrefix}`;
+      throw new DOMException(msg, SYNTAX_ERR);
     }
-  } else if (astPrefix && !forgive && !namespaceDeclared) {
-    const msg = `Undeclared namespace ${astPrefix}`;
-    throw new DOMException(msg, SYNTAX_ERR);
   }
   return res ?? null;
 };
