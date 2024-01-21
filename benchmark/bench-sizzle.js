@@ -243,22 +243,26 @@ suite.on('start', () => {
     }
     hz.clear();
     console.log(`* ${str}`);
+    /*
     console.log(`* ${errors.size}/${total} fails:`);
     const val = errors.values();
     for (const [key, value] of val) {
       console.log(`\t'${key}': ${value}`);
     }
+    */
     console.log(`* ${msg} ${elapsed}\n`);
     errors.clear();
   } else {
     const [, key] = /^([a-z-]+)\s/.exec(str);
     hz.set(key, target.hz);
     console.log(`* ${str}`);
+    /*
     console.log(`* ${errors.size}/${total} fails:`);
     const val = errors.values();
     for (const [key, value] of val) {
       console.log(`\t'${key}': ${value}`);
     }
+    */
     errors.clear();
   }
 }).run({

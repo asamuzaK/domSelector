@@ -243,6 +243,13 @@ const elementMatchesRandom = (api, selector, result) => {
       throw new Error('result does not match.');
     }
   }
+  for (const i of matrix) {
+    const id = `p${i[0] * 2 + 2}-${i[1] * 2 + 2}-${i[2] * 2 + 2}`;
+    const res = doc.getElementById(id).matches(selector);
+    if (res !== result) {
+      throw new Error('result does not match.');
+    }
+  }
 };
 
 const elementMatches = (api, selector, result) => {
@@ -342,6 +349,14 @@ suite.on('start', () => {
   elementMatches('linkedom', selectors[0], true);
 }).add(`patched-jsdom matches('${selectors[0]}')`, () => {
   elementMatches('patched-jsdom', selectors[0], true);
+}).add(`jsdom at random matches('${selectors[1]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[1], false);
+}).add(`happydom at random matches('${selectors[1]}')`, () => {
+  elementMatchesRandom('happydom', selectors[1], false);
+}).add(`linkedom at random matches('${selectors[1]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[1], false);
+}).add(`patched-jsdom at random matches('${selectors[1]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[1], false);
 }).add(`jsdom matches('${selectors[1]}')`, () => {
   elementMatches('jsdom', selectors[1], false);
 }).add(`happydom matches('${selectors[1]}')`, () => {
