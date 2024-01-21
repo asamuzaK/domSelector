@@ -5956,3 +5956,91 @@ describe('walk AST', () => {
     ], 'result');
   });
 });
+
+describe('sort AST', () => {
+  const func = parser.sortAST;
+
+  it('should get leaves', () => {
+    const leaves = [
+      { type: SELECTOR_ATTR }
+    ];
+    const res = func(leaves);
+    assert.deepEqual(res, [
+      { type: SELECTOR_ATTR }
+    ], 'result');
+  });
+
+  it('should get sorted leaves', () => {
+    const leaves = [
+      { type: SELECTOR_ATTR },
+      { type: SELECTOR_CLASS, name: 'foo' }
+    ];
+    const res = func(leaves);
+    assert.deepEqual(res, [
+      { type: SELECTOR_CLASS, name: 'foo' },
+      { type: SELECTOR_ATTR }
+    ], 'result');
+  });
+
+  it('should get sorted leaves', () => {
+    const leaves = [
+      { type: SELECTOR_ATTR },
+      { type: SELECTOR_CLASS, name: 'bar' },
+      { type: SELECTOR_ID },
+      { type: SELECTOR_PSEUDO_CLASS },
+      { type: SELECTOR_CLASS, name: 'foo' },
+      { type: SELECTOR_PSEUDO_ELEMENT },
+      { type: SELECTOR_TYPE }
+    ];
+    const res = func(leaves);
+    assert.deepEqual(res, [
+      { type: SELECTOR_PSEUDO_ELEMENT },
+      { type: SELECTOR_ID },
+      { type: SELECTOR_CLASS, name: 'bar' },
+      { type: SELECTOR_CLASS, name: 'foo' },
+      { type: SELECTOR_TYPE },
+      { type: SELECTOR_ATTR },
+      { type: SELECTOR_PSEUDO_CLASS }
+    ], 'result');
+  });
+});
+
+describe('parse AST name', () => {
+  const func = parser.parseAstName;
+
+  it('should throw', () => {
+    assert.throws(() => func(), DOMException);
+  });
+
+  it('should get value', () => {
+    const res = func('foo');
+    assert.deepEqual(res, {
+      prefix: '*',
+      localName: 'foo'
+    });
+  });
+
+  it('should get value', () => {
+    const res = func('|Foo');
+    assert.deepEqual(res, {
+      prefix: '',
+      localName: 'Foo'
+    });
+  });
+
+  it('should get value', () => {
+    const res = func('ns|Foo');
+    assert.deepEqual(res, {
+      prefix: 'ns',
+      localName: 'Foo'
+    });
+  });
+
+  it('should get value', () => {
+    const res = func('foo|div');
+    assert.deepEqual(res, {
+      prefix: 'foo',
+      localName: 'div'
+    }, 'result');
+  });
+});

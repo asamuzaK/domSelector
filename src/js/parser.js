@@ -7,9 +7,10 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 
 /* constants */
 import {
-  DUO, HEX, MAX_BIT_16, BIT_HYPHEN, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO,
-  SELECTOR, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SYNTAX_ERR,
-  TYPE_FROM, TYPE_TO, U_FFFD
+  BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
+  DUO, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
 /**
@@ -87,7 +88,7 @@ export const preprocess = (...args) => {
           throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
         }
       // escape char above 0xFFFF
-      } else if (codePoint > MAX_BIT_16) {
+      } else if (codePoint > BIT_FFFF) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
           postHash = str;
@@ -216,6 +217,66 @@ export const walkAST = (ast = {}) => {
     });
   }
   return [...branches];
+};
+
+/**
+ * sort AST
+ * @param {Array.<object>} asts - collection of AST
+ * @returns {Array.<object>} - collection of sorted AST
+ */
+export const sortAST = asts => {
+  const arr = [...asts];
+  if (arr.length > 1) {
+    const order = new Map([
+      [SELECTOR_PSEUDO_ELEMENT, BIT_01],
+      [SELECTOR_ID, BIT_02],
+      [SELECTOR_CLASS, BIT_04],
+      [SELECTOR_TYPE, BIT_08],
+      [SELECTOR_ATTR, BIT_16],
+      [SELECTOR_PSEUDO_CLASS, BIT_32]
+    ]);
+    arr.sort((a, b) => {
+      const { type: typeA } = a;
+      const { type: typeB } = b;
+      const bitA = order.get(typeA);
+      const bitB = order.get(typeB);
+      let res;
+      if (bitA === bitB) {
+        res = 0;
+      } else if (bitA > bitB) {
+        res = 1;
+      } else {
+        res = -1;
+      }
+      return res;
+    });
+  }
+  return arr;
+};
+
+/**
+ * parse AST name - e.g. ns|E -> { prefix: ns, localName: E }
+ * @private
+ * @param {string} selector - type selector
+ * @returns {object} - node properties
+ */
+export const parseAstName = selector => {
+  let prefix;
+  let localName;
+  if (selector && typeof selector === 'string') {
+    if (selector.indexOf('|') > -1) {
+      [prefix, localName] = selector.split('|');
+    } else {
+      prefix = '*';
+      localName = selector;
+    }
+  } else {
+    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
+  }
+  return {
+    prefix,
+    localName
+  };
 };
 
 /* export */

@@ -493,6 +493,49 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#3666 - https://github.com/jsdom/jsdom/issues/3666', () => {
+    const html = `
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+        </head>
+        <body>
+          <p id="p">One</p>
+          <span id="span">Two</span>
+        </body>
+      </html>
+    `;
+    let document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      document = null;
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('p');
+      const res = document.querySelector('p, span');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('span');
+      const res = document.querySelector('div, span');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('span');
+      const res = document.querySelector('span, div');
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;

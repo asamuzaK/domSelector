@@ -35,6 +35,118 @@ describe('DOM utility functions', () => {
     document = null;
   });
 
+  describe('verify node', () => {
+    const func = domUtil.verifyNode;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func([]), TypeError, 'Unexpected type Array');
+    });
+
+    it('should throw', () => {
+      const text = document.createTextNode('foo');
+      assert.throws(() => func(text), TypeError, 'Unexpected node #text');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(window), TypeError, 'Unexpected type Window');
+    });
+
+    it('should throw', () => {
+      const comment = new window.Comment('foo');
+      assert.throws(() => func(comment), TypeError, 'Unexpected node #comment');
+    });
+
+    it('should get result', () => {
+      const res = func(document);
+      assert.deepEqual(res, document, 'result');
+    });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const res = func(frag);
+      assert.deepEqual(res, frag, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('prepare window, document, root node', () => {
+    const func = domUtil.prepareDOMObjects;
+
+    it('should get result', () => {
+      const res = func(document);
+      assert.deepEqual(res, [
+        window,
+        document,
+        document
+      ]);
+    });
+
+    it('should get result', () => {
+      const node = document.createDocumentFragment();
+      const res = func(node);
+      assert.deepEqual(res, [
+        window,
+        document,
+        node
+      ]);
+    });
+
+    it('should get result', () => {
+      const node = document.getElementById('div0');
+      const res = func(node);
+      assert.deepEqual(res, [
+        window,
+        document,
+        document
+      ]);
+    });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(node);
+      assert.deepEqual(res, [
+        window,
+        document,
+        frag
+      ]);
+    });
+
+    it('should get result', () => {
+      const parent = document.createElement('div');
+      const node = document.createElement('div');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.deepEqual(res, [
+        window,
+        document,
+        parent
+      ]);
+    });
+
+    it('should get result', () => {
+      const domstr = '<foo id="foo"><bar id="bar" /></foo>';
+      const doc = new window.DOMParser().parseFromString(domstr, 'text/xml');
+      const node = doc.getElementById('bar');
+      const res = func(node);
+      assert.deepEqual(res, [
+        null,
+        doc,
+        doc
+      ]);
+    });
+  });
+
   describe('is in shadow tree', () => {
     const func = domUtil.isInShadowTree;
 
@@ -757,12 +869,44 @@ describe('DOM utility functions', () => {
     });
 
     it('should get result', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
       const frag = document.createDocumentFragment();
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
       frag.appendChild(node);
       const res = func('foo', node);
       assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      frag.appendChild(node);
+      const res = func('foo', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const frag = document.createDocumentFragment();
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
+      frag.appendChild(node);
+      const res = func('foo', node);
+      assert.isTrue(res, 'result');
     });
   });
 
@@ -898,60 +1042,63 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('selector to node props', () => {
-    const func = domUtil.selectorToNodeProps;
+  describe('sort nodes', () => {
+    const func = domUtil.sortNodes;
 
-    it('should throw', () => {
-      assert.throws(() => func(), DOMException);
-    });
-
-    it('should get value', () => {
-      const res = func('foo');
-      assert.deepEqual(res, {
-        prefix: '*',
-        tagName: 'foo'
-      });
-    });
-
-    it('should get value', () => {
-      const res = func('|Foo');
-      assert.deepEqual(res, {
-        prefix: '',
-        tagName: 'Foo'
-      });
-    });
-
-    it('should get value', () => {
-      const res = func('ns|Foo');
-      assert.deepEqual(res, {
-        prefix: 'ns',
-        tagName: 'Foo'
-      });
-    });
-
-    it('should get value', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const node1 = document.createElement('li');
+      const node2 = document.createElement('li');
+      const node3 = document.createElement('li');
+      ul.append(node1, node2, node3);
       const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func('foo|div', node);
-      assert.deepEqual(res, {
-        prefix: 'foo',
-        tagName: 'div'
-      }, 'result');
+      parent.appendChild(ul);
+      const nodes = new Set([node3, node2, node1]);
+      const res = func(nodes);
+      assert.deepEqual([...res], [
+        node1, node2, node3
+      ], 'result');
     });
 
-    it('should get value', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttribute('xmlns:foo', 'https:/example.com/foo');
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const node1 = document.createElement('li');
+      const node2 = document.createElement('li');
+      const node3 = document.createElement('li');
+      ul.append(node1, node2, node3);
       const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func('foo|div', node);
-      assert.deepEqual(res, {
-        prefix: 'foo',
-        tagName: 'div'
-      }, 'result');
+      parent.appendChild(ul);
+      const nodes = new Set([node3, node2, ul, node1]);
+      const res = func(nodes);
+      assert.deepEqual([...res], [
+        ul, node1, node2, node3
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      const node3 = document.createElement('div');
+      frag.append(node1, node2, node3);
+      const nodes = new Set([node2, node3, node1]);
+      const res = func(nodes);
+      assert.deepEqual([...res], [
+        node1, node2, node3
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      const node3 = document.createElement('div');
+      frag.append(node1, node2, node3);
+      const nodes = new Set([node2, node1, node3, node1]);
+      const res = func(nodes);
+      assert.deepEqual([...res], [
+        node1, node2, node3
+      ], 'result');
     });
   });
 });

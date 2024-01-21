@@ -9,8 +9,72 @@ import bidiFactory from 'bidi-js';
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_CONTAINED_BY, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  REG_SHADOW_MODE, SYNTAX_ERR, TEXT_NODE
+  REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
+
+/**
+ * verify node
+ * @param {*} node - node
+ * @throws
+ * @returns {object} - Document, DocumentFragment, Element node
+ */
+export const verifyNode = node => {
+  if (!node || !node.nodeType || !node.nodeName) {
+    const type = Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+    const msg = `Unexpected type ${type}`;
+    throw new TypeError(msg);
+  } else if (!(node.nodeType === DOCUMENT_NODE ||
+               node.nodeType === DOCUMENT_FRAGMENT_NODE ||
+               node.nodeType === ELEMENT_NODE)) {
+    const msg = `Unexpected node ${node.nodeName}`;
+    throw new TypeError(msg);
+  }
+  return node;
+};
+
+/**
+ * prepare window, document, root node
+ * @param {object} node - Document, DocumentFragment, Element node
+ * @returns {Array.<object>} - array of window, document, root node
+ */
+export const prepareDOMObjects = node => {
+  node = verifyNode(node);
+  let document;
+  let root;
+  switch (node.nodeType) {
+    case DOCUMENT_NODE: {
+      document = node;
+      root = node;
+      break;
+    }
+    case DOCUMENT_FRAGMENT_NODE: {
+      document = node.ownerDocument;
+      root = node;
+      break;
+    }
+    case ELEMENT_NODE:
+    default: {
+      document = node.ownerDocument;
+      let parent = node;
+      while (parent) {
+        if (parent.parentNode) {
+          parent = parent.parentNode;
+        } else {
+          break;
+        }
+      }
+      root = parent;
+      break;
+    }
+  }
+  // NOTE: nullable
+  const window = document.defaultView;
+  return [
+    window,
+    document,
+    root
+  ];
+};
 
 /**
  * is in shadow tree
@@ -269,26 +333,22 @@ export const isPreceding = (nodeA = {}, nodeB = {}) => {
 };
 
 /**
- * selector to node properties - e.g. ns|E -> { prefix: ns, tagName: E }
- * @param {string} selector - type selector
- * @param {object} [node] - Element node
- * @returns {object} - node properties
+ * sort nodes
+ * @param {Array.<object>|Set.<object>} nodes - collection of nodes
+ * @returns {Array.<object|undefined>} - collection of sorted nodes
  */
-export const selectorToNodeProps = (selector, node) => {
-  let prefix;
-  let tagName;
-  if (selector && typeof selector === 'string') {
-    if (selector.indexOf('|') > -1) {
-      [prefix, tagName] = selector.split('|');
-    } else {
-      prefix = '*';
-      tagName = selector;
-    }
-  } else {
-    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
+export const sortNodes = (nodes = []) => {
+  const arr = [...nodes];
+  if (arr.length > 1) {
+    arr.sort((a, b) => {
+      let res;
+      if (isPreceding(b, a)) {
+        res = 1;
+      } else {
+        res = -1;
+      }
+      return res;
+    });
   }
-  return {
-    prefix,
-    tagName
-  };
+  return arr;
 };

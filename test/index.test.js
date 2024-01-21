@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 
 /* test */
 import {
-  closest, matches, querySelector, querySelectorAll
+  Finder, closest, finder, matches, querySelector, querySelectorAll
 } from '../src/index.js';
 
 const globalKeys = ['DOMParser'];
@@ -40,10 +40,23 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
+      assert.throws(() => matches(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => matches(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => matches('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
         matches('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 
@@ -820,11 +833,54 @@ describe('exported api', () => {
 
   describe('closest', () => {
     it('should throw', () => {
+      assert.throws(() => closest(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => closest(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => closest('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
-        closest('*|', document);
+        closest('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
+    });
+
+    it('should get matched node', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      assert.throws(() => closest('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+      const res = closest('div.foo', li3);
+      assert.deepEqual(res, div1, 'result');
     });
 
     it('should get matched node', () => {
@@ -1151,10 +1207,18 @@ describe('exported api', () => {
 
   describe('query selector', () => {
     it('should throw', () => {
+      assert.throws(() => querySelector(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => querySelector(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
-        querySelector('*|', document);
+        querySelector('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 
@@ -1405,10 +1469,18 @@ describe('exported api', () => {
 
   describe('query selector all', () => {
     it('should throw', () => {
+      assert.throws(() => querySelectorAll(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => querySelectorAll(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
-        querySelectorAll('*|', document);
+        querySelectorAll('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 
@@ -2545,6 +2617,48 @@ describe('patched JSDOM', () => {
       const res = li3.closest('div.foobar');
       assert.isNull(res, 'result');
     });
+
+    it('should not match, should not throw', () => {
+      const domstr = '<div><button id="test"></button></div>';
+      document.body.innerHTML = domstr;
+      const node = document.getElementById('test');
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
+      assert.isTrue(typeof document.createTreeWalker === 'function',
+        'TreeWalker');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
+
+    it('should not match, should not throw', () => {
+      const domstr =
+        '<html><body><div><button id="test"></button></div></body></html>';
+      const doc = new DOMParser().parseFromString(domstr, 'text/html');
+      const node = doc.getElementById('test');
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, doc, 'ownerDocument');
+      assert.isTrue(typeof doc.createTreeWalker === 'function', 'TreeWalker');
+      assert.isNull(doc.defaultView, 'defaultView');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
+
+    it('should not match, should not throw', () => {
+      const html = document.createElement('html');
+      const body = document.createElement('body');
+      const div = document.createElement('div');
+      const node = document.createElement('button');
+      div.appendChild(node);
+      body.appendChild(div);
+      html.appendChild(body);
+      const res = node.closest('.foo');
+      assert.isNull(res, 'result');
+      assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
+      assert.deepEqual(html.ownerDocument, document, 'ownerDocument');
+      assert.isTrue(typeof document.createTreeWalker === 'function',
+        'TreeWalker');
+      assert.deepEqual(document.defaultView, window, 'window');
+    });
   });
 
   describe('Document.querySelector(), Element.querySelector()', () => {
@@ -2781,6 +2895,38 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [
         li1,
         li3,
+        li5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res =
+        document.querySelectorAll('li:last-child, li:first-child + li');
+      assert.deepEqual(res, [
+        li2,
         li5
       ], 'result');
     });
