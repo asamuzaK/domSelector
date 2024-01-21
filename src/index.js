@@ -6,28 +6,34 @@
  */
 
 /* import */
-import { Matcher } from './js/matcher.js';
+import { Finder } from './js/finder.js';
 
-/* instance */
-let matcher = new Matcher();
+/* export for test */
+export { Finder };
+
+/* instance, export for test */
+export let finder = new Finder();
 
 /**
  * matches
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
+ * @param {boolean} [opt.noexcept] - no exception
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {boolean} - `true` if matched, `false` otherwise
  */
 export const matches = (selector, node, opt) => {
   let res;
   try {
-    if (!matcher) {
-      matcher = new Matcher();
+    if (!finder) {
+      finder = new Finder();
     }
-    res = matcher.matches(node, selector, opt);
+    res = finder.matches(selector, node, opt);
   } catch (e) {
-    matcher = null;
+    if (e instanceof globalThis[e.name]) {
+      finder = null;
+    }
     throw e;
   }
   return res;
@@ -38,18 +44,21 @@ export const matches = (selector, node, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} node - Element node
  * @param {object} [opt] - options
+ * @param {boolean} [opt.noexcept] - no exception
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 export const closest = (selector, node, opt) => {
   let res;
   try {
-    if (!matcher) {
-      matcher = new Matcher();
+    if (!finder) {
+      finder = new Finder();
     }
-    res = matcher.closest(node, selector, opt);
+    res = finder.closest(selector, node, opt);
   } catch (e) {
-    matcher = null;
+    if (e instanceof globalThis[e.name]) {
+      finder = null;
+    }
     throw e;
   }
   return res;
@@ -60,18 +69,21 @@ export const closest = (selector, node, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} node - Document, DocumentFragment or Element node
  * @param {object} [opt] - options
+ * @param {boolean} [opt.noexcept] - no exception
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {?object} - matched node
  */
 export const querySelector = (selector, node, opt) => {
   let res;
   try {
-    if (!matcher) {
-      matcher = new Matcher();
+    if (!finder) {
+      finder = new Finder();
     }
-    res = matcher.querySelector(node, selector, opt);
+    res = finder.querySelector(selector, node, opt);
   } catch (e) {
-    matcher = null;
+    if (e instanceof globalThis[e.name]) {
+      finder = null;
+    }
     throw e;
   }
   return res;
@@ -83,18 +95,21 @@ export const querySelector = (selector, node, opt) => {
  * @param {string} selector - CSS selector
  * @param {object} node - Document, DocumentFragment or Element node
  * @param {object} [opt] - options
+ * @param {boolean} [opt.noexcept] - no exception
  * @param {boolean} [opt.warn] - console warn e.g. unsupported pseudo-class
  * @returns {Array.<object|undefined>} - array of matched nodes
  */
 export const querySelectorAll = (selector, node, opt) => {
   let res;
   try {
-    if (!matcher) {
-      matcher = new Matcher();
+    if (!finder) {
+      finder = new Finder();
     }
-    res = matcher.querySelectorAll(node, selector, opt);
+    res = finder.querySelectorAll(selector, node, opt);
   } catch (e) {
-    matcher = null;
+    if (e instanceof globalThis[e.name]) {
+      finder = null;
+    }
     throw e;
   }
   return res;

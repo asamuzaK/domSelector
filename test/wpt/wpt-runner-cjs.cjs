@@ -1,11 +1,11 @@
 /**
- * wpt-runner.js
+ * wpt-runner-cjs.cjs
  */
 
-import wptRunner from 'wpt-runner';
-import {
+const wptRunner = require('wpt-runner');
+const {
   closest, matches, querySelector, querySelectorAll
-} from '../../src/index.js';
+} = require('../../dist/cjs/index.js');
 
 const setup = window => {
   window.Element.prototype.matches = function (...args) {

@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 
 /* test */
 import {
-  closest, matches, querySelector, querySelectorAll
+  Finder, closest, finder, matches, querySelector, querySelectorAll
 } from '../src/index.js';
 
 const globalKeys = ['DOMParser'];
@@ -40,14 +40,23 @@ describe('exported api', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => matches('*|', document), TypeError);
+      assert.throws(() => matches(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => matches(), TypeError);
+      assert.isNull(finder, 'finder');
     });
 
     it('should throw', () => {
+      assert.throws(() => matches('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
         matches('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 
@@ -824,15 +833,54 @@ describe('exported api', () => {
 
   describe('closest', () => {
     it('should throw', () => {
-      assert.throws(() => closest('*|', document), TypeError);
+      assert.throws(() => closest(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => closest(), TypeError);
+      assert.isNull(finder, 'finder');
     });
 
     it('should throw', () => {
+      assert.throws(() => closest('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
         closest('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
+    });
+
+    it('should get matched node', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      assert.throws(() => closest('*', document), TypeError);
+      assert.isNull(finder, 'finder');
+      const res = closest('div.foo', li3);
+      assert.deepEqual(res, div1, 'result');
     });
 
     it('should get matched node', () => {
@@ -1159,10 +1207,18 @@ describe('exported api', () => {
 
   describe('query selector', () => {
     it('should throw', () => {
+      assert.throws(() => querySelector(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => querySelector(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
-        querySelector('*|', document);
+        querySelector('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 
@@ -1413,10 +1469,18 @@ describe('exported api', () => {
 
   describe('query selector all', () => {
     it('should throw', () => {
+      assert.throws(() => querySelectorAll(), TypeError);
+      assert.isNull(finder, 'finder');
+      assert.throws(() => querySelectorAll(), TypeError);
+      assert.isNull(finder, 'finder');
+    });
+
+    it('should throw, but keep instance', () => {
       try {
-        querySelectorAll('*|', document);
+        querySelectorAll('*|', document.body);
       } catch (e) {
         assert.instanceOf(e, window.DOMException);
+        assert.instanceOf(finder, Finder);
       }
     });
 

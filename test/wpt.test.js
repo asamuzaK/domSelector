@@ -138,6 +138,17 @@ describe('local wpt test cases', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       try {
+        node.querySelectorAll('div:example');
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+        assert.strictEqual(e.message, 'Unknown pseudo-class :example',
+          'message');
+      }
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      try {
         node.querySelector('ns|div');
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
@@ -2097,6 +2108,53 @@ describe('local wpt test cases', () => {
       host.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
       const res = node.matches('::slotted(div)');
       assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('dom/nodes/Element-matches.html', () => {
+    it('should match', () => {
+      const html = `<div id="universal">
+        <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+        <hr id="universal-hr1">
+        <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+        <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+        <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('universal-a1');
+      const res = node.matches('*');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const html = `<div id="universal">
+        <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+        <hr id="universal-hr1">
+        <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+        <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+        <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('universal-a1');
+      const res = node.matches('#universal>*>*');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const html = `<div id="universal">
+        <p id="universal-p1">Universal selector tests inside element with <code id="universal-code1">id="universal"</code>.</p>
+        <hr id="universal-hr1">
+        <pre id="universal-pre1">Some preformatted text with some <span id="universal-span1">embedded code</span></pre>
+        <p id="universal-p2">This is a normal link: <a id="universal-a1" href="http://www.w3.org/">W3C</a></p>
+        <address id="universal-address1">Some more nested elements <code id="universal-code2"><a href="#" id="universal-a2">code hyperlink</a></code></address>
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('universal-a1');
+      const res = node.matches('#universal *');
+      assert.isTrue(res, 'result');
     });
   });
 
