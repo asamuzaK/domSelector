@@ -8459,11 +8459,17 @@ describe('Finder', () => {
       finder._setup('li.li', node);
       const res = finder._findLineal(leaf, {
         complex: false,
-        compound: true
+        compound: true,
+        filterLeaves: [
+          {
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ]
       });
       assert.deepEqual(res, [
         [document.getElementById('li2')],
-        false
+        true
       ], 'result');
     });
 
@@ -9998,7 +10004,7 @@ describe('Finder', () => {
             ],
             dir: 'prev',
             filtered: false,
-            find: true
+            find: false
           },
           {
             branch: [
@@ -10039,7 +10045,7 @@ describe('Finder', () => {
           }
         ],
         [
-          [node],
+          [],
           [node]
         ]
       ], 'result');

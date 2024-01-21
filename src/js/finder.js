@@ -2024,14 +2024,21 @@ export class Finder {
    * @returns {Array} - [nodes, filtered]
    */
   _findLineal(leaf, opt = {}) {
-    const { complex, compound } = opt;
+    const { complex, compound, filterLeaves } = opt;
     const nodes = [];
     let filtered = false;
     let bool = this._matchLeaves([leaf], this.#node);
-    if (bool && !complex && !compound) {
+    if (bool && !compound && !complex) {
       nodes.push(this.#node);
       filtered = true;
-    } else {
+    } else if (bool && compound && !complex) {
+      bool = this._matchLeaves(filterLeaves, this.#node);
+      if (bool) {
+        nodes.push(this.#node);
+        filtered = true;
+      }
+    }
+    if (!bool || complex) {
       if (bool) {
         nodes.push(this.#node);
         if (!compound) {
@@ -2149,7 +2156,8 @@ export class Finder {
         } else if (targetType === TARGET_LINEAL) {
           [nodes, filtered] = this._findLineal(leaf, {
             complex,
-            compound
+            compound,
+            filterLeaves
           });
         } else if (targetType === TARGET_FIRST &&
                    this.#root.nodeType !== ELEMENT_NODE) {
@@ -2179,7 +2187,8 @@ export class Finder {
         } else if (targetType === TARGET_LINEAL) {
           [nodes, filtered] = this._findLineal(leaf, {
             complex,
-            compound
+            compound,
+            filterLeaves
           });
         } else if (targetType === TARGET_FIRST) {
           [nodes, filtered] = this._findFirst(leaves);
@@ -2200,7 +2209,8 @@ export class Finder {
         } else if (targetType === TARGET_LINEAL) {
           [nodes, filtered] = this._findLineal(leaf, {
             complex,
-            compound
+            compound,
+            filterLeaves
           });
         } else if (this.#document.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
@@ -2230,7 +2240,8 @@ export class Finder {
         } else if (targetType === TARGET_LINEAL) {
           [nodes, filtered] = this._findLineal(leaf, {
             complex,
-            compound
+            compound,
+            filterLeaves
           });
         } else if (targetType === TARGET_FIRST) {
           [nodes, filtered] = this._findFirst(leaves);
