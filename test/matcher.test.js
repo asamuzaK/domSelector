@@ -291,7 +291,7 @@ describe('matcher', () => {
         value: null
       };
       const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      node.setAttributeNS('https://example.com/baz', 'Baz:foo', 'qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -331,7 +331,7 @@ describe('matcher', () => {
         value: null
       };
       const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
+      node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -353,6 +353,48 @@ describe('matcher', () => {
         'https://example.com/baz');
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: 'Baz|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:Baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(leaf, node);
@@ -1752,7 +1794,8 @@ describe('matcher', () => {
       };
       const nsroot = document.createElement('div');
       nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
-      nsroot.setAttribute('xmlns:foo', 'https://example.com/foo');
+      nsroot.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
       const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
       nsroot.appendChild(node);

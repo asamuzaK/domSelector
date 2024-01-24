@@ -275,6 +275,30 @@ export const isContentEditable = (node = {}) => {
 };
 
 /**
+ * get namespace URI
+ * @param {string} ns - namespace prefix
+ * @param {Array} node - Element node
+ * @returns {?string} - namespace URI
+ */
+export const getNamespaceURI = (ns, node) => {
+  let res;
+  if (ns && typeof ns === 'string' && node?.nodeType === ELEMENT_NODE) {
+    const { attributes } = node;
+    for (const attr of attributes) {
+      const { name, namespaceURI, prefix, value } = attr;
+      if (name === `xmlns:${ns}`) {
+        res = value;
+        break;
+      } else if (prefix === ns) {
+        res = namespaceURI;
+        break;
+      }
+    }
+  }
+  return res ?? null;
+};
+
+/**
  * is namespace declared
  * @param {string} ns - namespace
  * @param {object} node - Element node
@@ -283,15 +307,11 @@ export const isContentEditable = (node = {}) => {
 export const isNamespaceDeclared = (ns = '', node = {}) => {
   let res;
   if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
-    const attr = `xmlns:${ns}`;
     const root = node.ownerDocument.documentElement;
     let parent = node;
     while (parent) {
-      if (typeof parent.hasAttribute === 'function' &&
-          parent.hasAttribute(attr)) {
-        res = true;
-        break;
-      } else if (parent === root) {
+      res = getNamespaceURI(ns, parent);
+      if (res || parent === root) {
         break;
       }
       parent = parent.parentNode;

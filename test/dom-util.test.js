@@ -841,6 +841,56 @@ describe('DOM utility functions', () => {
     });
   });
 
+  describe('get namespace URI', () => {
+    const func = domUtil.getNamespaceURI;
+
+    it('should get null', () => {
+      const res = func();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get null', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.strictEqual(res, 'https://example.com/foo', 'result');
+    });
+
+    it('should get null', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:div');
+      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func('foo', node);
+      assert.strictEqual(res, 'https://example.com/foo', 'result');
+    });
+  });
+
   describe('is namespace declared', () => {
     const func = domUtil.isNamespaceDeclared;
 
