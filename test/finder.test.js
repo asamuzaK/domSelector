@@ -381,7 +381,7 @@ describe('Finder', () => {
     it('should get tree walkers', () => {
       const finder = new Finder();
       finder._setup('*', document);
-      const res = finder._prepareTreeWalkers();
+      const res = finder._prepareTreeWalkers(document);
       assert.deepEqual(res[0].root, document, 'tree');
       assert.deepEqual(res[1].root, document, 'finder');
     });
@@ -390,7 +390,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('*', node);
-      const res = finder._prepareTreeWalkers();
+      const res = finder._prepareTreeWalkers(node);
       assert.deepEqual(res[0].root, document, 'tree');
       assert.deepEqual(res[1].root, node, 'finder');
     });
@@ -400,7 +400,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder();
       finder._setup('*', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._traverse();
       assert.deepEqual(res, document, 'result');
     });
@@ -409,7 +409,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('*', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._traverse(node);
       assert.deepEqual(res, node, 'result');
     });
@@ -418,7 +418,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('*', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._traverse(document);
       const res = finder._traverse(node);
       assert.deepEqual(res, node, 'result');
@@ -428,7 +428,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('*', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._traverse(document.getElementById('li1'));
       const res = finder._traverse(node);
       assert.deepEqual(res, node, 'result');
@@ -438,7 +438,7 @@ describe('Finder', () => {
       const node = document.createElement('ol');
       const finder = new Finder();
       finder._setup('*', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._traverse(node);
       assert.isNull(res, null, 'result');
     });
@@ -447,7 +447,7 @@ describe('Finder', () => {
       const node = document.createElement('ol');
       const finder = new Finder();
       finder._setup('*', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const res = finder._traverse(node);
       assert.deepEqual(res, node, 'result');
     });
@@ -8243,7 +8243,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder();
       finder._setup('ul', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
       const res = finder._findNode(leaves);
       assert.deepEqual(res, document.getElementById('ul1'), 'result');
@@ -8252,7 +8252,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ol', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ol');
       const res = finder._findNode(leaves);
       assert.isNull(res, 'result');
@@ -8264,7 +8264,7 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder();
       finder._setup('ul', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
       const res = finder._findNode(leaves);
       assert.deepEqual(res, node, 'result');
@@ -8276,7 +8276,7 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder();
       finder._setup('li', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
       const res = finder._findNode(leaves);
       assert.deepEqual(res, child, 'result');
@@ -8288,7 +8288,7 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder();
       finder._setup('ul', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
       const res = finder._findNode(leaves);
       assert.deepEqual(res, node, 'result');
@@ -8297,7 +8297,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder();
       finder._setup('li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
       const res = finder._findNode(leaves, {
         node: document.getElementById('li1')
@@ -8308,7 +8308,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
       const res = finder._findNode(leaves, {
         node: document.getElementById('li3')
@@ -8319,7 +8319,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ul', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
       const res = finder._findNode(leaves, {
         node: document.getElementById('li1'),
@@ -8331,7 +8331,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ol', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ol');
       const res = finder._findNode(leaves, {
         node: document.getElementById('li1'),
@@ -8506,7 +8506,7 @@ describe('Finder', () => {
       ];
       const finder = new Finder();
       finder._setup('li.li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._findFirst(leaves);
       assert.deepEqual(res, [
         [document.getElementById('li1')],
@@ -8523,7 +8523,7 @@ describe('Finder', () => {
       ];
       const finder = new Finder();
       finder._setup('ol', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._findFirst(leaves);
       assert.deepEqual(res, [
         [],
@@ -8536,7 +8536,7 @@ describe('Finder', () => {
     it('should match', () => {
       const finder = new Finder();
       finder._setup('.li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const items = document.getElementsByClassName('li');
       const res = finder._findFromHTMLCollection(items);
       assert.deepEqual(res, [
@@ -8552,7 +8552,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ol', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const items = document.getElementsByTagName('ol');
       const res = finder._findFromHTMLCollection(items);
       assert.deepEqual(res, [
@@ -8575,7 +8575,7 @@ describe('Finder', () => {
       ];
       const finder = new Finder();
       finder._setup('li.li:last-child', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const items = document.getElementsByClassName('li');
       const res = finder._findFromHTMLCollection(items, {
         compound: true,
@@ -8595,7 +8595,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('li.li:last-child', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const items = document.getElementsByClassName('li');
       const res = finder._findFromHTMLCollection(items);
       assert.deepEqual(res, [
@@ -8623,7 +8623,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('li.li:last-child', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const items = document.getElementsByClassName('li');
       const res = finder._findFromHTMLCollection(items, {
         compound: true,
@@ -8640,7 +8640,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('::before', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('::before');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -8652,7 +8652,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('#ul1', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('#ul1');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8706,7 +8706,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('#li1.li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('#li1.li');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8720,7 +8720,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('#li1.foobar', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('#li1.foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -8732,7 +8732,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('ul#ul1', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('ul#ul1');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8746,7 +8746,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('#foobar', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -8762,7 +8762,7 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder();
       finder._setup('#foobar', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8780,7 +8780,7 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder();
       finder._setup('#foobar', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -8792,7 +8792,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('#li1:first-child', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('#li1:first-child');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8807,7 +8807,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('.li', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('.li');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -8822,7 +8822,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('.li', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('.li');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual([...res.nodes], [
@@ -8838,7 +8838,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('.li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('.li');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
@@ -8861,7 +8861,7 @@ describe('Finder', () => {
       frag.appendChild(parent);
       const finder = new Finder();
       finder._setup('.foo', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const [[{ branch: [twig] }]] = finder._correspond('.foo');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -8873,7 +8873,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('li.li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('li.li');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
@@ -8942,7 +8942,7 @@ describe('Finder', () => {
       const node = document.getElementById('dd1');
       const finder = new Finder();
       finder._setup('.dd', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('.dd');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9007,7 +9007,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('ul', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('ul');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -9022,7 +9022,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const finder = new Finder();
       finder._setup('li:first-child', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
@@ -9037,7 +9037,7 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('li:first-child', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
@@ -9052,7 +9052,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const finder = new Finder();
       finder._setup('li:first-child', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -9078,7 +9078,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('li.li:last-child', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('li.li:last-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
@@ -9102,7 +9102,7 @@ describe('Finder', () => {
       frag.appendChild(parent);
       const finder = new Finder();
       finder._setup('.foo.bar', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const [[{ branch: [twig] }]] = finder._correspond('.foo.bar');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9114,7 +9114,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('.foobar', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('.foobar');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9129,7 +9129,7 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder();
       finder._setup('div', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const [[{ branch: [twig] }]] = finder._correspond('div');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9144,7 +9144,7 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder();
       finder._setup('div', parent);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(parent);
       const [[{ branch: [twig] }]] = finder._correspond('div');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9161,7 +9161,7 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder();
       finder._setup('.foo', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond('.foo');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9176,7 +9176,7 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder();
       finder._setup('p', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const [[{ branch: [twig] }]] = finder._correspond('p');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9217,7 +9217,7 @@ describe('Finder', () => {
     it('should be pended', () => {
       const finder = new Finder();
       finder._setup(':first-child', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond(':first-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [], 'nodes');
@@ -9252,7 +9252,7 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder();
       finder._setup(':host div', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       const [[{ branch: [twig] }]] = finder._correspond(':host div');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
@@ -10054,7 +10054,7 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder();
       finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._collectNodes('first');
       assert.deepEqual(res, [
         [
@@ -10137,7 +10137,7 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder();
       finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(res, [
         [
@@ -10229,7 +10229,7 @@ describe('Finder', () => {
       root.appendChild(div4);
       const finder = new Finder();
       finder._setup(':nth-child(2n), :nth-of-type(2n+3)', root);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(root);
       const res = finder._collectNodes('all');
       assert.deepEqual(res, [
         [
@@ -10315,7 +10315,7 @@ describe('Finder', () => {
       frag.appendChild(root);
       const finder = new Finder();
       finder._setup(':nth-child(2n), :nth-of-type(2n+3)', frag);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(frag);
       const res = finder._collectNodes('all');
       assert.deepEqual(res, [
         [
@@ -10476,7 +10476,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('first');
       const res = finder._matchNodes('first');
       assert.deepEqual([...res], [
@@ -10488,7 +10488,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('first');
       const res = finder._matchNodes('all');
       assert.deepEqual([...res], [
@@ -10500,7 +10500,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('first');
       const res = finder._matchNodes('first');
       assert.deepEqual([...res], [], 'result');
@@ -10509,7 +10509,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder();
       finder._setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('all');
       const res = finder._matchNodes('all');
       assert.deepEqual([...res], [], 'result');
@@ -10518,7 +10518,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('ol > .li ~ li, ul > .li ~ li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('first');
       const res = finder._matchNodes('first');
       assert.deepEqual([...res], [
@@ -10529,7 +10529,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder();
       finder._setup('ol > .li ~ li, ul > .li ~ li', document);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(document);
       finder._collectNodes('all');
       const res = finder._matchNodes('all');
       assert.deepEqual([...res], [
@@ -10561,7 +10561,7 @@ describe('Finder', () => {
       root.appendChild(div);
       const finder = new Finder();
       finder._setup('div > p > span', root);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(root);
       finder._collectNodes('all');
       const res = finder._matchNodes('all');
       assert.deepEqual([...res], [
@@ -10582,7 +10582,7 @@ describe('Finder', () => {
       root.appendChild(div);
       const finder = new Finder();
       finder._setup('div > p > span', root);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(root);
       finder._collectNodes('first');
       const res = finder._matchNodes('first');
       assert.deepEqual([...res], [
@@ -10602,7 +10602,7 @@ describe('Finder', () => {
       root.appendChild(div);
       const finder = new Finder();
       finder._setup('span', root);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(root);
       finder._collectNodes('first');
       const res = finder._matchNodes('first');
       assert.deepEqual([...res], [
@@ -10614,548 +10614,543 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder();
       finder._setup('li:active', node);
-      finder._prepareTreeWalkers();
+      finder._prepareTreeWalkers(node);
       finder._collectNodes('all');
       const res = finder._matchNodes('all');
       assert.deepEqual([...res], [], 'result');
     });
   });
 
-/*
-// restart from here
-
-    describe('find matched nodes', () => {
-      it('should get matched node(s)', () => {
-        const finder =
-          new Finder('li:last-child, li:first-child + li', document);
-        const res = finder._find();
-        assert.deepEqual([...res], [
-          document.getElementById('li3'),
-          document.getElementById('li2')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const node = document.getElementById('li1');
-        const finder = new Finder('li:last-child, li:first-child + li', node);
-        const res = finder._find('self');
-        assert.deepEqual([...res], [], 'result');
-      });
+  describe('find matched nodes', () => {
+    it('should get matched node(s)', () => {
+      const finder = new Finder();
+      finder._setup('li:last-child, li:first-child + li', document);
+      finder._prepareTreeWalkers(document);
+      const res = finder._find('all');
+      assert.deepEqual([...res], [
+        document.getElementById('li3'),
+        document.getElementById('li2')
+      ], 'result');
     });
 
-    describe('matches', () => {
-      it('should throw', () => {
-        try {
-          new Finder().matches();
-        } catch (e) {
-          assert.instanceOf(e, TypeError, 'error');
-        };
-      });
-
-      it('should get true', () => {
-        const node = document.createElement(null);
-        const res = new Finder(null, node).matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get false', () => {
-        const node = document.createElement('div');
-        const res = new Finder(null, node).matches();
-        assert.isFalse(res, 'result');
-      });
-
-      it('should get true', () => {
-        const node = document.createElement(undefined);
-        const res = new Finder(undefined, node).matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get false', () => {
-        const node = document.createElement('div');
-        const res = new Finder(undefined, node).matches();
-        assert.isFalse(res, 'result');
-      });
-
-      it('should throw', () => {
-        try {
-          new Finder('body', document).matches();
-        } catch (e) {
-          assert.instanceOf(e, window.TypeError, 'error');
-          assert.strictEqual(e.message, 'Unexpected node #document', 'message');
-        }
-      });
-
-      it('should throw', () => {
-        try {
-          new Finder('[foo=bar baz]', document.body).matches();
-        } catch (e) {
-          assert.instanceOf(e, window.DOMException, 'error');
-        }
-      });
-
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
-        const node = document.getElementById('li2');
-        const finder = new Finder('li:hover', node, {
-          warn: true
-        });
-        const res = finder.matches();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'warn');
-        assert.isFalse(res, 'result');
-      });
-
-      it('should get true', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('li', node);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get true', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('ul > li', node);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get true', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('#li2', node);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get true', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('ul > li:nth-child(2n)', node);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get false', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('ul > li:nth-child(2n+1)', node);
-        const res = finder.matches();
-        assert.isFalse(res, 'result');
-      });
-
-      it('should get true', () => {
-        const div = document.createElement('div');
-        div.id = 'main';
-        const p1 = document.createElement('p');
-        p1.id = 'p1-1';
-        p1.classList.add('foo');
-        p1.textContent = 'Foo';
-        const p2 = document.createElement('p');
-        p2.id = 'p1-2';
-        p2.textContent = 'Bar';
-        div.appendChild(p1);
-        div.appendChild(p2);
-        const parent = document.getElementById('div0');
-        parent.appendChild(div);
-        const finder = new Finder('#main p', p1);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-
-      it('should get true', () => {
-        const div = document.createElement('div');
-        div.id = 'main';
-        const p1 = document.createElement('p');
-        p1.id = 'p1-1';
-        p1.classList.add('foo');
-        p1.textContent = 'Foo';
-        const p2 = document.createElement('p');
-        p2.id = 'p1-2';
-        p2.textContent = 'Bar';
-        div.appendChild(p1);
-        div.appendChild(p2);
-        const parent = document.getElementById('div0');
-        parent.appendChild(div);
-        const finder = new Finder('#main p:not(.foo)', p2);
-        const res = finder.matches();
-        assert.isTrue(res, 'result');
-      });
-    });
-
-    describe('closest', () => {
-      it('should throw', () => {
-        try {
-          new Finder('body', document).closest();
-        } catch (e) {
-          assert.instanceOf(e, window.TypeError, 'error');
-          assert.strictEqual(e.message, 'Unexpected node #document', 'message');
-        }
-      });
-
-      it('should throw', () => {
-        try {
-          new Finder('[foo=bar baz]', document.getElementById('div0'))
-            .closest();
-        } catch (e) {
-          assert.instanceOf(e, window.DOMException, 'error');
-        }
-      });
-
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
-        const node = document.getElementById('li2');
-        const finder = new Finder('ul:hover', node, {
-          warn: true
-        });
-        const res = finder.closest();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'warn');
-        assert.isNull(res, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.getElementById('li2');
-        const target = document.getElementById('div2');
-        const finder = new Finder('div', node);
-        const res = finder.closest();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.getElementById('li2');
-        const target = document.getElementById('div1');
-        const finder = new Finder('body > div', node);
-        const res = finder.closest();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should not match', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder('dl', node);
-        const res = finder.closest();
-        assert.isNull(res, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.getElementById('li2');
-        const finder = new Finder(':has(:scope)', node);
-        const res = finder.closest();
-        assert.deepEqual(res, document.getElementById('ul1'), 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const ul = document.createElement('ul');
-        const l1 = document.createElement('li');
-        const l2 = document.createElement('li');
-        const l3 = document.createElement('li');
-        const l4 = document.createElement('li');
-        const l5 = document.createElement('li');
-        const l6 = document.createElement('li');
-        const l7 = document.createElement('li');
-        const l8 = document.createElement('li');
-        const l9 = document.createElement('li');
-        const l10 = document.createElement('li');
-        const p1 = document.createElement('p');
-        const p2 = document.createElement('p');
-        const p3 = document.createElement('p');
-        const p4 = document.createElement('p');
-        const p5 = document.createElement('p');
-        const p6 = document.createElement('p');
-        const p7 = document.createElement('p');
-        const p8 = document.createElement('p');
-        const p9 = document.createElement('p');
-        const p10 = document.createElement('p');
-        l1.id = 'l1';
-        l2.id = 'l2';
-        l3.id = 'l3';
-        l4.id = 'l4';
-        l5.id = 'l5';
-        l6.id = 'l6';
-        l7.id = 'l7';
-        l8.id = 'l8';
-        l9.id = 'l9';
-        l10.id = 'l10';
-        l2.classList.add('noted');
-        l4.classList.add('noted');
-        l7.classList.add('noted');
-        l10.classList.add('noted');
-        l1.appendChild(p1);
-        ul.appendChild(l1);
-        l2.appendChild(p2);
-        ul.appendChild(l2);
-        l3.appendChild(p3);
-        ul.appendChild(l3);
-        l4.appendChild(p4);
-        ul.appendChild(l4);
-        l5.appendChild(p5);
-        ul.appendChild(l5);
-        l6.appendChild(p6);
-        ul.appendChild(l6);
-        l7.appendChild(p7);
-        ul.appendChild(l7);
-        l8.appendChild(p8);
-        ul.appendChild(l8);
-        l9.appendChild(p9);
-        ul.appendChild(l9);
-        l10.appendChild(p10);
-        ul.appendChild(l10);
-        const parent = document.getElementById('div0');
-        parent.appendChild(ul);
-        const res = new Finder(':nth-child(2n+1 of .noted)', p7).closest();
-        assert.deepEqual(res, l7, 'result');
-      });
-    });
-
-    describe('querySelector', () => {
-      it('should throw', () => {
-        try {
-          new Finder('[foo=bar baz]', document).querySelector();
-        } catch (e) {
-          assert.instanceOf(e, window.DOMException, 'error');
-        }
-      });
-
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
-        const node = document.getElementById('div1');
-        const finder = new Finder('dt:hover', node, {
-          warn: true
-        });
-        const res = finder.querySelector();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'warn');
-        assert.isNull(res, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.getElementById('div1');
-        const target = document.getElementById('dt1');
-        const finder = new Finder('#dt1', node);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.getElementById('div1');
-        const target = document.getElementById('dt1');
-        const finder = new Finder('dt', node);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const target = document.getElementById('dt1');
-        const finder = new Finder('dt', document);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should not match', () => {
-        const finder = new Finder('ol', document);
-        const res = finder.querySelector();
-        assert.isNull(res, 'result');
-      });
-
-      it('should get matched node', () => {
-        const refPoint = document.getElementById('dl1');
-        const target = document.getElementById('dt1');
-        const finder = new Finder('*', refPoint);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const refPoint = document.getElementById('dl1');
-        const target = document.getElementById('dt1');
-        const finder = new Finder('body #dt1', refPoint);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const target = document.getElementById('li1');
-        const finder = new Finder('.li', document);
-        const res = finder.querySelector();
-        assert.deepEqual(res, target, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.createElement('div');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const root = node.attachShadow({ mode: 'open' });
-        root.innerHTML = '<div></div><div></div>';
-        const finder = new Finder(':host div', root);
-        const res = finder.querySelector();
-        assert.deepEqual(res, root.firstElementChild, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node = document.createElement('div');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const root = node.attachShadow({ mode: 'open' });
-        root.innerHTML = '<div></div><div></div>';
-        const finder = new Finder(':host div + div', root);
-        const res = finder.querySelector();
-        assert.deepEqual(res, root.lastElementChild, 'result');
-      });
-
-      it('should get matched node', () => {
-        const node1 = document.createElement('div');
-        const node2 = document.createElement('div');
-        const node3 = document.createElement('div');
-        const node4 = document.createElement('div');
-        const node5 = document.createElement('div');
-        const parent = document.getElementById('div0');
-        node1.classList.add('foo');
-        node2.classList.add('foo');
-        node3.classList.add('foo');
-        node4.classList.add('foo');
-        node5.classList.add('foo');
-        parent.appendChild(node1);
-        parent.appendChild(node2);
-        parent.appendChild(node3);
-        parent.appendChild(node4);
-        parent.appendChild(node5);
-        const finder =
-          new Finder('.foo + .foo + .foo:last-child', parent);
-        const res = finder.querySelector();
-        assert.deepEqual(res, node5, 'result');
-      });
-    });
-
-    describe('querySelectorAll', () => {
-      it('should throw', () => {
-        try {
-          new Finder('[foo=bar baz]', document).querySelectorAll();
-        } catch (e) {
-          assert.instanceOf(e, window.DOMException, 'error');
-        }
-      });
-
-      it('should warn', () => {
-        const stubWarn = sinon.stub(console, 'warn');
-        const node = document.getElementById('div1');
-        const finder = new Finder('dt:hover', node, {
-          warn: true
-        });
-        const res = finder.querySelectorAll();
-        const { called } = stubWarn;
-        stubWarn.restore();
-        assert.isTrue(called, 'warn');
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const node = document.getElementById('div1');
-        const finder = new Finder('dt', node);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          document.getElementById('dt1'),
-          document.getElementById('dt2'),
-          document.getElementById('dt3')
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const finder = new Finder('dt', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          document.getElementById('dt1'),
-          document.getElementById('dt2'),
-          document.getElementById('dt3')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const finder = new Finder('ol', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const refPoint = document.getElementById('dl1');
-        const finder = new Finder('*', refPoint);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          document.getElementById('dt1'),
-          document.getElementById('dd1'),
-          document.getElementById('span1'),
-          document.getElementById('dt2'),
-          document.getElementById('dd2'),
-          document.getElementById('span2'),
-          document.getElementById('dt3'),
-          document.getElementById('dd3'),
-          document.getElementById('span3')
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const refPoint = document.getElementById('dl1');
-        const target = document.getElementById('dt1');
-        const finder = new Finder('body #dt1', refPoint);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [target], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const finder = new Finder('.li', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ], 'result');
-      });
-
-      it('should not match', () => {
-        const finder = new Finder('ul.li + .li', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should not match', () => {
-        const finder = new Finder('::slotted(foo)', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should not match', () => {
-        const finder = new Finder('::slotted(foo', document);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const root = document.createElement('div');
-        const node = document.createElement('div');
-        root.id = 'root';
-        root.classList.add('div');
-        node.id = 'div';
-        node.classList.add('div');
-        root.append(node);
-        const finder = new Finder(':nth-child(n of .div)', root);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          node
-        ], 'result');
-      });
-
-      it('should get matched node(s)', () => {
-        const node = document.createElement('div');
-        const parent = document.getElementById('div0');
-        parent.appendChild(node);
-        const root = node.attachShadow({ mode: 'open' });
-        root.innerHTML = '<div></div><div></div>';
-        const finder = new Finder(':host div', root);
-        const res = finder.querySelectorAll();
-        assert.deepEqual(res, [
-          root.firstElementChild,
-          root.lastElementChild
-        ], 'result');
-      });
+    it('should not match', () => {
+      const node = document.getElementById('li1');
+      const finder = new Finder();
+      finder._setup('li:last-child, li:first-child + li', node);
+      const res = finder._find('self');
+      assert.deepEqual([...res], [], 'result');
     });
   });
-*/
+
+  describe('matches', () => {
+    it('should throw', () => {
+      try {
+        new Finder().matches();
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+      };
+    });
+
+    it('should get true', () => {
+      const node = document.createElement(null);
+      const res = new Finder().matches(null, node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = new Finder().matches(null, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement(undefined);
+      const res = new Finder().matches(undefined, node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = new Finder().matches(undefined, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should throw', () => {
+      try {
+        new Finder().matches('body', document);
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node #document', 'message');
+      }
+    });
+
+    it('should throw', () => {
+      try {
+        new Finder().matches('[foo=bar baz]', document.body);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+      }
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('li:hover', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('li', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('ul > li', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('#li2', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('ul > li:nth-child(2n)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.matches('ul > li:nth-child(2n+1)', node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const div = document.createElement('div');
+      div.id = 'main';
+      const p1 = document.createElement('p');
+      p1.id = 'p1-1';
+      p1.classList.add('foo');
+      p1.textContent = 'Foo';
+      const p2 = document.createElement('p');
+      p2.id = 'p1-2';
+      p2.textContent = 'Bar';
+      div.appendChild(p1);
+      div.appendChild(p2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(div);
+      const finder = new Finder();
+      const res = finder.matches('#main p', p1);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const div = document.createElement('div');
+      div.id = 'main';
+      const p1 = document.createElement('p');
+      p1.id = 'p1-1';
+      p1.classList.add('foo');
+      p1.textContent = 'Foo';
+      const p2 = document.createElement('p');
+      p2.id = 'p1-2';
+      p2.textContent = 'Bar';
+      div.appendChild(p1);
+      div.appendChild(p2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(div);
+      const finder = new Finder();
+      const res = finder.matches('#main p:not(.foo)', p2);
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('closest', () => {
+    it('should throw', () => {
+      try {
+        new Finder().closest('body', document);
+      } catch (e) {
+        assert.instanceOf(e, TypeError, 'error');
+        assert.strictEqual(e.message, 'Unexpected node #document', 'message');
+      }
+    });
+
+    it('should throw', () => {
+      try {
+        new Finder().closest('[foo=bar baz]', document.getElementById('div0'));
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+      }
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.closest('ul:hover', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const target = document.getElementById('div2');
+      const finder = new Finder();
+      const res = finder.closest('div', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const target = document.getElementById('div1');
+      const finder = new Finder();
+      const res = finder.closest('body > div', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.closest('dl', node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder();
+      const res = finder.closest(':has(:scope)', node);
+      assert.deepEqual(res, document.getElementById('ul1'), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      const p1 = document.createElement('p');
+      const p2 = document.createElement('p');
+      const p3 = document.createElement('p');
+      const p4 = document.createElement('p');
+      const p5 = document.createElement('p');
+      const p6 = document.createElement('p');
+      const p7 = document.createElement('p');
+      const p8 = document.createElement('p');
+      const p9 = document.createElement('p');
+      const p10 = document.createElement('p');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      l1.appendChild(p1);
+      ul.appendChild(l1);
+      l2.appendChild(p2);
+      ul.appendChild(l2);
+      l3.appendChild(p3);
+      ul.appendChild(l3);
+      l4.appendChild(p4);
+      ul.appendChild(l4);
+      l5.appendChild(p5);
+      ul.appendChild(l5);
+      l6.appendChild(p6);
+      ul.appendChild(l6);
+      l7.appendChild(p7);
+      ul.appendChild(l7);
+      l8.appendChild(p8);
+      ul.appendChild(l8);
+      l9.appendChild(p9);
+      ul.appendChild(l9);
+      l10.appendChild(p10);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const res = new Finder().closest(':nth-child(2n+1 of .noted)', p7);
+      assert.deepEqual(res, l7, 'result');
+    });
+  });
+
+  describe('querySelector', () => {
+    it('should throw', () => {
+      try {
+        new Finder().querySelector('[foo=bar baz]', document);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+      }
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('div1');
+      const finder = new Finder();
+      const res = finder.querySelector('dt:hover', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('div1');
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelector('#dt1', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('div1');
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelector('dt', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelector('dt', document);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder();
+      const res = finder.querySelector('ol', document);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelector('*', refPoint);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelector('body #dt1', refPoint);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('li1');
+      const finder = new Finder();
+      const res = finder.querySelector('.li', document);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const finder = new Finder();
+      const res = finder.querySelector(':host div', root);
+      assert.deepEqual(res, root.firstElementChild, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const finder = new Finder();
+      const res = finder.querySelector(':host div + div', root);
+      assert.deepEqual(res, root.lastElementChild, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      const node3 = document.createElement('div');
+      const node4 = document.createElement('div');
+      const node5 = document.createElement('div');
+      const parent = document.getElementById('div0');
+      node1.classList.add('foo');
+      node2.classList.add('foo');
+      node3.classList.add('foo');
+      node4.classList.add('foo');
+      node5.classList.add('foo');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      const finder = new Finder();
+      const res = finder.querySelector('.foo + .foo + .foo:last-child', parent);
+      assert.deepEqual(res, node5, 'result');
+    });
+  });
+
+  describe('querySelectorAll', () => {
+    it('should throw', () => {
+      try {
+        new Finder().querySelectorAll('[foo=bar baz]', document);
+      } catch (e) {
+        assert.instanceOf(e, window.DOMException, 'error');
+      }
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('div1');
+      const finder = new Finder();
+      const res = finder.querySelectorAll('dt:hover', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('div1');
+      const finder = new Finder();
+      const res = finder.querySelectorAll('dt', node);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('dt', document);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('ol', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const refPoint = document.getElementById('dl1');
+      const finder = new Finder();
+      const res = finder.querySelectorAll('*', refPoint);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dd1'),
+        document.getElementById('span1'),
+        document.getElementById('dt2'),
+        document.getElementById('dd2'),
+        document.getElementById('span2'),
+        document.getElementById('dt3'),
+        document.getElementById('dd3'),
+        document.getElementById('span3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const finder = new Finder();
+      const res = finder.querySelectorAll('body #dt1', refPoint);
+      assert.deepEqual(res, [target], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('.li', document);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('ul.li + .li', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('::slotted(foo)', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder();
+      const res = finder.querySelectorAll('::slotted(foo', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const root = document.createElement('div');
+      const node = document.createElement('div');
+      root.id = 'root';
+      root.classList.add('div');
+      node.id = 'div';
+      node.classList.add('div');
+      root.append(node);
+      const finder = new Finder();
+      const res = finder.querySelectorAll(':nth-child(n of .div)', root);
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const finder = new Finder();
+      const res = finder.querySelectorAll(':host div', root);
+      assert.deepEqual(res, [
+        root.firstElementChild,
+        root.lastElementChild
+      ], 'result');
+    });
+  });
 });

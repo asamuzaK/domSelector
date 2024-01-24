@@ -70,7 +70,6 @@ export class Finder {
   #noexcept;
   #results;
   #root;
-  #selector;
   #shadow;
   #sort;
   #tree;
@@ -124,13 +123,12 @@ export class Finder {
     const { noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
-    [this.#window, this.#document, this.#root] = prepareDOMObjects(node);
     this.#node = node;
+    [this.#window, this.#document, this.#root] = prepareDOMObjects(node);
     this.#shadow = isInShadowTree(node);
-    this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#results = new WeakMap();
-    return this.#node;
+    return node;
   }
 
   /**
@@ -222,11 +220,12 @@ export class Finder {
   /**
    * prepare tree walkers
    * @private
+   * @param {object} node - Document, DocumentFragment, Element node
    * @returns {Array} - [#tree, #finder]
    */
-  _prepareTreeWalkers() {
+  _prepareTreeWalkers(node) {
     this.#tree = this.#document.createTreeWalker(this.#root, WALKER_FILTER);
-    this.#finder = this.#document.createTreeWalker(this.#node, WALKER_FILTER);
+    this.#finder = this.#document.createTreeWalker(node, WALKER_FILTER);
     this.#sort = false;
     return [
       this.#tree,
@@ -2718,7 +2717,7 @@ export class Finder {
   matches(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
+      this.#node = this._setup(selector, node, opt);
       if (node.nodeType !== ELEMENT_NODE) {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
@@ -2743,7 +2742,7 @@ export class Finder {
   closest(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
+      this.#node = this._setup(selector, node, opt);
       if (node.nodeType !== ELEMENT_NODE) {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
@@ -2777,8 +2776,8 @@ export class Finder {
   querySelector(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
-      this._prepareTreeWalkers();
+      this.#node = this._setup(selector, node, opt);
+      this._prepareTreeWalkers(node);
       const nodes = this._find(TARGET_FIRST);
       nodes.delete(this.#node);
       if (nodes.size) {
@@ -2801,8 +2800,8 @@ export class Finder {
   querySelectorAll(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
-      this._prepareTreeWalkers();
+      this.#node = this._setup(selector, node, opt);
+      this._prepareTreeWalkers(node);
       const nodes = this._find(TARGET_ALL);
       nodes.delete(this.#node);
       if (nodes.size) {

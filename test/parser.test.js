@@ -6013,6 +6013,14 @@ describe('parse AST name', () => {
   });
 
   it('should get value', () => {
+    const res = func('*');
+    assert.deepEqual(res, {
+      prefix: '*',
+      localName: '*'
+    });
+  });
+
+  it('should get value', () => {
     const res = func('foo');
     assert.deepEqual(res, {
       prefix: '*',

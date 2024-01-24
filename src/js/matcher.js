@@ -88,7 +88,7 @@ export const _matchAttributeSelector = (ast, node) => {
                 continue;
               } else if (astPrefix === itemPrefix &&
                          astLocalName === itemLocalName) {
-                const namespaceDeclared = isNamespaceDeclared(itemPrefix, node);
+                const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
                 if (namespaceDeclared) {
                   attrValues.add(itemValue);
                 }
@@ -285,24 +285,31 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
     nodeLocalName = localName;
   }
   let res;
-  const namespaceDeclared = isNamespaceDeclared(nodePrefix, node);
-  if (astPrefix === '' && nodePrefix === '') {
-    if (namespaceURI === null &&
-        (astLocalName === '*' || astLocalName === nodeLocalName)) {
-      res = node;
+  switch (astPrefix) {
+    case '': {
+      if (nodePrefix === '' && namespaceURI === null &&
+          (astLocalName === '*' || astLocalName === nodeLocalName)) {
+        res = node;
+      }
+      break;
     }
-  } else if (astPrefix === '*') {
-    if (astLocalName === '*' || astLocalName === nodeLocalName) {
-      res = node;
-    }
-  } else if (astPrefix === nodePrefix) {
-    if (namespaceDeclared) {
+    case '*': {
       if (astLocalName === '*' || astLocalName === nodeLocalName) {
         res = node;
       }
-    } else if (!forgive) {
-      const msg = `Undeclared namespace ${astPrefix}`;
-      throw new DOMException(msg, SYNTAX_ERR);
+      break;
+    }
+    default: {
+      const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+      if (namespaceDeclared) {
+        if (astPrefix === nodePrefix &&
+            (astLocalName === '*' || astLocalName === nodeLocalName)) {
+          res = node;
+        }
+      } else if (!forgive) {
+        const msg = `Undeclared namespace ${astPrefix}`;
+        throw new DOMException(msg, SYNTAX_ERR);
+      }
     }
   }
   return res ?? null;

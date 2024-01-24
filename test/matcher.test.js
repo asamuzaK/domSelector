@@ -1785,8 +1785,8 @@ describe('matcher', () => {
           document.createElementNS('https://example.com/baz', 'baz:qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
+      assert.throws(() => func(leaf, node), DOMException,
+        'Undeclared namespace foo');
     });
 
     it('should get matched node', () => {

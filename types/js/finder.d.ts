@@ -2,7 +2,7 @@ export class Finder {
     private _onError;
     private _setup;
     private _correspond;
-    _prepareTreeWalkers(): any[];
+    private _prepareTreeWalkers;
     private _traverse;
     private _collectNthChild;
     private _collectNthOfType;
@@ -15,7 +15,7 @@ export class Finder {
     private _matchShadowHostPseudoClass;
     private _matchSelector;
     private _matchLeaves;
-    _matchHTMLCollection(items: object, opt?: object): Set<object>;
+    private _matchHTMLCollection;
     private _findDescendantNodes;
     private _matchCombinator;
     private _findNode;
