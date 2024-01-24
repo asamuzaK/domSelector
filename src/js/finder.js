@@ -422,8 +422,7 @@ export class Finder {
         const m = [...matched];
         matched = new Set(m.reverse());
       }
-    } else if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
-               (a + b) === 1) {
+    } else if (node === this.#root && (a + b) === 1) {
       if (selectorBranches) {
         let bool;
         for (const leaves of selectorBranches) {
@@ -533,8 +532,7 @@ export class Finder {
         const m = [...matched];
         matched = new Set(m.reverse());
       }
-    } else if (node === this.#root && this.#root.nodeType === ELEMENT_NODE &&
-               (a + b) === 1) {
+    } else if (node === this.#root && (a + b) === 1) {
       matched.add(node);
     }
     return matched;
@@ -1432,23 +1430,21 @@ export class Finder {
         }
         case 'first-child': {
           if ((parentNode && node === parentNode.firstElementChild) ||
-              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
+              node === this.#root) {
             matched.add(node);
           }
           break;
         }
         case 'last-child': {
           if ((parentNode && node === parentNode.lastElementChild) ||
-              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
+              node === this.#root) {
             matched.add(node);
           }
           break;
         }
         case 'only-child': {
-          if ((parentNode &&
-               node === parentNode.firstElementChild &&
-               node === parentNode.lastElementChild) ||
-              (node === this.#root && this.#root.nodeType === ELEMENT_NODE)) {
+          if ((parentNode && node === parentNode.firstElementChild &&
+               node === parentNode.lastElementChild) || node === this.#root) {
             matched.add(node);
           }
           break;
@@ -1462,8 +1458,7 @@ export class Finder {
             if (node1) {
               matched.add(node1);
             }
-          } else if (node === this.#root &&
-                     this.#root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root) {
             matched.add(node);
           }
           break;
@@ -1478,8 +1473,7 @@ export class Finder {
             if (node1) {
               matched.add(node1);
             }
-          } else if (node === this.#root &&
-                     this.#root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root) {
             matched.add(node);
           }
           break;
@@ -1500,8 +1494,7 @@ export class Finder {
                 matched.add(node);
               }
             }
-          } else if (node === this.#root &&
-                     this.#root.nodeType === ELEMENT_NODE) {
+          } else if (node === this.#root) {
             matched.add(node);
           }
           break;
