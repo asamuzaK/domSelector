@@ -2509,7 +2509,6 @@ export class Finder {
           }
         } else if (dir === DIR_NEXT) {
           let { combo, leaves: entryLeaves } = branch[0];
-          const [, ...filterLeaves] = entryLeaves;
           let matched;
           for (let j = 0; j < entryNodesLen; j++) {
             const node = entryNodes[j];
