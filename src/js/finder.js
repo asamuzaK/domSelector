@@ -180,6 +180,20 @@ export class Finder {
               });
               leaves.clear();
             } else if (item) {
+              let { name: itemName } = item;
+              if (itemName) {
+                if (Object.prototype.hasOwnProperty.call(itemName, 'name')) {
+                  itemName = unescapeSelector(itemName.name);
+                  if (/[|:]/.test(itemName)) {
+                    item.namespace = true;
+                  }
+                } else if (typeof itemName === 'string') {
+                  itemName = unescapeSelector(itemName);
+                  if (/[|:]/.test(itemName)) {
+                    item.namespace = true;
+                  }
+                }
+              }
               leaves.add(item);
             }
             if (items.length) {
