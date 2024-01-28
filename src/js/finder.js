@@ -1760,6 +1760,10 @@ export class Finder {
       pending = true;
     } else {
       switch (leafType) {
+        case SELECTOR_PSEUDO_ELEMENT: {
+          matchPseudoElementSelector(leafName, opt);
+          break;
+        }
         case SELECTOR_ID: {
           if (this.#root.nodeType === ELEMENT_NODE) {
             pending = true;
@@ -1797,10 +1801,6 @@ export class Finder {
           } else {
             pending = true;
           }
-          break;
-        }
-        case SELECTOR_PSEUDO_ELEMENT: {
-          matchPseudoElementSelector(leafName, opt);
           break;
         }
         default: {
@@ -2022,12 +2022,14 @@ export class Finder {
     const nodes = [];
     let filtered = false;
     let bool = this._matchLeaves([leaf], this.#node);
-    if (bool && !compound && !complex) {
-      nodes.push(this.#node);
-      filtered = true;
-    } else if (bool && compound && !complex) {
-      bool = this._matchLeaves(filterLeaves, this.#node);
-      if (bool) {
+    if (bool && !complex) {
+      if (compound) {
+        bool = this._matchLeaves(filterLeaves, this.#node);
+        if (bool) {
+          nodes.push(this.#node);
+          filtered = true;
+        }
+      } else {
         nodes.push(this.#node);
         filtered = true;
       }
@@ -2110,11 +2112,20 @@ export class Finder {
             }
           }
         }
+      } else if (compound) {
+        for (let i = 0; i < l; i++) {
+          const node = items[i];
+          const bool = this._matchLeaves(filterLeaves, node, {
+            warn: this.#warn
+          });
+          if (bool) {
+            nodes.push(node);
+            filtered = true;
+          }
+        }
       } else {
         nodes = [].slice.call(items);
-        if (!compound) {
-          filtered = true;
-        }
+        filtered = true;
       }
     }
     return [nodes, filtered];
@@ -2741,16 +2752,18 @@ export class Finder {
         throw new TypeError(msg);
       }
       const nodes = this._find(TARGET_LINEAL);
-      let refNode = this.#node;
-      while (refNode) {
-        if (nodes.has(refNode)) {
-          res = refNode;
-          break;
-        }
-        if (refNode.parentNode) {
-          refNode = refNode.parentNode;
-        } else {
-          break;
+      if (nodes.size) {
+        let refNode = this.#node;
+        while (refNode) {
+          if (nodes.has(refNode)) {
+            res = refNode;
+            break;
+          }
+          if (refNode.parentNode) {
+            refNode = refNode.parentNode;
+          } else {
+            break;
+          }
         }
       }
     } catch (e) {
