@@ -8583,11 +8583,9 @@ describe('Finder', () => {
       });
       assert.deepEqual(res, [
         [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
           document.getElementById('li3')
         ],
-        false
+        true
       ], 'result');
     });
 
@@ -8882,7 +8880,7 @@ describe('Finder', () => {
         document.getElementById('li3')
       ], 'nodes');
       assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
+      assert.isTrue(res.filtered, 'filtered');
       assert.isFalse(res.pending, 'pending');
     });
 
@@ -9082,12 +9080,10 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('li.li:last-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
       assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
+      assert.isTrue(res.filtered, 'filtered');
       assert.isFalse(res.pending, 'pending');
     });
 
@@ -10078,7 +10074,7 @@ describe('Finder', () => {
               }
             ],
             dir: 'prev',
-            filtered: false,
+            filtered: true,
             find: true
           },
           {
@@ -10115,20 +10111,16 @@ describe('Finder', () => {
               }
             ],
             dir: 'next',
-            filtered: false,
+            filtered: true,
             find: true
           }
         ],
         [
           [
-            document.getElementById('li1'),
-            document.getElementById('li2'),
             document.getElementById('li3')
           ],
           [
-            document.getElementById('li1'),
-            document.getElementById('li2'),
-            document.getElementById('li3')
+            document.getElementById('li1')
           ]
         ]
       ], 'result');
@@ -10161,7 +10153,7 @@ describe('Finder', () => {
               }
             ],
             dir: 'prev',
-            filtered: false,
+            filtered: true,
             find: true
           },
           {
@@ -10204,8 +10196,6 @@ describe('Finder', () => {
         ],
         [
           [
-            document.getElementById('li1'),
-            document.getElementById('li2'),
             document.getElementById('li3')
           ],
           [

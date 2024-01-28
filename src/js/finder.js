@@ -2513,54 +2513,47 @@ export class Finder {
           let matched;
           for (let j = 0; j < entryNodesLen; j++) {
             const node = entryNodes[j];
-            const bool = filtered || this._matchLeaves(filterLeaves, node, {
-              warn: this.#warn
-            });
-            if (bool) {
-              let nextNodes = new Set([node]);
-              for (let j = 1; j < branchLen; j++) {
-                const { combo: nextCombo, leaves } = branch[j];
-                const arr = [];
-                for (const nextNode of nextNodes) {
-                  const twig = {
-                    combo,
-                    leaves
-                  };
-                  const m = this._matchCombinator(twig, nextNode, {
-                    dir,
-                    warn: this.#warn
-                  });
-                  if (m.size) {
-                    arr.push(...m);
-                  }
-                }
-                if (arr.length) {
-                  if (j === lastIndex) {
-                    if (targetType === TARGET_ALL) {
-                      if (nodes.size) {
-                        const n = [...nodes];
-                        nodes = new Set([...n, ...arr]);
-                      } else {
-                        nodes = new Set([...arr]);
-                      }
-                      this.#sort = true;
-                    } else {
-                      const [node] = sortNodes(arr);
-                      nodes.add(node);
-                    }
-                    matched = true;
-                  } else {
-                    combo = nextCombo;
-                    nextNodes = new Set(arr);
-                    matched = false;
-                  }
-                } else {
-                  matched = false;
-                  break;
+            let nextNodes = new Set([node]);
+            for (let j = 1; j < branchLen; j++) {
+              const { combo: nextCombo, leaves } = branch[j];
+              const arr = [];
+              for (const nextNode of nextNodes) {
+                const twig = {
+                  combo,
+                  leaves
+                };
+                const m = this._matchCombinator(twig, nextNode, {
+                  dir,
+                  warn: this.#warn
+                });
+                if (m.size) {
+                  arr.push(...m);
                 }
               }
-            } else {
-              matched = false;
+              if (arr.length) {
+                if (j === lastIndex) {
+                  if (targetType === TARGET_ALL) {
+                    if (nodes.size) {
+                      const n = [...nodes];
+                      nodes = new Set([...n, ...arr]);
+                    } else {
+                      nodes = new Set([...arr]);
+                    }
+                    this.#sort = true;
+                  } else {
+                    const [node] = sortNodes(arr);
+                    nodes.add(node);
+                  }
+                  matched = true;
+                } else {
+                  combo = nextCombo;
+                  nextNodes = new Set(arr);
+                  matched = false;
+                }
+              } else {
+                matched = false;
+                break;
+              }
             }
             if (matched && targetType !== TARGET_ALL) {
               break;
@@ -2727,9 +2720,7 @@ export class Finder {
         throw new TypeError(msg);
       }
       const nodes = this._find(TARGET_SELF);
-      if (nodes.size) {
-        res = nodes.has(this.#node);
-      }
+      res = nodes.size;
     } catch (e) {
       this._onError(e);
     }
@@ -2759,11 +2750,7 @@ export class Finder {
             res = refNode;
             break;
           }
-          if (refNode.parentNode) {
-            refNode = refNode.parentNode;
-          } else {
-            break;
-          }
+          refNode = refNode.parentNode;
         }
       }
     } catch (e) {
