@@ -1046,7 +1046,7 @@ export class Finder {
           let current = this.#document.activeElement;
           while (current) {
             if (current === node) {
-              if (this.#window.getComputedStyle(current).display !== 'none') {
+              if (this.#window.getComputedStyle(node).display !== 'none') {
                 matched.add(node);
               }
               break;

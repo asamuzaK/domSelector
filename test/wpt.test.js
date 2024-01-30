@@ -2122,7 +2122,7 @@ describe('local wpt test cases', () => {
       node.focus();
       assert.isTrue(node.matches(':focus'), 'before');
       node.style.display = 'none';
-      node.focus()
+      node.focus();
       assert.isFalse(node.matches(':focus'), 'before');
     });
   });
