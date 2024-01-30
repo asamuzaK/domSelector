@@ -1036,7 +1036,8 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement) {
+          if (node === this.#document.activeElement &&
+              this.#window.getComputedStyle(node).display !== 'none') {
             matched.add(node);
           }
           break;
@@ -1045,7 +1046,9 @@ export class Finder {
           let current = this.#document.activeElement;
           while (current) {
             if (current === node) {
-              matched.add(node);
+              if (this.#window.getComputedStyle(current).display !== 'none') {
+                matched.add(node);
+              }
               break;
             }
             current = current.parentNode;

@@ -2111,6 +2111,22 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/focus-display-none-001.html', () => {
+    it('should match', () => {
+      const html = `<div id="wrapper">
+        <input id="input">
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('input');
+      node.focus();
+      assert.isTrue(node.matches(':focus'), 'before');
+      node.style.display = 'none';
+      node.focus()
+      assert.isFalse(node.matches(':focus'), 'before');
+    });
+  });
+
   describe('dom/nodes/Element-matches.html', () => {
     it('should match', () => {
       const html = `<div id="universal">
