@@ -1036,22 +1036,55 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement &&
-              this.#window.getComputedStyle(node).display !== 'none') {
+          let display = true;
+          let refNode = node;
+          while (refNode) {
+            if (refNode.hasAttribute('style')) {
+              display = refNode.style.display !== 'none';
+            }
+            if (!display) {
+              break;
+            }
+            if (refNode.parentNode &&
+                refNode.parentNode.nodeType === ELEMENT_NODE) {
+              refNode = refNode.parentNode;
+            } else {
+              break;
+            }
+          }
+          if (display && node === this.#document.activeElement) {
             matched.add(node);
           }
           break;
         }
         case 'focus-within': {
-          let current = this.#document.activeElement;
-          while (current) {
-            if (current === node) {
-              if (this.#window.getComputedStyle(node).display !== 'none') {
-                matched.add(node);
-              }
+          let display = true;
+          let refNode = node;
+          while (refNode) {
+            if (refNode.hasAttribute('style')) {
+              display = refNode.style.display !== 'none';
+            }
+            if (!display) {
               break;
             }
-            current = current.parentNode;
+            if (refNode.parentNode &&
+                refNode.parentNode.nodeType === ELEMENT_NODE) {
+              refNode = refNode.parentNode;
+            } else {
+              break;
+            }
+          }
+          if (display) {
+            let current = this.#document.activeElement;
+            while (current) {
+              if (current === node) {
+                if (this.#window.getComputedStyle(node).display !== 'none') {
+                  matched.add(node);
+                }
+                break;
+              }
+              current = current.parentNode;
+            }
           }
           break;
         }
