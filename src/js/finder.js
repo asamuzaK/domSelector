@@ -1036,54 +1036,66 @@ export class Finder {
           break;
         }
         case 'focus': {
-          let display = true;
-          let refNode = node;
-          while (refNode) {
-            if (refNode.hasAttribute('style')) {
-              display = refNode.style.display !== 'none';
+          if (node === this.#document.activeElement) {
+            let focus = true;
+            let refNode = node;
+            while (refNode) {
+              if (refNode.hasAttribute('hidden')) {
+                focus = false;
+                break;
+              } else if (refNode.hasAttribute('style')) {
+                const { display, visibility } = refNode.style;
+                focus = !(display === 'none' || visibility === 'hidden');
+                if (!focus) {
+                  break;
+                }
+              }
+              if (refNode.parentNode &&
+                  refNode.parentNode.nodeType === ELEMENT_NODE) {
+                refNode = refNode.parentNode;
+              } else {
+                break;
+              }
             }
-            if (!display) {
-              break;
+            if (focus) {
+              matched.add(node);
             }
-            if (refNode.parentNode &&
-                refNode.parentNode.nodeType === ELEMENT_NODE) {
-              refNode = refNode.parentNode;
-            } else {
-              break;
-            }
-          }
-          if (display && node === this.#document.activeElement) {
-            matched.add(node);
           }
           break;
         }
         case 'focus-within': {
-          let display = true;
-          let refNode = node;
-          while (refNode) {
-            if (refNode.hasAttribute('style')) {
-              display = refNode.style.display !== 'none';
-            }
-            if (!display) {
+          let active;
+          let current = this.#document.activeElement;
+          while (current) {
+            if (current === node) {
+              active = true;
               break;
             }
-            if (refNode.parentNode &&
-                refNode.parentNode.nodeType === ELEMENT_NODE) {
-              refNode = refNode.parentNode;
-            } else {
-              break;
-            }
+            current = current.parentNode;
           }
-          if (display) {
-            let current = this.#document.activeElement;
-            while (current) {
-              if (current === node) {
-                if (this.#window.getComputedStyle(node).display !== 'none') {
-                  matched.add(node);
+          if (active) {
+            let focus = true;
+            let refNode = node;
+            while (refNode) {
+              if (refNode.hasAttribute('hidden')) {
+                focus = false;
+                break;
+              } else if (refNode.hasAttribute('style')) {
+                const { display, visibility } = refNode.style;
+                focus = !(display === 'none' || visibility === 'hidden');
+                if (!focus) {
+                  break;
                 }
+              }
+              if (refNode.parentNode &&
+                  refNode.parentNode.nodeType === ELEMENT_NODE) {
+                refNode = refNode.parentNode;
+              } else {
                 break;
               }
-              current = current.parentNode;
+            }
+            if (focus) {
+              matched.add(node);
             }
           }
           break;
