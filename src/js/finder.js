@@ -1036,22 +1036,67 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement &&
-              this.#window.getComputedStyle(node).display !== 'none') {
-            matched.add(node);
+          if (node === this.#document.activeElement) {
+            let focus = true;
+            let refNode = node;
+            while (refNode) {
+              if (refNode.hasAttribute('hidden')) {
+                focus = false;
+                break;
+              } else if (refNode.hasAttribute('style')) {
+                const { display, visibility } = refNode.style;
+                focus = !(display === 'none' || visibility === 'hidden');
+                if (!focus) {
+                  break;
+                }
+              }
+              if (refNode.parentNode &&
+                  refNode.parentNode.nodeType === ELEMENT_NODE) {
+                refNode = refNode.parentNode;
+              } else {
+                break;
+              }
+            }
+            if (focus) {
+              matched.add(node);
+            }
           }
           break;
         }
         case 'focus-within': {
+          let active;
           let current = this.#document.activeElement;
           while (current) {
             if (current === node) {
-              if (this.#window.getComputedStyle(node).display !== 'none') {
-                matched.add(node);
-              }
+              active = true;
               break;
             }
             current = current.parentNode;
+          }
+          if (active) {
+            let focus = true;
+            let refNode = node;
+            while (refNode) {
+              if (refNode.hasAttribute('hidden')) {
+                focus = false;
+                break;
+              } else if (refNode.hasAttribute('style')) {
+                const { display, visibility } = refNode.style;
+                focus = !(display === 'none' || visibility === 'hidden');
+                if (!focus) {
+                  break;
+                }
+              }
+              if (refNode.parentNode &&
+                  refNode.parentNode.nodeType === ELEMENT_NODE) {
+                refNode = refNode.parentNode;
+              } else {
+                break;
+              }
+            }
+            if (focus) {
+              matched.add(node);
+            }
           }
           break;
         }
