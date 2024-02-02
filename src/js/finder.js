@@ -1702,14 +1702,18 @@ export class Finder {
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
-        case SELECTOR_CLASS: {
-          if (node.classList.contains(astName)) {
+        case SELECTOR_PSEUDO_ELEMENT: {
+          matchPseudoElementSelector(astName, opt);
+          break;
+        }
+        case SELECTOR_ID: {
+          if (node.id === astName) {
             matched.add(node);
           }
           break;
         }
-        case SELECTOR_ID: {
-          if (astName === node.id) {
+        case SELECTOR_CLASS: {
+          if (node.classList.contains(astName)) {
             matched.add(node);
           }
           break;
@@ -1719,10 +1723,6 @@ export class Finder {
           if (nodes.size) {
             matched = nodes;
           }
-          break;
-        }
-        case SELECTOR_PSEUDO_ELEMENT: {
-          matchPseudoElementSelector(astName, opt);
           break;
         }
         default: {
