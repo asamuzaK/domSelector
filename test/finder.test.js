@@ -7405,12 +7405,12 @@ describe('Finder', () => {
   describe('match selector', () => {
     it('should get matched node(s)', () => {
       const ast = {
-        name: 'dt',
-        type: SELECTOR_TYPE
+        name: 'foo',
+        type: SELECTOR_CLASS
       };
-      const node = document.getElementById('dt1');
+      const node = document.getElementById('div5');
       const finder = new Finder();
-      finder._setup('dt', document);
+      finder._setup('.foo', document);
       const res = finder._matchSelector(ast, node);
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
@@ -7418,12 +7418,77 @@ describe('Finder', () => {
       ], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should get matched node', () => {
       const ast = {
         name: 'foo',
         type: SELECTOR_CLASS
       };
-      const node = document.getElementById('div5');
+      const node = document.createElement('div');
+      node.classList.add('foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder();
+      finder._setup('.foo', document);
+      const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'bar',
+        type: SELECTOR_CLASS
+      };
+      const node = document.createElement('div');
+      node.classList.add('foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder();
+      finder._setup('.foo', document);
+      const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 0, 'size');
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'div0',
+        type: SELECTOR_ID
+      };
+      const node = document.getElementById('div0');
+      const finder = new Finder();
+      finder._setup('.foo', document);
+      const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'foo',
+        type: SELECTOR_ID
+      };
+      const node = document.getElementById('div0');
+      const finder = new Finder();
+      finder._setup('.foo', document);
+      const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 0, 'size');
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'foo\\ bar',
+        type: SELECTOR_ID
+      };
+      const node = document.createElement('div');
+      node.setAttribute('id', 'foo bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
       const finder = new Finder();
       finder._setup('.foo', document);
       const res = finder._matchSelector(ast, node);
@@ -7451,6 +7516,21 @@ describe('Finder', () => {
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [
         document.getElementById('span3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        name: 'dt',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('dt1');
+      const finder = new Finder();
+      finder._setup('dt', document);
+      const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [
+        node
       ], 'result');
     });
 

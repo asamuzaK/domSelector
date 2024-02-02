@@ -11,8 +11,8 @@ import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 
 /* constants */
 import {
-  ELEMENT_NODE, NOT_SUPPORTED_ERR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
-  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  ELEMENT_NODE, NOT_SUPPORTED_ERR, SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR,
+  TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /**
@@ -224,38 +224,6 @@ export const _matchAttributeSelector = (ast, node) => {
 };
 
 /**
- * match class selector
- * @private
- * @param {object} ast - AST
- * @param {object} node - Element node or structured clone
- * @returns {?object} - matched node
- */
-export const _matchClassSelector = (ast, node) => {
-  const astName = unescapeSelector(ast.name);
-  let res;
-  if (node.classList.contains(astName)) {
-    res = node;
-  }
-  return res ?? null;
-};
-
-/**
- * match ID selector
- * @private
- * @param {object} ast - AST
- * @param {object} node - Element node or structured clone
- * @returns {?object} - matched node
- */
-export const _matchIDSelector = (ast, node) => {
-  const astName = unescapeSelector(ast.name);
-  let res;
-  if (astName === node.id) {
-    res = node;
-  }
-  return res ?? null;
-};
-
-/**
  * match type selector
  * @private
  * @param {object} ast - AST
@@ -341,14 +309,6 @@ export const matchSelector = (ast, node, opt) => {
   switch (ast.type) {
     case SELECTOR_ATTR: {
       matched = _matchAttributeSelector(ast, node);
-      break;
-    }
-    case SELECTOR_CLASS: {
-      matched = _matchClassSelector(ast, node);
-      break;
-    }
-    case SELECTOR_ID: {
-      matched = _matchIDSelector(ast, node);
       break;
     }
     case SELECTOR_TYPE:

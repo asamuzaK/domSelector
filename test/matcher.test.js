@@ -10,8 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as matcher from '../src/js/matcher.js';
 import {
-  IDENTIFIER, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_TYPE,
-  STRING
+  IDENTIFIER, SELECTOR_ATTR, SELECTOR_TYPE, STRING
 } from '../src/js/constant.js';
 
 describe('matcher', () => {
@@ -1621,71 +1620,6 @@ describe('matcher', () => {
     });
   });
 
-  describe('match class selector', () => {
-    const func = matcher._matchClassSelector;
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo',
-        type: SELECTOR_CLASS
-      };
-      const node = document.createElement('div');
-      node.classList.add('foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: 'bar',
-        type: SELECTOR_CLASS
-      };
-      const node = document.createElement('div');
-      node.classList.add('foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-  });
-
-  describe('match id selector', () => {
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'div0',
-        type: SELECTOR_ID
-      };
-      const node = document.getElementById('div0');
-      const res = matcher._matchIDSelector(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: 'foo',
-        type: SELECTOR_ID
-      };
-      const node = document.getElementById('div0');
-      const res = matcher._matchIDSelector(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo\\ bar',
-        type: SELECTOR_ID
-      };
-      const node = document.createElement('div');
-      node.setAttribute('id', 'foo bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = matcher._matchIDSelector(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
   describe('match type selector', () => {
     const func = matcher._matchTypeSelector;
 
@@ -2034,26 +1968,6 @@ describe('matcher', () => {
       const ast = {
         name: 'li',
         type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_CLASS
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        name: 'li1',
-        type: SELECTOR_ID
       };
       const node = document.getElementById('li1');
       const res = func(ast, node);

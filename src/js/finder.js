@@ -8,7 +8,7 @@ import {
   getDirectionality, isContentEditable, isInclusive, isInShadowTree,
   prepareDOMObjects, sortNodes
 } from './dom-util.js';
-import { matchSelector, matchPseudoElementSelector } from './matcher.js';
+import { matchPseudoElementSelector, matchSelector } from './matcher.js';
 import {
   generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
@@ -1702,6 +1702,18 @@ export class Finder {
     let matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
+        case SELECTOR_CLASS: {
+          if (node.classList.contains(astName)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case SELECTOR_ID: {
+          if (astName === node.id) {
+            matched.add(node);
+          }
+          break;
+        }
         case SELECTOR_PSEUDO_CLASS: {
           const nodes = this._matchPseudoClassSelector(ast, node, opt);
           if (nodes.size) {
