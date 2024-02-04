@@ -207,7 +207,7 @@ describe('parse command', () => {
     const j = spyCmd.callCount;
     parseCommand(['foo', 'bar', 'clean']);
     assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
-    assert.strictEqual(spyCmd.callCount, j + 2, 'called command');
+    assert.strictEqual(spyCmd.callCount, j + 1, 'called command');
     stubParse.restore();
     spyCmd.restore();
     stubAct.restore();
@@ -221,7 +221,7 @@ describe('parse command', () => {
     const j = spyCmd.callCount;
     parseCommand(['foo', 'bar', 'denoconf']);
     assert.strictEqual(stubParse.callCount, i + 1, 'called parse');
-    assert.strictEqual(spyCmd.callCount, j + 2, 'called command');
+    assert.strictEqual(spyCmd.callCount, j + 1, 'called command');
     stubParse.restore();
     spyCmd.restore();
     stubAct.restore();
