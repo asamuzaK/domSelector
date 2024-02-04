@@ -251,7 +251,8 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
   } else {
     nodePrefix = prefix || '';
     nodeLocalName = localName;
-  }  let res;
+  }
+  let res;
   switch (astPrefix) {
     case '': {
       if (!nodePrefix && !namespaceURI &&
