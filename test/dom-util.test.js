@@ -900,8 +900,7 @@ describe('DOM utility functions', () => {
     });
 
     it('should get result', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElement('foo:div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
@@ -911,18 +910,6 @@ describe('DOM utility functions', () => {
     it('should get result', () => {
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func('foo', node);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
@@ -933,16 +920,6 @@ describe('DOM utility functions', () => {
       const frag = document.createDocumentFragment();
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
-      frag.appendChild(node);
-      const res = func('foo', node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const frag = document.createDocumentFragment();
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
       frag.appendChild(node);
       const res = func('foo', node);
       assert.isTrue(res, 'result');

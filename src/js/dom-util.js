@@ -307,14 +307,17 @@ export const getNamespaceURI = (ns, node) => {
 export const isNamespaceDeclared = (ns = '', node = {}) => {
   let res;
   if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
-    const root = node.ownerDocument.documentElement;
-    let parent = node;
-    while (parent) {
-      res = getNamespaceURI(ns, parent);
-      if (res || parent === root) {
-        break;
+    res = node.lookupNamespaceURI(ns);
+    if (!res) {
+      const root = node.ownerDocument.documentElement;
+      let parent = node;
+      while (parent) {
+        res = getNamespaceURI(ns, parent);
+        if (res || parent === root) {
+          break;
+        }
+        parent = parent.parentNode;
       }
-      parent = parent.parentNode;
     }
   }
   return !!res;

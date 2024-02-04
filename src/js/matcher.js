@@ -251,11 +251,10 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
   } else {
     nodePrefix = prefix || '';
     nodeLocalName = localName;
-  }
-  let res;
+  }  let res;
   switch (astPrefix) {
     case '': {
-      if (nodePrefix === '' && namespaceURI === null &&
+      if (!nodePrefix && !namespaceURI &&
           (astLocalName === '*' || astLocalName === nodeLocalName)) {
         res = node;
       }
@@ -268,15 +267,16 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
       break;
     }
     default: {
-      const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
-      if (namespaceDeclared) {
-        if (astPrefix === nodePrefix &&
-            (astLocalName === '*' || astLocalName === nodeLocalName)) {
-          res = node;
+      if (astPrefix === nodePrefix) {
+        const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+        if (namespaceDeclared) {
+          if (astLocalName === '*' || astLocalName === nodeLocalName) {
+            res = node;
+          }
+        } else if (!forgive) {
+          const msg = `Undeclared namespace ${astPrefix}`;
+          throw new DOMException(msg, SYNTAX_ERR);
         }
-      } else if (!forgive) {
-        const msg = `Undeclared namespace ${astPrefix}`;
-        throw new DOMException(msg, SYNTAX_ERR);
       }
     }
   }

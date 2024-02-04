@@ -1695,17 +1695,17 @@ describe('matcher', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should throw', () => {
+    it('should get matched node', () => {
       const leaf = {
         name: 'foo|*',
         type: SELECTOR_TYPE
       };
       const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+        document.createElementNS('https://example.com/foo', 'foo:bar');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(leaf, node),
-        DOMException, 'Undeclared namespace foo');
+      const res = func(leaf, node);
+      assert.deepEqual(res, node, 'result');
     });
 
     it('should not match', () => {
@@ -1759,11 +1759,37 @@ describe('matcher', () => {
         type: SELECTOR_TYPE
       };
       const node =
-          document.createElementNS('https://example.com/baz', 'baz:qux');
+        document.createElementNS('https://example.com/baz', 'baz:qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElement('foo:qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       assert.throws(() => func(leaf, node), DOMException,
         'Undeclared namespace foo');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElement('foo:qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(leaf, node, {
+        forgive: true
+      });
+      assert.isNull(res, 'result');
     });
 
     it('should get matched node', () => {
