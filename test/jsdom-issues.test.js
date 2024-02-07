@@ -238,7 +238,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       document = null;
     });
 
-    it('should not match', () => {
+    it('should get matched node(s)', () => {
       const div = document.getElementById('d1');
       const p = document.getElementById('p1');
       assert.deepEqual(div.querySelector(':scope > p'), p, 'result');
