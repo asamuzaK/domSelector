@@ -2087,42 +2087,26 @@ export class Finder {
   /**
    * find lineal
    * @private
-   * @param {Array} leaf - AST leaf
+   * @param {Array} leaves - AST leaves
    * @param {object} opt - options
    * @returns {Array} - [nodes, filtered]
    */
-  _findLineal(leaf, opt = {}) {
-    const { complex, compound, filterLeaves } = opt;
+  _findLineal(leaves, opt = {}) {
+    const { complex } = opt;
     const nodes = [];
     let filtered = false;
-    let bool = this._matchLeaves([leaf], this.#node);
-    if (bool && !complex) {
-      if (compound) {
-        bool = this._matchLeaves(filterLeaves, this.#node);
-        if (bool) {
-          nodes.push(this.#node);
-          filtered = true;
-        }
-      } else {
-        nodes.push(this.#node);
-        filtered = true;
-      }
+    let bool = this._matchLeaves(leaves, this.#node);
+    if (bool) {
+      nodes.push(this.#node);
+      filtered = true;
     }
     if (!bool || complex) {
-      if (bool) {
-        nodes.push(this.#node);
-        if (!compound) {
-          filtered = true;
-        }
-      }
       let refNode = this.#node.parentNode;
       while (refNode) {
-        bool = this._matchLeaves([leaf], refNode);
+        bool = this._matchLeaves(leaves, refNode);
         if (bool) {
           nodes.push(refNode);
-          if (!compound) {
-            filtered = true;
-          }
+          filtered = true;
         }
         if (refNode.parentNode) {
           refNode = refNode.parentNode;
@@ -2233,10 +2217,8 @@ export class Finder {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaf, {
-            complex,
-            compound,
-            filterLeaves
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
           });
         } else if (targetType === TARGET_FIRST &&
                    this.#root.nodeType !== ELEMENT_NODE) {
@@ -2264,10 +2246,8 @@ export class Finder {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaf, {
-            complex,
-            compound,
-            filterLeaves
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
           });
         } else if (targetType === TARGET_FIRST) {
           [nodes, filtered] = this._findFirst(leaves);
@@ -2286,10 +2266,8 @@ export class Finder {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaf, {
-            complex,
-            compound,
-            filterLeaves
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
           });
         } else if (this.#document.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
@@ -2317,10 +2295,8 @@ export class Finder {
         } else if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaf, {
-            complex,
-            compound,
-            filterLeaves
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
           });
         } else if (targetType === TARGET_FIRST) {
           [nodes, filtered] = this._findFirst(leaves);
@@ -2536,9 +2512,6 @@ export class Finder {
     const [...branches] = this.#ast;
     const l = branches.length;
     let nodes = new Set();
-    if (targetType === TARGET_LINEAL) {
-      this.#results = new WeakMap();
-    }
     for (let i = 0; i < l; i++) {
       const { branch, dir, filtered, find } = branches[i];
       const branchLen = branch.length;
@@ -2562,14 +2535,9 @@ export class Finder {
           } else if (filterLeaves.length) {
             for (let j = 0; j < entryNodesLen; j++) {
               const node = entryNodes[j];
-              const bool = filtered || this._matchLeaves(filterLeaves, node, {
-                warn: this.#warn
-              });
-              if (bool) {
-                nodes.add(node);
-                if (targetType !== TARGET_ALL) {
-                  break;
-                }
+              nodes.add(node);
+              if (targetType !== TARGET_ALL) {
+                break;
               }
             }
           } else if (targetType === TARGET_ALL) {

@@ -8646,7 +8646,7 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('li', node);
-      const res = finder._findLineal(leaf);
+      const res = finder._findLineal([leaf]);
       assert.deepEqual(res, [
         [document.getElementById('li1')],
         true
@@ -8661,9 +8661,8 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('ul > li', node);
-      const res = finder._findLineal(leaf, {
-        complex: true,
-        compound: false
+      const res = finder._findLineal([leaf], {
+        complex: true
       });
       assert.deepEqual(res, [
         [document.getElementById('li1')],
@@ -8679,7 +8678,7 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('ul', node);
-      const res = finder._findLineal(leaf);
+      const res = finder._findLineal([leaf]);
       assert.deepEqual(res, [
         [document.getElementById('ul1')],
         true
@@ -8694,7 +8693,7 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('ol', node);
-      const res = finder._findLineal(leaf);
+      const res = finder._findLineal([leaf]);
       assert.deepEqual(res, [
         [],
         false
@@ -8709,15 +8708,8 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('li.li', node);
-      const res = finder._findLineal(leaf, {
-        complex: false,
-        compound: true,
-        filterLeaves: [
-          {
-            name: 'li',
-            type: SELECTOR_TYPE
-          }
-        ]
+      const res = finder._findLineal([leaf], {
+        complex: false
       });
       assert.deepEqual(res, [
         [document.getElementById('li2')],
@@ -8733,13 +8725,12 @@ describe('Finder', () => {
       };
       const finder = new Finder();
       finder._setup('li + li.li', node);
-      const res = finder._findLineal(leaf, {
-        complex: true,
-        compound: true
+      const res = finder._findLineal([leaf], {
+        complex: true
       });
       assert.deepEqual(res, [
         [document.getElementById('li2')],
-        false
+        true
       ], 'result');
     });
   });
