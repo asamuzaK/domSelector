@@ -81,6 +81,7 @@ export class Finder {
    */
   constructor() {
     this.#cache = new WeakMap();
+    this.#results = new WeakMap();
   }
 
   /**
@@ -127,7 +128,6 @@ export class Finder {
     [this.#window, this.#document, this.#root] = prepareDOMObjects(node);
     this.#shadow = isInShadowTree(node);
     [this.#ast, this.#nodes] = this._correspond(selector);
-    this.#results = new WeakMap();
     return node;
   }
 
@@ -1744,23 +1744,44 @@ export class Finder {
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node, opt) {
+    const { attributes, localName, nodeType } = node;
     let bool;
     let result = this.#results.get(leaves);
     if (result && result.has(node)) {
-      bool = result.get(node);
+      const { attr, matched } = result.get(node);
+      if (attributes?.length === attr) {
+        bool = matched;
+      }
     }
     if (typeof bool !== 'boolean') {
+      const regForm = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
+      let save;
+      if (nodeType === ELEMENT_NODE && regForm.test(localName)) {
+        save = false;
+      } else {
+        save = true;
+      }
       for (const leaf of leaves) {
+        const { name, type: leafType } = leaf;
+        const leafName = unescapeSelector(name);
+        if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
+          save = false;
+        }
         bool = this._matchSelector(leaf, node, opt).has(node);
         if (!bool) {
           break;
         }
       }
-      if (!result) {
-        result = new WeakMap();
+      if (save) {
+        if (!result) {
+          result = new WeakMap();
+        }
+        result.set(node, {
+          attr: attributes?.length,
+          matched: bool
+        });
+        this.#results.set(leaves, result);
       }
-      result.set(node, bool);
-      this.#results.set(leaves, result);
     }
     return !!bool;
   }
