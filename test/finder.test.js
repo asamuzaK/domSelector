@@ -1840,6 +1840,25 @@ describe('Finder', () => {
         document.getElementById('dt3')
       ], 'result');
     });
+
+    it('should not match', () => {
+      const leafName = 'nth-foo';
+      const leaf = {
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const finder = new Finder();
+      finder._setup(':nth-foo(3n+1)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res.size, 0, 'size');
+      assert.deepEqual([...res], [], 'result');
+    });
   });
 
   describe('match directionality pseudo-class', () => {

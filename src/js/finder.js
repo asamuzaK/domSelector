@@ -299,7 +299,7 @@ export class Finder {
   _collectNthChild(anb, node, opt) {
     const { a, b, reverse, selector } = anb;
     const { parentNode } = node;
-    let matched = new Set();
+    const matched = new Set();
     let selectorBranches;
     if (selector) {
       if (this.#cache.has(selector)) {
@@ -434,7 +434,7 @@ export class Finder {
       }
       if (reverse && matched.size > 1) {
         const m = [...matched];
-        matched = new Set(m.reverse());
+        return new Set(m.reverse());
       }
     } else if (node === this.#root && (a + b) === 1) {
       if (selectorBranches) {
@@ -468,7 +468,7 @@ export class Finder {
   _collectNthOfType(anb, node) {
     const { a, b, reverse } = anb;
     const { localName, parentNode, prefix } = node;
-    let matched = new Set();
+    const matched = new Set();
     if (parentNode) {
       const walker = this.#document.createTreeWalker(parentNode, WALKER_FILTER);
       let l = 0;
@@ -544,7 +544,7 @@ export class Finder {
       }
       if (reverse && matched.size > 1) {
         const m = [...matched];
-        matched = new Set(m.reverse());
+        return new Set(m.reverse());
       }
     } else if (node === this.#root && (a + b) === 1) {
       matched.add(node);
@@ -598,26 +598,19 @@ export class Finder {
         anbMap.set('reverse', true);
       }
     }
-    let matched = new Set();
-    if (anbMap.has('a') && anbMap.has('b')) {
-      if (/^nth-(?:last-)?child$/.test(nthName)) {
-        if (selector) {
-          anbMap.set('selector', selector);
-        }
-        const anb = Object.fromEntries(anbMap);
-        const nodes = this._collectNthChild(anb, node, opt);
-        if (nodes.size) {
-          matched = nodes;
-        }
-      } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
-        const anb = Object.fromEntries(anbMap);
-        const nodes = this._collectNthOfType(anb, node);
-        if (nodes.size) {
-          matched = nodes;
-        }
+    if (/^nth-(?:last-)?child$/.test(nthName)) {
+      if (selector) {
+        anbMap.set('selector', selector);
       }
+      const anb = Object.fromEntries(anbMap);
+      const nodes = this._collectNthChild(anb, node, opt);
+      return nodes;
+    } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
+      const anb = Object.fromEntries(anbMap);
+      const nodes = this._collectNthOfType(anb, node);
+      return nodes;
     }
-    return matched;
+    return new Set();
   }
 
   /**
@@ -872,7 +865,7 @@ export class Finder {
       warn = this.#warn
     } = opt;
     const astName = unescapeSelector(ast.name);
-    let matched = new Set();
+    const matched = new Set();
     // :has(), :is(), :not(), :where()
     if (REG_LOGICAL_PSEUDO.test(astName)) {
       let astData;
@@ -930,9 +923,7 @@ export class Finder {
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
-        if (nodes.size) {
-          matched = nodes;
-        }
+        return nodes;
       // :dir()
       } else if (astName === 'dir') {
         const res = this._matchDirectionPseudoClass(branch, node);
@@ -1699,7 +1690,7 @@ export class Finder {
   _matchSelector(ast, node, opt) {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
-    let matched = new Set();
+    const matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case SELECTOR_PSEUDO_ELEMENT: {
@@ -1720,10 +1711,7 @@ export class Finder {
         }
         case SELECTOR_PSEUDO_CLASS: {
           const nodes = this._matchPseudoClassSelector(ast, node, opt);
-          if (nodes.size) {
-            matched = nodes;
-          }
-          break;
+          return nodes;
         }
         default: {
           const res = matchSelector(ast, node, opt);
@@ -1736,9 +1724,7 @@ export class Finder {
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       if (astName !== 'has' && REG_LOGICAL_PSEUDO.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
-        if (nodes.size) {
-          matched = nodes;
-        }
+        return nodes;
       } else if (REG_SHADOW_HOST.test(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node, opt);
         if (res) {
@@ -1796,7 +1782,7 @@ export class Finder {
    */
   _matchHTMLCollection(items, opt = {}) {
     const { compound, filterLeaves } = opt;
-    let nodes = new Set();
+    const nodes = new Set();
     const l = items.length;
     if (l) {
       if (compound) {
@@ -1809,7 +1795,7 @@ export class Finder {
         }
       } else {
         const arr = [].slice.call(items);
-        nodes = new Set(arr);
+        return new Set(arr);
       }
     }
     return nodes;
@@ -1900,7 +1886,7 @@ export class Finder {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
     const { dir } = opt;
-    let matched = new Set();
+    const matched = new Set();
     if (dir === DIR_NEXT) {
       switch (comboName) {
         case '+': {
@@ -1948,8 +1934,9 @@ export class Finder {
         default: {
           const { nodes, pending } = this._findDescendantNodes(leaves, node);
           if (nodes.size) {
-            matched = nodes;
-          } else if (pending) {
+            return nodes;
+          }
+          if (pending) {
             const walker = this.#document.createTreeWalker(node, SHOW_ELEMENT);
             let refNode = walker.nextNode();
             while (refNode) {
@@ -2013,7 +2000,7 @@ export class Finder {
             refNode = refNode.parentNode;
           }
           if (arr.length) {
-            matched = new Set(arr.reverse());
+            return new Set(arr.reverse());
           }
         }
       }
