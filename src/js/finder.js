@@ -2536,6 +2536,9 @@ export class Finder {
     const [...branches] = this.#ast;
     const l = branches.length;
     let nodes = new Set();
+    if (targetType === TARGET_LINEAL) {
+      this.#results = new WeakMap();
+    }
     for (let i = 0; i < l; i++) {
       const { branch, dir, filtered, find } = branches[i];
       const branchLen = branch.length;
