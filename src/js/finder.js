@@ -2134,8 +2134,7 @@ export class Finder {
     const nodes = [];
     let filtered = false;
     const node = this._findNode(leaves, {
-      node: this.#node,
-      warn: this.#warn
+      node: this.#node
     });
     if (node) {
       nodes.push(node);
