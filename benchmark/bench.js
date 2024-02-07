@@ -383,7 +383,6 @@ suite.on('start', () => {
   elementClosest('linkedom', selectors[7], 'p9-9-9');
 }).add(`patched-jsdom closest('${selectors[7]}')`, () => {
   elementClosest('patched-jsdom', selectors[7], 'p9-9-9');
-
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelector('jsdom', selectors[0], 'p0-0-0');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
