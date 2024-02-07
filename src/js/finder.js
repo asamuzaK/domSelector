@@ -2076,7 +2076,9 @@ export class Finder {
   _matchSelf(leaves) {
     const nodes = [];
     let filtered = false;
-    const bool = this._matchLeaves(leaves, this.#node);
+    const bool = this._matchLeaves(leaves, this.#node, {
+      warn: this.#warn
+    });
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2095,7 +2097,9 @@ export class Finder {
     const { complex } = opt;
     const nodes = [];
     let filtered = false;
-    let bool = this._matchLeaves(leaves, this.#node);
+    let bool = this._matchLeaves(leaves, this.#node, {
+      warn: this.#warn
+    });
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2103,7 +2107,9 @@ export class Finder {
     if (!bool || complex) {
       let refNode = this.#node.parentNode;
       while (refNode) {
-        bool = this._matchLeaves(leaves, refNode);
+        bool = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
         if (bool) {
           nodes.push(refNode);
           filtered = true;
@@ -2128,7 +2134,8 @@ export class Finder {
     const nodes = [];
     let filtered = false;
     const node = this._findNode(leaves, {
-      node: this.#node
+      node: this.#node,
+      warn: this.#warn
     });
     if (node) {
       nodes.push(node);
