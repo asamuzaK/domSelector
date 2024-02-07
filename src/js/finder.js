@@ -1745,28 +1745,20 @@ export class Finder {
    */
   _matchLeaves(leaves, node, opt) {
     let bool;
-    if (this.#results.has(leaves)) {
-      const result = this.#results.get(leaves);
-      if (result.has(node)) {
-        bool = result.get(node);
-      } else {
-        for (const leaf of leaves) {
-          bool = this._matchSelector(leaf, node, opt).has(node);
-          if (!bool) {
-            break;
-          }
-        }
-        result.set(node, bool);
-        this.#results.set(leaves, result);
-      }
-    } else {
+    let result = this.#results.get(leaves);
+    if (result && result.has(node)) {
+      bool = result.get(node);
+    }
+    if (typeof bool !== 'boolean') {
       for (const leaf of leaves) {
         bool = this._matchSelector(leaf, node, opt).has(node);
         if (!bool) {
           break;
         }
       }
-      const result = new WeakMap();
+      if (!result) {
+        result = new WeakMap();
+      }
       result.set(node, bool);
       this.#results.set(leaves, result);
     }
