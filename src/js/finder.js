@@ -2513,14 +2513,15 @@ export class Finder {
     const l = branches.length;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, dir, filtered, find } = branches[i];
+      const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
         const entryNodes = this.#nodes[i];
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
-          const { leaves: [, ...filterLeaves] } = branch[0];
+          const { leaves } = branch[0];
+          const compound = leaves.length > 1;
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (let j = 0; j < entryNodesLen; j++) {
@@ -2532,7 +2533,7 @@ export class Finder {
                 }
               }
             }
-          } else if (filterLeaves.length) {
+          } else if (compound) {
             for (let j = 0; j < entryNodesLen; j++) {
               const node = entryNodes[j];
               nodes.add(node);
