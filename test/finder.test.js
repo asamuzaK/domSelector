@@ -8788,7 +8788,8 @@ describe('Finder', () => {
           document.getElementById('li2'),
           document.getElementById('li3')
         ],
-        true
+        true,
+        false
       ], 'result');
     });
 
@@ -8800,6 +8801,7 @@ describe('Finder', () => {
       const res = finder._findFromHTMLCollection(items);
       assert.deepEqual(res, [
         [],
+        false,
         false
       ], 'result');
     });
@@ -8825,9 +8827,8 @@ describe('Finder', () => {
         filterLeaves: leaves
       });
       assert.deepEqual(res, [
-        [
-          document.getElementById('li3')
-        ],
+        [],
+        false,
         true
       ], 'result');
     });
@@ -8845,7 +8846,8 @@ describe('Finder', () => {
           document.getElementById('li2'),
           document.getElementById('li3')
         ],
-        true
+        true,
+        false
       ], 'result');
     });
 
@@ -8872,7 +8874,8 @@ describe('Finder', () => {
       });
       assert.deepEqual(res, [
         [document.getElementById('li3')],
-        true
+        true,
+        false
       ], 'result');
     });
   });
@@ -9111,20 +9114,16 @@ describe('Finder', () => {
       assert.isTrue(res.pending, 'pending');
     });
 
-    it('should get matched node(s)', () => {
+    it('should be pended', () => {
       const finder = new Finder();
       finder._setup('li.li', document);
       finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('li.li');
       const res = finder._findEntryNodes(twig);
-      assert.deepEqual([...res.nodes], [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'nodes');
+      assert.deepEqual([...res.nodes], [], 'nodes');
       assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.isFalse(res.filtered, 'filtered');
+      assert.isTrue(res.pending, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -9316,18 +9315,16 @@ describe('Finder', () => {
       assert.isFalse(res.pending, 'pending');
     });
 
-    it('should get matched node(s)', () => {
+    it('should be pended', () => {
       const finder = new Finder();
       finder._setup('li.li:last-child', document);
       finder._prepareTreeWalkers(document);
       const [[{ branch: [twig] }]] = finder._correspond('li.li:last-child');
       const res = finder._findEntryNodes(twig);
-      assert.deepEqual([...res.nodes], [
-        document.getElementById('li3')
-      ], 'nodes');
+      assert.deepEqual([...res.nodes], [], 'nodes');
       assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.isFalse(res.filtered, 'filtered');
+      assert.isTrue(res.pending, 'pending');
     });
 
     it('should get matched node(s)', () => {

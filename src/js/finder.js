@@ -2157,6 +2157,7 @@ export class Finder {
     const { compound, filterLeaves } = opt;
     let nodes = [];
     let filtered = false;
+    let pending = false;
     const l = items.length;
     if (l) {
       if (this.#node.nodeType === ELEMENT_NODE) {
@@ -2178,22 +2179,13 @@ export class Finder {
           }
         }
       } else if (compound) {
-        for (let i = 0; i < l; i++) {
-          const node = items[i];
-          const bool = this._matchLeaves(filterLeaves, node, {
-            warn: this.#warn
-          });
-          if (bool) {
-            nodes.push(node);
-            filtered = true;
-          }
-        }
+        pending = true;
       } else {
         nodes = [].slice.call(items);
         filtered = true;
       }
     }
-    return [nodes, filtered];
+    return [nodes, filtered, pending];
   }
 
   /**
@@ -2260,7 +2252,7 @@ export class Finder {
           [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#root.nodeType === DOCUMENT_NODE) {
           const items = this.#root.getElementsByClassName(leafName);
-          [nodes, filtered] = this._findFromHTMLCollection(items, {
+          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
             compound,
             filterLeaves
           });
@@ -2280,7 +2272,7 @@ export class Finder {
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
-          [nodes, filtered] = this._findFromHTMLCollection(items, {
+          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
             compound,
             filterLeaves
           });
