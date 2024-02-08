@@ -33,9 +33,9 @@ export const verifyNode = node => {
 };
 
 /**
- * prepare window, document, root node
+ * prepare document, root node
  * @param {object} node - Document, DocumentFragment, Element node
- * @returns {Array.<object>} - array of window, document, root node
+ * @returns {Array.<object>} - array of document, root node
  */
 export const prepareDOMObjects = node => {
   node = verifyNode(node);
@@ -67,10 +67,7 @@ export const prepareDOMObjects = node => {
       break;
     }
   }
-  // NOTE: nullable
-  const window = document.defaultView;
   return [
-    window,
     document,
     root
   ];

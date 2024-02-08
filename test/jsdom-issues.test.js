@@ -8,9 +8,7 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import {
-  closest, matches, querySelector, querySelectorAll
-} from '../src/index.js';
+import { DOMSelector } from '../src/index.js';
 
 /**
  * monkey patch jsdom
@@ -22,13 +20,14 @@ const jsdom = (str = '') => {
     runScripts: 'dangerously',
     url: 'http://localhost/',
     beforeParse: window => {
+      const domSelector = new DOMSelector(window);
       window.Element.prototype.matches = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return matches(selector, this);
+        return domSelector.matches(selector, this);
       };
       window.Element.prototype.closest = function (...args) {
         if (!args.length) {
@@ -36,7 +35,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return closest(selector, this);
+        return domSelector.closest(selector, this);
       };
       window.Document.prototype.querySelector = function (...args) {
         if (!args.length) {
@@ -44,7 +43,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelector(selector, this);
+        return domSelector.querySelector(selector, this);
       };
       window.DocumentFragment.prototype.querySelector = function (...args) {
         if (!args.length) {
@@ -52,7 +51,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelector(selector, this);
+        return domSelector.querySelector(selector, this);
       };
       window.Element.prototype.querySelector = function (...args) {
         if (!args.length) {
@@ -60,7 +59,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelector(selector, this);
+        return domSelector.querySelector(selector, this);
       };
       window.Document.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
@@ -68,7 +67,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelectorAll(selector, this);
+        return domSelector.querySelectorAll(selector, this);
       };
       window.DocumentFragment.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
@@ -76,7 +75,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelectorAll(selector, this);
+        return domSelector.querySelectorAll(selector, this);
       };
       window.Element.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
@@ -84,7 +83,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return querySelectorAll(selector, this);
+        return domSelector.querySelectorAll(selector, this);
       };
     }
   });
