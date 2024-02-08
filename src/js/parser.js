@@ -279,5 +279,46 @@ export const parseAstName = selector => {
   };
 };
 
+/**
+ * filter selector (for nwsapi)
+ * @private
+ * @param {string} selector - type selector
+ * @returns {boolean} - result
+ */
+export const filterSelector = selector => {
+  let bool;
+  if (selector && typeof selector === 'string') {
+    // filter :not(complex selector)
+    // type selector: *, tag
+    // \*|[\da-z_-]+
+    // subclass selector: attr, class, id, pseudo-class
+    // \[.+\]|[.#:][\da-z_-]+
+    // compound selector:
+    // (?:\*|[\da-z_-]+|(?:\*|[\da-z_-]+)?(?:\[.+\]|[.#:][\da-z_-]+)+)
+    // :not() that only contains compound selectors:
+    // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
+    const regCompound =
+      /:not\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+))*\s*\)/i;
+    if (selector.includes(':not') && !regCompound.test(selector)) {
+      return false;
+    }
+    // filter namespaced selector e.g. ns|E, pseudo-element e.g. ::slotted,
+    // :focus, :indeterminate, :placeholder-shown, :scope,
+    // :dir(), :lang(), :has(), :is(), :where(),
+    // :nth-child(an+b of selector), :nth-last-child(an+b of selector),
+    // :host, :host(), :host-context(),
+    // [attr i], [attr s]
+    if (/\||:(?::|focus|indeterminate|placeholder|scope|dir|lang|has|is|where|nth-(?:last-)?child\(.+\sof.+\)|host)|\s[is]\s*\]/i.test(selector)) {
+      return false;
+    }
+    // filter unsupported pseudo-classes
+    if (/:(?:after|before|first-l(?:etter|ine)|active|autofill|blank|buffering|current|defined|fullscreen|future|hover|modal|muted|past|paused|picture|(?:play|seek)ing|stalled|user|visited|volume|-webkit-)/.test(selector)) {
+      return false;
+    }
+    bool = true;
+  }
+  return !!bool;
+};
+
 /* export */
 export { generate as generateCSS } from 'css-tree';
