@@ -302,20 +302,20 @@ export const filterSelector = selector => {
     }
     // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
     if (selector.includes(':nth') &&
-        /:nth-(?:last-)?child\(.+\sof.+\)/.test(selector)) {
+        /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/.test(selector)) {
       return false;
     }
     // filter :not(complex selector)
     // type selector: *, tag
     // \*|[\w-]{1,255}
     // subclass selector: attr, class, id, pseudo-class
-    // \[.+\]|[.#:][\w-]{1,255}
+    // \[.{1,255}\]|[.#:][\w-]{1,255}
     // compound selector:
-    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.+\]|[.#:][\w-]{1,255})+)
+    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255})+)
     // :not() that only contains compound selectors:
     // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
     if (selector.includes(':not') &&
-        !/:not\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.+\]|[.#:][\w-]{1,255})+)(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.+\]|[.#:][\w-]{1,255})+)){0,255}\s*\)/.test(selector)) {
+        !/:not\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255})+)(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255})+)){0,255}\s*\)/.test(selector)) {
       return false;
     }
   }
