@@ -131,19 +131,16 @@ export class Finder {
    * @param {object} opt - options
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
-   * @param {boolean} skip - skip correspond
    * @returns {object} - node
    */
-  _setup(selector, node, opt = {}, skip = false) {
+  _setup(selector, node, opt = {}) {
     const { noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
     [this.#content, this.#root] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
-    if (!skip) {
-      this._correspond(selector);
-    }
+    this._correspond(selector);
     return node;
   }
 
@@ -2809,11 +2806,10 @@ export class Finder {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
       }
-      this.#node = this._setup(selector, node, opt, true);
-      if (this.#document === this.#content && filterSelector(selector)) {
+      if (filterSelector(selector)) {
         res = this.#nwsapi.match(selector, node);
       } else {
-        this._correspond(selector);
+        this.#node = this._setup(selector, node, opt);
         const nodes = this._find(TARGET_SELF);
         res = nodes.size;
       }
@@ -2837,11 +2833,10 @@ export class Finder {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
       }
-      this.#node = this._setup(selector, node, opt, true);
-      if (this.#document === this.#content && filterSelector(selector)) {
+      if (filterSelector(selector)) {
         res = this.#nwsapi.closest(selector, node);
       } else {
-        this._correspond(selector);
+        this.#node = this._setup(selector, node, opt);
         const nodes = this._find(TARGET_LINEAL);
         if (nodes.size) {
           let refNode = this.#node;

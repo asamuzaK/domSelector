@@ -282,7 +282,7 @@ export const parseAstName = selector => {
 /**
  * filter selector (for nwsapi)
  * @private
- * @param {string} selector - type selector
+ * @param {string} selector - selector
  * @returns {boolean} - result
  */
 export const filterSelector = selector => {
@@ -290,13 +290,13 @@ export const filterSelector = selector => {
     return false;
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
-  // and attribute selectors with case flag i.e. [attr i], [attr s]
+  // and attribute selectors with case flag, i.e. [attr i], [attr s]
   if (/\||::|\s[is]\s*\]/i.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // passing only child-indexed pseudo-classes, e.g. :nth-child(), and :not()
+    // filter pseudos other than child-indexed, e.g. :nth-child(), and :not()
     if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
       return false;
     }
@@ -311,7 +311,7 @@ export const filterSelector = selector => {
     // subclass selector: attr, class, id, pseudo-class
     // \[.{1,255}\]|[.#:][\w-]{1,255}
     // compound selector:
-    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255})+)
+    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})
     // :not() that only contains compound selectors:
     // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
     if (selector.includes(':not') &&
