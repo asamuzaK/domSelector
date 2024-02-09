@@ -286,38 +286,40 @@ export const parseAstName = selector => {
  * @returns {boolean} - result
  */
 export const filterSelector = selector => {
-  let bool;
-  if (selector && typeof selector === 'string') {
+  if (!selector || typeof selector !== 'string') {
+    return false;
+  }
+  // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
+  // and attribute selectors with case flag i.e. [attr i], [attr s]
+  if (/\||::|\s[is]\s*\]/i.test(selector)) {
+    return false;
+  }
+  // filter pseudo-class selectors
+  if (selector.includes(':')) {
+    // passing only child-indexed pseudo-classes, e.g. :nth-child(), and :not()
+    if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
+      return false;
+    }
+    // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
+    if (selector.includes(':nth') &&
+        /:nth-(?:last-)?child\(.+\sof.+\)/.test(selector)) {
+      return false;
+    }
     // filter :not(complex selector)
     // type selector: *, tag
-    // \*|[\da-z_-]+
+    // \*|[\w-]+
     // subclass selector: attr, class, id, pseudo-class
-    // \[.+\]|[.#:][\da-z_-]+
+    // \[.+\]|[.#:][\w-]+
     // compound selector:
-    // (?:\*|[\da-z_-]+|(?:\*|[\da-z_-]+)?(?:\[.+\]|[.#:][\da-z_-]+)+)
+    // (?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)
     // :not() that only contains compound selectors:
     // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
-    const regCompound =
-      /:not\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+))*\s*\)/i;
-    if (selector.includes(':not') && !regCompound.test(selector)) {
+    if (selector.includes(':not') &&
+        !/:not\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+))*\s*\)/.test(selector)) {
       return false;
     }
-    // filter namespaced selector e.g. ns|E, pseudo-element e.g. ::slotted,
-    // :focus, :indeterminate, :placeholder-shown, :scope,
-    // :dir(), :lang(), :has(), :is(), :where(),
-    // :nth-child(an+b of selector), :nth-last-child(an+b of selector),
-    // :host, :host(), :host-context(),
-    // [attr i], [attr s]
-    if (/\||:(?::|focus|indeterminate|placeholder|scope|dir|lang|has|is|where|nth-(?:last-)?child\(.+\sof.+\)|host)|\s[is]\s*\]/i.test(selector)) {
-      return false;
-    }
-    // filter unsupported pseudo-classes
-    if (/:(?:after|before|first-l(?:etter|ine)|active|autofill|blank|buffering|current|defined|fullscreen|future|hover|modal|muted|past|paused|picture|(?:play|seek)ing|stalled|user|visited|volume|-webkit-)/.test(selector)) {
-      return false;
-    }
-    bool = true;
   }
-  return !!bool;
+  return true;
 };
 
 /* export */
