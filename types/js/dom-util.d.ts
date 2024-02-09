@@ -1,5 +1,5 @@
 export function verifyNode(node: any): object;
-export function prepareDOMObjects(node: object): Array<object>;
+export function resolveContent(node: object): Array<object>;
 export function isInShadowTree(node?: object): boolean;
 export function getSlottedTextContent(node?: object): string | null;
 export function getDirectionality(node?: object): string | null;

@@ -44,7 +44,7 @@
     "happy-dom": "^13.3.8",
     "jsdom": "24.0.0",
     "linkedom": "^0.16.8",
-    "mocha": "^10.2.0",
+    "mocha": "^10.3.0",
     "sinon": "^17.0.1",
     "typescript": "^5.3.3",
     "wpt-runner": "^5.0.0"
@@ -60,5 +60,5 @@
     "tsc": "npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "3.0.5"
+  "version": "4.0.0"
 }
