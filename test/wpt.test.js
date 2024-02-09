@@ -2150,17 +2150,17 @@ describe('local wpt test cases', () => {
 
   describe('css/selectors/scope-selector.html', () => {
     it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
-      const html = `<div id='shadowHost'></div>`;
+      const html = '<div id=\'shadowHost\'></div>';
       document.body.innerHTML = html;
-      const shadowHost = document.getElementById("shadowHost");
-      const shadowRoot = shadowHost.attachShadow({mode:'open'})
-      shadowRoot.appendChild(document.createElement("div"));
+      const shadowHost = document.getElementById('shadowHost');
+      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(document.createElement('div'));
 
       const res1 = shadowRoot.querySelectorAll(':scope > div');
       assert.deepEqual(res1, [], 'should not match in shadow root');
 
       const documentFragment = document.createDocumentFragment();
-      documentFragment.appendChild(document.createElement("div"));
+      documentFragment.appendChild(document.createElement('div'));
       const res2 = documentFragment.querySelectorAll(':scope > div');
       assert.deepEqual(res2, [], 'should not match in document fragment');
 

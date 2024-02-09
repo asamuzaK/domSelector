@@ -223,6 +223,7 @@ const filter = testPath => {
     'not-complex.html',
     'only-child.html',
     'only-of-type.html',
+    'open-closed-pseudo.html',
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
     'selector-placeholder-shown-emptify-placeholder.html',
