@@ -15,8 +15,9 @@ npm i @asamuzakjp/dom-selector
 ## Usage
 
 ```javascript
-import { JSDOM } from 'jsdom';
 import { DOMSelector } from '@asamuzakjp/dom-selector';
+import { JSDOM } from 'jsdom';
+
 const { window } = new JSDOM();
 const {
   closest, matches, querySelector, querySelectorAll
@@ -166,8 +167,8 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 ## Monkey patch jsdom
 
 ``` javascript
-import { JSDOM } from 'jsdom';
 import { DOMSelector } from '@asamuzakjp/dom-selector';
+import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('', {
   runScripts: 'dangerously',
