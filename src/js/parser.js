@@ -307,15 +307,15 @@ export const filterSelector = selector => {
     }
     // filter :not(complex selector)
     // type selector: *, tag
-    // \*|[\w-]+
+    // \*|[A-Za-z_][\w-]*
     // subclass selector: attr, class, id, pseudo-class
-    // \[.+\]|[.#:][\w-]+
+    // \[.+\]|[.#:][A-Za-z_][\w-]*
     // compound selector:
-    // (?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)
+    // (?:\*|[A-Za-z_][\w-]*|(?:\*|[A-Za-z_][\w-]*)?(?:\[.+\]|[.#:][A-Za-z_][\w-]*)+)
     // :not() that only contains compound selectors:
     // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
     if (selector.includes(':not') &&
-        !/:not\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[.+\]|[.#:][\w-]+)+))*\s*\)/.test(selector)) {
+        !/:not\(\s*(?:\*|[A-Za-z_][\w-]*|(?:\*|[A-Za-z_][\w-]*)?(?:\[.+\]|[.#:][A-Za-z_][\w-]*)+)(?:\s*,\s*(?:\*|[A-Za-z_][\w-]*|(?:\*|[A-Za-z_][\w-]*)?(?:\[.+\]|[.#:][A-Za-z_][\w-]*)+))*\s*\)/.test(selector)) {
       return false;
     }
   }
