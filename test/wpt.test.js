@@ -2148,6 +2148,47 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/scope-selector.html', () => {
+    it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
+      const html = `<div id='shadowHost'></div>`;
+      document.body.innerHTML = html;
+      const shadowHost = document.getElementById("shadowHost");
+      const shadowRoot = shadowHost.attachShadow({mode:'open'})
+      shadowRoot.appendChild(document.createElement("div"));
+
+      const res1 = shadowRoot.querySelectorAll(':scope > div');
+      assert.deepEqual(res1, [], 'should not match in shadow root');
+
+      const documentFragment = document.createDocumentFragment();
+      documentFragment.appendChild(document.createElement("div"));
+      const res2 = documentFragment.querySelectorAll(':scope > div');
+      assert.deepEqual(res2, [], 'should not match in document fragment');
+
+      const res3 = shadowRoot.firstChild.querySelector(':scope');
+      assert.isNull(res3, 'should not match');
+      const res4 = shadowRoot.firstChild.querySelectorAll(':scope');
+      assert.deepEqual(res4, [], 'should not match');
+
+      const res5 = shadowRoot.querySelector(':scope');
+      assert.isNull(res5, 'should not match');
+      const res6 = shadowRoot.querySelectorAll(':scope');
+      assert.deepEqual(res6, [], 'should not match');
+
+      const res7 = documentFragment.querySelector(':scope');
+      assert.isNull(res7, 'should not match');
+      const res8 = documentFragment.querySelectorAll(':scope');
+      assert.deepEqual(res8, [], 'should not match');
+
+      const res9 = document.querySelector(':scope');
+      assert.deepEqual(res9, document.documentElement,
+        'should match the document element');
+      const res10 = document.querySelectorAll(':scope');
+      assert.deepEqual(res10, [
+        document.documentElement
+      ], 'should match the document element');
+    });
+  });
+
   describe('html/semantics/forms/the-output-element/output-validity.html', () => {
     it('should not match', () => {
       const html = "<output id='output_test'></output>";
