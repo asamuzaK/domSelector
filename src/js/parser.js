@@ -290,13 +290,13 @@ export const filterSelector = selector => {
     return false;
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
-  // and attribute selectors with case flag i.e. [attr i], [attr s]
+  // and attribute selectors with case flag, i.e. [attr i], [attr s]
   if (/\||::|\s[is]\s*\]/i.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // passes only child-indexed pseudo-classes, e.g. :nth-child(), and :not()
+    // filter pseudos other than child-indexed, e.g. :nth-child(), and :not()
     if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
       return false;
     }
