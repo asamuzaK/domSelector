@@ -78,8 +78,8 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('prepare window, document, root node', () => {
-    const func = domUtil.prepareDOMObjects;
+  describe('resolve content document and root node', () => {
+    const func = domUtil.resolveContent;
 
     it('should get result', () => {
       const res = func(document);

@@ -7,7 +7,7 @@ import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from 'nwsapi';
 import {
   getDirectionality, isContentEditable, isInclusive, isInShadowTree,
-  prepareDOMObjects, sortNodes
+  resolveContent, sortNodes
 } from './dom-util.js';
 import { matchPseudoElementSelector, matchSelector } from './matcher.js';
 import {
@@ -139,7 +139,7 @@ export class Finder {
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
-    [this.#content, this.#root] = prepareDOMObjects(node);
+    [this.#content, this.#root] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
     if (!skip) {
       this._correspond(selector);

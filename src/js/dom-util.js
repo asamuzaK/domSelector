@@ -33,11 +33,11 @@ export const verifyNode = node => {
 };
 
 /**
- * prepare document, root node
+ * resolve content document and root node
  * @param {object} node - Document, DocumentFragment, Element node
  * @returns {Array.<object>} - array of document, root node
  */
-export const prepareDOMObjects = node => {
+export const resolveContent = node => {
   node = verifyNode(node);
   let document;
   let root;
