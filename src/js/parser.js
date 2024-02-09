@@ -279,5 +279,48 @@ export const parseAstName = selector => {
   };
 };
 
+/**
+ * filter selector (for nwsapi)
+ * @private
+ * @param {string} selector - type selector
+ * @returns {boolean} - result
+ */
+export const filterSelector = selector => {
+  if (!selector || typeof selector !== 'string') {
+    return false;
+  }
+  // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
+  // and attribute selectors with case flag i.e. [attr i], [attr s]
+  if (/\||::|\s[is]\s*\]/i.test(selector)) {
+    return false;
+  }
+  // filter pseudo-class selectors
+  if (selector.includes(':')) {
+    // passing only child-indexed pseudo-classes, e.g. :nth-child(), and :not()
+    if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
+      return false;
+    }
+    // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
+    if (selector.includes(':nth') &&
+        /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/.test(selector)) {
+      return false;
+    }
+    // filter :not(complex selector)
+    // type selector: *, tag
+    // \*|[\w-]{1,255}
+    // subclass selector: attr, class, id, pseudo-class
+    // \[.{1,255}\]|[.#:][\w-]{1,255}
+    // compound selector:
+    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255})+)
+    // :not() that only contains compound selectors:
+    // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
+    if (selector.includes(':not') &&
+        !/:not\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})){0,255}\s*\)/.test(selector)) {
+      return false;
+    }
+  }
+  return true;
+};
+
 /* export */
 export { generate as generateCSS } from 'css-tree';

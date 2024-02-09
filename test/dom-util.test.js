@@ -84,7 +84,6 @@ describe('DOM utility functions', () => {
     it('should get result', () => {
       const res = func(document);
       assert.deepEqual(res, [
-        window,
         document,
         document
       ]);
@@ -94,7 +93,6 @@ describe('DOM utility functions', () => {
       const node = document.createDocumentFragment();
       const res = func(node);
       assert.deepEqual(res, [
-        window,
         document,
         node
       ]);
@@ -104,7 +102,6 @@ describe('DOM utility functions', () => {
       const node = document.getElementById('div0');
       const res = func(node);
       assert.deepEqual(res, [
-        window,
         document,
         document
       ]);
@@ -116,7 +113,6 @@ describe('DOM utility functions', () => {
       frag.appendChild(node);
       const res = func(node);
       assert.deepEqual(res, [
-        window,
         document,
         frag
       ]);
@@ -128,7 +124,6 @@ describe('DOM utility functions', () => {
       parent.appendChild(node);
       const res = func(node);
       assert.deepEqual(res, [
-        window,
         document,
         parent
       ]);
@@ -140,7 +135,6 @@ describe('DOM utility functions', () => {
       const node = doc.getElementById('bar');
       const res = func(node);
       assert.deepEqual(res, [
-        null,
         doc,
         doc
       ]);

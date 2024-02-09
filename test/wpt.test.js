@@ -8,9 +8,7 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 
 /* test */
-import {
-  closest, matches, querySelector, querySelectorAll
-} from '../src/index.js';
+import { DOMSelector } from '../src/index.js';
 
 const globalKeys = ['DOMParser'];
 
@@ -21,13 +19,14 @@ describe('local wpt test cases', () => {
     runScripts: 'dangerously',
     url: 'http://localhost/',
     beforeParse: window => {
+      const domSelector = new DOMSelector(window);
       window.Element.prototype.matches = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = matches(selector, this);
+        const res = domSelector.matches(selector, this);
         return res;
       };
       window.Element.prototype.closest = function (...args) {
@@ -36,7 +35,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = closest(selector, this);
+        const res = domSelector.closest(selector, this);
         return res ?? null;
       };
       window.Document.prototype.querySelector = function (...args) {
@@ -45,7 +44,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelector(selector, this);
+        const res = domSelector.querySelector(selector, this);
         return res ?? null;
       };
       window.DocumentFragment.prototype.querySelector = function (...args) {
@@ -54,7 +53,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelector(selector, this);
+        const res = domSelector.querySelector(selector, this);
         return res ?? null;
       };
       window.Element.prototype.querySelector = function (...args) {
@@ -63,7 +62,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelector(selector, this);
+        const res = domSelector.querySelector(selector, this);
         return res ?? null;
       };
       window.Document.prototype.querySelectorAll = function (...args) {
@@ -72,7 +71,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelectorAll(selector, this);
+        const res = domSelector.querySelectorAll(selector, this);
         return res;
       };
       window.DocumentFragment.prototype.querySelectorAll = function (...args) {
@@ -81,7 +80,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelectorAll(selector, this);
+        const res = domSelector.querySelectorAll(selector, this);
         return res;
       };
       window.Element.prototype.querySelectorAll = function (...args) {
@@ -90,7 +89,7 @@ describe('local wpt test cases', () => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        const res = querySelectorAll(selector, this);
+        const res = domSelector.querySelectorAll(selector, this);
         return res;
       };
     }
@@ -2123,7 +2122,7 @@ describe('local wpt test cases', () => {
       assert.isTrue(node.matches(':focus'), 'before');
       node.style.display = 'none';
       node.focus();
-      assert.isFalse(node.matches(':focus'), 'before');
+      assert.isFalse(node.matches(':focus'), 'after');
     });
   });
 

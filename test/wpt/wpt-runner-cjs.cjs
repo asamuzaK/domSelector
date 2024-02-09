@@ -3,11 +3,10 @@
  */
 
 const wptRunner = require('wpt-runner');
-const {
-  closest, matches, querySelector, querySelectorAll
-} = require('../../dist/cjs/index.js');
+const { DOMSelector } = require('../../dist/cjs/index.js');
 
 const setup = window => {
+  const domSelector = new DOMSelector(window);
   window.Element.prototype.matches = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
@@ -15,7 +14,7 @@ const setup = window => {
     let res;
     try {
       const [selector] = args;
-      res = matches(selector, this);
+      res = domSelector.matches(selector, this);
     } catch (e) {
       if (e instanceof globalThis.DOMException &&
           !(e instanceof window.DOMException)) {
@@ -34,7 +33,7 @@ const setup = window => {
     let res;
     try {
       const [selector] = args;
-      res = closest(selector, this);
+      res = domSelector.closest(selector, this);
     } catch (e) {
       if (e instanceof globalThis.DOMException &&
           !(e instanceof window.DOMException)) {
@@ -53,7 +52,7 @@ const setup = window => {
     let res;
     try {
       const [selector] = args;
-      res = querySelector(selector, this);
+      res = domSelector.querySelector(selector, this);
     } catch (e) {
       if (e instanceof globalThis.DOMException &&
           !(e instanceof window.DOMException)) {
@@ -72,7 +71,7 @@ const setup = window => {
     let res;
     try {
       const [selector] = args;
-      res = querySelector(selector, this);
+      res = domSelector.querySelector(selector, this);
     } catch (e) {
       if (e instanceof globalThis.DOMException &&
           !(e instanceof window.DOMException)) {
@@ -91,7 +90,7 @@ const setup = window => {
     let res;
     try {
       const [selector] = args;
-      res = querySelector(selector, this);
+      res = domSelector.querySelector(selector, this);
     } catch (e) {
       if (e instanceof globalThis.DOMException &&
           !(e instanceof window.DOMException)) {
@@ -110,7 +109,7 @@ const setup = window => {
     const res = [];
     try {
       const [selector] = args;
-      const arr = querySelectorAll(selector, this);
+      const arr = domSelector.querySelectorAll(selector, this);
       if (arr.length) {
         res.push(...arr);
       }
@@ -132,7 +131,7 @@ const setup = window => {
     const res = [];
     try {
       const [selector] = args;
-      const arr = querySelectorAll(selector, this);
+      const arr = domSelector.querySelectorAll(selector, this);
       if (arr.length) {
         res.push(...arr);
       }
@@ -154,7 +153,7 @@ const setup = window => {
     const res = [];
     try {
       const [selector] = args;
-      const arr = querySelectorAll(selector, this);
+      const arr = domSelector.querySelectorAll(selector, this);
       if (arr.length) {
         res.push(...arr);
       }

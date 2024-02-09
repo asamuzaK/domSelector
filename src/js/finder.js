@@ -4,13 +4,14 @@
 
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
+import nwsapi from 'nwsapi';
 import {
   getDirectionality, isContentEditable, isInclusive, isInShadowTree,
   prepareDOMObjects, sortNodes
 } from './dom-util.js';
 import { matchPseudoElementSelector, matchSelector } from './matcher.js';
 import {
-  generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
+  filterSelector, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 
 /* constants */
@@ -63,14 +64,18 @@ export class Finder {
   /* private fields */
   #ast;
   #cache;
+  #content;
+  #descendant;
   #document;
   #finder;
   #node;
   #nodes;
   #noexcept;
+  #nwsapi;
   #results;
   #root;
   #shadow;
+  #sibling;
   #sort;
   #tree;
   #warn;
@@ -78,10 +83,20 @@ export class Finder {
 
   /**
    * construct
+   * @param {object} window - window
    */
-  constructor() {
+  constructor(window) {
+    this.#window = window;
+    this.#document = window.document;
     this.#cache = new WeakMap();
     this.#results = new WeakMap();
+    this.#nwsapi = nwsapi({
+      document: window.document,
+      DOMException: window.DOMException
+    });
+    this.#nwsapi.configure({
+      LOGERRORS: false
+    });
   }
 
   /**
@@ -94,15 +109,13 @@ export class Finder {
   _onError(e) {
     if (!this.#noexcept) {
       if (e instanceof DOMException ||
-          (this.#window && e instanceof this.#window.DOMException)) {
+          e instanceof this.#window.DOMException) {
         if (e.name === NOT_SUPPORTED_ERR) {
           if (this.#warn) {
             console.warn(e.message);
           }
-        } else if (this.#window) {
-          throw new this.#window.DOMException(e.message, e.name);
         } else {
-          throw e;
+          throw new this.#window.DOMException(e.message, e.name);
         }
       } else {
         throw e;
@@ -118,31 +131,39 @@ export class Finder {
    * @param {object} opt - options
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
+   * @param {boolean} skip - skip correspond
    * @returns {object} - node
    */
-  _setup(selector, node, opt = {}) {
+  _setup(selector, node, opt = {}, skip = false) {
     const { noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
-    [this.#window, this.#document, this.#root] = prepareDOMObjects(node);
+    [this.#content, this.#root] = prepareDOMObjects(node);
     this.#shadow = isInShadowTree(node);
-    [this.#ast, this.#nodes] = this._correspond(selector);
+    if (!skip) {
+      this._correspond(selector);
+    }
     return node;
   }
 
   /**
-   * correspond #ast and #nodes
+   * correspond ast and nodes
    * @private
    * @param {string} selector - CSS selector
-   * @returns {Array.<Array.<object|undefined>>} - array of #ast and #nodes
+   * @returns {Array.<Array.<object|undefined>>} - array of ast and nodes
    */
   _correspond(selector) {
     const nodes = [];
     let ast;
-    let cachedItem = this.#document && this.#cache.get(this.#document);
+    let cachedItem = this.#content && this.#cache.get(this.#content);
+    this.#descendant = false;
+    this.#sibling = false;
     if (cachedItem && cachedItem.has(`${selector}`)) {
-      ast = cachedItem.get(selector);
+      const item = cachedItem.get(`${selector}`);
+      ast = item.ast;
+      this.#descendant = item.descendant;
+      this.#sibling = item.sibling;
     }
     if (ast) {
       const l = ast.length;
@@ -161,6 +182,8 @@ export class Finder {
       }
       const branches = walkAST(cssAst);
       ast = [];
+      let descendant = false;
+      let sibling = false;
       let i = 0;
       for (const [...items] of branches) {
         const branch = [];
@@ -174,6 +197,12 @@ export class Finder {
                 const msg = `Invalid selector ${selector}`;
                 throw new DOMException(msg, SYNTAX_ERR);
               }
+              const itemName = unescapeSelector(item.name);
+              if (itemName === '~') {
+                sibling = true;
+              } else if (/^[\s>]$/.test(itemName)) {
+                descendant = true;
+              }
               branch.push({
                 combo: item,
                 leaves: sortAST(leaves)
@@ -181,17 +210,10 @@ export class Finder {
               leaves.clear();
             } else if (item) {
               let { name: itemName } = item;
-              if (itemName) {
-                if (Object.prototype.hasOwnProperty.call(itemName, 'name')) {
-                  itemName = unescapeSelector(itemName.name);
-                  if (/[|:]/.test(itemName)) {
-                    item.namespace = true;
-                  }
-                } else if (typeof itemName === 'string') {
-                  itemName = unescapeSelector(itemName);
-                  if (/[|:]/.test(itemName)) {
-                    item.namespace = true;
-                  }
+              if (itemName && typeof itemName === 'string') {
+                itemName = unescapeSelector(itemName);
+                if (/[|:]/.test(itemName)) {
+                  item.namespace = true;
                 }
               }
               leaves.add(item);
@@ -217,14 +239,22 @@ export class Finder {
         nodes[i] = [];
         i++;
       }
-      if (this.#document) {
+      if (this.#content) {
         if (!cachedItem) {
           cachedItem = new Map();
         }
-        cachedItem.set(`${selector}`, ast);
-        this.#cache.set(this.#document, cachedItem);
+        cachedItem.set(`${selector}`, {
+          ast,
+          descendant,
+          sibling
+        });
+        this.#cache.set(this.#content, cachedItem);
       }
+      this.#descendant = descendant;
+      this.#sibling = sibling;
     }
+    this.#ast = ast;
+    this.#nodes = nodes;
     return [
       ast,
       nodes
@@ -981,7 +1011,7 @@ export class Finder {
         }
         case 'local-link': {
           if (regAnchor.test(localName) && node.hasAttribute('href')) {
-            const { href, origin, pathname } = new URL(this.#document.URL);
+            const { href, origin, pathname } = new URL(this.#content.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
@@ -994,18 +1024,18 @@ export class Finder {
           break;
         }
         case 'target': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = new URL(this.#content.URL);
           if (node.id && hash === `#${node.id}` &&
-              this.#document.contains(node)) {
+              this.#content.contains(node)) {
             matched.add(node);
           }
           break;
         }
         case 'target-within': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = new URL(this.#content.URL);
           if (hash) {
             const id = hash.replace(/^#/, '');
-            let current = this.#document.getElementById(id);
+            let current = this.#content.getElementById(id);
             while (current) {
               if (current === node) {
                 matched.add(node);
@@ -1021,13 +1051,13 @@ export class Finder {
             if (node === this.#node) {
               matched.add(node);
             }
-          } else if (node === this.#document.documentElement) {
+          } else if (node === this.#content.documentElement) {
             matched.add(node);
           }
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement) {
+          if (node === this.#content.activeElement) {
             let focus = true;
             let refNode = node;
             while (refNode) {
@@ -1056,7 +1086,7 @@ export class Finder {
         }
         case 'focus-within': {
           let active;
-          let current = this.#document.activeElement;
+          let current = this.#content.activeElement;
           while (current) {
             if (current === node) {
               active = true;
@@ -1227,7 +1257,7 @@ export class Finder {
               parent = parent.parentNode;
             }
             if (!parent) {
-              parent = this.#document.documentElement;
+              parent = this.#content.documentElement;
             }
             let checked;
             const items = parent.getElementsByTagName('input');
@@ -1455,7 +1485,7 @@ export class Finder {
           break;
         }
         case 'root': {
-          if (node === this.#document.documentElement) {
+          if (node === this.#content.documentElement) {
             matched.add(node);
           }
           break;
@@ -1864,7 +1894,7 @@ export class Finder {
           break;
         }
         case SELECTOR_TYPE: {
-          if (this.#document.contentType === 'text/html' &&
+          if (this.#content.contentType === 'text/html' &&
               !/[*|]/.test(leafName)) {
             const items = baseNode.getElementsByTagName(leafName);
             nodes = this._matchHTMLCollection(items, {
@@ -2284,7 +2314,7 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (this.#document.contentType === 'text/html' &&
+        } else if (this.#content.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
@@ -2775,13 +2805,18 @@ export class Finder {
   matches(selector, node, opt) {
     let res;
     try {
-      this.#node = this._setup(selector, node, opt);
       if (node.nodeType !== ELEMENT_NODE) {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
       }
-      const nodes = this._find(TARGET_SELF);
-      res = nodes.size;
+      this.#node = this._setup(selector, node, opt, true);
+      if (this.#document === this.#content && filterSelector(selector)) {
+        res = this.#nwsapi.match(selector, node);
+      } else {
+        this._correspond(selector);
+        const nodes = this._find(TARGET_SELF);
+        res = nodes.size;
+      }
     } catch (e) {
       this._onError(e);
     }
@@ -2798,20 +2833,25 @@ export class Finder {
   closest(selector, node, opt) {
     let res;
     try {
-      this.#node = this._setup(selector, node, opt);
       if (node.nodeType !== ELEMENT_NODE) {
         const msg = `Unexpected node ${node.nodeName}`;
         throw new TypeError(msg);
       }
-      const nodes = this._find(TARGET_LINEAL);
-      if (nodes.size) {
-        let refNode = this.#node;
-        while (refNode) {
-          if (nodes.has(refNode)) {
-            res = refNode;
-            break;
+      this.#node = this._setup(selector, node, opt, true);
+      if (this.#document === this.#content && filterSelector(selector)) {
+        res = this.#nwsapi.closest(selector, node);
+      } else {
+        this._correspond(selector);
+        const nodes = this._find(TARGET_LINEAL);
+        if (nodes.size) {
+          let refNode = this.#node;
+          while (refNode) {
+            if (nodes.has(refNode)) {
+              res = refNode;
+              break;
+            }
+            refNode = refNode.parentNode;
           }
-          refNode = refNode.parentNode;
         }
       }
     } catch (e) {
@@ -2831,11 +2871,16 @@ export class Finder {
     let res;
     try {
       this.#node = this._setup(selector, node, opt);
-      this._prepareTreeWalkers(node);
-      const nodes = this._find(TARGET_FIRST);
-      nodes.delete(this.#node);
-      if (nodes.size) {
-        [res] = sortNodes(nodes);
+      if (this.#document === this.#content && this.#sibling &&
+          !this.#descendant && filterSelector(selector)) {
+        res = this.#nwsapi.first(selector, node);
+      } else {
+        this._prepareTreeWalkers(node);
+        const nodes = this._find(TARGET_FIRST);
+        nodes.delete(this.#node);
+        if (nodes.size) {
+          [res] = sortNodes(nodes);
+        }
       }
     } catch (e) {
       this._onError(e);
@@ -2855,14 +2900,19 @@ export class Finder {
     let res;
     try {
       this.#node = this._setup(selector, node, opt);
-      this._prepareTreeWalkers(node);
-      const nodes = this._find(TARGET_ALL);
-      nodes.delete(this.#node);
-      if (nodes.size) {
-        if (this.#sort) {
-          res = sortNodes(nodes);
-        } else {
-          res = [...nodes];
+      if (this.#document === this.#content && !this.#descendant &&
+          filterSelector(selector)) {
+        res = this.#nwsapi.select(selector, node);
+      } else {
+        this._prepareTreeWalkers(node);
+        const nodes = this._find(TARGET_ALL);
+        nodes.delete(this.#node);
+        if (nodes.size) {
+          if (this.#sort) {
+            res = sortNodes(nodes);
+          } else {
+            res = [...nodes];
+          }
         }
       }
     } catch (e) {

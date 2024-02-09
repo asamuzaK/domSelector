@@ -6052,3 +6052,97 @@ describe('parse AST name', () => {
     }, 'result');
   });
 });
+
+describe('filter selector (for nwsapi)', () => {
+  const func = parser.filterSelector;
+
+  it('should get false', () => {
+    const res = func();
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func('*');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func('p');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func('.foo');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func('#foo');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func('[id]');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(p)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(p.foo, div.bar)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(.foo .bar)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('foo|p');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('::slotted');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':indeterminate');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':is(p, div)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':nth-child(2n+1 of .foo)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':host');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':after');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('ns|div');
+    assert.isFalse(res, 'result');
+  });
+});
