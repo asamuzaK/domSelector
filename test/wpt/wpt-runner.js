@@ -11,161 +11,64 @@ const setup = window => {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.matches(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.matches(selector, this);
     return !!res;
   };
   window.Element.prototype.closest = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.closest(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.closest(selector, this);
     return res ?? null;
   };
   window.Document.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelector(selector, this);
     return res ?? null;
   };
   window.DocumentFragment.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelector(selector, this);
     return res ?? null;
   };
   window.Element.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelector(selector, this);
     return res ?? null;
   };
   window.Document.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelectorAll(selector, this);
     return res;
   };
   window.DocumentFragment.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelectorAll(selector, this);
     return res;
   };
   window.Element.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = domSelector.querySelectorAll(selector, this);
     return res;
   };
   window.requestAnimationFrame = function (callback) {

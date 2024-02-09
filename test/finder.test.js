@@ -11306,6 +11306,13 @@ describe('Finder', () => {
       const res = finder.querySelector('.foo + .foo + .foo:last-child', parent);
       assert.deepEqual(res, node5, 'result');
     });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder(window);
+      const res = finder.querySelector('li ~ li', document);
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {

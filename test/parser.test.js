@@ -6140,4 +6140,9 @@ describe('filter selector (for nwsapi)', () => {
     const res = func(':after');
     assert.isFalse(res, 'result');
   });
+
+  it('should get false', () => {
+    const res = func('ns|div');
+    assert.isFalse(res, 'result');
+  });
 });

@@ -160,7 +160,7 @@ export class Finder {
     this.#descendant = false;
     this.#sibling = false;
     if (cachedItem && cachedItem.has(`${selector}`)) {
-      const item = cachedItem.get(selector);
+      const item = cachedItem.get(`${selector}`);
       ast = item.ast;
       this.#descendant = item.descendant;
       this.#sibling = item.sibling;

@@ -119,7 +119,7 @@ describe('local wpt test cases', () => {
       } catch (e) {
         assert.instanceOf(e, window.DOMException, 'error');
         assert.strictEqual(e.message,
-          "'[class= space unquoted ]' is not a valid selector", 'message');
+          'Invalid selector [class=space unquoted]', 'message');
       }
     });
 
