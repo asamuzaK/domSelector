@@ -94,17 +94,15 @@ describe('local wpt test cases', () => {
       };
     }
   };
-  let window, document;
+  let document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
-    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
-    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
@@ -114,55 +112,32 @@ describe('local wpt test cases', () => {
   describe('dom/nodes/ParentNode-querySelector-All.html', () => {
     it('should throw', () => {
       const node = document.createElement('div');
-      try {
-        node.querySelector('[class= space unquoted ]');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message,
-          'Invalid selector [class=space unquoted]', 'message');
-      }
+      assert.throws(() => node.querySelector('[class= space unquoted ]'),
+        'Invalid selector [class=space unquoted]', 'message');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      try {
-        node.querySelector('div:example');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'Unknown pseudo-class :example',
-          'message');
-      }
+      assert.throws(() => node.querySelector('div:example'),
+        'Unknown pseudo-class :example');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      try {
-        node.querySelectorAll('div:example');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'Unknown pseudo-class :example',
-          'message');
-      }
+      assert.throws(() => node.querySelectorAll('div:example'),
+        'Unknown pseudo-class :example');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      try {
-        node.querySelector('ns|div');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'Undeclared namespace ns', 'message');
-      }
+      assert.throws(() => node.querySelector('ns|div'),
+        'Undeclared namespace ns');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      try {
-        node.querySelector(':not(ns|div)');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'Undeclared namespace ns', 'message');
-      }
+      assert.throws(() => node.querySelector(':not(ns|div)'),
+        'Undeclared namespace ns');
     });
 
     it('should get matched node(s)', () => {

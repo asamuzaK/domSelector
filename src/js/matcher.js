@@ -268,16 +268,15 @@ export const _matchTypeSelector = (ast, node, opt = {}) => {
       break;
     }
     default: {
-      if (astPrefix === nodePrefix) {
-        const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
-        if (namespaceDeclared) {
-          if (astLocalName === '*' || astLocalName === nodeLocalName) {
-            res = node;
-          }
-        } else if (!forgive) {
-          const msg = `Undeclared namespace ${astPrefix}`;
-          throw new DOMException(msg, SYNTAX_ERR);
+      const astNS = node.lookupNamespaceURI(astPrefix);
+      const nodeNS = node.lookupNamespaceURI(nodePrefix);
+      if (astNS === nodeNS && astPrefix === nodePrefix) {
+        if (astLocalName === '*' || astLocalName === nodeLocalName) {
+          res = node;
         }
+      } else if (!forgive && !astNS) {
+        const msg = `Undeclared namespace ${astPrefix}`;
+        throw new DOMException(msg, SYNTAX_ERR);
       }
     }
   }

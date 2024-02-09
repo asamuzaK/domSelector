@@ -171,55 +171,27 @@ describe('Finder', () => {
     });
   });
 
-  describe('correspond #ast and #nodes', () => {
+  describe('correspond ast and nodes', () => {
     it('should throw', () => {
       const finder = new Finder(window);
       finder._setup('*', document);
-      try {
-        finder._correspond('[foo==bar]');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-        assert.strictEqual(e.message, 'Identifier is expected');
-      }
-    });
-
-    it('should throw', () => {
-      const finder = new Finder(window);
-      try {
-        finder._setup('[foo==bar]', document);
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-        assert.strictEqual(e.message, 'Identifier is expected');
-        try {
-          finder._correspond('[foo==bar]');
-        } catch (e) {
-          assert.instanceOf(e, window.DOMException);
-          assert.strictEqual(e.message, 'Identifier is expected');
-        }
-      }
+      assert.throws(() => finder._correspond('[foo==bar]'),
+        'Identifier is expected');
     });
 
     // FIXME: CSSTree throws
     it('should throw', () => {
       const finder = new Finder(window);
       finder._setup('*', document);
-      try {
-        finder._correspond(':lang("")');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-        assert.strictEqual(e.message, 'Identifier is expected');
-      }
+      assert.throws(() => finder._correspond(':lang("")'),
+        'Identifier is expected');
     });
 
     it('should throw', () => {
       const finder = new Finder(window);
       finder._setup('*', document);
-      try {
-        finder._correspond('li ++ li');
-      } catch (e) {
-        assert.instanceOf(e, DOMException);
-        assert.strictEqual(e.message, 'Invalid selector li ++ li');
-      }
+      assert.throws(() => finder._correspond('li ++ li'),
+        'Invalid selector li ++ li');
     });
 
     it('should get result', () => {
@@ -10930,11 +10902,7 @@ describe('Finder', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      try {
-        new Finder(window).matches();
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-      };
+      assert.throws(() => new Finder(window).matches());
     });
 
     it('should get true', () => {
@@ -10962,20 +10930,13 @@ describe('Finder', () => {
     });
 
     it('should throw', () => {
-      try {
-        new Finder(window).matches('body', document);
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node #document', 'message');
-      }
+      assert.throws(() => new Finder(window).matches('body', document),
+        'Unexpected node #document');
     });
 
     it('should throw', () => {
-      try {
-        new Finder(window).matches('[foo=bar baz]', document.body);
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-      }
+      assert.throws(() => new Finder(window)
+        .matches('[foo=bar baz]', document.body));
     });
 
     it('should warn', () => {
@@ -11067,20 +11028,13 @@ describe('Finder', () => {
 
   describe('closest', () => {
     it('should throw', () => {
-      try {
-        new Finder(window).closest('body', document);
-      } catch (e) {
-        assert.instanceOf(e, TypeError, 'error');
-        assert.strictEqual(e.message, 'Unexpected node #document', 'message');
-      }
+      assert.throws(() => new Finder(window).closest('body', document),
+        'Unexpected node #document');
     });
 
     it('should throw', () => {
-      try {
-        new Finder(window).closest('[foo=bar baz]', document.getElementById('div0'));
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-      }
+      assert.throws(() => new Finder(window)
+        .closest('[foo=bar baz]', document.getElementById('div0')));
     });
 
     it('should warn', () => {
@@ -11191,11 +11145,8 @@ describe('Finder', () => {
 
   describe('querySelector', () => {
     it('should throw', () => {
-      try {
-        new Finder(window).querySelector('[foo=bar baz]', document);
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-      }
+      assert.throws(() => new Finder(window)
+        .querySelector('[foo=bar baz]', document));
     });
 
     it('should warn', () => {
@@ -11317,11 +11268,8 @@ describe('Finder', () => {
 
   describe('querySelectorAll', () => {
     it('should throw', () => {
-      try {
-        new Finder(window).querySelectorAll('[foo=bar baz]', document);
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-      }
+      assert.throws(() => new Finder(window)
+        .querySelectorAll('[foo=bar baz]', document));
     });
 
     it('should warn', () => {

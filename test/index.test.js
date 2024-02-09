@@ -113,11 +113,7 @@ describe('patched JSDOM', () => {
 
   describe('Element.matches()', () => {
     it('should throw', () => {
-      try {
-        document.body.matches('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.body.matches('*|'));
     });
 
     it('should match', () => {
@@ -179,11 +175,7 @@ describe('patched JSDOM', () => {
 
   describe('Element.closest()', () => {
     it('should throw', () => {
-      try {
-        document.body.closest('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.body.closest('*|'));
     });
 
     it('should get matched node', () => {
@@ -287,11 +279,7 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelector(), Element.querySelector()', () => {
     it('should throw', () => {
-      try {
-        document.querySelector('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.querySelector('*|'));
     });
 
     it('should get matched node', () => {
@@ -351,11 +339,7 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      try {
-        document.body.querySelector('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.body.querySelector('*|'));
     });
 
     it('should get matched node', () => {
@@ -416,11 +400,7 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      try {
-        frag.querySelector('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => frag.querySelector('*|'));
     });
 
     it('should get matched node', () => {
@@ -484,11 +464,7 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
     it('should throw', () => {
-      try {
-        document.querySelectorAll('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.querySelectorAll('*|'));
     });
 
     it('should get matched node', () => {
@@ -584,11 +560,7 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      try {
-        document.body.querySelectorAll('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => document.body.querySelectorAll('*|'));
     });
 
     it('should get matched node', () => {
@@ -653,11 +625,7 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      try {
-        frag.querySelectorAll('*|');
-      } catch (e) {
-        assert.instanceOf(e, window.DOMException);
-      }
+      assert.throws(() => frag.querySelectorAll('*|'));
     });
 
     it('should get matched node', () => {
