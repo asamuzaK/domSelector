@@ -1048,7 +1048,7 @@ export class Finder {
         }
         case 'scope': {
           if (this.#node.nodeType === ELEMENT_NODE) {
-            if (node === this.#node) {
+            if (!this.#shadow && node === this.#node) {
               matched.add(node);
             }
           } else if (node === this.#content.documentElement) {
