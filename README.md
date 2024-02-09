@@ -238,33 +238,33 @@ const dom = new JSDOM('', {
 
 |Selector|jsdom v24.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`matches('.content')`|2,655,332 ops/sec ±0.97%|1,649,052 ops/sec ±1.16%|638,730 ops/sec ±0.40%|189,123 ops/sec ±1.42%|jsdom is the fastest and 14.0 times faster than patched-jsdom.|
-|compound selector:<br>`matches('p.content[id]:only-child')`|1,147,320 ops/sec ±0.82%|449,008 ops/sec ±0.36%|292,142 ops/sec ±0.45%|190,288 ops/sec ±0.18%|jsdom is the fastest and 6.0 times faster than patched-jsdom.|
-|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|161,269 ops/sec ±0.19%|N/A|71,402 ops/sec ±0.22%|35,989 ops/sec ±0.50%|jsdom is the fastest and 4.5 times faster than patched-jsdom.|
+|simple selector:<br>`matches('.content')`|2,573,273 ops/sec ±1.01%|1,673,318 ops/sec ±0.30%|665,946 ops/sec ±0.26%|288,434 ops/sec ±0.25%|jsdom is the fastest and 8.9 times faster than patched-jsdom.|
+|compound selector:<br>`matches('p.content[id]:only-child')`|1,176,008 ops/sec ±0.67%|442,284 ops/sec ±1.85%|303,185 ops/sec ±1.27%|243,190 ops/sec ±0.22%|jsdom is the fastest and 4.8 times faster than patched-jsdom.|
+|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|155,130 ops/sec ±0.19%|N/A|72,721 ops/sec ±0.23%|96,817 ops/sec ±1.52%|jsdom is the fastest and 1.6 times faster than patched-jsdom.|
 
 ### closest()
 
 |Selector|jsdom v24.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`closest('.container')`|566,336 ops/sec ±0.57%|349,718 ops/sec ±1.86%|388,883 ops/sec ±2.14%|69,127 ops/sec ±0.63%|jsdom is the fastest and 8.2 times faster than patched-jsdom.|
-|compound selector:<br>`closest('div.container[id]:not(.box)')`|218,906 ops/sec ±1.45%|77,000 ops/sec ±1.95%|164,040 ops/sec ±1.76%|68,961 ops/sec ±0.63%|jsdom is the fastest and 3.2 times faster than patched-jsdom.|
-|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|156,502 ops/sec ±1.52%|N/A|69,949 ops/sec ±1.93%|27,285 ops/sec ±0.76%|jsdom is the fastest and 5.7 times faster than patched-jsdom.|
+|simple selector:<br>`closest('.container')`|562,510 ops/sec ±1.59%|355,759 ops/sec ±1.74%|390,352 ops/sec ±2.16%|194,428 ops/sec ±0.78%|jsdom is the fastest and 2.9 times faster than patched-jsdom.|
+|compound selector:<br>`closest('div.container[id]:not(.box)')`|200,674 ops/sec ±1.52%|77,134 ops/sec ±1.84%|163,407 ops/sec ±1.69%|117,207 ops/sec ±1.12%|jsdom is the fastest and 1.7 times faster than patched-jsdom.|
+|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|151,390 ops/sec ±0.60%|N/A|72,140 ops/sec ±1.33%|96,834 ops/sec ±0.95%|jsdom is the fastest and 1.6 times faster than patched-jsdom.|
 
 ### querySelector()
 
 |Selector|jsdom v24.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`querySelector('.content')`|3,261 ops/sec ±1.17%|364,651 ops/sec ±1.29%|319,993 ops/sec ±0.20%|71,125 ops/sec ±0.40%|happydom is the fastest and 5.1 times faster than patched-jsdom.<br>patched-jsdom is 21.8 times faster than jsdom.|
-|compound selector:<br>`querySelector('p.content[id]:only-child')`|1,223 ops/sec ±0.39%|357,836 ops/sec ±1.76%|252,758 ops/sec ±1.80%|70,641 ops/sec ±0.77%|happydom is the fastest and 5.1 times faster than patched-jsdom.<br>patched-jsdom is 57.8 times faster than jsdom.|
-|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|201 ops/sec ±1.71%|N/A|1,289 ops/sec ±1.77%|730 ops/sec ±2.24%|linkedom is the fastest and 1.8 times faster than patched-jsdom.<br>patched-jsdom is 3.6 times faster than jsdom.|
+|simple selector:<br>`querySelector('.content')`|3,020 ops/sec ±0.84%|374,668 ops/sec ±1.32%|326,366 ops/sec ±1.67%|74,776 ops/sec ±0.85%|happydom is the fastest and 5.0 times faster than patched-jsdom.<br>patched-jsdom is 24.8 times faster than jsdom.|
+|compound selector:<br>`querySelector('p.content[id]:only-child')`|1,183 ops/sec ±1.24%|375,791 ops/sec ±1.66%|253,707 ops/sec ±1.68%|76,218 ops/sec ±0.84%|happydom is the fastest and 4.9 times faster than patched-jsdom.<br>patched-jsdom is 64.4 times faster than jsdom.|
+|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|227 ops/sec ±1.27%|N/A|1,338 ops/sec ±0.35%|766 ops/sec ±2.66%| linkedom is the fastest and 1.7 times faster than patched-jsdom.<br>patched-jsdom is 3.4 times faster than jsdom.|
 
 ### querySelectorAll()
 
 |Selector|jsdom v24.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`querySelectorAll('.content')`|3,141 ops/sec ±1.31%|773 ops/sec ±0.36%|1,160 ops/sec ±1.42%|2,531 ops/sec ±0.92%|jsdom is the fastest and 1.2 times faster than patched-jsdom.|
-|compound selector:<br>`querySelectorAll('p.content[id]:only-child')`|1,226 ops/sec ±1.25%|911 ops/sec ±1.77%|1,043 ops/sec ±1.12%|270 ops/sec ±1.74%|jsdom is the fastest and 4.5 times faster than patched-jsdom.|
-|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|225 ops/sec ±1.05%|N/A|429 ops/sec ±0.30%|727 ops/sec ±1.34%|patched-jsdom is the fastest.<br>patched-jsdom is 3.2 times faster than jsdom.|
+|simple selector:<br>`querySelectorAll('.content')`|2,805 ops/sec ±0.63%|768 ops/sec ±1.68%|1,189 ops/sec ±0.22%|3,565 ops/sec ±0.24%|patched-jsdom is the fastest.<br>patched-jsdom is 1.3 times faster than jsdom.|
+|compound selector:<br>`querySelectorAll('p.content[id]:only-child')`|1,151 ops/sec ±0.37%|917 ops/sec ±2.18%|1,067 ops/sec ±0.27%|1,262 ops/sec ±0.25%|patched-jsdom is the fastest.<br>patched-jsdom is 1.1 times faster than jsdom.|
+|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|225 ops/sec ±0.46%|N/A|433 ops/sec ±0.23%|760 ops/sec ±0.53%|patched-jsdom is the fastest.<br>patched-jsdom is 3.4 times faster than jsdom.|
 
 
 ## Acknowledgments
