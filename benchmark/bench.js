@@ -657,7 +657,9 @@ suite.on('start', () => {
       }
     }
     const { key: fastestKey, hz: fastestHz } = fastest;
-    const elapsed = `patched-jsdom took ${(1000 / patchedHz).toFixed(3)}msec.`;
+    const elapsed = 1000 / patchedHz;
+    const figures = elapsed > 0.001 ? 3 : 6;
+    const elapsedTime = `patched-jsdom took ${elapsed.toFixed(figures)}msec.`;
     let fastestMsg;
     if (fastestKey === 'patched-jsdom') {
       fastestMsg = 'patched-jsdom is the fastest.';
@@ -678,7 +680,7 @@ suite.on('start', () => {
     }
     hz.clear();
     console.log(`* ${str}`);
-    console.log(`* ${msg} ${elapsed}\n`);
+    console.log(`* ${msg} ${elapsedTime}\n`);
   } else {
     const [, key] = /^([a-z-]+)\s/.exec(str);
     hz.set(key, target.hz);
