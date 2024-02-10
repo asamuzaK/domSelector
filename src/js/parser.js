@@ -309,7 +309,7 @@ export const filterSelector = selector => {
     // subclass selector: attr, class, id, pseudo-class
     // \[.{1,255}\]|[.#:][\w-]{1,255}
     // compound selector:
-    // (?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})
+    // (?:${type}|(?:${type})?(?:${subclass}){1,255})
     // :not() that only contains compound selectors:
     // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
     if (selector.includes(':not') &&
