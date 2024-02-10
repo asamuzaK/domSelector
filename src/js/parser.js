@@ -256,7 +256,6 @@ export const sortAST = asts => {
 
 /**
  * parse AST name - e.g. ns|E -> { prefix: ns, localName: E }
- * @private
  * @param {string} selector - type selector
  * @returns {object} - node properties
  */
@@ -281,7 +280,6 @@ export const parseAstName = selector => {
 
 /**
  * filter selector (for nwsapi)
- * @private
  * @param {string} selector - selector
  * @returns {boolean} - result
  */
