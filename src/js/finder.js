@@ -152,15 +152,17 @@ export class Finder {
    */
   _correspond(selector) {
     const nodes = [];
-    let ast;
-    let cachedItem = this.#content && this.#cache.get(this.#content);
     this.#descendant = false;
     this.#sibling = false;
-    if (cachedItem && cachedItem.has(`${selector}`)) {
-      const item = cachedItem.get(`${selector}`);
-      ast = item.ast;
-      this.#descendant = item.descendant;
-      this.#sibling = item.sibling;
+    let ast;
+    if (this.#content) {
+      const cachedItem = this.#cache.get(this.#content);
+      if (cachedItem && cachedItem.has(`${selector}`)) {
+        const item = cachedItem.get(`${selector}`);
+        ast = item.ast;
+        this.#descendant = item.descendant;
+        this.#sibling = item.sibling;
+      }
     }
     if (ast) {
       const l = ast.length;
@@ -178,10 +180,10 @@ export class Finder {
         this._onError(e);
       }
       const branches = walkAST(cssAst);
-      ast = [];
       let descendant = false;
       let sibling = false;
       let i = 0;
+      ast = [];
       for (const [...items] of branches) {
         const branch = [];
         let item = items.shift();
@@ -237,7 +239,10 @@ export class Finder {
         i++;
       }
       if (this.#content) {
-        if (!cachedItem) {
+        let cachedItem;
+        if (this.#cache.has(this.#content)) {
+          cachedItem = this.#cache.get(this.#content);
+        } else {
           cachedItem = new Map();
         }
         cachedItem.set(`${selector}`, {
@@ -291,8 +296,8 @@ export class Finder {
    * @returns {?object} - current node
    */
   _traverse(node = {}, walker = this.#walker) {
-    let current;
     let refNode = walker.currentNode;
+    let current;
     if (node.nodeType === ELEMENT_NODE && refNode === node) {
       current = refNode;
     } else {
@@ -377,13 +382,13 @@ export class Finder {
       if (a === 0) {
         if (b > 0 && b <= l) {
           if (selectorNodes.size) {
-            let i = 0;
             refNode = this._traverse(parentNode, walker);
             if (reverse) {
               refNode = walker.lastChild();
             } else {
               refNode = walker.firstChild();
             }
+            let i = 0;
             while (refNode) {
               if (selectorNodes.has(refNode)) {
                 if (i === b - 1) {
@@ -399,13 +404,13 @@ export class Finder {
               }
             }
           } else if (!selector) {
-            let i = 0;
             refNode = this._traverse(parentNode, walker);
             if (reverse) {
               refNode = walker.lastChild();
             } else {
               refNode = walker.firstChild();
             }
+            let i = 0;
             while (refNode) {
               if (i === b - 1) {
                 matched.add(refNode);
@@ -429,14 +434,14 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
-          let i = 0;
-          let j = a > 0 ? 0 : b - 1;
           refNode = this._traverse(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
             refNode = walker.firstChild();
           }
+          let i = 0;
+          let j = a > 0 ? 0 : b - 1;
           while (refNode) {
             if (refNode && nth >= 0 && nth < l) {
               if (selectorNodes.size) {
@@ -518,13 +523,13 @@ export class Finder {
       // :first-of-type, :last-of-type
       if (a === 0) {
         if (b > 0 && b <= l) {
-          let j = 0;
           refNode = this._traverse(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
             refNode = walker.firstChild();
           }
+          let j = 0;
           while (refNode) {
             const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
@@ -550,13 +555,13 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
-          let j = a > 0 ? 0 : b - 1;
           refNode = this._traverse(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
             refNode = walker.firstChild();
           }
+          let j = a > 0 ? 0 : b - 1;
           while (refNode) {
             const { localName: itemLocalName, prefix: itemPrefix } = refNode;
             if (itemLocalName === localName && itemPrefix === prefix) {
@@ -1066,8 +1071,8 @@ export class Finder {
         }
         case 'focus': {
           if (node === this.#content.activeElement) {
-            let focus = true;
             let refNode = node;
+            let focus = true;
             while (refNode) {
               if (refNode.hasAttribute('hidden')) {
                 focus = false;
@@ -1093,8 +1098,8 @@ export class Finder {
           break;
         }
         case 'focus-within': {
-          let active;
           let current = this.#content.activeElement;
+          let active;
           while (current) {
             if (current === node) {
               active = true;
@@ -1103,8 +1108,8 @@ export class Finder {
             current = current.parentNode;
           }
           if (active) {
-            let focus = true;
             let refNode = node;
+            let focus = true;
             while (refNode) {
               if (refNode.hasAttribute('hidden')) {
                 focus = false;
@@ -1267,23 +1272,21 @@ export class Finder {
             if (!parent) {
               parent = this.#content.documentElement;
             }
-            let checked;
             const items = parent.getElementsByTagName('input');
             const l = items.length;
-            if (l) {
-              for (let i = 0; i < l; i++) {
-                const item = items[i];
-                if (item.getAttribute('type') === 'radio') {
-                  if (nodeName) {
-                    if (item.getAttribute('name') === nodeName) {
-                      checked = !!item.checked;
-                    }
-                  } else if (!item.hasAttribute('name')) {
+            let checked;
+            for (let i = 0; i < l; i++) {
+              const item = items[i];
+              if (item.getAttribute('type') === 'radio') {
+                if (nodeName) {
+                  if (item.getAttribute('name') === nodeName) {
                     checked = !!item.checked;
                   }
-                  if (checked) {
-                    break;
-                  }
+                } else if (!item.hasAttribute('name')) {
+                  checked = !!item.checked;
+                }
+                if (checked) {
+                  break;
                 }
               }
             }
@@ -1339,8 +1342,8 @@ export class Finder {
             matched.add(node);
           // option
           } else if (localName === 'option') {
-            let isMultiple = false;
             let parent = parentNode;
+            let isMultiple = false;
             while (parent) {
               if (parent.localName === 'datalist') {
                 break;
@@ -1383,10 +1386,10 @@ export class Finder {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            let bool;
             const walker = this.#walker;
             let refNode = this._traverse(node, walker);
             refNode = walker.firstChild();
+            let bool;
             while (refNode && node.contains(refNode)) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -1408,10 +1411,10 @@ export class Finder {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            let bool;
             const walker = this.#walker;
             let refNode = this._traverse(node, walker);
             refNode = walker.firstChild();
+            let bool;
             while (refNode && node.contains(refNode)) {
               if (regFormValidity.test(refNode.localName)) {
                 bool = refNode.checkValidity();
@@ -1502,9 +1505,9 @@ export class Finder {
         }
         case 'empty': {
           if (node.hasChildNodes()) {
-            let bool;
             const walker = this.#document.createTreeWalker(node, SHOW_ALL);
             let refNode = walker.firstChild();
+            let bool;
             while (refNode) {
               bool = refNode.nodeType !== ELEMENT_NODE &&
                 refNode.nodeType !== TEXT_NODE;
@@ -1685,8 +1688,8 @@ export class Finder {
           res = node;
         }
       } else if (astName === 'host-context') {
-        let bool;
         let parent = host;
+        let bool;
         while (parent) {
           for (const leaf of leaves) {
             const { type: leafType } = leaf;
@@ -1785,8 +1788,8 @@ export class Finder {
    */
   _matchLeaves(leaves, node, opt) {
     const { attributes, localName, nodeType } = node;
-    let bool;
     let result = this.#results.get(leaves);
+    let bool;
     if (result && result.has(node)) {
       const { attr, matched } = result.get(node);
       if (attributes?.length === attr) {
@@ -2071,8 +2074,8 @@ export class Finder {
    */
   _findNode(leaves, opt = {}) {
     const { node } = opt;
-    let matchedNode;
     let refNode = this._traverse(node, this.#qswalker);
+    let matchedNode;
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
         refNode = this.#qswalker.nextNode();
@@ -2115,10 +2118,10 @@ export class Finder {
    */
   _matchSelf(leaves) {
     const nodes = [];
-    let filtered = false;
     const bool = this._matchLeaves(leaves, this.#node, {
       warn: this.#warn
     });
+    let filtered = false;
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2136,10 +2139,10 @@ export class Finder {
   _findLineal(leaves, opt = {}) {
     const { complex } = opt;
     const nodes = [];
-    let filtered = false;
     let bool = this._matchLeaves(leaves, this.#node, {
       warn: this.#warn
     });
+    let filtered = false;
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2172,10 +2175,10 @@ export class Finder {
    */
   _findFirst(leaves) {
     const nodes = [];
-    let filtered = false;
     const node = this._findNode(leaves, {
       node: this.#node
     });
+    let filtered = false;
     if (node) {
       nodes.push(node);
       filtered = true;
