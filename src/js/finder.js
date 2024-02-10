@@ -196,7 +196,7 @@ export class Finder {
                 const msg = `Invalid selector ${selector}`;
                 throw new DOMException(msg, SYNTAX_ERR);
               }
-              const itemName = unescapeSelector(item.name);
+              const itemName = item.name;
               if (itemName === '~') {
                 sibling = true;
               } else if (/^[\s>]$/.test(itemName)) {
@@ -211,6 +211,7 @@ export class Finder {
               let { name: itemName } = item;
               if (itemName && typeof itemName === 'string') {
                 itemName = unescapeSelector(itemName);
+                item.name = itemName;
                 if (/[|:]/.test(itemName)) {
                   item.namespace = true;
                 }
@@ -613,13 +614,12 @@ export class Finder {
       },
       selector
     } = ast;
-    const identName = unescapeSelector(nthIdentName);
     const anbMap = new Map();
-    if (identName) {
-      if (identName === 'even') {
+    if (nthIdentName) {
+      if (nthIdentName === 'even') {
         anbMap.set('a', 2);
         anbMap.set('b', 0);
-      } else if (identName === 'odd') {
+      } else if (nthIdentName === 'odd') {
         anbMap.set('a', 2);
         anbMap.set('b', 1);
       }
@@ -664,10 +664,9 @@ export class Finder {
    * @returns {?object} - matched node
    */
   _matchDirectionPseudoClass(ast, node) {
-    const astName = unescapeSelector(ast.name);
     const dir = getDirectionality(node);
     let res;
-    if (astName === dir) {
+    if (ast.name === dir) {
       res = node;
     }
     return res ?? null;
@@ -683,6 +682,7 @@ export class Finder {
    */
   _matchLanguagePseudoClass(ast, node) {
     const astName = unescapeSelector(ast.name);
+    ast.name = astName;
     let res;
     if (astName === '*') {
       if (node.hasAttribute('lang')) {
@@ -901,13 +901,12 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
-    const { children: astChildren } = ast;
+    const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
     const {
       forgive,
       warn = this.#warn
     } = opt;
-    const astName = unescapeSelector(ast.name);
     const matched = new Set();
     // :has(), :is(), :not(), :where()
     if (REG_LOGICAL_PSEUDO.test(astName)) {
@@ -1663,8 +1662,7 @@ export class Finder {
    * @returns {?object} - matched node
    */
   _matchShadowHostPseudoClass(ast, node) {
-    const { children: astChildren } = ast;
-    const astName = unescapeSelector(ast.name);
+    const { children: astChildren, name: astName } = ast;
     let res;
     if (Array.isArray(astChildren)) {
       const [branch] = walkAST(astChildren[0]);
@@ -1733,6 +1731,7 @@ export class Finder {
   _matchSelector(ast, node, opt) {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
+    ast.name = astName;
     const matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
@@ -1807,6 +1806,7 @@ export class Finder {
       for (const leaf of leaves) {
         const { name, type: leafType } = leaf;
         const leafName = unescapeSelector(name);
+        leaf.name = leafName;
         if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
           save = false;
         }
@@ -1867,9 +1867,10 @@ export class Finder {
    */
   _findDescendantNodes(leaves, baseNode, opt) {
     const [leaf, ...filterLeaves] = leaves;
+    const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    const compound = filterLeaves.length > 0;
+    leaf.name = leafName;
     let nodes = new Set();
     let pending = false;
     if (this.#shadow) {
@@ -2257,9 +2258,10 @@ export class Finder {
   _findEntryNodes(twig, targetType, complex) {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
+    const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    const compound = filterLeaves.length > 0;
+    leaf.name = leafName;
     let nodes = [];
     let filtered = false;
     let pending = false;
@@ -2439,6 +2441,7 @@ export class Finder {
         for (const { combo, leaves: [leaf] } of branch) {
           const { type: leafType } = leaf;
           const leafName = unescapeSelector(leaf.name);
+          leaf.name = leafName;
           if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
             bool = false;
             break;
