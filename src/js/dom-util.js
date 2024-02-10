@@ -9,7 +9,7 @@ import bidiFactory from 'bidi-js';
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_CONTAINED_BY, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO
+  REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -33,9 +33,9 @@ export const verifyNode = node => {
 };
 
 /**
- * resolve content document and root node
+ * resolve content document, root node and tree walker
  * @param {object} node - Document, DocumentFragment, Element node
- * @returns {Array.<object>} - array of document, root node
+ * @returns {Array.<object>} - array of document, root node, tree walker
  */
 export const resolveContent = node => {
   node = verifyNode(node);
@@ -67,9 +67,11 @@ export const resolveContent = node => {
       break;
     }
   }
+  const tree = document.createTreeWalker(root, WALKER_FILTER);
   return [
     document,
-    root
+    root,
+    tree
   ];
 };
 
