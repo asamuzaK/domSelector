@@ -159,9 +159,9 @@ export class Finder {
       const cachedItem = this.#cache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
-        ast = item.ast;
         this.#descendant = item.descendant;
         this.#sibling = item.sibling;
+        ast = item.ast;
       }
     }
     if (ast) {
