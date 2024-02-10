@@ -19,8 +19,7 @@ import {
   ALPHA_NUM, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
   NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_ALL, SHOW_DOCUMENT, SHOW_DOCUMENT_FRAGMENT, SHOW_ELEMENT, SYNTAX_ERR,
-  TEXT_NODE
+  SHOW_ALL, SHOW_ELEMENT, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -28,7 +27,6 @@ const TARGET_ALL = 'all';
 const TARGET_FIRST = 'first';
 const TARGET_LINEAL = 'lineal';
 const TARGET_SELF = 'self';
-const WALKER_FILTER = SHOW_DOCUMENT | SHOW_DOCUMENT_FRAGMENT | SHOW_ELEMENT;
 
 /**
  * Finder
@@ -67,7 +65,6 @@ export class Finder {
   #content;
   #descendant;
   #document;
-  #finder;
   #node;
   #nodes;
   #noexcept;
@@ -77,7 +74,8 @@ export class Finder {
   #shadow;
   #sibling;
   #sort;
-  #tree;
+  #subwalker;
+  #walker;
   #warn;
   #window;
 
@@ -138,9 +136,9 @@ export class Finder {
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
-    [this.#content, this.#root] = resolveContent(node);
+    [this.#content, this.#root, this.#walker] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
-    this._correspond(selector);
+    [this.#ast, this.#nodes] = this._correspond(selector);
     return node;
   }
 
@@ -250,8 +248,6 @@ export class Finder {
       this.#descendant = descendant;
       this.#sibling = sibling;
     }
-    this.#ast = ast;
-    this.#nodes = nodes;
     return [
       ast,
       nodes
@@ -259,18 +255,16 @@ export class Finder {
   }
 
   /**
-   * prepare tree walkers
+   * prepare sub tree walker
    * @private
    * @param {object} node - Document, DocumentFragment, Element node
-   * @returns {Array} - [#tree, #finder]
+   * @returns {Array} - [#subwalker]
    */
-  _prepareTreeWalkers(node) {
-    this.#tree = this.#document.createTreeWalker(this.#root, WALKER_FILTER);
-    this.#finder = this.#document.createTreeWalker(node, WALKER_FILTER);
+  _prepareSubWalker(node) {
+    this.#subwalker = this.#document.createTreeWalker(node, WALKER_FILTER);
     this.#sort = false;
     return [
-      this.#tree,
-      this.#finder
+      this.#subwalker
     ];
   }
 
@@ -281,7 +275,7 @@ export class Finder {
    * @param {object} [walker] - tree walker
    * @returns {?object} - current node
    */
-  _traverse(node = {}, walker = this.#tree) {
+  _traverse(node = {}, walker = this.#walker) {
     let current;
     let refNode = walker.currentNode;
     if (node.nodeType === ELEMENT_NODE && refNode === node) {
@@ -2049,7 +2043,7 @@ export class Finder {
   }
 
   /**
-   * find matched node from finder
+   * find matched node from sub walker
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} [opt] - options
@@ -2059,13 +2053,13 @@ export class Finder {
   _findNode(leaves, opt = {}) {
     const { node } = opt;
     let matchedNode;
-    let refNode = this._traverse(node, this.#finder);
+    let refNode = this._traverse(node, this.#subwalker);
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = this.#finder.nextNode();
+        refNode = this.#subwalker.nextNode();
       } else if (refNode === node) {
         if (refNode !== this.#root) {
-          refNode = this.#finder.nextNode();
+          refNode = this.#subwalker.nextNode();
         }
       }
       while (refNode) {
@@ -2088,7 +2082,7 @@ export class Finder {
             break;
           }
         }
-        refNode = this.#finder.nextNode();
+        refNode = this.#subwalker.nextNode();
       }
     }
     return matchedNode ?? null;
@@ -2488,10 +2482,10 @@ export class Finder {
         let walker;
         if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
           node = this.#node;
-          walker = this.#finder;
+          walker = this.#subwalker;
         } else {
           node = this.#root;
-          walker = this.#tree;
+          walker = this.#walker;
         }
         let nextNode = this._traverse(node, walker);
         while (nextNode) {
@@ -2870,7 +2864,7 @@ export class Finder {
           !this.#descendant && filterSelector(selector)) {
         res = this.#nwsapi.first(selector, node);
       } else {
-        this._prepareTreeWalkers(node);
+        this._prepareSubWalker(node);
         const nodes = this._find(TARGET_FIRST);
         nodes.delete(this.#node);
         if (nodes.size) {
@@ -2899,7 +2893,7 @@ export class Finder {
           filterSelector(selector)) {
         res = this.#nwsapi.select(selector, node);
       } else {
-        this._prepareTreeWalkers(node);
+        this._prepareSubWalker(node);
         const nodes = this._find(TARGET_ALL);
         nodes.delete(this.#node);
         if (nodes.size) {

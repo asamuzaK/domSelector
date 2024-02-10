@@ -50,6 +50,7 @@ export const SHOW_ALL = 0xffffffff;
 export const SHOW_DOCUMENT = 0x100;
 export const SHOW_DOCUMENT_FRAGMENT = 0x400;
 export const SHOW_ELEMENT = 1;
+export const WALKER_FILTER = 0x501;
 
 /* regexp */
 export const REG_LOGICAL_PSEUDO = /^(?:(?:ha|i)s|not|where)$/;

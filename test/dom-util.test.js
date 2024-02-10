@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import * as domUtil from '../src/js/dom-util.js';
+import { WALKER_FILTER } from '../src/js/constant.js';
 
 describe('DOM utility functions', () => {
   const domStr = `<!doctype html>
@@ -78,32 +79,38 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('resolve content document and root node', () => {
+  describe('resolve content document, root node and tree walker', () => {
     const func = domUtil.resolveContent;
 
     it('should get result', () => {
       const res = func(document);
+      const tree = document.createTreeWalker(document, WALKER_FILTER);
       assert.deepEqual(res, [
         document,
-        document
+        document,
+        tree
       ]);
     });
 
     it('should get result', () => {
       const node = document.createDocumentFragment();
+      const tree = document.createTreeWalker(node, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
-        node
+        node,
+        tree
       ]);
     });
 
     it('should get result', () => {
       const node = document.getElementById('div0');
+      const tree = document.createTreeWalker(document, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
-        document
+        document,
+        tree
       ]);
     });
 
@@ -111,10 +118,12 @@ describe('DOM utility functions', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
+      const tree = document.createTreeWalker(frag, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
-        frag
+        frag,
+        tree
       ]);
     });
 
@@ -122,10 +131,12 @@ describe('DOM utility functions', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
       parent.appendChild(node);
+      const tree = document.createTreeWalker(parent, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
-        parent
+        parent,
+        tree
       ]);
     });
 
@@ -133,10 +144,12 @@ describe('DOM utility functions', () => {
       const domstr = '<foo id="foo"><bar id="bar" /></foo>';
       const doc = new window.DOMParser().parseFromString(domstr, 'text/xml');
       const node = doc.getElementById('bar');
+      const tree = doc.createTreeWalker(doc, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         doc,
-        doc
+        doc,
+        tree
       ]);
     });
   });
