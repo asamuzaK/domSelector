@@ -2574,14 +2574,14 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchNodes(targetType) {
-    const [...branches] = this.#ast;
+    const [[...branches], nodes] = this._collectNodes(targetType);
     const l = branches.length;
-    let nodes = new Set();
+    let res = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
-        const entryNodes = this.#nodes[i];
+        const entryNodes = nodes[i];
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
@@ -2590,23 +2590,23 @@ export class Finder {
             for (let j = 0; j < entryNodesLen; j++) {
               const node = entryNodes[j];
               if (node !== this.#node && this.#node.contains(node)) {
-                nodes.add(node);
+                res.add(node);
                 if (targetType !== TARGET_ALL) {
                   break;
                 }
               }
             }
           } else if (targetType === TARGET_ALL) {
-            if (nodes.size) {
-              const n = [...nodes];
-              nodes = new Set([...n, ...entryNodes]);
+            if (res.size) {
+              const n = [...res];
+              res = new Set([...n, ...entryNodes]);
               this.#sort = true;
             } else {
-              nodes = new Set([...entryNodes]);
+              res = new Set([...entryNodes]);
             }
           } else {
             const [node] = [...entryNodes];
-            nodes.add(node);
+            res.add(node);
           }
         } else if (dir === DIR_NEXT) {
           let { combo, leaves: entryLeaves } = branch[0];
@@ -2632,16 +2632,16 @@ export class Finder {
               if (arr.length) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_ALL) {
-                    if (nodes.size) {
-                      const n = [...nodes];
-                      nodes = new Set([...n, ...arr]);
+                    if (res.size) {
+                      const n = [...res];
+                      res = new Set([...n, ...arr]);
                     } else {
-                      nodes = new Set([...arr]);
+                      res = new Set([...arr]);
                     }
                     this.#sort = true;
                   } else {
                     const [node] = sortNodes(arr);
-                    nodes.add(node);
+                    res.add(node);
                   }
                   matched = true;
                 } else {
@@ -2684,7 +2684,7 @@ export class Finder {
                 if (arr.length) {
                   if (j === lastIndex) {
                     const [node] = sortNodes(arr);
-                    nodes.add(node);
+                    res.add(node);
                     matched = true;
                   } else {
                     combo = nextCombo;
@@ -2724,10 +2724,10 @@ export class Finder {
               }
               if (arr.length) {
                 if (j === 0) {
-                  nodes.add(node);
+                  res.add(node);
                   matched = true;
                   if (targetType === TARGET_ALL &&
-                      branchLen > 1 && nodes.size > 1) {
+                      branchLen > 1 && res.size > 1) {
                     this.#sort = true;
                   }
                 } else {
@@ -2764,7 +2764,7 @@ export class Finder {
                 }
                 if (arr.length) {
                   if (j === 0) {
-                    nodes.add(refNode);
+                    res.add(refNode);
                     matched = true;
                   } else {
                     nextNodes = new Set(arr);
@@ -2787,7 +2787,7 @@ export class Finder {
         }
       }
     }
-    return nodes;
+    return res;
   }
 
   /**
@@ -2800,7 +2800,6 @@ export class Finder {
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this._prepareQuerySelectorWalker();
     }
-    this._collectNodes(targetType);
     const nodes = this._matchNodes(targetType);
     return nodes;
   }
