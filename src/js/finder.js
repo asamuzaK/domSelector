@@ -2621,8 +2621,7 @@ export class Finder {
         } else if (dir === DIR_NEXT) {
           let { combo, leaves: entryLeaves } = branch[0];
           let matched;
-          for (let j = 0; j < entryNodesLen; j++) {
-            const node = entryNodes[j];
+          for (const node of entryNodes) {
             let nextNodes = new Set([node]);
             for (let j = 1; j < branchLen; j++) {
               const { combo: nextCombo, leaves } = branch[j];
@@ -2719,8 +2718,7 @@ export class Finder {
         } else {
           const { leaves: entryLeaves } = branch[lastIndex];
           let matched;
-          for (let j = 0; j < entryNodesLen; j++) {
-            const node = entryNodes[j];
+          for (const node of entryNodes) {
             let nextNodes = new Set([node]);
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
