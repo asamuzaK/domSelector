@@ -10261,7 +10261,7 @@ describe('Finder', () => {
         ],
         [
           [],
-          [[node]]
+          [node]
         ]
       ], 'result');
     });
@@ -10336,7 +10336,7 @@ describe('Finder', () => {
         ],
         [
           [],
-          [[node]]
+          [node]
         ]
       ], 'result');
     });
@@ -10410,12 +10410,12 @@ describe('Finder', () => {
           }
         ],
         [
-          [[
+          [
             document.getElementById('li3')
-          ]],
-          [[
+          ],
+          [
             document.getElementById('li1')
-          ]]
+          ]
         ]
       ], 'result');
     });
@@ -10489,14 +10489,14 @@ describe('Finder', () => {
           }
         ],
         [
-          [[
+          [
             document.getElementById('li3')
-          ]],
-          [[
+          ],
+          [
             document.getElementById('li1'),
             document.getElementById('li2'),
             document.getElementById('li3')
-          ]]
+          ]
         ]
       ], 'result');
     });
@@ -10579,8 +10579,8 @@ describe('Finder', () => {
           }
         ],
         [
-          [[div2, div4]],
-          [[div3]]
+          [div2, div4],
+          [div3]
         ]
       ], 'result');
     });
@@ -10665,8 +10665,8 @@ describe('Finder', () => {
           }
         ],
         [
-          [[div2, div4]],
-          [[div3]]
+          [div2, div4],
+          [div3]
         ]
       ], 'result');
     });
@@ -10708,7 +10708,7 @@ describe('Finder', () => {
           }
         ],
         [
-          [[div2]]
+          [div2]
         ]
       ], 'result');
     });
@@ -10750,7 +10750,7 @@ describe('Finder', () => {
           }
         ],
         [
-          [[root]]
+          [root]
         ]
       ], 'result');
     });
@@ -10827,18 +10827,14 @@ describe('Finder', () => {
     });
   });
 
-  describe('match node', () => {
+  describe('match node to previous direction', () => {
     it('should get matched node(s)', () => {
       const node = document.getElementById('li2');
       const finder = new Finder(window);
       finder._setup('ul > .li ~ li', document);
       const [[{ branch }]] = finder._correspond('ul > .li ~ li');
-      const res = finder._matchNode(branch, node, {
-        dir: 'prev',
-        i: 0,
-        j: 1,
-        k: 1,
-        lastIndex: 2
+      const res = finder._matchNodePrev(branch, node, {
+        index: 1
       });
       assert.deepEqual(res, node, 'result');
     });
@@ -10848,12 +10844,8 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ol > .li ~ li', document);
       const [[{ branch }]] = finder._correspond('ol > .li ~ li');
-      const res = finder._matchNode(branch, node, {
-        dir: 'prev',
-        i: 0,
-        j: 1,
-        k: 1,
-        lastIndex: 2
+      const res = finder._matchNodePrev(branch, node, {
+        index: 1
       });
       assert.isNull(res, 'result');
     });

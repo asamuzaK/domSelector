@@ -46,8 +46,8 @@ const TARGET_SELF = 'self';
  *   }
  * ]
  * #nodes: [
- *   [[node{}, node{}]],
- *   [[node{}, node{}, node{}], [node{}, node{}]]
+ *   [node{}, node{}],
+ *   [node{}, node{}, node{}]
  * ]
  * branch[]: [twig{}, twig{}]
  * twig{}: {
@@ -2491,7 +2491,7 @@ export class Finder {
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
-          this.#nodes[i][0] = nodes;
+          this.#nodes[i] = nodes;
         } else if (pending) {
           pendingItems.add(new Map([
             ['index', i],
@@ -2534,10 +2534,7 @@ export class Finder {
                 const index = pendingItem.get('index');
                 this.#ast[index].filtered = true;
                 this.#ast[index].find = true;
-                if (!Array.isArray(this.#nodes[index][0])) {
-                  this.#nodes[index][0] = [];
-                }
-                this.#nodes[index][0].push(nextNode);
+                this.#nodes[index].push(nextNode);
               }
             }
           }
@@ -2557,7 +2554,7 @@ export class Finder {
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
-          this.#nodes[i][0] = nodes;
+          this.#nodes[i] = nodes;
         }
         this.#ast[i].dir = DIR_PREV;
         this.#ast[i].filtered = filtered || !compound;
@@ -2596,26 +2593,26 @@ export class Finder {
   }
 
   /**
-   * match node
+   * match node to previous direction
    * @private
    * @param {Array} branch - branch
    * @param {object} node - Element node
    * @param {object} opt - options
    * @returns {?object} - node
    */
-  _matchNode(branch, node, opt = {}) {
-    let { dir, i, j, k } = opt;
+  _matchNodePrev(branch, node, opt = {}) {
+    let { index } = opt;
     let nextNodes = new Set([node]);
     let res;
-    for (; j >= 0; j--) {
-      const twig = branch[j];
-      nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+    for (; index >= 0; index--) {
+      const twig = branch[index];
+      nextNodes = this._getCombinedNodes(twig, nextNodes, 'prev');
       if (nextNodes.size) {
-        if (j === 0) {
+        if (index === 0) {
           res = node;
         } else {
-          this.#nodes[i][k] = [...nextNodes];
-          k++;
+          // FIXME: recurse
+          // this.#nodes[i][k] = [...nextNodes];
         }
       } else {
         break;
@@ -2638,7 +2635,7 @@ export class Finder {
       const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
-        const entryNodes = nodes[i][0];
+        const entryNodes = nodes[i];
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
@@ -2693,7 +2690,7 @@ export class Finder {
                   }
                   matched = true;
                 } else {
-                  this.#nodes[i][j] = [...nextNodes];
+                  // this.#nodes[i][j] = [...nextNodes];
                   combo = nextCombo;
                   matched = false;
                 }
@@ -2727,7 +2724,7 @@ export class Finder {
                     res.add(node);
                     matched = true;
                   } else {
-                    this.#nodes[i][j] = [...nextNodes];
+                    // this.#nodes[i][j] = [...nextNodes];
                     combo = nextCombo;
                     matched = false;
                   }
@@ -2766,11 +2763,8 @@ export class Finder {
         } else {
           let matched;
           for (const node of entryNodes) {
-            matched = this._matchNode(branch, node, {
-              dir,
-              i,
-              j: lastIndex - 1,
-              k: 1
+            matched = this._matchNodePrev(branch, node, {
+              index: lastIndex - 1
             });
             if (matched) {
               res.add(node);
@@ -2784,11 +2778,8 @@ export class Finder {
               node: entryNode
             });
             while (refNode) {
-              matched = this._matchNode(branch, refNode, {
-                dir,
-                i,
-                j: lastIndex - 1,
-                k: 1
+              matched = this._matchNodePrev(branch, refNode, {
+                index: lastIndex - 1
               });
               if (matched) {
                 res.add(refNode);
