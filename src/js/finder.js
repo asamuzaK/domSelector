@@ -2637,7 +2637,7 @@ export class Finder {
             res.add(node);
           }
         } else if (dir === DIR_NEXT) {
-          let { combo, leaves: entryLeaves } = branch[0];
+          let { combo } = branch[0];
           let matched;
           for (const node of entryNodes) {
             let nextNodes = new Set([node]);
@@ -2678,6 +2678,7 @@ export class Finder {
             }
           }
           if (!matched && targetType === TARGET_FIRST) {
+            const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
@@ -2715,8 +2716,26 @@ export class Finder {
               nextNodes = new Set([refNode]);
             }
           }
+        } else if (targetType === TARGET_ALL) {
+          for (const node of entryNodes) {
+            let nextNodes = new Set([node]);
+            for (let j = lastIndex - 1; j >= 0; j--) {
+              const twig = branch[j];
+              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              if (nextNodes.size) {
+                if (j === 0) {
+                  res.add(node);
+                  if (targetType === TARGET_ALL &&
+                      branchLen > 1 && res.size > 1) {
+                    this.#sort = true;
+                  }
+                }
+              } else {
+                break;
+              }
+            }
+          }
         } else {
-          const { leaves: entryLeaves } = branch[lastIndex];
           let k = 1;
           let matched;
           for (const node of entryNodes) {
@@ -2729,10 +2748,6 @@ export class Finder {
                 if (j === 0) {
                   res.add(node);
                   matched = true;
-                  if (targetType === TARGET_ALL &&
-                      branchLen > 1 && res.size > 1) {
-                    this.#sort = true;
-                  }
                 } else {
                   this.#nodes[i][k] = [...nextNodes];
                   matched = false;
@@ -2743,11 +2758,12 @@ export class Finder {
                 break;
               }
             }
-            if (matched && targetType !== TARGET_ALL) {
+            if (matched) {
               break;
             }
           }
           if (!matched && targetType === TARGET_FIRST) {
+            const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
