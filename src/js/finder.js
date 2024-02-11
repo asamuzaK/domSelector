@@ -2814,8 +2814,8 @@ export class Finder {
   matches(selector, node, opt) {
     let res;
     try {
-      if (node.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node.nodeName}`;
+      if (node?.nodeType !== ELEMENT_NODE) {
+        const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
       if (filterSelector(selector)) {
@@ -2841,8 +2841,8 @@ export class Finder {
   closest(selector, node, opt) {
     let res;
     try {
-      if (node.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node.nodeName}`;
+      if (node?.nodeType !== ELEMENT_NODE) {
+        const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
       if (filterSelector(selector)) {
