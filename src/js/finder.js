@@ -2674,7 +2674,7 @@ export class Finder {
             }
           }
           if (!matched && targetType === TARGET_FIRST) {
-            const [entryNode] = [...entryNodes];
+            const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
             });
@@ -2739,7 +2739,7 @@ export class Finder {
             }
           }
           if (!matched && targetType === TARGET_FIRST) {
-            const [entryNode] = [...entryNodes];
+            const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
             });
