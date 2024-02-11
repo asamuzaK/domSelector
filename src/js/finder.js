@@ -2627,10 +2627,10 @@ export class Finder {
               res = new Set([...n, ...entryNodes]);
               this.#sort = true;
             } else {
-              res = new Set([...entryNodes]);
+              res = new Set(entryNodes);
             }
           } else {
-            const [node] = [...entryNodes];
+            const [node] = entryNodes;
             res.add(node);
           }
         } else if (dir === DIR_NEXT) {
