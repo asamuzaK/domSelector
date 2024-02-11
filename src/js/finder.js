@@ -2821,7 +2821,7 @@ export class Finder {
       if (filterSelector(selector)) {
         res = this.#nwsapi.match(selector, node);
       } else {
-        this.#node = this._setup(selector, node, opt);
+        this._setup(selector, node, opt);
         const nodes = this._find(TARGET_SELF);
         res = nodes.size;
       }
@@ -2848,7 +2848,7 @@ export class Finder {
       if (filterSelector(selector)) {
         res = this.#nwsapi.closest(selector, node);
       } else {
-        this.#node = this._setup(selector, node, opt);
+        this._setup(selector, node, opt);
         const nodes = this._find(TARGET_LINEAL);
         if (nodes.size) {
           let refNode = this.#node;
@@ -2877,7 +2877,7 @@ export class Finder {
   querySelector(selector, node, opt) {
     let res;
     try {
-      this.#node = this._setup(selector, node, opt);
+      this._setup(selector, node, opt);
       if (this.#document === this.#content && this.#sibling &&
           !this.#descendant && filterSelector(selector)) {
         res = this.#nwsapi.first(selector, node);
@@ -2905,7 +2905,7 @@ export class Finder {
   querySelectorAll(selector, node, opt) {
     let res;
     try {
-      this.#node = this._setup(selector, node, opt);
+      this._setup(selector, node, opt);
       if (this.#document === this.#content && !this.#descendant &&
           filterSelector(selector)) {
         res = this.#nwsapi.select(selector, node);
