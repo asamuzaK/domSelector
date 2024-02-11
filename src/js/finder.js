@@ -46,8 +46,8 @@ const TARGET_SELF = 'self';
  *   }
  * ]
  * #nodes: [
- *   [node{}, node{}],
- *   [node{}, node{}, node{}]
+ *   [[node{}, node{}]],
+ *   [[node{}, node{}, node{}], [node{}, node{}]]
  * ]
  * branch[]: [twig{}, twig{}]
  * twig{}: {
@@ -2491,7 +2491,7 @@ export class Finder {
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
-          this.#nodes[i] = nodes;
+          this.#nodes[i][0] = nodes;
         } else if (pending) {
           pendingItems.add(new Map([
             ['index', i],
@@ -2534,7 +2534,10 @@ export class Finder {
                 const index = pendingItem.get('index');
                 this.#ast[index].filtered = true;
                 this.#ast[index].find = true;
-                this.#nodes[index].push(nextNode);
+                if (!Array.isArray(this.#nodes[index][0])) {
+                  this.#nodes[index][0] = [];
+                }
+                this.#nodes[index][0].push(nextNode);
               }
             }
           }
@@ -2554,7 +2557,7 @@ export class Finder {
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
-          this.#nodes[i] = nodes;
+          this.#nodes[i][0] = nodes;
         }
         this.#ast[i].dir = DIR_PREV;
         this.#ast[i].filtered = filtered || !compound;
@@ -2606,7 +2609,7 @@ export class Finder {
       const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
-        const entryNodes = nodes[i];
+        const entryNodes = nodes[i][0];
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
@@ -2661,6 +2664,7 @@ export class Finder {
                   }
                   matched = true;
                 } else {
+                  this.#nodes[i][j] = [...nextNodes];
                   combo = nextCombo;
                   matched = false;
                 }
@@ -2693,6 +2697,7 @@ export class Finder {
                     res.add(node);
                     matched = true;
                   } else {
+                    this.#nodes[i][j] = [...nextNodes];
                     combo = nextCombo;
                     matched = false;
                   }
@@ -2712,9 +2717,11 @@ export class Finder {
           }
         } else {
           const { leaves: entryLeaves } = branch[lastIndex];
+          let k = 1;
           let matched;
           for (const node of entryNodes) {
             let nextNodes = new Set([node]);
+            k = 1;
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
               nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
@@ -2727,7 +2734,9 @@ export class Finder {
                     this.#sort = true;
                   }
                 } else {
+                  this.#nodes[i][k] = [...nextNodes];
                   matched = false;
+                  k++;
                 }
               } else {
                 matched = false;
@@ -2745,6 +2754,7 @@ export class Finder {
             });
             while (refNode) {
               let nextNodes = new Set([refNode]);
+              k = 1;
               for (let j = lastIndex - 1; j >= 0; j--) {
                 const twig = branch[j];
                 nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
@@ -2753,7 +2763,9 @@ export class Finder {
                     res.add(refNode);
                     matched = true;
                   } else {
+                    this.#nodes[i][k] = [...nextNodes];
                     matched = false;
+                    k++;
                   }
                 } else {
                   matched = false;

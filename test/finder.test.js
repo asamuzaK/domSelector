@@ -10261,7 +10261,7 @@ describe('Finder', () => {
         ],
         [
           [],
-          [node]
+          [[node]]
         ]
       ], 'result');
     });
@@ -10336,7 +10336,7 @@ describe('Finder', () => {
         ],
         [
           [],
-          [node]
+          [[node]]
         ]
       ], 'result');
     });
@@ -10410,12 +10410,12 @@ describe('Finder', () => {
           }
         ],
         [
-          [
+          [[
             document.getElementById('li3')
-          ],
-          [
+          ]],
+          [[
             document.getElementById('li1')
-          ]
+          ]]
         ]
       ], 'result');
     });
@@ -10489,14 +10489,14 @@ describe('Finder', () => {
           }
         ],
         [
-          [
+          [[
             document.getElementById('li3')
-          ],
-          [
+          ]],
+          [[
             document.getElementById('li1'),
             document.getElementById('li2'),
             document.getElementById('li3')
-          ]
+          ]]
         ]
       ], 'result');
     });
@@ -10579,8 +10579,8 @@ describe('Finder', () => {
           }
         ],
         [
-          [div2, div4],
-          [div3]
+          [[div2, div4]],
+          [[div3]]
         ]
       ], 'result');
     });
@@ -10665,8 +10665,8 @@ describe('Finder', () => {
           }
         ],
         [
-          [div2, div4],
-          [div3]
+          [[div2, div4]],
+          [[div3]]
         ]
       ], 'result');
     });
@@ -10708,7 +10708,7 @@ describe('Finder', () => {
           }
         ],
         [
-          [div2]
+          [[div2]]
         ]
       ], 'result');
     });
@@ -10750,7 +10750,7 @@ describe('Finder', () => {
           }
         ],
         [
-          [root]
+          [[root]]
         ]
       ], 'result');
     });
