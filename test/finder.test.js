@@ -10756,7 +10756,7 @@ describe('Finder', () => {
     });
   });
 
-  describe('get matched nodes', () => {
+  describe('get combined nodes', () => {
     it('should get matched nodes', () => {
       const finder = new Finder(window);
       finder._setup('ul > li', document);
@@ -10774,7 +10774,7 @@ describe('Finder', () => {
       const nodes = new Set([
         document.getElementById('li1')
       ]);
-      const res = finder._getMatchedNodes(twig, nodes, 'prev');
+      const res = finder._getCombinedNodes(twig, nodes, 'prev');
       assert.deepEqual([...res], [
         document.getElementById('ul1')
       ], 'result');
@@ -10797,7 +10797,7 @@ describe('Finder', () => {
       const nodes = new Set([
         document.getElementById('ul1')
       ]);
-      const res = finder._getMatchedNodes(twig, nodes, 'next');
+      const res = finder._getCombinedNodes(twig, nodes, 'next');
       assert.deepEqual([...res], [
         document.getElementById('li1'),
         document.getElementById('li2'),
@@ -10822,7 +10822,7 @@ describe('Finder', () => {
       const nodes = new Set([
         document.getElementById('li1')
       ]);
-      const res = finder._getMatchedNodes(twig, nodes, 'prev');
+      const res = finder._getCombinedNodes(twig, nodes, 'prev');
       assert.deepEqual([...res], [], 'result');
     });
   });

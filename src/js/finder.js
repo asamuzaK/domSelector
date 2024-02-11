@@ -2571,14 +2571,14 @@ export class Finder {
   }
 
   /**
-   * get matched nodes
+   * get combined nodes
    * @private
    * @param {object} twig - twig
    * @param {object} nodes - collection of nodes
    * @param {string} dir - direction
    * @returns {Array.<object>} - collection of matched nodes
    */
-  _getMatchedNodes(twig, nodes, dir) {
+  _getCombinedNodes(twig, nodes, dir) {
     const arr = [];
     for (const node of nodes) {
       const matched = this._matchCombinator(twig, node, {
@@ -2647,7 +2647,7 @@ export class Finder {
                 combo,
                 leaves
               };
-              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
               if (nextNodes.size) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_ALL) {
@@ -2691,7 +2691,7 @@ export class Finder {
                   combo,
                   leaves
                 };
-                nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
                 if (nextNodes.size) {
                   if (j === lastIndex) {
                     const [node] = sortNodes(nextNodes);
@@ -2721,12 +2721,11 @@ export class Finder {
             let nextNodes = new Set([node]);
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
-              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
               if (nextNodes.size) {
                 if (j === 0) {
                   res.add(node);
-                  if (targetType === TARGET_ALL &&
-                      branchLen > 1 && res.size > 1) {
+                  if (branchLen > 1 && res.size > 1) {
                     this.#sort = true;
                   }
                 }
@@ -2743,7 +2742,7 @@ export class Finder {
             k = 1;
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
-              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
               if (nextNodes.size) {
                 if (j === 0) {
                   res.add(node);
@@ -2773,7 +2772,7 @@ export class Finder {
               k = 1;
               for (let j = lastIndex - 1; j >= 0; j--) {
                 const twig = branch[j];
-                nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
                 if (nextNodes.size) {
                   if (j === 0) {
                     res.add(refNode);
