@@ -2627,7 +2627,7 @@ export class Finder {
               res = new Set([...n, ...entryNodes]);
               this.#sort = true;
             } else {
-              res = entryNodes;
+              res = new Set([...entryNodes]);
             }
           } else {
             const [node] = [...entryNodes];
