@@ -2596,6 +2596,36 @@ export class Finder {
   }
 
   /**
+   * match node
+   * @private
+   * @param {Array} branch - branch
+   * @param {object} node - Element node
+   * @param {object} opt - options
+   * @returns {?object} - node
+   */
+  _matchNode(branch, node, opt = {}) {
+    const { dir, i, lastIndex } = opt;
+    let nextNodes = new Set([node]);
+    let k = 1;
+    let res;
+    for (let j = lastIndex - 1; j >= 0; j--) {
+      const twig = branch[j];
+      nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+      if (nextNodes.size) {
+        if (j === 0) {
+          res = node;
+        } else {
+          this.#nodes[i][k] = [...nextNodes];
+          k++;
+        }
+      } else {
+        break;
+      }
+    }
+    return res ?? null;
+  }
+
+  /**
    * match nodes
    * @private
    * @param {string} targetType - target type
@@ -2735,29 +2765,13 @@ export class Finder {
             }
           }
         } else {
-          let k = 1;
           let matched;
           for (const node of entryNodes) {
-            let nextNodes = new Set([node]);
-            k = 1;
-            for (let j = lastIndex - 1; j >= 0; j--) {
-              const twig = branch[j];
-              nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
-              if (nextNodes.size) {
-                if (j === 0) {
-                  res.add(node);
-                  matched = true;
-                } else {
-                  this.#nodes[i][k] = [...nextNodes];
-                  matched = false;
-                  k++;
-                }
-              } else {
-                matched = false;
-                break;
-              }
-            }
+            matched = this._matchNode(branch, node, {
+              dir, i, lastIndex
+            });
             if (matched) {
+              res.add(node);
               break;
             }
           }
@@ -2768,32 +2782,16 @@ export class Finder {
               node: entryNode
             });
             while (refNode) {
-              let nextNodes = new Set([refNode]);
-              k = 1;
-              for (let j = lastIndex - 1; j >= 0; j--) {
-                const twig = branch[j];
-                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
-                if (nextNodes.size) {
-                  if (j === 0) {
-                    res.add(refNode);
-                    matched = true;
-                  } else {
-                    this.#nodes[i][k] = [...nextNodes];
-                    matched = false;
-                    k++;
-                  }
-                } else {
-                  matched = false;
-                  break;
-                }
-              }
+              matched = this._matchNode(branch, refNode, {
+                dir, i, lastIndex
+              });
               if (matched) {
+                res.add(refNode);
                 break;
               }
               refNode = this._findNode(entryLeaves, {
                 node: refNode
               });
-              nextNodes = new Set([refNode]);
             }
           }
         }

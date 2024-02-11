@@ -10827,6 +10827,35 @@ describe('Finder', () => {
     });
   });
 
+  describe('match node', () => {
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li');
+      console.log(branch);
+      const res = finder._matchNode(branch, node, {
+        dir: 'prev',
+        i: 0,
+        lastIndex: 2
+      });
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder(window);
+      finder._setup('ol > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ol > .li ~ li');
+      const res = finder._matchNode(branch, node, {
+        dir: 'prev',
+        i: 0,
+        lastIndex: 2
+      });
+      assert.isNull(res, 'result');
+    });
+  });
+
   describe('match nodes', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
