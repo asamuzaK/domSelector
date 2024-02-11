@@ -10756,6 +10756,159 @@ describe('Finder', () => {
     });
   });
 
+  describe('get combined nodes', () => {
+    it('should get matched nodes', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'ul',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('li1')
+      ]);
+      const res = finder._getCombinedNodes(twig, nodes, 'prev');
+      assert.deepEqual([...res], [
+        document.getElementById('ul1')
+      ], 'result');
+    });
+
+    it('should get matched nodes', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('ul1')
+      ]);
+      const res = finder._getCombinedNodes(twig, nodes, 'next');
+      assert.deepEqual([...res], [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      finder._setup('ol > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'ol',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('li1')
+      ]);
+      const res = finder._getCombinedNodes(twig, nodes, 'prev');
+      assert.deepEqual([...res], [], 'result');
+    });
+  });
+
+  describe('match node to next direction', () => {
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li');
+      const res = finder._matchNodeNext(branch, new Set([node]), {
+        combo: {
+          name: '>'
+        },
+        index: 1
+      });
+      assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li:last-child', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li:last-child');
+      const res = finder._matchNodeNext(branch, new Set([node]), {
+        combo: {
+          name: '>'
+        },
+        index: 1
+      });
+      assert.deepEqual(res, document.getElementById('li3'), 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li.foo', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li.foo');
+      const res = finder._matchNodeNext(branch, new Set([node]), {
+        combo: {
+          name: '>'
+        },
+        index: 1
+      });
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > li.foo ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > li.foo ~ li');
+      const res = finder._matchNodeNext(branch, new Set([node]), {
+        combo: {
+          name: '>'
+        },
+        index: 1
+      });
+      assert.isNull(res, 'result');
+    });
+  });
+
+  describe('match node to previous direction', () => {
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li');
+      const res = finder._matchNodePrev(branch, node, {
+        index: 1
+      });
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('li2');
+      const finder = new Finder(window);
+      finder._setup('ol > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ol > .li ~ li');
+      const res = finder._matchNodePrev(branch, node, {
+        index: 1
+      });
+      assert.isNull(res, 'result');
+    });
+  });
+
   describe('match nodes', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
@@ -11268,10 +11421,15 @@ describe('Finder', () => {
       const node4 = document.createElement('div');
       const node5 = document.createElement('div');
       const parent = document.getElementById('div0');
+      node1.id = 'node1';
       node1.classList.add('foo');
+      node2.id = 'node2';
       node2.classList.add('foo');
+      node3.id = 'node3';
       node3.classList.add('foo');
+      node4.id = 'node4';
       node4.classList.add('foo');
+      node5.id = 'node5';
       node5.classList.add('foo');
       parent.appendChild(node1);
       parent.appendChild(node2);

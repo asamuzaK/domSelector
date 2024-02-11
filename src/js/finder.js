@@ -2568,6 +2568,95 @@ export class Finder {
   }
 
   /**
+   * get combined nodes
+   * @private
+   * @param {object} twig - twig
+   * @param {object} nodes - collection of nodes
+   * @param {string} dir - direction
+   * @returns {Array.<object>} - collection of matched nodes
+   */
+  _getCombinedNodes(twig, nodes, dir) {
+    const arr = [];
+    for (const node of nodes) {
+      const matched = this._matchCombinator(twig, node, {
+        dir,
+        warn: this.#warn
+      });
+      if (matched.size) {
+        arr.push(...matched);
+      }
+    }
+    if (arr.length) {
+      return new Set(arr);
+    }
+    return new Set();
+  }
+
+  /**
+   * match node to next direction
+   * @private
+   * @param {Array} branch - branch
+   * @param {Set.<object>} nodes - collection of Element node
+   * @param {object} opt - option
+   * @param {object} opt.combo - combo
+   * @returns {?object} - matched node
+   */
+  _matchNodeNext(branch, nodes, opt) {
+    const { combo, index } = opt;
+    const { combo: nextCombo, leaves } = branch[index];
+    const twig = {
+      combo,
+      leaves
+    };
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
+    let res;
+    if (nextNodes.size) {
+      if (index === branch.length - 1) {
+        const [nextNode] = sortNodes(nextNodes);
+        res = nextNode;
+      } else {
+        res = this._matchNodeNext(branch, nextNodes, {
+          combo: nextCombo,
+          index: index + 1
+        });
+      }
+    }
+    return res ?? null;
+  }
+
+  /**
+   * match node to previous direction
+   * @private
+   * @param {Array} branch - branch
+   * @param {object} node - Element node
+   * @param {object} opt - option
+   * @param {number} opt.index - index
+   * @returns {?object} - node
+   */
+  _matchNodePrev(branch, node, opt) {
+    const { index } = opt;
+    const twig = branch[index];
+    const nodes = new Set([node]);
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_PREV);
+    let res;
+    if (nextNodes.size) {
+      if (index === 0) {
+        res = node;
+      } else {
+        for (const nextNode of nextNodes) {
+          const matched = this._matchNodePrev(branch, nextNode, {
+            index: index - 1
+          });
+          if (matched) {
+            return node;
+          }
+        }
+      }
+    }
+    return res ?? null;
+  }
+
+  /**
    * match nodes
    * @private
    * @param {string} targetType - target type
@@ -2602,186 +2691,121 @@ export class Finder {
               res = new Set([...n, ...entryNodes]);
               this.#sort = true;
             } else {
-              res = new Set([...entryNodes]);
+              res = new Set(entryNodes);
             }
           } else {
-            const [node] = [...entryNodes];
+            const [node] = entryNodes;
             res.add(node);
           }
-        } else if (dir === DIR_NEXT) {
-          let { combo, leaves: entryLeaves } = branch[0];
-          let matched;
-          for (const node of entryNodes) {
-            let nextNodes = new Set([node]);
-            for (let j = 1; j < branchLen; j++) {
-              const { combo: nextCombo, leaves } = branch[j];
-              const arr = [];
-              for (const nextNode of nextNodes) {
+        } else if (targetType === TARGET_ALL) {
+          if (dir === DIR_NEXT) {
+            let { combo } = branch[0];
+            for (const node of entryNodes) {
+              let nextNodes = new Set([node]);
+              for (let j = 1; j < branchLen; j++) {
+                const { combo: nextCombo, leaves } = branch[j];
                 const twig = {
                   combo,
                   leaves
                 };
-                const m = this._matchCombinator(twig, nextNode, {
-                  dir,
-                  warn: this.#warn
-                });
-                if (m.size) {
-                  arr.push(...m);
-                }
-              }
-              if (arr.length) {
-                if (j === lastIndex) {
-                  if (targetType === TARGET_ALL) {
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
+                  if (j === lastIndex) {
                     if (res.size) {
                       const n = [...res];
-                      res = new Set([...n, ...arr]);
+                      res = new Set([...n, ...nextNodes]);
+                      this.#sort = true;
                     } else {
-                      res = new Set([...arr]);
+                      res = nextNodes;
                     }
-                    this.#sort = true;
                   } else {
-                    const [node] = sortNodes(arr);
-                    res.add(node);
+                    combo = nextCombo;
                   }
-                  matched = true;
                 } else {
-                  combo = nextCombo;
-                  nextNodes = new Set(arr);
-                  matched = false;
+                  break;
                 }
-              } else {
-                matched = false;
-                break;
               }
             }
-            if (matched && targetType !== TARGET_ALL) {
+          } else {
+            for (const node of entryNodes) {
+              let nextNodes = new Set([node]);
+              for (let j = lastIndex - 1; j >= 0; j--) {
+                const twig = branch[j];
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
+                  if (j === 0) {
+                    res.add(node);
+                    if (branchLen > 1 && res.size > 1) {
+                      this.#sort = true;
+                    }
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        } else if (targetType === TARGET_FIRST && dir === DIR_NEXT) {
+          const { combo: entryCombo } = branch[0];
+          let matched;
+          for (const node of entryNodes) {
+            matched = this._matchNodeNext(branch, new Set([node]), {
+              combo: entryCombo,
+              index: 1
+            });
+            if (matched) {
+              res.add(matched);
               break;
             }
           }
-          if (!matched && targetType === TARGET_FIRST) {
-            const [entryNode] = [...entryNodes];
+          if (!matched) {
+            const { leaves: entryLeaves } = branch[0];
+            const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
             });
             while (refNode) {
-              let nextNodes = new Set([refNode]);
-              for (let j = 1; j < branchLen; j++) {
-                const { combo: nextCombo, leaves } = branch[j];
-                const arr = [];
-                for (const nextNode of nextNodes) {
-                  const twig = {
-                    combo,
-                    leaves
-                  };
-                  const m = this._matchCombinator(twig, nextNode, {
-                    dir,
-                    warn: this.#warn
-                  });
-                  if (m.size) {
-                    arr.push(...m);
-                  }
-                }
-                if (arr.length) {
-                  if (j === lastIndex) {
-                    const [node] = sortNodes(arr);
-                    res.add(node);
-                    matched = true;
-                  } else {
-                    combo = nextCombo;
-                    nextNodes = new Set(arr);
-                    matched = false;
-                  }
-                } else {
-                  matched = false;
-                  break;
-                }
-              }
+              matched = this._matchNodeNext(branch, new Set([refNode]), {
+                combo: entryCombo,
+                index: 1
+              });
               if (matched) {
+                res.add(matched);
                 break;
               }
               refNode = this._findNode(entryLeaves, {
                 node: refNode
               });
-              nextNodes = new Set([refNode]);
             }
           }
         } else {
-          const { leaves: entryLeaves } = branch[lastIndex];
           let matched;
           for (const node of entryNodes) {
-            let nextNodes = new Set([node]);
-            for (let j = lastIndex - 1; j >= 0; j--) {
-              const twig = branch[j];
-              const arr = [];
-              for (const nextNode of nextNodes) {
-                const m = this._matchCombinator(twig, nextNode, {
-                  dir,
-                  warn: this.#warn
-                });
-                if (m.size) {
-                  arr.push(...m);
-                }
-              }
-              if (arr.length) {
-                if (j === 0) {
-                  res.add(node);
-                  matched = true;
-                  if (targetType === TARGET_ALL &&
-                      branchLen > 1 && res.size > 1) {
-                    this.#sort = true;
-                  }
-                } else {
-                  nextNodes = new Set(arr);
-                  matched = false;
-                }
-              } else {
-                matched = false;
-                break;
-              }
-            }
-            if (matched && targetType !== TARGET_ALL) {
+            matched = this._matchNodePrev(branch, node, {
+              index: lastIndex - 1
+            });
+            if (matched) {
+              res.add(node);
               break;
             }
           }
           if (!matched && targetType === TARGET_FIRST) {
-            const [entryNode] = [...entryNodes];
+            const { leaves: entryLeaves } = branch[lastIndex];
+            const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
               node: entryNode
             });
             while (refNode) {
-              let nextNodes = new Set([refNode]);
-              for (let j = lastIndex - 1; j >= 0; j--) {
-                const twig = branch[j];
-                const arr = [];
-                for (const nextNode of nextNodes) {
-                  const m = this._matchCombinator(twig, nextNode, {
-                    dir,
-                    warn: this.#warn
-                  });
-                  if (m.size) {
-                    arr.push(...m);
-                  }
-                }
-                if (arr.length) {
-                  if (j === 0) {
-                    res.add(refNode);
-                    matched = true;
-                  } else {
-                    nextNodes = new Set(arr);
-                    matched = false;
-                  }
-                } else {
-                  matched = false;
-                  break;
-                }
-              }
+              matched = this._matchNodePrev(branch, refNode, {
+                index: lastIndex - 1
+              });
               if (matched) {
+                res.add(refNode);
                 break;
               }
               refNode = this._findNode(entryLeaves, {
                 node: refNode
               });
-              nextNodes = new Set([refNode]);
             }
           }
         }
