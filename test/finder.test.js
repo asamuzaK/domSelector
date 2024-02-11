@@ -10833,10 +10833,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ul > .li ~ li', document);
       const [[{ branch }]] = finder._correspond('ul > .li ~ li');
-      const res = finder._matchNodeNext(branch, node, {
+      const res = finder._matchNodeNext(branch, new Set([node]), {
         combo: {
           name: '>'
-        }
+        },
+        index: 1
       });
       assert.deepEqual(res, document.getElementById('li2'), 'result');
     });
@@ -10846,10 +10847,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ul > .li ~ li:last-child', document);
       const [[{ branch }]] = finder._correspond('ul > .li ~ li:last-child');
-      const res = finder._matchNodeNext(branch, node, {
+      const res = finder._matchNodeNext(branch, new Set([node]), {
         combo: {
           name: '>'
-        }
+        },
+        index: 1
       });
       assert.deepEqual(res, document.getElementById('li3'), 'result');
     });
@@ -10859,10 +10861,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ul > .li ~ li.foo', document);
       const [[{ branch }]] = finder._correspond('ul > .li ~ li.foo');
-      const res = finder._matchNodeNext(branch, node, {
+      const res = finder._matchNodeNext(branch, new Set([node]), {
         combo: {
           name: '>'
-        }
+        },
+        index: 1
       });
       assert.isNull(res, 'result');
     });
@@ -10872,10 +10875,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ul > li.foo ~ li', document);
       const [[{ branch }]] = finder._correspond('ul > li.foo ~ li');
-      const res = finder._matchNodeNext(branch, node, {
+      const res = finder._matchNodeNext(branch, new Set([node]), {
         combo: {
           name: '>'
-        }
+        },
+        index: 1
       });
       assert.isNull(res, 'result');
     });

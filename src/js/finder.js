@@ -2596,33 +2596,29 @@ export class Finder {
    * match node to next direction
    * @private
    * @param {Array} branch - branch
-   * @param {object} node - Element node
+   * @param {Set.<object>} nodes - collection of Element node
    * @param {object} opt - option
    * @param {object} opt.combo - combo
-   * @returns {?object} - node
+   * @returns {?object} - matched node
    */
-  _matchNodeNext(branch, node, opt) {
-    const l = branch.length;
-    const { combo: entryCombo } = opt;
-    let combo = entryCombo;
-    let nextNodes = new Set([node]);
+  _matchNodeNext(branch, nodes, opt) {
+    const { combo, index } = opt;
+    const { combo: nextCombo, leaves } = branch[index];
+    const twig = {
+      combo,
+      leaves
+    };
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
     let res;
-    for (let i = 1; i < l; i++) {
-      const { combo: nextCombo, leaves } = branch[i];
-      const twig = {
-        combo,
-        leaves
-      };
-      nextNodes = this._getCombinedNodes(twig, nextNodes, DIR_NEXT);
-      if (nextNodes.size) {
-        if (i === l - 1) {
-          const [nextNode] = sortNodes(nextNodes);
-          res = nextNode;
-        } else {
-          combo = nextCombo;
-        }
+    if (nextNodes.size) {
+      if (index === branch.length - 1) {
+        const [nextNode] = sortNodes(nextNodes);
+        res = nextNode;
       } else {
-        break;
+        res = this._matchNodeNext(branch, nextNodes, {
+          combo: nextCombo,
+          index: index + 1
+        });
       }
     }
     return res ?? null;
@@ -2751,11 +2747,11 @@ export class Finder {
           }
         } else if (targetType === TARGET_FIRST && dir === DIR_NEXT) {
           const { combo: entryCombo } = branch[0];
-          let combo = entryCombo;
           let matched;
           for (const node of entryNodes) {
-            matched = this._matchNodeNext(branch, node, {
-              combo: entryCombo
+            matched = this._matchNodeNext(branch, new Set([node]), {
+              combo: entryCombo,
+              index: 1
             });
             if (matched) {
               res.add(matched);
@@ -2769,8 +2765,9 @@ export class Finder {
               node: entryNode
             });
             while (refNode) {
-              matched = this._matchNodeNext(branch, refNode, {
-                combo: entryCombo
+              matched = this._matchNodeNext(branch, new Set([refNode]), {
+                combo: entryCombo,
+                index: 1
               });
               if (matched) {
                 res.add(matched);
