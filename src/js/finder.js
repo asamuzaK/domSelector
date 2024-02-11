@@ -2586,7 +2586,10 @@ export class Finder {
         arr.push(...matched);
       }
     }
-    return arr;
+    if (arr.length) {
+      return new Set(arr);
+    }
+    return new Set();
   }
 
   /**
@@ -2641,25 +2644,24 @@ export class Finder {
                 combo,
                 leaves
               };
-              const arr = this._getMatchedNodes(twig, nextNodes, dir);
-              if (arr.length) {
+              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              if (nextNodes.size) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_ALL) {
                     if (res.size) {
                       const n = [...res];
-                      res = new Set([...n, ...arr]);
+                      res = new Set([...n, ...nextNodes]);
                     } else {
-                      res = new Set([...arr]);
+                      res = nextNodes;
                     }
                     this.#sort = true;
                   } else {
-                    const [node] = sortNodes(arr);
+                    const [node] = sortNodes(nextNodes);
                     res.add(node);
                   }
                   matched = true;
                 } else {
                   combo = nextCombo;
-                  nextNodes = new Set(arr);
                   matched = false;
                 }
               } else {
@@ -2684,15 +2686,14 @@ export class Finder {
                   combo,
                   leaves
                 };
-                const arr = this._getMatchedNodes(twig, nextNodes, dir);
-                if (arr.length) {
+                nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
                   if (j === lastIndex) {
-                    const [node] = sortNodes(arr);
+                    const [node] = sortNodes(nextNodes);
                     res.add(node);
                     matched = true;
                   } else {
                     combo = nextCombo;
-                    nextNodes = new Set(arr);
                     matched = false;
                   }
                 } else {
@@ -2716,8 +2717,8 @@ export class Finder {
             let nextNodes = new Set([node]);
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
-              const arr = this._getMatchedNodes(twig, nextNodes, dir);
-              if (arr.length) {
+              nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+              if (nextNodes.size) {
                 if (j === 0) {
                   res.add(node);
                   matched = true;
@@ -2726,7 +2727,6 @@ export class Finder {
                     this.#sort = true;
                   }
                 } else {
-                  nextNodes = new Set(arr);
                   matched = false;
                 }
               } else {
@@ -2747,13 +2747,12 @@ export class Finder {
               let nextNodes = new Set([refNode]);
               for (let j = lastIndex - 1; j >= 0; j--) {
                 const twig = branch[j];
-                const arr = this._getMatchedNodes(twig, nextNodes, dir);
-                if (arr.length) {
+                nextNodes = this._getMatchedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
                   if (j === 0) {
                     res.add(refNode);
                     matched = true;
                   } else {
-                    nextNodes = new Set(arr);
                     matched = false;
                   }
                 } else {

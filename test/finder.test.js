@@ -10775,7 +10775,7 @@ describe('Finder', () => {
         document.getElementById('li1')
       ]);
       const res = finder._getMatchedNodes(twig, nodes, 'prev');
-      assert.deepEqual(res, [
+      assert.deepEqual([...res], [
         document.getElementById('ul1')
       ], 'result');
     });
@@ -10798,7 +10798,7 @@ describe('Finder', () => {
         document.getElementById('ul1')
       ]);
       const res = finder._getMatchedNodes(twig, nodes, 'next');
-      assert.deepEqual(res, [
+      assert.deepEqual([...res], [
         document.getElementById('li1'),
         document.getElementById('li2'),
         document.getElementById('li3')
@@ -10823,7 +10823,7 @@ describe('Finder', () => {
         document.getElementById('li1')
       ]);
       const res = finder._getMatchedNodes(twig, nodes, 'prev');
-      assert.deepEqual(res, [], 'result');
+      assert.deepEqual([...res], [], 'result');
     });
   });
 
