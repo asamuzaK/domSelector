@@ -2604,7 +2604,7 @@ export class Finder {
    * @returns {?object} - node
    */
   _matchNode(branch, node, opt = {}) {
-    let { dir, i, j, k, lastIndex } = opt;
+    let { dir, i, j, k } = opt;
     let nextNodes = new Set([node]);
     let res;
     for (; j >= 0; j--) {
@@ -2770,8 +2770,7 @@ export class Finder {
               dir,
               i,
               j: lastIndex - 1,
-              k: 1,
-              lastIndex
+              k: 1
             });
             if (matched) {
               res.add(node);
@@ -2789,8 +2788,7 @@ export class Finder {
                 dir,
                 i,
                 j: lastIndex - 1,
-                k: 1,
-                lastIndex
+                k: 1
               });
               if (matched) {
                 res.add(refNode);
