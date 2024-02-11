@@ -2585,8 +2585,6 @@ export class Finder {
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
-          const { leaves } = branch[0];
-          const compound = leaves.length > 1;
           if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
               this.#node.nodeType === ELEMENT_NODE) {
             for (let j = 0; j < entryNodesLen; j++) {
@@ -2596,14 +2594,6 @@ export class Finder {
                 if (targetType !== TARGET_ALL) {
                   break;
                 }
-              }
-            }
-          } else if (compound) {
-            for (let j = 0; j < entryNodesLen; j++) {
-              const node = entryNodes[j];
-              nodes.add(node);
-              if (targetType !== TARGET_ALL) {
-                break;
               }
             }
           } else if (targetType === TARGET_ALL) {
