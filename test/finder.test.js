@@ -10833,16 +10833,17 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('ul > .li ~ li', document);
       const [[{ branch }]] = finder._correspond('ul > .li ~ li');
-      console.log(branch);
       const res = finder._matchNode(branch, node, {
         dir: 'prev',
         i: 0,
+        j: 1,
+        k: 1,
         lastIndex: 2
       });
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const node = document.getElementById('li2');
       const finder = new Finder(window);
       finder._setup('ol > .li ~ li', document);
@@ -10850,6 +10851,8 @@ describe('Finder', () => {
       const res = finder._matchNode(branch, node, {
         dir: 'prev',
         i: 0,
+        j: 1,
+        k: 1,
         lastIndex: 2
       });
       assert.isNull(res, 'result');

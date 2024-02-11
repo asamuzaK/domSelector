@@ -2604,11 +2604,10 @@ export class Finder {
    * @returns {?object} - node
    */
   _matchNode(branch, node, opt = {}) {
-    const { dir, i, lastIndex } = opt;
+    let { dir, i, j, k, lastIndex } = opt;
     let nextNodes = new Set([node]);
-    let k = 1;
     let res;
-    for (let j = lastIndex - 1; j >= 0; j--) {
+    for (; j >= 0; j--) {
       const twig = branch[j];
       nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
       if (nextNodes.size) {
@@ -2768,7 +2767,11 @@ export class Finder {
           let matched;
           for (const node of entryNodes) {
             matched = this._matchNode(branch, node, {
-              dir, i, lastIndex
+              dir,
+              i,
+              j: lastIndex - 1,
+              k: 1,
+              lastIndex
             });
             if (matched) {
               res.add(node);
@@ -2783,7 +2786,11 @@ export class Finder {
             });
             while (refNode) {
               matched = this._matchNode(branch, refNode, {
-                dir, i, lastIndex
+                dir,
+                i,
+                j: lastIndex - 1,
+                k: 1,
+                lastIndex
               });
               if (matched) {
                 res.add(refNode);
