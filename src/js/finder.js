@@ -2568,6 +2568,28 @@ export class Finder {
   }
 
   /**
+   * get matched nodes
+   * @private
+   * @param {object} twig - twig
+   * @param {object} nodes - collection of nodes
+   * @param {string} dir - direction
+   * @returns {Array.<object>} - collection of matched nodes
+   */
+  _getMatchedNodes(twig, nodes, dir) {
+    const arr = [];
+    for (const node of nodes) {
+      const matched = this._matchCombinator(twig, node, {
+        dir,
+        warn: this.#warn
+      });
+      if (matched.size) {
+        arr.push(...matched);
+      }
+    }
+    return arr;
+  }
+
+  /**
    * match nodes
    * @private
    * @param {string} targetType - target type
@@ -2615,20 +2637,11 @@ export class Finder {
             let nextNodes = new Set([node]);
             for (let j = 1; j < branchLen; j++) {
               const { combo: nextCombo, leaves } = branch[j];
-              const arr = [];
-              for (const nextNode of nextNodes) {
-                const twig = {
-                  combo,
-                  leaves
-                };
-                const m = this._matchCombinator(twig, nextNode, {
-                  dir,
-                  warn: this.#warn
-                });
-                if (m.size) {
-                  arr.push(...m);
-                }
-              }
+              const twig = {
+                combo,
+                leaves
+              };
+              const arr = this._getMatchedNodes(twig, nextNodes, dir);
               if (arr.length) {
                 if (j === lastIndex) {
                   if (targetType === TARGET_ALL) {
@@ -2667,20 +2680,11 @@ export class Finder {
               let nextNodes = new Set([refNode]);
               for (let j = 1; j < branchLen; j++) {
                 const { combo: nextCombo, leaves } = branch[j];
-                const arr = [];
-                for (const nextNode of nextNodes) {
-                  const twig = {
-                    combo,
-                    leaves
-                  };
-                  const m = this._matchCombinator(twig, nextNode, {
-                    dir,
-                    warn: this.#warn
-                  });
-                  if (m.size) {
-                    arr.push(...m);
-                  }
-                }
+                const twig = {
+                  combo,
+                  leaves
+                };
+                const arr = this._getMatchedNodes(twig, nextNodes, dir);
                 if (arr.length) {
                   if (j === lastIndex) {
                     const [node] = sortNodes(arr);
@@ -2712,16 +2716,7 @@ export class Finder {
             let nextNodes = new Set([node]);
             for (let j = lastIndex - 1; j >= 0; j--) {
               const twig = branch[j];
-              const arr = [];
-              for (const nextNode of nextNodes) {
-                const m = this._matchCombinator(twig, nextNode, {
-                  dir,
-                  warn: this.#warn
-                });
-                if (m.size) {
-                  arr.push(...m);
-                }
-              }
+              const arr = this._getMatchedNodes(twig, nextNodes, dir);
               if (arr.length) {
                 if (j === 0) {
                   res.add(node);
@@ -2752,16 +2747,7 @@ export class Finder {
               let nextNodes = new Set([refNode]);
               for (let j = lastIndex - 1; j >= 0; j--) {
                 const twig = branch[j];
-                const arr = [];
-                for (const nextNode of nextNodes) {
-                  const m = this._matchCombinator(twig, nextNode, {
-                    dir,
-                    warn: this.#warn
-                  });
-                  if (m.size) {
-                    arr.push(...m);
-                  }
-                }
+                const arr = this._getMatchedNodes(twig, nextNodes, dir);
                 if (arr.length) {
                   if (j === 0) {
                     res.add(refNode);

@@ -10756,6 +10756,77 @@ describe('Finder', () => {
     });
   });
 
+  describe('get matched nodes', () => {
+    it('should get matched nodes', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'ul',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('li1')
+      ]);
+      const res = finder._getMatchedNodes(twig, nodes, 'prev');
+      assert.deepEqual(res, [
+        document.getElementById('ul1')
+      ], 'result');
+    });
+
+    it('should get matched nodes', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('ul1')
+      ]);
+      const res = finder._getMatchedNodes(twig, nodes, 'next');
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      finder._setup('ol > li', document);
+      const twig = {
+        combo: {
+          name: '>'
+        },
+        leaves: [
+          {
+            name: 'ol',
+            type: SELECTOR_TYPE
+          }
+        ]
+      };
+      const nodes = new Set([
+        document.getElementById('li1')
+      ]);
+      const res = finder._getMatchedNodes(twig, nodes, 'prev');
+      assert.deepEqual(res, [], 'result');
+    });
+  });
+
   describe('match nodes', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
