@@ -10827,6 +10827,60 @@ describe('Finder', () => {
     });
   });
 
+  describe('match node to next direction', () => {
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li');
+      const res = finder._matchNodeNext(branch, node, {
+        combo: {
+          name: '>'
+        }
+      });
+      assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li:last-child', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li:last-child');
+      const res = finder._matchNodeNext(branch, node, {
+        combo: {
+          name: '>'
+        }
+      });
+      assert.deepEqual(res, document.getElementById('li3'), 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > .li ~ li.foo', document);
+      const [[{ branch }]] = finder._correspond('ul > .li ~ li.foo');
+      const res = finder._matchNodeNext(branch, node, {
+        combo: {
+          name: '>'
+        }
+      });
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      finder._setup('ul > li.foo ~ li', document);
+      const [[{ branch }]] = finder._correspond('ul > li.foo ~ li');
+      const res = finder._matchNodeNext(branch, node, {
+        combo: {
+          name: '>'
+        }
+      });
+      assert.isNull(res, 'result');
+    });
+  });
+
   describe('match node to previous direction', () => {
     it('should get matched node(s)', () => {
       const node = document.getElementById('li2');
@@ -11363,10 +11417,15 @@ describe('Finder', () => {
       const node4 = document.createElement('div');
       const node5 = document.createElement('div');
       const parent = document.getElementById('div0');
+      node1.id = 'node1';
       node1.classList.add('foo');
+      node2.id = 'node2';
       node2.classList.add('foo');
+      node3.id = 'node3';
       node3.classList.add('foo');
+      node4.id = 'node4';
       node4.classList.add('foo');
+      node5.id = 'node5';
       node5.classList.add('foo');
       parent.appendChild(node1);
       parent.appendChild(node2);
