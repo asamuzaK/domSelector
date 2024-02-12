@@ -8,8 +8,8 @@ import bidiFactory from 'bidi-js';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_CONTAINED_BY, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_SHADOW_MODE, TEXT_NODE,
+  TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -318,22 +318,6 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
         parent = parent.parentNode;
       }
     }
-  }
-  return !!res;
-};
-
-/**
- * is inclusive - nodeA and nodeB are in inclusive relation
- * @param {object} nodeA - Element node
- * @param {object} nodeB - Element node
- * @returns {boolean} - result
- */
-export const isInclusive = (nodeA = {}, nodeB = {}) => {
-  let res;
-  if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
-    const posBit = nodeB.compareDocumentPosition(nodeA);
-    res = posBit & DOCUMENT_POSITION_CONTAINS ||
-          posBit & DOCUMENT_POSITION_CONTAINED_BY;
   }
   return !!res;
 };
