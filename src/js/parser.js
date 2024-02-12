@@ -288,31 +288,26 @@ export const filterSelector = (selector, simple = false) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-
   // filter selectors other than simple selector
-  if (simple && !/^(?:\*|[\w-]{1,255}|[.#:][\w-]{1,255})$/.test(selector)) {
+  if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/.test(selector)) {
     return false;
   }
-
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
   // and attribute selectors with case flag, i.e. [attr i], [attr s]
   if (/\||::|\s[is]\s*\]/i.test(selector)) {
     return false;
   }
-
   // filter pseudo-class selectors
   if (selector.includes(':')) {
     // filter pseudos other than child-indexed, e.g. :nth-child(), and :not()
     if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
       return false;
     }
-
     // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
     if (selector.includes(':nth') &&
         /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/.test(selector)) {
       return false;
     }
-
     // filter :not(complex selector)
     // type selector: *, tag
     // \*|[\w-]{1,255}
