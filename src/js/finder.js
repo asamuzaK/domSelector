@@ -301,6 +301,15 @@ export class Finder {
     let current;
     if (node.nodeType === ELEMENT_NODE && refNode === node) {
       current = refNode;
+    } else if (node.nodeType === ELEMENT_NODE && refNode.contains(node)) {
+      refNode = walker.nextNode();
+      while (refNode) {
+        if (refNode === node) {
+          current = refNode;
+          break;
+        }
+        refNode = walker.nextNode();
+      }
     } else {
       if (refNode !== walker.root) {
         while (refNode) {
@@ -2073,7 +2082,7 @@ export class Finder {
    * @param {object} [opt.node] - node to start from
    * @returns {?object} - matched node
    */
-  _findNode(leaves, opt = {}) {
+  _findNode(leaves, opt) {
     const { node } = opt;
     let refNode = this._traverse(node, this.#qswalker);
     let matchedNode;
