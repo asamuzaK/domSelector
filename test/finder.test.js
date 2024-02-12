@@ -9019,7 +9019,7 @@ describe('Finder', () => {
       const parent = document.createElement('ul');
       const node = document.createElement('li');
       node.id = 'li1';
-      node.classList.add('li')
+      node.classList.add('li');
       parent.appendChild(node);
       const finder = new Finder(window);
       finder._setup('#li1.li', parent);

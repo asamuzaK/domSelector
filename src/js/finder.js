@@ -2086,24 +2086,12 @@ export class Finder {
         }
       }
       while (refNode) {
-        let bool;
-        if (this.#node.nodeType === ELEMENT_NODE) {
-          if (refNode === this.#node) {
-            bool = true;
-          } else {
-            bool = this.#node.contains(refNode);
-          }
-        } else {
-          bool = true;
-        }
-        if (bool) {
-          const matched = this._matchLeaves(leaves, refNode, {
-            warn: this.#warn
-          });
-          if (matched) {
-            matchedNode = refNode;
-            break;
-          }
+        const matched = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (matched) {
+          matchedNode = refNode;
+          break;
         }
         refNode = this.#qswalker.nextNode();
       }
