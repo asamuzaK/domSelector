@@ -944,61 +944,6 @@ describe('DOM utility functions', () => {
     });
   });
 
-  describe('is inclusive', () => {
-    const func = domUtil.isInclusive;
-
-    it('should get result', () => {
-      const node = document.documentElement;
-      const res = func(node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('li');
-      const base = document.createElement('ul');
-      const parent = document.getElementById('div0');
-      base.appendChild(node);
-      parent.appendChild(base);
-      const res = func(node, base);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get result', () => {
-      const nodeA = document.createElement('li');
-      const nodeB = document.createElement('li');
-      const base = document.createElement('ul');
-      const parent = document.getElementById('div0');
-      base.appendChild(nodeA);
-      base.appendChild(nodeB);
-      parent.appendChild(base);
-      const res = func(nodeA, nodeB);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const base = document.documentElement;
-      const res = func(node, base);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const res = func(node, node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get result', () => {
-      const tmpl = document.createElement('template');
-      const node = document.createElement('div');
-      tmpl.appendChild(node);
-      document.body.appendChild(tmpl);
-      const base = document.documentElement;
-      const res = func(tmpl.content, base);
-      assert.isFalse(res, 'result');
-    });
-  });
-
   describe('is preceding', () => {
     const func = domUtil.isPreceding;
 

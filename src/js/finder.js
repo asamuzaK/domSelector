@@ -6,8 +6,8 @@
 import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from 'nwsapi';
 import {
-  getDirectionality, isContentEditable, isInclusive, isInShadowTree,
-  resolveContent, sortNodes
+  getDirectionality, isContentEditable, isInShadowTree, resolveContent,
+  sortNodes
 } from './dom-util.js';
 import { matchPseudoElementSelector, matchSelector } from './matcher.js';
 import {
@@ -34,12 +34,14 @@ const TARGET_SELF = 'self';
  * #ast: [
  *   {
  *     branch: branch[],
+ *     collected: boolean,
  *     dir: string|null,
  *     filtered: boolean,
  *     find: boolean
  *   },
  *   {
  *     branch: branch[],
+ *     collected: boolean,
  *     dir: string|null,
  *     filtered: boolean,
  *     find: boolean
@@ -167,6 +169,7 @@ export class Finder {
     if (ast) {
       const l = ast.length;
       for (let i = 0; i < l; i++) {
+        ast[i].collected = false;
         ast[i].dir = null;
         ast[i].filtered = false;
         ast[i].find = false;
@@ -232,6 +235,7 @@ export class Finder {
         }
         ast.push({
           branch,
+          collected: false,
           dir: null,
           filtered: false,
           find: false
@@ -2192,16 +2196,16 @@ export class Finder {
    * @returns {Array} - [nodes, filtered]
    */
   _findFromHTMLCollection(items, opt = {}) {
-    const { complex, compound, filterLeaves } = opt;
+    const { complex, compound, filterLeaves, targetType } = opt;
     let nodes = [];
     let filtered = false;
-    let pending = false;
+    let collected = false;
     const l = items.length;
     if (l) {
       if (this.#node.nodeType === ELEMENT_NODE) {
         for (let i = 0; i < l; i++) {
           const node = items[i];
-          if (node === this.#node || isInclusive(node, this.#node)) {
+          if (node !== this.#node && this.#node.contains(node)) {
             if (compound) {
               const bool = this._matchLeaves(filterLeaves, node, {
                 warn: this.#warn
@@ -2209,10 +2213,16 @@ export class Finder {
               if (bool) {
                 nodes.push(node);
                 filtered = true;
+                if (targetType === TARGET_FIRST) {
+                  break;
+                }
               }
             } else {
               nodes.push(node);
               filtered = true;
+              if (targetType === TARGET_FIRST) {
+                break;
+              }
             }
           }
         }
@@ -2226,20 +2236,37 @@ export class Finder {
             if (bool) {
               nodes.push(node);
               filtered = true;
+              if (targetType === TARGET_FIRST) {
+                break;
+              }
             }
           }
         } else {
           nodes = [].slice.call(items);
           filtered = true;
+          collected = true;
         }
       } else if (compound) {
-        pending = true;
+        for (let i = 0; i < l; i++) {
+          const node = items[i];
+          const bool = this._matchLeaves(filterLeaves, node, {
+            warn: this.#warn
+          });
+          if (bool) {
+            nodes.push(node);
+            filtered = true;
+            if (targetType === TARGET_FIRST) {
+              break;
+            }
+          }
+        }
       } else {
         nodes = [].slice.call(items);
         filtered = true;
+        collected = true;
       }
     }
-    return [nodes, filtered, pending];
+    return [nodes, filtered, collected];
   }
 
   /**
@@ -2258,6 +2285,7 @@ export class Finder {
     const leafName = unescapeSelector(leaf.name);
     leaf.name = leafName;
     let nodes = [];
+    let collected = false;
     let filtered = false;
     let pending = false;
     switch (leafType) {
@@ -2305,17 +2333,18 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (targetType === TARGET_FIRST) {
-          [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#root.nodeType === DOCUMENT_NODE) {
           const items = this.#root.getElementsByClassName(leafName);
           if (items.length) {
-            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+            [nodes, filtered, collected] = this._findFromHTMLCollection(items, {
               complex,
               compound,
-              filterLeaves
+              filterLeaves,
+              targetType
             });
           }
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else {
           pending = true;
         }
@@ -2328,19 +2357,20 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (targetType === TARGET_FIRST) {
-          [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#content.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
           if (items.length) {
-            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+            [nodes, filtered, collected] = this._findFromHTMLCollection(items, {
               complex,
               compound,
-              filterLeaves
+              filterLeaves,
+              targetType
             });
           }
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else {
           pending = true;
         }
@@ -2370,6 +2400,7 @@ export class Finder {
       }
     }
     return {
+      collected,
       compound,
       filtered,
       nodes,
@@ -2490,7 +2521,7 @@ export class Finder {
       for (const { branch } of ast) {
         const { complex, dir, twig } = this._getEntryTwig(branch, targetType);
         const {
-          compound, filtered, nodes, pending
+          collected, compound, filtered, nodes, pending
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
@@ -2501,6 +2532,7 @@ export class Finder {
             ['twig', twig]
           ]));
         }
+        this.#ast[i].collected = collected;
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
         i++;
@@ -2670,7 +2702,7 @@ export class Finder {
     const l = branches.length;
     let res = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, dir, find } = branches[i];
+      const { branch, collected, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
         const entryNodes = nodes[i];
@@ -2761,7 +2793,7 @@ export class Finder {
               break;
             }
           }
-          if (!matched) {
+          if (!matched && !collected) {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
@@ -2792,7 +2824,7 @@ export class Finder {
               break;
             }
           }
-          if (!matched && targetType === TARGET_FIRST) {
+          if (!matched && !collected && targetType === TARGET_FIRST) {
             const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
             let refNode = this._findNode(entryLeaves, {
@@ -2905,8 +2937,8 @@ export class Finder {
     let res;
     try {
       this._setup(selector, node, opt);
-      if (this.#document === this.#content && this.#sibling &&
-          !this.#descendant && filterSelector(selector)) {
+      if (this.#document === this.#content && !this.#descendant &&
+          filterSelector(selector, !this.#sibling)) {
         res = this.#nwsapi.first(selector, node);
       } else {
         const nodes = this._find(TARGET_FIRST);
