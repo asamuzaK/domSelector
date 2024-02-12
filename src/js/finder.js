@@ -292,11 +292,11 @@ export class Finder {
   /**
    * traverse tree walker
    * @private
-   * @param {object} [node] - Element node
+   * @param {object} node - Element node
    * @param {object} [walker] - tree walker
    * @returns {?object} - current node
    */
-  _traverse(node = {}, walker = this.#walker) {
+  _traverse(node, walker = this.#walker) {
     let refNode = walker.currentNode;
     let current;
     if (refNode === node) {
@@ -319,7 +319,7 @@ export class Finder {
           refNode = walker.parentNode();
         }
       }
-      if (node.nodeType === ELEMENT_NODE) {
+      if (node?.nodeType === ELEMENT_NODE) {
         while (refNode) {
           if (refNode === node) {
             current = refNode;
