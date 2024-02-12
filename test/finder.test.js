@@ -9015,6 +9015,25 @@ describe('Finder', () => {
       assert.isFalse(res.pending, 'pending');
     });
 
+    it('should get matched node(s)', () => {
+      const parent = document.createElement('ul');
+      const node = document.createElement('li');
+      node.id = 'li1';
+      node.classList.add('li')
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup('#li1.li', parent);
+      finder._prepareQuerySelectorWalker(parent);
+      const [[{ branch: [twig] }]] = finder._correspond('#li1.li');
+      const res = finder._findEntryNodes(twig, 'first');
+      assert.deepEqual([...res.nodes], [
+        node
+      ], 'nodes');
+      assert.isTrue(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
+
     it('should not match', () => {
       const finder = new Finder(window);
       finder._setup('#li1.foobar', document);
@@ -9300,12 +9319,12 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
-      finder._setup('ul', node);
+      finder._setup('li', node);
       finder._prepareQuerySelectorWalker(node);
-      const [[{ branch: [twig] }]] = finder._correspond('ul');
+      const [[{ branch: [twig] }]] = finder._correspond('li');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual([...res.nodes], [
-        node
+        document.getElementById('li1')
       ], 'nodes');
       assert.isFalse(res.compound, 'compound');
       assert.isTrue(res.filtered, 'filtered');
@@ -9313,14 +9332,14 @@ describe('Finder', () => {
     });
 
     it('should get matched node(s)', () => {
-      const node = document.getElementById('li1');
+      const node = document.getElementById('ul1');
       const finder = new Finder(window);
-      finder._setup('li:first-child', node);
+      finder._setup('li:last-child', node);
       finder._prepareQuerySelectorWalker(node);
-      const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
+      const [[{ branch: [twig] }]] = finder._correspond('li:last-child');
       const res = finder._findEntryNodes(twig);
       assert.deepEqual([...res.nodes], [
-        node
+        document.getElementById('li3')
       ], 'nodes');
       assert.isTrue(res.compound, 'compound');
       assert.isTrue(res.filtered, 'filtered');
@@ -9342,18 +9361,16 @@ describe('Finder', () => {
       assert.isFalse(res.pending, 'pending');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder._setup('li:first-child', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig, 'first');
-      assert.deepEqual([...res.nodes], [
-        node
-      ], 'nodes');
+      assert.deepEqual([...res.nodes], [], 'nodes');
       assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.filtered, 'filtered');
       assert.isFalse(res.pending, 'pending');
     });
 
@@ -9379,6 +9396,21 @@ describe('Finder', () => {
       assert.isTrue(res.compound, 'compound');
       assert.isFalse(res.filtered, 'filtered');
       assert.isTrue(res.pending, 'pending');
+    });
+
+    it('should get matched node(s)', () => {
+      const finder = new Finder(window);
+      finder._setup('li.li:first-child + li.li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const [[{ branch: [twig] }]] =
+        finder._correspond('li.li:first-child + li.li');
+      const res = finder._findEntryNodes(twig, 'all', true);
+      assert.deepEqual([...res.nodes], [
+        document.getElementById('li1')
+      ], 'nodes');
+      assert.isTrue(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
     });
 
     it('should get matched node(s)', () => {

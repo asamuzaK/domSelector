@@ -284,7 +284,7 @@ export class Finder {
    * @returns {object} - tree walker
    */
   _prepareQuerySelectorWalker() {
-    this.#qswalker = this.#document.createTreeWalker(this.#node, WALKER_FILTER);
+    this.#qswalker = this._createTreeWalker(this.#node);
     this.#sort = false;
     return this.#qswalker;
   }
@@ -2066,7 +2066,7 @@ export class Finder {
   }
 
   /**
-   * find matched node from sub walker
+   * find matched node from #qswalker
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} [opt] - options
@@ -2296,6 +2296,8 @@ export class Finder {
               filtered = true;
             }
           }
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else {
           pending = true;
         }
@@ -2312,11 +2314,13 @@ export class Finder {
           [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#root.nodeType === DOCUMENT_NODE) {
           const items = this.#root.getElementsByClassName(leafName);
-          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
-            complex,
-            compound,
-            filterLeaves
-          });
+          if (items.length) {
+            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+              complex,
+              compound,
+              filterLeaves
+            });
+          }
         } else {
           pending = true;
         }
@@ -2329,15 +2333,19 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#content.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
-          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
-            complex,
-            compound,
-            filterLeaves
-          });
+          if (items.length) {
+            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+              complex,
+              compound,
+              filterLeaves
+            });
+          }
         } else {
           pending = true;
         }
