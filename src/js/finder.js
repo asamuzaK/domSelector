@@ -284,7 +284,7 @@ export class Finder {
    * @returns {object} - tree walker
    */
   _prepareQuerySelectorWalker() {
-    this.#qswalker = this.#document.createTreeWalker(this.#node, WALKER_FILTER);
+    this.#qswalker = this._createTreeWalker(this.#node);
     this.#sort = false;
     return this.#qswalker;
   }
@@ -292,26 +292,34 @@ export class Finder {
   /**
    * traverse tree walker
    * @private
-   * @param {object} [node] - Element node
+   * @param {object} node - Element node
    * @param {object} [walker] - tree walker
    * @returns {?object} - current node
    */
-  _traverse(node = {}, walker = this.#walker) {
+  _traverse(node, walker = this.#walker) {
     let refNode = walker.currentNode;
     let current;
-    if (node.nodeType === ELEMENT_NODE && refNode === node) {
+    if (refNode === node) {
       current = refNode;
+    } else if (refNode.contains(node)) {
+      refNode = walker.nextNode();
+      while (refNode) {
+        if (refNode === node) {
+          current = refNode;
+          break;
+        }
+        refNode = walker.nextNode();
+      }
     } else {
       if (refNode !== walker.root) {
         while (refNode) {
-          if (refNode === walker.root ||
-              (node.nodeType === ELEMENT_NODE && refNode === node)) {
+          if (refNode === walker.root || refNode === node) {
             break;
           }
           refNode = walker.parentNode();
         }
       }
-      if (node.nodeType === ELEMENT_NODE) {
+      if (node?.nodeType === ELEMENT_NODE) {
         while (refNode) {
           if (refNode === node) {
             current = refNode;
@@ -363,7 +371,6 @@ export class Finder {
       refNode = this._traverse(parentNode, walker);
       const selectorNodes = new Set();
       if (selectorBranches) {
-        refNode = this._traverse(parentNode, walker);
         refNode = walker.firstChild();
         while (refNode) {
           let bool;
@@ -2066,14 +2073,14 @@ export class Finder {
   }
 
   /**
-   * find matched node from sub walker
+   * find matched node from #qswalker
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} [opt] - options
    * @param {object} [opt.node] - node to start from
    * @returns {?object} - matched node
    */
-  _findNode(leaves, opt = {}) {
+  _findNode(leaves, opt) {
     const { node } = opt;
     let refNode = this._traverse(node, this.#qswalker);
     let matchedNode;
@@ -2086,24 +2093,12 @@ export class Finder {
         }
       }
       while (refNode) {
-        let bool;
-        if (this.#node.nodeType === ELEMENT_NODE) {
-          if (refNode === this.#node) {
-            bool = true;
-          } else {
-            bool = this.#node.contains(refNode);
-          }
-        } else {
-          bool = true;
-        }
-        if (bool) {
-          const matched = this._matchLeaves(leaves, refNode, {
-            warn: this.#warn
-          });
-          if (matched) {
-            matchedNode = refNode;
-            break;
-          }
+        const matched = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (matched) {
+          matchedNode = refNode;
+          break;
         }
         refNode = this.#qswalker.nextNode();
       }
@@ -2296,6 +2291,8 @@ export class Finder {
               filtered = true;
             }
           }
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else {
           pending = true;
         }
@@ -2312,11 +2309,13 @@ export class Finder {
           [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#root.nodeType === DOCUMENT_NODE) {
           const items = this.#root.getElementsByClassName(leafName);
-          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
-            complex,
-            compound,
-            filterLeaves
-          });
+          if (items.length) {
+            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+              complex,
+              compound,
+              filterLeaves
+            });
+          }
         } else {
           pending = true;
         }
@@ -2329,15 +2328,19 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
+        } else if (targetType === TARGET_FIRST) {
+          [nodes, filtered] = this._findFirst(leaves);
         } else if (this.#content.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
-          [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
-            complex,
-            compound,
-            filterLeaves
-          });
+          if (items.length) {
+            [nodes, filtered, pending] = this._findFromHTMLCollection(items, {
+              complex,
+              compound,
+              filterLeaves
+            });
+          }
         } else {
           pending = true;
         }
