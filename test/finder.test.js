@@ -11678,6 +11678,16 @@ describe('Finder', () => {
       const res = finder.querySelector('li ~ li', document);
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('div');
+      child.classList.add('foo');
+      node.appendChild(child);
+      const finder = new Finder(window);
+      const res = finder.querySelector('div.foo', node);
+      assert.deepEqual(res, child, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {
