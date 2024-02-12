@@ -299,9 +299,9 @@ export class Finder {
   _traverse(node = {}, walker = this.#walker) {
     let refNode = walker.currentNode;
     let current;
-    if (node.nodeType === ELEMENT_NODE && refNode === node) {
+    if (refNode === node) {
       current = refNode;
-    } else if (node.nodeType === ELEMENT_NODE && refNode.contains(node)) {
+    } else if (refNode.contains(node)) {
       refNode = walker.nextNode();
       while (refNode) {
         if (refNode === node) {
@@ -313,8 +313,7 @@ export class Finder {
     } else {
       if (refNode !== walker.root) {
         while (refNode) {
-          if (refNode === walker.root ||
-              (node.nodeType === ELEMENT_NODE && refNode === node)) {
+          if (refNode === walker.root || refNode === node) {
             break;
           }
           refNode = walker.parentNode();

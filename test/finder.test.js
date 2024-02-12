@@ -390,7 +390,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);
       finder._setup('*', document);
-      const res = finder._traverse();
+      const res = finder._traverse(document);
       assert.deepEqual(res, document, 'result');
     });
 
