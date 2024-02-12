@@ -371,7 +371,6 @@ export class Finder {
       refNode = this._traverse(parentNode, walker);
       const selectorNodes = new Set();
       if (selectorBranches) {
-        refNode = this._traverse(parentNode, walker);
         refNode = walker.firstChild();
         while (refNode) {
           let bool;
