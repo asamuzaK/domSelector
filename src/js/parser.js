@@ -311,7 +311,7 @@ export const filterSelector = (selector, simple = false) => {
     // :nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)
     // filter pseudos other than child-indexed and logical combination pseudos:
     // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
-    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255})){0,255}\s*\))|:nth-(?:last-)?child\([^)]{1,255}\sof[^)]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255}))*\s*\))|:nth-(?:last-)?child\([^)]{1,255}\sof[^)]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
       return false;
     }
   }
