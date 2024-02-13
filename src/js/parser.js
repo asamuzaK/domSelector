@@ -302,16 +302,16 @@ export const filterSelector = (selector, simple = false) => {
     // filter logical combination with complex selector, e.g. :is(.foo > .bar):
     // :(?:is|not|where)(?!\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\))
     // compound selector:
-    // (?:${type}|(?:${type})?(?:${subclass}){1,255})
+    // (?:${type}|(?:${type})?(?:${subclass})+)
     // type selector: *, tag
-    // \*|[\w-]{1,255}
+    // \*|[\w-]+
     // subclass selector: attr, class, id, pseudo-class
-    // \[[^\]]{1,255}\]|[.#:][\w-]{1,255}
+    // \[[^\]]+\]|[.#:][\w-]+
     // filter An+B with selector list e.g. :nth-child(an+b of .foo):
-    // :nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)
+    // :nth-(?:last-)?child\([^)]+\sof.+\)
     // filter pseudos other than child-indexed and logical combination pseudos:
     // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
-    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[[^\]]{1,255}\]|[.#:][\w-]{1,255}){1,255}))*\s*\))|:nth-(?:last-)?child\([^)]{1,255}\sof[^)]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^)]+\sof[^)]+\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
       return false;
     }
   }
