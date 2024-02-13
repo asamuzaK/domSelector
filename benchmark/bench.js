@@ -346,14 +346,6 @@ suite.on('start', () => {
   elementMatches('linkedom', selectors[0], true);
 }).add(`patched-jsdom matches('${selectors[0]}')`, () => {
   elementMatches('patched-jsdom', selectors[0], true);
-}).add(`jsdom matches('${selectors[2]}')`, () => {
-  elementMatches('jsdom', selectors[2], true);
-}).add(`happydom matches('${selectors[2]}')`, () => {
-  elementMatches('happydom', selectors[2], true);
-}).add(`linkedom matches('${selectors[2]}')`, () => {
-  elementMatches('linkedom', selectors[2], true);
-}).add(`patched-jsdom matches('${selectors[2]}')`, () => {
-  elementMatches('patched-jsdom', selectors[2], true);
 }).add(`jsdom matches('${selectors[3]}')`, () => {
   elementMatches('jsdom', selectors[3], true);
 }).add(`happydom matches('${selectors[3]}')`, () => {
