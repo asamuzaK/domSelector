@@ -289,23 +289,23 @@ export const filterSelector = (selector, simple = false) => {
     return false;
   }
   // filter selectors other than simple selector
-  if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/.test(selector)) {
+  if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/g.test(selector)) {
     return false;
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
   // and attribute selectors with case flag, i.e. [attr i], [attr s]
-  if (/\||::|\s[is]\s*\]/i.test(selector)) {
+  if (/\||::|\s[is]\s*\]/gi.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // filter pseudos other than child-indexed, e.g. :nth-child(), and :not()
-    if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
+    // filter pseudos other than child-indexed and logical combination pseudos
+    if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/g.test(selector)) {
       return false;
     }
     // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
     if (selector.includes(':nth') &&
-        /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/.test(selector)) {
+        /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/g.test(selector)) {
       return false;
     }
     // filter :not(complex selector)
@@ -315,10 +315,9 @@ export const filterSelector = (selector, simple = false) => {
     // \[.{1,255}\]|[.#:][\w-]{1,255}
     // compound selector:
     // (?:${type}|(?:${type})?(?:${subclass}){1,255})
-    // :not() that only contains compound selectors:
-    // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
-    if (selector.includes(':not') &&
-        !/:not\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})){0,255}\s*\)/.test(selector)) {
+    // logical combinations that only contains compound selectors:
+    // :(?:is|not|where)(?!\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\))
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})){0,255}\s*\))/g.test(selector)) {
       return false;
     }
   }
