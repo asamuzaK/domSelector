@@ -283,7 +283,7 @@ export const parseAstName = selector => {
  * @param {string} selector - selector
  * @returns {boolean} - result
  */
-export const filterSelector = (selector) => {
+export const filterSelector = selector => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
