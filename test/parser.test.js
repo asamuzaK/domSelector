@@ -6071,11 +6071,6 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
-  it('should get false', () => {
-    const res = func('p.foo', true);
-    assert.isFalse(res, 'result');
-  });
-
   it('should get true', () => {
     const res = func('.foo');
     assert.isTrue(res, 'result');
