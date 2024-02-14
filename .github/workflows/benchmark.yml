@@ -17,3 +17,4 @@ jobs:
           node-version: lts/*
       - run: npm install
       - run: npm run bench
+      - run: npm run bench-sizzle

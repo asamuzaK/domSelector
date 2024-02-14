@@ -281,20 +281,15 @@ export const parseAstName = selector => {
 /**
  * filter selector (for nwsapi)
  * @param {string} selector - selector
- * @param {boolean} [simple] - filter selectors other than simple selector
  * @returns {boolean} - result
  */
-export const filterSelector = (selector, simple = false) => {
+export const filterSelector = selector => {
   if (!selector || typeof selector !== 'string') {
-    return false;
-  }
-  // filter selectors other than simple selector if `simple` is true
-  if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/.test(selector)) {
     return false;
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
   // and attribute selectors with case flag, i.e. [attr i], [attr s]
-  if (/\||::|\s[is]\s*\]/i.test(selector)) {
+  if (/\||::|\[\s*[\w=~|^$*-]+(?:\s+[\w=~|^$*-]+)+\s*\]|\[\s*[\w=~|^$*-]+["'][\w=~|^$*\s-]+['"]+\s+[\w=~|^$*-]+\s*\]/.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
