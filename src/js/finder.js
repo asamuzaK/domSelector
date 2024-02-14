@@ -2938,7 +2938,7 @@ export class Finder {
     try {
       this._setup(selector, node, opt);
       if (this.#document === this.#content && !this.#descendant &&
-          filterSelector(selector, !this.#sibling)) {
+          filterSelector(selector)) {
         res = this.#nwsapi.first(selector, node);
       } else {
         const nodes = this._find(TARGET_FIRST);
