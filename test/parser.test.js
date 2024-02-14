@@ -6121,6 +6121,16 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
+  it('should get true', () => {
+    const res = func(':not(:nth-child(2n + 1))');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(:nth-child(2n+1))');
+    assert.isTrue(res, 'result');
+  });
+
   it('should get false', () => {
     const res = func(':not(.foo .bar)');
     assert.isFalse(res, 'result');
