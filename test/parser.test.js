@@ -6097,6 +6097,21 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get true', () => {
+    const res = func(':nth-child(even)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(2n + 1)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-of-type(odd)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
     const res = func(':is(p, div)');
     assert.isTrue(res, 'result');
   });
