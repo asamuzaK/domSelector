@@ -277,6 +277,7 @@ export class Finder {
 
   /**
    * prepare querySelector walker
+   * @private
    * @returns {object} - tree walker
    */
   _prepareQuerySelectorWalker() {
