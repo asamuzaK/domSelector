@@ -6097,6 +6097,11 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get true', () => {
+    const res = func(':is(p, div)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
     const res = func(':not(p.foo, div.bar)');
     assert.isTrue(res, 'result');
   });
@@ -6118,11 +6123,6 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get false', () => {
     const res = func(':indeterminate');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':is(p, div)');
     assert.isFalse(res, 'result');
   });
 

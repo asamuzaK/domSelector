@@ -288,7 +288,7 @@ export const filterSelector = (selector, simple = false) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  // filter selectors other than simple selector
+  // filter selectors other than simple selector if `simple` is true
   if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/.test(selector)) {
     return false;
   }
@@ -299,26 +299,19 @@ export const filterSelector = (selector, simple = false) => {
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // filter pseudos other than child-indexed, e.g. :nth-child(), and :not()
-    if (/:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|not)/.test(selector)) {
-      return false;
-    }
-    // filter :nth-child(an+b of selector), :nth-last-child(an+b of selector)
-    if (selector.includes(':nth') &&
-        /:nth-(?:last-)?child\(.{1,255}\sof.{1,255}\)/.test(selector)) {
-      return false;
-    }
-    // filter :not(complex selector)
-    // type selector: *, tag
-    // \*|[\w-]{1,255}
-    // subclass selector: attr, class, id, pseudo-class
-    // \[.{1,255}\]|[.#:][\w-]{1,255}
+    // filter logical combinations with complex selector, e.g. :is(.foo > .bar):
+    // :(?:is|not|where)(?!\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\))
     // compound selector:
-    // (?:${type}|(?:${type})?(?:${subclass}){1,255})
-    // :not() that only contains compound selectors:
-    // :not\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
-    if (selector.includes(':not') &&
-        !/:not\(\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})(?:\s*,\s*(?:\*|[\w-]{1,255}|(?:\*|[\w-]{1,255})?(?:\[.{1,255}\]|[.#:][\w-]{1,255}){1,255})){0,255}\s*\)/.test(selector)) {
+    // (?:${type}|(?:${type})?(?:${subclass})+)
+    // type selector: *, tag
+    // \*|[A-Za-z][\w-]*
+    // subclass selector: attr, class, id, pseudo-class
+    // \[[^\]]+\]|[.#:][\w-]+
+    // filter An+B with selector list e.g. :nth-child(an+b of .foo):
+    // :nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)
+    // filter pseudos other than child-indexed and logical combination pseudos:
+    // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
       return false;
     }
   }
