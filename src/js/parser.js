@@ -308,10 +308,10 @@ export const filterSelector = (selector, simple = false) => {
     // subclass selector: attr, class, id, pseudo-class
     // \[[^\]]+\]|[.#:][\w-]+
     // filter An+B with selector list e.g. :nth-child(an+b of .foo):
-    // :nth-(?:last-)?child\([^)]+\sof.+\)
+    // :nth-(?:last-)?child\([^()]+\sof[^()]+\)
     // filter pseudos other than child-indexed and logical combination pseudos:
     // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
-    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^)]+\sof[^)]+\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^()]+\sof[^()]+\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
       return false;
     }
   }
