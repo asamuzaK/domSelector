@@ -2197,7 +2197,8 @@ export class Finder {
       if (this.#node.nodeType === ELEMENT_NODE) {
         for (let i = 0; i < l; i++) {
           const node = items[i];
-          if (node !== this.#node && this.#node.contains(node)) {
+          if (node !== this.#node &&
+              (this.#node.contains(node) || node.contains(this.#node))) {
             if (compound) {
               const bool = this._matchLeaves(filterLeaves, node, {
                 warn: this.#warn

@@ -915,6 +915,90 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/has-argument-with-explicit-scope.html', () => {
+    const html = `
+    <main>
+      <div id=d01 class="a">
+        <div id=scope1 class="b">
+          <div id=d02 class="c">
+            <div id=d03 class="c">
+              <div id=d04 class="d"></div>
+            </div>
+          </div>
+          <div id=d05 class="e"></div>
+        </div>
+      </div>
+      <div id=d06>
+        <div id=scope2 class="b">
+          <div id=d07 class="c">
+            <div id=d08 class="c">
+              <div id=d09></div>
+            </div>
+          </div>
+        </div>
+       </div>
+      </div>
+    </main>
+    `;
+    const sortNodes = arr => arr.map(elm => elm.id).sort();
+
+    it('should not match', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope1');
+      const res = scope.querySelectorAll(':has(:scope)');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should not match', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope1');
+      const res = scope.querySelectorAll(':has(:scope .c)');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should not match', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope1');
+      const res = scope.querySelectorAll(':has(.a :scope)');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope1');
+      const res = scope.querySelectorAll('.a:has(:scope) .c');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d02'),
+        document.getElementById('d03')
+      ]), 'result');
+    });
+
+    it('should not match', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope2');
+      const res = scope.querySelectorAll('.a:has(:scope) .c');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope1');
+      const res = scope.querySelectorAll('.c:has(:is(:scope .d))');
+      assert.deepEqual(sortNodes(res), sortNodes([
+        document.getElementById('d02'),
+        document.getElementById('d03')
+      ]), 'result');
+    });
+
+    it('should not match', () => {
+      document.body.innerHTML = html;
+      const scope = document.getElementById('scope2');
+      const res = scope.querySelectorAll('.c:has(:is(:scope .d))');
+      assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
+    });
+
+  });
+
   describe('css/selectors/has-matches-to-uninserted-elements.html', () => {
     it('should not match', () => {
       const subject = document.createElement('subject');
