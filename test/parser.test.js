@@ -6087,6 +6087,11 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get true', () => {
+    const res = func('[foo="bar baz"]');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
     const res = func(':not(p)');
     assert.isTrue(res, 'result');
   });
@@ -6133,6 +6138,16 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get false', () => {
     const res = func('[foo i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo="bar baz" i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo bar baz i]');
     assert.isFalse(res, 'result');
   });
 

@@ -11683,9 +11683,10 @@ describe('Finder', () => {
       const node = document.createElement('div');
       const child = document.createElement('div');
       child.classList.add('foo');
+      child.setAttribute('data-bar', 'Baz');
       node.appendChild(child);
       const finder = new Finder(window);
-      const res = finder.querySelector('div.foo', node);
+      const res = finder.querySelector('.foo[data-bar=baz i]', node);
       assert.deepEqual(res, child, 'result');
     });
   });
