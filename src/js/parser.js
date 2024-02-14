@@ -288,7 +288,7 @@ export const filterSelector = (selector, simple = false) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  // filter selectors other than simple selector
+  // filter selectors other than simple selector if `simple` is true
   if (simple && !/^(?:\*|[\w-]{1,255}|[.#][\w-]{1,255})$/.test(selector)) {
     return false;
   }
@@ -299,19 +299,19 @@ export const filterSelector = (selector, simple = false) => {
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // filter logical combination with complex selector, e.g. :is(.foo > .bar):
+    // filter logical combinations with complex selector, e.g. :is(.foo > .bar):
     // :(?:is|not|where)(?!\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\))
     // compound selector:
     // (?:${type}|(?:${type})?(?:${subclass})+)
     // type selector: *, tag
-    // \*|[\w-]+
+    // \*|[A-Za-z][\w-]+
     // subclass selector: attr, class, id, pseudo-class
     // \[[^\]]+\]|[.#:][\w-]+
     // filter An+B with selector list e.g. :nth-child(an+b of .foo):
     // :nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)
     // filter pseudos other than child-indexed and logical combination pseudos:
     // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
-    if (/:(?:is|not|where)(?!\(\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[\w-]+|(?:\*|[\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
+    if (/:(?:is|not|where)(?!\(\s*(?:\*|[A-Za-z][\w-]+|(?:\*|[A-Za-z][\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]+|(?:\*|[A-Za-z][\w-]+)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
       return false;
     }
   }
