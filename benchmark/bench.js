@@ -169,7 +169,7 @@ const selectors = [
   'div.container[id]:not(.box)',
   'div.container[id]:not(.box):is(:invalid-nth-child, :only-child)',
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content',
-  '.box:first-child~.box:nth-of-type(4n+1)+.box .block.inner:has(>.content)',
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(> .content)',
   '.box + .box',
   '.box ~ .box',
   '.box > .block',
@@ -177,7 +177,7 @@ const selectors = [
 ];
 
 /* matcher tests */
-const elementMatchesRandom = (api, selector) => {
+const elementMatchesRandom = (api, selector, result) => {
   let doc;
   if (api === 'jsdom') {
     doc = document;
@@ -189,7 +189,7 @@ const elementMatchesRandom = (api, selector) => {
     doc = patchedDoc;
   }
   const i = Math.floor(Math.random()) * 2 + 5;
-  const id = `p${i}-9-9`;
+  const id = `${result}${i}-9-9`;
   const res = doc.getElementById(id).matches(selector);
   if (res !== true) {
     throw new Error('result does not match.');
@@ -333,37 +333,45 @@ suite.on('start', () => {
   console.log(`benchmark ${pkgName} v${version}`);
   prepareDom();
 }).add(`jsdom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[0], true);
+  elementMatchesRandom('jsdom', selectors[0], 'p');
 }).add(`happydom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('happydom', selectors[0], true);
+  elementMatchesRandom('happydom', selectors[0], 'p');
 }).add(`linkedom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[0], true);
+  elementMatchesRandom('linkedom', selectors[0], 'p');
 }).add(`patched-jsdom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[0], true);
+  elementMatchesRandom('patched-jsdom', selectors[0], 'p');
 }).add(`jsdom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[3], true);
+  elementMatchesRandom('jsdom', selectors[3], 'p');
 }).add(`happydom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('happydom', selectors[3], true);
+  elementMatchesRandom('happydom', selectors[3], 'p');
 }).add(`linkedom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[3], true);
+  elementMatchesRandom('linkedom', selectors[3], 'p');
 }).add(`patched-jsdom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[3], true);
+  elementMatchesRandom('patched-jsdom', selectors[3], 'p');
 }).add(`jsdom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[4], true);
+  elementMatchesRandom('jsdom', selectors[4], 'p');
 }).add(`happydom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('happydom', selectors[4], true);
+  elementMatchesRandom('happydom', selectors[4], 'p');
 }).add(`linkedom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[4], true);
+  elementMatchesRandom('linkedom', selectors[4], 'p');
 }).add(`patched-jsdom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[4], true);
+  elementMatchesRandom('patched-jsdom', selectors[4], 'p');
 }).add(`jsdom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[8], true);
+  elementMatchesRandom('jsdom', selectors[8], 'p');
 }).add(`happydom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('happydom', selectors[8], true);
+  elementMatchesRandom('happydom', selectors[8], 'p');
 }).add(`linkedom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[8], true);
+  elementMatchesRandom('linkedom', selectors[8], 'p');
 }).add(`patched-jsdom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[8], true);
+  elementMatchesRandom('patched-jsdom', selectors[8], 'p');
+}).add(`jsdom matches('${selectors[9]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[9], 'div');
+}).add(`happydom matches('${selectors[9]}')`, () => {
+  elementMatchesRandom('happydom', selectors[9], 'div');
+}).add(`linkedom matches('${selectors[9]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[9], 'div');
+}).add(`patched-jsdom matches('${selectors[9]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[9], 'div');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
