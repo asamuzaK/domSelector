@@ -460,6 +460,7 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[9], 200);
 }).add(`patched-jsdom querySelectorAll('${selectors[9]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[9], 200);
+/*
 }).add(`jsdom matches('${selectors[10]}')`, () => {
   elementMatches('jsdom', selectors[10], false);
 }).add(`happydom matches('${selectors[10]}')`, () => {
@@ -587,6 +588,7 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[13], 1000);
 }).add(`patched-jsdom querySelectorAll('${selectors[13]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[13], 1000);
+*/
 }).on('cycle', evt => {
   const { target } = evt;
   const str = String(target);
