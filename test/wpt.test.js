@@ -996,7 +996,6 @@ describe('local wpt test cases', () => {
       const res = scope.querySelectorAll('.c:has(:is(:scope .d))');
       assert.deepEqual(sortNodes(res), sortNodes([]), 'result');
     });
-
   });
 
   describe('css/selectors/has-matches-to-uninserted-elements.html', () => {

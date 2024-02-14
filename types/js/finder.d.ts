@@ -3,7 +3,8 @@ export class Finder {
     private _onError;
     private _setup;
     private _correspond;
-    private _prepareTreeWalkers;
+    private _createTreeWalker;
+    private _prepareQuerySelectorWalker;
     private _traverse;
     private _collectNthChild;
     private _collectNthOfType;
@@ -27,6 +28,9 @@ export class Finder {
     private _findEntryNodes;
     private _getEntryTwig;
     private _collectNodes;
+    private _getCombinedNodes;
+    private _matchNodeNext;
+    private _matchNodePrev;
     private _matchNodes;
     private _find;
     matches(selector: string, node: object, opt: object): boolean;

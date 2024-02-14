@@ -39,6 +39,7 @@ export const SHOW_ALL: 4294967295;
 export const SHOW_DOCUMENT: 256;
 export const SHOW_DOCUMENT_FRAGMENT: 1024;
 export const SHOW_ELEMENT: 1;
+export const WALKER_FILTER: 1281;
 export const REG_LOGICAL_PSEUDO: RegExp;
 export const REG_SHADOW_HOST: RegExp;
 export const REG_SHADOW_MODE: RegExp;
