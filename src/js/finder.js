@@ -75,7 +75,6 @@ export class Finder {
   #results;
   #root;
   #shadow;
-  #sibling;
   #sort;
   #walker;
   #walkers;
@@ -155,14 +154,12 @@ export class Finder {
   _correspond(selector) {
     const nodes = [];
     this.#descendant = false;
-    this.#sibling = false;
     let ast;
     if (this.#content) {
       const cachedItem = this.#cache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
         this.#descendant = item.descendant;
-        this.#sibling = item.sibling;
         ast = item.ast;
       }
     }
@@ -184,7 +181,6 @@ export class Finder {
       }
       const branches = walkAST(cssAst);
       let descendant = false;
-      let sibling = false;
       let i = 0;
       ast = [];
       for (const [...items] of branches) {
@@ -200,9 +196,7 @@ export class Finder {
                 throw new DOMException(msg, SYNTAX_ERR);
               }
               const itemName = item.name;
-              if (itemName === '~') {
-                sibling = true;
-              } else if (/^[\s>]$/.test(itemName)) {
+              if (/^[\s>]$/.test(itemName)) {
                 descendant = true;
               }
               branch.push({
@@ -252,13 +246,11 @@ export class Finder {
         }
         cachedItem.set(`${selector}`, {
           ast,
-          descendant,
-          sibling
+          descendant
         });
         this.#cache.set(this.#content, cachedItem);
       }
       this.#descendant = descendant;
-      this.#sibling = sibling;
     }
     return [
       ast,
@@ -2471,7 +2463,6 @@ export class Finder {
         twig = lastTwig;
       } else {
         let bool;
-        let sibling;
         for (const { combo, leaves: [leaf] } of branch) {
           const { type: leafType } = leaf;
           const leafName = unescapeSelector(leaf.name);
@@ -2480,11 +2471,10 @@ export class Finder {
             bool = false;
             break;
           }
-          if (combo && !sibling) {
+          if (!bool && combo) {
             const { name: comboName } = combo;
             if (/^[+~]$/.test(comboName)) {
               bool = true;
-              sibling = true;
             }
           }
         }
