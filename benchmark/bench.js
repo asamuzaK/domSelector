@@ -165,9 +165,9 @@ const selectors = [
   'p.content[id]:only-child',
   'p.content[id]:is(:last-child, :only-child)',
   'p.content[id]:is(:invalid-nth-child, :only-child)',
-  'p.content[id]:not(:is(.foo .bar, .baz))',
+  'p.content[id]:not(:is(.foo, .bar))',
   'div.container[id]:only-child',
-  'div.container[id]:not(.box)',
+  'div.container[id]:not(.foo, .box)',
   'div.container[id]:not(.box):is(:invalid-nth-child, :only-child)',
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content',
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(> .content)',
@@ -357,7 +357,6 @@ suite.on('start', () => {
   elementMatchesRandom('linkedom', selectors[4], 'p');
 }).add(`patched-jsdom matches('${selectors[4]}')`, () => {
   elementMatchesRandom('patched-jsdom', selectors[4], 'p');
-/*
 }).add(`jsdom matches('${selectors[5]}')`, () => {
   elementMatchesRandom('jsdom', selectors[5], 'p');
 }).add(`happydom matches('${selectors[5]}')`, () => {
@@ -366,7 +365,6 @@ suite.on('start', () => {
   elementMatchesRandom('linkedom', selectors[5], 'p');
 }).add(`patched-jsdom matches('${selectors[5]}')`, () => {
   elementMatchesRandom('patched-jsdom', selectors[5], 'p');
-*/
 }).add(`jsdom matches('${selectors[9]}')`, () => {
   elementMatchesRandom('jsdom', selectors[9], 'p');
 }).add(`happydom matches('${selectors[9]}')`, () => {
