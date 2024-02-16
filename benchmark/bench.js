@@ -165,6 +165,7 @@ const selectors = [
   'p.content[id]:only-child',
   'p.content[id]:is(:last-child, :only-child)',
   'p.content[id]:is(:invalid-nth-child, :only-child)',
+  'p.content[id]:not(:is(.foo .bar, .baz))',
   'div.container[id]:only-child',
   'div.container[id]:not(.box)',
   'div.container[id]:not(.box):is(:invalid-nth-child, :only-child)',
@@ -356,22 +357,32 @@ suite.on('start', () => {
   elementMatchesRandom('linkedom', selectors[4], 'p');
 }).add(`patched-jsdom matches('${selectors[4]}')`, () => {
   elementMatchesRandom('patched-jsdom', selectors[4], 'p');
-}).add(`jsdom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[8], 'p');
-}).add(`happydom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('happydom', selectors[8], 'p');
-}).add(`linkedom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[8], 'p');
-}).add(`patched-jsdom matches('${selectors[8]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[8], 'p');
+/*
+}).add(`jsdom matches('${selectors[5]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[5], 'p');
+}).add(`happydom matches('${selectors[5]}')`, () => {
+  elementMatchesRandom('happydom', selectors[5], 'p');
+}).add(`linkedom matches('${selectors[5]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[5], 'p');
+}).add(`patched-jsdom matches('${selectors[5]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[5], 'p');
+*/
 }).add(`jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[9], 'div');
+  elementMatchesRandom('jsdom', selectors[9], 'p');
 }).add(`happydom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('happydom', selectors[9], 'div');
+  elementMatchesRandom('happydom', selectors[9], 'p');
 }).add(`linkedom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[9], 'div');
+  elementMatchesRandom('linkedom', selectors[9], 'p');
 }).add(`patched-jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[9], 'div');
+  elementMatchesRandom('patched-jsdom', selectors[9], 'p');
+}).add(`jsdom matches('${selectors[10]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[10], 'div');
+}).add(`happydom matches('${selectors[10]}')`, () => {
+  elementMatchesRandom('happydom', selectors[10], 'div');
+}).add(`linkedom matches('${selectors[10]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[10], 'div');
+}).add(`patched-jsdom matches('${selectors[10]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[10], 'div');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
@@ -380,30 +391,30 @@ suite.on('start', () => {
   elementClosestRandom('linkedom', selectors[1], 'box');
 }).add(`patched-jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('patched-jsdom', selectors[1], 'box');
-}).add(`jsdom closest('${selectors[6]}')`, () => {
-  elementClosestRandom('jsdom', selectors[6], 'container');
-}).add(`happydom closest('${selectors[6]}')`, () => {
-  elementClosestRandom('happydom', selectors[6], 'container');
-}).add(`linkedom closest('${selectors[6]}')`, () => {
-  elementClosestRandom('linkedom', selectors[6], 'container');
-}).add(`patched-jsdom closest('${selectors[6]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[6], 'container');
-}).add(`jsdom closest('${selectors[8]}')`, () => {
-  elementClosestRandom('jsdom', selectors[8], 'p');
-}).add(`happydom closest('${selectors[8]}')`, () => {
-  elementClosestRandom('happydom', selectors[8], 'p');
-}).add(`linkedom closest('${selectors[8]}')`, () => {
-  elementClosestRandom('linkedom', selectors[8], 'p');
-}).add(`patched-jsdom closest('${selectors[8]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[8], 'p');
+}).add(`jsdom closest('${selectors[7]}')`, () => {
+  elementClosestRandom('jsdom', selectors[7], 'container');
+}).add(`happydom closest('${selectors[7]}')`, () => {
+  elementClosestRandom('happydom', selectors[7], 'container');
+}).add(`linkedom closest('${selectors[7]}')`, () => {
+  elementClosestRandom('linkedom', selectors[7], 'container');
+}).add(`patched-jsdom closest('${selectors[7]}')`, () => {
+  elementClosestRandom('patched-jsdom', selectors[7], 'container');
 }).add(`jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('jsdom', selectors[9], 'div');
+  elementClosestRandom('jsdom', selectors[9], 'p');
 }).add(`happydom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('happydom', selectors[9], 'div');
+  elementClosestRandom('happydom', selectors[9], 'p');
 }).add(`linkedom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('linkedom', selectors[9], 'div');
+  elementClosestRandom('linkedom', selectors[9], 'p');
 }).add(`patched-jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[9], 'div');
+  elementClosestRandom('patched-jsdom', selectors[9], 'p');
+}).add(`jsdom closest('${selectors[10]}')`, () => {
+  elementClosestRandom('jsdom', selectors[10], 'div');
+}).add(`happydom closest('${selectors[10]}')`, () => {
+  elementClosestRandom('happydom', selectors[10], 'div');
+}).add(`linkedom closest('${selectors[10]}')`, () => {
+  elementClosestRandom('linkedom', selectors[10], 'div');
+}).add(`patched-jsdom closest('${selectors[10]}')`, () => {
+  elementClosestRandom('patched-jsdom', selectors[10], 'div');
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
@@ -420,22 +431,22 @@ suite.on('start', () => {
   parentNodeQuerySelectorRandom('linkedom', selectors[3], 'p');
 }).add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
   parentNodeQuerySelectorRandom('patched-jsdom', selectors[3], 'p');
-}).add(`jsdom querySelector('${selectors[8]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[8], 'p5-0-0');
-}).add(`happydom querySelector('${selectors[8]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[8], 'p5-0-0');
-}).add(`linkedom querySelector('${selectors[8]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[8], 'p5-0-0');
-}).add(`patched-jsdom querySelector('${selectors[8]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[8], 'p5-0-0');
 }).add(`jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[9], 'div5-0-0');
+  parentNodeQuerySelector('jsdom', selectors[9], 'p5-0-0');
 }).add(`happydom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[9], 'div5-0-0');
+  parentNodeQuerySelector('happydom', selectors[9], 'p5-0-0');
 }).add(`linkedom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[9], 'div5-0-0');
+  parentNodeQuerySelector('linkedom', selectors[9], 'p5-0-0');
 }).add(`patched-jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[9], 'div5-0-0');
+  parentNodeQuerySelector('patched-jsdom', selectors[9], 'p5-0-0');
+}).add(`jsdom querySelector('${selectors[10]}')`, () => {
+  parentNodeQuerySelector('jsdom', selectors[10], 'div5-0-0');
+}).add(`happydom querySelector('${selectors[10]}')`, () => {
+  parentNodeQuerySelector('happydom', selectors[10], 'div5-0-0');
+}).add(`linkedom querySelector('${selectors[10]}')`, () => {
+  parentNodeQuerySelector('linkedom', selectors[10], 'div5-0-0');
+}).add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
+  parentNodeQuerySelector('patched-jsdom', selectors[10], 'div5-0-0');
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
 }).add(`happydom querySelectorAll('${selectors[0]}')`, () => {
@@ -452,14 +463,6 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[3], 1000);
 }).add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[3], 1000);
-}).add(`jsdom querySelectorAll('${selectors[8]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[8], 200);
-}).add(`happydom querySelectorAll('${selectors[8]}')`, () => {
-  parentNodeQuerySelectorAll('happydom', selectors[8], 200);
-}).add(`linkedom querySelectorAll('${selectors[8]}')`, () => {
-  parentNodeQuerySelectorAll('linkedom', selectors[8], 200);
-}).add(`patched-jsdom querySelectorAll('${selectors[8]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[8], 200);
 }).add(`jsdom querySelectorAll('${selectors[9]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[9], 200);
 }).add(`happydom querySelectorAll('${selectors[9]}')`, () => {
@@ -468,15 +471,15 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[9], 200);
 }).add(`patched-jsdom querySelectorAll('${selectors[9]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[9], 200);
+}).add(`jsdom querySelectorAll('${selectors[10]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[10], 200);
+}).add(`happydom querySelectorAll('${selectors[10]}')`, () => {
+  parentNodeQuerySelectorAll('happydom', selectors[10], 200);
+}).add(`linkedom querySelectorAll('${selectors[10]}')`, () => {
+  parentNodeQuerySelectorAll('linkedom', selectors[10], 200);
+}).add(`patched-jsdom querySelectorAll('${selectors[10]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[10], 200);
 /*
-}).add(`jsdom matches('${selectors[10]}')`, () => {
-  elementMatches('jsdom', selectors[10], false);
-}).add(`happydom matches('${selectors[10]}')`, () => {
-  elementMatches('happydom', selectors[10], false);
-}).add(`linkedom matches('${selectors[10]}')`, () => {
-  elementMatches('linkedom', selectors[10], false);
-}).add(`patched-jsdom matches('${selectors[10]}')`, () => {
-  elementMatches('patched-jsdom', selectors[10], false);
 }).add(`jsdom matches('${selectors[11]}')`, () => {
   elementMatches('jsdom', selectors[11], false);
 }).add(`happydom matches('${selectors[11]}')`, () => {
@@ -494,20 +497,21 @@ suite.on('start', () => {
 }).add(`patched-jsdom matches('${selectors[12]}')`, () => {
   elementMatches('patched-jsdom', selectors[12], false);
 }).add(`jsdom matches('${selectors[13]}')`, () => {
-  elementMatches('jsdom', selectors[13], true);
+  elementMatches('jsdom', selectors[13], false);
 }).add(`happydom matches('${selectors[13]}')`, () => {
-  elementMatches('happydom', selectors[13], true);
+  elementMatches('happydom', selectors[13], false);
 }).add(`linkedom matches('${selectors[13]}')`, () => {
-  elementMatches('linkedom', selectors[13], true);
+  elementMatches('linkedom', selectors[13], false);
 }).add(`patched-jsdom matches('${selectors[13]}')`, () => {
-  elementMatches('patched-jsdom', selectors[13], true);
-  elementClosest('jsdom', selectors[10], 'box9');
-}).add(`happydom closest('${selectors[10]}')`, () => {
-  elementClosest('happydom', selectors[10], 'box9');
-}).add(`linkedom closest('${selectors[10]}')`, () => {
-  elementClosest('linkedom', selectors[10], 'box9');
-}).add(`patched-jsdom closest('${selectors[10]}')`, () => {
-  elementClosest('patched-jsdom', selectors[10], 'box9');
+  elementMatches('patched-jsdom', selectors[13], false);
+}).add(`jsdom matches('${selectors[14]}')`, () => {
+  elementMatches('jsdom', selectors[14], true);
+}).add(`happydom matches('${selectors[14]}')`, () => {
+  elementMatches('happydom', selectors[14], true);
+}).add(`linkedom matches('${selectors[14]}')`, () => {
+  elementMatches('linkedom', selectors[14], true);
+}).add(`patched-jsdom matches('${selectors[14]}')`, () => {
+  elementMatches('patched-jsdom', selectors[14], true);
 }).add(`jsdom closest('${selectors[11]}')`, () => {
   elementClosest('jsdom', selectors[11], 'box9');
 }).add(`happydom closest('${selectors[11]}')`, () => {
@@ -517,29 +521,29 @@ suite.on('start', () => {
 }).add(`patched-jsdom closest('${selectors[11]}')`, () => {
   elementClosest('patched-jsdom', selectors[11], 'box9');
 }).add(`jsdom closest('${selectors[12]}')`, () => {
-  elementClosest('jsdom', selectors[12], 'div9-9');
+  elementClosest('jsdom', selectors[12], 'box9');
 }).add(`happydom closest('${selectors[12]}')`, () => {
-  elementClosest('happydom', selectors[12], 'div9-9');
+  elementClosest('happydom', selectors[12], 'box9');
 }).add(`linkedom closest('${selectors[12]}')`, () => {
-  elementClosest('linkedom', selectors[12], 'div9-9');
+  elementClosest('linkedom', selectors[12], 'box9');
 }).add(`patched-jsdom closest('${selectors[12]}')`, () => {
-  elementClosest('patched-jsdom', selectors[12], 'div9-9');
+  elementClosest('patched-jsdom', selectors[12], 'box9');
 }).add(`jsdom closest('${selectors[13]}')`, () => {
-  elementClosest('jsdom', selectors[13], 'p9-9-9');
+  elementClosest('jsdom', selectors[13], 'div9-9');
 }).add(`happydom closest('${selectors[13]}')`, () => {
-  elementClosest('happydom', selectors[13], 'p9-9-9');
+  elementClosest('happydom', selectors[13], 'div9-9');
 }).add(`linkedom closest('${selectors[13]}')`, () => {
-  elementClosest('linkedom', selectors[13], 'p9-9-9');
+  elementClosest('linkedom', selectors[13], 'div9-9');
 }).add(`patched-jsdom closest('${selectors[13]}')`, () => {
-  elementClosest('patched-jsdom', selectors[13], 'p9-9-9');
-}).add(`jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[10], 'box1');
-}).add(`happydom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[10], 'box1');
-}).add(`linkedom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[10], 'box1');
-}).add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[10], 'box1');
+  elementClosest('patched-jsdom', selectors[13], 'div9-9');
+}).add(`jsdom closest('${selectors[14]}')`, () => {
+  elementClosest('jsdom', selectors[14], 'p9-9-9');
+}).add(`happydom closest('${selectors[14]}')`, () => {
+  elementClosest('happydom', selectors[14], 'p9-9-9');
+}).add(`linkedom closest('${selectors[14]}')`, () => {
+  elementClosest('linkedom', selectors[14], 'p9-9-9');
+}).add(`patched-jsdom closest('${selectors[14]}')`, () => {
+  elementClosest('patched-jsdom', selectors[14], 'p9-9-9');
 }).add(`jsdom querySelector('${selectors[11]}')`, () => {
   parentNodeQuerySelector('jsdom', selectors[11], 'box1');
 }).add(`happydom querySelector('${selectors[11]}')`, () => {
@@ -549,29 +553,29 @@ suite.on('start', () => {
 }).add(`patched-jsdom querySelector('${selectors[11]}')`, () => {
   parentNodeQuerySelector('patched-jsdom', selectors[11], 'box1');
 }).add(`jsdom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[12], 'div0-0');
+  parentNodeQuerySelector('jsdom', selectors[12], 'box1');
 }).add(`happydom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[12], 'div0-0');
+  parentNodeQuerySelector('happydom', selectors[12], 'box1');
 }).add(`linkedom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[12], 'div0-0');
+  parentNodeQuerySelector('linkedom', selectors[12], 'box1');
 }).add(`patched-jsdom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[12], 'div0-0');
+  parentNodeQuerySelector('patched-jsdom', selectors[12], 'box1');
 }).add(`jsdom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[13], 'p0-0-0');
+  parentNodeQuerySelector('jsdom', selectors[13], 'div0-0');
 }).add(`happydom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[13], 'p0-0-0');
+  parentNodeQuerySelector('happydom', selectors[13], 'div0-0');
 }).add(`linkedom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[13], 'p0-0-0');
+  parentNodeQuerySelector('linkedom', selectors[13], 'div0-0');
 }).add(`patched-jsdom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[13], 'p0-0-0');
-}).add(`jsdom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[10], 9);
-}).add(`happydom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('happydom', selectors[10], 9);
-}).add(`linkedom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('linkedom', selectors[10], 9);
-}).add(`patched-jsdom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[10], 9);
+  parentNodeQuerySelector('patched-jsdom', selectors[13], 'div0-0');
+}).add(`jsdom querySelector('${selectors[14]}')`, () => {
+  parentNodeQuerySelector('jsdom', selectors[14], 'p0-0-0');
+}).add(`happydom querySelector('${selectors[14]}')`, () => {
+  parentNodeQuerySelector('happydom', selectors[14], 'p0-0-0');
+}).add(`linkedom querySelector('${selectors[14]}')`, () => {
+  parentNodeQuerySelector('linkedom', selectors[14], 'p0-0-0');
+}).add(`patched-jsdom querySelector('${selectors[14]}')`, () => {
+  parentNodeQuerySelector('patched-jsdom', selectors[14], 'p0-0-0');
 }).add(`jsdom querySelectorAll('${selectors[11]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[11], 9);
 }).add(`happydom querySelectorAll('${selectors[11]}')`, () => {
@@ -581,21 +585,29 @@ suite.on('start', () => {
 }).add(`patched-jsdom querySelectorAll('${selectors[11]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[11], 9);
 }).add(`jsdom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[12], 100);
+  parentNodeQuerySelectorAll('jsdom', selectors[12], 9);
 }).add(`happydom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('happydom', selectors[12], 100);
+  parentNodeQuerySelectorAll('happydom', selectors[12], 9);
 }).add(`linkedom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('linkedom', selectors[12], 100);
+  parentNodeQuerySelectorAll('linkedom', selectors[12], 9);
 }).add(`patched-jsdom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[12], 100);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[12], 9);
 }).add(`jsdom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[13], 1000);
+  parentNodeQuerySelectorAll('jsdom', selectors[13], 100);
 }).add(`happydom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('happydom', selectors[13], 1000);
+  parentNodeQuerySelectorAll('happydom', selectors[13], 100);
 }).add(`linkedom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('linkedom', selectors[13], 1000);
+  parentNodeQuerySelectorAll('linkedom', selectors[13], 100);
 }).add(`patched-jsdom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[13], 1000);
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[13], 100);
+}).add(`jsdom querySelectorAll('${selectors[14]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[14], 1000);
+}).add(`happydom querySelectorAll('${selectors[14]}')`, () => {
+  parentNodeQuerySelectorAll('happydom', selectors[14], 1000);
+}).add(`linkedom querySelectorAll('${selectors[14]}')`, () => {
+  parentNodeQuerySelectorAll('linkedom', selectors[14], 1000);
+}).add(`patched-jsdom querySelectorAll('${selectors[14]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[14], 1000);
 */
 }).on('cycle', evt => {
   const { target } = evt;
