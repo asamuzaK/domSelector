@@ -174,9 +174,9 @@ const dom = new JSDOM('', {
   runScripts: 'dangerously',
   url: 'http://localhost/',
   beforeParse: window => {
-    const {
-      closest, matches, querySelector, querySelectorAll
-    } = new DOMSelector(window);
+    const domSelector = new DOMSelector(window);
+
+    const matches = domSelector.matches.bind(domSelector);
     window.Element.prototype.matches = function (...args) {
       if (!args.length) {
         throw new window.TypeError('1 argument required, but only 0 present.');
@@ -184,6 +184,8 @@ const dom = new JSDOM('', {
       const [selector] = args;
       return matches(selector, this);
     };
+
+    const closest = domSelector.closest.bind(domSelector);
     window.Element.prototype.closest = function (...args) {
       if (!args.length) {
         throw new window.TypeError('1 argument required, but only 0 present.');
@@ -191,6 +193,8 @@ const dom = new JSDOM('', {
       const [selector] = args;
       return closest(selector, this);
     };
+
+    const querySelector = domSelector.querySelector.bind(domSelector);
     window.Document.prototype.querySelector = function (...args) {
       if (!args.length) {
         throw new window.TypeError('1 argument required, but only 0 present.');
@@ -212,6 +216,8 @@ const dom = new JSDOM('', {
       const [selector] = args;
       return querySelector(selector, this);
     };
+
+    const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
     window.Document.prototype.querySelectorAll = function (...args) {
       if (!args.length) {
         throw new window.TypeError('1 argument required, but only 0 present.');
