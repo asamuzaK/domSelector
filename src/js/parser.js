@@ -294,19 +294,21 @@ export const filterSelector = selector => {
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // filter logical combinations with complex selector, e.g. :is(.foo > .bar):
-    // :(?:is|not|where)(?!\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\))
-    // compound selector:
+    // filter pseudos other than child-indexed and logical combination pseudos
+    // :(?!(?:first|last|only)-(?:child|of-type)|${nth}|${logical})
+    // nth: filter An+B with selector list, e.g. :nth-child(2n+1 of .foo)
+    // nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${an+b})\s*\)
+    // an+b:
+    // n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*)
+    // logical: filter complex selector, e.g. :is(.foo > .bar)
+    // (?:is|not|where)\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
+    // compound:
     // (?:${type}|(?:${type})?(?:${subclass})+)
-    // type selector: *, tag
+    // type: *, tag
     // \*|[A-Za-z][\w-]*
-    // subclass selector: attr, class, id, pseudo-class
+    // subclass: attr, class, id, pseudo-class
     // \[[^\]]+\]|[.#:][\w-]+
-    // filter An+B with selector list e.g. :nth-child(an+b of .foo):
-    // :nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)
-    // filter pseudos other than child-indexed and logical combination pseudos:
-    // :(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)
-    if (/:(?:is|not|where)(?!\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))|:nth-(?:last-)?child\([^()]{1,255}\sof[^()]{1,255}\)|:(?!(?:nth(?:-last)?|first|last|only)-(?:of-type|child)|is|not|where)/.test(selector)) {
+    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))/.test(selector)) {
       return false;
     }
   }

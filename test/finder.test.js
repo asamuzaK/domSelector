@@ -11689,6 +11689,13 @@ describe('Finder', () => {
       const res = finder.querySelector('.foo[data-bar=baz i]', node);
       assert.deepEqual(res, child, 'result');
     });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('ul1');
+      const finder = new Finder(window);
+      const res = finder.querySelector(':nth-child(even)', node);
+      assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
   });
 
   describe('querySelectorAll', () => {

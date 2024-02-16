@@ -6066,9 +6066,29 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
+  it('should get false', () => {
+    const res = func('*|*');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('|*');
+    assert.isFalse(res, 'result');
+  });
+
   it('should get true', () => {
     const res = func('p');
     assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('ns|p');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('::slotted');
+    assert.isFalse(res, 'result');
   });
 
   it('should get true', () => {
@@ -6091,71 +6111,6 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
-  it('should get true', () => {
-    const res = func(':not(p)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get true', () => {
-    const res = func(':nth-child(even)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get true', () => {
-    const res = func(':nth-child(2n + 1)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get true', () => {
-    const res = func(':nth-of-type(odd)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get true', () => {
-    const res = func(':is(p, div)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get true', () => {
-    const res = func(':not(p.foo, div.bar)');
-    assert.isTrue(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':not(.foo .bar)');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':not(:is(.foo, .bar))');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func('foo|p');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func('::slotted');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':indeterminate');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':nth-child(2n+1 of .foo)');
-    assert.isFalse(res, 'result');
-  });
-
-  it('should get false', () => {
-    const res = func(':host');
-    assert.isFalse(res, 'result');
-  });
-
   it('should get false', () => {
     const res = func('[foo i]');
     assert.isFalse(res, 'result');
@@ -6172,12 +6127,97 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
+    const res = func(':indeterminate');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
     const res = func(':after');
     assert.isFalse(res, 'result');
   });
 
   it('should get false', () => {
-    const res = func('ns|div');
+    const res = func(':host');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(even)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-of-type( odd )');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':nth-child(foo)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':nth-child(even of .foo)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(2)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(-1)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(n)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(2n + 1)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(-2n - 1)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':nth-child(n of .foo)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':nth-child(2n+1 of .foo)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(p)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':is( p, div )');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(p.foo, div.bar)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(.foo .bar)');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(:is(.foo, .bar))');
     assert.isFalse(res, 'result');
   });
 });
