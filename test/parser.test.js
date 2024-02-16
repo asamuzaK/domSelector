@@ -6220,4 +6220,9 @@ describe('filter selector (for nwsapi)', () => {
     const res = func(':not(:is(.foo, .bar))');
     assert.isTrue(res, 'result');
   });
+
+  it('should get false', () => {
+    const res = func(':is(:not(:is(.foo, .bar)), .baz)');
+    assert.isFalse(res, 'result');
+  });
 });

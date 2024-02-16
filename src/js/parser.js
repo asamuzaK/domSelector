@@ -308,7 +308,7 @@ export const filterSelector = selector => {
     // \*|[A-Za-z][\w-]*
     // subclass: attr, class, id, pseudo-class
     // \[[^\]]+\]|[#.:][\w-]+|:${logical}
-    // subclass w/o logical
+    // subclass w/o logical:
     // \[[^\]]+\]|[#.:][\w-]+
     if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
       return false;
