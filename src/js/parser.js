@@ -289,26 +289,26 @@ export const filterSelector = selector => {
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
   // and attribute selectors with case flag, i.e. [attr i], [attr s]
-  if (/\||::|\[\s*[\w=~|^$*-]+(?:\s+[\w=~|^$*-]+)+\s*\]|\[\s*[\w=~|^$*-]+["'][\w=~|^$*\s-]+['"]+\s+[\w=~|^$*-]+\s*\]/.test(selector)) {
+  if (/\||::|\[\s*[\w$*=^|~-]+(?:\s+[\w$*=^|~-]+)+\s*\]|\[\s*[\w$*=^|~-]+["'][\w$*=^|~\s-]+['"]+\s+[\w$*=^|~-]+\s*\]/.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
     // filter pseudos other than child-indexed and logical combination pseudos
     // :(?!(?:first|last|only)-(?:child|of-type)|${nth}|${logical})
-    // nth: filter An+B with selector list, e.g. :nth-child(2n+1 of .foo)
+    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
     // nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${an+b})\s*\)
     // an+b:
     // n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*)
-    // logical: filter complex selector, e.g. :is(.foo > .bar)
-    // (?:is|not|where)\(\s*(?:${compound}(?:\s*,\s*${compound})*)\s*\)
+    // logical: exclude complex selector, e.g. :is(.foo > .bar)
+    // (?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)
     // compound:
     // (?:${type}|(?:${type})?(?:${subclass})+)
     // type: *, tag
     // \*|[A-Za-z][\w-]*
     // subclass: attr, class, id, pseudo-class
-    // \[[^\]]+\]|[.#:][\w-]+
-    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[.#:][\w-]+)+))*\s*\))/.test(selector)) {
+    // \[[^\]]+\]|[#.:][\w-]+
+    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))/.test(selector)) {
       return false;
     }
   }
