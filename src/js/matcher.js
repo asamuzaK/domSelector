@@ -1,8 +1,5 @@
 /**
  * matcher.js
- * NOTE: Pseudo-class selector matching is done within `./finder.js`.
- *       Functions that begin with `_` are not intended for general use,
- *       and are exported for testing purposes only.
  */
 
 /* import */
