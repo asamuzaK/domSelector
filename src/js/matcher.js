@@ -144,7 +144,7 @@ export class Matcher {
                 if (itemPrefix === 'xml' && itemLocalName === 'lang') {
                   continue;
                 } else if (astPrefix === itemPrefix &&
-                         astLocalName === itemLocalName) {
+                           astLocalName === itemLocalName) {
                   const namespaceDeclared =
                     isNamespaceDeclared(astPrefix, node);
                   if (namespaceDeclared) {
@@ -314,7 +314,7 @@ export class Matcher {
     switch (astPrefix) {
       case '': {
         if (!nodePrefix && !namespaceURI &&
-          (astLocalName === '*' || astLocalName === nodeLocalName)) {
+            (astLocalName === '*' || astLocalName === nodeLocalName)) {
           res = node;
         }
         break;
