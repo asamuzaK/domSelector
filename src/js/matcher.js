@@ -360,6 +360,7 @@ export class Matcher {
   /**
    * match language pseudo-class - :lang()
    * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
+   * @private
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @returns {?object} - matched node
