@@ -6,18 +6,17 @@
 import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from 'nwsapi';
 import {
-  getDirectionality, isContentEditable, isInShadowTree, resolveContent,
-  sortNodes
+  isContentEditable, isInShadowTree, resolveContent, sortNodes
 } from './dom-util.js';
-import { matchPseudoElementSelector, matchSelector } from './matcher.js';
+import matcher from './matcher.js';
 import {
   filterSelector, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 
 /* constants */
 import {
-  ALPHA_NUM, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
+  COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE, EMPTY,
+  NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
@@ -661,110 +660,6 @@ export class Finder {
   }
 
   /**
-   * match directionality pseudo-class - :dir()
-   * @private
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @returns {?object} - matched node
-   */
-  _matchDirectionPseudoClass(ast, node) {
-    const dir = getDirectionality(node);
-    let res;
-    if (ast.name === dir) {
-      res = node;
-    }
-    return res ?? null;
-  }
-
-  /**
-   * match language pseudo-class - :lang()
-   * @private
-   * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @returns {?object} - matched node
-   */
-  _matchLanguagePseudoClass(ast, node) {
-    if (ast.name === EMPTY) {
-      return null;
-    }
-    const astName = unescapeSelector(ast.name);
-    ast.name = astName;
-    let res;
-    if (astName === '*') {
-      if (node.hasAttribute('lang')) {
-        if (node.getAttribute('lang')) {
-          res = node;
-        }
-      } else {
-        let parent = node.parentNode;
-        while (parent) {
-          if (parent.nodeType === ELEMENT_NODE) {
-            if (parent.hasAttribute('lang')) {
-              if (parent.getAttribute('lang')) {
-                res = node;
-              }
-              break;
-            }
-            parent = parent.parentNode;
-          } else {
-            break;
-          }
-        }
-      }
-    } else if (astName) {
-      const langPart = `(?:-${ALPHA_NUM})*`;
-      const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
-      if (regLang.test(astName)) {
-        let regExtendedLang;
-        if (astName.indexOf('-') > -1) {
-          const [langMain, langSub, ...langRest] = astName.split('-');
-          let extendedMain;
-          if (langMain === '*') {
-            extendedMain = `${ALPHA_NUM}${langPart}`;
-          } else {
-            extendedMain = `${langMain}${langPart}`;
-          }
-          const extendedSub = `-${langSub}${langPart}`;
-          const len = langRest.length;
-          let extendedRest = '';
-          if (len) {
-            for (let i = 0; i < len; i++) {
-              extendedRest += `-${langRest[i]}${langPart}`;
-            }
-          }
-          regExtendedLang =
-            new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
-        } else {
-          regExtendedLang = new RegExp(`^${astName}${langPart}$`, 'i');
-        }
-        if (node.hasAttribute('lang')) {
-          if (regExtendedLang.test(node.getAttribute('lang'))) {
-            res = node;
-          }
-        } else {
-          let parent = node.parentNode;
-          while (parent) {
-            if (parent.nodeType === ELEMENT_NODE) {
-              if (parent.hasAttribute('lang')) {
-                const value = parent.getAttribute('lang');
-                if (regExtendedLang.test(value)) {
-                  res = node;
-                }
-                break;
-              }
-              parent = parent.parentNode;
-            } else {
-              break;
-            }
-          }
-        }
-      }
-    }
-    return res ?? null;
-  }
-
-  /**
    * match :has() pseudo-class function
    * @private
    * @param {Array.<object>} leaves - AST leaves
@@ -968,25 +863,22 @@ export class Finder {
         matched.add(res);
       }
     } else if (Array.isArray(astChildren)) {
-      const [branch] = astChildren;
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
+        const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
-      // :dir()
-      } else if (astName === 'dir') {
-        const res = this._matchDirectionPseudoClass(branch, node);
-        if (res) {
-          matched.add(res);
-        }
-      // :lang()
-      } else if (astName === 'lang') {
-        const res = this._matchLanguagePseudoClass(branch, node);
-        if (res) {
-          matched.add(res);
-        }
       } else {
         switch (astName) {
+          // :dir(), :lang()
+          case 'dir':
+          case 'lang': {
+            const res = matcher.matchSelector(ast, node);
+            if (res) {
+              matched.add(res);
+            }
+            break;
+          }
           case 'current':
           case 'nth-col':
           case 'nth-last-col': {
@@ -1746,7 +1638,7 @@ export class Finder {
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case SELECTOR_PSEUDO_ELEMENT: {
-          matchPseudoElementSelector(astName, opt);
+          matcher.matchPseudoElementSelector(astName, opt);
           break;
         }
         case SELECTOR_ID: {
@@ -1766,7 +1658,7 @@ export class Finder {
           return nodes;
         }
         default: {
-          const res = matchSelector(ast, node, opt);
+          const res = matcher.matchSelector(ast, node, opt);
           if (res) {
             matched.add(res);
           }
@@ -1888,7 +1780,7 @@ export class Finder {
     } else {
       switch (leafType) {
         case SELECTOR_PSEUDO_ELEMENT: {
-          matchPseudoElementSelector(leafName, opt);
+          matcher.matchPseudoElementSelector(leafName, opt);
           break;
         }
         case SELECTOR_ID: {
@@ -2290,7 +2182,7 @@ export class Finder {
     let pending = false;
     switch (leafType) {
       case SELECTOR_PSEUDO_ELEMENT: {
-        matchPseudoElementSelector(leafName, {
+        matcher.matchPseudoElementSelector(leafName, {
           warn: this.#warn
         });
         break;
