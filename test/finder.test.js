@@ -13,8 +13,8 @@ import { Finder } from '../src/js/finder.js';
 
 /* constants */
 import {
-  AN_PLUS_B, COMBINATOR, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW, SELECTOR,
-  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
+  AN_PLUS_B, COMBINATOR, EMPTY, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW,
+  SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR
 } from '../src/js/constant.js';
 
@@ -176,14 +176,6 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup('*', document);
       assert.throws(() => finder._correspond('[foo==bar]'),
-        'Identifier is expected');
-    });
-
-    // FIXME: CSSTree throws
-    it('should throw', () => {
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      assert.throws(() => finder._correspond(':lang("")'),
         'Identifier is expected');
     });
 
@@ -2129,6 +2121,21 @@ describe('Finder', () => {
   describe('match language pseudo-class', () => {
     it('should not match', () => {
       const leaf = {
+        name: EMPTY,
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':lang("")', node);
+      const res = finder._matchLanguagePseudoClass(leaf, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
         name: '',
         type: IDENTIFIER
       };
@@ -2136,9 +2143,8 @@ describe('Finder', () => {
       node.setAttribute('lang', '');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      // new Finder(':lang("")', node) throws
       const finder = new Finder(window);
-      finder._setup(':lang(en)', node);
+      finder._setup(':lang("")', node);
       const res = finder._matchLanguagePseudoClass(leaf, node);
       assert.isNull(res, 'result');
     });
@@ -7480,6 +7486,18 @@ describe('Finder', () => {
   });
 
   describe('match selector', () => {
+    it('should not match', () => {
+      const ast = {
+        name: EMPTY,
+        type: SELECTOR_TYPE
+      };
+      const finder = new Finder(window);
+      finder._setup(':is()', document);
+      const res = finder._matchSelector(ast, document.body);
+      assert.strictEqual(res.size, 0, 'size');
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const ast = {
         name: 'foo',

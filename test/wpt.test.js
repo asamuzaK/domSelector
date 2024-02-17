@@ -1206,8 +1206,7 @@ describe('local wpt test cases', () => {
     `;
     const sortNodes = arr => arr.map(elm => elm.id).sort();
 
-    // FIXME: css-tree throws
-    xit('should get empty array', () => {
+    it('should get empty array', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is()');
