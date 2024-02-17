@@ -9,8 +9,6 @@ export class Finder {
     private _collectNthChild;
     private _collectNthOfType;
     private _matchAnPlusB;
-    private _matchDirectionPseudoClass;
-    private _matchLanguagePseudoClass;
     private _matchHasPseudoFunc;
     private _matchLogicalPseudoFunc;
     private _matchPseudoClassSelector;
