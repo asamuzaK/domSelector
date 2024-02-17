@@ -21,29 +21,35 @@ const jsdom = (str = '') => {
     url: 'http://localhost/',
     beforeParse: window => {
       const domSelector = new DOMSelector(window);
+
+      const matches = domSelector.matches.bind(domSelector);
       window.Element.prototype.matches = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.matches(selector, this);
+        return matches(selector, this);
       };
+
+      const closest = domSelector.closest.bind(domSelector);
       window.Element.prototype.closest = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.closest(selector, this);
+        return closest(selector, this);
       };
+
+      const querySelector = domSelector.querySelector.bind(domSelector);
       window.Document.prototype.querySelector = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelector(selector, this);
+        return querySelector(selector, this);
       };
       window.DocumentFragment.prototype.querySelector = function (...args) {
         if (!args.length) {
@@ -51,7 +57,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelector(selector, this);
+        return querySelector(selector, this);
       };
       window.Element.prototype.querySelector = function (...args) {
         if (!args.length) {
@@ -59,15 +65,17 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelector(selector, this);
+        return querySelector(selector, this);
       };
+
+      const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
       window.Document.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
           const msg = '1 argument required, but only 0 present.';
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelectorAll(selector, this);
+        return querySelectorAll(selector, this);
       };
       window.DocumentFragment.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
@@ -75,7 +83,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelectorAll(selector, this);
+        return querySelectorAll(selector, this);
       };
       window.Element.prototype.querySelectorAll = function (...args) {
         if (!args.length) {
@@ -83,7 +91,7 @@ const jsdom = (str = '') => {
           throw new window.TypeError(msg);
         }
         const [selector] = args;
-        return domSelector.querySelectorAll(selector, this);
+        return querySelectorAll(selector, this);
       };
     }
   });
@@ -489,6 +497,53 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = document.getElementById('target');
       const res = document.querySelector('p:has(span)');
       assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('#3544 - https://github.com/jsdom/jsdom/issues/3544', () => {
+    let document;
+    beforeEach(() => {
+      const dom = jsdom();
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      document = null;
+    });
+
+    it('should get matched node(s)', () => {
+      const body = document.body;
+      const div = document.createElement('div');
+      const ul = document.createElement('ul');
+      const li = document.createElement('li');
+      ul.appendChild(li);
+      div.appendChild(ul);
+      body.appendChild(div);
+      const res1 = div.querySelectorAll('UL');
+      const res2 = div.querySelectorAll('ul');
+      const res3 = div.querySelectorAll('ul > li');
+      const res4 = div.querySelectorAll('UL > LI');
+      assert.deepEqual(res1, [ul], 'result1');
+      assert.deepEqual(res2, [ul], 'result2');
+      assert.deepEqual(res3, [li], 'result3');
+      assert.deepEqual(res4, [li], 'result4');
+    });
+
+    it('should get matched node(s)', () => {
+      const body = document.body;
+      const div = document.createElement('div');
+      const ul = document.createElement('ul');
+      const li = document.createElement('li');
+      ul.appendChild(li);
+      div.appendChild(ul);
+      body.appendChild(div);
+      const res1 = ul.matches('UL');
+      const res2 = ul.matches('ul');
+      const res3 = li.matches('ul > li');
+      const res4 = li.matches('UL > LI');
+      assert.isTrue(res1, 'result1');
+      assert.isTrue(res2, 'result2');
+      assert.isTrue(res3, 'result3');
+      assert.isTrue(res4, 'result4');
     });
   });
 
