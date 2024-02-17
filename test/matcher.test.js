@@ -8,9 +8,9 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import * as matcher from '../src/js/matcher.js';
+import matcher, { Matcher } from '../src/js/matcher.js';
 import {
-  IDENTIFIER, SELECTOR_ATTR, SELECTOR_TYPE, STRING
+  EMPTY, IDENTIFIER, SELECTOR_ATTR, SELECTOR_PSEUDO_CLASS, SELECTOR_TYPE, STRING
 } from '../src/js/constant.js';
 
 describe('matcher', () => {
@@ -80,1920 +80,14 @@ describe('matcher', () => {
     document = null;
   });
 
-  describe('match attribute selector', () => {
-    const func = matcher._matchAttributeSelector;
-
-    it('should throw', () => {
-      const leaf = {
-        flags: 'baz',
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          name: 'bar',
-          type: IDENTIFIER
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      assert.throws(() => func(leaf, node), DOMException,
-        'Invalid selector [foo=bar baz]');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: '|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: '|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 'i',
-        matcher: null,
-        name: {
-          name: '|Foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: '|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: '*|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: '*|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: '*|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: '*|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'baz|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'baz|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'Baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: 'Baz|Foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      document.documentElement.setAttribute('xmlns:Baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: 'Baz|Foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 'i',
-        matcher: null,
-        name: {
-          name: 'Baz|Foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 'i',
-        matcher: null,
-        name: {
-          name: 'Baz|Foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 'i',
-        matcher: null,
-        name: {
-          name: 'baz|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      document.documentElement.setAttribute('xmlns:Baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'baz|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('https://example.com/baz', 'baz:bar', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.createElement('div');
-      node.setAttribute('baz', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          name: 'bar',
-          type: IDENTIFIER
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          name: 'Bar',
-          type: IDENTIFIER
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          name: 'bar',
-          type: IDENTIFIER
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          name: 'bar',
-          type: IDENTIFIER
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar baz'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'baz|foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'qux'
-        }
-      };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'xml|lang',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'en'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
-        'en');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'xml:lang',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'en'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
-        'en');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '~=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: ''
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar-baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar-baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar-baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz-bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '|=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: ''
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz-bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'barbaz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '^=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: ''
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'Bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bazbar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar baz');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '$=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: ''
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'bazbarqux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: null,
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz bar qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz qux quux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'Bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'bar'
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '*=',
-        name: {
-          name: 'foo',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: ''
-        }
-      };
-      const node = document.createElement('div');
-      node.setAttribute('foo', 'baz Bar qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leaf = {
-        flags: 'i',
-        matcher: '=',
-        name: {
-          name: 'baz',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'qux'
-        }
-      };
-      const domStr = '<foo></foo>';
-      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
-      const node = doc.createElement('bar');
-      node.setAttribute('baz', 'QUX');
-      doc.documentElement.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: 's',
-        matcher: '=',
-        name: {
-          name: 'baz',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'qux'
-        }
-      };
-      const domStr = '<foo></foo>';
-      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
-      const node = doc.createElement('bar');
-      node.setAttribute('baz', 'QUX');
-      doc.documentElement.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        flags: null,
-        matcher: '=',
-        name: {
-          name: 'baz',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: {
-          type: STRING,
-          value: 'qux'
-        }
-      };
-      const domStr = '<foo></foo>';
-      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
-      const node = doc.createElement('bar');
-      node.setAttribute('baz', 'QUX');
-      doc.documentElement.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-  });
-
-  describe('match type selector', () => {
-    const func = matcher._matchTypeSelector;
-
-    it('should get matched node(s)', () => {
-      const leaf = {
-        name: '|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('', 'div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: '|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: '|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('https://example.com/foo', 'div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*|*',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo|*',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo|*',
-        type: SELECTOR_TYPE
-      };
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: 'foo|*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
-      const res = func(leaf, node, {
-        forgive: true
-      });
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo|bar',
-        type: SELECTOR_TYPE
-      };
-      const nsroot = document.createElement('div');
-      nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
-      nsroot.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
-      nsroot.appendChild(node);
-      const parent = document.getElementById('div0');
-      parent.appendChild(nsroot);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: 'foo|bar',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:baz');
-      node.setAttribute('xmlns:foo', 'https://example.com/foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: 'foo|bar',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElement('foo:qux');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node, {
-        forgive: true
-      });
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '|div',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('', 'div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        name: '|div',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      const res = func(leaf, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'foo',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('', 'foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'h',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('urn:ns', 'h');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*|h',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElementNS('urn:ns', 'h');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'div',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('div0');
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'div',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: '*|div',
-        type: SELECTOR_TYPE
-      };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const domStr = `<!doctype html>
-        <html>
-          <body>
-            <foo:bar xmlns:foo="https://example.com/foo" id="foobar">
-              <foo:baz/>
-              <foo:qux/>
-            </foo:bar>
-          </body>
-        </html>`;
-      const doc = new window.DOMParser().parseFromString(domStr, 'text/html');
-      const leaf = {
-        name: 'foo|bar',
-        type: SELECTOR_TYPE
-      };
-      const node = doc.getElementById('foobar');
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'null',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElement('null');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const leaf = {
-        name: 'undefined',
-        type: SELECTOR_TYPE
-      };
-      const node = document.createElement('undefined');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(leaf, node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
-  describe('match selector', () => {
-    const func = matcher.matchSelector;
-
-    it('should throw', () => {
-      assert.throws(() => func(), TypeError, 'Unexpected node Undefined');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => func({}), TypeError, 'Unexpected node Object');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_TYPE
-      };
-      assert.throws(() => func(ast), TypeError, 'Unexpected node Undefined');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_TYPE
-      };
-      assert.throws(() => func(ast, {}), TypeError, 'Unexpected node Object');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_TYPE
-      };
-      assert.throws(() => func(ast, document), TypeError,
-        'Unexpected node #document');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_TYPE
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'id',
-          type: IDENTIFIER
-        },
-        type: SELECTOR_ATTR,
-        value: null
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+  describe('matcher', () => {
+    it('should be instance of Matcher', () => {
+      assert.instanceOf(matcher, Matcher, 'instance');
     });
   });
 
   describe('match pseudo-element selector', () => {
-    const func = matcher.matchPseudoElementSelector;
+    const func = matcher.matchPseudoElementSelector.bind(matcher);
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -2107,6 +201,2431 @@ describe('matcher', () => {
         forgive: true
       });
       assert.isUndefined(res, 'result');
+    });
+  });
+
+  describe('match attribute selector', () => {
+    const func = matcher._matchAttributeSelector.bind(matcher);
+
+    it('should throw', () => {
+      const ast = {
+        flags: 'baz',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          name: 'bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(() => func(ast, node), DOMException,
+        'Invalid selector [foo=bar baz]');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: '|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: '|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: '|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: '|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: '*|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: '*|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: '*|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: '*|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'Baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: 'Baz|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:Baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: 'Baz|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: 'Baz|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: 'Baz|Foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 'i',
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:Baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:bar', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('baz', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          name: 'bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          name: 'Bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          name: 'bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          name: 'bar',
+          type: IDENTIFIER
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar baz'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'baz|foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'xml|lang',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'en'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
+        'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'xml:lang',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'en'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
+        'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '~=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar-baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar-baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar-baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz-bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz-bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'barbaz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '^=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'Bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bazbar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar baz');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '$=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bazbarqux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: null,
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz bar qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz qux quux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        flags: 's',
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'Bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '*=',
+        name: {
+          name: 'foo',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'baz Bar qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        flags: 'i',
+        matcher: '=',
+        name: {
+          name: 'baz',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      const domStr = '<foo></foo>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('bar');
+      node.setAttribute('baz', 'QUX');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'baz',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      const domStr = '<foo></foo>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('bar');
+      node.setAttribute('baz', 'QUX');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'baz',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      const domStr = '<foo></foo>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('bar');
+      node.setAttribute('baz', 'QUX');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+  });
+
+  describe('match type selector', () => {
+    const func = matcher._matchTypeSelector.bind(matcher);
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        name: '|*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('', 'div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '|*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '|*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('https://example.com/foo', 'div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*|*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*|*',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'foo|*',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'foo|*',
+        type: SELECTOR_TYPE
+      };
+      const node =
+        document.createElementNS('https://example.com/foo', 'foo:bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'foo|*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const res = func(ast, node, {
+        forgive: true
+      });
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const nsroot = document.createElement('div');
+      nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
+      nsroot.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
+        'https://example.com/foo');
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+      nsroot.appendChild(node);
+      const parent = document.getElementById('div0');
+      parent.appendChild(nsroot);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:baz');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElement('foo:qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node, {
+        forgive: true
+      });
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '|div',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('', 'div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '|div',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'foo',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('', 'foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'h',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('urn:ns', 'h');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*|h',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElementNS('urn:ns', 'h');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'div',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('div0');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'div',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*|div',
+        type: SELECTOR_TYPE
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domStr = `<!doctype html>
+        <html>
+          <body>
+            <foo:bar xmlns:foo="https://example.com/foo" id="foobar">
+              <foo:baz/>
+              <foo:qux/>
+            </foo:bar>
+          </body>
+        </html>`;
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/html');
+      const ast = {
+        name: 'foo|bar',
+        type: SELECTOR_TYPE
+      };
+      const node = doc.getElementById('foobar');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'null',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElement('null');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'undefined',
+        type: SELECTOR_TYPE
+      };
+      const node = document.createElement('undefined');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('match directionality pseudo-class', () => {
+    const func = matcher._matchDirectionPseudoClass.bind(matcher);
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'ltr');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'ltr');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'rtl');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const root = document.documentElement;
+      const res = func(ast, root);
+      assert.deepEqual(res, root, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      node.setAttribute('dir', 'foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('bdi');
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('bdi');
+      node.textContent = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('bdi');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar" dir="auto">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENTIFIER
+      };
+      const root = document.documentElement;
+      root.setAttribute('dir', 'rtl');
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.setAttribute('dir', 'ltr');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('match language pseudo-class', () => {
+    const func = matcher._matchLanguagePseudoClass.bind(matcher);
+
+    it('should not match', () => {
+      const ast = {
+        name: EMPTY,
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.lang = 'en';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '\\*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.lang = 'en';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '\\*-FR',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.lang = 'fr-FR';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENTIFIER
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en-US');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENTIFIER
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-DE',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-Latn-DE',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-DE');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENTIFIER
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Deva');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, node, 'result');
+    });
+  });
+
+  describe('match selector', () => {
+    const func = matcher.matchSelector.bind(matcher);
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected node Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func({}), TypeError, 'Unexpected node Object');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        name: 'li',
+        type: SELECTOR_TYPE
+      };
+      assert.throws(() => func(ast), TypeError, 'Unexpected node Undefined');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        name: 'li',
+        type: SELECTOR_TYPE
+      };
+      assert.throws(() => func(ast, {}), TypeError, 'Unexpected node Object');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        name: 'li',
+        type: SELECTOR_TYPE
+      };
+      assert.throws(() => func(ast, document), TypeError,
+        'Unexpected node #document');
+    });
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        name: 'li',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('li1');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'id',
+          type: IDENTIFIER
+        },
+        type: SELECTOR_ATTR,
+        value: null
+      };
+      const node = document.getElementById('li1');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        children: [
+          {
+            name: 'ltr',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'dir',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.setAttribute('dir', 'ltr');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        children: [
+          {
+            name: 'en',
+            type: IDENTIFIER
+          }
+        ],
+        name: 'lang',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
     });
   });
 });
