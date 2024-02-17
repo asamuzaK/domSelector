@@ -2940,8 +2940,143 @@ describe('create AST from CSS selector', () => {
   });
 
   describe('matches-any pseudo-class', () => {
-    it('should throw', () => {
-      assert.throws(() => func(':is()'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':is()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '__EMPTY__',
+                            type: SELECTOR_TYPE
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'is',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':is( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '__EMPTY__',
+                            type: SELECTOR_TYPE
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'is',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':is(:is())');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: '__EMPTY__',
+                                        type: SELECTOR_TYPE
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'is',
+                            type: SELECTOR_PSEUDO_CLASS
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'is',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -3096,8 +3231,143 @@ describe('create AST from CSS selector', () => {
   });
 
   describe('specificity-adjustment pseudo-class', () => {
-    it('should throw', () => {
-      assert.throws(() => func(':where()'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':where()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '__EMPTY__',
+                            type: SELECTOR_TYPE
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'where',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':where( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: '__EMPTY__',
+                            type: SELECTOR_TYPE
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'where',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':where(:where())');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        loc: null,
+                                        name: '__EMPTY__',
+                                        type: SELECTOR_TYPE
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'where',
+                            type: SELECTOR_PSEUDO_CLASS
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'where',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -5002,9 +5272,32 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    // FIXME: expect to parse
-    it('should throw', () => {
-      assert.throws(() => func(':lang("")'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':lang("")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '__EMPTY__',
+                    type: IDENTIFIER
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {

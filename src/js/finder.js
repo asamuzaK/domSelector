@@ -17,7 +17,7 @@ import {
 /* constants */
 import {
   ALPHA_NUM, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
+  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
@@ -685,6 +685,9 @@ export class Finder {
    * @returns {?object} - matched node
    */
   _matchLanguagePseudoClass(ast, node) {
+    if (ast.name === EMPTY) {
+      return null;
+    }
     const astName = unescapeSelector(ast.name);
     ast.name = astName;
     let res;
@@ -1734,9 +1737,12 @@ export class Finder {
    */
   _matchSelector(ast, node, opt) {
     const { type: astType } = ast;
+    const matched = new Set();
+    if (ast.name === EMPTY) {
+      return matched;
+    }
     const astName = unescapeSelector(ast.name);
     ast.name = astName;
-    const matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case SELECTOR_PSEUDO_ELEMENT: {

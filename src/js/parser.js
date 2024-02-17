@@ -8,9 +8,9 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
+  DUO, EMPTY, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
+  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
+  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
 /**
@@ -133,21 +133,31 @@ export const parseSelector = selector => {
     });
     res = toPlainObject(ast);
   } catch (e) {
+    const { message } = e;
+    const regEmptyIs = /(:(is|where)\(\s*\))/;
     // workaround for https://github.com/csstree/csstree/issues/265
-    // NOTE: still throws on `:lang("")`;
-    const regLang = /(:lang\(\s*("[A-Za-z\d\-*]+")\s*\))/;
-    if (e.message === 'Identifier is expected' && regLang.test(selector)) {
+    const regLang = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
+    if (message === 'Identifier is expected' && regLang.test(selector)) {
       const [, lang, range] = regLang.exec(selector);
       const escapedRange =
         range.replaceAll('*', '\\*').replace(/^"/, '').replace(/"$/, '');
-      const escapedLang = lang.replace(range, escapedRange);
+      let escapedLang = lang.replace(range, escapedRange);
+      if (escapedLang === ':lang()') {
+        escapedLang = `:lang(${EMPTY})`;
+      }
       res = parseSelector(selector.replace(lang, escapedLang));
-    } else if (e.message === '"]" is expected' && !selector.endsWith(']')) {
+    } else if ((message === 'Identifier is expected' ||
+                message === 'Selector is expected') &&
+               regEmptyIs.test(selector)) {
+      const [, logic, name] = regEmptyIs.exec(selector);
+      const emptyIs = `:${name}(${EMPTY})`;
+      res = parseSelector(selector.replace(logic, emptyIs));
+    } else if (message === '"]" is expected' && !selector.endsWith(']')) {
       res = parseSelector(`${selector}]`);
-    } else if (e.message === '")" is expected' && !selector.endsWith(')')) {
+    } else if (message === '")" is expected' && !selector.endsWith(')')) {
       res = parseSelector(`${selector})`);
     } else {
-      throw new DOMException(e.message, SYNTAX_ERR);
+      throw new DOMException(message, SYNTAX_ERR);
     }
   }
   return res;
