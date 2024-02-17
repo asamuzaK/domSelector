@@ -1,6 +1,7 @@
 export const ALPHA_NUM: "[A-Z\\d]+";
 export const AN_PLUS_B: "AnPlusB";
 export const COMBINATOR: "Combinator";
+export const EMPTY: "__EMPTY__";
 export const IDENTIFIER: "Identifier";
 export const NOT_SUPPORTED_ERR: "NotSupportedError";
 export const NTH: "Nth";
