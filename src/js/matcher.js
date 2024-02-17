@@ -76,7 +76,7 @@ export class Matcher {
    * match attribute selector
    * @private
    * @param {object} ast - AST
-   * @param {object} node - Element node or structured clone
+   * @param {object} node - Element node
    * @returns {?object} - matched node
    */
   _matchAttributeSelector(ast, node) {
@@ -285,7 +285,7 @@ export class Matcher {
    * match type selector
    * @private
    * @param {object} ast - AST
-   * @param {object} node - Element node or structured clone
+   * @param {object} node - Element node
    * @param {object} opt - options
    * @param {boolean} [opt.forgive] - forgive undeclared namespace
    * @returns {?object} - matched node
@@ -450,7 +450,7 @@ export class Matcher {
   /**
    * match selector
    * @param {object} ast - AST
-   * @param {object} node - Element node or structured clone
+   * @param {object} node - Element node
    * @param {object} opt - options
    * @returns {?object} - matched node
    */
