@@ -7340,6 +7340,22 @@ describe('Finder', () => {
       assert.isTrue(res.pending, 'pending');
     });
 
+    it('should be pended', () => {
+      const leaves = [
+        {
+          name: '\\*',
+          type: SELECTOR_TYPE
+        }
+      ];
+      const refNode = document.getElementById('ul1');
+      const node = document.getElementById('li3');
+      const finder = new Finder(window);
+      finder._setup('ul *', document);
+      const res = finder._findDescendantNodes(leaves, refNode);
+      assert.deepEqual([...res.nodes], [], 'nodes');
+      assert.isTrue(res.pending, 'pending');
+    });
+
     it('should get matched node(s)', () => {
       const leaves = [
         {

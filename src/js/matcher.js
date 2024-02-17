@@ -370,7 +370,9 @@ export class Matcher {
       return null;
     }
     const astName = unescapeSelector(ast.name);
-    ast.name = astName;
+    if (typeof astName === 'string' && astName !== ast.name) {
+      ast.name = astName;
+    }
     let res;
     if (astName === '*') {
       if (node.hasAttribute('lang')) {
