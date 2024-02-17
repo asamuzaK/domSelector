@@ -7347,11 +7347,10 @@ describe('Finder', () => {
           type: SELECTOR_TYPE
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const node = document.getElementById('li3');
+      const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder._setup('ul *', document);
-      const res = finder._findDescendantNodes(leaves, refNode);
+      const res = finder._findDescendantNodes(leaves, node);
       assert.deepEqual([...res.nodes], [], 'nodes');
       assert.isTrue(res.pending, 'pending');
     });
