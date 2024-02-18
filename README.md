@@ -248,6 +248,8 @@ const dom = new JSDOM('', {
 
 See [benchmark](https://github.com/asamuzaK/domSelector/actions/workflows/benchmark.yml) for the latest results.
 
+`N/A`: Not supported and/or results are incorrect.
+
 ### matches()
 
 |Selector|jsdom v24.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
