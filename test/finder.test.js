@@ -3415,6 +3415,57 @@ describe('Finder', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       node.focus();
+      node.disabled = true;
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      node.setAttribute('disabled', 'disabled');
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      node.hidden = true;
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
       node.setAttribute('hidden', 'hidden');
       const finder = new Finder(window);
       finder._setup(':focus', node);
@@ -3483,6 +3534,57 @@ describe('Finder', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':focus-within', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      node.disabled = true;
+      const finder = new Finder(window);
+      finder._setup(':focus-within', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      node.setAttribute('disabled', 'disabled');
+      const finder = new Finder(window);
+      finder._setup(':focus-within', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      node.hidden = true;
       const finder = new Finder(window);
       finder._setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
@@ -3582,8 +3684,8 @@ describe('Finder', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      parent.setAttribute('hidden', 'hidden');
-      parent.focus();
+      node.focus();
+      parent.disabled = true;
       const finder = new Finder(window);
       finder._setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent);
@@ -3599,7 +3701,58 @@ describe('Finder', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      parent.focus();
+      node.focus();
+      parent.setAttribute('disabled', 'disabled');
+      const finder = new Finder(window);
+      finder._setup(':focus-within', parent);
+      const res = finder._matchPseudoClassSelector(leaf, parent);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      parent.hidden = true;
+      const finder = new Finder(window);
+      finder._setup(':focus-within', parent);
+      const res = finder._matchPseudoClassSelector(leaf, parent);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
+      parent.setAttribute('hidden', 'hidden');
+      const finder = new Finder(window);
+      finder._setup(':focus-within', parent);
+      const res = finder._matchPseudoClassSelector(leaf, parent);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.focus();
       parent.style.display = 'none';
       const finder = new Finder(window);
       finder._setup(':focus-within', parent);
@@ -3616,8 +3769,8 @@ describe('Finder', () => {
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      parent.focus();
-      parent.style.visibility = 'hiddne';
+      node.focus();
+      parent.style.visibility = 'hidden';
       const finder = new Finder(window);
       finder._setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent);

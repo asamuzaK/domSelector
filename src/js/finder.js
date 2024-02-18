@@ -974,7 +974,8 @@ export class Finder {
             let refNode = node;
             let focus = true;
             while (refNode) {
-              if (refNode.hasAttribute('hidden')) {
+              if (refNode.disabled || refNode.hasAttribute('disabled') ||
+                  refNode.hidden || refNode.hasAttribute('hidden')) {
                 focus = false;
                 break;
               } else if (refNode.hasAttribute('style')) {
@@ -1011,7 +1012,8 @@ export class Finder {
             let refNode = node;
             let focus = true;
             while (refNode) {
-              if (refNode.hasAttribute('hidden')) {
+              if (refNode.disabled || refNode.hasAttribute('disabled') ||
+                  refNode.hidden || refNode.hasAttribute('hidden')) {
                 focus = false;
                 break;
               } else if (refNode.hasAttribute('style')) {
