@@ -60,7 +60,7 @@
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test-wpt": "node test/wpt/wpt-runner.js",
-    "tsc": "npx tsc",
+    "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
   "version": "4.1.4"
