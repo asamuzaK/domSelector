@@ -140,7 +140,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:valid<br>E:invalid|✓| |
 |E:required<br>E:optional|✓| |
 |E:blank|Unsupported| |
-|E:user&#8209;invalid|Unsupported| |
+|E:user&#8209;valid<br>E:user&#8209;invalid|Unsupported| |
 |E:root|✓| |
 |E:empty|✓| |
 |E:nth&#8209;child(n&nbsp;[of&nbsp;S]?)|✓| |
