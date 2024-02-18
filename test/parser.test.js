@@ -4957,7 +4957,9 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+  });
 
+  describe('linguistic pseudo-class', () => {
     it('should get selector list', () => {
       const res = func(':dir(foo)');
       assert.deepEqual(res, {
@@ -5299,7 +5301,9 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+  });
 
+  describe('shadow host', () => {
     it('should get selector list', () => {
       const res = func(':host');
       assert.deepEqual(res, {
@@ -6399,6 +6403,11 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
+  it('should get false', () => {
+    const res = func('[ns|id]');
+    assert.isFalse(res, 'result');
+  });
+
   it('should get true', () => {
     const res = func('[foo="bar baz"]');
     assert.isTrue(res, 'result');
@@ -6466,6 +6475,11 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get true', () => {
     const res = func(':nth-child(n)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(2n+1)');
     assert.isTrue(res, 'result');
   });
 
