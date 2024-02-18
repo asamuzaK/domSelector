@@ -3379,8 +3379,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       const finder = new Finder(window);
       finder._setup(':focus', node);
@@ -3397,8 +3398,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       const finder = new Finder(window);
       finder._setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
@@ -3412,8 +3414,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.disabled = true;
       const finder = new Finder(window);
@@ -3429,8 +3432,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.setAttribute('disabled', 'disabled');
       const finder = new Finder(window);
@@ -3446,8 +3450,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.hidden = true;
       const finder = new Finder(window);
@@ -3463,8 +3468,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.setAttribute('hidden', 'hidden');
       const finder = new Finder(window);
@@ -3480,8 +3486,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.style.display = 'none';
       const finder = new Finder(window);
@@ -3497,10 +3504,119 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.style.visibility = 'hidden';
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.disabled = true;
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.setAttribute('disabled', 'disabled');
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.hidden = true;
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.setAttribute('hidden', 'hidden');
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.style.display = 'none';
+      const finder = new Finder(window);
+      finder._setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      node.focus();
+      parent.style.visibility = 'hidden';
       const finder = new Finder(window);
       finder._setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
@@ -3514,8 +3630,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       const finder = new Finder(window);
       finder._setup(':focus-within', node);
@@ -3532,8 +3649,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       const finder = new Finder(window);
       finder._setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
@@ -3547,8 +3665,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.disabled = true;
       const finder = new Finder(window);
@@ -3564,8 +3683,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.setAttribute('disabled', 'disabled');
       const finder = new Finder(window);
@@ -3581,8 +3701,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.hidden = true;
       const finder = new Finder(window);
@@ -3598,8 +3719,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.setAttribute('hidden', 'hidden');
       const finder = new Finder(window);
@@ -3615,8 +3737,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.style.display = 'none';
       const finder = new Finder(window);
@@ -3632,8 +3755,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       node.style.visibility = 'hidden';
       const finder = new Finder(window);
@@ -3649,8 +3773,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       const finder = new Finder(window);
       finder._setup(':focus-within', parent);
@@ -3667,8 +3792,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       const finder = new Finder(window);
       finder._setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent);
@@ -3682,8 +3808,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.disabled = true;
       const finder = new Finder(window);
@@ -3699,8 +3826,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.setAttribute('disabled', 'disabled');
       const finder = new Finder(window);
@@ -3716,8 +3844,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.hidden = true;
       const finder = new Finder(window);
@@ -3733,8 +3862,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.setAttribute('hidden', 'hidden');
       const finder = new Finder(window);
@@ -3750,8 +3880,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.style.display = 'none';
       const finder = new Finder(window);
@@ -3767,8 +3898,9 @@ describe('Finder', () => {
         type: SELECTOR_PSEUDO_CLASS
       };
       const node = document.createElement('button');
-      const parent = document.getElementById('div0');
+      const parent = document.createElement('form');
       parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
       node.focus();
       parent.style.visibility = 'hidden';
       const finder = new Finder(window);
