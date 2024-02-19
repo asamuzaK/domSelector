@@ -189,7 +189,6 @@ describe('patched JSDOM', () => {
     it('should not match', () => {
       const node = document.createElement('div');
       node.classList.add('bar');
-      console.log(node)
       const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
       assert.isFalse(res, 'result');
     });
