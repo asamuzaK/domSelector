@@ -9,5 +9,5 @@ export class Matcher {
     private _matchLanguagePseudoClass;
     matchSelector(ast: object, node: object, opt: object): object | null;
 }
-declare const _default: Matcher;
-export default _default;
+export const matcher: Matcher;
+export default matcher;
