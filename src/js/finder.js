@@ -8,7 +8,7 @@ import nwsapi from 'nwsapi';
 import {
   isContentEditable, isInShadowTree, resolveContent, sortNodes
 } from './dom-util.js';
-import matcher from './matcher.js';
+import { matcher } from './matcher.js';
 import {
   filterSelector, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';

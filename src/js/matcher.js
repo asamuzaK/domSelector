@@ -492,4 +492,5 @@ export class Matcher {
   }
 }
 
-export default new Matcher();
+export const matcher = new Matcher();
+export default matcher;

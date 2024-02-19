@@ -7,165 +7,76 @@ const { DOMSelector } = require('../../dist/cjs/index.js');
 
 const setup = window => {
   const domSelector = new DOMSelector(window);
+
+  const matches = domSelector.matches.bind(domSelector);
   window.Element.prototype.matches = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.matches(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = matches(selector, this);
     return !!res;
   };
+
+  const closest = domSelector.closest.bind(domSelector);
   window.Element.prototype.closest = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.closest(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = closest(selector, this);
     return res ?? null;
   };
+
+  const querySelector = domSelector.querySelector.bind(domSelector);
   window.Document.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelector(selector, this);
     return res ?? null;
   };
   window.DocumentFragment.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelector(selector, this);
     return res ?? null;
   };
   window.Element.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    let res;
-    try {
-      const [selector] = args;
-      res = domSelector.querySelector(selector, this);
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelector(selector, this);
     return res ?? null;
   };
+
+  const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
   window.Document.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.DocumentFragment.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.Element.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
-    const res = [];
-    try {
-      const [selector] = args;
-      const arr = domSelector.querySelectorAll(selector, this);
-      if (arr.length) {
-        res.push(...arr);
-      }
-    } catch (e) {
-      if (e instanceof globalThis.DOMException &&
-          !(e instanceof window.DOMException)) {
-        const { message, name } = e;
-        throw new window.DOMException(message, name);
-      } else {
-        throw e;
-      }
-    }
+    const [selector] = args;
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.requestAnimationFrame = function (callback) {
@@ -194,6 +105,22 @@ const filter = testPath => {
     'has-style-sharing-006.html',
     'has-style-sharing-007-ref.html',
     'has-style-sharing-007.html',
+    'has-style-sharing-pseudo-001-ref.html',
+    'has-style-sharing-pseudo-001.html',
+    'has-style-sharing-pseudo-002-ref.html',
+    'has-style-sharing-pseudo-002.html',
+    'has-style-sharing-pseudo-003-ref.html',
+    'has-style-sharing-pseudo-003.html',
+    'has-style-sharing-pseudo-004-ref.html',
+    'has-style-sharing-pseudo-004.html',
+    'has-style-sharing-pseudo-005-ref.html',
+    'has-style-sharing-pseudo-005.html',
+    'has-style-sharing-pseudo-006-ref.html',
+    'has-style-sharing-pseudo-006.html',
+    'has-style-sharing-pseudo-007-ref.html',
+    'has-style-sharing-pseudo-007.html',
+    'has-style-sharing-pseudo-008-ref.html',
+    'has-style-sharing-pseudo-008.html',
     'has-visited-ref.html',
     'has-visited.html',
     'is-where-error-recovery.html',

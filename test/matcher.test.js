@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import matcher, { Matcher } from '../src/js/matcher.js';
+import defaultMatcher, { matcher, Matcher } from '../src/js/matcher.js';
 import {
   EMPTY, IDENTIFIER, SELECTOR_ATTR, SELECTOR_PSEUDO_CLASS, SELECTOR_TYPE, STRING
 } from '../src/js/constant.js';
@@ -83,6 +83,11 @@ describe('matcher', () => {
   describe('matcher', () => {
     it('should be instance of Matcher', () => {
       assert.instanceOf(matcher, Matcher, 'instance');
+    });
+
+    it('should be instance of Matcher', () => {
+      assert.instanceOf(defaultMatcher, Matcher, 'instance');
+      assert.deepEqual(defaultMatcher, matcher, 'result');
     });
   });
 
