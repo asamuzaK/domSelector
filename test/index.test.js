@@ -171,6 +171,28 @@ describe('patched JSDOM', () => {
       const res = li3.matches('div.foo ul.bar > li.qux');
       assert.isFalse(res, 'result');
     });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.classList.add('qux');
+      const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.classList.add('baz');
+      const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('div');
+      node.classList.add('bar');
+      console.log(node)
+      const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
+      assert.isFalse(res, 'result');
+    });
   });
 
   describe('Element.closest()', () => {
