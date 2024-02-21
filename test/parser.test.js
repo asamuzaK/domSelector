@@ -6429,6 +6429,41 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
+    const res = func("[foo='bar baz' qux i]");
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo="bar \'baz\'" i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo=\'bar "baz"\' i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo="bar baz\']');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo=\'bar baz"]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo="bar baz\' i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo=\'bar baz" i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
     const res = func('[foo bar baz i]');
     assert.isFalse(res, 'result');
   });
