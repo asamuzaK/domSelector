@@ -6513,6 +6513,11 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
+  it('should get False', () => {
+    const res = func(':is(:nth-child(2n+1), :nth-child(3n+1))');
+    assert.isFalse(res, 'result');
+  });
+
   it('should get true', () => {
     const res = func(':not(p.foo, div.bar)');
     assert.isTrue(res, 'result');

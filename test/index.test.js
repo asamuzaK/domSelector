@@ -545,6 +545,72 @@ describe('patched JSDOM', () => {
       ul1.classList.add('bar');
       li3.classList.add('baz');
       const res =
+        document.querySelectorAll('li:is(:nth-child(2n+1), :nth-child(3n+2))');
+      assert.deepEqual(res, [
+        li1,
+        li2,
+        li3,
+        li5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res =
+        document.querySelectorAll('li:not(:is(:nth-child(2n), :nth-child(3n+1)))');
+      assert.deepEqual(res, [
+        li3,
+        li5
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const div1 = document.createElement('div');
+      const div2 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      const li4 = document.createElement('li');
+      const li5 = document.createElement('li');
+      div1.id = 'div1';
+      div2.id = 'div2';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li2.id = 'li2';
+      li3.id = 'li3';
+      li4.id = 'li4';
+      li5.id = 'li5';
+      ul1.append(li1, li2, li3, li4, li5);
+      div2.appendChild(ul1);
+      div1.appendChild(div2);
+      document.body.appendChild(div1);
+      div1.classList.add('foo');
+      ul1.classList.add('bar');
+      li3.classList.add('baz');
+      const res =
         document.querySelectorAll('li:last-child, li:first-child + li');
       assert.deepEqual(res, [
         li2,
