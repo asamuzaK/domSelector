@@ -304,15 +304,10 @@ export const filterSelector = selector => {
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // nst:
-    const nst = '(?:first|last|only)-(?:child|of-type)';
     // digit:
     const digit = '(?:0|[1-9]\\d*)';
     // an+b:
     const anb = `n|[+-]?${digit}n?|(?:[+-]?${digit})?n\\s*[+-]\\s*${digit}`;
-    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
-    const nth =
-      `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${anb})\\s*\\)`;
     // type: *, tag
     const type = '\\*|[A-Za-z][\\w-]*';
     // subclass: attr, id, class, pseudo-class (nst)
@@ -325,6 +320,11 @@ export const filterSelector = selector => {
     // compoundB:
     const compoundB =
       `(?:${type}|(?:${type})?(?:${subclass}|:${nestedLogical})+)`;
+    // nst:
+    const nst = '(?:first|last|only)-(?:child|of-type)';
+    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
+    const nth =
+      `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${anb})\\s*\\)`;
     // logical: exclude complex selector, e.g. :is(.foo > .bar)
     const logical =
       `(?:is|not|where)\\(\\s*${compoundB}(?:\\s*,\\s*${compoundB})*\\s*\\)`;
