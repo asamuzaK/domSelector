@@ -304,23 +304,33 @@ export const filterSelector = selector => {
   }
   // filter pseudo-class selectors
   if (selector.includes(':')) {
-    // filter pseudos other than child-indexed and logical combination pseudos
-    // :(?!(?:first|last|only)-(?:child|of-type)|${nth}|${logical})
-    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
-    // nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${an+b})\s*\)
+    // nst:
+    const nst = '(?:first|last|only)-(?:child|of-type)';
+    // digit:
+    const digit = '(?:0|[1-9]\\d*)';
     // an+b:
-    // n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*)
-    // logical: exclude complex selector, e.g. :is(.foo > .bar)
-    // (?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)
-    // compound:
-    // (?:${type}|(?:${type})?(?:${subclass})+)
+    const anb = `n|[+-]?${digit}n?|(?:[+-]?${digit})?n\\s*[+-]\\s*${digit}`;
+    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
+    const nth =
+      `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${anb})\\s*\\)`;
     // type: *, tag
-    // \*|[A-Za-z][\w-]*
-    // subclass: attr, class, id, pseudo-class
-    // \[[^\]]+\]|[#.:][\w-]+|:${logical}
-    // subclass w/o logical:
-    // \[[^\]]+\]|[#.:][\w-]+
-    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
+    const type = '\\*|[A-Za-z][\\w-]*';
+    // subclass: attr, id, class, pseudo-class (nst)
+    const subclass = '\\[[^\\]]+\\]|[#.:][\\w-]+';
+    // compound:
+    const compound = `(?:${type}|(?:${type})?(?:${subclass})+)`;
+    // nestedLogical:
+    const nestedLogical =
+      `(?:is|not|where)\\(\\s*${compound}(?:\\s*,\\s*${compound})*\\s*\\)`;
+    // compoundB:
+    const compoundB =
+      `(?:${type}|(?:${type})?(?:${subclass}|:${nestedLogical})+)`;
+    // logical: exclude complex selector, e.g. :is(.foo > .bar)
+    const logical =
+      `(?:is|not|where)\\(\\s*${compoundB}(?:\\s*,\\s*${compoundB})*\\s*\\)`;
+    // filter pseudos other than child-indexed and logical combination pseudos
+    const regFilter = new RegExp(`:(?!${nst}|${nth}|${logical})`);
+    if (regFilter.test(selector)) {
       return false;
     }
   }
