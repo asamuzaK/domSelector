@@ -305,27 +305,27 @@ export const filterSelector = selector => {
   // filter pseudo-class selectors
   if (selector.includes(':')) {
     // digit:
-    // (?:0|[1-9]\d*)
-    // an+b:
-    // n|[+-]?${digit}n?|(?:[+-]?${digit})?n\s*[+-]\s*${digit}
+    // `(?:0|[1-9]\d*)`
+    // anb:
+    // `n|[+-]?${digit}n?|(?:[+-]?${digit})?n\s*[+-]\s*${digit}`
     // type: *, tag
-    // \*|[A-Za-z][\w-]*
+    // `\*|[A-Za-z][\w-]*`
     // subclass: attr, id, class, pseudo-class (nst)
-    // \[[^\]]+\]|[#.:][\w-]+
+    // `\[[^\]]+\]|[#.:][\w-]+`
     // compound:
-    // (?:${type}|(?:${type})?(?:${subclass})+)
+    // `(?:${type}|(?:${type})?(?:${subclass})+)`
     // nested logical:
-    // (?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)
+    // `(?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)`
     // compoundB:
-    // (?:${type}|(?:${type})?(?:${subclass}|:${nestedLogical})+)
+    // `(?:${type}|(?:${type})?(?:${subclass}|:${nestedLogical})+)`
     // nst:
-    // (?:first|last|only)-(?:child|of-type)
+    // `(?:first|last|only)-(?:child|of-type)`
     // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
-    // nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${anb})\s*\)
+    // `nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${anb})\s*\)`
     // logical: exclude complex selector, e.g. :is(.foo > .bar)
-    // (?:is|not|where)\(\s*${compoundB}(?:\s*,\s*${compoundB})*\s*\)
+    // `(?:is|not|where)\(\s*${compoundB}(?:\s*,\s*${compoundB})*\s*\)`
     // filter pseudos other than child-indexed and logical combination pseudos
-    // :(?!${nth}|${nst}|:${logical})
+    // `:(?!${nth}|${nst}|:${logical})`
     if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
       return false;
     }
