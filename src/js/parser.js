@@ -299,7 +299,7 @@ export const filterSelector = selector => {
   }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors
   // and attribute selectors with case flag, i.e. [attr i], [attr s]
-  if (/\||::|\[\s*[\w$*=^|~-]+(?:\s+[\w$*=^|~-]+)+\s*\]|\[\s*[\w$*=^|~-]+["'][\w$*=^|~\s-]+['"]+\s+[\w$*=^|~-]+\s*\]/.test(selector)) {
+  if (/\||::|\[\s*[\w$*=^|~-]+(?:["'][\w$*=^|~\s-]+['"])?(?:\s+[\w$*=^|~-]+)+\s*\]/.test(selector)) {
     return false;
   }
   // filter pseudo-class selectors
