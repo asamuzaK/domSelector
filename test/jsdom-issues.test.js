@@ -590,6 +590,49 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#3686 - https://github.com/jsdom/jsdom/issues/3686', () => {
+    let document;
+    beforeEach(() => {
+      const dom = jsdom('');
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      document = null;
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is([a],b):not(.c)'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a,[b]):not(.c)'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a,b):not(.c)'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a,b):not([c])'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a):not([b],.c)'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a,[b])'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is(a,[b]):first-child'));
+    });
+
+    it('should not throw', () => {
+      assert.doesNotThrow(() => document.querySelector(':is([b]):not(.c)'));
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;
