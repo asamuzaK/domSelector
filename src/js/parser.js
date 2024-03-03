@@ -325,7 +325,7 @@ export const filterSelector = selector => {
     // logical: exclude complex selector, e.g. :is(.foo > .bar)
     // `(?:is|not|where)\(\s*${compoundB}(?:\s*,\s*${compoundB})*\s*\)`
     // filter pseudos other than child-indexed and logical combination pseudos
-    // `:(?!${nth}|${nst}|:${logical})`
+    // `:(?!${nst}|${nth}|${logical})`
     if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
       return false;
     }
