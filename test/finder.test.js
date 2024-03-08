@@ -9563,642 +9563,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('get entry twig', () => {
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('li', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: false,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > li', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > li', document);
-      const res = finder._getEntryTwig(branch, 'first');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: {
-            name: '+',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > li + li', document);
-      const res = finder._getEntryTwig(branch, 'first');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul1',
-              type: SELECTOR_ID
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li1',
-              type: SELECTOR_ID
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('#ul1 > #li1', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li1',
-              type: SELECTOR_ID
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li1',
-              type: SELECTOR_ID
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > #li1', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li1',
-              type: SELECTOR_ID
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul1',
-              type: SELECTOR_ID
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('#ul1 > li', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul1',
-              type: SELECTOR_ID
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: '*',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('* > li', document);
-      const res = finder._getEntryTwig(branch, 'all');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: '*',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > *', document);
-      const res = finder._getEntryTwig(branch, 'all');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'after',
-              type: SELECTOR_PSEUDO_ELEMENT
-            },
-            {
-              name: 'li',
-              type: SELECTOR_CLASS
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > .li::after', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'after',
-              type: SELECTOR_PSEUDO_ELEMENT
-            },
-            {
-              name: 'li',
-              type: SELECTOR_CLASS
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'after',
-              type: SELECTOR_PSEUDO_ELEMENT
-            },
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_CLASS
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul::after > .li', document);
-      const res = finder._getEntryTwig(branch);
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'after',
-              type: SELECTOR_PSEUDO_ELEMENT
-            },
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: {
-            name: '+',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > li + li', document);
-      const res = finder._getEntryTwig(branch, 'all');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: '*',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('* > li', document);
-      const res = finder._getEntryTwig(branch, 'first');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'prev',
-        twig: {
-          combo: null,
-          leaves: [
-            {
-              name: 'li',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-
-    it('should get value', () => {
-      const branch = [
-        {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        },
-        {
-          combo: null,
-          leaves: [
-            {
-              name: '*',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      ];
-      const finder = new Finder(window);
-      finder._setup('ul > *', document);
-      const res = finder._getEntryTwig(branch, 'first');
-      assert.deepEqual(res, {
-        complex: true,
-        dir: 'next',
-        twig: {
-          combo: {
-            name: '>',
-            type: COMBINATOR
-          },
-          leaves: [
-            {
-              name: 'ul',
-              type: SELECTOR_TYPE
-            }
-          ]
-        }
-      }, 'result');
-    });
-  });
-
   describe('collect nodes', () => {
     it('should get list and matrix', () => {
       const node = document.getElementById('li1');
@@ -10777,6 +10141,451 @@ describe('Finder', () => {
         ]
       ], 'result');
     });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('* > li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: true,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('li1'),
+            document.getElementById('li2'),
+            document.getElementById('li3')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('* > li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('first');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: true,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('li1'),
+            document.getElementById('li2'),
+            document.getElementById('li3')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > *', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: true,
+            dir: 'next',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('ul1')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > *', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('first');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: true,
+            dir: 'next',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('ul1')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('#ul1 > #li1', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul1',
+                    type: SELECTOR_ID
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li1',
+                    type: SELECTOR_ID
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('li1')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > #li1', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li1',
+                    type: SELECTOR_ID
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('li1')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('#ul1 > li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul1',
+                    type: SELECTOR_ID
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'next',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            document.getElementById('ul1')
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('ul > li::after', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    children: null,
+                    loc: null,
+                    name: 'after',
+                    type: SELECTOR_PSEUDO_ELEMENT
+                  },
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'prev',
+            filtered: false,
+            find: false
+          }
+        ],
+        [
+          []
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const finder = new Finder(window);
+      finder._setup('ul::before > li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    children: null,
+                    loc: null,
+                    name: 'before',
+                    type: SELECTOR_PSEUDO_ELEMENT
+                  },
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'li',
+                    type: SELECTOR_TYPE
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'next',
+            filtered: false,
+            find: false
+          }
+        ],
+        [
+          []
+        ]
+      ], 'result');
+    });
+
   });
 
   describe('get combined nodes', () => {

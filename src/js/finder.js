@@ -2305,101 +2305,6 @@ export class Finder {
   }
 
   /**
-   * get entry twig
-   * @private
-   * @param {Array.<object>} branch - AST branch
-   * @param {string} targetType - target type
-   * @returns {object} - direction and twig
-   */
-  _getEntryTwig(branch, targetType) {
-    const branchLen = branch.length;
-    const complex = branchLen > 1;
-    const firstTwig = branch[0];
-    let dir;
-    let twig;
-    if (complex) {
-      const {
-        combo: firstCombo,
-        leaves: [{
-          name: firstName,
-          type: firstType
-        }]
-      } = firstTwig;
-      const lastTwig = branch[branchLen - 1];
-      const {
-        leaves: [{
-          name: lastName,
-          type: lastType
-        }]
-      } = lastTwig;
-      if (lastType === SELECTOR_PSEUDO_ELEMENT || lastType === SELECTOR_ID) {
-        dir = DIR_PREV;
-        twig = lastTwig;
-      } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
-                 firstType === SELECTOR_ID) {
-        dir = DIR_NEXT;
-        twig = firstTwig;
-      } else if (targetType === TARGET_ALL) {
-        if (firstName === '*' && firstType === SELECTOR_TYPE) {
-          dir = DIR_PREV;
-          twig = lastTwig;
-        } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
-          dir = DIR_NEXT;
-          twig = firstTwig;
-        } else if (branchLen === 2) {
-          const { name: comboName } = firstCombo;
-          if (/^[+~]$/.test(comboName)) {
-            dir = DIR_PREV;
-            twig = lastTwig;
-          } else {
-            dir = DIR_NEXT;
-            twig = firstTwig;
-          }
-        } else {
-          dir = DIR_NEXT;
-          twig = firstTwig;
-        }
-      } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
-        dir = DIR_NEXT;
-        twig = firstTwig;
-      } else if (firstName === '*' && firstType === SELECTOR_TYPE) {
-        dir = DIR_PREV;
-        twig = lastTwig;
-      } else {
-        let bool;
-        for (const { combo, leaves: [leaf] } of branch) {
-          const { name: leafName, type: leafType } = leaf;
-          if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
-            bool = false;
-            break;
-          }
-          if (!bool && combo) {
-            const { name: comboName } = combo;
-            if (/^[+~]$/.test(comboName)) {
-              bool = true;
-            }
-          }
-        }
-        if (bool) {
-          dir = DIR_NEXT;
-          twig = firstTwig;
-        } else {
-          dir = DIR_PREV;
-          twig = lastTwig;
-        }
-      }
-    } else {
-      dir = DIR_PREV;
-      twig = firstTwig;
-    }
-    return {
-      complex,
-      dir,
-      twig
-    };
-  }
-
-  /**
    * collect nodes
    * @private
    * @param {string} targetType - target type
@@ -2411,7 +2316,87 @@ export class Finder {
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
-        const { complex, dir, twig } = this._getEntryTwig(branch, targetType);
+        const branchLen = branch.length;
+        const complex = branchLen > 1;
+        const firstTwig = branch[0];
+        let dir;
+        let twig;
+        if (complex) {
+          const {
+            combo: firstCombo,
+            leaves: [{
+              name: firstName,
+              type: firstType
+            }]
+          } = firstTwig;
+          const lastTwig = branch[branchLen - 1];
+          const {
+            leaves: [{
+              name: lastName,
+              type: lastType
+            }]
+          } = lastTwig;
+          if (lastType === SELECTOR_PSEUDO_ELEMENT ||
+              lastType === SELECTOR_ID) {
+            dir = DIR_PREV;
+            twig = lastTwig;
+          } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
+                     firstType === SELECTOR_ID) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
+          } else if (targetType === TARGET_ALL) {
+            if (firstName === '*' && firstType === SELECTOR_TYPE) {
+              dir = DIR_PREV;
+              twig = lastTwig;
+            } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
+              dir = DIR_NEXT;
+              twig = firstTwig;
+            } else if (branchLen === 2) {
+              const { name: comboName } = firstCombo;
+              if (/^[+~]$/.test(comboName)) {
+                dir = DIR_PREV;
+                twig = lastTwig;
+              } else {
+                dir = DIR_NEXT;
+                twig = firstTwig;
+              }
+            } else {
+              dir = DIR_NEXT;
+              twig = firstTwig;
+            }
+          } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
+          } else if (firstName === '*' && firstType === SELECTOR_TYPE) {
+            dir = DIR_PREV;
+            twig = lastTwig;
+          } else {
+            let bool;
+            for (const { combo, leaves: [leaf] } of branch) {
+              const { name: leafName, type: leafType } = leaf;
+              if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
+                bool = false;
+                break;
+              }
+              if (!bool && combo) {
+                const { name: comboName } = combo;
+                if (/^[+~]$/.test(comboName)) {
+                  bool = true;
+                }
+              }
+            }
+            if (bool) {
+              dir = DIR_NEXT;
+              twig = firstTwig;
+            } else {
+              dir = DIR_PREV;
+              twig = lastTwig;
+            }
+          }
+        } else {
+          dir = DIR_PREV;
+          twig = firstTwig;
+        }
         const {
           collected, compound, filtered, nodes, pending
         } = this._findEntryNodes(twig, targetType, complex);
