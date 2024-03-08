@@ -10932,69 +10932,14 @@ describe('Finder', () => {
     });
   });
 
-  describe('match nodes', () => {
+  describe('find matched nodes', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('first');
+      const res = finder._find('all');
       assert.deepEqual([...res], [
         document.getElementById('li3'),
         document.getElementById('li2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const finder = new Finder(window);
-      finder._setup('li:last-child, li:first-child + li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('all');
-      assert.deepEqual([...res], [
-        document.getElementById('li3'),
-        document.getElementById('li2')
-      ], 'result');
-    });
-
-    it('should not match', () => {
-      const finder = new Finder(window);
-      finder._setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('first');
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should not match', () => {
-      const finder = new Finder(window);
-      finder._setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('all');
-      const res = finder._matchNodes('all');
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const finder = new Finder(window);
-      finder._setup('ol > .li ~ li, ul > .li ~ li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('first');
-      assert.deepEqual([...res], [
-        document.getElementById('li2')
-      ], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const finder = new Finder(window);
-      finder._setup('ol > .li ~ li, ul > .li ~ li', document);
-      finder._prepareQuerySelectorWalker(document);
-      finder._collectNodes('all');
-      const res = finder._matchNodes('all');
-      assert.deepEqual([...res], [
-        document.getElementById('li2'),
-        document.getElementById('li3')
       ], 'result');
     });
 
@@ -11002,51 +10947,33 @@ describe('Finder', () => {
       const node = document.getElementById('li2');
       const finder = new Finder(window);
       finder._setup('li:last-child, li:first-child + li', node);
-      finder._collectNodes('self');
-      const res = finder._matchNodes('self');
+      const res = finder._find('self');
       assert.deepEqual([...res], [
         node
       ], 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const root = document.createElement('div');
-      const div = document.createElement('div');
-      const p = document.createElement('p');
-      const span = document.createElement('span');
-      const span2 = document.createElement('span');
-      p.appendChild(span);
-      p.appendChild(span2);
-      div.appendChild(p);
-      root.appendChild(div);
+    it('should not match', () => {
+      const node = document.getElementById('li1');
       const finder = new Finder(window);
-      finder._setup('div > p > span', root);
-      finder._prepareQuerySelectorWalker(root);
-      finder._collectNodes('all');
-      const res = finder._matchNodes('all');
-      assert.deepEqual([...res], [
-        span,
-        span2
-      ], 'result');
+      finder._setup('li:last-child, li:first-child + li', node);
+      const res = finder._find('self');
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      finder._setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
+      const res = finder._find('all');
+      assert.deepEqual([...res], [], 'all');
     });
 
     it('should get matched node(s)', () => {
-      const root = document.createElement('div');
-      const div = document.createElement('div');
-      const p = document.createElement('p');
-      const span = document.createElement('span');
-      const span2 = document.createElement('span');
-      p.appendChild(span);
-      p.appendChild(span2);
-      div.appendChild(p);
-      root.appendChild(div);
       const finder = new Finder(window);
-      finder._setup('div > p > span', root);
-      finder._prepareQuerySelectorWalker(root);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('first');
+      finder._setup('ol > .li ~ li, ul > .li ~ li', document);
+      const res = finder._find('first');
       assert.deepEqual([...res], [
-        span
+        document.getElementById('li2')
       ], 'result');
     });
 
@@ -11062,11 +10989,28 @@ describe('Finder', () => {
       root.appendChild(div);
       const finder = new Finder(window);
       finder._setup('span', root);
-      finder._prepareQuerySelectorWalker(root);
-      finder._collectNodes('first');
-      const res = finder._matchNodes('first');
+      const res = finder._find('first');
       assert.deepEqual([...res], [
         span
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const root = document.createElement('div');
+      const div = document.createElement('div');
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      const span2 = document.createElement('span');
+      p.appendChild(span);
+      p.appendChild(span2);
+      div.appendChild(p);
+      root.appendChild(div);
+      const finder = new Finder(window);
+      finder._setup('div > p > span', root);
+      const res = finder._find('all');
+      assert.deepEqual([...res], [
+        span,
+        span2
       ], 'result');
     });
 
@@ -11076,27 +11020,7 @@ describe('Finder', () => {
       finder._setup('li:active', node);
       finder._prepareQuerySelectorWalker(node);
       finder._collectNodes('all');
-      const res = finder._matchNodes('all');
-      assert.deepEqual([...res], [], 'result');
-    });
-  });
-
-  describe('find matched nodes', () => {
-    it('should get matched node(s)', () => {
-      const finder = new Finder(window);
-      finder._setup('li:last-child, li:first-child + li', document);
       const res = finder._find('all');
-      assert.deepEqual([...res], [
-        document.getElementById('li3'),
-        document.getElementById('li2')
-      ], 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder._setup('li:last-child, li:first-child + li', node);
-      const res = finder._find('self');
       assert.deepEqual([...res], [], 'result');
     });
   });

@@ -2584,12 +2584,15 @@ export class Finder {
   }
 
   /**
-   * match nodes
+   * find matched nodes
    * @private
    * @param {string} targetType - target type
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchNodes(targetType) {
+  _find(targetType) {
+    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+      this._prepareQuerySelectorWalker();
+    }
     const [[...branches], nodes] = this._collectNodes(targetType);
     const l = branches.length;
     let res = new Set();
@@ -2739,20 +2742,6 @@ export class Finder {
       }
     }
     return res;
-  }
-
-  /**
-   * find matched nodes
-   * @private
-   * @param {string} targetType - target type
-   * @returns {Set.<object>} - collection of matched nodes
-   */
-  _find(targetType) {
-    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
-    }
-    const nodes = this._matchNodes(targetType);
-    return nodes;
   }
 
   /**
