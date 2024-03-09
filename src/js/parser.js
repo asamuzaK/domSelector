@@ -307,7 +307,7 @@ export const filterSelector = selector => {
     // digit:
     // `(?:0|[1-9]\d*)`
     // anb:
-    // `n|[+-]?${digit}n?|(?:[+-]?${digit})?n\s*[+-]\s*${digit}`
+    // `[+-]?(?:${digit}n?|n)|(?:[+-]?${digit})?n\s*[+-]\s*${digit}`
     // type: *, tag
     // `\*|[A-Za-z][\w-]*`
     // subclass: attr, id, class, pseudo-class (nst)
@@ -326,7 +326,7 @@ export const filterSelector = selector => {
     // `(?:is|not|where)\(\s*${compoundB}(?:\s*,\s*${compoundB})*\s*\)`
     // filter pseudos other than child-indexed and logical combination pseudos
     // `:(?!${nst}|${nth}|${logical})`
-    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|n|[+-]?(?:0|[1-9]\d*)n?|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
+    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|[+-]?(?:(?:0|[1-9]\d*)n?|n)|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
       return false;
     }
   }
