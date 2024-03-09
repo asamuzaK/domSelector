@@ -24,12 +24,10 @@ export class Finder {
     private _findFirst;
     private _findFromHTMLCollection;
     private _findEntryNodes;
-    private _getEntryTwig;
     private _collectNodes;
     private _getCombinedNodes;
     private _matchNodeNext;
     private _matchNodePrev;
-    private _matchNodes;
     private _find;
     matches(selector: string, node: object, opt: object): boolean;
     closest(selector: string, node: object, opt: object): object | null;
