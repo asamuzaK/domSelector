@@ -10585,7 +10585,6 @@ describe('Finder', () => {
         ]
       ], 'result');
     });
-
   });
 
   describe('get combined nodes', () => {
