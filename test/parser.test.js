@@ -6519,6 +6519,16 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get true', () => {
+    const res = func(':nth-child(+n)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':nth-child(-n)');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
     const res = func(':nth-child(2n+1)');
     assert.isTrue(res, 'result');
   });
