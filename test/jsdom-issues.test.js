@@ -867,7 +867,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
   });
 
   describe('#3692 - https://github.com/jsdom/jsdom/issues/3692', () => {
-    const domstr = `<div class="sm:block"><span id="target"></span></div>`;
+    const domstr = '<div class="sm:block"><span id="target"></span></div>';
     let document;
     beforeEach(() => {
       const dom = jsdom(domstr);
