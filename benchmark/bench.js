@@ -189,7 +189,26 @@ const elementMatchesRandom = (api, selector, result) => {
   } else {
     doc = patchedDoc;
   }
-  const i = Math.floor(Math.random()) * 2 + 5;
+  const i = Math.floor(Math.random() * 10);
+  const id = `${result}${i}-9-9`;
+  const res = doc.getElementById(id).matches(selector);
+  if (res !== true) {
+    throw new Error('result does not match.');
+  }
+};
+
+const elementMatchesRandom2 = (api, selector, result) => {
+  let doc;
+  if (api === 'jsdom') {
+    doc = document;
+  } else if (api === 'happydom') {
+    doc = happyDoc;
+  } else if (api === 'linkedom') {
+    doc = linkedDoc;
+  } else {
+    doc = patchedDoc;
+  }
+  const i = Math.round(Math.random()) * 4 + 5;
   const id = `${result}${i}-9-9`;
   const res = doc.getElementById(id).matches(selector);
   if (res !== true) {
@@ -225,7 +244,42 @@ const elementClosestRandom = (api, selector, result) => {
   } else {
     doc = patchedDoc;
   }
-  const i = Math.floor(Math.random()) * 2 + 5;
+  const i = Math.floor(Math.random() * 10);
+  const id = `p${i}-9-9`;
+  const res = doc.getElementById(id).closest(selector);
+  switch (result) {
+    case 'container': {
+      if (res?.id !== result) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    case 'box': {
+      if (res?.id !== `${result}${i}`) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    default: {
+      if (res?.id !== `${result}${i}-9-9`) {
+        throw new Error('result does not match.');
+      }
+    }
+  }
+};
+
+const elementClosestRandom2 = (api, selector, result) => {
+  let doc;
+  if (api === 'jsdom') {
+    doc = document;
+  } else if (api === 'happydom') {
+    doc = happyDoc;
+  } else if (api === 'linkedom') {
+    doc = linkedDoc;
+  } else {
+    doc = patchedDoc;
+  }
+  const i = Math.round(Math.random()) * 4 + 5;
   const id = `p${i}-9-9`;
   const res = doc.getElementById(id).closest(selector);
   switch (result) {
@@ -277,11 +331,29 @@ const parentNodeQuerySelectorRandom = (api, selector, result) => {
   } else {
     doc = patchedDoc;
   }
-  const i = Math.floor(Math.random()) * 2 + 5;
+  const i = Math.floor(Math.random() * 10);
   const id = `box${i}`;
   const node = doc.getElementById(id);
   const res = node.querySelector(selector);
   if (res?.id !== `${result}${i}-0-0`) {
+    throw new Error('result does not match.');
+  }
+};
+
+const parentNodeQuerySelectorRandom2 = (api, selector, result) => {
+  let doc;
+  if (api === 'jsdom') {
+    doc = document;
+  } else if (api === 'happydom') {
+    doc = happyDoc;
+  } else if (api === 'linkedom') {
+    doc = linkedDoc;
+  } else {
+    doc = patchedDoc;
+  }
+  const node = Math.round(Math.random()) > 0 ? doc : doc.body;
+  const res = node.querySelector(selector);
+  if (res?.id !== result) {
     throw new Error('result does not match.');
   }
 };
@@ -304,16 +376,17 @@ const parentNodeQuerySelector = (api, selector, result) => {
 };
 
 const parentNodeQuerySelectorAll = (api, selector, result) => {
-  let node;
+  let doc;
   if (api === 'jsdom') {
-    node = document;
+    doc = document;
   } else if (api === 'happydom') {
-    node = happyDoc;
+    doc = happyDoc;
   } else if (api === 'linkedom') {
-    node = linkedDoc;
+    doc = linkedDoc;
   } else {
-    node = patchedDoc;
+    doc = patchedDoc;
   }
+  const node = Math.round(Math.random()) > 0 ? doc : doc.body;
   const res = node.querySelectorAll(selector);
   if (res.length !== result) {
     throw new Error('result does not match.');
@@ -366,21 +439,21 @@ suite.on('start', () => {
 }).add(`patched-jsdom matches('${selectors[5]}')`, () => {
   elementMatchesRandom('patched-jsdom', selectors[5], 'p');
 }).add(`jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[9], 'p');
+  elementMatchesRandom2('jsdom', selectors[9], 'p');
 }).add(`happydom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('happydom', selectors[9], 'p');
+  elementMatchesRandom2('happydom', selectors[9], 'p');
 }).add(`linkedom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[9], 'p');
+  elementMatchesRandom2('linkedom', selectors[9], 'p');
 }).add(`patched-jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[9], 'p');
+  elementMatchesRandom2('patched-jsdom', selectors[9], 'p');
 }).add(`jsdom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[10], 'div');
+  elementMatchesRandom2('jsdom', selectors[10], 'div');
 }).add(`happydom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom('happydom', selectors[10], 'div');
+  elementMatchesRandom2('happydom', selectors[10], 'div');
 }).add(`linkedom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom('linkedom', selectors[10], 'div');
+  elementMatchesRandom2('linkedom', selectors[10], 'div');
 }).add(`patched-jsdom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[10], 'div');
+  elementMatchesRandom2('patched-jsdom', selectors[10], 'div');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
@@ -398,21 +471,21 @@ suite.on('start', () => {
 }).add(`patched-jsdom closest('${selectors[7]}')`, () => {
   elementClosestRandom('patched-jsdom', selectors[7], 'container');
 }).add(`jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('jsdom', selectors[9], 'p');
+  elementClosestRandom2('jsdom', selectors[9], 'p');
 }).add(`happydom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('happydom', selectors[9], 'p');
+  elementClosestRandom2('happydom', selectors[9], 'p');
 }).add(`linkedom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('linkedom', selectors[9], 'p');
+  elementClosestRandom2('linkedom', selectors[9], 'p');
 }).add(`patched-jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[9], 'p');
+  elementClosestRandom2('patched-jsdom', selectors[9], 'p');
 }).add(`jsdom closest('${selectors[10]}')`, () => {
-  elementClosestRandom('jsdom', selectors[10], 'div');
+  elementClosestRandom2('jsdom', selectors[10], 'div');
 }).add(`happydom closest('${selectors[10]}')`, () => {
-  elementClosestRandom('happydom', selectors[10], 'div');
+  elementClosestRandom2('happydom', selectors[10], 'div');
 }).add(`linkedom closest('${selectors[10]}')`, () => {
-  elementClosestRandom('linkedom', selectors[10], 'div');
+  elementClosestRandom2('linkedom', selectors[10], 'div');
 }).add(`patched-jsdom closest('${selectors[10]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[10], 'div');
+  elementClosestRandom2('patched-jsdom', selectors[10], 'div');
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
@@ -430,21 +503,21 @@ suite.on('start', () => {
 }).add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
   parentNodeQuerySelectorRandom('patched-jsdom', selectors[3], 'p');
 }).add(`jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[9], 'p5-0-0');
+  parentNodeQuerySelectorRandom2('jsdom', selectors[9], 'p5-0-0');
 }).add(`happydom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[9], 'p5-0-0');
+  parentNodeQuerySelectorRandom2('happydom', selectors[9], 'p5-0-0');
 }).add(`linkedom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[9], 'p5-0-0');
+  parentNodeQuerySelectorRandom2('linkedom', selectors[9], 'p5-0-0');
 }).add(`patched-jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[9], 'p5-0-0');
+  parentNodeQuerySelectorRandom2('patched-jsdom', selectors[9], 'p5-0-0');
 }).add(`jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[10], 'div5-0-0');
+  parentNodeQuerySelectorRandom2('jsdom', selectors[10], 'div5-0-0');
 }).add(`happydom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('happydom', selectors[10], 'div5-0-0');
+  parentNodeQuerySelectorRandom2('happydom', selectors[10], 'div5-0-0');
 }).add(`linkedom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('linkedom', selectors[10], 'div5-0-0');
+  parentNodeQuerySelectorRandom2('linkedom', selectors[10], 'div5-0-0');
 }).add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[10], 'div5-0-0');
+  parentNodeQuerySelectorRandom2('patched-jsdom', selectors[10], 'div5-0-0');
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
 }).add(`happydom querySelectorAll('${selectors[0]}')`, () => {
