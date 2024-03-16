@@ -315,9 +315,9 @@ export const filterSelector = selector => {
     // compound:
     // `(?:${type}|(?:${type})?(?:${subclass})+)`
     // nested logical:
-    // `(?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)`
+    // `:(?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)`
     // compoundB:
-    // `(?:${type}|(?:${type})?(?:${subclass}|:${nestedLogical})+)`
+    // `(?:${type}|(?:${type})?(?:${subclass}|${nestedLogical})+)`
     // nst:
     // `(?:first|last|only)-(?:child|of-type)`
     // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
