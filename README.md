@@ -111,7 +111,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo$="bar"\]|✓| |
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
-|E:defined|✓| |
+|E:defined|Partially supported|MathML is not yet supported.|
 |E:dir(ltr)|✓| |
 |E:lang(en)|Partially supported|Comma-separated list of language codes, e.g. `:lang(en, fr)`, is not yet supported.|
 |E:any&#8209;link|✓| |
