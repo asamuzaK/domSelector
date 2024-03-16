@@ -2339,11 +2339,7 @@ describe('local wpt test cases', () => {
       </section>`;
       document.body.innerHTML = html;
       window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {
-          constructor() {
-            super();
-          }
-        });
+        class ElucidateLate extends window.HTMLElement {});
       const node = document.getElementById('a1');
       const res = node.matches(':defined');
       assert.isTrue(res, 'result');
@@ -2362,11 +2358,7 @@ describe('local wpt test cases', () => {
       </section>`;
       document.body.innerHTML = html;
       window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {
-          constructor() {
-            super();
-          }
-        });
+        class ElucidateLate extends window.HTMLElement {});
       const node = document.getElementById('b1');
       const res = node.matches(':defined + #b1');
       assert.isTrue(res, 'result');
@@ -2385,16 +2377,11 @@ describe('local wpt test cases', () => {
       </section>`;
       document.body.innerHTML = html;
       window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {
-          constructor() {
-            super();
-          }
-        });
+        class ElucidateLate extends window.HTMLElement {});
       const node = document.getElementById('c1');
       const res = node.matches(':defined > #c1');
       assert.isTrue(res, 'result');
     });
-
 
     it('should get matched node', () => {
       const html = `<section id="container">
@@ -2409,11 +2396,7 @@ describe('local wpt test cases', () => {
       </section>`;
       document.body.innerHTML = html;
       window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {
-          constructor() {
-            super();
-          }
-        });
+        class ElucidateLate extends window.HTMLElement {});
       const node = document.getElementById('d1');
       const res = node.matches('div + :defined + * #d1');
       assert.isTrue(res, 'result');
