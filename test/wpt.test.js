@@ -95,15 +95,17 @@ describe('local wpt test cases', () => {
       };
     }
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
+    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
@@ -2303,6 +2305,101 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('output_test');
       const res = node.matches(':invalid');
       assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('css/selectors/invalidation/defined.html', () => {
+    it('should not match', () => {
+      const html = `<section id="container">
+        <elucidate-late id="a1"></elucidate-late>
+        <div id="b1"></div>
+        <elucidate-late>
+          <div id="c1"></div>
+        </elucidate-late>
+        <div>
+          <div id="d1"></div>
+        </div>
+      </section>`;
+      document.body.innerHTML = html;
+      const node = document.getElementById('a1');
+      const res = node.matches(':defined');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `<section id="container">
+        <elucidate-late id="a1"></elucidate-late>
+        <div id="b1"></div>
+        <elucidate-late>
+          <div id="c1"></div>
+        </elucidate-late>
+        <div>
+          <div id="d1"></div>
+        </div>
+      </section>`;
+      document.body.innerHTML = html;
+      window.customElements.define('elucidate-late',
+        class ElucidateLate extends window.HTMLElement {});
+      const node = document.getElementById('a1');
+      const res = node.matches(':defined');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `<section id="container">
+        <elucidate-late id="a1"></elucidate-late>
+        <div id="b1"></div>
+        <elucidate-late>
+          <div id="c1"></div>
+        </elucidate-late>
+        <div>
+          <div id="d1"></div>
+        </div>
+      </section>`;
+      document.body.innerHTML = html;
+      window.customElements.define('elucidate-late',
+        class ElucidateLate extends window.HTMLElement {});
+      const node = document.getElementById('b1');
+      const res = node.matches(':defined + #b1');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `<section id="container">
+        <elucidate-late id="a1"></elucidate-late>
+        <div id="b1"></div>
+        <elucidate-late>
+          <div id="c1"></div>
+        </elucidate-late>
+        <div>
+          <div id="d1"></div>
+        </div>
+      </section>`;
+      document.body.innerHTML = html;
+      window.customElements.define('elucidate-late',
+        class ElucidateLate extends window.HTMLElement {});
+      const node = document.getElementById('c1');
+      const res = node.matches(':defined > #c1');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `<section id="container">
+        <elucidate-late id="a1"></elucidate-late>
+        <div id="b1"></div>
+        <elucidate-late>
+          <div id="c1"></div>
+        </elucidate-late>
+        <div>
+          <div id="d1"></div>
+        </div>
+      </section>`;
+      document.body.innerHTML = html;
+      window.customElements.define('elucidate-late',
+        class ElucidateLate extends window.HTMLElement {});
+      const node = document.getElementById('d1');
+      const res = node.matches('div + :defined + * #d1');
+      assert.isTrue(res, 'result');
     });
   });
 
