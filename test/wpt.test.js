@@ -6,6 +6,7 @@
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it, xit } from 'mocha';
+import { sleep } from '../scripts/common.js';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
@@ -2168,7 +2169,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/focus-display-none-001.html', () => {
-    it('should match', () => {
+    it('should match', async () => {
       const html = `<div id="wrapper">
         <input id="input">
       </div>
@@ -2178,6 +2179,22 @@ describe('local wpt test cases', () => {
       node.focus();
       assert.isTrue(node.matches(':focus'), 'before');
       node.style.display = 'none';
+      await sleep(100);
+      node.focus();
+      assert.isFalse(node.matches(':focus'), 'after');
+    });
+
+    it('should match', async () => {
+      const html = `<div id="wrapper">
+        <input id="input">
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('input');
+      node.focus();
+      assert.isTrue(node.matches(':focus'), 'before');
+      node.parentNode.style.display = 'none';
+      await sleep(100);
       node.focus();
       assert.isFalse(node.matches(':focus'), 'after');
     });
