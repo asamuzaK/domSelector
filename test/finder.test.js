@@ -5,7 +5,7 @@
 /* api */
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
@@ -6684,6 +6684,24 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    // NOTE: not implemented in jsdom
+    xit('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node =
+        document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         children: null,
@@ -6699,6 +6717,37 @@ describe('Finder', () => {
       assert.deepEqual([...res], [
         node
       ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'foo');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElementNS('http://www.example.com', 'foo');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {

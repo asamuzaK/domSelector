@@ -1508,7 +1508,9 @@ export class Finder {
             if (this.#window.customElements.get(localName)) {
               matched.add(node);
             }
-          } else if (node instanceof this.#window.Element) {
+          // NOTE: MathMLElement not implemented in jsdom
+          } else if (node instanceof this.#window.HTMLElement ||
+                     node instanceof this.#window.SVGElement) {
             matched.add(node);
           }
           break;
