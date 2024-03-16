@@ -111,7 +111,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo$="bar"\]|✓| |
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
-|E:defined|Partially supported|MathML is not yet supported.|
+|E:defined|Partially supported|Matching with MathML is not yet supported.|
 |E:dir(ltr)|✓| |
 |E:lang(en)|Partially supported|Comma-separated list of language codes, e.g. `:lang(en, fr)`, is not yet supported.|
 |E:any&#8209;link|✓| |
@@ -130,7 +130,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:focus|✓| |
 |E:focus&#8209;within|✓| |
 |E:focus&#8209;visible|Unsupported| |
-|E:open<br>E:closed|Partially supported|Matching on &lt;select&gt;, e.g. `select:open`, is not supported.|
+|E:open<br>E:closed|Partially supported|Matching with &lt;select&gt;, e.g. `select:open`, is not supported.|
 |E:enabled<br>E:disabled|✓| |
 |E:read&#8209;write<br>E:read&#8209;only|✓| |
 |E:placeholder&#8209;shown|✓| |
