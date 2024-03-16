@@ -1508,7 +1508,7 @@ export class Finder {
             if (this.#window.customElements.get(localName)) {
               matched.add(node);
             }
-          } else if (node instanceof this.#window.HTMLElement) {
+          } else if (node instanceof this.#window.Element) {
             matched.add(node);
           }
           break;

@@ -6684,6 +6684,23 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,
