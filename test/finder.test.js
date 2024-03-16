@@ -6554,6 +6554,136 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('asdf');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      window.customElements.define('sw-rey',
+        class extends window.HTMLElement {});
+      const node = document.createElement('sw-rey');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      window.customElements.define('sw-finn',
+        class extends window.HTMLElement {}, { extends: 'p' });
+      const node = document.createElement('p');
+      node.setAttribute('is', 'sw-finn');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('sw-han');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      node.setAttribute('is', 'sw-luke');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      node.setAttribute('is', 'asdf');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'defined',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      window.customElements.define('foo-', class extends window.HTMLElement {});
+      const node = document.createElement('foo-');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':defined', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,
@@ -6642,36 +6772,6 @@ describe('Finder', () => {
       });
       assert.throws(() => finder._matchPseudoClassSelector(leaf, node),
         DOMException, 'Unsupported pseudo-class :active');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
-      };
-      const node = document.createElement('div');
-      document.getElementById('div0').appendChild(node);
-      const finder = new Finder(window);
-      finder._setup(':defined', node);
-      const res = finder._matchPseudoClassSelector(leaf, node);
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should throw', () => {
-      const leaf = {
-        children: null,
-        name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
-      };
-      const node = document.createElement('div');
-      document.getElementById('div0').appendChild(node);
-      const finder = new Finder(window);
-      finder._setup(':defined', node, {
-        warn: true
-      });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node),
-        DOMException, 'Unsupported pseudo-class :defined');
     });
 
     // unknown

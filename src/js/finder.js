@@ -1497,6 +1497,22 @@ export class Finder {
           }
           break;
         }
+        case 'defined': {
+          const attr = node.getAttribute('is');
+          if (attr) {
+            if (isCustomElementName(attr) &&
+                this.#window.customElements.get(attr)) {
+              matched.add(node);
+            }
+          } else if (isCustomElementName(localName)) {
+            if (this.#window.customElements.get(localName)) {
+              matched.add(node);
+            }
+          } else if (node instanceof this.#window.HTMLElement) {
+            matched.add(node);
+          }
+          break;
+        }
         case 'host':
         case 'host-context': {
           // ignore
@@ -1518,7 +1534,6 @@ export class Finder {
         case 'blank':
         case 'buffering':
         case 'current':
-        case 'defined':
         case 'focus-visible':
         case 'fullscreen':
         case 'future':
