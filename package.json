@@ -43,7 +43,7 @@
     "eslint-plugin-unicorn": "^51.0.1",
     "happy-dom": "^13.8.6",
     "jsdom": "^24.0.0",
-    "linkedom": "^0.16.9",
+    "linkedom": "^0.16.10",
     "mocha": "^10.3.0",
     "sinon": "^17.0.1",
     "typescript": "^5.4.2",
