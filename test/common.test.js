@@ -5,7 +5,7 @@ import { describe, it } from 'mocha';
 
 /* test */
 import {
-  getType, isString, logErr, logMsg, logWarn, throwErr
+  getType, isString, logErr, logMsg, logWarn, sleep, throwErr
 } from '../scripts/common.js';
 
 describe('getType', () => {
@@ -100,5 +100,41 @@ describe('throwErr', () => {
   it('should throw', () => {
     const e = new Error('Error');
     assert.throws(() => throwErr(e));
+  });
+});
+
+describe('sleep', () => {
+  it('should resolve even if no argument given', async () => {
+    const fake = sinon.fake();
+    const fake2 = sinon.fake();
+    await sleep().then(fake).catch(fake2);
+    assert.strictEqual(fake.callCount, 1);
+    assert.strictEqual(fake2.callCount, 0);
+  });
+
+  it('should get null if 1st argument is not integer', async () => {
+    const res = await sleep('foo');
+    assert.isNull(res);
+  });
+
+  it('should get null if 1st argument is not positive integer', async () => {
+    const res = await sleep(-1);
+    assert.isNull(res);
+  });
+
+  it('should resolve', async () => {
+    const fake = sinon.fake();
+    const fake2 = sinon.fake();
+    await sleep(1).then(fake).catch(fake2);
+    assert.strictEqual(fake.callCount, 1);
+    assert.strictEqual(fake2.callCount, 0);
+  });
+
+  it('should reject', async () => {
+    const fake = sinon.fake();
+    const fake2 = sinon.fake();
+    await sleep(1, true).then(fake).catch(fake2);
+    assert.strictEqual(fake.callCount, 0);
+    assert.strictEqual(fake2.callCount, 1);
   });
 });
