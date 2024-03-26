@@ -121,7 +121,6 @@ const filter = testPath => {
     'nth-of-type-namespace.html',
     'placeholder-shown.html',
     'user-invalid.html',
-    'user-valid-user-invalid-invalidation.html',
     'user-valid.html',
     'webkit-pseudo-element.html',
     'valid-invalid-form-fieldset.html'

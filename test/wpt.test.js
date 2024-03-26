@@ -95,130 +95,670 @@ describe('local wpt test cases', () => {
       };
     }
   };
-  let window, document;
+  let document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
-    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
-    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
     }
   });
 
-  describe('dom/nodes/ParentNode-querySelector-All.html', () => {
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelector('[class= space unquoted ]'),
-        'Invalid selector [class=space unquoted]', 'message');
-    });
-
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelector('div:example'),
-        'Unknown pseudo-class :example');
-    });
-
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelectorAll('div:example'),
-        'Unknown pseudo-class :example');
-    });
-
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelector('ns|div'),
-        'Undeclared namespace ns');
-    });
-
-    it('should throw', () => {
-      const node = document.createElement('div');
-      assert.throws(() => node.querySelector(':not(ns|div)'),
-        'Undeclared namespace ns');
-    });
-
-    it('should get matched node(s)', () => {
-      const html = `
-        <div id="root">
-          <div id="descendant">
-            <div id="descendant-div1" class="descendant-div1">
-              <div id="descendant-div2" class="descendant-div2">
-                <div id="descendant-div3" class="descendant-div3">
-                </div>
-              </div>
-            </div>
-            <div id="descendant-div4" class="descendant-div4"></div>
-          </div>
-        </div>
-      `;
-      document.body.innerHTML = html;
-      const root = document.getElementById('root');
-      const node = document.getElementById('descendant-div3');
-      const clone = root.cloneNode(true);
-      document.body.appendChild(clone);
-      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
-    });
-
+  describe('css/css-scoping/host-dom-001.html', () => {
     it('should not match', () => {
-      const res = document.querySelectorAll('::slotted(foo)');
-      assert.deepEqual(res, [], 'result');
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = node.matches(':host');
+      assert.isFalse(res, 'result');
     });
 
-    it('should not match', () => {
-      const res = document.querySelectorAll('::slotted(foo');
-      assert.deepEqual(res, [], 'result');
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.firstElementChild.matches(':host div');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.querySelector(':host div');
+      assert.deepEqual(res, root.firstElementChild, 'result');
     });
   });
 
-  describe('dom/nodes/ParentNode-querySelector-All-content.xht', () => {
-    it('should get matched node(s)', () => {
-      const html = `
-        <ul id="id-ul1">
-          <li id="id-li-duplicate"></li>
-          <li id="id-li-duplicate"></li>
-          <li id="id-li-duplicate"></li>
-          <li id="id-li-duplicate"></li>
-        </ul>
+  describe('css/css-scoping/host-is-001.html', () => {
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).innerHTML = `
+        <div class="nested"></div>
       `;
-      document.body.innerHTML = html;
-      const node = document.getElementById('id-ul1');
-      const res = document.querySelectorAll('#id-li-duplicate');
-      assert.deepEqual(res, [
-        node.firstElementChild,
-        node.firstElementChild.nextElementSibling,
-        node.firstElementChild.nextElementSibling.nextElementSibling,
-        node.lastElementChild
-      ], 'result');
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host) .nested');
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-is-003.html', () => {
+    it('should not match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({ mode: 'open' }).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host(#not-host), #host) .nested');
+      assert.isFalse(res, 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const html = `
-        <div id="descendant">
-          <div id="descendant-div1" class="descendant-div1">
-            <div id="descendant-div2" class="descendant-div2">
-              <div id="descendant-div3" class="descendant-div3">
-              </div>
-            </div>
-          </div>
-          <div id="descendant-div4" class="descendant-div4"></div>
-        </div>
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({ mode: 'open' }).innerHTML = `
+        <div class="nested"></div>
       `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.matches(':is(:host(#host)) .nested');
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-multiple-001.html', () => {
+    it('should match', () => {
+      const host = document.createElement('div');
+      host.id = 'host';
+      host.attachShadow({ mode: 'open' }).innerHTML = `
+        <div class="nested"></div>
+      `;
+      const node = host.shadowRoot.firstElementChild;
+      const res = node.closest(':host:host');
+      assert.deepEqual(res, host.shadowRoot, 'result');
+    });
+  });
+
+  describe('css/css-scoping/slotted-matches.html', () => {
+    it('should not match', () => {
+      const host = document.createElement('div');
+      const node = document.createElement('div');
+      node.id = 'slotted';
+      host.id = 'host';
+      host.appendChild(node);
+      document.body.appendChild(host);
+      host.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
+      const res = node.matches('::slotted(div)');
+      assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('css/selectors/i18n/', () => {
+    it('css3-selectors-lang-001.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
       document.body.innerHTML = html;
-      const node = document.getElementById('descendant-div3');
-      const root = document.documentElement;
-      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-002.html, should match', () => {
+      const html =
+        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-004.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-005.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-006.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es-MX)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-007.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es-MX)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-008.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(en-GB)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-009.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(en-GB)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-010.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(en-GB)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-011.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(az-Arab-IR)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-012.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(az-Arab-IR)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-014.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(cs-CZ)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-015.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(az-Arab-IR)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-016.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches('#box:lang(es)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-021.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-022.html, should not match', () => {
+      const html =
+        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-024.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-025.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-026.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es-MX']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-027.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-028.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='en-GB']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-029.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='en-GB']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-030.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='en-GB']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-031.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='az-Arab-IR']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-032.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='az-Arab-IR']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-034.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='cs-CZ']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-035.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='az-Arab-IR']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-036.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang|='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-041.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-042.html, should not match', () => {
+      const html =
+        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-044.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-045.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-046.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es-MX']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-047.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-048.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='en-GB']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-049.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='en-GB']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-050.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='en-GB']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-051.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='az-Arab-IR']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-052.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='az-Arab-IR']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-054.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='cs-CZ']");
+      assert.isFalse(res, 'result');
+    });
+
+    it('css3-selectors-lang-055.html, should match', () => {
+      const html =
+        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='az-Arab-IR']");
+      assert.isTrue(res, 'result');
+    });
+
+    it('css3-selectors-lang-056.html, should not match', () => {
+      const html =
+        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('box');
+      const res = node.matches("#box[lang='es']");
+      assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('css/selectors/selectors-4/', () => {
+    it('lang-007.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-CH">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("*-CH")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-008.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("*-Latn")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-009.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("fr-FR")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-010.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("*-FR")');
+      assert.isTrue(res, 'result');
+    });
+
+    // FIXME: not yet supported
+    xit('lang-011.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("fr", "nl", "de")');
+      assert.isTrue(res, 'result');
+    });
+
+    // FIXME: not yet supported
+    xit('lang-012.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(fr, nl, de)');
+      assert.isTrue(res, 'result');
+    });
+
+    // FIXME: not yet supported
+    xit('lang-013.html, should not match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(fr, nl, 0, de)');
+      assert.isFalse(res, 'result');
+    });
+
+    // FIXME: CSSTree throws
+    xit('lang-014.html, should not match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="0">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(0)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('lang-015.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(\\*-FR)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-016.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-FR-x-foobar">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(fr)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-017.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR-x-foobar">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang(fr-x-foobar)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-018.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr-Latn-FR-x-foobar">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("*-x-foobar")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-019.html, should not match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="fr">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("fr-x-foobar")');
+      assert.isFalse(res, 'result');
+    });
+
+    it('lang-020.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="iw-ase-jpan-basiceng">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("iw")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-021.html, should match', () => {
+      const html =
+        '<div class="test" lang="en-GB-oed"><span><span id="target">This should be green</span></span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches('span span:lang("*-gb")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-022.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="i-navajo">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("i-navajo")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-023.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="x-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("x")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-024.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="art-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("art")');
+      assert.isTrue(res, 'result');
+    });
+
+    it('lang-025.html, should match', () => {
+      const html =
+        '<div class="test"><span id="target" lang="art-x-lojban">This should be green</span></div>';
+      document.body.innerHTML = html;
+      const node = document.getElementById('target');
+      const res = node.matches(':lang("art")');
+      assert.isTrue(res, 'result');
     });
   });
 
@@ -918,6 +1458,38 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/focus-display-none-001.html', () => {
+    it('should match', async () => {
+      const html = `<div id="wrapper">
+        <input id="input">
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('input');
+      node.focus();
+      assert.isTrue(node.matches(':focus'), 'before');
+      node.style.display = 'none';
+      await sleep(100);
+      node.focus();
+      assert.isFalse(node.matches(':focus'), 'after');
+    });
+
+    it('should match', async () => {
+      const html = `<div id="wrapper">
+        <input id="input">
+      </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('input');
+      node.focus();
+      assert.isTrue(node.matches(':focus'), 'before');
+      node.parentNode.style.display = 'none';
+      await sleep(100);
+      node.focus();
+      assert.isFalse(node.matches(':focus'), 'after');
+    });
+  });
+
   describe('css/selectors/has-argument-with-explicit-scope.html', () => {
     const html = `
     <main>
@@ -1485,720 +2057,44 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('css/selectors/i18n/', () => {
-    it('css3-selectors-lang-001.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
+  describe('css/selectors/scope-selector.html', () => {
+    it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
+      const html = '<div id=\'shadowHost\'></div>';
       document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-002.html, should match', () => {
-      const html =
-        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-004.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-005.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-006.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es-MX)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-007.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es-MX)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-008.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(en-GB)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-009.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(en-GB)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-010.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(en-GB)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-011.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(az-Arab-IR)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-012.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(az-Arab-IR)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-014.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(cs-CZ)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-015.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(az-Arab-IR)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-016.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches('#box:lang(es)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-021.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-022.html, should not match', () => {
-      const html =
-        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-024.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-025.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-026.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es-MX']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-027.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-028.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='en-GB']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-029.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='en-GB']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-030.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='en-GB']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-031.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='az-Arab-IR']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-032.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='az-Arab-IR']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-034.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='cs-CZ']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-035.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='az-Arab-IR']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-036.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang|='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-041.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-042.html, should not match', () => {
-      const html =
-        '<div class="test" lang="es"><div id="box">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-044.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="ES">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-045.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es-MX">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-046.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es-MX']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-047.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="mx-es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-048.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='en-GB']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-049.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-GB-scouse">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='en-GB']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-050.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="en-US">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='en-GB']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-051.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-Arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='az-Arab-IR']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-052.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='az-Arab-IR']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-054.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="cs-Latn-CZ">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='cs-CZ']");
-      assert.isFalse(res, 'result');
-    });
-
-    it('css3-selectors-lang-055.html, should match', () => {
-      const html =
-        '<div class="test"><div id="box" lang="az-arab-IR">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='az-Arab-IR']");
-      assert.isTrue(res, 'result');
-    });
-
-    it('css3-selectors-lang-056.html, should not match', () => {
-      const html =
-        '<div class="test"><div id="box" xml:lang="es">&#xA0;</div></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('box');
-      const res = node.matches("#box[lang='es']");
-      assert.isFalse(res, 'result');
-    });
-  });
-
-  describe('css/selectors/invalidation/', () => {
-    it('host-pseudo-class-in-has.html, should match', () => {
-      const parent = document.createElement('div');
-      const host = document.createElement('div');
-      host.id = 'host';
-      host.classList.add('a');
-      parent.id = 'host_parent';
-      parent.appendChild(host);
-      document.body.appendChild(parent);
-      const shadow = host.attachShadow({ mode: 'open' });
-      shadow.innerHTML = `
-        <div class="foo">
-          <div id="subject1" class="subject">
-            <div class="bar"></div>
-          </div>
-        </div>
-        <div>
-          <div class="foo">
-            <div id="subject2" class="subject">
-              <div class="bar"></div>
-            </div>
-          </div>
-        </div>
-      `;
-      const node1 = shadow.getElementById('subject1');
-      const node2 = shadow.getElementById('subject2');
-      assert.isTrue(node1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
-        'result1');
-      assert.isTrue(node2.matches('.subject:has(:is(:host(.a) .bar))'),
-        'result2');
-    });
-  });
-
-  describe('css/selectors/selectors-4/', () => {
-    it('lang-007.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-CH">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("*-CH")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-008.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("*-Latn")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-009.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("fr-FR")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-010.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("*-FR")');
-      assert.isTrue(res, 'result');
-    });
-
-    // FIXME: not yet supported
-    xit('lang-011.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("fr", "nl", "de")');
-      assert.isTrue(res, 'result');
-    });
-
-    // FIXME: not yet supported
-    xit('lang-012.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(fr, nl, de)');
-      assert.isTrue(res, 'result');
-    });
-
-    // FIXME: not yet supported
-    xit('lang-013.html, should not match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(fr, nl, 0, de)');
-      assert.isFalse(res, 'result');
-    });
-
-    // FIXME: CSSTree throws
-    xit('lang-014.html, should not match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="0">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(0)');
-      assert.isFalse(res, 'result');
-    });
-
-    it('lang-015.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(\\*-FR)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-016.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-FR-x-foobar">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(fr)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-017.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR-x-foobar">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang(fr-x-foobar)');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-018.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr-Latn-FR-x-foobar">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("*-x-foobar")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-019.html, should not match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="fr">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("fr-x-foobar")');
-      assert.isFalse(res, 'result');
-    });
-
-    it('lang-020.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="iw-ase-jpan-basiceng">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("iw")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-021.html, should match', () => {
-      const html =
-        '<div class="test" lang="en-GB-oed"><span><span id="target">This should be green</span></span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches('span span:lang("*-gb")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-022.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="i-navajo">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("i-navajo")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-023.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="x-lojban">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("x")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-024.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="art-lojban">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("art")');
-      assert.isTrue(res, 'result');
-    });
-
-    it('lang-025.html, should match', () => {
-      const html =
-        '<div class="test"><span id="target" lang="art-x-lojban">This should be green</span></div>';
-      document.body.innerHTML = html;
-      const node = document.getElementById('target');
-      const res = node.matches(':lang("art")');
-      assert.isTrue(res, 'result');
-    });
-  });
-
-  describe('css/css-scoping/host-dom-001.html', () => {
-    it('should not match', () => {
-      const node = document.createElement('div');
-      node.id = 'host';
-      document.body.appendChild(node);
-      const root = node.attachShadow({ mode: 'open' });
-      root.innerHTML = '<div></div>';
-      const res = node.matches(':host');
-      assert.isFalse(res, 'result');
-    });
-
-    it('should match', () => {
-      const node = document.createElement('div');
-      node.id = 'host';
-      document.body.appendChild(node);
-      const root = node.attachShadow({ mode: 'open' });
-      root.innerHTML = '<div></div>';
-      const res = root.firstElementChild.matches(':host div');
-      assert.isTrue(res, 'result');
-    });
-
-    it('should match', () => {
-      const node = document.createElement('div');
-      node.id = 'host';
-      document.body.appendChild(node);
-      const root = node.attachShadow({ mode: 'open' });
-      root.innerHTML = '<div></div>';
-      const res = root.querySelector(':host div');
-      assert.deepEqual(res, root.firstElementChild, 'result');
-    });
-  });
-
-  describe('css/css-scoping/host-is-001.html', () => {
-    it('should match', () => {
-      const host = document.createElement('div');
-      host.attachShadow({ mode: 'open' }).innerHTML = `
-        <div class="nested"></div>
-      `;
-      const node = host.shadowRoot.firstElementChild;
-      const res = node.matches(':is(:host) .nested');
-      assert.isTrue(res, 'result');
-    });
-  });
-
-  describe('css/css-scoping/host-is-003.html', () => {
-    it('should not match', () => {
-      const host = document.createElement('div');
-      host.id = 'host';
-      host.attachShadow({ mode: 'open' }).innerHTML = `
-        <div class="nested"></div>
-      `;
-      const node = host.shadowRoot.firstElementChild;
-      const res = node.matches(':is(:host(#not-host), #host) .nested');
-      assert.isFalse(res, 'result');
-    });
-
-    it('should match', () => {
-      const host = document.createElement('div');
-      host.id = 'host';
-      host.attachShadow({ mode: 'open' }).innerHTML = `
-        <div class="nested"></div>
-      `;
-      const node = host.shadowRoot.firstElementChild;
-      const res = node.matches(':is(:host(#host)) .nested');
-      assert.isTrue(res, 'result');
-    });
-  });
-
-  describe('css/css-scoping/host-multiple-001.html', () => {
-    it('should match', () => {
-      const host = document.createElement('div');
-      host.id = 'host';
-      host.attachShadow({ mode: 'open' }).innerHTML = `
-        <div class="nested"></div>
-      `;
-      const node = host.shadowRoot.firstElementChild;
-      const res = node.closest(':host:host');
-      assert.deepEqual(res, host.shadowRoot, 'result');
-    });
-  });
-
-  describe('css/css-scoping/slotted-matches.html', () => {
-    it('should not match', () => {
-      const host = document.createElement('div');
-      const node = document.createElement('div');
-      node.id = 'slotted';
-      host.id = 'host';
-      host.appendChild(node);
-      document.body.appendChild(host);
-      host.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
-      const res = node.matches('::slotted(div)');
-      assert.isFalse(res, 'result');
-    });
-  });
-
-  describe('css/selectors/focus-display-none-001.html', () => {
-    it('should match', async () => {
-      const html = `<div id="wrapper">
-        <input id="input">
-      </div>
-      `;
-      document.body.innerHTML = html;
-      const node = document.getElementById('input');
-      node.focus();
-      assert.isTrue(node.matches(':focus'), 'before');
-      node.style.display = 'none';
-      await sleep(100);
-      node.focus();
-      assert.isFalse(node.matches(':focus'), 'after');
-    });
-
-    it('should match', async () => {
-      const html = `<div id="wrapper">
-        <input id="input">
-      </div>
-      `;
-      document.body.innerHTML = html;
-      const node = document.getElementById('input');
-      node.focus();
-      assert.isTrue(node.matches(':focus'), 'before');
-      node.parentNode.style.display = 'none';
-      await sleep(100);
-      node.focus();
-      assert.isFalse(node.matches(':focus'), 'after');
+      const shadowHost = document.getElementById('shadowHost');
+      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(document.createElement('div'));
+
+      const res1 = shadowRoot.querySelectorAll(':scope > div');
+      assert.deepEqual(res1, [], 'should not match in shadow root');
+
+      const documentFragment = document.createDocumentFragment();
+      documentFragment.appendChild(document.createElement('div'));
+      const res2 = documentFragment.querySelectorAll(':scope > div');
+      assert.deepEqual(res2, [], 'should not match in document fragment');
+
+      const res3 = shadowRoot.firstChild.querySelector(':scope');
+      assert.isNull(res3, 'should not match');
+      const res4 = shadowRoot.firstChild.querySelectorAll(':scope');
+      assert.deepEqual(res4, [], 'should not match');
+
+      const res5 = shadowRoot.querySelector(':scope');
+      assert.isNull(res5, 'should not match');
+      const res6 = shadowRoot.querySelectorAll(':scope');
+      assert.deepEqual(res6, [], 'should not match');
+
+      const res7 = documentFragment.querySelector(':scope');
+      assert.isNull(res7, 'should not match');
+      const res8 = documentFragment.querySelectorAll(':scope');
+      assert.deepEqual(res8, [], 'should not match');
+
+      const res9 = document.querySelector(':scope');
+      assert.deepEqual(res9, document.documentElement,
+        'should match the document element');
+      const res10 = document.querySelectorAll(':scope');
+      assert.deepEqual(res10, [
+        document.documentElement
+      ], 'should match the document element');
     });
   });
 
@@ -2249,44 +2145,113 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('css/selectors/scope-selector.html', () => {
-    it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
-      const html = '<div id=\'shadowHost\'></div>';
+  describe('dom/nodes/ParentNode-querySelector-All.html', () => {
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('[class= space unquoted ]'),
+        'Invalid selector [class=space unquoted]', 'message');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('div:example'),
+        'Unknown pseudo-class :example');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelectorAll('div:example'),
+        'Unknown pseudo-class :example');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector('ns|div'),
+        'Undeclared namespace ns');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => node.querySelector(':not(ns|div)'),
+        'Undeclared namespace ns');
+    });
+
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="root">
+          <div id="descendant">
+            <div id="descendant-div1" class="descendant-div1">
+              <div id="descendant-div2" class="descendant-div2">
+                <div id="descendant-div3" class="descendant-div3">
+                </div>
+              </div>
+            </div>
+            <div id="descendant-div4" class="descendant-div4"></div>
+          </div>
+        </div>
+      `;
       document.body.innerHTML = html;
-      const shadowHost = document.getElementById('shadowHost');
-      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
-      shadowRoot.appendChild(document.createElement('div'));
+      const root = document.getElementById('root');
+      const node = document.getElementById('descendant-div3');
+      const clone = root.cloneNode(true);
+      document.body.appendChild(clone);
+      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
 
-      const res1 = shadowRoot.querySelectorAll(':scope > div');
-      assert.deepEqual(res1, [], 'should not match in shadow root');
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo)');
+      assert.deepEqual(res, [], 'result');
+    });
 
-      const documentFragment = document.createDocumentFragment();
-      documentFragment.appendChild(document.createElement('div'));
-      const res2 = documentFragment.querySelectorAll(':scope > div');
-      assert.deepEqual(res2, [], 'should not match in document fragment');
+    it('should not match', () => {
+      const res = document.querySelectorAll('::slotted(foo');
+      assert.deepEqual(res, [], 'result');
+    });
+  });
 
-      const res3 = shadowRoot.firstChild.querySelector(':scope');
-      assert.isNull(res3, 'should not match');
-      const res4 = shadowRoot.firstChild.querySelectorAll(':scope');
-      assert.deepEqual(res4, [], 'should not match');
+  describe('dom/nodes/ParentNode-querySelector-All-content.xht', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <ul id="id-ul1">
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+          <li id="id-li-duplicate"></li>
+        </ul>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('id-ul1');
+      const res = document.querySelectorAll('#id-li-duplicate');
+      assert.deepEqual(res, [
+        node.firstElementChild,
+        node.firstElementChild.nextElementSibling,
+        node.firstElementChild.nextElementSibling.nextElementSibling,
+        node.lastElementChild
+      ], 'result');
+    });
 
-      const res5 = shadowRoot.querySelector(':scope');
-      assert.isNull(res5, 'should not match');
-      const res6 = shadowRoot.querySelectorAll(':scope');
-      assert.deepEqual(res6, [], 'should not match');
-
-      const res7 = documentFragment.querySelector(':scope');
-      assert.isNull(res7, 'should not match');
-      const res8 = documentFragment.querySelectorAll(':scope');
-      assert.deepEqual(res8, [], 'should not match');
-
-      const res9 = document.querySelector(':scope');
-      assert.deepEqual(res9, document.documentElement,
-        'should match the document element');
-      const res10 = document.querySelectorAll(':scope');
-      assert.deepEqual(res10, [
-        document.documentElement
-      ], 'should match the document element');
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="descendant">
+          <div id="descendant-div1" class="descendant-div1">
+            <div id="descendant-div2" class="descendant-div2">
+              <div id="descendant-div3" class="descendant-div3">
+              </div>
+            </div>
+          </div>
+          <div id="descendant-div4" class="descendant-div4"></div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('descendant-div3');
+      const root = document.documentElement;
+      const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
     });
   });
 
@@ -2305,101 +2270,6 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('output_test');
       const res = node.matches(':invalid');
       assert.isFalse(res, 'result');
-    });
-  });
-
-  describe('css/selectors/invalidation/defined.html', () => {
-    it('should not match', () => {
-      const html = `<section id="container">
-        <elucidate-late id="a1"></elucidate-late>
-        <div id="b1"></div>
-        <elucidate-late>
-          <div id="c1"></div>
-        </elucidate-late>
-        <div>
-          <div id="d1"></div>
-        </div>
-      </section>`;
-      document.body.innerHTML = html;
-      const node = document.getElementById('a1');
-      const res = node.matches(':defined');
-      assert.isFalse(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const html = `<section id="container">
-        <elucidate-late id="a1"></elucidate-late>
-        <div id="b1"></div>
-        <elucidate-late>
-          <div id="c1"></div>
-        </elucidate-late>
-        <div>
-          <div id="d1"></div>
-        </div>
-      </section>`;
-      document.body.innerHTML = html;
-      window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {});
-      const node = document.getElementById('a1');
-      const res = node.matches(':defined');
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const html = `<section id="container">
-        <elucidate-late id="a1"></elucidate-late>
-        <div id="b1"></div>
-        <elucidate-late>
-          <div id="c1"></div>
-        </elucidate-late>
-        <div>
-          <div id="d1"></div>
-        </div>
-      </section>`;
-      document.body.innerHTML = html;
-      window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {});
-      const node = document.getElementById('b1');
-      const res = node.matches(':defined + #b1');
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const html = `<section id="container">
-        <elucidate-late id="a1"></elucidate-late>
-        <div id="b1"></div>
-        <elucidate-late>
-          <div id="c1"></div>
-        </elucidate-late>
-        <div>
-          <div id="d1"></div>
-        </div>
-      </section>`;
-      document.body.innerHTML = html;
-      window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {});
-      const node = document.getElementById('c1');
-      const res = node.matches(':defined > #c1');
-      assert.isTrue(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const html = `<section id="container">
-        <elucidate-late id="a1"></elucidate-late>
-        <div id="b1"></div>
-        <elucidate-late>
-          <div id="c1"></div>
-        </elucidate-late>
-        <div>
-          <div id="d1"></div>
-        </div>
-      </section>`;
-      document.body.innerHTML = html;
-      window.customElements.define('elucidate-late',
-        class ElucidateLate extends window.HTMLElement {});
-      const node = document.getElementById('d1');
-      const res = node.matches('div + :defined + * #d1');
-      assert.isTrue(res, 'result');
     });
   });
 
