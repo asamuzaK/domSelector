@@ -30,34 +30,26 @@ const TARGET_SELF = 'self';
 /**
  * Finder
  * NOTE: #ast[i] corresponds to #nodes[i]
- * #ast: [
- *   {
- *     branch: branch[],
- *     collected: boolean,
- *     dir: string|null,
- *     filtered: boolean,
- *     find: boolean
- *   },
- *   {
- *     branch: branch[],
- *     collected: boolean,
- *     dir: string|null,
- *     filtered: boolean,
- *     find: boolean
- *   }
- * ]
- * #nodes: [
- *   [node{}, node{}],
- *   [node{}, node{}, node{}]
- * ]
- * branch[]: [twig{}, twig{}]
- * twig{}: {
- *   combo: leaf{}|null,
- *   leaves: leaves[]
+ * #ast: Array<Ast | undefined>
+ * #nodes: Array<Nodes>
+ * Ast: {
+ *   branch: Array<Branch | undefined>,
+ *   collected: boolean,
+ *   dir: string | null,
+ *   filtered: boolean,
+ *   find: boolean
  * }
- * leaves[]: [leaf{}, leaf{}, leaf{}]
- * leaf{}: CSSTree AST object
- * node{}: Element node
+ * Branch: Array<Twig>
+ * Twig: {
+ *   combo: Leaf | null,
+ *   leaves: Array<Leaf>
+ * }
+ * Leaf: {
+ *   children: Array<Leaf | undefined> | null,
+ *   loc: null,
+ *   type: string
+ * }
+ * Nodes: Array<HTMLElement | undefined>
  */
 export class Finder {
   /* private fields */
