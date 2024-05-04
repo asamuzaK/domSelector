@@ -175,6 +175,8 @@ const selectors = [
   '.box ~ .box',
   '.box > .block',
   '.box .content',
+  ':is(.box > .content, .block > .content)',
+  ':is(.container > .content, .container > .box)',
 ];
 
 /* matcher tests */
@@ -454,6 +456,14 @@ suite.on('start', () => {
   elementMatchesRandom2('linkedom', selectors[10], 'div');
 }).add(`patched-jsdom matches('${selectors[10]}')`, () => {
   elementMatchesRandom2('patched-jsdom', selectors[10], 'div');
+}).add(`jsdom matches('${selectors[15]}')`, () => {
+  elementMatchesRandom2('jsdom', selectors[15], 'p');
+}).add(`happydom matches('${selectors[15]}')`, () => {
+  elementMatchesRandom2('happydom', selectors[15], 'p');
+}).add(`linkedom matches('${selectors[15]}')`, () => {
+  elementMatchesRandom2('linkedom', selectors[15], 'p');
+}).add(`patched-jsdom matches('${selectors[15]}')`, () => {
+  elementMatchesRandom2('patched-jsdom', selectors[15], 'p');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
@@ -486,6 +496,14 @@ suite.on('start', () => {
   elementClosestRandom2('linkedom', selectors[10], 'div');
 }).add(`patched-jsdom closest('${selectors[10]}')`, () => {
   elementClosestRandom2('patched-jsdom', selectors[10], 'div');
+}).add(`jsdom closest('${selectors[16]}')`, () => {
+  elementClosestRandom2('jsdom', selectors[16], 'box');
+}).add(`happydom closest('${selectors[16]}')`, () => {
+  elementClosestRandom2('happydom', selectors[16], 'box');
+}).add(`linkedom closest('${selectors[16]}')`, () => {
+  elementClosestRandom2('linkedom', selectors[16], 'box');
+}).add(`patched-jsdom closest('${selectors[16]}')`, () => {
+  elementClosestRandom2('patched-jsdom', selectors[16], 'box');
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
@@ -518,6 +536,14 @@ suite.on('start', () => {
   parentNodeQuerySelectorRandom2('linkedom', selectors[10], 'div5-0-0');
 }).add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
   parentNodeQuerySelectorRandom2('patched-jsdom', selectors[10], 'div5-0-0');
+}).add(`jsdom querySelector('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorRandom('jsdom', selectors[15], 'p');
+}).add(`happydom querySelector('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorRandom('happydom', selectors[15], 'p');
+}).add(`linkedom querySelector('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorRandom('linkedom', selectors[15], 'p');
+}).add(`patched-jsdom querySelector('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorRandom('patched-jsdom', selectors[15], 'p');
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
 }).add(`happydom querySelectorAll('${selectors[0]}')`, () => {
@@ -550,6 +576,14 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[10], 200);
 }).add(`patched-jsdom querySelectorAll('${selectors[10]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[10], 200);
+}).add(`jsdom querySelectorAll('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[15], 1000);
+}).add(`happydom querySelectorAll('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorAll('happydom', selectors[15], 1000);
+}).add(`linkedom querySelectorAll('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorAll('linkedom', selectors[15], 1000);
+}).add(`patched-jsdom querySelectorAll('${selectors[15]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[15], 1000);
 /*
 }).add(`jsdom matches('${selectors[11]}')`, () => {
   elementMatches('jsdom', selectors[11], false);
