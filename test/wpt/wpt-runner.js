@@ -79,6 +79,7 @@ const setup = window => {
     const res = querySelectorAll(selector, this);
     return res;
   };
+
   window.requestAnimationFrame = function (callback) {
     return callback(30);
   };
