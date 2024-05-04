@@ -110,6 +110,38 @@ describe('local wpt test cases', () => {
     }
   });
 
+  describe('css/css-scoping/host-defined.html', () => {
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.firstElementChild.matches(':host > div');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.firstElementChild.matches(':not(:defined) > div');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('div');
+      node.id = 'host';
+      document.body.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div>';
+      const res = root.firstElementChild.matches(':defined > div');
+      assert.isFalse(res, 'result');
+    });
+  });
+
   describe('css/css-scoping/host-dom-001.html', () => {
     it('should not match', () => {
       const node = document.createElement('div');
