@@ -1517,6 +1517,9 @@ describe('local wpt test cases', () => {
       await sleep(100);
       node.focus();
       assert.isFalse(node.matches(':focus'), 'after');
+      assert.isFalse(document.body.matches(':focus'), 'body');
+      // jsdom fails
+      // assert.isTrue(document.body === document.activeElement, 'active');
     });
 
     it('should match', async () => {
@@ -1532,6 +1535,9 @@ describe('local wpt test cases', () => {
       await sleep(100);
       node.focus();
       assert.isFalse(node.matches(':focus'), 'after');
+      assert.isFalse(document.body.matches(':focus'), 'body');
+      // jsdom fails
+      // assert.isTrue(document.body === document.activeElement, 'active');
     });
   });
 
