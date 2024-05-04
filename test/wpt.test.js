@@ -1220,6 +1220,19 @@ describe('local wpt test cases', () => {
         assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
       }
     });
+
+    it('should get matched node', () => {
+      for (const type of dirDefault) {
+        const rtlParent = document.createElement('div');
+        rtlParent.dir = 'rtl';
+        const input = document.createElement('input');
+        input.type = type;
+        input.setAttribute('dir', 'auto');
+        rtlParent.appendChild(input);
+        assert.isTrue(input.matches(':dir(ltr)'), `${type} ltr`);
+        assert.isFalse(input.matches(':dir(rtl)'), `${type} rtl`);
+      }
+    });
   });
 
   describe('css/selectors/dir-selector-auto.html', () => {

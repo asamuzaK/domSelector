@@ -139,7 +139,9 @@ export const getDirectionality = (node = {}) => {
       let text;
       switch (localName) {
         case 'input': {
-          if (!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
+          if (/^(?:(?:ima|ran)ge|(?:dat|tim)e|c(?:olor|heckbox)|number|radio)$/.test(node.type)) {
+            res = 'ltr';
+          } else if (!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
             text = node.value;
           }
           break;
