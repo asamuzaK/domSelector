@@ -7,28 +7,34 @@ import { DOMSelector } from '../../src/index.js';
 
 const setup = window => {
   const domSelector = new DOMSelector(window);
+
+  const matches = domSelector.matches.bind(domSelector);
   window.Element.prototype.matches = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.matches(selector, this);
+    const res = matches(selector, this);
     return !!res;
   };
+
+  const closest = domSelector.closest.bind(domSelector);
   window.Element.prototype.closest = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.closest(selector, this);
+    const res = closest(selector, this);
     return res ?? null;
   };
+
+  const querySelector = domSelector.querySelector.bind(domSelector);
   window.Document.prototype.querySelector = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelector(selector, this);
+    const res = querySelector(selector, this);
     return res ?? null;
   };
   window.DocumentFragment.prototype.querySelector = function (...args) {
@@ -36,7 +42,7 @@ const setup = window => {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelector(selector, this);
+    const res = querySelector(selector, this);
     return res ?? null;
   };
   window.Element.prototype.querySelector = function (...args) {
@@ -44,15 +50,17 @@ const setup = window => {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelector(selector, this);
+    const res = querySelector(selector, this);
     return res ?? null;
   };
+
+  const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
   window.Document.prototype.querySelectorAll = function (...args) {
     if (!args.length) {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelectorAll(selector, this);
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.DocumentFragment.prototype.querySelectorAll = function (...args) {
@@ -60,7 +68,7 @@ const setup = window => {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelectorAll(selector, this);
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.Element.prototype.querySelectorAll = function (...args) {
@@ -68,7 +76,7 @@ const setup = window => {
       throw new window.TypeError('1 argument required, but only 0 present.');
     }
     const [selector] = args;
-    const res = domSelector.querySelectorAll(selector, this);
+    const res = querySelectorAll(selector, this);
     return res;
   };
   window.requestAnimationFrame = function (callback) {
