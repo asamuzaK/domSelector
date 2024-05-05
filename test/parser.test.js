@@ -183,7 +183,7 @@ describe('create AST from CSS selector', () => {
     });
   });
 
-  describe('should parse', () => {
+  describe('valid selectors', () => {
     it('should get selector list', () => {
       const res = func();
       assert.deepEqual(res, {
