@@ -80,9 +80,12 @@ export const preprocess = (...args) => {
       }
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
-      const codePoint = postHash.codePointAt(0);
       // @see https://drafts.csswg.org/selectors/#id-selectors
       // @see https://drafts.csswg.org/css-syntax-3/#ident-token-diagram
+      if (/^\d$/.test(postHash.substring(0, 1))) {
+        throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
+      }
+      const codePoint = postHash.codePointAt(0);
       if (codePoint === BIT_HYPHEN) {
         if (/^\d$/.test(postHash.substring(1, 2))) {
           throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);

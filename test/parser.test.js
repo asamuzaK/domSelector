@@ -356,14 +356,14 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
-      const res = func('#1\u{2003}2');
+      const res = func('#\\1\u{2003}2');
       assert.deepEqual(res, {
         children: [
           {
             children: [
               {
                 loc: null,
-                name: '1 2',
+                name: '\\1 2',
                 type: SELECTOR_ID
               }
             ],
@@ -842,6 +842,10 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
+      assert.throws(() => func('.123'), DOMException);
+    });
+
+    it('should throw', () => {
       assert.throws(() => func('.-123'), DOMException);
     });
 
@@ -854,6 +858,69 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
+                type: SELECTOR_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('.-foo');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '-foo',
+                type: SELECTOR_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('.\\123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '\\123',
+                type: SELECTOR_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('.-\\123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '-\\123',
                 type: SELECTOR_CLASS
               }
             ],
@@ -960,6 +1027,10 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
+      assert.throws(() => func('#123'), DOMException);
+    });
+
+    it('should throw', () => {
       assert.throws(() => func('#-123'), DOMException);
     });
 
@@ -972,6 +1043,69 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
+                type: SELECTOR_ID
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#-foo');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '-foo',
+                type: SELECTOR_ID
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#\\123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '\\123',
+                type: SELECTOR_ID
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#-\\123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '-\\123',
                 type: SELECTOR_ID
               }
             ],
