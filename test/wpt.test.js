@@ -1510,6 +1510,8 @@ describe('local wpt test cases', () => {
       </div>
       `;
       document.body.innerHTML = html;
+      assert.isTrue(document.body === document.activeElement, 'active');
+      assert.isFalse(document.body.matches(':focus'), 'body');
       const node = document.getElementById('input');
       node.focus();
       assert.isTrue(node.matches(':focus'), 'before');
@@ -1528,6 +1530,8 @@ describe('local wpt test cases', () => {
       </div>
       `;
       document.body.innerHTML = html;
+      assert.isTrue(document.body === document.activeElement, 'active');
+      assert.isFalse(document.body.matches(':focus'), 'body');
       const node = document.getElementById('input');
       node.focus();
       assert.isTrue(node.matches(':focus'), 'before');

@@ -962,7 +962,7 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#content.activeElement) {
+          if (node === this.#content.activeElement && node.tabIndex >= 0) {
             let refNode = node;
             let focus = true;
             while (refNode) {
