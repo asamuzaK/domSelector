@@ -962,7 +962,7 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#content.activeElement) {
+          if (node === this.#content.activeElement && node.tabIndex >= 0) {
             let refNode = node;
             let focus = true;
             while (refNode) {
@@ -991,14 +991,16 @@ export class Finder {
           break;
         }
         case 'focus-within': {
-          let current = this.#content.activeElement;
           let active;
-          while (current) {
-            if (current === node) {
-              active = true;
-              break;
+          let current = this.#content.activeElement;
+          if (current.tabIndex >= 0) {
+            while (current) {
+              if (current === node) {
+                active = true;
+                break;
+              }
+              current = current.parentNode;
             }
-            current = current.parentNode;
           }
           if (active) {
             let refNode = node;
