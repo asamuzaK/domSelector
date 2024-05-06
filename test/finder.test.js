@@ -3397,6 +3397,18 @@ describe('Finder', () => {
         name: 'focus',
         type: SELECTOR_PSEUDO_CLASS
       };
+      const finder = new Finder(window);
+      finder._setup(':focus', document.body);
+      const res = finder._matchPseudoClassSelector(leaf, document.body);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
       const node = document.createElement('button');
       const parent = document.createElement('form');
       parent.appendChild(node);
@@ -3655,6 +3667,18 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const finder = new Finder(window);
+      finder._setup(':focus-within', document.body);
+      const res = finder._matchPseudoClassSelector(leaf, document.body);
       assert.deepEqual([...res], [], 'result');
     });
 
