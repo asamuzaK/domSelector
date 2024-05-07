@@ -970,8 +970,9 @@ export class Finder {
                   refNode.hidden || refNode.hasAttribute('hidden')) {
                 focus = false;
                 break;
-              } else if (refNode.hasAttribute('style')) {
-                const { display, visibility } = refNode.style;
+              } else {
+                const { display, visibility } =
+                  this.#window.getComputedStyle(refNode);
                 focus = !(display === 'none' || visibility === 'hidden');
                 if (!focus) {
                   break;
@@ -1010,8 +1011,9 @@ export class Finder {
                   refNode.hidden || refNode.hasAttribute('hidden')) {
                 focus = false;
                 break;
-              } else if (refNode.hasAttribute('style')) {
-                const { display, visibility } = refNode.style;
+              } else {
+                const { display, visibility } =
+                  this.#window.getComputedStyle(refNode);
                 focus = !(display === 'none' || visibility === 'hidden');
                 if (!focus) {
                   break;
