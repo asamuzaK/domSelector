@@ -139,9 +139,9 @@ export const getDirectionality = (node = {}) => {
       let text;
       switch (localName) {
         case 'input': {
-          if (!node.type || /^(?:(?:butto|hidde)n|(?:emai|te|ur)l|(?:rese|submi|tex)t|password|search)$/.test(node.type)) {
+          if (!node.type || /^(?:button|email|hidden|password|reset|search|submit|tel|text|url)$/.test(node.type)) {
             text = node.value;
-          } else if (/^(?:(?:ima|ran)ge|(?:dat|tim)e|c(?:olor|heckbox)|number|radio)$/.test(node.type)) {
+          } else if (/^(?:checkbox|color|date|image|number|radio|range|time)$/.test(node.type)) {
             res = 'ltr';
           }
           break;
@@ -164,7 +164,7 @@ export const getDirectionality = (node = {}) => {
             if (itemNodeType === TEXT_NODE) {
               text = itemTextContent.trim();
             } else if (itemNodeType === ELEMENT_NODE) {
-              if (!/^(?:bdi|s(?:cript|tyle)|textarea)$/.test(itemLocalName) &&
+              if (!/^(?:bdi|script|style|textarea)$/.test(itemLocalName) &&
                   (!itemDir || !regDir.test(itemDir))) {
                 if (itemLocalName === 'slot') {
                   text = getSlottedTextContent(item);
