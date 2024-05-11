@@ -54,7 +54,7 @@ export const SHOW_ELEMENT = 1;
 export const WALKER_FILTER = 0x501;
 
 /* regexp */
-export const REG_LOGICAL_PSEUDO = /^(?:(?:ha|i)s|not|where)$/;
+export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
 export const REG_SHADOW_HOST = /^host(?:-context)?$/;
 export const REG_SHADOW_MODE = /^(?:close|open)$/;
 export const REG_SHADOW_PSEUDO = /^part|slotted$/;

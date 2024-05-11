@@ -898,14 +898,14 @@ export class Finder {
     } else {
       const regAnchor = /^a(?:rea)?$/;
       const regFormCtrl =
-        /^(?:(?:fieldse|inpu|selec)t|button|opt(?:group|ion)|textarea)$/;
-      const regFormValidity = /^(?:(?:inpu|selec)t|button|form|textarea)$/;
-      const regInteract = /^d(?:etails|ialog)$/;
+        /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
+      const regFormValidity = /^(?:button|form|input|select|textarea)$/;
+      const regInteract = /^(?:details|dialog)$/;
       const regTypeCheck = /^(?:checkbox|radio)$/;
       const regTypeDate = /^(?:date(?:time-local)?|month|time|week)$/;
       const regTypeRange =
-        /(?:(?:rang|tim)e|date(?:time-local)?|month|number|week)$/;
-      const regTypeText = /^(?:(?:emai|te|ur)l|number|password|search|text)$/;
+        /(?:date(?:time-local)?|month|number|range|time|week)$/;
+      const regTypeText = /^(?:email|number|password|search|tel|text|url)$/;
       switch (astName) {
         case 'any-link':
         case 'link': {
