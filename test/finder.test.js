@@ -3880,8 +3880,6 @@ describe('Finder', () => {
       ], 'result');
     });
 
-
-
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
