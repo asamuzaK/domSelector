@@ -58,6 +58,7 @@ export class Finder {
   #content;
   #descendant;
   #document;
+  #event;
   #node;
   #nodes;
   #noexcept;
@@ -120,20 +121,34 @@ export class Finder {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} opt - options
+   * @param {object} [opt.event] - MouseEvent, KeyboardEvent
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - node
    */
   _setup(selector, node, opt = {}) {
-    const { noexcept, warn } = opt;
+    const { event, noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
+    this.#event = this._setEvent(event);
     this.#node = node;
     [this.#content, this.#root, this.#walker] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#walkers = new WeakMap();
     return node;
+  }
+
+  /**
+   * set event
+   * @param {object} event - instance of MouseEvent, KeyboardEvent
+   * @returns {object} - result
+   */
+  _setEvent(event) {
+    return (event instanceof this.#window.MouseEvent ||
+            event instanceof this.#window.KeyboardEvent)
+      ? event
+      : null;
   }
 
   /**

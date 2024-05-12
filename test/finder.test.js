@@ -171,6 +171,43 @@ describe('Finder', () => {
     });
   });
 
+  describe('set event', () => {
+    it('should get null', () => {
+      const finder = new Finder(window);
+      const res = finder._setEvent();
+      assert.isNull(res, 'result');
+    });
+
+    it('should get value', () => {
+      const evt = new window.MouseEvent('mousedown');
+      const finder = new Finder(window);
+      const res = finder._setEvent(evt);
+      assert.deepEqual(res, evt, 'result');
+    });
+
+    // not implemented in jsdom
+    xit('should get value', () => {
+      const evt = new window.PointerEvent('pointerdown');
+      const finder = new Finder(window);
+      const res = finder._setEvent(evt);
+      assert.deepEqual(res, evt, 'result');
+    });
+
+    it('should get value', () => {
+      const evt = new window.KeyboardEvent('keydown');
+      const finder = new Finder(window);
+      const res = finder._setEvent(evt);
+      assert.deepEqual(res, evt, 'result');
+    });
+
+    it('should get null', () => {
+      const evt = new window.FocusEvent('focus');
+      const finder = new Finder(window);
+      const res = finder._setEvent(evt);
+      assert.isNull(res, 'result');
+    });
+  });
+
   describe('correspond ast and nodes', () => {
     it('should throw', () => {
       const finder = new Finder(window);
