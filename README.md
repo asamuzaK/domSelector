@@ -35,6 +35,7 @@ matches - same functionality as [Element.matches()][64]
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
+  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -50,6 +51,7 @@ closest - same functionality as [Element.closest()][65]
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
+  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -65,6 +67,7 @@ querySelector - same functionality as [Document.querySelector()][66], [DocumentF
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
+  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -81,6 +84,7 @@ querySelectorAll - same functionality as [Document.querySelectorAll()][69], [Doc
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
+  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -125,11 +129,11 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:current(s)|Unsupported| |
 |E:past|Unsupported| |
 |E:future|Unsupported| |
-|E:active|Unsupported| |
-|E:hover|Unsupported| |
+|E:active|✓|Enabled if a `mousedown` / `pointerdown` event is passed as an option.|
+|E:hover|✓|Enabled if a `mouseover` / `pointerover` event is passed as an option.|
 |E:focus|✓| |
 |E:focus&#8209;within|✓| |
-|E:focus&#8209;visible|Unsupported| |
+|E:focus&#8209;visible|✓|Enabled if a `keydown` event is passed as an option.|
 |E:open<br>E:closed|Partially supported|Matching with &lt;select&gt;, e.g. `select:open`, is not supported.|
 |E:enabled<br>E:disabled|✓| |
 |E:read&#8209;write<br>E:read&#8209;only|✓| |
