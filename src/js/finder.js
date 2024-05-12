@@ -141,6 +141,7 @@ export class Finder {
 
   /**
    * set event
+   * @private
    * @param {object} event - instance of MouseEvent, KeyboardEvent
    * @returns {object} - result
    */
