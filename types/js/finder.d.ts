@@ -2,6 +2,7 @@ export class Finder {
     constructor(window: object);
     private _onError;
     private _setup;
+    private _setEvent;
     private _correspond;
     private _createTreeWalker;
     private _prepareQuerySelectorWalker;
