@@ -15,8 +15,8 @@ import {
 
 /* constants */
 import {
-  COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE, EMPTY,
-  NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
+  BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
+  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
   SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
   SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
@@ -943,6 +943,22 @@ export class Finder {
           // prevent fingerprinting
           break;
         }
+        case 'hover': {
+          const { target, type } = this.#event ?? {};
+          if ((type === 'mouseover' || type === 'pointerover') &&
+              node.contains(target)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'active': {
+          const { buttons, target, type } = this.#event ?? {};
+          if ((type === 'mousedown' || type === 'pointerdown') &&
+              buttons & BIT_01 && node.contains(target)) {
+            matched.add(node);
+          }
+          break;
+        }
         case 'target': {
           const { hash } = new URL(this.#content.URL);
           if (node.id && hash === `#${node.id}` &&
@@ -976,8 +992,12 @@ export class Finder {
           }
           break;
         }
-        case 'focus': {
-          if (node === this.#content.activeElement && node.tabIndex >= 0) {
+        case 'focus':
+        case 'focus-visible': {
+          const { target, type } = this.#event ?? {};
+          if (node === this.#content.activeElement && node.tabIndex >= 0 &&
+              (astName === 'focus' ||
+               (type === 'keydown' && node.contains(target)))) {
             let refNode = node;
             let focus = true;
             while (refNode) {
@@ -1542,15 +1562,13 @@ export class Finder {
           }
           break;
         }
-        case 'active':
+        // not supported
         case 'autofill':
         case 'blank':
         case 'buffering':
         case 'current':
-        case 'focus-visible':
         case 'fullscreen':
         case 'future':
-        case 'hover':
         case 'modal':
         case 'muted':
         case 'past':
