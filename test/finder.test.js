@@ -7017,6 +7017,82 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    // NOTE: popover api is not supported in jsdom
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'popover-open',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':popover-open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'popover-open',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      node.showPopover = () => {
+        node.style.display = 'block';
+      };
+      node.popover = 'auto';
+      node.style.display = 'none';
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':popover-open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'popover-open',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      node.showPopover = () => {
+        node.style.display = 'block';
+      };
+      node.popover = 'auto';
+      node.style.display = 'none';
+      document.getElementById('div0').appendChild(node);
+      node.showPopover();
+      const finder = new Finder(window);
+      finder._setup(':popover-open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'popover-open',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('p');
+      node.hidePopover = () => {
+        node.style.display = 'none';
+      };
+      node.popover = 'auto';
+      node.style.display = 'block';
+      document.getElementById('div0').appendChild(node);
+      node.hidePopover();
+      const finder = new Finder(window);
+      finder._setup(':popover-open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,

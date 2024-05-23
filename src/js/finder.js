@@ -1547,6 +1547,15 @@ export class Finder {
           }
           break;
         }
+        case 'popover-open': {
+          if (node.popover) {
+            const { display } = this.#window.getComputedStyle(node);
+            if (display !== 'none') {
+              matched.add(node);
+            }
+          }
+          break;
+        }
         case 'host':
         case 'host-context': {
           // ignore
