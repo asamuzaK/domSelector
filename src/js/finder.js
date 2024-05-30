@@ -4,7 +4,7 @@
 
 /* import */
 import isCustomElementName from 'is-potential-custom-element-name';
-import nwsapi from 'nwsapi';
+import nwsapi from '@asamuzakjp/nwsapi';
 import {
   isContentEditable, isInShadowTree, resolveContent, sortNodes
 } from './dom-util.js';
