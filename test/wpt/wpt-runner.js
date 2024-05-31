@@ -124,6 +124,7 @@ const filter = testPath => {
     'has-style-sharing-pseudo-008.html',
     'has-visited-ref.html',
     'has-visited.html',
+    'is-where-error-recovery.html',
     'modal-pseudo-class.html',
     'nth-of-type-namespace.html',
     'placeholder-shown.html',
