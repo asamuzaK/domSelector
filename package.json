@@ -49,6 +49,10 @@
     "typescript": "^5.4.5",
     "wpt-runner": "^5.0.0"
   },
+  "overrides": {
+    "jsdom": "^24.1.0",
+    "nwsapi": "2.2.2"
+  },
   "scripts": {
     "bench": "node benchmark/bench.js",
     "bench-sizzle": "node benchmark/bench-sizzle.js",
