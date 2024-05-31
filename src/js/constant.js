@@ -102,14 +102,18 @@ export const REG_FORM = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
 export const REG_FORM_CTRL =
   /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
 export const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
+export const REG_HEX = /^([\da-f]{1,6}\s?)/i;
 export const REG_INTERACT = /^(?:details|dialog)$/;
+export const REG_INVALID_SELECTOR = /^$|^\s*>|,\s*$/;
 export const REG_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+export const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
 export const REG_LOGICAL_COMPLEX_A =
   new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_A})`);
 export const REG_LOGICAL_COMPLEX_B =
   new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_B})`);
 export const REG_LOGICAL_COMPOUND =
   new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPOUND})`);
+export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
 export const REG_LOGICAL_KEY = new RegExp(`:${LOGICAL_KEY}\\(`);
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
 export const REG_SHADOW_HOST = /^host(?:-context)?$/;

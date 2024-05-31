@@ -8,11 +8,12 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  COMBINATOR, DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_LOGICAL_COMPLEX_A,
-  REG_LOGICAL_COMPLEX_B, REG_LOGICAL_COMPOUND, REG_LOGICAL_KEY,
-  REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
+  COMBINATOR, DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
+  REG_LANG_QUOTED, REG_LOGICAL_COMPLEX_A, REG_LOGICAL_COMPLEX_B,
+  REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, REG_LOGICAL_PSEUDO,
+  REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR,
+  TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
 /**
@@ -29,7 +30,7 @@ export const unescapeSelector = (selector = '') => {
       if (item === '' && i === l - 1) {
         item = U_FFFD;
       } else {
-        const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
+        const hexExists = REG_HEX.exec(item);
         if (hexExists) {
           const [, hex] = hexExists;
           let str;
@@ -127,7 +128,7 @@ export const preprocess = (...args) => {
 export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
-  if (/^$|^\s*>|,\s*$/.test(selector)) {
+  if (REG_INVALID_SELECTOR.test(selector)) {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   let res;
@@ -139,11 +140,10 @@ export const parseSelector = selector => {
     res = toPlainObject(ast);
   } catch (e) {
     const { message } = e;
-    const regEmptyIs = /(:(is|where)\(\s*\))/;
     // workaround for https://github.com/csstree/csstree/issues/265
-    const regLang = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
-    if (message === 'Identifier is expected' && regLang.test(selector)) {
-      const [, lang, range] = regLang.exec(selector);
+    if (message === 'Identifier is expected' &&
+        REG_LANG_QUOTED.test(selector)) {
+      const [, lang, range] = REG_LANG_QUOTED.exec(selector);
       const escapedRange =
         range.replaceAll('*', '\\*').replace(/^"/, '').replace(/"$/, '');
       let escapedLang = lang.replace(range, escapedRange);
@@ -151,19 +151,17 @@ export const parseSelector = selector => {
         escapedLang = `:lang(${EMPTY})`;
       }
       res = parseSelector(selector.replace(lang, escapedLang));
-    } else if ((message === 'Identifier is expected' ||
-                message === 'Selector is expected') &&
-               regEmptyIs.test(selector)) {
-      const [, logic, name] = regEmptyIs.exec(selector);
-      const emptyIs = `:${name}(${EMPTY})`;
-      res = parseSelector(selector.replace(logic, emptyIs));
+    } else if (/^(?:Identifier|Selector) is expected$/.test(message) &&
+               REG_LOGICAL_EMPTY.test(selector)) {
+      const [, sel, name] = REG_LOGICAL_EMPTY.exec(selector);
+      res = parseSelector(selector.replace(sel, `:${name}(${EMPTY})`));
     } else if (/^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(message) &&
                !selector.endsWith(']')) {
       const index = selector.lastIndexOf('[');
       const sel = selector.substring(index);
       if (sel.includes('"')) {
-        const count = sel.match(/"/g).length;
-        if (count % 2) {
+        const quotes = sel.match(/"/g).length;
+        if (quotes % 2) {
           res = parseSelector(`${selector}"]`);
         } else {
           res = parseSelector(`${selector}]`);
