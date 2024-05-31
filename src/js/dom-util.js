@@ -8,8 +8,8 @@ import bidiFactory from 'bidi-js';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_SHADOW_MODE, TEXT_NODE,
-  TYPE_FROM, TYPE_TO, WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_SHADOW_MODE,
+  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -132,8 +132,7 @@ export const getDirectionality = (node = {}) => {
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
     const { getEmbeddingLevels } = bidiFactory();
-    const regDir = /^(?:ltr|rtl)$/;
-    if (regDir.test(nodeDir)) {
+    if (REG_DIR.test(nodeDir)) {
       res = nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
@@ -165,7 +164,7 @@ export const getDirectionality = (node = {}) => {
               text = itemTextContent.trim();
             } else if (itemNodeType === ELEMENT_NODE) {
               if (!/^(?:bdi|script|style|textarea)$/.test(itemLocalName) &&
-                  (!itemDir || !regDir.test(itemDir))) {
+                  (!itemDir || !REG_DIR.test(itemDir))) {
                 if (itemLocalName === 'slot') {
                   text = getSlottedTextContent(item);
                 } else {

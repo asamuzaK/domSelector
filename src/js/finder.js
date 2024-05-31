@@ -16,9 +16,11 @@ import {
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, SELECTOR_CLASS,
-  SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE,
-  SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
+  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL, REG_FORM_VALID,
+  REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, REG_TYPE_CHECK,
+  REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -918,26 +920,16 @@ export class Finder {
         }
       }
     } else {
-      const regAnchor = /^a(?:rea)?$/;
-      const regFormCtrl =
-        /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
-      const regFormValidity = /^(?:button|form|input|select|textarea)$/;
-      const regInteract = /^(?:details|dialog)$/;
-      const regTypeCheck = /^(?:checkbox|radio)$/;
-      const regTypeDate = /^(?:date(?:time-local)?|month|time|week)$/;
-      const regTypeRange =
-        /(?:date(?:time-local)?|month|number|range|time|week)$/;
-      const regTypeText = /^(?:email|number|password|search|tel|text|url)$/;
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (regAnchor.test(localName) && node.hasAttribute('href')) {
+          if (REG_ANCHOR.test(localName) && node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (regAnchor.test(localName) && node.hasAttribute('href')) {
+          if (REG_ANCHOR.test(localName) && node.hasAttribute('href')) {
             const { href, origin, pathname } = new URL(this.#content.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
@@ -1075,19 +1067,19 @@ export class Finder {
           break;
         }
         case 'open': {
-          if (regInteract.test(localName) && node.hasAttribute('open')) {
+          if (REG_INTERACT.test(localName) && node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
         }
         case 'closed': {
-          if (regInteract.test(localName) && !node.hasAttribute('open')) {
+          if (REG_INTERACT.test(localName) && !node.hasAttribute('open')) {
             matched.add(node);
           }
           break;
         }
         case 'disabled': {
-          if (regFormCtrl.test(localName) || isCustomElementName(localName)) {
+          if (REG_FORM_CTRL.test(localName) || isCustomElementName(localName)) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -1107,7 +1099,8 @@ export class Finder {
           break;
         }
         case 'enabled': {
-          if ((regFormCtrl.test(localName) || isCustomElementName(localName)) &&
+          if ((REG_FORM_CTRL.test(localName) ||
+               isCustomElementName(localName)) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
@@ -1123,8 +1116,8 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || regTypeDate.test(node.type) ||
-                   regTypeText.test(node.type)) &&
+              if ((!node.type || REG_TYPE_DATE.test(node.type) ||
+                   REG_TYPE_TEXT.test(node.type)) &&
                   (node.readonly || node.hasAttribute('readonly') ||
                    node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1149,8 +1142,8 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || regTypeDate.test(node.type) ||
-                   regTypeText.test(node.type)) &&
+              if ((!node.type || REG_TYPE_DATE.test(node.type) ||
+                   REG_TYPE_TEXT.test(node.type)) &&
                   !(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1171,7 +1164,7 @@ export class Finder {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              if (regTypeText.test(node.getAttribute('type'))) {
+              if (REG_TYPE_TEXT.test(node.getAttribute('type'))) {
                 targetNode = node;
               }
             } else {
@@ -1188,7 +1181,7 @@ export class Finder {
         case 'checked': {
           if ((node.checked && localName === 'input' &&
                node.hasAttribute('type') &&
-               regTypeCheck.test(node.getAttribute('type'))) ||
+               REG_TYPE_CHECK.test(node.getAttribute('type'))) ||
               (node.selected && localName === 'option')) {
             matched.add(node);
           }
@@ -1237,14 +1230,12 @@ export class Finder {
           break;
         }
         case 'default': {
-          const regTypeReset = /^(?:button|reset)$/;
-          const regTypeSubmit = /^(?:image|submit)$/;
           // button[type="submit"], input[type="submit"], input[type="image"]
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
-                 regTypeReset.test(node.getAttribute('type')))) ||
+                 REG_TYPE_RESET.test(node.getAttribute('type')))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               regTypeSubmit.test(node.getAttribute('type')))) {
+               REG_TYPE_SUBMIT.test(node.getAttribute('type')))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1261,10 +1252,10 @@ export class Finder {
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    regTypeReset.test(nextNode.getAttribute('type')));
+                    REG_TYPE_RESET.test(nextNode.getAttribute('type')));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    regTypeSubmit.test(nextNode.getAttribute('type'));
+                    REG_TYPE_SUBMIT.test(nextNode.getAttribute('type'));
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1277,7 +1268,7 @@ export class Finder {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     regTypeCheck.test(node.getAttribute('type')) &&
+                     REG_TYPE_CHECK.test(node.getAttribute('type')) &&
                      (node.checked || node.hasAttribute('checked'))) {
             matched.add(node);
           // option
@@ -1321,7 +1312,7 @@ export class Finder {
           break;
         }
         case 'valid': {
-          if (regFormValidity.test(localName)) {
+          if (REG_FORM_VALID.test(localName)) {
             if (node.checkValidity()) {
               matched.add(node);
             }
@@ -1331,7 +1322,7 @@ export class Finder {
             refNode = walker.firstChild();
             let bool;
             while (refNode && node.contains(refNode)) {
-              if (regFormValidity.test(refNode.localName)) {
+              if (REG_FORM_VALID.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
@@ -1346,7 +1337,7 @@ export class Finder {
           break;
         }
         case 'invalid': {
-          if (regFormValidity.test(localName)) {
+          if (REG_FORM_VALID.test(localName)) {
             if (!node.checkValidity()) {
               matched.add(node);
             }
@@ -1356,7 +1347,7 @@ export class Finder {
             refNode = walker.firstChild();
             let bool;
             while (refNode && node.contains(refNode)) {
-              if (regFormValidity.test(refNode.localName)) {
+              if (REG_FORM_VALID.test(refNode.localName)) {
                 bool = refNode.checkValidity();
                 if (!bool) {
                   break;
@@ -1375,7 +1366,7 @@ export class Finder {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              regTypeRange.test(node.getAttribute('type')) &&
+              REG_TYPE_RANGE.test(node.getAttribute('type')) &&
               !(node.validity.rangeUnderflow ||
                 node.validity.rangeOverflow) &&
               (node.hasAttribute('min') || node.hasAttribute('max') ||
@@ -1389,7 +1380,7 @@ export class Finder {
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              regTypeRange.test(node.getAttribute('type')) &&
+              REG_TYPE_RANGE.test(node.getAttribute('type')) &&
               (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
             matched.add(node);
           }
@@ -1402,8 +1393,9 @@ export class Finder {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || regTypeCheck.test(inputType) ||
-                  regTypeDate.test(inputType) || regTypeText.test(inputType)) {
+              if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
+                  REG_TYPE_DATE.test(inputType) ||
+                  REG_TYPE_TEXT.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1423,8 +1415,9 @@ export class Finder {
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || regTypeCheck.test(inputType) ||
-                  regTypeDate.test(inputType) || regTypeText.test(inputType)) {
+              if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
+                  REG_TYPE_DATE.test(inputType) ||
+                  REG_TYPE_TEXT.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1767,9 +1760,8 @@ export class Finder {
       }
     }
     if (typeof bool !== 'boolean') {
-      const regForm = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
       let save;
-      if (nodeType === ELEMENT_NODE && regForm.test(localName)) {
+      if (nodeType === ELEMENT_NODE && REG_FORM.test(localName)) {
         save = false;
       } else {
         save = true;
