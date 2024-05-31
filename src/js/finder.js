@@ -186,7 +186,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const branches = walkAST(cssAst);
+      const { branches } = walkAST(cssAst);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -361,7 +361,8 @@ export class Finder {
       if (this.#cache.has(selector)) {
         selectorBranches = this.#cache.get(selector);
       } else {
-        selectorBranches = walkAST(selector);
+        const { branches } = walkAST(selector);
+        selectorBranches = branches;
         this.#cache.set(selector, selectorBranches);
       }
     }
@@ -826,7 +827,7 @@ export class Finder {
       if (this.#cache.has(ast)) {
         astData = this.#cache.get(ast);
       } else {
-        const branches = walkAST(ast);
+        const { branches } = walkAST(ast);
         const selectors = [];
         const twigBranches = [];
         for (const [...leaves] of branches) {
@@ -1624,7 +1625,8 @@ export class Finder {
     const { children: astChildren, name: astName } = ast;
     let res;
     if (Array.isArray(astChildren)) {
-      const [branch] = walkAST(astChildren[0]);
+      const { branches } = walkAST(astChildren[0]);
+      const [branch] = branches;
       const [...leaves] = branch;
       const { host } = node;
       if (astName === 'host') {
