@@ -5976,7 +5976,10 @@ describe('walk AST', () => {
 
   it('should get empty array', () => {
     const res = func();
-    assert.deepEqual(res, [], 'result');
+    assert.deepEqual(res, {
+      branches: [],
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6008,25 +6011,28 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
-        {
-          loc: null,
-          name: 'ul',
-          type: SELECTOR_TYPE
-        },
-        {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        {
-          loc: null,
-          name: 'li',
-          type: SELECTOR_TYPE
-        }
-      ]
-    ], 'result');
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'ul',
+            type: SELECTOR_TYPE
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ]
+      ],
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6079,42 +6085,45 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
-        {
-          loc: null,
-          name: 'ul',
-          type: SELECTOR_TYPE
-        },
-        {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        {
-          loc: null,
-          name: 'li',
-          type: SELECTOR_TYPE
-        }
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'ul',
+            type: SELECTOR_TYPE
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ],
+        [
+          {
+            loc: null,
+            name: 'ol',
+            type: SELECTOR_TYPE
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'li',
+            type: SELECTOR_TYPE
+          }
+        ]
       ],
-      [
-        {
-          loc: null,
-          name: 'ol',
-          type: SELECTOR_TYPE
-        },
-        {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        {
-          loc: null,
-          name: 'li',
-          type: SELECTOR_TYPE
-        }
-      ]
-    ], 'result');
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6160,39 +6169,42 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
-        {
-          loc: null,
-          name: 'div',
-          type: SELECTOR_TYPE
-        },
-        {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: 'foo',
-                      type: SELECTOR_CLASS
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR_LIST
-            }
-          ],
-          loc: null,
-          name: 'not',
-          type: SELECTOR_PSEUDO_CLASS
-        }
-      ]
-    ], 'result');
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'div',
+            type: SELECTOR_TYPE
+          },
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'foo',
+                        type: SELECTOR_CLASS
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR_LIST
+              }
+            ],
+            loc: null,
+            name: 'not',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6233,34 +6245,37 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
-        {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: '*',
-                      type: SELECTOR_TYPE
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR_LIST
-            }
-          ],
-          loc: null,
-          name: 'not',
-          type: SELECTOR_PSEUDO_CLASS
-        }
-      ]
-    ], 'result');
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: '*',
+                        type: SELECTOR_TYPE
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR_LIST
+              }
+            ],
+            loc: null,
+            name: 'not',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6301,34 +6316,37 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
-        {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      loc: null,
-                      name: '*|*',
-                      type: SELECTOR_TYPE
-                    }
-                  ],
-                  loc: null,
-                  type: SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR_LIST
-            }
-          ],
-          loc: null,
-          name: 'not',
-          type: SELECTOR_PSEUDO_CLASS
-        }
-      ]
-    ], 'result');
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: '*|*',
+                        type: SELECTOR_TYPE
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR_LIST
+              }
+            ],
+            loc: null,
+            name: 'not',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      complex: false
+    }, 'result');
   });
 
   it('should get selectors', () => {
@@ -6363,28 +6381,132 @@ describe('walk AST', () => {
       type: SELECTOR_LIST
     };
     const res = func(ast);
-    assert.deepEqual(res, [
-      [
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'foo',
+                    type: SELECTOR_TYPE
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            name: 'slotted',
+            type: SELECTOR_PSEUDO_ELEMENT
+          }
+        ]
+      ],
+      complex: false
+    }, 'result');
+  });
+
+  it('should get selectors', () => {
+    const ast = {
+      children: [
         {
           children: [
             {
+              loc: null,
+              name: 'div',
+              type: SELECTOR_TYPE
+            },
+            {
               children: [
                 {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: 'ul',
+                          type: SELECTOR_TYPE
+                        },
+                        {
+                          loc: null,
+                          name: '>',
+                          type: COMBINATOR
+                        },
+                        {
+                          loc: null,
+                          name: 'li',
+                          type: SELECTOR_TYPE
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
                   loc: null,
-                  name: 'foo',
-                  type: SELECTOR_TYPE
+                  type: SELECTOR_LIST
                 }
               ],
               loc: null,
-              type: SELECTOR
+              name: 'not',
+              type: SELECTOR_PSEUDO_CLASS
             }
           ],
           loc: null,
-          name: 'slotted',
-          type: SELECTOR_PSEUDO_ELEMENT
+          type: SELECTOR
         }
-      ]
-    ], 'result');
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'div',
+            type: SELECTOR_TYPE
+          },
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        loc: null,
+                        name: 'ul',
+                        type: SELECTOR_TYPE
+                      },
+                      {
+                        loc: null,
+                        name: '>',
+                        type: COMBINATOR
+                      },
+                      {
+                        loc: null,
+                        name: 'li',
+                        type: SELECTOR_TYPE
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR_LIST
+              }
+            ],
+            loc: null,
+            name: 'not',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      complex: true
+    }, 'result');
   });
 });
 
@@ -6713,8 +6835,61 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get true', () => {
+    const res = func(':not(.foo .bar)', {
+      complex: true,
+      descendant: true
+    });
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(.foo > .bar)', {
+      complex: true,
+      descendant: true
+    });
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(.foo > .bar)', {
+      complex: true,
+      descendant: false
+    });
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
     const res = func(':not(:is(.foo, .bar))');
     assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(:is(.foo > .bar))');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(:is(.foo .bar))', {
+      complex: true,
+      descendant: true
+    });
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':not(:is(.foo > .bar))', {
+      complex: true,
+      descendant: true
+    });
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':not(:is(.foo > .bar))', {
+      complex: true,
+      descendant: false
+    });
+    assert.isFalse(res, 'result');
   });
 
   it('should get false', () => {
