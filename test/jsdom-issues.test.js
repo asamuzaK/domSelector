@@ -637,7 +637,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
     let document;
     beforeEach(() => {
       const dom =
-        jsdom(`<div class="sm:block"><span id="target"></span></div>`);
+        jsdom('<div class="sm:block"><span id="target"></span></div>');
       document = dom.window.document;
     });
     afterEach(() => {
