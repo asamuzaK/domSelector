@@ -169,7 +169,7 @@ export const parseSelector = selector => {
 /**
  * walk AST
  * @param {object} ast - AST
- * @returns {Array.<object|undefined>} - collection of AST branches
+ * @returns {object} - branches and complex
  */
 export const walkAST = (ast = {}) => {
   const branches = new Set();
