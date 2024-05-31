@@ -8,7 +8,7 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, EMPTY, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
+  COMBINATOR, DUO, EMPTY, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
   SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
@@ -174,6 +174,7 @@ export const parseSelector = selector => {
 export const walkAST = (ast = {}) => {
   const branches = new Set();
   let hasPseudoFunc;
+  let hasComplexSelector;
   const opt = {
     enter: node => {
       if (node.type === SELECTOR) {
@@ -204,6 +205,13 @@ export const walkAST = (ast = {}) => {
               // Selector
               for (const { children: greatGrandChildren } of grandChildren) {
                 if (branches.has(greatGrandChildren)) {
+                  for (const greatGrandChild of greatGrandChildren) {
+                    const { type: greatGrandChildType } = greatGrandChild;
+                    if (greatGrandChildType === COMBINATOR) {
+                      hasComplexSelector = true;
+                      break;
+                    }
+                  }
                   branches.delete(greatGrandChildren);
                 }
               }
@@ -229,7 +237,10 @@ export const walkAST = (ast = {}) => {
       }
     });
   }
-  return [...branches];
+  return {
+    branches: [...branches],
+    complex: !!hasComplexSelector
+  };
 };
 
 /**
@@ -291,12 +302,56 @@ export const parseAstName = selector => {
   };
 };
 
+/* filter selector constants */
+// :first-child, :last-child etc.
+const N_ST = '(?:first|last|only)-(?:child|of-type)';
+const DIGIT = '(?:0|[1-9]\\d*)';
+const ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
+// exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
+const N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
+// *, tag
+const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
+// attr, id, class, pseudo-class
+const SUB_CLASS = '\\[[^\\]]+\\]|[#.:][\\w-]+';
+const LOGICAL_KEY = '(?:is|not|where)';
+const COMBO_A = '\\s?[\\s>~+]\\s?';
+const COMBO_B = '\\s?[~+]\\s?';
+const COMPOUND_A = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS})+)`;
+const COMPLEX_A = `${COMPOUND_A}(?:${COMBO_A}${COMPOUND_A})*`;
+const COMPLEX_B = `${COMPOUND_A}(?:${COMBO_B}${COMPOUND_A})*`;
+const NESTED_LOGICAL_A =
+  `:${LOGICAL_KEY}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
+const NESTED_LOGICAL_B =
+  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_A}(?:\\s*,\\s*${COMPLEX_A})*\\s*\\)`;
+const NESTED_LOGICAL_C =
+  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_B}(?:\\s*,\\s*${COMPLEX_B})*\\s*\\)`;
+const COMPOUND_B =
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_A})+)`;
+const COMPOUND_C =
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_B})+)`;
+const COMPOUND_D =
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_C})+)`;
+const COMPLEX_C = `${COMPOUND_C}(?:${COMBO_A}${COMPOUND_C})*`;
+const COMPLEX_D = `${COMPOUND_D}(?:${COMBO_B}${COMPOUND_D})*`;
+const LOGICAL_COMPOUND =
+  `${LOGICAL_KEY}\\(\\s*${COMPOUND_B}(?:\\s*,\\s*${COMPOUND_B})*\\s*\\)`;
+const LOGICAL_COMPLEX_A =
+  `${LOGICAL_KEY}\\(\\s*${COMPLEX_C}(?:\\s*,\\s*${COMPLEX_C})*\\s*\\)`;
+const LOGICAL_COMPLEX_B =
+  `${LOGICAL_KEY}\\(\\s*${COMPLEX_D}(?:\\s*,\\s*${COMPLEX_D})*\\s*\\)`;
+const REG_LOGICAL_KEY = new RegExp(`:${LOGICAL_KEY}\\(`);
+const REG_COMPLEX_A = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_A})`);
+const REG_COMPLEX_B = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_B})`);
+const REG_COMPOUND = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPOUND})`);
+const REG_CHILD_INDEXED = new RegExp(`:(?!${N_ST}|${N_TH})`);
+
 /**
  * filter selector (for nwsapi)
  * @param {string} selector - selector
+ * @param {object} opt - options
  * @returns {boolean} - result
  */
-export const filterSelector = selector => {
+export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
@@ -305,31 +360,22 @@ export const filterSelector = selector => {
   if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
     return false;
   }
-  // filter pseudo-class selectors
+  // filter pseudo-classes other than child-indexed and logical combination
   if (selector.includes(':')) {
-    // digit:
-    // `(?:0|[1-9]\d*)`
-    // anb:
-    // `[+-]?(?:${digit}n?|n)|(?:[+-]?${digit})?n\s*[+-]\s*${digit}`
-    // type: *, tag
-    // `\*|[A-Za-z][\w-]*`
-    // subclass: attr, id, class, pseudo-class (nst)
-    // `\[[^\]]+\]|[#.:][\w-]+`
-    // compound:
-    // `(?:${type}|(?:${type})?(?:${subclass})+)`
-    // nested logical:
-    // `:(?:is|not|where)\(\s*${compound}(?:\s*,\s*${compound})*\s*\)`
-    // compoundB:
-    // `(?:${type}|(?:${type})?(?:${subclass}|${nestedLogical})+)`
-    // nst:
-    // `(?:first|last|only)-(?:child|of-type)`
-    // nth: exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
-    // `nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|${anb})\s*\)`
-    // logical: exclude complex selector, e.g. :is(.foo > .bar)
-    // `(?:is|not|where)\(\s*${compoundB}(?:\s*,\s*${compoundB})*\s*\)`
-    // filter pseudos other than child-indexed and logical combination pseudos
-    // `:(?!${nst}|${nth}|${logical})`
-    if (/:(?!(?:first|last|only)-(?:child|of-type)|nth-(?:last-)?(?:child|of-type)\(\s*(?:even|odd|[+-]?(?:(?:0|[1-9]\d*)n?|n)|(?:[+-]?(?:0|[1-9]\d*))?n\s*[+-]\s*(?:0|[1-9]\d*))\s*\)|(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+|:(?:is|not|where)\(\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+)(?:\s*,\s*(?:\*|[A-Za-z][\w-]*|(?:\*|[A-Za-z][\w-]*)?(?:\[[^\]]+\]|[#.:][\w-]+)+))*\s*\))+))*\s*\))/.test(selector)) {
+    let reg;
+    if (REG_LOGICAL_KEY.test(selector)) {
+      const { complex, descendant } = opt;
+      if (complex && descendant) {
+        reg = REG_COMPLEX_A;
+      } else if (complex) {
+        reg = REG_COMPLEX_B;
+      } else {
+        reg = REG_COMPOUND;
+      }
+    } else {
+      reg = REG_CHILD_INDEXED;
+    }
+    if (reg.test(selector)) {
       return false;
     }
   }
