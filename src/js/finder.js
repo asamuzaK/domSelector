@@ -189,7 +189,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches, complex } = walkAST(cssAst);
+      const { branches, complex } = walkAST(cssAst, true);
       let descendant = false;
       let i = 0;
       ast = [];

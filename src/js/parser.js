@@ -169,9 +169,10 @@ export const parseSelector = selector => {
 /**
  * walk AST
  * @param {object} ast - AST
+ * @param {boolean} check - check selector within logical combinators
  * @returns {object} - branches and complex
  */
-export const walkAST = (ast = {}) => {
+export const walkAST = (ast = {}, check = false) => {
   const branches = new Set();
   let hasPseudoFunc;
   let hasComplexSelector;
@@ -205,12 +206,16 @@ export const walkAST = (ast = {}) => {
               // Selector
               for (const { children: greatGrandChildren } of grandChildren) {
                 if (branches.has(greatGrandChildren)) {
-                  for (const greatGrandChild of greatGrandChildren) {
-                    const { type: greatGrandChildType } = greatGrandChild;
-                    if (greatGrandChildType === COMBINATOR) {
-                      hasComplexSelector = true;
-                      break;
+                  if (check) {
+                    for (const greatGrandChild of greatGrandChildren) {
+                      const { type: greatGrandChildType } = greatGrandChild;
+                      if (greatGrandChildType === COMBINATOR) {
+                        hasComplexSelector = true;
+                        break;
+                      }
                     }
+                  } else {
+                    hasComplexSelector = false;
                   }
                   branches.delete(greatGrandChildren);
                 }
@@ -239,7 +244,7 @@ export const walkAST = (ast = {}) => {
   }
   return {
     branches: [...branches],
-    complex: !!hasComplexSelector
+    complex: hasComplexSelector
   };
 };
 
