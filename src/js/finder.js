@@ -55,6 +55,7 @@ export class Finder {
   /* private fields */
   #ast;
   #cache;
+  #complex;
   #content;
   #descendant;
   #document;
@@ -160,12 +161,14 @@ export class Finder {
    */
   _correspond(selector) {
     const nodes = [];
+    this.#complex = false;
     this.#descendant = false;
     let ast;
     if (this.#content) {
       const cachedItem = this.#cache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
+        this.#complex = item.complex;
         this.#descendant = item.descendant;
         ast = item.ast;
       }
@@ -186,7 +189,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches } = walkAST(cssAst);
+      const { branches, complex } = walkAST(cssAst);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -255,10 +258,12 @@ export class Finder {
         }
         cachedItem.set(`${selector}`, {
           ast,
+          complex,
           descendant
         });
         this.#cache.set(this.#content, cachedItem);
       }
+      this.#complex = complex;
       this.#descendant = descendant;
     }
     return [
@@ -2801,7 +2806,10 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
-      if (filterSelector(selector)) {
+      if (filterSelector(selector, {
+        complex: this.#complex,
+        descendant: true
+      })) {
         res = this.#nwsapi.match(selector, node);
       } else {
         this._setup(selector, node, opt);
@@ -2828,7 +2836,10 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
-      if (filterSelector(selector)) {
+      if (filterSelector(selector, {
+        complex: this.#complex,
+        descendant: true
+      })) {
         res = this.#nwsapi.closest(selector, node);
       } else {
         this._setup(selector, node, opt);
@@ -2862,7 +2873,10 @@ export class Finder {
     try {
       this._setup(selector, node, opt);
       if (this.#document === this.#content && !this.#descendant &&
-          filterSelector(selector)) {
+          filterSelector(selector, {
+            complex: this.#complex,
+            descendant: false
+          })) {
         res = this.#nwsapi.first(selector, node);
       } else {
         const nodes = this._find(TARGET_FIRST);
@@ -2890,7 +2904,10 @@ export class Finder {
     try {
       this._setup(selector, node, opt);
       if (this.#document === this.#content && !this.#descendant &&
-          filterSelector(selector)) {
+          filterSelector(selector, {
+            complex: this.#complex,
+            descendant: false
+          })) {
         res = this.#nwsapi.select(selector, node);
       } else {
         const nodes = this._find(TARGET_ALL);
