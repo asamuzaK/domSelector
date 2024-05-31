@@ -633,6 +633,34 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#3692 - https://github.com/jsdom/jsdom/issues/3692', () => {
+    let document;
+    beforeEach(() => {
+      const dom =
+        jsdom(`<div class="sm:block"><span id="target"></span></div>`);
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      document = null;
+    });
+
+    it('should get matched node', () => {
+      const div = document.querySelector('div');
+      const span = document.getElementById('target');
+      const res = div.querySelector(':scope > span');
+      assert.deepEqual(res, span, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const div = document.querySelector('div');
+      const span = document.getElementById('target');
+      const res = div.querySelectorAll(':scope > span');
+      assert.deepEqual(res, [
+        span
+      ], 'result');
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;
