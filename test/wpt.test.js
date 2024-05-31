@@ -2028,8 +2028,7 @@ describe('local wpt test cases', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    // FIXME: css-tree throws
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       const node = document.createElement('meta');
       const head = document.body.previousElementSibling;
       node.setAttribute('charset', 'utf-8');
@@ -2052,8 +2051,7 @@ describe('local wpt test cases', () => {
       assert.strictEqual(res.length, 1, 'result');
     });
 
-    // FIXME: css-tree throws
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       document.body.innerHTML = html;
       const container = document.getElementById('container');
       const res = container.querySelectorAll('span:not([class');

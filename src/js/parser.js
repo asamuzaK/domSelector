@@ -157,8 +157,20 @@ export const parseSelector = selector => {
       const [, logic, name] = regEmptyIs.exec(selector);
       const emptyIs = `:${name}(${EMPTY})`;
       res = parseSelector(selector.replace(logic, emptyIs));
-    } else if (message === '"]" is expected' && !selector.endsWith(']')) {
-      res = parseSelector(`${selector}]`);
+    } else if (/^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(message) &&
+               !selector.endsWith(']')) {
+      const index = selector.lastIndexOf('[');
+      const sel = selector.substring(index);
+      if (sel.includes('"')) {
+        const count = sel.match(/"/g).length;
+        if (count % 2) {
+          res = parseSelector(`${selector}"]`);
+        } else {
+          res = parseSelector(`${selector}]`);
+        }
+      } else {
+        res = parseSelector(`${selector}]`);
+      }
     } else if (message === '")" is expected' && !selector.endsWith(')')) {
       res = parseSelector(`${selector})`);
     } else {
