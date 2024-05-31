@@ -8,9 +8,11 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  COMBINATOR, DUO, EMPTY, HEX, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
-  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
-  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
+  COMBINATOR, DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_LOGICAL_COMPLEX_A,
+  REG_LOGICAL_COMPLEX_B, REG_LOGICAL_COMPOUND, REG_LOGICAL_KEY,
+  REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
 /**
@@ -307,49 +309,6 @@ export const parseAstName = selector => {
   };
 };
 
-/* filter selector constants */
-// :first-child, :last-child etc.
-const N_ST = '(?:first|last|only)-(?:child|of-type)';
-const DIGIT = '(?:0|[1-9]\\d*)';
-const ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
-// exclude An+B with selector list, e.g. :nth-child(2n+1 of .foo)
-const N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
-// *, tag
-const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
-// attr, id, class, pseudo-class
-const SUB_CLASS = '\\[[^\\]]+\\]|[#.:][\\w-]+';
-const LOGICAL_KEY = '(?:is|not|where)';
-const COMBO_A = '\\s?[\\s>~+]\\s?';
-const COMBO_B = '\\s?[~+]\\s?';
-const COMPOUND_A = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS})+)`;
-const COMPLEX_A = `${COMPOUND_A}(?:${COMBO_A}${COMPOUND_A})*`;
-const COMPLEX_B = `${COMPOUND_A}(?:${COMBO_B}${COMPOUND_A})*`;
-const NESTED_LOGICAL_A =
-  `:${LOGICAL_KEY}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
-const NESTED_LOGICAL_B =
-  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_A}(?:\\s*,\\s*${COMPLEX_A})*\\s*\\)`;
-const NESTED_LOGICAL_C =
-  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_B}(?:\\s*,\\s*${COMPLEX_B})*\\s*\\)`;
-const COMPOUND_B =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_A})+)`;
-const COMPOUND_C =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_B})+)`;
-const COMPOUND_D =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_CLASS}|${NESTED_LOGICAL_C})+)`;
-const COMPLEX_C = `${COMPOUND_C}(?:${COMBO_A}${COMPOUND_C})*`;
-const COMPLEX_D = `${COMPOUND_D}(?:${COMBO_B}${COMPOUND_D})*`;
-const LOGICAL_COMPOUND =
-  `${LOGICAL_KEY}\\(\\s*${COMPOUND_B}(?:\\s*,\\s*${COMPOUND_B})*\\s*\\)`;
-const LOGICAL_COMPLEX_A =
-  `${LOGICAL_KEY}\\(\\s*${COMPLEX_C}(?:\\s*,\\s*${COMPLEX_C})*\\s*\\)`;
-const LOGICAL_COMPLEX_B =
-  `${LOGICAL_KEY}\\(\\s*${COMPLEX_D}(?:\\s*,\\s*${COMPLEX_D})*\\s*\\)`;
-const REG_LOGICAL_KEY = new RegExp(`:${LOGICAL_KEY}\\(`);
-const REG_COMPLEX_A = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_A})`);
-const REG_COMPLEX_B = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_B})`);
-const REG_COMPOUND = new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPOUND})`);
-const REG_CHILD_INDEXED = new RegExp(`:(?!${N_ST}|${N_TH})`);
-
 /**
  * filter selector (for nwsapi)
  * @param {string} selector - selector
@@ -371,11 +330,11 @@ export const filterSelector = (selector, opt = {}) => {
     if (REG_LOGICAL_KEY.test(selector)) {
       const { complex, descendant } = opt;
       if (complex && descendant) {
-        reg = REG_COMPLEX_A;
+        reg = REG_LOGICAL_COMPLEX_A;
       } else if (complex) {
-        reg = REG_COMPLEX_B;
+        reg = REG_LOGICAL_COMPLEX_B;
       } else {
-        reg = REG_COMPOUND;
+        reg = REG_LOGICAL_COMPOUND;
       }
     } else {
       reg = REG_CHILD_INDEXED;

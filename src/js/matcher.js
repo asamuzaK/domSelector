@@ -8,8 +8,8 @@ import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 
 /* constants */
 import {
-  ALPHA_NUM, ELEMENT_NODE, EMPTY, NOT_SUPPORTED_ERR, SELECTOR_ATTR,
-  SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, REG_LANG,
+  SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /* Matcher */
@@ -396,30 +396,28 @@ export class Matcher {
         }
       }
     } else if (astName) {
-      const langPart = `(?:-${ALPHA_NUM})*`;
-      const regLang = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${langPart}$`, 'i');
-      if (regLang.test(astName)) {
+      if (REG_LANG.test(astName)) {
         let regExtendedLang;
         if (astName.indexOf('-') > -1) {
           const [langMain, langSub, ...langRest] = astName.split('-');
           let extendedMain;
           if (langMain === '*') {
-            extendedMain = `${ALPHA_NUM}${langPart}`;
+            extendedMain = `${ALPHA_NUM}${LANG_PART}`;
           } else {
-            extendedMain = `${langMain}${langPart}`;
+            extendedMain = `${langMain}${LANG_PART}`;
           }
-          const extendedSub = `-${langSub}${langPart}`;
+          const extendedSub = `-${langSub}${LANG_PART}`;
           const len = langRest.length;
           let extendedRest = '';
           if (len) {
             for (let i = 0; i < len; i++) {
-              extendedRest += `-${langRest[i]}${langPart}`;
+              extendedRest += `-${langRest[i]}${LANG_PART}`;
             }
           }
           regExtendedLang =
             new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
         } else {
-          regExtendedLang = new RegExp(`^${astName}${langPart}$`, 'i');
+          regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
         }
         if (node.hasAttribute('lang')) {
           if (regExtendedLang.test(node.getAttribute('lang'))) {
