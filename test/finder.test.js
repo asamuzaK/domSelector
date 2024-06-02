@@ -171,6 +171,17 @@ describe('Finder', () => {
     });
   });
 
+  describe('init nwsapi', () => {
+    it('should get nwsapi', () => {
+      const finder = new Finder(window);
+      const res = finder._initNwsapi(document);
+      assert.isFunction(res?.match, 'match');
+      assert.isFunction(res?.closest, 'closest');
+      assert.isFunction(res?.first, 'find');
+      assert.isFunction(res?.select, 'select');
+    });
+  });
+
   describe('set event', () => {
     it('should get null', () => {
       const finder = new Finder(window);

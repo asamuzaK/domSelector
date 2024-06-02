@@ -16,12 +16,12 @@ import {
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR,
-  REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL, REG_FORM_VALID,
-  REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, REG_TYPE_CHECK,
-  REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
+  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX_A, REG_COMPLEX_B,
+  REG_FORM, REG_FORM_CTRL, REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO,
+  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
+  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
+  SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -85,13 +85,6 @@ export class Finder {
     this.#document = window.document;
     this.#cache = new WeakMap();
     this.#results = new WeakMap();
-    this.#nwsapi = nwsapi({
-      document: window.document,
-      DOMException: window.DOMException
-    });
-    this.#nwsapi.configure({
-      LOGERRORS: false
-    });
   }
 
   /**
@@ -141,6 +134,23 @@ export class Finder {
     this.#walkers = new WeakMap();
     return node;
   }
+
+  /**
+   * init nwsapi
+   * @private
+   * @param {object} doc - document
+   * @returns {object} - nwsapi
+   */
+  _initNwsapi(doc) {
+    this.#nwsapi = nwsapi({
+      DOMException: this.#window.DOMException,
+      document: doc
+    });
+    this.#nwsapi.configure({
+      LOGERRORS: false
+    });
+    return this.#nwsapi;
+  };
 
   /**
    * set event
@@ -2792,17 +2802,21 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
-      const complex = REG_COMPLEX.test(selector);
-      if (filterSelector(selector, {
-        complex,
-        descendant: true
-      })) {
-        res = this.#nwsapi.match(selector, node);
-      } else {
-        this._setup(selector, node, opt);
-        const nodes = this._find(TARGET_SELF);
-        res = nodes.size;
+      const document = node.ownerDocument;
+      if (document === this.#document && document.contentType === 'text/html') {
+        if (filterSelector(selector, {
+          complex: REG_COMPLEX_A.test(selector),
+          descendant: true
+        })) {
+          if (!this.#nwsapi) {
+            this._initNwsapi(document);
+          }
+          return this.#nwsapi.match(selector, node);
+        }
       }
+      this._setup(selector, node, opt);
+      const nodes = this._find(TARGET_SELF);
+      res = nodes.size;
     } catch (e) {
       this._onError(e);
     }
@@ -2823,24 +2837,28 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
-      const complex = REG_COMPLEX.test(selector);
-      if (filterSelector(selector, {
-        complex,
-        descendant: true
-      })) {
-        res = this.#nwsapi.closest(selector, node);
-      } else {
-        this._setup(selector, node, opt);
-        const nodes = this._find(TARGET_LINEAL);
-        if (nodes.size) {
-          let refNode = this.#node;
-          while (refNode) {
-            if (nodes.has(refNode)) {
-              res = refNode;
-              break;
-            }
-            refNode = refNode.parentNode;
+      const document = node.ownerDocument;
+      if (document === this.#document && document.contentType === 'text/html') {
+        if (filterSelector(selector, {
+          complex: REG_COMPLEX_A.test(selector),
+          descendant: true
+        })) {
+          if (!this.#nwsapi) {
+            this._initNwsapi(document);
           }
+          return this.#nwsapi.closest(selector, node);
+        }
+      }
+      this._setup(selector, node, opt);
+      const nodes = this._find(TARGET_LINEAL);
+      if (nodes.size) {
+        let refNode = this.#node;
+        while (refNode) {
+          if (nodes.has(refNode)) {
+            res = refNode;
+            break;
+          }
+          refNode = refNode.parentNode;
         }
       }
     } catch (e) {
@@ -2859,20 +2877,28 @@ export class Finder {
   querySelector(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
-      const complex = REG_COMPLEX.test(selector);
-      if (this.#document === this.#content && !this.#descendant &&
-          filterSelector(selector, {
-            complex,
-            descendant: false
-          })) {
-        res = this.#nwsapi.first(selector, node);
+      let document;
+      if (node.nodeType === DOCUMENT_NODE) {
+        document = node;
       } else {
-        const nodes = this._find(TARGET_FIRST);
-        nodes.delete(this.#node);
-        if (nodes.size) {
-          [res] = sortNodes(nodes);
+        document = node.ownerDocument;
+      }
+      if (document === this.#document && document.contentType === 'text/html') {
+        if (filterSelector(selector, {
+          complex: REG_COMPLEX_B.test(selector),
+          descendant: false
+        })) {
+          if (!this.#nwsapi) {
+            this._initNwsapi(document);
+          }
+          return this.#nwsapi.first(selector, node);
         }
+      }
+      this._setup(selector, node, opt);
+      const nodes = this._find(TARGET_FIRST);
+      nodes.delete(this.#node);
+      if (nodes.size) {
+        [res] = sortNodes(nodes);
       }
     } catch (e) {
       this._onError(e);
@@ -2891,23 +2917,31 @@ export class Finder {
   querySelectorAll(selector, node, opt) {
     let res;
     try {
-      this._setup(selector, node, opt);
-      const complex = REG_COMPLEX.test(selector);
-      if (this.#document === this.#content && !this.#descendant &&
-          filterSelector(selector, {
-            complex,
-            descendant: false
-          })) {
-        res = this.#nwsapi.select(selector, node);
+      let document;
+      if (node.nodeType === DOCUMENT_NODE) {
+        document = node;
       } else {
-        const nodes = this._find(TARGET_ALL);
-        nodes.delete(this.#node);
-        if (nodes.size) {
-          if (this.#sort) {
-            res = sortNodes(nodes);
-          } else {
-            res = [...nodes];
+        document = node.ownerDocument;
+      }
+      if (document === this.#document && document.contentType === 'text/html') {
+        if (filterSelector(selector, {
+          complex: REG_COMPLEX_B.test(selector),
+          descendant: false
+        })) {
+          if (!this.#nwsapi) {
+            this._initNwsapi(document);
           }
+          return this.#nwsapi.select(selector, node);
+        }
+      }
+      this._setup(selector, node, opt);
+      const nodes = this._find(TARGET_ALL);
+      nodes.delete(this.#node);
+      if (nodes.size) {
+        if (this.#sort) {
+          res = sortNodes(nodes);
+        } else {
+          res = [...nodes];
         }
       }
     } catch (e) {
