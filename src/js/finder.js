@@ -16,7 +16,8 @@ import {
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL, REG_FORM_VALID,
+  EMPTY, NOT_SUPPORTED_ERR,
+  REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL, REG_FORM_VALID,
   REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, REG_TYPE_CHECK,
   REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT,
   SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
@@ -2798,8 +2799,9 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
+      const complex = REG_COMPLEX.test(selector);
       if (filterSelector(selector, {
-        complex: this.#complex,
+        complex,
         descendant: true
       })) {
         res = this.#nwsapi.match(selector, node);
@@ -2828,8 +2830,9 @@ export class Finder {
         const msg = `Unexpected node ${node?.nodeName}`;
         throw new TypeError(msg);
       }
+      const complex = REG_COMPLEX.test(selector);
       if (filterSelector(selector, {
-        complex: this.#complex,
+        complex,
         descendant: true
       })) {
         res = this.#nwsapi.closest(selector, node);
@@ -2864,9 +2867,10 @@ export class Finder {
     let res;
     try {
       this._setup(selector, node, opt);
+      const complex = REG_COMPLEX.test(selector);
       if (this.#document === this.#content && !this.#descendant &&
           filterSelector(selector, {
-            complex: this.#complex,
+            complex,
             descendant: false
           })) {
         res = this.#nwsapi.first(selector, node);
@@ -2895,9 +2899,10 @@ export class Finder {
     let res;
     try {
       this._setup(selector, node, opt);
+      const complex = REG_COMPLEX.test(selector);
       if (this.#document === this.#content && !this.#descendant &&
           filterSelector(selector, {
-            complex: this.#complex,
+            complex,
             descendant: false
           })) {
         res = this.#nwsapi.select(selector, node);

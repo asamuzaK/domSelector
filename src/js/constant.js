@@ -93,10 +93,14 @@ export const COMPOUND_D =
 export const COMPLEX_D = `${COMPOUND_D}(?:${COMBO_B}${COMPOUND_D})*`;
 export const LOGICAL_COMPLEX_B =
   `${LOGICAL_KEY}\\(\\s*${COMPLEX_D}(?:\\s*,\\s*${COMPLEX_D})*\\s*\\)`;
+export const TAG_TYPE_I = '\\*|[a-z][\\w-]*';
+export const COMPOUND_I =
+  `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
 
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_CHILD_INDEXED = new RegExp(`:(?!${N_ST}|${N_TH})`);
+export const REG_COMPLEX = new RegExp(`${COMBO_A}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FORM = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
 export const REG_FORM_CTRL =
