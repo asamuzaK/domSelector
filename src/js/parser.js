@@ -313,6 +313,14 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
+  // filter missing close square bracket
+  if (selector.includes('[')) {
+    const index = selector.lastIndexOf('[');
+    const sel = selector.substring(index);
+    if (sel.lastIndexOf(']') < 0) {
+      return false;
+    }
+  }
   // filter namespaced selectors, e.g. ns|E, pseudo-element selectors and
   // attribute selectors with case flag, e.g. [attr i], and unclosed quotes
   if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
@@ -322,6 +330,10 @@ export const filterSelector = (selector, opt = {}) => {
   if (selector.includes(':')) {
     let reg;
     if (REG_LOGICAL_KEY.test(selector)) {
+      // filter empty :is() and :where()
+      if (REG_LOGICAL_EMPTY.test(selector)) {
+        return false;
+      }
       const { complex, descendant } = opt;
       if (complex && descendant) {
         reg = REG_LOGICAL_COMPLEX_A;
