@@ -6,7 +6,7 @@
 import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from '@asamuzakjp/nwsapi';
 import {
-  isContentEditable, isInShadowTree, resolveContent, sortNodes
+  isContentEditable, isInShadowTree, resolveContent, sortNodes, verifyNode
 } from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
@@ -2877,6 +2877,7 @@ export class Finder {
   querySelector(selector, node, opt) {
     let res;
     try {
+      verifyNode(node);
       let document;
       if (node.nodeType === DOCUMENT_NODE) {
         document = node;
@@ -2917,6 +2918,7 @@ export class Finder {
   querySelectorAll(selector, node, opt) {
     let res;
     try {
+      verifyNode(node);
       let document;
       if (node.nodeType === DOCUMENT_NODE) {
         document = node;
