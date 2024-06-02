@@ -8,7 +8,7 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  COMBINATOR, DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
+  DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
   REG_LANG_QUOTED, REG_LOGICAL_COMPLEX_A, REG_LOGICAL_COMPLEX_B,
   REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, REG_LOGICAL_PSEUDO,
   REG_SHADOW_PSEUDO, SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
@@ -181,13 +181,11 @@ export const parseSelector = selector => {
 /**
  * walk AST
  * @param {object} ast - AST
- * @param {boolean} check - check selector within logical combinators
- * @returns {object} - branches and complex
+ * @returns {Array.<object|undefined>} - collection of AST branches
  */
-export const walkAST = (ast = {}, check = false) => {
+export const walkAST = (ast = {}) => {
   const branches = new Set();
   let hasPseudoFunc;
-  let hasComplexSelector;
   const opt = {
     enter: node => {
       if (node.type === SELECTOR) {
@@ -218,17 +216,6 @@ export const walkAST = (ast = {}, check = false) => {
               // Selector
               for (const { children: greatGrandChildren } of grandChildren) {
                 if (branches.has(greatGrandChildren)) {
-                  if (check) {
-                    for (const greatGrandChild of greatGrandChildren) {
-                      const { type: greatGrandChildType } = greatGrandChild;
-                      if (greatGrandChildType === COMBINATOR) {
-                        hasComplexSelector = true;
-                        break;
-                      }
-                    }
-                  } else {
-                    hasComplexSelector = false;
-                  }
                   branches.delete(greatGrandChildren);
                 }
               }
@@ -254,10 +241,7 @@ export const walkAST = (ast = {}, check = false) => {
       }
     });
   }
-  return {
-    branches: [...branches],
-    complex: hasComplexSelector
-  };
+  return [...branches];
 };
 
 /**

@@ -58,7 +58,6 @@ export class Finder {
   /* private fields */
   #ast;
   #cache;
-  #complex;
   #content;
   #descendant;
   #document;
@@ -164,14 +163,12 @@ export class Finder {
    */
   _correspond(selector) {
     const nodes = [];
-    this.#complex = false;
     this.#descendant = false;
     let ast;
     if (this.#content) {
       const cachedItem = this.#cache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
-        this.#complex = item.complex;
         this.#descendant = item.descendant;
         ast = item.ast;
       }
@@ -192,7 +189,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches, complex } = walkAST(cssAst, true);
+      const branches = walkAST(cssAst);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -261,12 +258,10 @@ export class Finder {
         }
         cachedItem.set(`${selector}`, {
           ast,
-          complex,
           descendant
         });
         this.#cache.set(this.#content, cachedItem);
       }
-      this.#complex = complex;
       this.#descendant = descendant;
     }
     return [
@@ -369,8 +364,7 @@ export class Finder {
       if (this.#cache.has(selector)) {
         selectorBranches = this.#cache.get(selector);
       } else {
-        const { branches } = walkAST(selector);
-        selectorBranches = branches;
+        selectorBranches = walkAST(selector);
         this.#cache.set(selector, selectorBranches);
       }
     }
@@ -835,7 +829,7 @@ export class Finder {
       if (this.#cache.has(ast)) {
         astData = this.#cache.get(ast);
       } else {
-        const { branches } = walkAST(ast);
+        const branches = walkAST(ast);
         const selectors = [];
         const twigBranches = [];
         for (const [...leaves] of branches) {
@@ -1624,8 +1618,7 @@ export class Finder {
     const { children: astChildren, name: astName } = ast;
     let res;
     if (Array.isArray(astChildren)) {
-      const { branches } = walkAST(astChildren[0]);
-      const [branch] = branches;
+      const [branch] = walkAST(astChildren[0]);
       const [...leaves] = branch;
       const { host } = node;
       if (astName === 'host') {
