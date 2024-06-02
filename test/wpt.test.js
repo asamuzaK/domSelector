@@ -2057,6 +2057,13 @@ describe('local wpt test cases', () => {
       const res = container.querySelectorAll('span:not([class');
       assert.strictEqual(res.length, 1, 'result');
     });
+
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      const res = container.querySelectorAll(':is(span, p):not([class]');
+      assert.strictEqual(res.length, 1, 'result');
+    });
   });
 
   describe('css/selectors/not-complex.html', () => {
