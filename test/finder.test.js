@@ -90,6 +90,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       assert.instanceOf(finder, Finder, 'result');
     });
+
+    it('should be instance of Finder', () => {
+      const finder = new Finder(window, document);
+      assert.instanceOf(finder, Finder, 'result');
+    });
   });
 
   describe('handle error', () => {
@@ -174,7 +179,7 @@ describe('Finder', () => {
   describe('init nwsapi', () => {
     it('should get nwsapi', () => {
       const finder = new Finder(window);
-      const res = finder._initNwsapi(document);
+      const res = finder._initNwsapi();
       assert.isFunction(res?.match, 'match');
       assert.isFunction(res?.closest, 'closest');
       assert.isFunction(res?.first, 'find');

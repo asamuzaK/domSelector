@@ -79,12 +79,14 @@ export class Finder {
   /**
    * construct
    * @param {object} window - window
+   * @param {object} document - document
    */
-  constructor(window) {
+  constructor(window, document) {
     this.#window = window;
-    this.#document = window.document;
+    this.#document = document ?? window.document;
     this.#cache = new WeakMap();
     this.#results = new WeakMap();
+    this._initNwsapi();
   }
 
   /**
@@ -138,13 +140,12 @@ export class Finder {
   /**
    * init nwsapi
    * @private
-   * @param {object} doc - document
    * @returns {object} - nwsapi
    */
-  _initNwsapi(doc) {
+  _initNwsapi() {
     this.#nwsapi = nwsapi({
       DOMException: this.#window.DOMException,
-      document: doc
+      document: this.#document
     });
     this.#nwsapi.configure({
       LOGERRORS: false
@@ -2808,9 +2809,6 @@ export class Finder {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
         })) {
-          if (!this.#nwsapi) {
-            this._initNwsapi(document);
-          }
           return this.#nwsapi.match(selector, node);
         }
       }
@@ -2843,9 +2841,6 @@ export class Finder {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
         })) {
-          if (!this.#nwsapi) {
-            this._initNwsapi(document);
-          }
           return this.#nwsapi.closest(selector, node);
         }
       }
@@ -2889,9 +2884,6 @@ export class Finder {
           complex: REG_COMPLEX_B.test(selector),
           descendant: false
         })) {
-          if (!this.#nwsapi) {
-            this._initNwsapi(document);
-          }
           return this.#nwsapi.first(selector, node);
         }
       }
@@ -2930,9 +2922,6 @@ export class Finder {
           complex: REG_COMPLEX_B.test(selector),
           descendant: false
         })) {
-          if (!this.#nwsapi) {
-            this._initNwsapi(document);
-          }
           return this.#nwsapi.select(selector, node);
         }
       }
