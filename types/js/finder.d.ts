@@ -1,5 +1,5 @@
 export class Finder {
-    constructor(window: object);
+    constructor(window: object, document: object);
     private _onError;
     private _setup;
     private _initNwsapi;
