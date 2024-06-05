@@ -106,6 +106,7 @@ export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FORM = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
 export const REG_FORM_CTRL =
   /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
+export const REG_FORM_GROUP = /^(?:fieldset|optgroup|select)$/;
 export const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
 export const REG_HEX = /^([\da-f]{1,6}\s?)/i;
 export const REG_INTERACT = /^(?:details|dialog)$/;

@@ -74,6 +74,7 @@ export const REG_COMPLEX_B: RegExp;
 export const REG_DIR: RegExp;
 export const REG_FORM: RegExp;
 export const REG_FORM_CTRL: RegExp;
+export const REG_FORM_GROUP: RegExp;
 export const REG_FORM_VALID: RegExp;
 export const REG_HEX: RegExp;
 export const REG_INTERACT: RegExp;

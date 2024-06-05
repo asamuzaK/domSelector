@@ -88,41 +88,24 @@ const setup = window => {
 const filter = testPath => {
   // fails due to upstream issues and/or not yet supported
   const skipList = [
-    'has-display-none-checked-ref.html',
     'has-display-none-checked.html',
     'has-sibling-chrome-crash.html',
     'has-specificity.html',
-    'has-style-sharing-001-ref.html',
     'has-style-sharing-001.html',
-    'has-style-sharing-002-ref.html',
     'has-style-sharing-002.html',
-    'has-style-sharing-003-ref.html',
     'has-style-sharing-003.html',
-    'has-style-sharing-004-ref.html',
     'has-style-sharing-004.html',
-    'has-style-sharing-005-ref.html',
     'has-style-sharing-005.html',
-    'has-style-sharing-006-ref.html',
     'has-style-sharing-006.html',
-    'has-style-sharing-007-ref.html',
     'has-style-sharing-007.html',
-    'has-style-sharing-pseudo-001-ref.html',
     'has-style-sharing-pseudo-001.html',
-    'has-style-sharing-pseudo-002-ref.html',
     'has-style-sharing-pseudo-002.html',
-    'has-style-sharing-pseudo-003-ref.html',
     'has-style-sharing-pseudo-003.html',
-    'has-style-sharing-pseudo-004-ref.html',
     'has-style-sharing-pseudo-004.html',
-    'has-style-sharing-pseudo-005-ref.html',
     'has-style-sharing-pseudo-005.html',
-    'has-style-sharing-pseudo-006-ref.html',
     'has-style-sharing-pseudo-006.html',
-    'has-style-sharing-pseudo-007-ref.html',
     'has-style-sharing-pseudo-007.html',
-    'has-style-sharing-pseudo-008-ref.html',
     'has-style-sharing-pseudo-008.html',
-    'has-visited-ref.html',
     'has-visited.html',
     'is-where-error-recovery.html',
     'modal-pseudo-class.html',
@@ -159,17 +142,38 @@ const filter = testPath => {
     'query-target-in-load-event.html'
   ];
   const excludeList = [
-    'ParentNode-querySelector-All-content.html'
+    'ParentNode-querySelector-All-content.html',
+    'pseudo-classes/active-disabled.html',
+    'pseudo-classes/autofill.html',
+    'pseudo-classes/checked-indeterminate.window.html',
+    'pseudo-classes/checked-type-change.html',
+    'pseudo-classes/checked.html',
+    'pseudo-classes/focus-autofocus.html',
+    'pseudo-classes/focus-iframe.html',
+    'pseudo-classes/focus.html',
+    'pseudo-classes/indeterminate-radio-group.html',
+    'pseudo-classes/link.html',
+    'pseudo-classes/indeterminate-radio.html',
+    'pseudo-classes/indeterminate-type-change.html',
+    'pseudo-classes/inrange-outofrange-type-change.html',
+    'pseudo-classes/invalid-after-clone.html',
+    'pseudo-classes/placeholder-shown-type-change.html',
+    'pseudo-classes/readwrite-readonly.html',
+    'pseudo-classes/readwrite-readonly-type-change.html',
+    'pseudo-classes/required-optional-hidden.html',
+    'pseudo-classes/valid-invalid.html'
   ];
   let res;
-  if (skipList.includes(testPath)) {
+  if (/(?:-ref|-manual)\.html$|tentative/.test(testPath)) {
+    res = false;
+  } else if (skipList.includes(testPath)) {
     res = false;
   } else if (includeList.includes(testPath)) {
     res = true;
   } else if (testPath.startsWith('invalidation/') ||
              testPath.startsWith('parsing/')) {
     res = false;
-  } else if (/closest|matches|querySelector(?:All)?|has-/.test(testPath)) {
+  } else if (/closest|matches|querySelector(?:All)?|has-|pseudo-classes/.test(testPath)) {
     if (excludeList.includes(testPath)) {
       res = false;
     } else {
@@ -184,7 +188,8 @@ const filter = testPath => {
 const rootURLs = [
   'css/css-scoping/',
   'css/selectors/',
-  'dom/nodes/'
+  'dom/nodes/',
+  'html/semantics/selectors/'
 ];
 
 (async () => {
