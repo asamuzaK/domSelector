@@ -5740,6 +5740,94 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
+        name: 'valid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':valid', input);
+      const res = finder._matchPseudoClassSelector(leaf, input);
+      assert.deepEqual([...res], [
+        input
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 2;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':valid', input);
+      const res = finder._matchPseudoClassSelector(leaf, input);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':valid', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 2;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':valid', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
         name: 'invalid',
         type: SELECTOR_PSEUDO_CLASS
       };
@@ -5861,6 +5949,94 @@ describe('Finder', () => {
       finder._setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
       assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':invalid', input);
+      const res = finder._matchPseudoClassSelector(leaf, input);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 2;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':invalid', input);
+      const res = finder._matchPseudoClassSelector(leaf, input);
+      assert.deepEqual([...res], [
+        input
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':invalid', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('fieldset');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 2;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':invalid', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
     });
 
     it('should not match', () => {

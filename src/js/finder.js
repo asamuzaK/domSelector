@@ -17,11 +17,11 @@ import {
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
   EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX_A, REG_COMPLEX_B,
-  REG_FORM, REG_FORM_CTRL, REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO,
-  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
-  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
-  SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
+  REG_FORM, REG_FORM_CTRL, REG_FORM_GROUP, REG_FORM_VALID, REG_INTERACT,
+  REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE,
+  REG_TYPE_RANGE, REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -1091,13 +1091,19 @@ export class Finder {
             } else {
               let parent = parentNode;
               while (parent) {
-                if (parent.localName === 'fieldset') {
-                  break;
+                if (REG_FORM_GROUP.test(parent.localName)) {
+                  if (parent.localName === 'fieldset') {
+                    if (parent.disabled && parent.hasAttribute('disabled')) {
+                      break;
+                    }
+                  } else {
+                    break;
+                  }
                 }
                 parent = parent.parentNode;
               }
               if (parent && parentNode.localName !== 'legend' &&
-                  parent.hasAttribute('disabled')) {
+                  (parent.disabled || parent.hasAttribute('disabled'))) {
                 matched.add(node);
               }
             }
@@ -1320,21 +1326,39 @@ export class Finder {
         case 'valid': {
           if (REG_FORM_VALID.test(localName)) {
             if (node.checkValidity()) {
-              matched.add(node);
+              if (node.maxLength >= 0) {
+                if (node.maxLength >= node.value.length) {
+                  matched.add(node);
+                }
+              } else {
+                matched.add(node);
+              }
             }
           } else if (localName === 'fieldset') {
             const walker = this.#walker;
             let refNode = this._traverse(node, walker);
             refNode = walker.firstChild();
             let bool;
-            while (refNode && node.contains(refNode)) {
-              if (REG_FORM_VALID.test(refNode.localName)) {
-                bool = refNode.checkValidity();
-                if (!bool) {
-                  break;
+            if (!refNode) {
+              bool = true;
+            } else {
+              while (refNode && node.contains(refNode)) {
+                if (REG_FORM_VALID.test(refNode.localName)) {
+                  if (refNode.checkValidity()) {
+                    if (refNode.maxLength >= 0) {
+                      bool = refNode.maxLength >= refNode.value.length;
+                    } else {
+                      bool = true;
+                    }
+                  } else {
+                    bool = false;
+                  }
+                  if (!bool) {
+                    break;
+                  }
                 }
+                refNode = walker.nextNode();
               }
-              refNode = walker.nextNode();
             }
             if (bool) {
               matched.add(node);
@@ -1344,7 +1368,11 @@ export class Finder {
         }
         case 'invalid': {
           if (REG_FORM_VALID.test(localName)) {
-            if (!node.checkValidity()) {
+            if (node.checkValidity()) {
+              if (node.maxLength >= 0 && node.maxLength < node.value.length) {
+                matched.add(node);
+              }
+            } else {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
@@ -1352,14 +1380,26 @@ export class Finder {
             let refNode = this._traverse(node, walker);
             refNode = walker.firstChild();
             let bool;
-            while (refNode && node.contains(refNode)) {
-              if (REG_FORM_VALID.test(refNode.localName)) {
-                bool = refNode.checkValidity();
-                if (!bool) {
-                  break;
+            if (!refNode) {
+              bool = true;
+            } else {
+              while (refNode && node.contains(refNode)) {
+                if (REG_FORM_VALID.test(refNode.localName)) {
+                  if (refNode.checkValidity()) {
+                    if (refNode.maxLength >= 0) {
+                      bool = refNode.maxLength >= refNode.value.length;
+                    } else {
+                      bool = true;
+                    }
+                  } else {
+                    bool = false;
+                  }
+                  if (!bool) {
+                    break;
+                  }
                 }
+                refNode = walker.nextNode();
               }
-              refNode = walker.nextNode();
             }
             if (!bool) {
               matched.add(node);

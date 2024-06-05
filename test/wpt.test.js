@@ -2333,6 +2333,275 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('html/semantics/selectors/pseudo-classes/checked-type-change.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text" checked>
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':checked + span'), 'result');
+      input.type = 'radio';
+      assert.isTrue(node.matches(':checked + span'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/checked.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <select id=select1>
+          <optgroup label="options" id=optgroup1>
+          <option value="option1" id=option1 selected>option1
+          <option value="option2" id=option2>option2
+          <option value="option2" id=option3 checked>option3
+        </select>
+        <input type=checkbox id=checkbox1 checked>
+        <input type=checkbox id=checkbox2>
+        <input type=checkbox id=checkbox3 selected>
+        <input type=radio id=radio1 checked>
+        <input type=radio id=radio2>
+        <form>
+          <p><input type=submit contextmenu=formmenu id="submitbutton"></p>
+          <menu type=context id=formmenu>
+            <!-- historical; these should *not* match -->
+            <menuitem type=checkbox checked default id=menuitem1>
+            <menuitem type=checkbox default id=menuitem2>
+            <menuitem type=checkbox id=menuitem3>
+            <menuitem type=radio checked id=menuitem4>
+            <menuitem type=radio id=menuitem5>
+          </menu>
+        </form>
+      `;
+      document.body.innerHTML = html;
+      document.getElementById('checkbox1').removeAttribute('type');
+      document.getElementById('radio1').removeAttribute('type');
+      document.getElementById('option2').selected = 'selected';
+      document.getElementById('checkbox2').click();
+      document.getElementById('radio2').click();
+      await sleep(100);
+      const res = document.querySelectorAll(':checked');
+      assert.deepEqual(res, [
+        document.getElementById('option2'),
+        document.getElementById('checkbox2'),
+        document.getElementById('radio2')
+      ], 'result');
+    });
+  });
+
+  describe('', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <fieldset disabled id=fieldset>
+          <legend><input type=checkbox id=club></legend>
+          <p><label>Name on card: <input id=clubname required></label></p>
+          <p><label>Card number: <input id=clubnum required pattern="[-0-9]+"></label></p>
+        </fieldset>
+        <label disabled></label>
+        <object disabled></object>
+        <output disabled></output>
+        <img disabled/>
+        <meter disabled></meter>
+        <progress disabled></progress>
+      `;
+      document.body.innerHTML = html;
+      const fieldset = document.createElement("fieldset");
+      fieldset.id = "fieldset_nested";
+      fieldset.innerHTML = `
+        <input id=input_nested>
+        <button id=button_nested>button nested</button>
+        <select id=select_nested>
+          <optgroup label="options" id=optgroup_nested>
+            <option value="options" id=option_nested>option nested</option>
+          </optgroup>
+        </select>
+        <textarea id=textarea_nested>textarea nested</textarea>
+        <object id=object_nested></object>
+        <output id=output_nested></output>
+        <fieldset id=fieldset_nested2>
+          <input id=input_nested2>
+        </fieldset>
+      `;
+      document.getElementById("fieldset").appendChild(fieldset);
+      const res = document.querySelectorAll(':disabled');
+      assert.deepEqual(res, [
+        document.getElementById('fieldset'),
+        document.getElementById('clubname'),
+        document.getElementById('clubnum'),
+        document.getElementById('fieldset_nested'),
+        document.getElementById('input_nested'),
+        document.getElementById('button_nested'),
+        document.getElementById('select_nested'),
+        document.getElementById('textarea_nested'),
+        document.getElementById('fieldset_nested2'),
+        document.getElementById('input_nested2'),
+      ], 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/indeterminate-radio.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input type="radio" name="radios">
+        <div id="test"></div>
+        <input type="radio" name="radios" checked>
+      `;
+      document.body.innerHTML = html;
+      document.getElementsByTagName('input')[0].indeterminate = true;
+      const node = document.getElementById('test');
+      assert.isFalse(node.matches('input:indeterminate + #test'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/indeterminate-type-change.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text">
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':indeterminate + span'), 'result');
+      input.type = 'radio';
+      assert.isTrue(node.matches(':indeterminate + span'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/inrange-outofrange-type-change.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text" min="0" max="10" value="5">
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':in-range + span'), 'result');
+      input.type = 'number';
+      assert.isTrue(node.matches(':in-range + span'), 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text" min="0" max="10" value="50">
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':out-of-range + span'), 'result');
+      input.type = 'number';
+      assert.isTrue(node.matches(':out-of-range + span'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/invalid-after-clone.html', () => {
+    it('should get matched node', () => {
+      const html = '<input id="input">';
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      input.value = 'foo';
+      assert.isTrue(input.matches(':valid'), 'match :valid');
+      assert.isTrue(input.validity.valid, 'valid');
+      input.maxLength = 0;
+      assert.isTrue(input.matches(':invalid'), 'match :invalid');
+      // jsdom fails
+      // assert.isFalse(input.validity.valid, 'invalid');
+      const clone = input.cloneNode(true);
+      assert.isTrue(clone.matches(':invalid'), 'match :invalid');
+      // jsdom fails
+      // assert.isFalse(clone.validity.valid, 'invalid');
+    });
+
+    it('should get matched node', () => {
+      const html = '<textarea id="textarea"></textarea>';
+      document.body.innerHTML = html;
+      const input = document.getElementById('textarea');
+      input.value = 'foo';
+      assert.isTrue(input.matches(':valid'), 'match :valid');
+      assert.isTrue(input.validity.valid, 'valid');
+      input.maxLength = 0;
+      assert.isTrue(input.matches(':invalid'), 'match :invalid');
+      // jsdom fails
+      // assert.isFalse(input.validity.valid, 'invalid');
+      const clone = input.cloneNode(true);
+      assert.isTrue(clone.matches(':invalid'), 'match :invalid');
+      // jsdom fails
+      // assert.isFalse(clone.validity.valid, 'invalid');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/placeholder-shown-type-change.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="submit" placeholder="placeholder">
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':placeholder-shown + span'), 'result');
+      input.type = 'text';
+      assert.isTrue(node.matches(':placeholder-shown + span'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/required-optional-hidden.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="hidden" required>
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isFalse(node.matches(':required + span'), 'result');
+      input.type = 'text';
+      assert.isTrue(node.matches(':required + span'), 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="hidden" required>
+        <span id="sibling">This text should be green.</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const node = document.getElementById('sibling');
+      assert.isTrue(node.matches(':not(:optional) + span'), 'result');
+      input.type = 'text';
+      assert.isTrue(node.matches(':not(:optional) + span'), 'result');
+    });
+  });
+
+  describe('html/semantics/selectors/pseudo-classes/valid-invalid.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="styleTests">
+          <fieldset id="empty">
+          </fieldset>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('empty');
+      assert.isTrue(node.matches('#styleTests > :valid'), 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="styleTests">
+          <fieldset id="empty">
+          </fieldset>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('empty');
+      assert.isFalse(node.matches('#styleTests > :invalid'), 'result');
+    });
+  });
+
   describe('jsdom: to-port-to-wpts/query-selector-all.js', () => {
     it('should get matched node(s)', () => {
       const html = `
