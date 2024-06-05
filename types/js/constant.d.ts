@@ -43,6 +43,7 @@ export const WALKER_FILTER: 1281;
 export const ALPHA_NUM: "[A-Z\\d]+";
 export const DIGIT: "(?:0|[1-9]\\d*)";
 export const LANG_PART: "(?:-[A-Z\\d]+)*";
+export const PSEUDO_CLASS_NAME: "(?:any-)?link|visited|checked";
 export const N_ST: "(?:first|last|only)-(?:child|of-type)";
 export const ANB: "[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+-]\\s*(?:0|[1-9]\\d*)";
 export const N_TH: "nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+-]\\s*(?:0|[1-9]\\d*))\\s*\\)";

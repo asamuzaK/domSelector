@@ -57,6 +57,7 @@ export const ALPHA_NUM = '[A-Z\\d]+';
 export const DIGIT = '(?:0|[1-9]\\d*)';
 export const LANG_PART = `(?:-${ALPHA_NUM})*`;
 export const N_ST = '(?:first|last|only)-(?:child|of-type)';
+export const PSEUDO_CLASSES = `(?:any-)?link|visited|checked|${N_ST}`;
 export const ANB =
   `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
@@ -99,7 +100,7 @@ export const LOGICAL_COMPOUND =
 
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
-export const REG_CHILD_INDEXED = new RegExp(`:(?!${N_ST}|${N_TH})`);
+export const REG_CHILD_INDEXED = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_COMPLEX_A = new RegExp(`${COMBO_A}${COMPOUND_I}`, 'i');
 export const REG_COMPLEX_B = new RegExp(`${COMBO_B}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
@@ -114,11 +115,11 @@ export const REG_INVALID_SELECTOR = /^$|^\s*>|,\s*$/;
 export const REG_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 export const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
 export const REG_LOGICAL_COMPLEX_A =
-  new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_A})`);
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX_A})`);
 export const REG_LOGICAL_COMPLEX_B =
-  new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPLEX_B})`);
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX_B})`);
 export const REG_LOGICAL_COMPOUND =
-  new RegExp(`:(?!${N_ST}|${N_TH}|${LOGICAL_COMPOUND})`);
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
 export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
 export const REG_LOGICAL_KEY = new RegExp(`:${LOGICAL_KEY}\\(`);
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;

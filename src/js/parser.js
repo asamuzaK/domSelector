@@ -326,7 +326,7 @@ export const filterSelector = (selector, opt = {}) => {
   if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
     return false;
   }
-  // filter pseudo-classes other than child-indexed and logical combination
+  // filter pseudo-classes
   if (selector.includes(':')) {
     let reg;
     if (REG_LOGICAL_KEY.test(selector)) {
