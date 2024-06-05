@@ -23,7 +23,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.2.2",
+    "@asamuzakjp/nwsapi": "^2.2.3",
     "bidi-js": "^1.0.3",
     "css-tree": "^2.3.1",
     "is-potential-custom-element-name": "^1.0.1"
@@ -43,7 +43,7 @@
     "eslint-plugin-unicorn": "^53.0.0",
     "happy-dom": "^14.12.0",
     "jsdom": "^24.1.0",
-    "linkedom": "^0.18.2",
+    "linkedom": "^0.18.3",
     "mocha": "^10.4.0",
     "sinon": "^18.0.0",
     "typescript": "^5.4.5",
