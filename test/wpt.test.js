@@ -2406,8 +2406,8 @@ describe('local wpt test cases', () => {
         <progress disabled></progress>
       `;
       document.body.innerHTML = html;
-      const fieldset = document.createElement("fieldset");
-      fieldset.id = "fieldset_nested";
+      const fieldset = document.createElement('fieldset');
+      fieldset.id = 'fieldset_nested';
       fieldset.innerHTML = `
         <input id=input_nested>
         <button id=button_nested>button nested</button>
@@ -2423,7 +2423,7 @@ describe('local wpt test cases', () => {
           <input id=input_nested2>
         </fieldset>
       `;
-      document.getElementById("fieldset").appendChild(fieldset);
+      document.getElementById('fieldset').appendChild(fieldset);
       const res = document.querySelectorAll(':disabled');
       assert.deepEqual(res, [
         document.getElementById('fieldset'),
@@ -2435,7 +2435,7 @@ describe('local wpt test cases', () => {
         document.getElementById('select_nested'),
         document.getElementById('textarea_nested'),
         document.getElementById('fieldset_nested2'),
-        document.getElementById('input_nested2'),
+        document.getElementById('input_nested2')
       ], 'result');
     });
   });
