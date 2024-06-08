@@ -3124,6 +3124,50 @@ describe('Finder', () => {
           }
         ],
         loc: null,
+        name: 'contains',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':contains(foo)', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: [
+          {
+            type: RAW,
+            value: 'foo'
+          }
+        ],
+        loc: null,
+        name: 'contains',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':contains(foo)', node, {
+        warn: true
+      });
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node),
+        DOMException, 'Unknown pseudo-class :contains()');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: [
+          {
+            type: RAW,
+            value: 'foo'
+          }
+        ],
+        loc: null,
         name: 'foobar',
         type: SELECTOR_PSEUDO_CLASS
       };
