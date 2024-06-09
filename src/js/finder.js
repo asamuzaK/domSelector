@@ -917,6 +917,14 @@ export class Finder {
             // ignore
             break;
           }
+          // dropped from CSS Selectors 3
+          case 'contains': {
+            if (warn) {
+              const msg = `Unknown pseudo-class :${astName}()`;
+              throw new DOMException(msg, NOT_SUPPORTED_ERR);
+            }
+            break;
+          }
           default: {
             if (!forgive) {
               const msg = `Unknown pseudo-class :${astName}()`;
