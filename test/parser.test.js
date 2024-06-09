@@ -6799,7 +6799,7 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
-    const res = func(':indeterminate');
+    const res = func(':enabled');
     assert.isFalse(res, 'result');
   });
 
