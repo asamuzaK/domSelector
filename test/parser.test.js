@@ -6804,6 +6804,31 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
+    const res = func(':disabled');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':empty');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':indeterminate');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':root');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get true', () => {
+    const res = func(':target');
+    assert.isTrue(res, 'result');
+  });
+
+  it('should get false', () => {
     const res = func(':after');
     assert.isFalse(res, 'result');
   });
@@ -6893,7 +6918,7 @@ describe('filter selector (for nwsapi)', () => {
     assert.isTrue(res, 'result');
   });
 
-  it('should get False', () => {
+  it('should get false', () => {
     const res = func(':is(:nth-child(2n+1), :nth-child(3n+1))');
     assert.isFalse(res, 'result');
   });
