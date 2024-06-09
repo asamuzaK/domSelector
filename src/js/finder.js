@@ -2968,7 +2968,7 @@ export class Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         if (filterSelector(selector, {
           complex: REG_COMPLEX_B.test(selector),
-          descendant: false
+          descendant: true
         })) {
           return this.#nwsapi.select(selector, node);
         }
