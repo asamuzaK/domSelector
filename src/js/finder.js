@@ -120,12 +120,16 @@ export class Finder {
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} opt - options
    * @param {object} [opt.event] - MouseEvent, KeyboardEvent
+   * @param {boolean} [opt.invalidate] - invalidate (for jsdom)
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - node
    */
   _setup(selector, node, opt = {}) {
-    const { event, noexcept, warn } = opt;
+    const { event, invalidate, noexcept, warn } = opt;
+    if (invalidate && node.nodeType === ELEMENT_NODE) {
+      this.#cache = new WeakMap();
+    }
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#event = this._setEvent(event);

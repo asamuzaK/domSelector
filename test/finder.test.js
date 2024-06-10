@@ -174,6 +174,15 @@ describe('Finder', () => {
       });
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      const finder = new Finder(window);
+      const res = finder._setup('*', node, {
+        invalidate: true
+      });
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('init nwsapi', () => {

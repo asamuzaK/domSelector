@@ -2602,6 +2602,31 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('to-upstream/cssom/getComputedStyle-mutations.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <a class="my-link">Hello world</a>
+      `;
+      document.body.innerHTML = html;
+      const node = document.querySelector('.my-link');
+      assert.isTrue(node.matches('.my-link'), 'result');
+      node.href = '#x';
+      assert.isTrue(node.matches('.my-link[href]'), 'result append attr');
+      node.setAttribute('href', '#a');
+      assert.isTrue(node.matches('.my-link[href="#a"]'), 'result change attr');
+      const attr = document.createAttribute('href');
+      attr.value = '#b';
+      node.attributes.setNamedItem(attr);
+      assert.isTrue(node.matches('.my-link[href="#b"]'), 'result replace attr');
+      node.removeAttribute('href');
+      assert.isTrue(node.matches('.my-link'), 'result remove attr');
+      assert.isFalse(node.matches('.my-link[href]'), 'result remove attr');
+      node.textContent = '';
+      assert.isTrue(node.matches('.my-link'), 'result :empty');
+      assert.isTrue(node.matches('.my-link:empty'), 'result :empty');
+    });
+  });
+
   describe('jsdom: to-port-to-wpts/query-selector-all.js', () => {
     it('should get matched node(s)', () => {
       const html = `

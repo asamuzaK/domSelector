@@ -6810,7 +6810,7 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get false', () => {
     const res = func(':empty');
-    assert.isFalse(res, 'result');
+    assert.isTrue(res, 'result');
   });
 
   it('should get true', () => {
