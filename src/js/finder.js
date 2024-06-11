@@ -127,7 +127,8 @@ export class Finder {
    */
   _setup(selector, node, opt = {}) {
     const { event, invalidate, noexcept, warn } = opt;
-    if (invalidate && node.nodeType === ELEMENT_NODE) {
+    if ((typeof selector === 'string' && selector.includes(':has(')) ||
+        (invalidate && node.nodeType === ELEMENT_NODE)) {
       this.#cache = new WeakMap();
     }
     this.#noexcept = !!noexcept;
@@ -1183,7 +1184,12 @@ export class Finder {
           break;
         }
         case 'placeholder-shown': {
-          const { placeholder } = node;
+          let placeholder;
+          if (node.placeholder) {
+            placeholder = node.placeholder;
+          } else if (node.hasAttribute('placeholder')) {
+            placeholder = node.getAttribute('placeholder');
+          }
           if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
             let targetNode;
             if (localName === 'textarea') {

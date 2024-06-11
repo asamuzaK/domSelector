@@ -1826,6 +1826,237 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/is.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="a1">
+          <div class="b" id="b1">
+            Red
+          </div>
+          <div class="c" id="c1">
+            Red
+          </div>
+          <div class="c" id="d">
+            Green
+          </div>
+          <div class="e" id="e1">
+            Green
+          </div>
+          <div class="f" id="f1">
+            Blue
+          </div>
+          <div class="g">
+            <div class="b" id="b2">
+              Blue
+              <div class="b" id="b3">
+                Red
+              </div>
+            </div>
+          </div>
+          <div class="h" id="h1">
+            Blue
+          </div>
+        </div>
+        <div class="c" id="c2">
+          <div id="a2"></div>
+          <div class="e" id="e2">
+            Red
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const a1 = document.getElementById('a1');
+      const a2 = document.getElementById('a2');
+      const b1 = document.getElementById('b1');
+      const b2 = document.getElementById('b2');
+      const b3 = document.getElementById('b3');
+      const c1 = document.getElementById('c1');
+      const d = document.getElementById('d');
+      const e2 = document.getElementById('e2');
+      const f1 = document.getElementById('f1');
+      const h1 = document.getElementById('h1');
+      assert.isTrue(b1.matches('.b'), 'result initial');
+      assert.isTrue(b3.matches('.b'), 'result initial');
+      a1.className = 'a';
+      assert.isTrue(b1.matches('.a :is(.b, .c)'), 'result simple');
+      assert.isTrue(b3.matches('.a :is(.b, .c)'), 'result simple');
+      assert.isTrue(c1.matches('.a :is(.b, .c)'), 'result simple');
+      assert.isTrue(d.matches('.a :is(.c#d, .e)'), 'result compound');
+      assert.isTrue(b2.matches('.a :is(.e+.f, .g>.b, .h)'), 'result complex');
+      assert.isFalse(b3.matches('.a :is(.e+.f, .g>.b, .h)'), 'result complex');
+      assert.isTrue(b3.matches('.a :is(.b, .c)'), 'result complex');
+      assert.isTrue(f1.matches('.a :is(.e+.f, .g>.b, .h)'), 'result complex');
+      assert.isTrue(e2.matches('.a+.c>.e'), 'result nested');
+      a2.className = 'a';
+      assert.isTrue(e2.matches('.a+:is(.b+.f, :is(.c>.e, .g))'),
+        'result nested');
+      assert.isTrue(h1.matches('.a :is(.e+.f, .g>.b, .h)'), 'result complex');
+    });
+  });
+
+  describe('css/selectors/invalidation/not-002.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="a1">
+          <div class="b" id="b1">
+            Red
+          </div>
+          <div class="c" id="c1">
+            Red
+          </div>
+          <div class="c" id="d">
+            Green
+          </div>
+          <div class="e" id="e1">
+            Green
+          </div>
+          <div class="f" id="f1">
+            Blue
+          </div>
+          <div class="g">
+            <div class="b" id="b2">
+              Blue
+              <div class="b" id="b3">
+                Red
+              </div>
+            </div>
+          </div>
+          <div class="h" id="h1">
+            Blue
+          </div>
+        </div>
+        <div class="c" id="c2">
+          <div id="a2"></div>
+          <div class="e" id="e2">
+            Red
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const a1 = document.getElementById('a1');
+      const a2 = document.getElementById('a2');
+      const b1 = document.getElementById('b1');
+      const b2 = document.getElementById('b2');
+      const b3 = document.getElementById('b3');
+      const c1 = document.getElementById('c1');
+      const d = document.getElementById('d');
+      const e2 = document.getElementById('e2');
+      const f1 = document.getElementById('f1');
+      const h1 = document.getElementById('h1');
+      assert.isTrue(b1.matches('.b'), 'result initial');
+      assert.isTrue(b2.matches('.g>.b'), 'result initial');
+      assert.isTrue(b3.matches('.b'), 'result initial');
+      a1.className = 'a';
+      assert.isTrue(b1.matches('.a :not(:not(.b, .c))'), 'result simple');
+      assert.isTrue(b3.matches('.a :not(:not(.b, .c))'), 'result simple');
+      assert.isTrue(c1.matches('.a :not(:not(.b, .c))'), 'result simple');
+      assert.isTrue(d.matches('.a :not(:not(.c#d, .e))'), 'result compound');
+      assert.isTrue(b2.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        'result complex');
+      assert.isTrue(b3.matches('.a :not(:not(.b, .c))'), 'result complex');
+      assert.isTrue(f1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        'result complex');
+      assert.isTrue(e2.matches('.a+.c>.e'), 'result nested');
+      a2.className = 'a';
+      assert.isTrue(e2.matches('.a+:not(:not(.b+.f, :is(.c>.e, .g)))'),
+        'result nested');
+      assert.isTrue(h1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        'result complex');
+    });
+  });
+
+  describe('css/selectors/invalidation/placeholder-shown.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text">
+        <span id="target"></span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const target = document.getElementById('target');
+      const selector = 'input:placeholder-shown + #target';
+      assert.isFalse(target.matches(selector), 'result initial');
+      input.setAttribute('placeholder', 'PLACEHOLDER');
+      assert.isTrue(target.matches(selector), 'result placeholder text');
+      input.setAttribute('placeholder', '');
+      assert.isTrue(target.matches(selector), 'result empty placeholder text');
+      input.removeAttribute('placeholder');
+      assert.isFalse(target.matches(selector), 'result remove placeholder');
+    });
+  });
+
+  describe('css/selectors/invalidation/subject-has-invalidation-with-display-none-anchor-element.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <p>Click checkbox</p>
+        <div id="target">PASS</div>
+        <input type="checkbox" id="checkme">
+        <label for="checkme">Check me!</label>
+      `;
+      document.body.innerHTML = html;
+      const checkme = document.getElementById('checkme');
+      const target = document.getElementById('target');
+      const selector = '#target:has(~ input:checked)';
+      checkme.checked = false;
+      assert.isFalse(target.matches(selector), 'result initial');
+      checkme.checked = true;
+      assert.isTrue(target.matches(selector), 'result checked');
+      checkme.checked = false;
+      assert.isFalse(target.matches(selector), 'result unchecked');
+    });
+  });
+
+  describe('css/selectors/invalidation/where.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="a1">
+          <div class="g">
+          </div>
+          <div class="h">
+          </div>
+          <div class="i" id="i1">
+            Blue
+          </div>
+        </div>
+        <div class="b" id="b1">
+          Yellow
+        </div>
+        <div class="c" id="c1">
+          Red
+        </div>
+        <div class="c" id="d">
+          Green
+        </div>
+        <div class="h" id="h1">
+          Red
+        </div>
+        <div class="f" id="f1">
+          Yellow
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const a1 = document.getElementById('a1');
+      const b1 = document.getElementById('b1');
+      const c1 = document.getElementById('c1');
+      const d = document.getElementById('d');
+      const f1 = document.getElementById('f1');
+      const h1 = document.getElementById('h1');
+      const i1 = document.getElementById('i1');
+      assert.isTrue(b1.matches('.b'), 'result initial');
+      assert.isTrue(b1.matches(':where(.b, .c)'), 'result initial');
+      assert.isTrue(c1.matches(':where(.b, .c)'), 'result initial');
+      assert.isTrue(d.matches(':where(.b, .c)'), 'result initial');
+      assert.isTrue(h1.matches('.h'), 'result initial');
+      a1.className = 'a';
+      assert.isTrue(d.matches('.a~:where(.c#d, .e)'), 'result compound');
+      assert.isTrue(h1.matches('.h'), 'result complex');
+      assert.isTrue(h1.matches(':where(.a~.h, .a~.h+.f)'), 'result complex');
+      assert.isTrue(f1.matches(':where(.a~.h, .a~.h+.f)'), 'result complex');
+      assert.isTrue(i1.matches(':where(.a>:where(.g+.h, .b)~.i)'),
+        'result nested');
+    });
+  });
+
   describe('css/selectors/is-where-basic.html', () => {
     const html = `
       <main id=main>
