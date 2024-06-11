@@ -70,7 +70,7 @@ export const SUB_TYPE = '\\[[^\\]]+\\]|[#.:][\\w-]+';
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 // LOGICAL_KEY: excludes :has()
-export const LOGICAL_KEY = '(?:is|not|where)';
+export const LOGICAL_KEY = '(?:is|not)';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMBO_A = '\\s?[\\s>~+]\\s?';
 export const COMBO_B = '\\s?[~+]\\s?';
