@@ -1183,22 +1183,23 @@ export class Finder {
           break;
         }
         case 'placeholder-shown': {
-          let targetNode;
-          if (localName === 'textarea') {
-            targetNode = node;
-          } else if (localName === 'input') {
-            if (node.hasAttribute('type')) {
-              if (REG_TYPE_TEXT.test(node.getAttribute('type'))) {
+          const { placeholder } = node;
+          if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
+            let targetNode;
+            if (localName === 'textarea') {
+              targetNode = node;
+            } else if (localName === 'input') {
+              if (node.hasAttribute('type')) {
+                if (REG_TYPE_TEXT.test(node.getAttribute('type'))) {
+                  targetNode = node;
+                }
+              } else {
                 targetNode = node;
               }
-            } else {
-              targetNode = node;
             }
-          }
-          const placeholder =
-            node.placeholder || node.getAttribute('placeholder');
-          if (targetNode && node.value === '' && !/[\r\n]/.test(placeholder)) {
-            matched.add(node);
+            if (targetNode && node.value === '') {
+              matched.add(node);
+            }
           }
           break;
         }
