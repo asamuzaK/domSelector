@@ -1985,6 +1985,27 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/subject-has-invalidation-with-display-none-anchor-element.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <p>Click checkbox</p>
+        <div id="target">PASS</div>
+        <input type="checkbox" id="checkme">
+        <label for="checkme">Check me!</label>
+      `;
+      document.body.innerHTML = html;
+      const checkme = document.getElementById('checkme');
+      const target = document.getElementById('target');
+      const selector = '#target:has(~ input:checked)';
+      checkme.checked = false;
+      assert.isFalse(target.matches(selector), 'result initial');
+      checkme.checked = true;
+      assert.isTrue(target.matches(selector), 'result checked');
+      checkme.checked = false;
+      assert.isFalse(target.matches(selector), 'result unchecked');
+    });
+  });
+
   describe('css/selectors/invalidation/where.html', () => {
     it('should get matched node', () => {
       const html = `

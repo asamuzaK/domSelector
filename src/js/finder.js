@@ -127,7 +127,8 @@ export class Finder {
    */
   _setup(selector, node, opt = {}) {
     const { event, invalidate, noexcept, warn } = opt;
-    if (invalidate && node.nodeType === ELEMENT_NODE) {
+    if ((typeof selector === 'string' && selector.includes(':has(')) ||
+        (invalidate && node.nodeType === ELEMENT_NODE)) {
       this.#cache = new WeakMap();
     }
     this.#noexcept = !!noexcept;
