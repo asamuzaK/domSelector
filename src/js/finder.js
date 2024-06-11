@@ -1183,7 +1183,12 @@ export class Finder {
           break;
         }
         case 'placeholder-shown': {
-          const { placeholder } = node;
+          let placeholder;
+          if (node.placeholder) {
+            placeholder = node.placeholder;
+          } else if (node.hasAttribute('placeholder')) {
+            placeholder = node.getAttribute('placeholder');
+          }
           if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
             let targetNode;
             if (localName === 'textarea') {

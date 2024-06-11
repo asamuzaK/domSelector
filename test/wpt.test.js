@@ -1826,6 +1826,26 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/placeholder-shown.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input id="input" type="text">
+        <span id="target"></span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const target = document.getElementById('target');
+      const selector = 'input:placeholder-shown + #target';
+      assert.isFalse(target.matches(selector), 'result initial');
+      input.setAttribute('placeholder', 'PLACEHOLDER');
+      assert.isTrue(target.matches(selector), 'result placeholder text');
+      input.setAttribute('placeholder', '');
+      assert.isTrue(target.matches(selector), 'result empty placeholder text');
+      input.removeAttribute('placeholder');
+      assert.isFalse(target.matches(selector), 'result remove placeholder');
+    });
+  });
+
   describe('css/selectors/is-where-basic.html', () => {
     const html = `
       <main id=main>
