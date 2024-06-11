@@ -1195,9 +1195,9 @@ export class Finder {
               targetNode = node;
             }
           }
-          if (targetNode && node.value === '' &&
-              node.hasAttribute('placeholder') &&
-              node.getAttribute('placeholder').trim().length) {
+          const placeholder =
+            node.placeholder || node.getAttribute('placeholder');
+          if (targetNode && node.value === '' && !/[\r\n]/.test(placeholder)) {
             matched.add(node);
           }
           break;

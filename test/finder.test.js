@@ -4901,7 +4901,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    it('should get matched node(s)', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4909,6 +4909,82 @@ describe('Finder', () => {
       };
       const node = document.createElement('input');
       node.setAttribute('placeholder', ' ');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':placeholder-shown', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      node.setAttribute('placeholder', '');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':placeholder-shown', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      node.placeholder = 'foo';
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':placeholder-shown', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      node.placeholder = '';
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':placeholder-shown', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'placeholder-shown',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      node.placeholder = 'foo\r\nbar';
       node.value = '';
       const parent = document.getElementById('div0');
       parent.appendChild(node);
