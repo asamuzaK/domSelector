@@ -77,11 +77,11 @@ export const COMBO_B = '\\s?[~+]\\s?';
 export const COMPLEX_A = `${COMPOUND}(?:${COMBO_A}${COMPOUND})*`;
 export const COMPLEX_B = `${COMPOUND}(?:${COMBO_B}${COMPOUND})*`;
 export const NESTED_LOGICAL_A =
-  `:${LOGICAL_KEY}\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
+  `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 export const NESTED_LOGICAL_B =
-  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_A}(?:\\s*,\\s*${COMPLEX_A})*\\s*\\)`;
+  `:is\\(\\s*${COMPLEX_A}(?:\\s*,\\s*${COMPLEX_A})*\\s*\\)`;
 export const NESTED_LOGICAL_C =
-  `:${LOGICAL_KEY}\\(\\s*${COMPLEX_B}(?:\\s*,\\s*${COMPLEX_B})*\\s*\\)`;
+  `:is\\(\\s*${COMPLEX_B}(?:\\s*,\\s*${COMPLEX_B})*\\s*\\)`;
 export const COMPOUND_A =
   `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_A})+)`;
 export const COMPOUND_B =
