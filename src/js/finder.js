@@ -127,8 +127,8 @@ export class Finder {
    */
   _setup(selector, node, opt = {}) {
     const { event, invalidate, noexcept, warn } = opt;
-    if ((typeof selector === 'string' && selector.includes(':has(')) ||
-        (invalidate && node.nodeType === ELEMENT_NODE)) {
+    // clear cache in jsdom internal process
+    if (invalidate && node.nodeType === ELEMENT_NODE) {
       this.#cache = new WeakMap();
     }
     this.#noexcept = !!noexcept;
@@ -205,7 +205,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const branches = walkAST(cssAst);
+      const { branches, info: { hasPseudo } } = walkAST(cssAst);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -265,7 +265,7 @@ export class Finder {
         nodes[i] = [];
         i++;
       }
-      if (this.#content) {
+      if (this.#content && !hasPseudo) {
         let cachedItem;
         if (this.#cache.has(this.#content)) {
           cachedItem = this.#cache.get(this.#content);
@@ -380,7 +380,8 @@ export class Finder {
       if (this.#cache.has(selector)) {
         selectorBranches = this.#cache.get(selector);
       } else {
-        selectorBranches = walkAST(selector);
+        const { branches } = walkAST(selector);
+        selectorBranches = branches;
         this.#cache.set(selector, selectorBranches);
       }
     }
@@ -845,7 +846,7 @@ export class Finder {
       if (this.#cache.has(ast)) {
         astData = this.#cache.get(ast);
       } else {
-        const branches = walkAST(ast);
+        const { branches } = walkAST(ast);
         const selectors = [];
         const twigBranches = [];
         for (const [...leaves] of branches) {
@@ -1688,7 +1689,8 @@ export class Finder {
     const { children: astChildren, name: astName } = ast;
     let res;
     if (Array.isArray(astChildren)) {
-      const [branch] = walkAST(astChildren[0]);
+      const { branches } = walkAST(astChildren[0]);
+      const [branch] = branches;
       const [...leaves] = branch;
       const { host } = node;
       if (astName === 'host') {

@@ -185,16 +185,22 @@ export const parseSelector = selector => {
  */
 export const walkAST = (ast = {}) => {
   const branches = new Set();
+  let hasPseudo;
   let hasPseudoFunc;
   const opt = {
     enter: node => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
-      } else if ((node.type === SELECTOR_PSEUDO_CLASS &&
-                  REG_LOGICAL_PSEUDO.test(node.name)) ||
-                 (node.type === SELECTOR_PSEUDO_ELEMENT &&
-                  REG_SHADOW_PSEUDO.test(node.name))) {
-        hasPseudoFunc = true;
+      } else if (node.type === SELECTOR_PSEUDO_CLASS) {
+        hasPseudo = true;
+        if (REG_LOGICAL_PSEUDO.test(node.name)) {
+          hasPseudoFunc = true;
+        }
+      } else if (node.type === SELECTOR_PSEUDO_ELEMENT) {
+        hasPseudo = true;
+        if (REG_SHADOW_PSEUDO.test(node.name)) {
+          hasPseudoFunc = true;
+        }
       }
     }
   };
@@ -241,7 +247,17 @@ export const walkAST = (ast = {}) => {
       }
     });
   }
-  return [...branches];
+  const info = {};
+  if (hasPseudo) {
+    info.hasPseudo = hasPseudo;
+  }
+  if (hasPseudoFunc) {
+    info.hasPseudoFunc = hasPseudoFunc;
+  }
+  return {
+    info,
+    branches: [...branches]
+  };
 };
 
 /**

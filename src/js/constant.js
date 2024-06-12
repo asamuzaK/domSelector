@@ -54,11 +54,11 @@ export const WALKER_FILTER = 0x501;
 
 /* selectors */
 export const ALPHA_NUM = '[A-Z\\d]+';
+export const CHILD_IDX = '(?:first|last|only)-(?:child|of-type)';
 export const DIGIT = '(?:0|[1-9]\\d*)';
 export const LANG_PART = `(?:-${ALPHA_NUM})*`;
-export const N_ST = '(?:first|last|only)-(?:child|of-type)';
 export const PSEUDO_CLASSES =
-  `(?:any-)?link|${N_ST}|checked|empty|indeterminate|root|target|visited`;
+  `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|root|target|visited`;
 export const ANB =
   `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
