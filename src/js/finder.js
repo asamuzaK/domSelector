@@ -692,14 +692,15 @@ export class Finder {
   /**
    * match :has() pseudo-class function
    * @private
-   * @param {Array.<object>} leaves - AST leaves
+   * @param {Array.<object>} astLeaves - AST leaves
    * @param {object} node - Element node
    * @param {object} opt - options
    * @returns {boolean} - result
    */
-  _matchHasPseudoFunc(leaves, node, opt = {}) {
+  _matchHasPseudoFunc(astLeaves, node, opt = {}) {
     let bool;
-    if (Array.isArray(leaves) && leaves.length) {
+    if (Array.isArray(astLeaves) && astLeaves.length) {
+      const leaves = astLeaves.map(i => i);
       const [leaf] = leaves;
       const { type: leafType } = leaf;
       let combo;
@@ -730,8 +731,7 @@ export class Finder {
       if (nodes.size) {
         if (leaves.length) {
           for (const nextNode of nodes) {
-            bool = this._matchHasPseudoFunc(Object.assign([], leaves),
-              nextNode, opt);
+            bool = this._matchHasPseudoFunc(leaves, nextNode, opt);
             if (bool) {
               break;
             }
@@ -763,7 +763,7 @@ export class Finder {
       } else {
         let bool;
         for (const leaves of branches) {
-          bool = this._matchHasPseudoFunc(Object.assign([], leaves), node, opt);
+          bool = this._matchHasPseudoFunc(leaves, node, opt);
           if (bool) {
             break;
           }
