@@ -7063,6 +7063,11 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
+    const res = func(':not(:not(.foo, .bar))');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
     const res = func(':not(:is(.foo > .bar))');
     assert.isFalse(res, 'result');
   });
