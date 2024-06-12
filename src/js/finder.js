@@ -127,7 +127,7 @@ export class Finder {
    */
   _setup(selector, node, opt = {}) {
     const { event, invalidate, noexcept, warn } = opt;
-    // clear cache for jsdom internal process
+    // clear cache in jsdom internal process
     if (invalidate && node.nodeType === ELEMENT_NODE) {
       this.#cache = new WeakMap();
     }
