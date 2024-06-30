@@ -162,12 +162,13 @@ export class Finder {
   /**
    * set event
    * @private
-   * @param {object} event - instance of MouseEvent, KeyboardEvent
+   * @param {object} event - instance of KeyboardEvent, MouseEvent
    * @returns {object} - result
    */
   _setEvent(event) {
-    return (event instanceof this.#window.MouseEvent ||
-            event instanceof this.#window.KeyboardEvent)
+    // NOTE: PointerEvent not implemented in jsdom
+    return (event instanceof this.#window.KeyboardEvent ||
+            event instanceof this.#window.MouseEvent)
       ? event
       : null;
   }
