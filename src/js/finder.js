@@ -2866,10 +2866,11 @@ export class Finder {
       }
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.match(selector, node);
         }
       }
@@ -2898,10 +2899,11 @@ export class Finder {
       }
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.closest(selector, node);
         }
       }
@@ -2941,10 +2943,11 @@ export class Finder {
         document = node.ownerDocument;
       }
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_B.test(selector),
           descendant: false
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.first(selector, node);
         }
       }
@@ -2979,10 +2982,11 @@ export class Finder {
         document = node.ownerDocument;
       }
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_B.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.select(selector, node);
         }
       }
