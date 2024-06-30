@@ -67,12 +67,63 @@ export const resolveContent = node => {
       break;
     }
   }
-  const tree = document.createTreeWalker(root, WALKER_FILTER);
+  const walker = document.createTreeWalker(root, WALKER_FILTER);
   return [
     document,
     root,
-    tree
+    walker
   ];
+};
+
+/**
+ * traverse node tree
+ * @private
+ * @param {object} node - node
+ * @param {object} walker - tree walker
+ * @returns {?object} - current node
+ */
+export const traverseNode = (node, walker) => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
+  let current;
+  if (walker?.currentNode) {
+    let refNode = walker.currentNode;
+    if (refNode === node) {
+      current = refNode;
+    } else if (refNode.contains(node)) {
+      refNode = walker.nextNode();
+      while (refNode) {
+        if (refNode === node) {
+          current = refNode;
+          break;
+        }
+        refNode = walker.nextNode();
+      }
+    } else {
+      if (refNode !== walker.root) {
+        while (refNode) {
+          if (refNode === walker.root || refNode === node) {
+            break;
+          }
+          refNode = walker.parentNode();
+        }
+      }
+      if (node.nodeType === ELEMENT_NODE) {
+        while (refNode) {
+          if (refNode === node) {
+            current = refNode;
+            break;
+          }
+          refNode = walker.nextNode();
+        }
+      } else {
+        current = refNode;
+      }
+    }
+  }
+  return current ?? null;
 };
 
 /**

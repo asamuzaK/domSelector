@@ -19,6 +19,14 @@ describe('DOM utility functions', () => {
       <body>
         <div id="div0">
         </div>
+        <div id="div1">
+          <div id="div2">
+            <ul id="ul1">
+              <li id="li1" class="li">foo</li>
+              <li id="li2" class="li">bar</li>
+              <li id="li3" class="li"></li>
+            </ul>
+          </div>
       </body>
     </html>`;
   const domOpt = {
@@ -151,6 +159,71 @@ describe('DOM utility functions', () => {
         doc,
         tree
       ]);
+    });
+  });
+
+  describe('traverse node tree', () => {
+    const func = domUtil.traverseNode;
+    let treeWalker;
+    beforeEach(() => {
+      treeWalker = document.createTreeWalker(document, WALKER_FILTER);
+    });
+    afterEach(() => {
+      treeWalker = null;
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should get null', () => {
+      const res = func(document);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const res = func(document, treeWalker);
+      assert.deepEqual(res, document, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('ul1');
+      const res = func(node, treeWalker);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('ul1');
+      func(document.getElementById('li1'), treeWalker);
+      const res = func(node, treeWalker);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('ol');
+      const res = func(node, treeWalker);
+      assert.isNull(res, null, 'result');
+    });
+
+    it('should get matched node', () => {
+      const parent = document.createElement('ol');
+      const node = document.createElement('li');
+      parent.appendChild(node);
+      const walker = document.createTreeWalker(parent, WALKER_FILTER);
+      const res = func(node, walker);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const frag = document.createDocumentFragment();
+      const parent = document.createElement('ol');
+      const node = document.createElement('li');
+      parent.appendChild(node);
+      frag.appendChild(parent);
+      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      func(node, walker);
+      const res = func(frag, walker);
+      assert.deepEqual(res, frag, 'result');
     });
   });
 
