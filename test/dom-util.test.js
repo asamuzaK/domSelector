@@ -157,9 +157,8 @@ describe('DOM utility functions', () => {
   describe('is in shadow tree', () => {
     const func = domUtil.isInShadowTree;
 
-    it('should not match', () => {
-      const res = func();
-      assert.isFalse(res, 'result');
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
     it('should not match', () => {
@@ -235,9 +234,8 @@ describe('DOM utility functions', () => {
   describe('get slotted text content', () => {
     const func = domUtil.getSlottedTextContent;
 
-    it('should get null', () => {
-      const res = func();
-      assert.isNull(res, 'result');
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
     it('should get null', () => {
@@ -315,9 +313,8 @@ describe('DOM utility functions', () => {
   describe('get directionality of node', () => {
     const func = domUtil.getDirectionality;
 
-    it('should get null', () => {
-      const res = func();
-      assert.isNull(res, 'result');
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
     it('should get value', () => {
@@ -765,9 +762,8 @@ describe('DOM utility functions', () => {
   describe('is content editable', () => {
     const func = domUtil.isContentEditable;
 
-    it('should get result', () => {
-      const res = func();
-      assert.isFalse(res, 'result');
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
     it('should get result', () => {
@@ -851,9 +847,8 @@ describe('DOM utility functions', () => {
   describe('get namespace URI', () => {
     const func = domUtil.getNamespaceURI;
 
-    it('should get null', () => {
-      const res = func();
-      assert.isNull(res, 'result');
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
     it('should get null', () => {
@@ -947,10 +942,18 @@ describe('DOM utility functions', () => {
   describe('is preceding', () => {
     const func = domUtil.isPreceding;
 
-    it('should get result', () => {
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
       const node = document.documentElement;
-      const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.throws(() => func(node), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      const node = document.documentElement;
+      assert.throws(() => func(null, node), TypeError, 'Unexpected type Null');
     });
 
     it('should get result', () => {
