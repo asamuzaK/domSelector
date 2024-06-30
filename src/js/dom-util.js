@@ -67,12 +67,63 @@ export const resolveContent = node => {
       break;
     }
   }
-  const tree = document.createTreeWalker(root, WALKER_FILTER);
+  const walker = document.createTreeWalker(root, WALKER_FILTER);
   return [
     document,
     root,
-    tree
+    walker
   ];
+};
+
+/**
+ * traverse node tree
+ * @private
+ * @param {object} node - node
+ * @param {object} walker - tree walker
+ * @returns {?object} - current node
+ */
+export const traverseNode = (node, walker) => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
+  let current;
+  if (walker?.currentNode) {
+    let refNode = walker.currentNode;
+    if (refNode === node) {
+      current = refNode;
+    } else if (refNode.contains(node)) {
+      refNode = walker.nextNode();
+      while (refNode) {
+        if (refNode === node) {
+          current = refNode;
+          break;
+        }
+        refNode = walker.nextNode();
+      }
+    } else {
+      if (refNode !== walker.root) {
+        while (refNode) {
+          if (refNode === walker.root || refNode === node) {
+            break;
+          }
+          refNode = walker.parentNode();
+        }
+      }
+      if (node.nodeType === ELEMENT_NODE) {
+        while (refNode) {
+          if (refNode === node) {
+            current = refNode;
+            break;
+          }
+          refNode = walker.nextNode();
+        }
+      } else {
+        current = refNode;
+      }
+    }
+  }
+  return current ?? null;
 };
 
 /**
@@ -80,7 +131,11 @@ export const resolveContent = node => {
  * @param {object} node - node
  * @returns {boolean} - result;
  */
-export const isInShadowTree = (node = {}) => {
+export const isInShadowTree = node => {
+  if (!node || !node.type) {
+    // throws
+    verifyNode(node);
+  }
   let bool;
   if (node.nodeType === ELEMENT_NODE ||
       node.nodeType === DOCUMENT_FRAGMENT_NODE) {
@@ -103,7 +158,11 @@ export const isInShadowTree = (node = {}) => {
  * @param {object} node - Element node
  * @returns {?string} - text content
  */
-export const getSlottedTextContent = (node = {}) => {
+export const getSlottedTextContent = node => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
   let res;
   if (node.localName === 'slot' && isInShadowTree(node)) {
     const nodes = node.assignedNodes();
@@ -127,7 +186,11 @@ export const getSlottedTextContent = (node = {}) => {
  * @param {object} node - Element node
  * @returns {?string} - 'ltr' / 'rtl'
  */
-export const getDirectionality = (node = {}) => {
+export const getDirectionality = node => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
@@ -248,7 +311,11 @@ export const getDirectionality = (node = {}) => {
  * @param {object} node - Element node
  * @returns {boolean} - result
  */
-export const isContentEditable = (node = {}) => {
+export const isContentEditable = node => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     if (typeof node.isContentEditable === 'boolean') {
@@ -281,8 +348,12 @@ export const isContentEditable = (node = {}) => {
  * @returns {?string} - namespace URI
  */
 export const getNamespaceURI = (ns, node) => {
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  }
   let res;
-  if (ns && typeof ns === 'string' && node?.nodeType === ELEMENT_NODE) {
+  if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
     const { attributes } = node;
     for (const attr of attributes) {
       const { name, namespaceURI, prefix, value } = attr;
@@ -329,7 +400,14 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
  * @param {object} nodeB - Element node
  * @returns {boolean} - result
  */
-export const isPreceding = (nodeA = {}, nodeB = {}) => {
+export const isPreceding = (nodeA, nodeB) => {
+  if (!nodeA || !nodeA.nodeType) {
+    // throws
+    verifyNode(nodeA);
+  } else if (!nodeB || !nodeB.nodeType) {
+    // throws
+    verifyNode(nodeB);
+  }
   let res;
   if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
     const posBit = nodeB.compareDocumentPosition(nodeA);

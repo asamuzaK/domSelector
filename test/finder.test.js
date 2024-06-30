@@ -444,61 +444,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('traverse tree walker', () => {
-    it('should get matched node', () => {
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      const res = finder._traverse(document);
-      assert.deepEqual(res, document, 'result');
-    });
-
-    it('should get matched node', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      const res = finder._traverse(node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      const walker = finder._createTreeWalker(document);
-      finder._traverse(document, walker);
-      const res = finder._traverse(node, walker);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      const walker = finder._createTreeWalker(document);
-      finder._traverse(document.getElementById('li1'), walker);
-      const res = finder._traverse(node, walker);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.createElement('ol');
-      const finder = new Finder(window);
-      finder._setup('*', document);
-      finder._createTreeWalker(document);
-      const res = finder._traverse(node);
-      assert.isNull(res, null, 'result');
-    });
-
-    it('should get matched node', () => {
-      const node = document.createElement('ol');
-      const finder = new Finder(window);
-      finder._setup('*', node);
-      finder._createTreeWalker(node);
-      const res = finder._traverse(node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
   describe('collect nth child', () => {
     it('should not match', () => {
       const anb = {

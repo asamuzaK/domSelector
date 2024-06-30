@@ -6,7 +6,8 @@
 import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from '@asamuzakjp/nwsapi';
 import {
-  isContentEditable, isInShadowTree, resolveContent, sortNodes, verifyNode
+  isContentEditable, isInShadowTree, resolveContent, sortNodes, traverseNode,
+  verifyNode
 } from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
@@ -315,51 +316,6 @@ export class Finder {
   }
 
   /**
-   * traverse tree walker
-   * @private
-   * @param {object} node - Element node
-   * @param {object} [walker] - tree walker
-   * @returns {?object} - current node
-   */
-  _traverse(node, walker = this.#walker) {
-    let refNode = walker.currentNode;
-    let current;
-    if (refNode === node) {
-      current = refNode;
-    } else if (refNode.contains(node)) {
-      refNode = walker.nextNode();
-      while (refNode) {
-        if (refNode === node) {
-          current = refNode;
-          break;
-        }
-        refNode = walker.nextNode();
-      }
-    } else {
-      if (refNode !== walker.root) {
-        while (refNode) {
-          if (refNode === walker.root || refNode === node) {
-            break;
-          }
-          refNode = walker.parentNode();
-        }
-      }
-      if (node?.nodeType === ELEMENT_NODE) {
-        while (refNode) {
-          if (refNode === node) {
-            current = refNode;
-            break;
-          }
-          refNode = walker.nextNode();
-        }
-      } else {
-        current = refNode;
-      }
-    }
-    return current ?? null;
-  }
-
-  /**
    * collect nth child
    * @private
    * @param {object} anb - An+B options
@@ -387,14 +343,14 @@ export class Finder {
     }
     if (parentNode) {
       const walker = this.#walker;
-      let refNode = this._traverse(parentNode, walker);
+      let refNode = traverseNode(parentNode, walker);
       refNode = walker.firstChild();
       let l = 0;
       while (refNode) {
         l++;
         refNode = walker.nextSibling();
       }
-      refNode = this._traverse(parentNode, walker);
+      refNode = traverseNode(parentNode, walker);
       const selectorNodes = new Set();
       if (selectorBranches) {
         refNode = walker.firstChild();
@@ -416,7 +372,7 @@ export class Finder {
       if (a === 0) {
         if (b > 0 && b <= l) {
           if (selectorNodes.size) {
-            refNode = this._traverse(parentNode, walker);
+            refNode = traverseNode(parentNode, walker);
             if (reverse) {
               refNode = walker.lastChild();
             } else {
@@ -438,7 +394,7 @@ export class Finder {
               }
             }
           } else if (!selector) {
-            refNode = this._traverse(parentNode, walker);
+            refNode = traverseNode(parentNode, walker);
             if (reverse) {
               refNode = walker.lastChild();
             } else {
@@ -468,7 +424,7 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
-          refNode = this._traverse(parentNode, walker);
+          refNode = traverseNode(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
@@ -547,7 +503,7 @@ export class Finder {
     const matched = new Set();
     if (parentNode) {
       const walker = this.#walker;
-      let refNode = this._traverse(parentNode, walker);
+      let refNode = traverseNode(parentNode, walker);
       refNode = walker.firstChild();
       let l = 0;
       while (refNode) {
@@ -557,7 +513,7 @@ export class Finder {
       // :first-of-type, :last-of-type
       if (a === 0) {
         if (b > 0 && b <= l) {
-          refNode = this._traverse(parentNode, walker);
+          refNode = traverseNode(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
@@ -589,7 +545,7 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
-          refNode = this._traverse(parentNode, walker);
+          refNode = traverseNode(parentNode, walker);
           if (reverse) {
             refNode = walker.lastChild();
           } else {
@@ -1277,7 +1233,7 @@ export class Finder {
             }
             if (form) {
               const walker = this.#walker;
-              let nextNode = this._traverse(form, walker);
+              let nextNode = traverseNode(form, walker);
               nextNode = walker.firstChild();
               while (nextNode && form.contains(nextNode)) {
                 const nodeName = nextNode.localName;
@@ -1325,7 +1281,7 @@ export class Finder {
             } else {
               const defaultOpt = new Set();
               const walker = this.#walker;
-              let refNode = this._traverse(parentNode, walker);
+              let refNode = traverseNode(parentNode, walker);
               refNode = walker.firstChild();
               while (refNode) {
                 if (refNode.selected || refNode.hasAttribute('selected')) {
@@ -1356,7 +1312,7 @@ export class Finder {
             }
           } else if (localName === 'fieldset') {
             const walker = this.#walker;
-            let refNode = this._traverse(node, walker);
+            let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
             let bool;
             if (!refNode) {
@@ -1397,7 +1353,7 @@ export class Finder {
             }
           } else if (localName === 'fieldset') {
             const walker = this.#walker;
-            let refNode = this._traverse(node, walker);
+            let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
             let bool;
             if (!refNode) {
@@ -1989,7 +1945,7 @@ export class Finder {
         case '~': {
           if (parentNode) {
             const walker = this._createTreeWalker(parentNode);
-            let refNode = this._traverse(node, walker);
+            let refNode = traverseNode(node, walker);
             refNode = walker.nextSibling();
             while (refNode) {
               const bool = this._matchLeaves(leaves, refNode, opt);
@@ -2003,7 +1959,7 @@ export class Finder {
         }
         case '>': {
           const walker = this._createTreeWalker(node);
-          let refNode = this._traverse(node, walker);
+          let refNode = traverseNode(node, walker);
           refNode = walker.firstChild();
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode, opt);
@@ -2022,7 +1978,7 @@ export class Finder {
           }
           if (pending) {
             const walker = this._createTreeWalker(node);
-            let refNode = this._traverse(node, walker);
+            let refNode = traverseNode(node, walker);
             refNode = walker.nextNode();
             while (refNode && node.contains(refNode)) {
               const bool = this._matchLeaves(leaves, refNode, opt);
@@ -2049,7 +2005,7 @@ export class Finder {
         case '~': {
           if (parentNode) {
             const walker = this._createTreeWalker(parentNode);
-            let refNode = this._traverse(parentNode, walker);
+            let refNode = traverseNode(parentNode, walker);
             refNode = walker.firstChild();
             while (refNode) {
               if (refNode === node) {
@@ -2104,7 +2060,7 @@ export class Finder {
    */
   _findNode(leaves, opt) {
     const { node } = opt;
-    let refNode = this._traverse(node, this.#qswalker);
+    let refNode = traverseNode(node, this.#qswalker);
     let matchedNode;
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
@@ -2545,7 +2501,7 @@ export class Finder {
           node = this.#root;
           walker = this.#walker;
         }
-        let nextNode = this._traverse(node, walker);
+        let nextNode = traverseNode(node, walker);
         while (nextNode) {
           let bool = false;
           if (this.#node.nodeType === ELEMENT_NODE) {
@@ -2572,7 +2528,7 @@ export class Finder {
             }
           }
           if (nextNode !== walker.currentNode) {
-            nextNode = this._traverse(nextNode, walker);
+            nextNode = traverseNode(nextNode, walker);
           }
           nextNode = walker.nextNode();
         }
@@ -2866,10 +2822,11 @@ export class Finder {
       }
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.match(selector, node);
         }
       }
@@ -2898,10 +2855,11 @@ export class Finder {
       }
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_A.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.closest(selector, node);
         }
       }
@@ -2941,10 +2899,11 @@ export class Finder {
         document = node.ownerDocument;
       }
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_B.test(selector),
           descendant: false
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.first(selector, node);
         }
       }
@@ -2979,10 +2938,11 @@ export class Finder {
         document = node.ownerDocument;
       }
       if (document === this.#document && document.contentType === 'text/html') {
-        if (filterSelector(selector, {
+        const filterOpt = {
           complex: REG_COMPLEX_B.test(selector),
           descendant: true
-        })) {
+        };
+        if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.select(selector, node);
         }
       }
