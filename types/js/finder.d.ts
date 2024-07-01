@@ -7,7 +7,6 @@ export class Finder {
     private _correspond;
     private _createTreeWalker;
     private _prepareQuerySelectorWalker;
-    private _traverse;
     private _collectNthChild;
     private _collectNthOfType;
     private _matchAnPlusB;
