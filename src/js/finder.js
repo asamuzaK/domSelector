@@ -60,6 +60,7 @@ export class Finder {
   #ast;
   #cache;
   #content;
+  #contentCache;
   #descendant;
   #document;
   #event;
@@ -86,6 +87,7 @@ export class Finder {
     this.#window = window;
     this.#document = document ?? window.document;
     this.#cache = new WeakMap();
+    this.#contentCache = new WeakMap();
     this.#results = new WeakMap();
     this._initNwsapi();
   }
@@ -121,17 +123,12 @@ export class Finder {
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} opt - options
    * @param {object} [opt.event] - MouseEvent, KeyboardEvent
-   * @param {boolean} [opt.invalidate] - invalidate (for jsdom)
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - node
    */
   _setup(selector, node, opt = {}) {
-    const { event, invalidate, noexcept, warn } = opt;
-    // clear cache in jsdom internal process
-    if (invalidate && node.nodeType === ELEMENT_NODE) {
-      this.#cache = new WeakMap();
-    }
+    const { event, noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#event = this._setEvent(event);
@@ -183,8 +180,8 @@ export class Finder {
     const nodes = [];
     this.#descendant = false;
     let ast;
-    if (this.#content) {
-      const cachedItem = this.#cache.get(this.#content);
+    if (this.#contentCache.has(this.#content)) {
+      const cachedItem = this.#contentCache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
         this.#descendant = item.descendant;
@@ -207,7 +204,19 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches, info: { hasPseudo } } = walkAST(cssAst);
+      const {
+        branches,
+        info: {
+          hasHasPseudoFunc,
+          hasHyphenSepAttr
+        }
+      } = walkAST(cssAst);
+      let cacheable;
+      if (hasHasPseudoFunc || hasHyphenSepAttr) {
+        cacheable = false;
+      } else {
+        cacheable = true;
+      }
       let descendant = false;
       let i = 0;
       ast = [];
@@ -267,10 +276,10 @@ export class Finder {
         nodes[i] = [];
         i++;
       }
-      if (this.#content && !hasPseudo) {
+      if (cacheable) {
         let cachedItem;
-        if (this.#cache.has(this.#content)) {
-          cachedItem = this.#cache.get(this.#content);
+        if (this.#contentCache.has(this.#content)) {
+          cachedItem = this.#contentCache.get(this.#content);
         } else {
           cachedItem = new Map();
         }
@@ -278,7 +287,7 @@ export class Finder {
           ast,
           descendant
         });
-        this.#cache.set(this.#content, cachedItem);
+        this.#contentCache.set(this.#content, cachedItem);
       }
       this.#descendant = descendant;
     }
