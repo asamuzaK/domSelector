@@ -185,27 +185,31 @@ export const parseSelector = selector => {
  */
 export const walkAST = (ast = {}) => {
   const branches = new Set();
-  let hasPseudo;
-  let hasPseudoFunc;
+  const info = new Map();
   const opt = {
     enter: node => {
       if (node.type === SELECTOR) {
         branches.add(node.children);
       } else if (node.type === SELECTOR_PSEUDO_CLASS) {
-        hasPseudo = true;
+        info.set('hasPseudo', true);
         if (REG_LOGICAL_PSEUDO.test(node.name)) {
-          hasPseudoFunc = true;
+          info.set('hasPseudoFunc', true);
+          if (node.name === 'has') {
+            info.set('hasHasPseudoFunc', true);
+          }
         }
       } else if (node.type === SELECTOR_PSEUDO_ELEMENT) {
-        hasPseudo = true;
+        info.set('hasPseudo', true);
         if (REG_SHADOW_PSEUDO.test(node.name)) {
-          hasPseudoFunc = true;
+          info.set('hasPseudoFunc', true);
         }
+      } else if (node.type === SELECTOR_ATTR && node.matcher === '|=') {
+        info.set('hasHyphenSepAttr', true);
       }
     }
   };
   walk(ast, opt);
-  if (hasPseudoFunc) {
+  if (info.get('hasPseudoFunc')) {
     findAll(ast, (node, item, list) => {
       if (list) {
         if (node.type === SELECTOR_PSEUDO_CLASS &&
@@ -247,16 +251,9 @@ export const walkAST = (ast = {}) => {
       }
     });
   }
-  const info = {};
-  if (hasPseudo) {
-    info.hasPseudo = hasPseudo;
-  }
-  if (hasPseudoFunc) {
-    info.hasPseudoFunc = hasPseudoFunc;
-  }
   return {
-    info,
-    branches: [...branches]
+    branches: [...branches],
+    info: Object.fromEntries(info)
   };
 };
 

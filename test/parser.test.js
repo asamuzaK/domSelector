@@ -6620,7 +6620,7 @@ describe('walk AST', () => {
                 }
               ],
               loc: null,
-              name: 'not',
+              name: 'has',
               type: SELECTOR_PSEUDO_CLASS
             }
           ],
@@ -6631,7 +6631,7 @@ describe('walk AST', () => {
       loc: null,
       type: SELECTOR_LIST
     };
-    const res = func(ast, true);
+    const res = func(ast);
     assert.deepEqual(res, {
       branches: [
         [
@@ -6671,14 +6671,72 @@ describe('walk AST', () => {
               }
             ],
             loc: null,
-            name: 'not',
+            name: 'has',
             type: SELECTOR_PSEUDO_CLASS
           }
         ]
       ],
       info: {
+        hasHasPseudoFunc: true,
         hasPseudo: true,
         hasPseudoFunc: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              flags: null,
+              loc: null,
+              matcher: '|=',
+              name: {
+                loc: null,
+                name: 'foo',
+                type: IDENTIFIER
+              },
+              type: SELECTOR_ATTR,
+              value: {
+                loc: null,
+                name: 'bar',
+                type: IDENTIFIER
+              }
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            flags: null,
+            loc: null,
+            matcher: '|=',
+            name: {
+              loc: null,
+              name: 'foo',
+              type: IDENTIFIER
+            },
+            type: SELECTOR_ATTR,
+            value: {
+              loc: null,
+              name: 'bar',
+              type: IDENTIFIER
+            }
+          }
+        ]
+      ],
+      info: {
+        hasHyphenSepAttr: true
       }
     }, 'result');
   });
@@ -6895,6 +6953,11 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get false', () => {
     const res = func('[foo bar baz i]');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func('[foo|=bar]');
     assert.isFalse(res, 'result');
   });
 

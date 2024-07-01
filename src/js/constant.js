@@ -65,7 +65,7 @@ export const ANB =
 export const N_TH =
   `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 // SUB_TYPE: attr, id, class, pseudo-class
-export const SUB_TYPE = '\\[[^\\]]+\\]|[#.:][\\w-]+';
+export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
