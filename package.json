@@ -34,19 +34,19 @@
     "c8": "^10.1.2",
     "chai": "^5.1.1",
     "commander": "^12.1.0",
-    "esbuild": "^0.21.5",
+    "esbuild": "^0.23.0",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsdoc": "^48.2.12",
+    "eslint-plugin-jsdoc": "^48.5.0",
     "eslint-plugin-regexp": "^2.6.0",
     "eslint-plugin-unicorn": "^54.0.0",
-    "happy-dom": "^14.12.0",
+    "happy-dom": "^14.12.3",
     "jsdom": "^24.1.0",
-    "linkedom": "^0.18.3",
-    "mocha": "^10.4.0",
+    "linkedom": "^0.18.4",
+    "mocha": "^10.6.0",
     "sinon": "^18.0.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.3",
     "wpt-runner": "^5.0.0"
   },
   "scripts": {
@@ -60,5 +60,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "4.4.13"
+  "version": "4.5.0"
 }
