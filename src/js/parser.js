@@ -334,8 +334,10 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
-  // filter namespaced selectors, e.g. ns|E, pseudo-element selectors and
-  // attribute selectors with case flag, e.g. [attr i], and unclosed quotes
+  // filter namespaced selectors, e.g. ns|E
+  // filter pseudo-element selectors
+  // filter attribute selectors with case flag, e.g. [attr i]
+  // filter unclosed quotes
   if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
     return false;
   }

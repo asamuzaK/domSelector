@@ -64,7 +64,7 @@ export const ANB =
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
 export const N_TH =
   `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
-// SUB_TYPE: attr, id, class, pseudo-class
+// SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
 export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
