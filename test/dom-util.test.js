@@ -176,6 +176,10 @@ describe('DOM utility functions', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
     it('should get null', () => {
       const res = func(document);
       assert.isNull(res, 'result');
@@ -232,6 +236,10 @@ describe('DOM utility functions', () => {
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
     it('should not match', () => {
@@ -311,6 +319,10 @@ describe('DOM utility functions', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
     it('should get null', () => {
       const html = `
         <div>
@@ -388,6 +400,10 @@ describe('DOM utility functions', () => {
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
     it('should get value', () => {
@@ -839,6 +855,10 @@ describe('DOM utility functions', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
     it('should get result', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -922,6 +942,19 @@ describe('DOM utility functions', () => {
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func([]), TypeError, 'Unexpected type Array');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func('foo', 'bar'), TypeError,
+        'Unexpected type String');
     });
 
     it('should get null', () => {
@@ -1020,13 +1053,18 @@ describe('DOM utility functions', () => {
     });
 
     it('should throw', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
+    it('should throw', () => {
       const node = document.documentElement;
       assert.throws(() => func(node), TypeError, 'Unexpected type Undefined');
     });
 
     it('should throw', () => {
       const node = document.documentElement;
-      assert.throws(() => func(null, node), TypeError, 'Unexpected type Null');
+      assert.throws(() => func(node, 'foo'), TypeError,
+        'Unexpected type String');
     });
 
     it('should get result', () => {
