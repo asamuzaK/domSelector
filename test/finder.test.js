@@ -4297,6 +4297,9 @@ describe('Finder', () => {
         name: 'disabled',
         type: SELECTOR_PSEUDO_CLASS
       };
+      window.customElements.define('x-input', class extends window.HTMLElement {
+        static formAssociated = true;
+      });
       const node = document.createElement('x-input');
       node.setAttribute('disabled', 'disabled');
       const parent = document.getElementById('div0');
@@ -4307,6 +4310,24 @@ describe('Finder', () => {
       assert.deepEqual([...res], [
         node
       ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'disabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      window.customElements.define('x-input',
+        class extends window.HTMLElement {});
+      const node = document.createElement('x-input');
+      node.setAttribute('disabled', 'disabled');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':disabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -4372,6 +4393,9 @@ describe('Finder', () => {
         name: 'enabled',
         type: SELECTOR_PSEUDO_CLASS
       };
+      window.customElements.define('x-input', class extends window.HTMLElement {
+        static formAssociated = true;
+      });
       const node = document.createElement('x-input');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -4381,6 +4405,23 @@ describe('Finder', () => {
       assert.deepEqual([...res], [
         node
       ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      window.customElements.define('x-input',
+        class extends window.HTMLElement {});
+      const node = document.createElement('x-input');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {
@@ -7116,6 +7157,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.isTrue(node instanceof window.HTMLUnknownElement, 'instance');
       assert.deepEqual([...res], [
         node
       ], 'result');
@@ -7158,7 +7200,7 @@ describe('Finder', () => {
       ], 'result');
     });
 
-    it('should not match', () => {
+    it('should get matched node', () => {
       const leaf = {
         children: null,
         name: 'defined',
