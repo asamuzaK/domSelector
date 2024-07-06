@@ -874,6 +874,15 @@ export class Finder {
             }
             break;
           }
+          case 'state': {
+            if (isCustomElement(node)) {
+              const [{ value: stateValue }] = astChildren;
+              if (stateValue && node[stateValue]) {
+                matched.add(node);
+              }
+            }
+            break;
+          }
           case 'current':
           case 'nth-col':
           case 'nth-last-col': {
