@@ -1,6 +1,7 @@
 export function verifyNode(node: any): object;
 export function resolveContent(node: object): Array<object>;
 export function traverseNode(node: object, walker: object): object | null;
+export function isCustomElement(node: object, opt?: object): boolean;
 export function isInShadowTree(node: object): boolean;
 export function getSlottedTextContent(node: object): string | null;
 export function getDirectionality(node: object): string | null;
