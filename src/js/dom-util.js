@@ -4,7 +4,6 @@
 
 /* import */
 import bidiFactory from 'bidi-js';
-import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
@@ -124,41 +123,6 @@ export const traverseNode = (node, walker) => {
     }
   }
   return current ?? null;
-};
-
-/**
- * is custom element
- * @param {object} node - Element node
- * @param {object} opt - options
- * @returns {boolean} - result;
- */
-export const isCustomElement = (node, opt = {}) => {
-  let bool;
-  if (!node || !node.nodeType) {
-    // throws
-    verifyNode(node);
-  } else if (node.nodeType === ELEMENT_NODE) {
-    const { localName, ownerDocument } = node;
-    const { formAssociated } = opt;
-    const window = ownerDocument.defaultView;
-    let elmConstructor;
-    const attr = node.getAttribute('is');
-    if (attr) {
-      elmConstructor =
-        isCustomElementName(attr) && window.customElements.get(attr);
-    } else {
-      elmConstructor =
-        isCustomElementName(localName) && window.customElements.get(localName);
-    }
-    if (elmConstructor) {
-      if (formAssociated) {
-        bool = elmConstructor.formAssociated;
-      } else {
-        bool = true;
-      }
-    }
-  }
-  return !!bool;
 };
 
 /**
