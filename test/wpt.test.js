@@ -2233,6 +2233,35 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/is-where-pseudo-classes.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <main>
+          <button id=a>A</button>
+          <button id=b>B</button>
+          <button id=c>C</button>
+          <button id=d disabled>D</button>
+          <button id=e disabled>E</button>
+          <button id=f disabled>F</button>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      /* Selects #a, #c */
+      const selectorA =
+        ':is(main :where(main #a), #c:nth-child(odd), #d):is(:enabled)';
+      /* Selects #b, #d, #f */
+      const selectorB =
+        'button:is(:nth-child(even), span #e):is(:enabled, :where(:disabled))';
+      assert.isTrue(document.getElementById('a').matches(selectorA), 'a');
+      assert.isTrue(document.getElementById('b').matches(selectorB), 'b');
+      assert.isTrue(document.getElementById('c').matches(selectorA), 'c');
+      assert.isTrue(document.getElementById('d').matches(selectorB), 'd');
+      assert.isFalse(document.getElementById('e').matches(selectorA), 'e-1');
+      assert.isFalse(document.getElementById('e').matches(selectorB), 'e-2');
+      assert.isTrue(document.getElementById('f').matches(selectorB), 'f');
+    });
+  });
+
   describe('css/selectors/missing-right-token.html', () => {
     const html = `
       <div id="container">
