@@ -8210,6 +8210,165 @@ describe('Finder', () => {
       const res = finder._matchShadowHostPseudoClass(ast, node);
       assert.isNull(res, 'result');
     });
+
+    it('should not match', () => {
+      const ast = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: 'Raw',
+                    value: 'checked'
+                  }
+                ],
+                loc: null,
+                name: 'state',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        name: 'host',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      class LabeledCheckbox extends window.HTMLElement {
+        constructor() {
+          super();
+          this._internals = this.attachInternals();
+          // ElementInternals.states is not implemented in jsdom
+          if (!this._internals.states) {
+            this._internals.states = new Set();
+          }
+          this.addEventListener('click', this._onClick.bind(this));
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          shadowRoot.innerHTML = `
+            <style>
+              :host::before {
+                content: '[ ]';
+                white-space: pre;
+                font-family: monospace;
+              }
+              :host(:state(checked))::before {
+                content: '[x]'
+              }
+            </style>
+            <div>
+              <slot>Label</slot>
+            </div>
+          `;
+        }
+
+        get checked() {
+          return this._internals.states.has('checked');
+        }
+
+        set checked(flag) {
+          if (flag) {
+            this._internals.states.add('checked');
+          } else {
+            this._internals.states.delete('checked');
+          }
+        }
+
+        _onClick(event) {
+          this.checked = !this.checked;
+        }
+      }
+      window.customElements.define('labeled-checkbox', LabeledCheckbox);
+      const host = document.createElement('labeled-checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(host);
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder._setup(':host(:state(checked)) div', node);
+      const res = finder._matchShadowHostPseudoClass(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: 'Raw',
+                    value: 'checked'
+                  }
+                ],
+                loc: null,
+                name: 'state',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        name: 'host',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      class LabeledCheckbox extends window.HTMLElement {
+        constructor() {
+          super();
+          this._internals = this.attachInternals();
+          // ElementInternals.states is not implemented in jsdom
+          if (!this._internals.states) {
+            this._internals.states = new Set();
+          }
+          this.addEventListener('click', this._onClick.bind(this));
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          shadowRoot.innerHTML = `
+            <style>
+              :host::before {
+                content: '[ ]';
+                white-space: pre;
+                font-family: monospace;
+              }
+              :host(:state(checked))::before {
+                content: '[x]'
+              }
+            </style>
+            <div>
+              <slot>Label</slot>
+            </div>
+          `;
+        }
+
+        get checked() {
+          return this._internals.states.has('checked');
+        }
+
+        set checked(flag) {
+          if (flag) {
+            this._internals.states.add('checked');
+          } else {
+            this._internals.states.delete('checked');
+          }
+        }
+
+        _onClick(event) {
+          this.checked = !this.checked;
+        }
+      }
+      window.customElements.define('labeled-checkbox', LabeledCheckbox);
+      const host = document.createElement('labeled-checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(host);
+      const node = host.shadowRoot;
+      host.click();
+      const finder = new Finder(window);
+      finder._setup(':host(:state(checked)) div', node);
+      const res = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('match selector', () => {
