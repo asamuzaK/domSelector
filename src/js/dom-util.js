@@ -4,6 +4,7 @@
 
 /* import */
 import bidiFactory from 'bidi-js';
+import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
@@ -83,12 +84,11 @@ export const resolveContent = node => {
  * @returns {?object} - current node
  */
 export const traverseNode = (node, walker) => {
+  let current;
   if (!node || !node.nodeType) {
     // throws
     verifyNode(node);
-  }
-  let current;
-  if (walker?.currentNode) {
+  } else if (walker?.currentNode) {
     let refNode = walker.currentNode;
     if (refNode === node) {
       current = refNode;
@@ -127,18 +127,52 @@ export const traverseNode = (node, walker) => {
 };
 
 /**
+ * is custom element
+ * @param {object} node - Element node
+ * @param {object} opt - options
+ * @returns {boolean} - result;
+ */
+export const isCustomElement = (node, opt = {}) => {
+  let bool;
+  if (!node || !node.nodeType) {
+    // throws
+    verifyNode(node);
+  } else if (node.nodeType === ELEMENT_NODE) {
+    const { localName, ownerDocument } = node;
+    const { formAssociated } = opt;
+    const window = ownerDocument.defaultView;
+    let elmConstructor;
+    const attr = node.getAttribute('is');
+    if (attr) {
+      elmConstructor =
+        isCustomElementName(attr) && window.customElements.get(attr);
+    } else {
+      elmConstructor =
+        isCustomElementName(localName) && window.customElements.get(localName);
+    }
+    if (elmConstructor) {
+      if (formAssociated) {
+        bool = elmConstructor.formAssociated;
+      } else {
+        bool = true;
+      }
+    }
+  }
+  return !!bool;
+};
+
+/**
  * is in shadow tree
  * @param {object} node - node
  * @returns {boolean} - result;
  */
 export const isInShadowTree = node => {
-  if (!node || !node.type) {
+  let bool;
+  if (!node || !node.nodeType) {
     // throws
     verifyNode(node);
-  }
-  let bool;
-  if (node.nodeType === ELEMENT_NODE ||
-      node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+  } else if (node.nodeType === ELEMENT_NODE ||
+             node.nodeType === DOCUMENT_FRAGMENT_NODE) {
     let refNode = node;
     while (refNode) {
       const { host, mode, nodeType, parentNode } = refNode;
@@ -159,12 +193,11 @@ export const isInShadowTree = node => {
  * @returns {?string} - text content
  */
 export const getSlottedTextContent = node => {
+  let res;
   if (!node || !node.nodeType) {
     // throws
     verifyNode(node);
-  }
-  let res;
-  if (node.localName === 'slot' && isInShadowTree(node)) {
+  } else if (node.localName === 'slot' && isInShadowTree(node)) {
     const nodes = node.assignedNodes();
     if (nodes.length) {
       for (const item of nodes) {
@@ -187,12 +220,11 @@ export const getSlottedTextContent = node => {
  * @returns {?string} - 'ltr' / 'rtl'
  */
 export const getDirectionality = node => {
+  let res;
   if (!node || !node.nodeType) {
     // throws
     verifyNode(node);
-  }
-  let res;
-  if (node.nodeType === ELEMENT_NODE) {
+  } else if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
     const { getEmbeddingLevels } = bidiFactory();
     if (REG_DIR.test(nodeDir)) {
@@ -312,12 +344,11 @@ export const getDirectionality = node => {
  * @returns {boolean} - result
  */
 export const isContentEditable = node => {
+  let res;
   if (!node || !node.nodeType) {
     // throws
     verifyNode(node);
-  }
-  let res;
-  if (node.nodeType === ELEMENT_NODE) {
+  } else if (node.nodeType === ELEMENT_NODE) {
     if (typeof node.isContentEditable === 'boolean') {
       res = node.isContentEditable;
     } else if (node.ownerDocument.designMode === 'on') {
@@ -348,12 +379,17 @@ export const isContentEditable = node => {
  * @returns {?string} - namespace URI
  */
 export const getNamespaceURI = (ns, node) => {
-  if (!node || !node.nodeType) {
-    // throws
-    verifyNode(node);
-  }
   let res;
-  if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
+  if (typeof ns !== 'string' || !node || !node.nodeType) {
+    if (typeof ns !== 'string') {
+      const type = Object.prototype.toString.call(ns).slice(TYPE_FROM, TYPE_TO);
+      const msg = `Unexpected type ${type}`;
+      throw new TypeError(msg);
+    } else {
+      // throws
+      verifyNode(node);
+    }
+  } else if (ns && node.nodeType === ELEMENT_NODE) {
     const { attributes } = node;
     for (const attr of attributes) {
       const { name, namespaceURI, prefix, value } = attr;
@@ -401,15 +437,15 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
  * @returns {boolean} - result
  */
 export const isPreceding = (nodeA, nodeB) => {
+  let res;
   if (!nodeA || !nodeA.nodeType) {
     // throws
     verifyNode(nodeA);
   } else if (!nodeB || !nodeB.nodeType) {
     // throws
     verifyNode(nodeB);
-  }
-  let res;
-  if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
+  } else if (nodeA.nodeType === ELEMENT_NODE &&
+             nodeB.nodeType === ELEMENT_NODE) {
     const posBit = nodeB.compareDocumentPosition(nodeA);
     res = posBit & DOCUMENT_POSITION_PRECEDING ||
           posBit & DOCUMENT_POSITION_CONTAINS;
