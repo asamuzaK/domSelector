@@ -5504,7 +5504,7 @@ describe('create AST from CSS selector', () => {
         ],
         loc: null,
         type: SELECTOR_LIST
-      }, 'result')
+      }, 'result');
     });
   });
 
