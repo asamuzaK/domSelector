@@ -171,14 +171,15 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:state(v)|✓|*1|
 |E:host(:state(v))|✓|*1|
 
-*1: `ElementInternals.states` is not implemented in jsdom, so you need to implement yourself.
+*1: `ElementInternals.states`, i.e. `CustomStateSet`, is not implemented in jsdom, so you need to patch yourself.
+
 ``` javascript
 class LabeledCheckbox extends window.HTMLElement {
   #internals;
   constructor() {
     super();
     this.#internals = this.attachInternals();
-    // implement CustomStateSet
+    // patch CustomStateSet
     if (!this.#internals.states) {
       this.#internals.states = new Set();
     }
