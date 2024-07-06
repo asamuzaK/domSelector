@@ -169,7 +169,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:host(s)|✓| |
 |E:host&#8209;context(s)|✓| |
 |E:state(v)|✓|*1|
-|E:host(state(v))|✓|*1|
+|E:host(:state(v))|✓|*1|
 
 *1: `ElementInternals.states` is not implemented in jsdom, so you need to implement yourself.
 ``` javascript
