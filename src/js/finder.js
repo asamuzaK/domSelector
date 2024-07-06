@@ -3,11 +3,10 @@
  */
 
 /* import */
-import isCustomElementName from 'is-potential-custom-element-name';
 import nwsapi from '@asamuzakjp/nwsapi';
 import {
-  isContentEditable, isInShadowTree, resolveContent, sortNodes, traverseNode,
-  verifyNode
+  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
+  sortNodes, traverseNode, verifyNode
 } from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
@@ -875,6 +874,15 @@ export class Finder {
             }
             break;
           }
+          case 'state': {
+            if (isCustomElement(node)) {
+              const [{ value: stateValue }] = astChildren;
+              if (stateValue && node[stateValue]) {
+                matched.add(node);
+              }
+            }
+            break;
+          }
           case 'current':
           case 'nth-col':
           case 'nth-last-col': {
@@ -1065,7 +1073,8 @@ export class Finder {
           break;
         }
         case 'disabled': {
-          if (REG_FORM_CTRL.test(localName) || isCustomElementName(localName)) {
+          if (REG_FORM_CTRL.test(localName) ||
+              isCustomElement(node, { formAssociated: true })) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
             } else {
@@ -1092,7 +1101,7 @@ export class Finder {
         }
         case 'enabled': {
           if ((REG_FORM_CTRL.test(localName) ||
-               isCustomElementName(localName)) &&
+               isCustomElement(node, { formAssociated: true })) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
             matched.add(node);
           }
@@ -1561,14 +1570,8 @@ export class Finder {
           break;
         }
         case 'defined': {
-          const attr = node.getAttribute('is');
-          if (attr) {
-            if (isCustomElementName(attr) &&
-                this.#window.customElements.get(attr)) {
-              matched.add(node);
-            }
-          } else if (isCustomElementName(localName)) {
-            if (this.#window.customElements.get(localName)) {
+          if (node.hasAttribute('is') || localName.includes('-')) {
+            if (isCustomElement(node)) {
               matched.add(node);
             }
           // NOTE: MathMLElement not implemented in jsdom
