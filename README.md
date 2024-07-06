@@ -168,6 +168,37 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:host|✓| |
 |E:host(s)|✓| |
 |E:host&#8209;context(s)|✓| |
+|E:state(v)|✓|*1|
+|E:host(:state(v))|✓|*1|
+
+*1: `ElementInternals.states` is not implemented in jsdom, so you need to implement yourself.
+``` javascript
+class LabeledCheckbox extends window.HTMLElement {
+  #internals;
+  constructor() {
+    super();
+    this.#internals = this.attachInternals();
+    // implement CustomStateSet
+    if (!this.#internals.states) {
+      this.#internals.states = new Set();
+    }
+    this.addEventListener('click', this._onClick.bind(this));
+  }
+  get checked() {
+    return this.#internals.states.has('checked');
+  }
+  set checked(flag) {
+    if (flag) {
+      this.#internals.states.add('checked');
+    } else {
+      this.#internals.states.delete('checked');
+    }
+  }
+  _onClick(event) {
+    this.checked = !this.checked;
+  }
+}
+```
 
 
 ## Monkey patch jsdom
