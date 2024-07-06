@@ -5437,6 +5437,77 @@ describe('create AST from CSS selector', () => {
     });
   });
 
+  describe('custom state pseudo-class', () => {
+    it('should get selector list', () => {
+      const res = func(':state(foo)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: 'Raw',
+                    value: 'foo'
+                  }
+                ],
+                loc: null,
+                name: 'state',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host(:state(foo))');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            type: 'Raw',
+                            value: 'foo'
+                          }
+                        ],
+                        loc: null,
+                        name: 'state',
+                        type: SELECTOR_PSEUDO_CLASS
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR
+                  }
+                ],
+                loc: null,
+                name: 'host',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result')
+    });
+  });
+
   describe('shadow host', () => {
     it('should get selector list', () => {
       const res = func(':host');
