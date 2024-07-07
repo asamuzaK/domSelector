@@ -349,8 +349,8 @@ export const filterSelector = (selector, opt = {}) => {
       if (REG_LOGICAL_EMPTY.test(selector)) {
         return false;
       }
-      const { complex, descendant } = opt;
-      if (complex && descendant) {
+      const { complex, descendant, qsa } = opt;
+      if ((complex && descendant) || qsa) {
         reg = REG_LOGICAL_COMPLEX_A;
       } else if (complex) {
         reg = REG_LOGICAL_COMPLEX_B;
