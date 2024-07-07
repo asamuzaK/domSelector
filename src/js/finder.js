@@ -2953,7 +2953,8 @@ export class Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: false,
-          descendant: true
+          descendant: true,
+          qsa: true
         };
         if (filterSelector(selector, filterOpt)) {
           return this.#nwsapi.select(selector, node);
