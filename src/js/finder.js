@@ -16,12 +16,12 @@ import {
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX_A, REG_COMPLEX_B,
-  REG_FORM, REG_FORM_CTRL, REG_FORM_GROUP, REG_FORM_VALID, REG_INTERACT,
-  REG_LOGICAL_PSEUDO, REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE,
-  REG_TYPE_RANGE, REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
+  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL,
+  REG_FORM_GROUP, REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO,
+  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
+  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
+  SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -2836,7 +2836,7 @@ export class Finder {
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
-          complex: REG_COMPLEX_A.test(selector),
+          complex: REG_COMPLEX.test(selector),
           descendant: true
         };
         if (filterSelector(selector, filterOpt)) {
@@ -2869,7 +2869,7 @@ export class Finder {
       const document = node.ownerDocument;
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
-          complex: REG_COMPLEX_A.test(selector),
+          complex: REG_COMPLEX.test(selector),
           descendant: true
         };
         if (filterSelector(selector, filterOpt)) {
@@ -2913,7 +2913,7 @@ export class Finder {
       }
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
-          complex: REG_COMPLEX_B.test(selector),
+          complex: false,
           descendant: false
         };
         if (filterSelector(selector, filterOpt)) {
@@ -2952,7 +2952,7 @@ export class Finder {
       }
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
-          complex: REG_COMPLEX_B.test(selector),
+          complex: false,
           descendant: true
         };
         if (filterSelector(selector, filterOpt)) {

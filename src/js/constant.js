@@ -102,8 +102,7 @@ export const LOGICAL_COMPOUND =
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_CHILD_INDEXED = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
-export const REG_COMPLEX_A = new RegExp(`${COMBO_A}${COMPOUND_I}`, 'i');
-export const REG_COMPLEX_B = new RegExp(`${COMBO_B}${COMPOUND_I}`, 'i');
+export const REG_COMPLEX = new RegExp(`${COMBO_A}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FORM = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
 export const REG_FORM_CTRL =
