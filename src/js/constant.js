@@ -72,37 +72,28 @@ export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 // LOGICAL_KEY: excludes :has()
 export const LOGICAL_KEY = '(?:is|not)';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
-export const COMBO_A = '\\s?[\\s>~+]\\s?';
-export const COMBO_B = '\\s?[~+]\\s?';
-export const COMPLEX_A = `${COMPOUND}(?:${COMBO_A}${COMPOUND})*`;
-export const COMPLEX_B = `${COMPOUND}(?:${COMBO_B}${COMPOUND})*`;
+export const COMBO = '\\s?[\\s>~+]\\s?';
+export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const NESTED_LOGICAL_A =
   `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 export const NESTED_LOGICAL_B =
-  `:is\\(\\s*${COMPLEX_A}(?:\\s*,\\s*${COMPLEX_A})*\\s*\\)`;
-export const NESTED_LOGICAL_C =
-  `:is\\(\\s*${COMPLEX_B}(?:\\s*,\\s*${COMPLEX_B})*\\s*\\)`;
+  `:is\\(\\s*${COMPLEX}(?:\\s*,\\s*${COMPLEX})*\\s*\\)`;
 export const COMPOUND_A =
   `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_A})+)`;
 export const COMPOUND_B =
   `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_B})+)`;
-export const COMPOUND_C =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_C})+)`;
 export const COMPOUND_I =
   `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
-export const COMPLEX_C = `${COMPOUND_B}(?:${COMBO_A}${COMPOUND_B})*`;
-export const COMPLEX_D = `${COMPOUND_C}(?:${COMBO_B}${COMPOUND_C})*`;
-export const LOGICAL_COMPLEX_A =
-  `${LOGICAL_KEY}\\(\\s*${COMPLEX_C}(?:\\s*,\\s*${COMPLEX_C})*\\s*\\)`;
-export const LOGICAL_COMPLEX_B =
-  `${LOGICAL_KEY}\\(\\s*${COMPLEX_D}(?:\\s*,\\s*${COMPLEX_D})*\\s*\\)`;
+export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
+export const LOGICAL_COMPLEX =
+  `${LOGICAL_KEY}\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 export const LOGICAL_COMPOUND =
   `${LOGICAL_KEY}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_CHILD_INDEXED = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
-export const REG_COMPLEX = new RegExp(`${COMBO_A}${COMPOUND_I}`, 'i');
+export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FORM = /^(?:(?:fieldse|inpu|selec)t|button|form|textarea)$/;
 export const REG_FORM_CTRL =
@@ -114,10 +105,8 @@ export const REG_INTERACT = /^(?:details|dialog)$/;
 export const REG_INVALID_SELECTOR = /^$|^\s*>|,\s*$/;
 export const REG_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 export const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
-export const REG_LOGICAL_COMPLEX_A =
-  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX_A})`);
-export const REG_LOGICAL_COMPLEX_B =
-  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX_B})`);
+export const REG_LOGICAL_COMPLEX =
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX})`);
 export const REG_LOGICAL_COMPOUND =
   new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
 export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
