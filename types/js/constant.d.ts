@@ -70,8 +70,7 @@ export const LOGICAL_COMPLEX_B: "(?:is|not)\\(\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|
 export const LOGICAL_COMPOUND: "(?:is|not)\\(\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+|:is\\(\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+)+)(?:\\s*,\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+)+))*\\s*\\))+)(?:\\s*,\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+|:is\\(\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+)+)(?:\\s*,\\s*(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+)+))*\\s*\\))+))*\\s*\\)";
 export const REG_ANCHOR: RegExp;
 export const REG_CHILD_INDEXED: RegExp;
-export const REG_COMPLEX_A: RegExp;
-export const REG_COMPLEX_B: RegExp;
+export const REG_COMPLEX: RegExp;
 export const REG_DIR: RegExp;
 export const REG_FORM: RegExp;
 export const REG_FORM_CTRL: RegExp;
