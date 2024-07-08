@@ -164,14 +164,14 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |F \|\| E|Unsupported| |
 |E:nth&#8209;col(n)|Unsupported| |
 |E:nth&#8209;last&#8209;col(n)|Unsupported| |
-|E:popover-open|✓| |
 |E:host|✓| |
 |E:host(s)|✓| |
 |E:host&#8209;context(s)|✓| |
+|E:popover-open|✓| |
 |E:state(v)|✓|*1|
 |E:host(:state(v))|✓|*1|
 
-*1: `ElementInternals.states`, i.e. `CustomStateSet`, is not implemented in jsdom, so you need to patch yourself.
+*1: `ElementInternals.states`, i.e. `CustomStateSet`, is not implemented in jsdom, so you need to apply a patch in the custom element constructor.
 
 ``` javascript
 class LabeledCheckbox extends window.HTMLElement {
