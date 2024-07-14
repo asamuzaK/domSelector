@@ -88,7 +88,7 @@ export class Finder {
     this.#cache = new WeakMap();
     this.#contentCache = new WeakMap();
     this.#results = new WeakMap();
-    this._initNwsapi();
+    this.#nwsapi = this._initNwsapi(window, document);
   }
 
   /**
@@ -145,14 +145,14 @@ export class Finder {
    * @returns {object} - nwsapi
    */
   _initNwsapi() {
-    this.#nwsapi = nwsapi({
+    const nw = nwsapi({
       DOMException: this.#window.DOMException,
       document: this.#document
     });
-    this.#nwsapi.configure({
+    nw.configure({
       LOGERRORS: false
     });
-    return this.#nwsapi;
+    return nw;
   };
 
   /**
