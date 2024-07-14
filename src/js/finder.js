@@ -359,9 +359,9 @@ export class Finder {
         l++;
         refNode = walker.nextSibling();
       }
-      refNode = traverseNode(parentNode, walker);
       const selectorNodes = new Set();
       if (selectorBranches) {
+        refNode = traverseNode(parentNode, walker);
         refNode = walker.firstChild();
         while (refNode) {
           let bool;
@@ -2073,14 +2073,15 @@ export class Finder {
    */
   _findNode(leaves, opt) {
     const { node } = opt;
-    let refNode = traverseNode(node, this.#qswalker);
+    const walker = this.#qswalker;
+    let refNode = traverseNode(node, walker);
     let matchedNode;
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = this.#qswalker.nextNode();
+        refNode = walker.nextNode();
       } else if (refNode === node) {
         if (refNode !== this.#root) {
-          refNode = this.#qswalker.nextNode();
+          refNode = walker.nextNode();
         }
       }
       while (refNode) {
@@ -2091,7 +2092,7 @@ export class Finder {
           matchedNode = refNode;
           break;
         }
-        refNode = this.#qswalker.nextNode();
+        refNode = walker.nextNode();
       }
     }
     return matchedNode ?? null;
