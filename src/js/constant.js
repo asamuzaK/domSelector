@@ -46,7 +46,7 @@ export const DOCUMENT_POSITION_CONTAINS = 8;
 export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
-export const SHOW_ALL = 0xffffffff;
+export const SHOW_ALL = 0xFFFFFFFF;
 export const SHOW_DOCUMENT = 0x100;
 export const SHOW_DOCUMENT_FRAGMENT = 0x400;
 export const SHOW_ELEMENT = 1;
@@ -69,7 +69,7 @@ export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
-// LOGICAL_KEY: excludes :has()
+// LOGICAL_KEY: :has() and :where() are excluded
 export const LOGICAL_KEY = '(?:is|not)';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMBO = '\\s?[\\s>~+]\\s?';
