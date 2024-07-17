@@ -204,6 +204,8 @@ export const walkAST = (ast = {}) => {
         }
       } else if (node.type === SELECTOR_ATTR && node.matcher === '|=') {
         info.set('hasHyphenSepAttr', true);
+      } else if (node.type === NTH && node.selector) {
+        info.set('hasNthChildOfSelector', true);
       }
     }
   };

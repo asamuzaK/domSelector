@@ -7004,6 +7004,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasNthChildOfSelector: true,
         hasPseudo: true,
         hasPseudoFunc: true
       }
