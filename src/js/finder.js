@@ -207,11 +207,12 @@ export class Finder {
         branches,
         info: {
           hasHasPseudoFunc,
-          hasHyphenSepAttr
+          hasHyphenSepAttr,
+          hasPseudoFunc
         }
       } = walkAST(cssAst);
       let cacheable;
-      if (hasHasPseudoFunc || hasHyphenSepAttr) {
+      if (hasHasPseudoFunc || hasHyphenSepAttr || hasPseudoFunc) {
         cacheable = false;
       } else {
         cacheable = true;
@@ -364,15 +365,19 @@ export class Finder {
         refNode = traverseNode(parentNode, walker);
         refNode = walker.firstChild();
         while (refNode) {
-          let bool;
-          for (const leaves of selectorBranches) {
-            bool = this._matchLeaves(leaves, refNode, opt);
-            if (!bool) {
-              break;
+          const { display, visibility } =
+            this.#window.getComputedStyle(refNode);
+          if (display !== 'none' && visibility !== 'hidden') {
+            let bool;
+            for (const leaves of selectorBranches) {
+              bool = this._matchLeaves(leaves, refNode, opt);
+              if (!bool) {
+                break;
+              }
             }
-          }
-          if (bool) {
-            selectorNodes.add(refNode);
+            if (bool) {
+              selectorNodes.add(refNode);
+            }
           }
           refNode = walker.nextSibling();
         }

@@ -1514,10 +1514,11 @@ describe('local wpt test cases', () => {
       assert.isFalse(document.body.matches(':focus'), 'body');
       const node = document.getElementById('input');
       node.focus();
+      await sleep();
       assert.isTrue(node.matches(':focus'), 'before');
       node.style.display = 'none';
-      await sleep(100);
       node.focus();
+      await sleep();
       assert.isFalse(node.matches(':focus'), 'after');
       assert.isFalse(document.body.matches(':focus'), 'body');
       // jsdom fails
@@ -1534,10 +1535,11 @@ describe('local wpt test cases', () => {
       assert.isFalse(document.body.matches(':focus'), 'body');
       const node = document.getElementById('input');
       node.focus();
+      await sleep();
       assert.isTrue(node.matches(':focus'), 'before');
       node.parentNode.style.display = 'none';
-      await sleep(100);
       node.focus();
+      await sleep();
       assert.isFalse(node.matches(':focus'), 'after');
       assert.isFalse(document.body.matches(':focus'), 'body');
       // jsdom fails
@@ -1962,6 +1964,34 @@ describe('local wpt test cases', () => {
         'result nested');
       assert.isTrue(h1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
         'result complex');
+    });
+  });
+
+  describe('css/selectors/invalidation/nth-child-whole-subtree.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <style>
+          div:nth-child(odd of :not(.c)) {
+            background-color: silver;
+          }
+          .c * {}
+        </style>
+        <div id="d1">Silver</div>
+        <div id="d2" class="c">White</div>
+        <div id="d3">Silver</div>
+      `;
+      document.body.innerHTML = html;
+      const selector = 'div:nth-child(odd of :not(.c))';
+      const resBefore = document.querySelectorAll(selector);
+      assert.deepEqual(resBefore, [
+        document.getElementById('d1')
+      ], 'result before');
+      document.getElementById('d2').classList.value = '';
+      const resAfter = document.querySelectorAll(selector);
+      assert.deepEqual(resAfter, [
+        document.getElementById('d1'),
+        document.getElementById('d3')
+      ], 'result after');
     });
   });
 
@@ -2640,7 +2670,7 @@ describe('local wpt test cases', () => {
       document.getElementById('option2').selected = 'selected';
       document.getElementById('checkbox2').click();
       document.getElementById('radio2').click();
-      await sleep(100);
+      await sleep();
       const res = document.querySelectorAll(':checked');
       assert.deepEqual(res, [
         document.getElementById('option2'),
