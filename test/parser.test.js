@@ -4547,6 +4547,81 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func(':nth-child(odd of :not([hidden]))');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    nth: {
+                      loc: null,
+                      name: 'odd',
+                      type: IDENTIFIER
+                    },
+                    selector: {
+                      children: [
+                        {
+                          children: [
+                            {
+                              children: [
+                                {
+                                  children: [
+                                    {
+                                      children: [
+                                        {
+                                          flags: null,
+                                          loc: null,
+                                          matcher: null,
+                                          name: {
+                                            loc: null,
+                                            name: 'hidden',
+                                            type: IDENTIFIER
+                                          },
+                                          type: SELECTOR_ATTR,
+                                          value: null
+                                        }
+                                      ],
+                                      loc: null,
+                                      type: SELECTOR
+                                    }
+                                  ],
+                                  loc: null,
+                                  type: SELECTOR_LIST
+                                }
+                              ],
+                              loc: null,
+                              name: 'not',
+                              type: SELECTOR_PSEUDO_CLASS
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    },
+                    type: NTH
+                  }
+                ],
+                loc: null,
+                name: 'nth-child',
+                type: SELECTOR_PSEUDO_CLASS
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func(':nth-child(odd of :not(.foo))');
       assert.deepEqual(res, {
         children: [
@@ -6876,6 +6951,151 @@ describe('walk AST', () => {
       ],
       info: {
         hasHyphenSepAttr: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  nth: {
+                    loc: null,
+                    name: 'odd',
+                    type: IDENTIFIER
+                  },
+                  selector: {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        flags: null,
+                                        loc: null,
+                                        matcher: null,
+                                        name: {
+                                          loc: null,
+                                          name: 'hidden',
+                                          type: IDENTIFIER
+                                        },
+                                        type: SELECTOR_ATTR,
+                                        value: null
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'not',
+                            type: SELECTOR_PSEUDO_CLASS
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  },
+                  type: NTH
+                }
+              ],
+              loc: null,
+              name: 'nth-child',
+              type: SELECTOR_PSEUDO_CLASS
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                loc: null,
+                nth: {
+                  loc: null,
+                  name: 'odd',
+                  type: IDENTIFIER
+                },
+                selector: {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              children: [
+                                {
+                                  children: [
+                                    {
+                                      flags: null,
+                                      loc: null,
+                                      matcher: null,
+                                      name: {
+                                        loc: null,
+                                        name: 'hidden',
+                                        type: IDENTIFIER
+                                      },
+                                      type: SELECTOR_ATTR,
+                                      value: null
+                                    }
+                                  ],
+                                  loc: null,
+                                  type: SELECTOR
+                                }
+                              ],
+                              loc: null,
+                              type: SELECTOR_LIST
+                            }
+                          ],
+                          loc: null,
+                          name: 'not',
+                          type: SELECTOR_PSEUDO_CLASS
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                },
+                type: NTH
+              }
+            ],
+            loc: null,
+            name: 'nth-child',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      info: {
+        hasNthChildOfSelector: true,
+        hasPseudo: true,
+        hasPseudoFunc: true
       }
     }, 'result');
   });
