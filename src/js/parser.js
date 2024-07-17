@@ -8,7 +8,7 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, EMPTY, HEX, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
+  DUO, EMPTY, HEX, NTH, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
   REG_LANG_QUOTED, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
   REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO,
   SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
@@ -239,6 +239,21 @@ export const walkAST = (ast = {}) => {
             return res;
           });
           for (const { children } of itemList) {
+            // Selector
+            for (const { children: grandChildren } of children) {
+              if (branches.has(grandChildren)) {
+                branches.delete(grandChildren);
+              }
+            }
+          }
+        } else if (node.type === NTH && node.selector) {
+          const itemList = list.filter(i => {
+            const { selector, type } = i;
+            const res = type === NTH && selector;
+            return res;
+          });
+          for (const { selector } of itemList) {
+            const { children } = selector;
             // Selector
             for (const { children: grandChildren } of children) {
               if (branches.has(grandChildren)) {
