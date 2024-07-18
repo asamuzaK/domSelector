@@ -6517,9 +6517,7 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {
-        hasPseudo: true
-      }
+      info: {}
     }, 'result');
   });
 
@@ -6601,7 +6599,6 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6675,7 +6672,6 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6749,7 +6745,6 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6811,7 +6806,6 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6915,7 +6909,6 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7020,7 +7013,6 @@ describe('walk AST', () => {
       ],
       info: {
         hasHasPseudoFunc: true,
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7077,9 +7069,7 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {
-        hasHyphenSepAttr: true
-      }
+      info: {}
     }, 'result');
   });
 
@@ -7222,7 +7212,6 @@ describe('walk AST', () => {
       ],
       info: {
         hasNthChildOfSelector: true,
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7353,7 +7342,6 @@ describe('walk AST', () => {
       ],
       info: {
         hasNthChildOfSelector: true,
-        hasPseudo: true,
         hasPseudoFunc: true
       }
     }, 'result');

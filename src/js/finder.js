@@ -207,14 +207,12 @@ export class Finder {
         branches,
         info: {
           hasHasPseudoFunc,
-          hasHyphenSepAttr,
           hasNthChildOfSelector,
           hasPseudoFunc
         }
       } = walkAST(cssAst);
       let cacheable;
-      if (hasHasPseudoFunc || hasHyphenSepAttr ||
-          (hasNthChildOfSelector && hasPseudoFunc)) {
+      if (hasHasPseudoFunc || (hasNthChildOfSelector && hasPseudoFunc)) {
         cacheable = false;
       } else {
         cacheable = true;
