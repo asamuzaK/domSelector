@@ -195,6 +195,8 @@ export const walkAST = (ast = {}) => {
           if (node.name === 'has') {
             info.set('hasHasPseudoFunc', true);
           }
+        } else if (node.name === 'defined') {
+          info.set('hasDefinedPseudo', true);
         }
       } else if (node.type === SELECTOR_PSEUDO_ELEMENT) {
         if (REG_SHADOW_PSEUDO.test(node.name)) {

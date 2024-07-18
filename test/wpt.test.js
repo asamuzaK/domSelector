@@ -1,6 +1,7 @@
 /**
  * wpt.test.js
  */
+/* eslint-disable camelcase */
 
 /* api */
 import { assert } from 'chai';
@@ -95,15 +96,17 @@ describe('local wpt test cases', () => {
       };
     }
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
+    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
@@ -1124,6 +1127,85 @@ describe('local wpt test cases', () => {
       assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
     });
 
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'foo');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'rtl');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'RTL');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'ltr');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'LTR');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'auto');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.value = '\u05EA';
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'AUTO');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.removeAttribute('dir');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+
+      const container = document.createElement('div');
+      container.setAttribute('dir', 'rtl');
+      container.appendChild(input);
+
+      // Insert the element into the document so that we can also check for
+      // 'direction' in computed style.
+      document.body.appendChild(container);
+
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+      // Per https://html.spec.whatwg.org/multipage/rendering.html#bidi-rendering:
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'ltr');
+
+      // Changing to a different type causes the special type=tel rule to
+      // no longer apply.
+      input.type = 'text';
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'rtl');
+
+      // And restoring type=tel brings back that behavior.
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'ltr');
+
+      document.body.removeChild(container);
+    });
+
     const dirValue = [
       'password', 'text', 'search', 'url', 'email', 'submit', 'reset',
       'button'
@@ -1346,6 +1428,59 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const res = document.querySelector('#div4_2:dir(ltr)');
       assert.deepEqual(res, document.getElementById('div4_2'), 'result');
+    });
+
+    // NOTE: jsdom does not implement `innerText`, so using `textContent`.
+    // https://github.com/jsdom/jsdom/issues/1245
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const div1 = document.getElementById('div1');
+      const div1_1 = document.getElementById('div1_1');
+      const div2 = document.getElementById('div2');
+      const div2_1 = document.getElementById('div2_1');
+      const div3 = document.getElementById('div3');
+      const div3_1 = document.getElementById('div3_1');
+      const div3_2 = document.getElementById('div3_2');
+      const div4 = document.getElementById('div4');
+      const div4_1 = document.getElementById('div4_1');
+      const div4_1_1 = document.getElementById('div4_1_1');
+      /* Initial */
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      assert.isTrue(div2.matches(':dir(rtl)'));
+      assert.isTrue(div2_1.matches(':dir(rtl)'));
+      assert.isTrue(div3.matches(':dir(ltr)'));
+      assert.isTrue(div3_1.matches(':dir(rtl)'));
+      assert.isTrue(div3_2.matches(':dir(ltr)'));
+      assert.isTrue(div4.matches(':dir(ltr)'));
+      assert.isTrue(div4_1.matches(':dir(ltr)'));
+      assert.isTrue(div4_1_1.matches(':dir(ltr)'));
+      /* Update text */
+      div1_1.textContent = '\u05EA';
+      assert.isTrue(div1.matches(':dir(rtl)'));
+      assert.isTrue(div1_1.matches(':dir(rtl)'));
+      /* Update dir attr */
+      div1_1.dir = 'ltr';
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      /* Reupdate text */
+      div1_1.textContent = 'a';
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      /* Remove child */
+      div2_1.remove();
+      assert.isTrue(div2.matches(':dir(ltr)'));
+      /* Update child dir attr */
+      div3_1.dir = '';
+      assert.isTrue(div3.matches(':dir(rtl)'));
+      /* Update child order */
+      div3.appendChild(div3_1);
+      assert.isTrue(div3.matches(':dir(ltr)'));
+      /* Update child text */
+      div4_1_1.textContent = '\u05EA';
+      assert.isTrue(div4.matches(':dir(rtl)'));
+      assert.isTrue(div4_1.matches(':dir(rtl)'));
+      assert.isTrue(div4_1_1.matches(':dir(rtl)'));
     });
   });
 
@@ -1825,6 +1960,52 @@ describe('local wpt test cases', () => {
         document.getElementById('d28'),
         document.getElementById('d32')
       ]), 'result');
+    });
+  });
+
+  describe('css/selectors/invalidation/defined-in-has.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="subject">
+          <my-element></my-element>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      assert.isFalse(subject.matches('#subject:has(:defined)'));
+      window.customElements.define('my-element',
+        class MyElement extends window.HTMLElement {});
+      assert.isTrue(subject.matches('#subject:has(:defined)'));
+    });
+  });
+
+  describe('css/selectors/invalidation/defined.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <section id="container">
+          <elucidate-late id="a1"></elucidate-late>
+          <div id="b1"></div>
+          <elucidate-late>
+            <div id="c1"></div>
+          </elucidate-late>
+          <div>
+            <div id="d1"></div>
+          </div>
+        </section>
+      `;
+      document.body.innerHTML = html;
+      assert.isFalse(document.getElementById('a1').matches('#a1:defined'));
+      assert.isFalse(document.getElementById('b1').matches(':defined + #b1'));
+      assert.isFalse(document.getElementById('c1').matches(':defined > #c1'));
+      assert.isFalse(document.getElementById('d1')
+        .matches('div + :defined + * #d1'));
+      class ElucidateLate extends window.HTMLElement {};
+      window.customElements.define('elucidate-late', ElucidateLate);
+      assert.isTrue(document.getElementById('a1').matches('#a1:defined'));
+      assert.isTrue(document.getElementById('b1').matches(':defined + #b1'));
+      assert.isTrue(document.getElementById('c1').matches(':defined > #c1'));
+      assert.isTrue(document.getElementById('d1')
+        .matches('div + :defined + * #d1'));
     });
   });
 

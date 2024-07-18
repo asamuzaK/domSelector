@@ -6528,6 +6528,41 @@ describe('walk AST', () => {
           children: [
             {
               loc: null,
+              name: 'defined',
+              type: SELECTOR_PSEUDO_CLASS
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'defined',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      info: {
+        hasDefinedPseudo: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
               name: 'div',
               type: SELECTOR_TYPE
             },

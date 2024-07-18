@@ -206,13 +206,15 @@ export class Finder {
       const {
         branches,
         info: {
+          hasDefinedPseudo,
           hasHasPseudoFunc,
           hasNthChildOfSelector,
           hasPseudoFunc
         }
       } = walkAST(cssAst);
       let cacheable;
-      if (hasHasPseudoFunc || (hasNthChildOfSelector && hasPseudoFunc)) {
+      if (hasDefinedPseudo || hasHasPseudoFunc ||
+          (hasNthChildOfSelector && hasPseudoFunc)) {
         cacheable = false;
       } else {
         cacheable = true;
