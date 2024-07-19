@@ -1994,19 +1994,79 @@ describe('local wpt test cases', () => {
         </section>
       `;
       document.body.innerHTML = html;
-      assert.isFalse(document.getElementById('a1').matches('#a1:defined'));
-      assert.isFalse(document.getElementById('b1').matches(':defined + #b1'));
-      assert.isFalse(document.getElementById('c1').matches(':defined > #c1'));
-      assert.isFalse(document.getElementById('d1')
-        .matches('div + :defined + * #d1'));
+      const a1 = document.getElementById('a1');
+      const b1 = document.getElementById('b1');
+      const c1 = document.getElementById('c1');
+      const d1 = document.getElementById('d1');
+      assert.isFalse(a1.matches('#a1:defined'));
+      assert.isFalse(b1.matches(':defined + #b1'));
+      assert.isFalse(c1.matches(':defined > #c1'));
+      assert.isFalse(d1.matches('div + :defined + * #d1'));
       class ElucidateLate extends window.HTMLElement {};
       window.customElements.define('elucidate-late', ElucidateLate);
-      assert.isTrue(document.getElementById('a1').matches('#a1:defined'));
-      assert.isTrue(document.getElementById('b1').matches(':defined + #b1'));
-      assert.isTrue(document.getElementById('c1').matches(':defined > #c1'));
-      assert.isTrue(document.getElementById('d1')
-        .matches('div + :defined + * #d1'));
+      assert.isTrue(a1.matches('#a1:defined'));
+      assert.isTrue(b1.matches(':defined + #b1'));
+      assert.isTrue(c1.matches(':defined > #c1'));
+      assert.isTrue(d1.matches('div + :defined + * #d1'));
     });
+  });
+
+  describe('css/selectors/invalidation/has-complexity.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <main>
+          <div id=container>
+            <span></span>
+          </div>
+          <div id=subject class=subject></div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      const subject = document.getElementById('subject');
+      const count = 25000;
+      /* Before appending ${count} elements */
+      assert.isTrue(subject.matches('main:has(span) .subject'));
+      /* After appending ${count} elements */
+      for (let i = 0; i < count; ++i) {
+        const span = document.createElement('span');
+        container.appendChild(span);
+      }
+      assert.isTrue(subject.matches('main:has(span + span) .subject'));
+      /* After appending another ${count} elements */
+      for (let i = 0; i < count - 1; ++i) {
+        const span = document.createElement("span");
+        container.appendChild(span);
+      }
+      const final = document.createElement("final");
+      container.appendChild(final);
+      assert.isTrue(subject.matches('main:has(span + final) .subject'));
+      /* After appending div with ${count} elements */
+      const div = document.createElement("div");
+      for (let i = 0; i < count; ++i) {
+        const span = document.createElement("span");
+        div.appendChild(span);
+      }
+      container.appendChild(div);
+      assert.isTrue(subject.matches('main:has(div div span) .subject'));
+      /* After removing div with ${count} elements */
+      div.remove();
+      assert.isFalse(subject.matches('main:has(div div span) .subject'));
+      assert.isTrue(subject.matches('main:has(span + final) .subject'));
+      /* After removing ${count} elements one-by-one */
+      /* jsdom hangs. recursive call to ChildNode.remove() costs very high
+      for (let i = 0; i < count; ++i) {
+        container.lastChild.remove();
+      }
+      */
+      container.lastChild.remove();
+      assert.isFalse(subject.matches('main:has(span + final) .subject'));
+      assert.isTrue(subject.matches('main:has(span + span) .subject'));
+      /* After removing the remaining elements */
+      container.replaceChildren();
+      assert.isFalse(subject.matches('main:has(span) .subject'));
+      assert.isTrue(subject.matches('main .subject'));
+    }).timeout(10 * 1000);
   });
 
   describe('css/selectors/invalidation/is.html', () => {
