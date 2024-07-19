@@ -2090,8 +2090,6 @@ describe('local wpt test cases', () => {
         </main>
       `;
       document.body.innerHTML = html;
-      const main = document.getElementById('main');
-      const form = document.getElementById('form');
       const checkbox = document.getElementById('checkbox');
       const select = document.getElementById('select');
       const optgroup = document.getElementById('optgroup');
