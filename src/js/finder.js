@@ -1113,8 +1113,14 @@ export class Finder {
                     bool = true;
                   }
                   break;
+                } else if (parent.localName === 'form') {
+                  break;
                 } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
-                  parent = parent.parentNode;
+                  if (parent.parentNode.localName === 'form') {
+                    break;
+                  } else {
+                    parent = parent.parentNode;
+                  }
                 } else {
                   break;
                 }
@@ -1159,8 +1165,14 @@ export class Finder {
                     bool = true;
                   }
                   break;
+                } else if (parent.localName === 'form') {
+                  break;
                 } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
-                  parent = parent.parentNode;
+                  if (parent.parentNode.localName === 'form') {
+                    break;
+                  } else {
+                    parent = parent.parentNode;
+                  }
                 } else {
                   break;
                 }

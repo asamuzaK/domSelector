@@ -4634,6 +4634,25 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'disabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const form = document.createElement('form');
+      const div = document.createElement('div');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      div.appendChild(node);
+      form.appendChild(div);
+      parent.appendChild(form);
+      const finder = new Finder(window);
+      finder._setup(':disabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -4756,6 +4775,25 @@ describe('Finder', () => {
         name: 'enabled',
         type: SELECTOR_PSEUDO_CLASS
       };
+      const form = document.createElement('form');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      form.appendChild(node);
+      parent.appendChild(form);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
       window.customElements.define('x-input', class extends window.HTMLElement {
         static formAssociated = true;
       });
@@ -4853,11 +4891,13 @@ describe('Finder', () => {
         name: 'enabled',
         type: SELECTOR_PSEUDO_CLASS
       };
+      const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
       field.appendChild(node);
-      parent.appendChild(field);
+      form.appendChild(field);
+      parent.appendChild(form);
       const finder = new Finder(window);
       finder._setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
