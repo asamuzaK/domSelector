@@ -4713,6 +4713,26 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'disabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const field = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      legend.appendChild(node);
+      field.appendChild(legend);
+      field.setAttribute('disabled', 'disabled');
+      parent.appendChild(field);
+      const finder = new Finder(window);
+      finder._setup(':disabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -4777,6 +4797,87 @@ describe('Finder', () => {
       node.setAttribute('disabled', 'disabled');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const field = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      legend.appendChild(node);
+      field.appendChild(legend);
+      field.setAttribute('disabled', 'disabled');
+      parent.appendChild(field);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const field = document.createElement('fieldset');
+      const div = document.createElement('div');
+      const legend = document.createElement('legend');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      field.appendChild(div);
+      field.appendChild(legend);
+      field.appendChild(node);
+      field.setAttribute('disabled', 'disabled');
+      parent.appendChild(field);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      field.appendChild(node);
+      parent.appendChild(field);
+      const finder = new Finder(window);
+      finder._setup(':enabled', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'enabled',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      field.appendChild(node);
+      field.disabled = true;
+      parent.appendChild(field);
       const finder = new Finder(window);
       finder._setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node);

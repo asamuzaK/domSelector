@@ -17,9 +17,9 @@ import {
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
   EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL,
-  REG_FORM_GROUP, REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO,
-  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
-  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
+  REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
+  REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
+  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
   SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
@@ -1084,22 +1084,42 @@ export class Finder {
               isCustomElement(node, { formAssociated: true })) {
             if (node.disabled || node.hasAttribute('disabled')) {
               matched.add(node);
-            } else {
+            } else if (node.localName === 'option') {
+              if (parentNode.localName === 'optgroup' &&
+                  (parentNode.disabled ||
+                   parentNode.hasAttribute('disabled'))) {
+                matched.add(node);
+              }
+            } else if (node.localName !== 'optgroup') {
+              let bool;
               let parent = parentNode;
               while (parent) {
-                if (REG_FORM_GROUP.test(parent.localName)) {
-                  if (parent.localName === 'fieldset') {
-                    if (parent.disabled && parent.hasAttribute('disabled')) {
+                if (parent.localName === 'fieldset' &&
+                    (parent.disabled || parent.hasAttribute('disabled'))) {
+                  const walker = this.#walker;
+                  let refNode = traverseNode(parent, walker);
+                  refNode = walker.firstChild();
+                  while (refNode) {
+                    if (refNode.localName === 'legend') {
                       break;
                     }
-                  } else {
-                    break;
+                    refNode = walker.nextSibling();
                   }
+                  if (refNode) {
+                    if (!refNode.contains(node)) {
+                      bool = true;
+                    }
+                  } else {
+                    bool = true;
+                  }
+                  break;
+                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
+                  parent = parent.parentNode;
+                } else {
+                  break;
                 }
-                parent = parent.parentNode;
               }
-              if (parent && parentNode.localName !== 'legend' &&
-                  (parent.disabled || parent.hasAttribute('disabled'))) {
+              if (bool) {
                 matched.add(node);
               }
             }
@@ -1110,7 +1130,45 @@ export class Finder {
           if ((REG_FORM_CTRL.test(localName) ||
                isCustomElement(node, { formAssociated: true })) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
-            matched.add(node);
+            if (node.localName === 'option') {
+              if (parentNode.localName !== 'optgroup' ||
+                  !(parentNode.disabled ||
+                    parentNode.hasAttribute('disabled'))) {
+                matched.add(node);
+              }
+            } else if (node.localName !== 'optgroup') {
+              let bool;
+              let parent = parentNode;
+              while (parent) {
+                if (parent.localName === 'fieldset' &&
+                    (parent.disabled || parent.hasAttribute('disabled'))) {
+                  const walker = this.#walker;
+                  let refNode = traverseNode(parent, walker);
+                  refNode = walker.firstChild();
+                  while (refNode) {
+                    if (refNode.localName === 'legend') {
+                      break;
+                    }
+                    refNode = walker.nextSibling();
+                  }
+                  if (refNode) {
+                    if (!refNode.contains(node)) {
+                      bool = true;
+                    }
+                  } else {
+                    bool = true;
+                  }
+                  break;
+                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
+                  parent = parent.parentNode;
+                } else {
+                  break;
+                }
+              }
+              if (!bool) {
+                matched.add(node);
+              }
+            }
           }
           break;
         }

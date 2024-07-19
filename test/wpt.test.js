@@ -2035,16 +2035,16 @@ describe('local wpt test cases', () => {
       assert.isTrue(subject.matches('main:has(span + span) .subject'));
       /* After appending another ${count} elements */
       for (let i = 0; i < count - 1; ++i) {
-        const span = document.createElement("span");
+        const span = document.createElement('span');
         container.appendChild(span);
       }
-      const final = document.createElement("final");
+      const final = document.createElement('final');
       container.appendChild(final);
       assert.isTrue(subject.matches('main:has(span + final) .subject'));
       /* After appending div with ${count} elements */
-      const div = document.createElement("div");
+      const div = document.createElement('div');
       for (let i = 0; i < count; ++i) {
-        const span = document.createElement("span");
+        const span = document.createElement('span');
         div.appendChild(span);
       }
       container.appendChild(div);
@@ -2067,6 +2067,88 @@ describe('local wpt test cases', () => {
       assert.isFalse(subject.matches('main:has(span) .subject'));
       assert.isTrue(subject.matches('main .subject'));
     }).timeout(10 * 1000);
+  });
+
+  describe('css/selectors/invalidation/has-with-pseudo-class.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <main id=main>
+          <form id=form>
+            <input type=checkbox id=checkbox>
+            <select id=select>
+              <optgroup id=optgroup>
+                <option>a</option>
+                <option id=option>b</option>
+              </optgroup>
+            </select>
+            <input id=text_input type=text required>
+          </form>
+          <div id=subject></div>
+          <div id=subject2></div>
+          <div id=subject3></div>
+          <div id=subject4></div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      const form = document.getElementById('form');
+      const checkbox = document.getElementById('checkbox');
+      const select = document.getElementById('select');
+      const optgroup = document.getElementById('optgroup');
+      const option = document.getElementById('option');
+      const text_input = document.getElementById('text_input');
+      const subject = document.getElementById('subject');
+      const subject2 = document.getElementById('subject2');
+      const subject3 = document.getElementById('subject3');
+      const subject4 = document.getElementById('subject4');
+      assert.isTrue(subject.matches('main:has(input) div'));
+      checkbox.checked = true;
+      assert.isTrue(subject.matches('main:has(#checkbox:checked) > #subject'));
+      checkbox.checked = false;
+      assert.isFalse(subject.matches('main:has(#checkbox:checked) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      const oldOption = select.selectedOptions[0];
+      option.selected = true;
+      assert.isTrue(subject.matches('main:has(#option:checked) > #subject'));
+      oldOption.selected = true;
+      assert.isFalse(subject.matches('main:has(#option:checked) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      checkbox.disabled = true;
+      assert.isTrue(subject.matches('main:has(#checkbox:disabled) > #subject'));
+      assert.isTrue(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'));
+      checkbox.disabled = false;
+      assert.isFalse(subject.matches('main:has(#checkbox:disabled) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      option.disabled = true;
+      assert.isTrue(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      option.disabled = false;
+      assert.isFalse(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      optgroup.disabled = true;
+      assert.isTrue(subject.matches('main:has(#optgroup:disabled) > #subject'));
+      assert.isTrue(subject2.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject3.matches('main:not(:has(#optgroup:enabled)) > #subject3'));
+      assert.isTrue(subject4.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      text_input.value = 'value';
+      assert.isTrue(subject.matches('main:has(#text_input:valid) > #subject'));
+      assert.isTrue(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'));
+      assert.isTrue(subject3.matches('main:has(#form:valid) > #subject3'));
+      assert.isTrue(subject4.matches('main:not(:has(#form:invalid)) > #subject4'));
+      text_input.value = '';
+      assert.isFalse(subject.matches('main:has(#text_input:valid) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'));
+      assert.isTrue(subject2.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:has(#form:valid) > #subject3'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      assert.isFalse(subject4.matches('main:not(:has(#form:invalid)) > #subject4'));
+      assert.isTrue(subject4.matches('main:has(input) div'));
+    });
   });
 
   describe('css/selectors/invalidation/is.html', () => {
@@ -2921,7 +3003,7 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('', () => {
+  describe('html/semantics/selectors/pseudo-classes/disabled.html', () => {
     it('should get matched node(s)', () => {
       const html = `
         <fieldset disabled id=fieldset>
