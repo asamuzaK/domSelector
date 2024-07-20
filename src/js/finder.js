@@ -208,12 +208,13 @@ export class Finder {
         info: {
           hasDefinedPseudo,
           hasHasPseudoFunc,
+          hasHyphenSepAttr,
           hasNthChildOfSelector,
           hasPseudoFunc
         }
       } = walkAST(cssAst);
       let cacheable;
-      if (hasDefinedPseudo || hasHasPseudoFunc ||
+      if (hasDefinedPseudo || hasHasPseudoFunc || hasHyphenSepAttr ||
           (hasNthChildOfSelector && hasPseudoFunc)) {
         cacheable = false;
       } else {
