@@ -1963,6 +1963,204 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/attribute.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="a1">
+          <div id="b1">
+            <div id="c1">
+            </div>
+          </div>
+        </div>
+        <div id="d1">
+        </div>
+        <div>
+          <div id="b2">
+            <div id="c2">
+            </div>
+          </div>
+        </div>
+        <div id="d2">
+        </div>
+        <div id="a3">
+          <div id="b3">
+            <div id="c3">
+            </div>
+          </div>
+        </div>
+        <div id="d3">
+        </div>
+        <div id="a4">
+          <div id="b4">
+            <div id="c4">
+            </div>
+          </div>
+        </div>
+        <div id="d4">
+        </div>
+        <div>
+          <div id="b5">
+            <div id="c5">
+            </div>
+          </div>
+        </div>
+        <div id="d5">
+        </div>
+        <div id="a6">
+          <div id="b6">
+            <div id="c6">
+            </div>
+          </div>
+        </div>
+        <div id="d6">
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const a1 = document.getElementById('a1');
+      const b1 = document.getElementById('b1');
+      const c1 = document.getElementById('c1');
+      const d1 = document.getElementById('d1');
+      const b2 = document.getElementById('b2');
+      const c2 = document.getElementById('c2');
+      const d2 = document.getElementById('d2');
+      const a3 = document.getElementById('a3');
+      const b3 = document.getElementById('b3');
+      const c3 = document.getElementById('c3');
+      const d3 = document.getElementById('d3');
+      const a4 = document.getElementById('a4');
+      const b4 = document.getElementById('b4');
+      const c4 = document.getElementById('c4');
+      const d4 = document.getElementById('d4');
+      const b5 = document.getElementById('b5');
+      const c5 = document.getElementById('c5');
+      const d5 = document.getElementById('d5');
+      const a6 = document.getElementById('a6');
+      const b6 = document.getElementById('b6');
+      const c6 = document.getElementById('c6');
+      const d6 = document.getElementById('d6');
+      /* [att] selector is effective */
+      assert.isFalse(a1.matches('#a1[style]'));
+      assert.isFalse(b1.matches('#a1[style] > #b1'));
+      assert.isFalse(c1.matches('#a1[style] #c1'));
+      assert.isFalse(d1.matches('#a1[style] + #d1'));
+      a1.style.visibility = 'visible';
+      assert.isTrue(a1.matches('#a1[style]'));
+      assert.isTrue(b1.matches('#a1[style] > #b1'));
+      assert.isTrue(c1.matches('#a1[style] #c1'));
+      assert.isTrue(d1.matches('#a1[style] + #d1'));
+      a1.removeAttribute('style');
+      assert.isFalse(a1.matches('#a1[style]'));
+      assert.isFalse(b1.matches('#a1[style] > #b1'));
+      assert.isFalse(c1.matches('#a1[style] #c1'));
+      assert.isFalse(d1.matches('#a1[style] + #d1'));
+      /* [att=val] selector is effective */
+      const a2 = b2.parentElement;
+      assert.isFalse(a2.matches('[id=a2]'));
+      assert.isFalse(b2.matches('[id=a2] > #b2'));
+      assert.isFalse(c2.matches('[id=a2] #c2'));
+      assert.isFalse(d2.matches('[id=a2] + #d2'));
+      a2.id = 'x-a2';
+      assert.isFalse(a2.matches('[id=a2]'));
+      assert.isFalse(b2.matches('[id=a2] > #b2'));
+      assert.isFalse(c2.matches('[id=a2] #c2'));
+      assert.isFalse(d2.matches('[id=a2] + #d2'));
+      a2.id = 'a2';
+      assert.isTrue(a2.matches('[id=a2]'));
+      assert.isTrue(b2.matches('[id=a2] > #b2'));
+      assert.isTrue(c2.matches('[id=a2] #c2'));
+      assert.isTrue(d2.matches('[id=a2] + #d2'));
+      a2.id = 'a2-y';
+      assert.isFalse(a2.matches('[id=a2]'));
+      assert.isFalse(b2.matches('[id=a2] > #b2'));
+      assert.isFalse(c2.matches('[id=a2] #c2'));
+      assert.isFalse(d2.matches('[id=a2] + #d2'));
+      a2.removeAttribute('id');
+      /* [att~=val] selector is effective */
+      assert.isFalse(a3.matches('#a3[class~=q]'));
+      assert.isFalse(b3.matches('#a3[class~=q] > #b3'));
+      assert.isFalse(c3.matches('#a3[class~=q] #c3'));
+      assert.isFalse(d3.matches('#a3[class~=q] + #d3'));
+      a3.setAttribute('class', 'p q r');
+      assert.isTrue(a3.matches('#a3[class~=q]'));
+      assert.isTrue(b3.matches('#a3[class~=q] > #b3'));
+      assert.isTrue(c3.matches('#a3[class~=q] #c3'));
+      assert.isTrue(d3.matches('#a3[class~=q] + #d3'));
+      a3.setAttribute('class', 'q-r');
+      assert.isFalse(a3.matches('#a3[class~=q]'));
+      assert.isFalse(b3.matches('#a3[class~=q] > #b3'));
+      assert.isFalse(c3.matches('#a3[class~=q] #c3'));
+      assert.isFalse(d3.matches('#a3[class~=q] + #d3'));
+      a3.removeAttribute('class');
+      /* [att|=val] selector is effective */
+      assert.isFalse(a4.matches('#a4[run|=one]'));
+      assert.isFalse(b4.matches('#a4[run|=one] > #b4'));
+      assert.isFalse(c4.matches('#a4[run|=one] #c4'));
+      assert.isFalse(d4.matches('#a4[run|=one] + #d4'));
+      a4.setAttribute('run', 'one');
+      assert.isTrue(a4.matches('#a4[run|=one]'));
+      assert.isTrue(b4.matches('#a4[run|=one] > #b4'));
+      assert.isTrue(c4.matches('#a4[run|=one] #c4'));
+      assert.isTrue(d4.matches('#a4[run|=one] + #d4'));
+      a4.setAttribute('run', 'one two three');
+      assert.isFalse(a4.matches('#a4[run|=one]'));
+      assert.isFalse(b4.matches('#a4[run|=one] > #b4'));
+      assert.isFalse(c4.matches('#a4[run|=one] #c4'));
+      assert.isFalse(d4.matches('#a4[run|=one] + #d4'));
+      a4.setAttribute('run', 'one-two-three');
+      assert.isTrue(a4.matches('#a4[run|=one]'));
+      assert.isTrue(b4.matches('#a4[run|=one] > #b4'));
+      assert.isTrue(c4.matches('#a4[run|=one] #c4'));
+      assert.isTrue(d4.matches('#a4[run|=one] + #d4'));
+      a4.setAttribute('run', 'zero-one');
+      assert.isFalse(a4.matches('#a4[run|=one]'));
+      assert.isFalse(b4.matches('#a4[run|=one] > #b4'));
+      assert.isFalse(c4.matches('#a4[run|=one] #c4'));
+      assert.isFalse(d4.matches('#a4[run|=one] + #d4'));
+      a4.removeAttribute('run');
+      /* #id selector is effective */
+      const a5 = b5.parentElement;
+      assert.isFalse(a5.matches('#a5'));
+      assert.isFalse(b5.matches('#a5 > #b5'));
+      assert.isFalse(c5.matches('#a5 #c5'));
+      assert.isFalse(d5.matches('#a5 + #d5'));
+      a5.setAttribute('id', 'x-a5');
+      assert.isFalse(a5.matches('#a5'));
+      assert.isFalse(b5.matches('#a5 > #b5'));
+      assert.isFalse(c5.matches('#a5 #c5'));
+      assert.isFalse(d5.matches('#a5 + #d5'));
+      a5.setAttribute('id', 'a5');
+      assert.isTrue(a5.matches('#a5'));
+      assert.isTrue(b5.matches('#a5 > #b5'));
+      assert.isTrue(c5.matches('#a5 #c5'));
+      assert.isTrue(d5.matches('#a5 + #d5'));
+      a5.setAttribute('id', 'a5-y');
+      assert.isFalse(a5.matches('#a5'));
+      assert.isFalse(b5.matches('#a5 > #b5'));
+      assert.isFalse(c5.matches('#a5 #c5'));
+      assert.isFalse(d5.matches('#a5 + #d5'));
+      a5.removeAttribute('id');
+      /* .class selector is effective */
+      assert.isFalse(a6.matches('#a6.q'));
+      assert.isFalse(b6.matches('#a6.q > #b6'));
+      assert.isFalse(c6.matches('#a6.q #c6'));
+      assert.isFalse(d6.matches('#a6.q + #d6'));
+      a6.classList.add('p');
+      a6.classList.add('q');
+      a6.classList.add('r');
+      assert.isTrue(a6.matches('#a6.q'));
+      assert.isTrue(b6.matches('#a6.q > #b6'));
+      assert.isTrue(c6.matches('#a6.q #c6'));
+      assert.isTrue(d6.matches('#a6.q + #d6'));
+      a6.classList.remove('q');
+      a6.classList.add('q-r');
+      assert.isFalse(a6.matches('#a6.q'));
+      assert.isFalse(b6.matches('#a6.q > #b6'));
+      assert.isFalse(c6.matches('#a6.q #c6'));
+      assert.isFalse(d6.matches('#a6.q + #d6'));
+      a6.removeAttribute('class');
+    });
+  });
+
   describe('css/selectors/invalidation/defined-in-has.html', () => {
     it('should get matched node', () => {
       const html = `

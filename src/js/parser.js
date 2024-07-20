@@ -187,23 +187,41 @@ export const walkAST = (ast = {}) => {
   const info = new Map();
   const opt = {
     enter: node => {
-      if (node.type === SELECTOR) {
-        branches.add(node.children);
-      } else if (node.type === SELECTOR_PSEUDO_CLASS) {
-        if (REG_LOGICAL_PSEUDO.test(node.name)) {
-          info.set('hasPseudoFunc', true);
-          if (node.name === 'has') {
-            info.set('hasHasPseudoFunc', true);
+      switch (node.type) {
+        case SELECTOR: {
+          branches.add(node.children);
+          break;
+        }
+        case SELECTOR_PSEUDO_CLASS: {
+          if (REG_LOGICAL_PSEUDO.test(node.name)) {
+            info.set('hasPseudoFunc', true);
+            if (node.name === 'has') {
+              info.set('hasHasPseudoFunc', true);
+            }
+          } else if (node.name === 'defined') {
+            info.set('hasDefinedPseudo', true);
           }
-        } else if (node.name === 'defined') {
-          info.set('hasDefinedPseudo', true);
+          break;
         }
-      } else if (node.type === SELECTOR_PSEUDO_ELEMENT) {
-        if (REG_SHADOW_PSEUDO.test(node.name)) {
-          info.set('hasPseudoFunc', true);
+        case SELECTOR_PSEUDO_ELEMENT: {
+          if (REG_SHADOW_PSEUDO.test(node.name)) {
+            info.set('hasPseudoFunc', true);
+          }
+          break;
         }
-      } else if (node.type === NTH && node.selector) {
-        info.set('hasNthChildOfSelector', true);
+        case SELECTOR_ATTR: {
+          if (node.matcher === '|=') {
+            info.set('hasHyphenSepAttr', true);
+          }
+          break;
+        }
+        case NTH: {
+          if (node.selector) {
+            info.set('hasNthChildOfSelector', true);
+          }
+          break;
+        }
+        default:
       }
     }
   };

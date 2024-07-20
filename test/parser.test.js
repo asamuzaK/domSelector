@@ -7104,7 +7104,9 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHyphenSepAttr: true
+      }
     }, 'result');
   });
 
