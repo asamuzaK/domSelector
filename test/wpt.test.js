@@ -2149,6 +2149,181 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/host-context-pseudo-class-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="host_parent"><div id="host"></div></div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          .subject {
+            color: red;
+          }
+          .subject:has(:is(:host-context(.a) > .foo .bar)) { color: green }
+          .subject:has(:is(:host-context(.a) .bar)) { color: blue }
+        </style>
+        <div class="foo">
+          <div id="subject1" class="subject">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="foo">
+            <div id="subject2" class="subject">
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const subject1 = shadow.querySelector('#subject1');
+      const subject2 = shadow.querySelector('#subject2');
+      /* Before adding 'a' to #host_parent */
+      assert.isTrue(subject1.matches('.subject'));
+      assert.isTrue(subject2.matches('.subject'));
+      /* After adding 'a' to #host_parent */
+      const host_parent = document.getElementById('host_parent');
+      host_parent.classList.add('a');
+      assert.isTrue(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'));
+      assert.isTrue(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'));
+      /* After removing 'a' from #host_parent */
+      host_parent.classList.remove('a');
+      assert.isFalse(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'));
+      assert.isFalse(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/host-pseudo-class-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="host_parent"><div id="host"></div></div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          .subject {
+            color: red;
+          }
+          .subject:has(:is(:host(.a) > .foo .bar)) { color: green }
+          .subject:has(:is(:host(.a) .bar)) { color: blue }
+        </style>
+        <div class="foo">
+          <div id="subject1" class="subject">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="foo">
+            <div id="subject2" class="subject">
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const subject1 = shadow.querySelector('#subject1');
+      const subject2 = shadow.querySelector('#subject2');
+      /* Before adding 'a' to #host */
+      assert.isTrue(subject1.matches('.subject'));
+      assert.isTrue(subject2.matches('.subject'));
+      /* After adding 'a' to #host */
+      host.classList.add('a');
+      assert.isTrue(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'));
+      assert.isTrue(subject2.matches('.subject:has(:is(:host(.a) .bar))'));
+      /* After removing 'a' from #host */
+      host.classList.remove('a');
+      assert.isFalse(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'));
+      assert.isFalse(subject2.matches('.subject:has(:is(:host(.a) .bar))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/input-pseudo-classes-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id=subject class=ancestor>
+          <input type="checkbox" name="my-checkbox" id="checkme">
+          <label for="checkme">Check me!</label>
+          <input type="text" id="textinput" required>
+          <input id="radioinput" checked>
+          <input id="numberinput" type="number" min="1" max="10" value="5">
+          <progress id="progress" value="50" max="100"></progress>
+          <input id="checkboxinput" type="checkbox">
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      const checkme = document.getElementById('checkme');
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:checked)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:disabled)'));
+      checkme.checked = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:checked)'));
+      checkme.checked = false;
+      checkme.indeterminate = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      checkme.indeterminate = false;
+      checkme.disabled = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:disabled)'));
+      checkme.disabled = false;
+      let input = null;
+      input = checkme;
+      checkme.remove();
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:checked)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:disabled)'));
+      subject.prepend(input);
+      input = null;
+      checkme.checked = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:checked)'));
+      checkme.checked = false;
+      const progress = document.getElementById('progress');
+      assert.isFalse(subject.matches('.ancestor:has(#progress:indeterminate)'));
+      progress.removeAttribute('value');
+      assert.isTrue(subject.matches('.ancestor:has(#progress:indeterminate)'));
+      progress.setAttribute('value', '50');
+      const textinput = document.getElementById('textinput');
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:read-only)'));
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:valid)'));
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:placeholder-shown)'));
+      textinput.readOnly = true;
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:read-only)'));
+      textinput.readOnly = false;
+      textinput.value = 'text input';
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:valid)'));
+      textinput.value = '';
+      textinput.placeholder = 'placeholder text';
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:placeholder-shown)'));
+      textinput.removeAttribute('placeholder');
+      const radioinput = document.getElementById('radioinput');
+      assert.isFalse(subject.matches('.ancestor:has(#radioinput:default)'));
+      radioinput.type = 'radio';
+      assert.isTrue(subject.matches('.ancestor:has(#radioinput:default)'));
+      radioinput.removeAttribute('type');
+      const numberinput = document.getElementById('numberinput');
+      assert.isFalse(subject.matches('.ancestor:has(#numberinput:required)'));
+      assert.isFalse(subject.matches('.ancestor:has(#numberinput:out-of-range)'));
+      numberinput.required = true;
+      assert.isTrue(subject.matches('.ancestor:has(#numberinput:required)'));
+      numberinput.required = false;
+      numberinput.value = 12;
+      assert.isTrue(subject.matches('.ancestor:has(#numberinput:out-of-range)'));
+      numberinput.value = 5;
+      const checkboxinput = document.getElementById('checkboxinput');
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.checked = true;
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.setAttribute('checked', '');
+      assert.isTrue(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.checked = false;
+      assert.isTrue(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.removeAttribute('checked');
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
+    });
+  });
+
   describe('css/selectors/invalidation/is.html', () => {
     it('should get matched node(s)', () => {
       const html = `
