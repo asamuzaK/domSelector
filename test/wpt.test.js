@@ -1,6 +1,7 @@
 /**
  * wpt.test.js
  */
+/* eslint-disable camelcase */
 
 /* api */
 import { assert } from 'chai';
@@ -95,15 +96,17 @@ describe('local wpt test cases', () => {
       };
     }
   };
-  let document;
+  let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
     document = dom.window.document;
     for (const key of globalKeys) {
       global[key] = dom.window[key];
     }
   });
   afterEach(() => {
+    window = null;
     document = null;
     for (const key of globalKeys) {
       delete global[key];
@@ -1124,6 +1127,85 @@ describe('local wpt test cases', () => {
       assert.isFalse(input.matches(':dir(rtl)'), 'rtl');
     });
 
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'foo');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'rtl');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'RTL');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'ltr');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'LTR');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'auto');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+
+      input.value = '\u05EA';
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.setAttribute('dir', 'AUTO');
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+
+      input.removeAttribute('dir');
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+    });
+
+    it('should get matched node', () => {
+      const input = document.createElement('input');
+      input.type = 'tel';
+
+      const container = document.createElement('div');
+      container.setAttribute('dir', 'rtl');
+      container.appendChild(input);
+
+      // Insert the element into the document so that we can also check for
+      // 'direction' in computed style.
+      document.body.appendChild(container);
+
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+      // Per https://html.spec.whatwg.org/multipage/rendering.html#bidi-rendering:
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'ltr');
+
+      // Changing to a different type causes the special type=tel rule to
+      // no longer apply.
+      input.type = 'text';
+      assert.isFalse(input.matches(':dir(ltr)'));
+      assert.isTrue(input.matches(':dir(rtl)'));
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'rtl');
+
+      // And restoring type=tel brings back that behavior.
+      input.type = 'tel';
+      assert.isTrue(input.matches(':dir(ltr)'));
+      assert.isFalse(input.matches(':dir(rtl)'));
+      // jsdom fails
+      // assert.strictEqual(window.getComputedStyle(input).direction, 'ltr');
+
+      document.body.removeChild(container);
+    });
+
     const dirValue = [
       'password', 'text', 'search', 'url', 'email', 'submit', 'reset',
       'button'
@@ -1346,6 +1428,59 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const res = document.querySelector('#div4_2:dir(ltr)');
       assert.deepEqual(res, document.getElementById('div4_2'), 'result');
+    });
+
+    // NOTE: jsdom does not implement `innerText`, so using `textContent`.
+    // https://github.com/jsdom/jsdom/issues/1245
+    it('should get matched node', () => {
+      document.body.innerHTML = html;
+      const div1 = document.getElementById('div1');
+      const div1_1 = document.getElementById('div1_1');
+      const div2 = document.getElementById('div2');
+      const div2_1 = document.getElementById('div2_1');
+      const div3 = document.getElementById('div3');
+      const div3_1 = document.getElementById('div3_1');
+      const div3_2 = document.getElementById('div3_2');
+      const div4 = document.getElementById('div4');
+      const div4_1 = document.getElementById('div4_1');
+      const div4_1_1 = document.getElementById('div4_1_1');
+      /* Initial */
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      assert.isTrue(div2.matches(':dir(rtl)'));
+      assert.isTrue(div2_1.matches(':dir(rtl)'));
+      assert.isTrue(div3.matches(':dir(ltr)'));
+      assert.isTrue(div3_1.matches(':dir(rtl)'));
+      assert.isTrue(div3_2.matches(':dir(ltr)'));
+      assert.isTrue(div4.matches(':dir(ltr)'));
+      assert.isTrue(div4_1.matches(':dir(ltr)'));
+      assert.isTrue(div4_1_1.matches(':dir(ltr)'));
+      /* Update text */
+      div1_1.textContent = '\u05EA';
+      assert.isTrue(div1.matches(':dir(rtl)'));
+      assert.isTrue(div1_1.matches(':dir(rtl)'));
+      /* Update dir attr */
+      div1_1.dir = 'ltr';
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      /* Reupdate text */
+      div1_1.textContent = 'a';
+      assert.isTrue(div1.matches(':dir(ltr)'));
+      assert.isTrue(div1_1.matches(':dir(ltr)'));
+      /* Remove child */
+      div2_1.remove();
+      assert.isTrue(div2.matches(':dir(ltr)'));
+      /* Update child dir attr */
+      div3_1.dir = '';
+      assert.isTrue(div3.matches(':dir(rtl)'));
+      /* Update child order */
+      div3.appendChild(div3_1);
+      assert.isTrue(div3.matches(':dir(ltr)'));
+      /* Update child text */
+      div4_1_1.textContent = '\u05EA';
+      assert.isTrue(div4.matches(':dir(rtl)'));
+      assert.isTrue(div4_1.matches(':dir(rtl)'));
+      assert.isTrue(div4_1_1.matches(':dir(rtl)'));
     });
   });
 
@@ -1825,6 +1960,367 @@ describe('local wpt test cases', () => {
         document.getElementById('d28'),
         document.getElementById('d32')
       ]), 'result');
+    });
+  });
+
+  describe('css/selectors/invalidation/defined-in-has.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="subject">
+          <my-element></my-element>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      assert.isFalse(subject.matches('#subject:has(:defined)'));
+      window.customElements.define('my-element',
+        class MyElement extends window.HTMLElement {});
+      assert.isTrue(subject.matches('#subject:has(:defined)'));
+    });
+  });
+
+  describe('css/selectors/invalidation/defined.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <section id="container">
+          <elucidate-late id="a1"></elucidate-late>
+          <div id="b1"></div>
+          <elucidate-late>
+            <div id="c1"></div>
+          </elucidate-late>
+          <div>
+            <div id="d1"></div>
+          </div>
+        </section>
+      `;
+      document.body.innerHTML = html;
+      const a1 = document.getElementById('a1');
+      const b1 = document.getElementById('b1');
+      const c1 = document.getElementById('c1');
+      const d1 = document.getElementById('d1');
+      assert.isFalse(a1.matches('#a1:defined'));
+      assert.isFalse(b1.matches(':defined + #b1'));
+      assert.isFalse(c1.matches(':defined > #c1'));
+      assert.isFalse(d1.matches('div + :defined + * #d1'));
+      class ElucidateLate extends window.HTMLElement {};
+      window.customElements.define('elucidate-late', ElucidateLate);
+      assert.isTrue(a1.matches('#a1:defined'));
+      assert.isTrue(b1.matches(':defined + #b1'));
+      assert.isTrue(c1.matches(':defined > #c1'));
+      assert.isTrue(d1.matches('div + :defined + * #d1'));
+    });
+  });
+
+  describe('css/selectors/invalidation/has-complexity.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <main>
+          <div id=container>
+            <span></span>
+          </div>
+          <div id=subject class=subject></div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      const subject = document.getElementById('subject');
+      const count = 25000;
+      /* Before appending ${count} elements */
+      assert.isTrue(subject.matches('main:has(span) .subject'));
+      /* After appending ${count} elements */
+      for (let i = 0; i < count; ++i) {
+        const span = document.createElement('span');
+        container.appendChild(span);
+      }
+      assert.isTrue(subject.matches('main:has(span + span) .subject'));
+      /* After appending another ${count} elements */
+      for (let i = 0; i < count - 1; ++i) {
+        const span = document.createElement('span');
+        container.appendChild(span);
+      }
+      const final = document.createElement('final');
+      container.appendChild(final);
+      assert.isTrue(subject.matches('main:has(span + final) .subject'));
+      /* After appending div with ${count} elements */
+      const div = document.createElement('div');
+      for (let i = 0; i < count; ++i) {
+        const span = document.createElement('span');
+        div.appendChild(span);
+      }
+      container.appendChild(div);
+      assert.isTrue(subject.matches('main:has(div div span) .subject'));
+      /* After removing div with ${count} elements */
+      div.remove();
+      assert.isFalse(subject.matches('main:has(div div span) .subject'));
+      assert.isTrue(subject.matches('main:has(span + final) .subject'));
+      /* After removing ${count} elements one-by-one */
+      /* jsdom hangs. recursive call to ChildNode.remove() costs very high
+      for (let i = 0; i < count; ++i) {
+        container.lastChild.remove();
+      }
+      */
+      container.lastChild.remove();
+      assert.isFalse(subject.matches('main:has(span + final) .subject'));
+      assert.isTrue(subject.matches('main:has(span + span) .subject'));
+      /* After removing the remaining elements */
+      container.replaceChildren();
+      assert.isFalse(subject.matches('main:has(span) .subject'));
+      assert.isTrue(subject.matches('main .subject'));
+    }).timeout(10 * 1000);
+  });
+
+  describe('css/selectors/invalidation/has-with-pseudo-class.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <main id=main>
+          <form id=form>
+            <input type=checkbox id=checkbox>
+            <select id=select>
+              <optgroup id=optgroup>
+                <option>a</option>
+                <option id=option>b</option>
+              </optgroup>
+            </select>
+            <input id=text_input type=text required>
+          </form>
+          <div id=subject></div>
+          <div id=subject2></div>
+          <div id=subject3></div>
+          <div id=subject4></div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const checkbox = document.getElementById('checkbox');
+      const select = document.getElementById('select');
+      const optgroup = document.getElementById('optgroup');
+      const option = document.getElementById('option');
+      const text_input = document.getElementById('text_input');
+      const subject = document.getElementById('subject');
+      const subject2 = document.getElementById('subject2');
+      const subject3 = document.getElementById('subject3');
+      const subject4 = document.getElementById('subject4');
+      assert.isTrue(subject.matches('main:has(input) div'));
+      checkbox.checked = true;
+      assert.isTrue(subject.matches('main:has(#checkbox:checked) > #subject'));
+      checkbox.checked = false;
+      assert.isFalse(subject.matches('main:has(#checkbox:checked) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      const oldOption = select.selectedOptions[0];
+      option.selected = true;
+      assert.isTrue(subject.matches('main:has(#option:checked) > #subject'));
+      oldOption.selected = true;
+      assert.isFalse(subject.matches('main:has(#option:checked) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      checkbox.disabled = true;
+      assert.isTrue(subject.matches('main:has(#checkbox:disabled) > #subject'));
+      assert.isTrue(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'));
+      checkbox.disabled = false;
+      assert.isFalse(subject.matches('main:has(#checkbox:disabled) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      option.disabled = true;
+      assert.isTrue(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      option.disabled = false;
+      assert.isFalse(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      optgroup.disabled = true;
+      assert.isTrue(subject.matches('main:has(#optgroup:disabled) > #subject'));
+      assert.isTrue(subject2.matches('main:has(#option:disabled) > :is(#subject, #subject2)'));
+      assert.isTrue(subject3.matches('main:not(:has(#optgroup:enabled)) > #subject3'));
+      assert.isTrue(subject4.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'));
+      text_input.value = 'value';
+      assert.isTrue(subject.matches('main:has(#text_input:valid) > #subject'));
+      assert.isTrue(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'));
+      assert.isTrue(subject3.matches('main:has(#form:valid) > #subject3'));
+      assert.isTrue(subject4.matches('main:not(:has(#form:invalid)) > #subject4'));
+      text_input.value = '';
+      assert.isFalse(subject.matches('main:has(#text_input:valid) > #subject'));
+      assert.isTrue(subject.matches('main:has(input) div'));
+      assert.isFalse(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'));
+      assert.isTrue(subject2.matches('main:has(input) div'));
+      assert.isFalse(subject3.matches('main:has(#form:valid) > #subject3'));
+      assert.isTrue(subject3.matches('main:has(input) div'));
+      assert.isFalse(subject4.matches('main:not(:has(#form:invalid)) > #subject4'));
+      assert.isTrue(subject4.matches('main:has(input) div'));
+    });
+  });
+
+  describe('css/selectors/invalidation/host-context-pseudo-class-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="host_parent"><div id="host"></div></div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          .subject {
+            color: red;
+          }
+          .subject:has(:is(:host-context(.a) > .foo .bar)) { color: green }
+          .subject:has(:is(:host-context(.a) .bar)) { color: blue }
+        </style>
+        <div class="foo">
+          <div id="subject1" class="subject">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="foo">
+            <div id="subject2" class="subject">
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const subject1 = shadow.querySelector('#subject1');
+      const subject2 = shadow.querySelector('#subject2');
+      /* Before adding 'a' to #host_parent */
+      assert.isTrue(subject1.matches('.subject'));
+      assert.isTrue(subject2.matches('.subject'));
+      /* After adding 'a' to #host_parent */
+      const host_parent = document.getElementById('host_parent');
+      host_parent.classList.add('a');
+      assert.isTrue(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'));
+      assert.isTrue(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'));
+      /* After removing 'a' from #host_parent */
+      host_parent.classList.remove('a');
+      assert.isFalse(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'));
+      assert.isFalse(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/host-pseudo-class-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="host_parent"><div id="host"></div></div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          .subject {
+            color: red;
+          }
+          .subject:has(:is(:host(.a) > .foo .bar)) { color: green }
+          .subject:has(:is(:host(.a) .bar)) { color: blue }
+        </style>
+        <div class="foo">
+          <div id="subject1" class="subject">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="foo">
+            <div id="subject2" class="subject">
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const subject1 = shadow.querySelector('#subject1');
+      const subject2 = shadow.querySelector('#subject2');
+      /* Before adding 'a' to #host */
+      assert.isTrue(subject1.matches('.subject'));
+      assert.isTrue(subject2.matches('.subject'));
+      /* After adding 'a' to #host */
+      host.classList.add('a');
+      assert.isTrue(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'));
+      assert.isTrue(subject2.matches('.subject:has(:is(:host(.a) .bar))'));
+      /* After removing 'a' from #host */
+      host.classList.remove('a');
+      assert.isFalse(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'));
+      assert.isFalse(subject2.matches('.subject:has(:is(:host(.a) .bar))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/input-pseudo-classes-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id=subject class=ancestor>
+          <input type="checkbox" name="my-checkbox" id="checkme">
+          <label for="checkme">Check me!</label>
+          <input type="text" id="textinput" required>
+          <input id="radioinput" checked>
+          <input id="numberinput" type="number" min="1" max="10" value="5">
+          <progress id="progress" value="50" max="100"></progress>
+          <input id="checkboxinput" type="checkbox">
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      const checkme = document.getElementById('checkme');
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:checked)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:disabled)'));
+      checkme.checked = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:checked)'));
+      checkme.checked = false;
+      checkme.indeterminate = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      checkme.indeterminate = false;
+      checkme.disabled = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:disabled)'));
+      checkme.disabled = false;
+      let input = null;
+      input = checkme;
+      checkme.remove();
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:checked)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:indeterminate)'));
+      assert.isFalse(subject.matches('.ancestor:has(#checkme:disabled)'));
+      subject.prepend(input);
+      input = null;
+      checkme.checked = true;
+      assert.isTrue(subject.matches('.ancestor:has(#checkme:checked)'));
+      checkme.checked = false;
+      const progress = document.getElementById('progress');
+      assert.isFalse(subject.matches('.ancestor:has(#progress:indeterminate)'));
+      progress.removeAttribute('value');
+      assert.isTrue(subject.matches('.ancestor:has(#progress:indeterminate)'));
+      progress.setAttribute('value', '50');
+      const textinput = document.getElementById('textinput');
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:read-only)'));
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:valid)'));
+      assert.isFalse(subject.matches('.ancestor:has(#textinput:placeholder-shown)'));
+      textinput.readOnly = true;
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:read-only)'));
+      textinput.readOnly = false;
+      textinput.value = 'text input';
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:valid)'));
+      textinput.value = '';
+      textinput.placeholder = 'placeholder text';
+      assert.isTrue(subject.matches('.ancestor:has(#textinput:placeholder-shown)'));
+      textinput.removeAttribute('placeholder');
+      const radioinput = document.getElementById('radioinput');
+      assert.isFalse(subject.matches('.ancestor:has(#radioinput:default)'));
+      radioinput.type = 'radio';
+      assert.isTrue(subject.matches('.ancestor:has(#radioinput:default)'));
+      radioinput.removeAttribute('type');
+      const numberinput = document.getElementById('numberinput');
+      assert.isFalse(subject.matches('.ancestor:has(#numberinput:required)'));
+      assert.isFalse(subject.matches('.ancestor:has(#numberinput:out-of-range)'));
+      numberinput.required = true;
+      assert.isTrue(subject.matches('.ancestor:has(#numberinput:required)'));
+      numberinput.required = false;
+      numberinput.value = 12;
+      assert.isTrue(subject.matches('.ancestor:has(#numberinput:out-of-range)'));
+      numberinput.value = 5;
+      const checkboxinput = document.getElementById('checkboxinput');
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.checked = true;
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.setAttribute('checked', '');
+      assert.isTrue(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.checked = false;
+      assert.isTrue(subject.matches('.ancestor:has(#checkboxinput:default)'));
+      checkboxinput.removeAttribute('checked');
+      assert.isFalse(subject.matches('.ancestor:has(#checkboxinput:default)'));
     });
   });
 
@@ -2680,7 +3176,7 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('', () => {
+  describe('html/semantics/selectors/pseudo-classes/disabled.html', () => {
     it('should get matched node(s)', () => {
       const html = `
         <fieldset disabled id=fieldset>
