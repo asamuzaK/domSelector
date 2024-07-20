@@ -5763,7 +5763,7 @@ describe('Finder', () => {
       ], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5777,9 +5777,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
-      assert.deepEqual([...res], [
-        node
-      ], 'result');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {
@@ -5798,7 +5796,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5812,9 +5810,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
-      assert.deepEqual([...res], [
-        node
-      ], 'result');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should get matched node(s)', () => {

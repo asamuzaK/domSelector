@@ -1353,7 +1353,7 @@ export class Finder {
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
                      REG_TYPE_CHECK.test(node.getAttribute('type')) &&
-                     (node.checked || node.hasAttribute('checked'))) {
+                     node.hasAttribute('checked')) {
             matched.add(node);
           // option
           } else if (localName === 'option') {
