@@ -5872,7 +5872,7 @@ describe('Finder', () => {
       ], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5891,6 +5891,30 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'default',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const container = document.createElement('select');
+      const group = document.createElement('optgroup');
+      const prev = document.createElement('option');
+      const node = document.createElement('option');
+      prev.setAttribute('selected', 'selected');
+      node.setAttribute('selected', 'selected');
+      group.appendChild(prev);
+      group.appendChild(node);
+      container.appendChild(group);
+      container.multiple = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(container);
+      const finder = new Finder(window);
+      finder._setup(':default', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
       assert.deepEqual([...res], [
         node
       ], 'result');
@@ -5906,8 +5930,6 @@ describe('Finder', () => {
       const group = document.createElement('optgroup');
       const prev = document.createElement('option');
       const node = document.createElement('option');
-      prev.setAttribute('selected', 'selected');
-      node.setAttribute('selected', 'selected');
       group.appendChild(prev);
       group.appendChild(node);
       container.appendChild(group);
@@ -5920,27 +5942,6 @@ describe('Finder', () => {
     });
 
     it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
-      };
-      const container = document.createElement('select');
-      const group = document.createElement('optgroup');
-      const prev = document.createElement('option');
-      const node = document.createElement('option');
-      group.appendChild(prev);
-      group.appendChild(node);
-      container.appendChild(group);
-      const parent = document.getElementById('div0');
-      parent.appendChild(container);
-      const finder = new Finder(window);
-      finder._setup(':default', node);
-      const res = finder._matchPseudoClassSelector(leaf, node);
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5956,9 +5957,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder._setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
-      assert.deepEqual([...res], [
-        node
-      ], 'result');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {

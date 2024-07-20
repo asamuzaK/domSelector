@@ -1356,42 +1356,8 @@ export class Finder {
                      node.hasAttribute('checked')) {
             matched.add(node);
           // option
-          } else if (localName === 'option') {
-            let parent = parentNode;
-            let isMultiple = false;
-            while (parent) {
-              if (parent.localName === 'datalist') {
-                break;
-              } else if (parent.localName === 'select') {
-                if (parent.multiple || parent.hasAttribute('multiple')) {
-                  isMultiple = true;
-                }
-                break;
-              }
-              parent = parent.parentNode;
-            }
-            if (isMultiple) {
-              if (node.selected || node.hasAttribute('selected')) {
-                matched.add(node);
-              }
-            } else {
-              const defaultOpt = new Set();
-              const walker = this.#walker;
-              let refNode = traverseNode(parentNode, walker);
-              refNode = walker.firstChild();
-              while (refNode) {
-                if (refNode.selected || refNode.hasAttribute('selected')) {
-                  defaultOpt.add(refNode);
-                  break;
-                }
-                refNode = walker.nextSibling();
-              }
-              if (defaultOpt.size) {
-                if (defaultOpt.has(node)) {
-                  matched.add(node);
-                }
-              }
-            }
+          } else if (localName === 'option' && node.hasAttribute('selected')) {
+            matched.add(node);
           }
           break;
         }
