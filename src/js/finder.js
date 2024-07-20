@@ -1137,13 +1137,15 @@ export class Finder {
           if ((REG_FORM_CTRL.test(localName) ||
                isCustomElement(node, { formAssociated: true })) &&
               !(node.disabled && node.hasAttribute('disabled'))) {
-            if (node.localName === 'option') {
+            if (node.localName === 'optgroup') {
+              matched.add(node);
+            } else if (node.localName === 'option') {
               if (parentNode.localName !== 'optgroup' ||
                   !(parentNode.disabled ||
                     parentNode.hasAttribute('disabled'))) {
                 matched.add(node);
               }
-            } else if (node.localName !== 'optgroup') {
+            } else {
               let bool;
               let parent = parentNode;
               while (parent) {
