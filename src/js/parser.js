@@ -195,29 +195,13 @@ export const walkAST = (ast = {}) => {
         case SELECTOR_PSEUDO_CLASS: {
           if (REG_LOGICAL_PSEUDO.test(node.name)) {
             info.set('hasPseudoFunc', true);
-            if (node.name === 'has') {
-              info.set('hasHasPseudoFunc', true);
-            }
-          } else if (node.name === 'defined') {
-            info.set('hasDefinedPseudo', true);
+            info.set('hasLogicalPseudoFunc', true);
           }
           break;
         }
         case SELECTOR_PSEUDO_ELEMENT: {
           if (REG_SHADOW_PSEUDO.test(node.name)) {
             info.set('hasPseudoFunc', true);
-          }
-          break;
-        }
-        case SELECTOR_ATTR: {
-          if (node.matcher === '|=') {
-            info.set('hasHyphenSepAttr', true);
-          }
-          break;
-        }
-        case NTH: {
-          if (node.selector) {
-            info.set('hasNthChildOfSelector', true);
           }
           break;
         }

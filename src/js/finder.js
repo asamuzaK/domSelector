@@ -19,7 +19,7 @@ import {
   EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL,
   REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
   REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
-  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_CLASS, SELECTOR_ID,
+  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
   SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
@@ -57,12 +57,13 @@ const TARGET_SELF = 'self';
 export class Finder {
   /* private fields */
   #ast;
-  #cache;
+  #astCache;
   #content;
   #contentCache;
   #descendant;
   #document;
   #event;
+  #invalidate;
   #node;
   #nodes;
   #noexcept;
@@ -85,7 +86,7 @@ export class Finder {
   constructor(window, document) {
     this.#window = window;
     this.#document = document ?? window.document;
-    this.#cache = new WeakMap();
+    this.#astCache = new WeakMap();
     this.#contentCache = new WeakMap();
     this.#results = new WeakMap();
     this.#nwsapi = this._initNwsapi(window, document);
@@ -136,6 +137,7 @@ export class Finder {
     this.#shadow = isInShadowTree(node);
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#walkers = new WeakMap();
+    this.#invalidate = false;
     return node;
   }
 
@@ -183,8 +185,8 @@ export class Finder {
       const cachedItem = this.#contentCache.get(this.#content);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
-        this.#descendant = item.descendant;
         ast = item.ast;
+        this.#descendant = item.descendant;
       }
     }
     if (ast) {
@@ -203,23 +205,7 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const {
-        branches,
-        info: {
-          hasDefinedPseudo,
-          hasHasPseudoFunc,
-          hasHyphenSepAttr,
-          hasNthChildOfSelector,
-          hasPseudoFunc
-        }
-      } = walkAST(cssAst);
-      let cacheable;
-      if (hasDefinedPseudo || hasHasPseudoFunc || hasHyphenSepAttr ||
-          (hasNthChildOfSelector && hasPseudoFunc)) {
-        cacheable = false;
-      } else {
-        cacheable = true;
-      }
+      const { branches } = walkAST(cssAst);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -279,19 +265,17 @@ export class Finder {
         nodes[i] = [];
         i++;
       }
-      if (cacheable) {
-        let cachedItem;
-        if (this.#contentCache.has(this.#content)) {
-          cachedItem = this.#contentCache.get(this.#content);
-        } else {
-          cachedItem = new Map();
-        }
-        cachedItem.set(`${selector}`, {
-          ast,
-          descendant
-        });
-        this.#contentCache.set(this.#content, cachedItem);
+      let cachedItem;
+      if (this.#contentCache.has(this.#content)) {
+        cachedItem = this.#contentCache.get(this.#content);
+      } else {
+        cachedItem = new Map();
       }
+      cachedItem.set(`${selector}`, {
+        ast,
+        descendant
+      });
+      this.#contentCache.set(this.#content, cachedItem);
       this.#descendant = descendant;
     }
     return [
@@ -346,12 +330,15 @@ export class Finder {
     const matched = new Set();
     let selectorBranches;
     if (selector) {
-      if (this.#cache.has(selector)) {
-        selectorBranches = this.#cache.get(selector);
+      if (this.#astCache.has(selector)) {
+        selectorBranches = this.#astCache.get(selector);
       } else {
-        const { branches } = walkAST(selector);
+        const { branches, info } = walkAST(selector);
         selectorBranches = branches;
-        this.#cache.set(selector, selectorBranches);
+        this.#astCache.set(selector, selectorBranches);
+        if (info.hasLogicalPseudoFunc) {
+          this.#invalidate = true;
+        }
       }
     }
     if (parentNode) {
@@ -816,8 +803,8 @@ export class Finder {
     // :has(), :is(), :not(), :where()
     if (REG_LOGICAL_PSEUDO.test(astName)) {
       let astData;
-      if (this.#cache.has(ast)) {
-        astData = this.#cache.get(ast);
+      if (this.#astCache.has(ast)) {
+        astData = this.#astCache.get(ast);
       } else {
         const { branches } = walkAST(ast);
         const selectors = [];
@@ -859,7 +846,7 @@ export class Finder {
           twigBranches,
           selector: selectors.join(',')
         };
-        this.#cache.set(ast, astData);
+        this.#astCache.set(ast, astData);
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
       if (res) {
@@ -882,6 +869,7 @@ export class Finder {
             }
             break;
           }
+          // :state()
           case 'state': {
             if (isCustomElement(node)) {
               const [{ value: stateValue }] = astChildren;
@@ -1841,23 +1829,23 @@ export class Finder {
       }
     }
     if (typeof bool !== 'boolean') {
-      let save;
-      if (nodeType === ELEMENT_NODE && REG_FORM.test(localName)) {
-        save = false;
-      } else {
-        save = true;
-      }
       for (const leaf of leaves) {
-        const { name: leafName, type: leafType } = leaf;
-        if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
-          save = false;
+        if (leaf.type === SELECTOR_PSEUDO_CLASS &&
+            /^(?:defined|dir|has)$/.test(leaf.name)) {
+          this.#invalidate = true;
+        } else if (leaf.type === SELECTOR_ATTR && leaf.matcher === '|=') {
+          this.#invalidate = true;
         }
         bool = this._matchSelector(leaf, node, opt).has(node);
         if (!bool) {
           break;
         }
       }
-      if (save) {
+      let cacheable = true;
+      if (nodeType === ELEMENT_NODE && REG_FORM.test(localName)) {
+        cacheable = false;
+      }
+      if (cacheable && !this.#invalidate) {
         if (!result) {
           result = new WeakMap();
         }

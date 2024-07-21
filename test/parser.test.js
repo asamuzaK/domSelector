@@ -6550,9 +6550,54 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {
-        hasDefinedPseudo: true
-      }
+      info: {}
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  name: 'auto',
+                  type: IDENTIFIER
+                }
+              ],
+              loc: null,
+              name: 'dir',
+              type: SELECTOR_PSEUDO_CLASS
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'auto',
+                type: IDENTIFIER
+              }
+            ],
+            loc: null,
+            name: 'dir',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      info: {}
     }, 'result');
   });
 
@@ -6634,6 +6679,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6707,6 +6753,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6780,6 +6827,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -6944,6 +6992,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7047,7 +7096,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasHasPseudoFunc: true,
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7104,9 +7153,7 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {
-        hasHyphenSepAttr: true
-      }
+      info: {}
     }, 'result');
   });
 
@@ -7248,7 +7295,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNthChildOfSelector: true,
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
@@ -7378,7 +7425,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNthChildOfSelector: true,
+        hasLogicalPseudoFunc: true,
         hasPseudoFunc: true
       }
     }, 'result');
