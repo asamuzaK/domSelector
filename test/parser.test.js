@@ -6680,7 +6680,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -6754,7 +6754,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -6828,7 +6828,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -6889,7 +6889,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -6993,7 +6993,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -7097,7 +7097,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -7296,7 +7296,98 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  loc: null,
+                  nth: {
+                    loc: null,
+                    name: 'odd',
+                    type: IDENTIFIER
+                  },
+                  selector: {
+                    children: [
+                      {
+                        children: [
+                          {
+                            loc: null,
+                            name: 'foo',
+                            type: SELECTOR_TYPE
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  },
+                  type: NTH
+                }
+              ],
+              loc: null,
+              name: 'nth-child',
+              type: SELECTOR_PSEUDO_CLASS
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                loc: null,
+                nth: {
+                  loc: null,
+                  name: 'odd',
+                  type: IDENTIFIER
+                },
+                selector: {
+                  children: [
+                    {
+                      children: [
+                        {
+                          loc: null,
+                          name: 'foo',
+                          type: SELECTOR_TYPE
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR_LIST
+                },
+                type: NTH
+              }
+            ],
+            loc: null,
+            name: 'nth-child',
+            type: SELECTOR_PSEUDO_CLASS
+          }
+        ]
+      ],
+      info: {
+        hasNestedSelector: true
       }
     }, 'result');
   });
@@ -7426,7 +7517,7 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasPseudoFunc: true
+        hasNestedSelector: true
       }
     }, 'result');
   });

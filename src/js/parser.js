@@ -194,14 +194,20 @@ export const walkAST = (ast = {}) => {
         }
         case SELECTOR_PSEUDO_CLASS: {
           if (REG_LOGICAL_PSEUDO.test(node.name)) {
-            info.set('hasPseudoFunc', true);
+            info.set('hasNestedSelector', true);
             info.set('hasLogicalPseudoFunc', true);
           }
           break;
         }
         case SELECTOR_PSEUDO_ELEMENT: {
           if (REG_SHADOW_PSEUDO.test(node.name)) {
-            info.set('hasPseudoFunc', true);
+            info.set('hasNestedSelector', true);
+          }
+          break;
+        }
+        case NTH: {
+          if (node.selector) {
+            info.set('hasNestedSelector', true);
           }
           break;
         }
@@ -210,7 +216,7 @@ export const walkAST = (ast = {}) => {
     }
   };
   walk(ast, opt);
-  if (info.get('hasPseudoFunc')) {
+  if (info.get('hasNestedSelector')) {
     findAll(ast, (node, item, list) => {
       if (list) {
         if (node.type === SELECTOR_PSEUDO_CLASS &&
