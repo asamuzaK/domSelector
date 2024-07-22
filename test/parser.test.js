@@ -7673,6 +7673,11 @@ describe('filter selector (for nwsapi)', () => {
   });
 
   it('should get false', () => {
+    const res = func('[id');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
     const res = func('[ns|id]');
     assert.isFalse(res, 'result');
   });
@@ -7864,6 +7869,16 @@ describe('filter selector (for nwsapi)', () => {
 
   it('should get false', () => {
     const res = func(':is(:nth-child(2n+1), :nth-child(3n+1))');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':is()');
+    assert.isFalse(res, 'result');
+  });
+
+  it('should get false', () => {
+    const res = func(':where()');
     assert.isFalse(res, 'result');
   });
 
