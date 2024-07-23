@@ -1830,11 +1830,24 @@ export class Finder {
     }
     if (typeof bool !== 'boolean') {
       for (const leaf of leaves) {
-        if (leaf.type === SELECTOR_PSEUDO_CLASS &&
-            /^(?:defined|dir|has)$/.test(leaf.name)) {
-          this.#invalidate = true;
-        } else if (leaf.type === SELECTOR_ATTR && leaf.matcher === '|=') {
-          this.#invalidate = true;
+        switch (leaf.type) {
+          case SELECTOR_ATTR: {
+            if (/\|?=/.test(leaf.matcher)) {
+              this.#invalidate = true;
+            }
+            break;
+          }
+          case SELECTOR_ID: {
+            this.#invalidate = true;
+            break;
+          }
+          case SELECTOR_PSEUDO_CLASS: {
+            if (/^(?:defined|dir|has)$/.test(leaf.name)) {
+              this.#invalidate = true;
+            }
+            break;
+          }
+          default:
         }
         bool = this._matchSelector(leaf, node, opt).has(node);
         if (!bool) {
