@@ -3,10 +3,9 @@
  */
 
 /* import */
-import nwsapi from '@asamuzakjp/nwsapi';
 import {
-  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
-  sortNodes, traverseNode, verifyNode
+  initNwsapi, isContentEditable, isCustomElement, isInShadowTree,
+  resolveContent, sortNodes, traverseNode, verifyNode
 } from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
@@ -86,10 +85,10 @@ export class Finder {
   constructor(window, document) {
     this.#window = window;
     this.#document = document ?? window.document;
+    this.#nwsapi = initNwsapi(this.#document);
     this.#astCache = new WeakMap();
     this.#contentCache = new WeakMap();
     this.#results = new WeakMap();
-    this.#nwsapi = this._initNwsapi(window, document);
   }
 
   /**
@@ -140,22 +139,6 @@ export class Finder {
     this.#invalidate = false;
     return node;
   }
-
-  /**
-   * init nwsapi
-   * @private
-   * @returns {object} - nwsapi
-   */
-  _initNwsapi() {
-    const nw = nwsapi({
-      DOMException: this.#window.DOMException,
-      document: this.#document
-    });
-    nw.configure({
-      LOGERRORS: false
-    });
-    return nw;
-  };
 
   /**
    * set event

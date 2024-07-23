@@ -1276,4 +1276,33 @@ describe('DOM utility functions', () => {
       ], 'result');
     });
   });
+
+  describe('sort nodes', () => {
+    const func = domUtil.initNwsapi;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(window), TypeError, 'Unexpected type Window');
+    });
+
+    it('should throw', () => {
+      const node = document.createElement('div');
+      assert.throws(() => func(node), TypeError, 'Unexpected node DIV');
+    });
+
+    it('should get nwsapi', () => {
+      const res = func(document);
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+        'nwsapi.match');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        'nwsapi.closest');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+        'nwsapi.first');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+        'nwsapi.select');
+    });
+  });
 });
