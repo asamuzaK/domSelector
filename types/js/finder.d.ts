@@ -2,7 +2,6 @@ export class Finder {
     constructor(window: object, document: object);
     private _onError;
     private _setup;
-    private _initNwsapi;
     private _setEvent;
     private _correspond;
     private _createTreeWalker;
@@ -30,9 +29,5 @@ export class Finder {
     private _matchNodeNext;
     private _matchNodePrev;
     private _find;
-    matches(selector: string, node: object, opt: object): boolean;
-    closest(selector: string, node: object, opt: object): object | null;
-    querySelector(selector: string, node: object, opt: object): object | null;
-    querySelectorAll(selector: string, node: object, opt: object): Array<object | undefined>;
     #private;
 }
