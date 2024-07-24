@@ -4,30 +4,27 @@
 
 /* import */
 import {
-  initNwsapi, isContentEditable, isCustomElement, isInShadowTree,
-  resolveContent, sortNodes, traverseNode, verifyNode
+  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
+  sortNodes, traverseNode
 } from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
-  filterSelector, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
+  generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_COMPLEX, REG_FORM, REG_FORM_CTRL,
+  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
   REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
   REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
   REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
-  SYNTAX_ERR, TEXT_NODE, WALKER_FILTER
+  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
+  WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const TARGET_ALL = 'all';
-const TARGET_FIRST = 'first';
-const TARGET_LINEAL = 'lineal';
-const TARGET_SELF = 'self';
 
 /**
  * Finder
@@ -66,12 +63,10 @@ export class Finder {
   #node;
   #nodes;
   #noexcept;
-  #nwsapi;
   #qswalker;
   #results;
   #root;
   #shadow;
-  #sort;
   #walker;
   #walkers;
   #warn;
@@ -85,7 +80,6 @@ export class Finder {
   constructor(window, document) {
     this.#window = window;
     this.#document = document ?? window.document;
-    this.#nwsapi = initNwsapi(this.#document);
     this.#astCache = new WeakMap();
     this.#contentCache = new WeakMap();
     this.#results = new WeakMap();
@@ -291,7 +285,6 @@ export class Finder {
    */
   _prepareQuerySelectorWalker() {
     this.#qswalker = this._createTreeWalker(this.#node);
-    this.#sort = false;
     return this.#qswalker;
   }
 
@@ -1802,30 +1795,22 @@ export class Finder {
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node, opt) {
-    const { attributes, localName, nodeType } = node;
-    let result = this.#results.get(leaves);
     let bool;
+    let result = this.#results.get(leaves);
     if (result && result.has(node)) {
-      const { attr, matched } = result.get(node);
-      if (attributes?.length === attr) {
-        bool = matched;
-      }
+      const { matched } = result.get(node);
+      bool = matched;
     }
     if (typeof bool !== 'boolean') {
       for (const leaf of leaves) {
         switch (leaf.type) {
-          case SELECTOR_ATTR: {
-            if (/\|?=/.test(leaf.matcher)) {
-              this.#invalidate = true;
-            }
-            break;
-          }
+          case SELECTOR_ATTR:
           case SELECTOR_ID: {
             this.#invalidate = true;
             break;
           }
           case SELECTOR_PSEUDO_CLASS: {
-            if (/^(?:defined|dir|has)$/.test(leaf.name)) {
+            if (/^(?:(?:any-)?link|defined|dir|has)$/.test(leaf.name)) {
               this.#invalidate = true;
             }
             break;
@@ -1838,7 +1823,7 @@ export class Finder {
         }
       }
       let cacheable = true;
-      if (nodeType === ELEMENT_NODE && REG_FORM.test(localName)) {
+      if (node.nodeType === ELEMENT_NODE && REG_FORM.test(node.localName)) {
         cacheable = false;
       }
       if (cacheable && !this.#invalidate) {
@@ -1846,7 +1831,6 @@ export class Finder {
           result = new WeakMap();
         }
         result.set(node, {
-          attr: attributes?.length,
           matched: bool
         });
         this.#results.set(leaves, result);
@@ -2699,14 +2683,15 @@ export class Finder {
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this._prepareQuerySelectorWalker();
     }
-    const [[...branches], nodes] = this._collectNodes(targetType);
+    const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
-    let res = new Set();
+    let sort;
+    let nodes = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, collected, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
-        const entryNodes = nodes[i];
+        const entryNodes = collectedNodes[i];
         const entryNodesLen = entryNodes.length;
         const lastIndex = branchLen - 1;
         if (lastIndex === 0) {
@@ -2715,23 +2700,23 @@ export class Finder {
             for (let j = 0; j < entryNodesLen; j++) {
               const node = entryNodes[j];
               if (node !== this.#node && this.#node.contains(node)) {
-                res.add(node);
+                nodes.add(node);
                 if (targetType !== TARGET_ALL) {
                   break;
                 }
               }
             }
           } else if (targetType === TARGET_ALL) {
-            if (res.size) {
-              const n = [...res];
-              res = new Set([...n, ...entryNodes]);
-              this.#sort = true;
+            if (nodes.size) {
+              const n = [...nodes];
+              nodes = new Set([...n, ...entryNodes]);
+              sort = true;
             } else {
-              res = new Set(entryNodes);
+              nodes = new Set(entryNodes);
             }
           } else {
             const [node] = entryNodes;
-            res.add(node);
+            nodes.add(node);
           }
         } else if (targetType === TARGET_ALL) {
           if (dir === DIR_NEXT) {
@@ -2747,12 +2732,12 @@ export class Finder {
                 nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
                 if (nextNodes.size) {
                   if (j === lastIndex) {
-                    if (res.size) {
-                      const n = [...res];
-                      res = new Set([...n, ...nextNodes]);
-                      this.#sort = true;
+                    if (nodes.size) {
+                      const n = [...nodes];
+                      nodes = new Set([...n, ...nextNodes]);
+                      sort = true;
                     } else {
-                      res = nextNodes;
+                      nodes = nextNodes;
                     }
                   } else {
                     combo = nextCombo;
@@ -2770,9 +2755,9 @@ export class Finder {
                 nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
                 if (nextNodes.size) {
                   if (j === 0) {
-                    res.add(node);
-                    if (branchLen > 1 && res.size > 1) {
-                      this.#sort = true;
+                    nodes.add(node);
+                    if (branchLen > 1 && nodes.size > 1) {
+                      sort = true;
                     }
                   }
                 } else {
@@ -2790,7 +2775,7 @@ export class Finder {
               index: 1
             });
             if (matched) {
-              res.add(matched);
+              nodes.add(matched);
               break;
             }
           }
@@ -2806,7 +2791,7 @@ export class Finder {
                 index: 1
               });
               if (matched) {
-                res.add(matched);
+                nodes.add(matched);
                 break;
               }
               refNode = this._findNode(entryLeaves, {
@@ -2821,7 +2806,7 @@ export class Finder {
               index: lastIndex - 1
             });
             if (matched) {
-              res.add(node);
+              nodes.add(node);
               break;
             }
           }
@@ -2836,7 +2821,7 @@ export class Finder {
                 index: lastIndex - 1
               });
               if (matched) {
-                res.add(refNode);
+                nodes.add(refNode);
                 break;
               }
               refNode = this._findNode(entryLeaves, {
@@ -2847,163 +2832,9 @@ export class Finder {
         }
       }
     }
-    return res;
-  }
-
-  /**
-   * matches
-   * @param {string} selector - CSS selector
-   * @param {object} node - Element node
-   * @param {object} opt - options
-   * @returns {boolean} - `true` if matched `false` otherwise
-   */
-  matches(selector, node, opt) {
-    let res;
-    try {
-      if (node?.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node?.nodeName}`;
-        throw new TypeError(msg);
-      }
-      const document = node.ownerDocument;
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          descendant: true
-        };
-        if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.match(selector, node);
-        }
-      }
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_SELF);
-      res = nodes.size;
-    } catch (e) {
-      this._onError(e);
+    if (targetType === TARGET_ALL && sort) {
+      nodes = new Set(sortNodes(nodes));
     }
-    return !!res;
-  }
-
-  /**
-   * closest
-   * @param {string} selector - CSS selector
-   * @param {object} node - Element node
-   * @param {object} opt - options
-   * @returns {?object} - matched node
-   */
-  closest(selector, node, opt) {
-    let res;
-    try {
-      if (node?.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node?.nodeName}`;
-        throw new TypeError(msg);
-      }
-      const document = node.ownerDocument;
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          descendant: true
-        };
-        if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.closest(selector, node);
-        }
-      }
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_LINEAL);
-      if (nodes.size) {
-        let refNode = this.#node;
-        while (refNode) {
-          if (nodes.has(refNode)) {
-            res = refNode;
-            break;
-          }
-          refNode = refNode.parentNode;
-        }
-      }
-    } catch (e) {
-      this._onError(e);
-    }
-    return res ?? null;
-  }
-
-  /**
-   * query selector
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
-   * @returns {?object} - matched node
-   */
-  querySelector(selector, node, opt) {
-    let res;
-    try {
-      verifyNode(node);
-      let document;
-      if (node.nodeType === DOCUMENT_NODE) {
-        document = node;
-      } else {
-        document = node.ownerDocument;
-      }
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: false,
-          descendant: false
-        };
-        if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.first(selector, node);
-        }
-      }
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_FIRST);
-      nodes.delete(this.#node);
-      if (nodes.size) {
-        [res] = sortNodes(nodes);
-      }
-    } catch (e) {
-      this._onError(e);
-    }
-    return res ?? null;
-  }
-
-  /**
-   * query selector all
-   * NOTE: returns Array, not NodeList
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
-   * @returns {Array.<object|undefined>} - collection of matched nodes
-   */
-  querySelectorAll(selector, node, opt) {
-    let res;
-    try {
-      verifyNode(node);
-      let document;
-      if (node.nodeType === DOCUMENT_NODE) {
-        document = node;
-      } else {
-        document = node.ownerDocument;
-      }
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: false,
-          descendant: true,
-          qsa: true
-        };
-        if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.select(selector, node);
-        }
-      }
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_ALL);
-      nodes.delete(this.#node);
-      if (nodes.size) {
-        if (this.#sort) {
-          res = sortNodes(nodes);
-        } else {
-          res = [...nodes];
-        }
-      }
-    } catch (e) {
-      this._onError(e);
-    }
-    return res ?? [];
+    return nodes;
   }
 };

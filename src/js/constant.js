@@ -20,6 +20,10 @@ export const SELECTOR_PSEUDO_ELEMENT = 'PseudoElementSelector';
 export const SELECTOR_TYPE = 'TypeSelector';
 export const STRING = 'String';
 export const SYNTAX_ERR = 'SyntaxError';
+export const TARGET_ALL = 'all';
+export const TARGET_FIRST = 'first';
+export const TARGET_LINEAL = 'lineal';
+export const TARGET_SELF = 'self';
 export const U_FFFD = '\uFFFD';
 
 /* numeric */

@@ -170,7 +170,7 @@ const selectors = [
   'div.container[id]:not(.foo, .box)',
   'div.container[id]:not(.box):is(:invalid-nth-child, :only-child)',
   '.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content',
-  '.box:first-child ~ .box:nth-of-type(4n+1) + .box .block.inner:has(> .content)',
+  '.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)',
   '.box + .box',
   '.box ~ .box',
   '.box > .block',

@@ -3,7 +3,6 @@
  */
 
 /* import */
-import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
 import isCustomElementName from 'is-potential-custom-element-name';
 
@@ -473,27 +472,4 @@ export const sortNodes = (nodes = []) => {
     });
   }
   return arr;
-};
-
-/**
- * init nwsapi
- * @param {object} document - Document
- * @returns {object} - nwsapi
- */
-export const initNwsapi = document => {
-  if (!document || !document.nodeType) {
-    // throws
-    verifyNode(document);
-  } else if (document.nodeType !== DOCUMENT_NODE) {
-    const msg = `Unexpected node ${document.nodeName}`;
-    throw new TypeError(msg);
-  }
-  const nw = nwsapi({
-    document,
-    DOMException: document.defaultView.DOMException
-  });
-  nw.configure({
-    LOGERRORS: false
-  });
-  return nw;
 };
