@@ -18,7 +18,6 @@ import {
 
 export class DOMSelector extends Finder {
   /* private fields */
-  #window;
   #document;
   #nwsapi;
 
@@ -28,8 +27,7 @@ export class DOMSelector extends Finder {
    * @param {object} document - document
    */
   constructor(window, document) {
-    super(window, document);
-    this.#window = window;
+    super(window);
     this.#document = document ?? window.document;
     this.#nwsapi = initNwsapi(window, document);
   }
