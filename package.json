@@ -23,7 +23,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.2.5",
+    "@asamuzakjp/nwsapi": "^2.2.6",
     "bidi-js": "^1.0.3",
     "css-tree": "^2.3.1",
     "is-potential-custom-element-name": "^1.0.1"
@@ -46,7 +46,7 @@
     "linkedom": "^0.18.4",
     "mocha": "^10.7.0",
     "sinon": "^18.0.0",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "wpt-runner": "^5.0.0"
   },
   "scripts": {
