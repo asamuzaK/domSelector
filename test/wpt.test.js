@@ -1682,6 +1682,101 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/has-basic.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <main id=main>
+          <div id=a class="ancestor">
+            <div id=b class="parent ancestor">
+              <div id=c class="sibling descendant">
+                <div id=d class="descendant"></div>
+              </div>
+              <div id=e class="target descendant"></div>
+            </div>
+            <div id=f class="parent ancestor">
+              <div id=g class="target descendant"></div>
+            </div>
+            <div id=h class="parent ancestor">
+              <div id=i class="target descendant"></div>
+              <div id=j class="sibling descendant">
+                <div id=k class="descendant"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const main = document.getElementById('main');
+      assert.deepEqual(main.querySelectorAll(':has(#a)'), []);
+      assert.deepEqual(main.querySelectorAll(':has(.ancestor)'), [
+        document.getElementById('a')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(.target)'), [
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('f'),
+        document.getElementById('h')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(.descendant)'), [
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('c'),
+        document.getElementById('f'),
+        document.getElementById('h'),
+        document.getElementById('j')
+      ]);
+      assert.deepEqual(main.querySelectorAll('.parent:has(.target)'), [
+        document.getElementById('b'),
+        document.getElementById('f'),
+        document.getElementById('h')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(.sibling ~ .target)'), [
+        document.getElementById('a'),
+        document.getElementById('b')
+      ]);
+      assert.deepEqual(main.querySelectorAll('.parent:has(.sibling ~ .target)'), [
+        document.getElementById('b')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(:is(.target ~ .sibling .descendant))'), [
+        document.getElementById('a'),
+        document.getElementById('h'),
+        document.getElementById('j')
+      ]);
+      assert.deepEqual(main.querySelectorAll('.parent:has(:is(.target ~ .sibling .descendant))'), [
+        document.getElementById('h')
+      ]);
+      assert.deepEqual(main.querySelectorAll('.sibling:has(.descendant) ~ .target'), [
+        document.getElementById('e')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(> .parent)'), [
+        document.getElementById('a')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(> .target)'), [
+        document.getElementById('b'),
+        document.getElementById('f'),
+        document.getElementById('h')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(> .parent, > .target)'), [
+        document.getElementById('a'),
+        document.getElementById('b'),
+        document.getElementById('f'),
+        document.getElementById('h')
+      ]);
+      assert.deepEqual(main.querySelectorAll(':has(+ #h)'), [
+        document.getElementById('f')
+      ]);
+      assert.deepEqual(main.querySelectorAll('.parent:has(~ #h)'), [
+        document.getElementById('b'),
+        document.getElementById('f')
+      ]);
+      assert.deepEqual(main.querySelector('.sibling:has(.descendant)'),
+        document.getElementById('c'));
+      assert.deepEqual(document.getElementById('k').closest('.ancestor:has(.descendant)'),
+        document.getElementById('h'));
+      assert.isTrue(document.getElementById('h').matches(':has(.target ~ .sibling .descendant)'));
+    });
+  });
+
   describe('css/selectors/has-argument-with-explicit-scope.html', () => {
     const html = `
     <main>
