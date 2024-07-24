@@ -4,30 +4,32 @@
 
 /* import */
 import nwsapi from '@asamuzakjp/nwsapi';
-import { verifyNode } from './dom-util.js';
 
 /* constants */
 import {
   DOCUMENT_NODE, REG_CHILD_INDEXED, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY
+  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /**
  * init nwsapi
+ * @param {object} window - Window
  * @param {object} document - Document
  * @returns {object} - nwsapi
  */
-export const initNwsapi = document => {
-  if (!document || !document.nodeType) {
-    // throws
-    verifyNode(document);
-  } else if (document.nodeType !== DOCUMENT_NODE) {
-    const msg = `Unexpected node ${document.nodeName}`;
+export const initNwsapi = (window, document) => {
+  if (!(window && window.document)) {
+    const type =
+      Object.prototype.toString.call(window).slice(TYPE_FROM, TYPE_TO);
+    const msg = `Unexpected global object ${type}`;
     throw new TypeError(msg);
+  }
+  if (document?.nodeType !== DOCUMENT_NODE) {
+    document = window.document;
   }
   const nw = nwsapi({
     document,
-    DOMException: document.defaultView.DOMException
+    DOMException: window.DOMException
   });
   nw.configure({
     LOGERRORS: false

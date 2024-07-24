@@ -28,20 +28,29 @@ describe('init nwsapi', () => {
   });
 
   it('should throw', () => {
-    assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    assert.throws(() => func(), TypeError,
+      'Unexpected global object Undefined');
   });
 
   it('should throw', () => {
-    assert.throws(() => func(window), TypeError, 'Unexpected type Window');
-  });
-
-  it('should throw', () => {
-    const node = document.createElement('div');
-    assert.throws(() => func(node), TypeError, 'Unexpected node DIV');
+    assert.throws(() => func(document), TypeError,
+      'Unexpected global object Document');
   });
 
   it('should get nwsapi', () => {
-    const res = func(document);
+    const res = func(window);
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+      'nwsapi.match');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+      'nwsapi.closest');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+      'nwsapi.first');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+      'nwsapi.select');
+  });
+
+  it('should get nwsapi', () => {
+    const res = func(window, document);
     assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
       'nwsapi.match');
     assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
