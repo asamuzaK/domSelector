@@ -54,10 +54,9 @@ export class Finder {
   /* private fields */
   #ast;
   #astCache;
-  #content;
-  #contentCache;
   #descendant;
   #document;
+  #documentCache;
   #event;
   #invalidate;
   #node;
@@ -75,13 +74,11 @@ export class Finder {
   /**
    * construct
    * @param {object} window - window
-   * @param {object} document - document
    */
-  constructor(window, document) {
+  constructor(window) {
     this.#window = window;
-    this.#document = document ?? window.document;
     this.#astCache = new WeakMap();
-    this.#contentCache = new WeakMap();
+    this.#documentCache = new WeakMap();
     this.#results = new WeakMap();
   }
 
@@ -126,7 +123,7 @@ export class Finder {
     this.#warn = !!warn;
     this.#event = this._setEvent(event);
     this.#node = node;
-    [this.#content, this.#root, this.#walker] = resolveContent(node);
+    [this.#document, this.#root, this.#walker] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#walkers = new WeakMap();
@@ -158,8 +155,8 @@ export class Finder {
     const nodes = [];
     this.#descendant = false;
     let ast;
-    if (this.#contentCache.has(this.#content)) {
-      const cachedItem = this.#contentCache.get(this.#content);
+    if (this.#documentCache.has(this.#document)) {
+      const cachedItem = this.#documentCache.get(this.#document);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
         ast = item.ast;
@@ -243,8 +240,8 @@ export class Finder {
         i++;
       }
       let cachedItem;
-      if (this.#contentCache.has(this.#content)) {
-        cachedItem = this.#contentCache.get(this.#content);
+      if (this.#documentCache.has(this.#document)) {
+        cachedItem = this.#documentCache.get(this.#document);
       } else {
         cachedItem = new Map();
       }
@@ -252,7 +249,7 @@ export class Finder {
         ast,
         descendant
       });
-      this.#contentCache.set(this.#content, cachedItem);
+      this.#documentCache.set(this.#document, cachedItem);
       this.#descendant = descendant;
     }
     return [
@@ -896,7 +893,7 @@ export class Finder {
         }
         case 'local-link': {
           if (REG_ANCHOR.test(localName) && node.hasAttribute('href')) {
-            const { href, origin, pathname } = new URL(this.#content.URL);
+            const { href, origin, pathname } = new URL(this.#document.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
@@ -925,18 +922,18 @@ export class Finder {
           break;
         }
         case 'target': {
-          const { hash } = new URL(this.#content.URL);
+          const { hash } = new URL(this.#document.URL);
           if (node.id && hash === `#${node.id}` &&
-              this.#content.contains(node)) {
+              this.#document.contains(node)) {
             matched.add(node);
           }
           break;
         }
         case 'target-within': {
-          const { hash } = new URL(this.#content.URL);
+          const { hash } = new URL(this.#document.URL);
           if (hash) {
             const id = hash.replace(/^#/, '');
-            let current = this.#content.getElementById(id);
+            let current = this.#document.getElementById(id);
             while (current) {
               if (current === node) {
                 matched.add(node);
@@ -952,7 +949,7 @@ export class Finder {
             if (!this.#shadow && node === this.#node) {
               matched.add(node);
             }
-          } else if (node === this.#content.documentElement) {
+          } else if (node === this.#document.documentElement) {
             matched.add(node);
           }
           break;
@@ -960,7 +957,7 @@ export class Finder {
         case 'focus':
         case 'focus-visible': {
           const { target, type } = this.#event ?? {};
-          if (node === this.#content.activeElement && node.tabIndex >= 0 &&
+          if (node === this.#document.activeElement && node.tabIndex >= 0 &&
               (astName === 'focus' ||
                (type === 'keydown' && node.contains(target)))) {
             let refNode = node;
@@ -993,7 +990,7 @@ export class Finder {
         }
         case 'focus-within': {
           let active;
-          let current = this.#content.activeElement;
+          let current = this.#document.activeElement;
           if (current.tabIndex >= 0) {
             while (current) {
               if (current === node) {
@@ -1254,7 +1251,7 @@ export class Finder {
               parent = parent.parentNode;
             }
             if (!parent) {
-              parent = this.#content.documentElement;
+              parent = this.#document.documentElement;
             }
             const items = parent.getElementsByTagName('input');
             const l = items.length;
@@ -1482,7 +1479,7 @@ export class Finder {
           break;
         }
         case 'root': {
-          if (node === this.#content.documentElement) {
+          if (node === this.#document.documentElement) {
             matched.add(node);
           }
           break;
@@ -1920,7 +1917,7 @@ export class Finder {
           break;
         }
         case SELECTOR_TYPE: {
-          if (this.#content.contentType === 'text/html' &&
+          if (this.#document.contentType === 'text/html' &&
               !/[*|]/.test(leafName)) {
             const items = baseNode.getElementsByTagName(leafName);
             nodes = this._matchHTMLCollection(items, {
@@ -2358,7 +2355,7 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (this.#content.contentType === 'text/html' &&
+        } else if (this.#document.contentType === 'text/html' &&
                    this.#root.nodeType === DOCUMENT_NODE &&
                    !/[*|]/.test(leafName)) {
           const items = this.#root.getElementsByTagName(leafName);
