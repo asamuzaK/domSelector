@@ -1,4 +1,5 @@
 export class DOMSelector extends Finder {
+    constructor(window: object, document: object);
     matches(selector: string, node: object, opt: object): boolean;
     closest(selector: string, node: object, opt: object): object | null;
     querySelector(selector: string, node: object, opt: object): object | null;

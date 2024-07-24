@@ -1,5 +1,5 @@
 export class Finder {
-    constructor(window: object, document: object);
+    constructor(window: object);
     private _onError;
     private _setup;
     private _setEvent;
