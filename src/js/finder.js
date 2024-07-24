@@ -16,12 +16,12 @@ import {
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
   EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
-  REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
-  REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
-  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
-  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
-  WALKER_FILTER
+  REG_FORM_VALID, REG_INTERACT, REG_INVALIDATE_PSEUDO, REG_LOGICAL_PSEUDO,
+  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
+  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
+  TARGET_SELF, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -1799,16 +1799,20 @@ export class Finder {
       bool = matched;
     }
     if (typeof bool !== 'boolean') {
+      let cacheable = true;
+      if (node.nodeType === ELEMENT_NODE && REG_FORM.test(node.localName)) {
+        cacheable = false;
+      }
       for (const leaf of leaves) {
         switch (leaf.type) {
           case SELECTOR_ATTR:
           case SELECTOR_ID: {
-            this.#invalidate = true;
+            cacheable = false;
             break;
           }
           case SELECTOR_PSEUDO_CLASS: {
-            if (/^(?:(?:any-)?link|defined|dir|has)$/.test(leaf.name)) {
-              this.#invalidate = true;
+            if (REG_INVALIDATE_PSEUDO.test(leaf.name)) {
+              cacheable = false;
             }
             break;
           }
@@ -1818,10 +1822,6 @@ export class Finder {
         if (!bool) {
           break;
         }
-      }
-      let cacheable = true;
-      if (node.nodeType === ELEMENT_NODE && REG_FORM.test(node.localName)) {
-        cacheable = false;
       }
       if (cacheable && !this.#invalidate) {
         if (!result) {
