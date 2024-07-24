@@ -8,10 +8,9 @@ import { findAll, parse, toPlainObject, walk } from 'css-tree';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, EMPTY, HEX, NTH, REG_CHILD_INDEXED, REG_HEX, REG_INVALID_SELECTOR,
-  REG_LANG_QUOTED, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO,
-  SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
+  DUO, EMPTY, HEX, NTH, REG_HEX, REG_INVALID_SELECTOR, REG_LANG_QUOTED,
+  REG_LOGICAL_EMPTY, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
+  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
   SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
 } from './constant.js';
 
@@ -336,55 +335,6 @@ export const parseAstName = selector => {
     prefix,
     localName
   };
-};
-
-/**
- * filter selector (for nwsapi)
- * @param {string} selector - selector
- * @param {object} opt - options
- * @returns {boolean} - result
- */
-export const filterSelector = (selector, opt = {}) => {
-  if (!selector || typeof selector !== 'string') {
-    return false;
-  }
-  // filter missing close square bracket
-  if (selector.includes('[')) {
-    const index = selector.lastIndexOf('[');
-    const sel = selector.substring(index);
-    if (sel.lastIndexOf(']') < 0) {
-      return false;
-    }
-  }
-  // filter namespaced selectors, e.g. ns|E
-  // filter pseudo-element selectors
-  // filter attribute selectors with case flag, e.g. [attr i]
-  // filter unclosed quotes
-  if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
-    return false;
-  }
-  // filter pseudo-classes
-  if (selector.includes(':')) {
-    let reg;
-    if (REG_LOGICAL_KEY.test(selector)) {
-      // filter empty :is() and :where()
-      if (REG_LOGICAL_EMPTY.test(selector)) {
-        return false;
-      }
-      const { complex, descendant, qsa } = opt;
-      if ((complex && descendant) || qsa) {
-        reg = REG_LOGICAL_COMPLEX;
-      } else {
-        reg = REG_LOGICAL_COMPOUND;
-      }
-    } else {
-      reg = REG_CHILD_INDEXED;
-    }
-    if (reg.test(selector)) {
-      return false;
-    }
-  }
-  return true;
 };
 
 /* export */

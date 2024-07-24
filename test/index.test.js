@@ -6,9 +6,597 @@
 import { assert } from 'chai';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
+
+describe('DOMSelector', () => {
+  const domStr = `<!doctype html>
+    <html lang="en">
+      <head>
+      </head>
+      <body>
+        <div id="div0">
+        </div>
+        <div id="div1">
+          <div id="div2">
+            <ul id="ul1">
+              <li id="li1" class="li">foo</li>
+              <li id="li2" class="li">bar</li>
+              <li id="li3" class="li"></li>
+            </ul>
+          </div>
+          <div id="div3">
+            <dl id="dl1">
+              <dt id="dt1"></dt>
+              <dd id="dd1" class="dd">
+                <span id="span1" hidden></span>
+              </dd>
+              <dt id="dt2"></dt>
+              <dd id="dd2" class="dd">
+                <span id="span2"></span>
+              </dd>
+              <dt id="dt3"></dt>
+              <dd id="dd3" class="dd">
+                <span id="span3" hidden></span>
+              </dd>
+            </dl>
+          </div>
+          <div id="div4">
+            <div id="div5" class="foo">
+              <p id="p1"></p>
+              <p id="p2"></p>
+              <p id="p3"></p>
+            </div>
+            <div id="div6" class="foo bar">
+              <p id="p4"></p>
+              <p id="p5"></p>
+              <p id="p6"></p>
+            </div>
+            <div id="div7" class="baz">
+              <p id="p7"></p>
+              <p id="p8"></p>
+              <p id="p9"></p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>`;
+  const domOpt = {
+    runScripts: 'dangerously',
+    url: 'http://localhost/#foo'
+  };
+  let window, document;
+  beforeEach(() => {
+    const dom = new JSDOM(domStr, domOpt);
+    window = dom.window;
+    document = dom.window.document;
+  });
+  afterEach(() => {
+    window = null;
+    document = null;
+  });
+
+  describe('matches', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).matches());
+    });
+
+    it('should get true', () => {
+      const node = document.createElement(null);
+      const res = new DOMSelector(window).matches(null, node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = new DOMSelector(window).matches(null, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement(undefined);
+      const res = new DOMSelector(window).matches(undefined, node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = new DOMSelector(window).matches(undefined, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).matches('body', document),
+        'Unexpected node #document');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window)
+        .matches('[foo=bar baz]', document.body));
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('li:blank', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('li', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('ul > li', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('#li2', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('ul > li:nth-child(2n)', node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('ul > li:nth-child(2n+1)', node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const div = document.createElement('div');
+      div.id = 'main';
+      const p1 = document.createElement('p');
+      p1.id = 'p1-1';
+      p1.classList.add('foo');
+      p1.textContent = 'Foo';
+      const p2 = document.createElement('p');
+      p2.id = 'p1-2';
+      p2.textContent = 'Bar';
+      div.appendChild(p1);
+      div.appendChild(p2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(div);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('#main p', p1);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const div = document.createElement('div');
+      div.id = 'main';
+      const p1 = document.createElement('p');
+      p1.id = 'p1-1';
+      p1.classList.add('foo');
+      p1.textContent = 'Foo';
+      const p2 = document.createElement('p');
+      p2.id = 'p1-2';
+      p2.textContent = 'Bar';
+      div.appendChild(p1);
+      div.appendChild(p2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(div);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('#main p:not(.foo)', p2);
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('closest', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).closest('body', document),
+        'Unexpected node #document');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window)
+        .closest('[foo=bar baz]', document.getElementById('div0')));
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('ul:blank', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const target = document.getElementById('div2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('div', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const target = document.getElementById('div1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('body > div', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('dl', node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest(':has(:scope)', node);
+      assert.deepEqual(res, document.getElementById('ul1'), 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      const p1 = document.createElement('p');
+      const p2 = document.createElement('p');
+      const p3 = document.createElement('p');
+      const p4 = document.createElement('p');
+      const p5 = document.createElement('p');
+      const p6 = document.createElement('p');
+      const p7 = document.createElement('p');
+      const p8 = document.createElement('p');
+      const p9 = document.createElement('p');
+      const p10 = document.createElement('p');
+      l1.id = 'l1';
+      l2.id = 'l2';
+      l3.id = 'l3';
+      l4.id = 'l4';
+      l5.id = 'l5';
+      l6.id = 'l6';
+      l7.id = 'l7';
+      l8.id = 'l8';
+      l9.id = 'l9';
+      l10.id = 'l10';
+      l2.classList.add('noted');
+      l4.classList.add('noted');
+      l7.classList.add('noted');
+      l10.classList.add('noted');
+      l1.appendChild(p1);
+      ul.appendChild(l1);
+      l2.appendChild(p2);
+      ul.appendChild(l2);
+      l3.appendChild(p3);
+      ul.appendChild(l3);
+      l4.appendChild(p4);
+      ul.appendChild(l4);
+      l5.appendChild(p5);
+      ul.appendChild(l5);
+      l6.appendChild(p6);
+      ul.appendChild(l6);
+      l7.appendChild(p7);
+      ul.appendChild(l7);
+      l8.appendChild(p8);
+      ul.appendChild(l8);
+      l9.appendChild(p9);
+      ul.appendChild(l9);
+      l10.appendChild(p10);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const res = new DOMSelector(window).closest(':nth-child(2n+1 of .noted)', p7);
+      assert.deepEqual(res, l7, 'result');
+    });
+  });
+
+  describe('querySelector', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window)
+        .querySelector('[foo=bar baz]', document));
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('div1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('dt:blank', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('div1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('#dt1', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('div1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('dt', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('dt', document);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should not match', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('ol', document);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', refPoint);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('body #dt1', refPoint);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('li1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('.li', document);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(':host div', root);
+      assert.deepEqual(res, root.firstElementChild, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(':host div + div', root);
+      assert.deepEqual(res, root.lastElementChild, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      const node3 = document.createElement('div');
+      const node4 = document.createElement('div');
+      const node5 = document.createElement('div');
+      const parent = document.getElementById('div0');
+      node1.id = 'node1';
+      node1.classList.add('foo');
+      node2.id = 'node2';
+      node2.classList.add('foo');
+      node3.id = 'node3';
+      node3.classList.add('foo');
+      node4.id = 'node4';
+      node4.classList.add('foo');
+      node5.id = 'node5';
+      node5.classList.add('foo');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      const domSelector = new DOMSelector(window);
+      const res =
+        domSelector.querySelector('.foo + .foo + .foo:last-child', parent);
+      assert.deepEqual(res, node5, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('li ~ li', document);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('div');
+      child.classList.add('foo');
+      child.setAttribute('data-bar', 'Baz');
+      node.appendChild(child);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('.foo[data-bar=baz i]', node);
+      assert.deepEqual(res, child, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('ul1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(':nth-child(even)', node);
+      assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
+  });
+
+  describe('querySelectorAll', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window)
+        .querySelectorAll('[foo=bar baz]', document));
+    });
+
+    it('should warn', () => {
+      const stubWarn = sinon.stub(console, 'warn');
+      const node = document.getElementById('div1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('dt:blank', node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.isTrue(called, 'warn');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('div1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('dt', node);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('dt', document);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('ol', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const refPoint = document.getElementById('dl1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('*', refPoint);
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dd1'),
+        document.getElementById('span1'),
+        document.getElementById('dt2'),
+        document.getElementById('dd2'),
+        document.getElementById('span2'),
+        document.getElementById('dt3'),
+        document.getElementById('dd3'),
+        document.getElementById('span3')
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const refPoint = document.getElementById('dl1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('body #dt1', refPoint);
+      assert.deepEqual(res, [target], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('.li', document);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('ul.li + .li', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('::slotted(foo)', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('::slotted(foo', document);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const root = document.createElement('div');
+      const node = document.createElement('div');
+      root.id = 'root';
+      root.classList.add('div');
+      node.id = 'div';
+      node.classList.add('div');
+      root.append(node);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll(':nth-child(n of .div)', root);
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const root = node.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div></div><div></div>';
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll(':host div', root);
+      assert.deepEqual(res, [
+        root.firstElementChild,
+        root.lastElementChild
+      ], 'result');
+    });
+  });
+});
 
 /**
  * monkey patch jsdom
