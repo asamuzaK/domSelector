@@ -125,8 +125,7 @@ export class DOMSelector extends Finder {
       } else {
         document = node?.ownerDocument;
       }
-      if (document === this.#document &&
-          document?.contentType === 'text/html') {
+      if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: false,
           descendant: false,
@@ -165,8 +164,7 @@ export class DOMSelector extends Finder {
       } else {
         document = node?.ownerDocument;
       }
-      if (document === this.#document &&
-          document?.contentType === 'text/html') {
+      if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: false,
           descendant: true,
