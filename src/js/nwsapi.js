@@ -18,7 +18,7 @@ import {
  * @returns {object} - nwsapi
  */
 export const initNwsapi = (window, document) => {
-  if (!(window && window.document)) {
+  if (!window?.document) {
     const type =
       Object.prototype.toString.call(window).slice(TYPE_FROM, TYPE_TO);
     const msg = `Unexpected global object ${type}`;
