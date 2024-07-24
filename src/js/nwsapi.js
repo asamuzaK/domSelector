@@ -23,8 +23,7 @@ export const initNwsapi = (window, document) => {
       Object.prototype.toString.call(window).slice(TYPE_FROM, TYPE_TO);
     const msg = `Unexpected global object ${type}`;
     throw new TypeError(msg);
-  }
-  if (document?.nodeType !== DOCUMENT_NODE) {
+  } else if (document?.nodeType !== DOCUMENT_NODE) {
     document = window.document;
   }
   const nw = nwsapi({
