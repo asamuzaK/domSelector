@@ -2304,6 +2304,31 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/empty-pseudo-in-has.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = '<div id="subject"></div>';
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      assert.isTrue(subject.matches('#subject'));
+      assert.isFalse(subject.matches('#subject:has(:empty)'));
+      assert.isFalse(subject.matches('#subject:has(:not(:empty))'));
+      const child = document.createElement('div');
+      child.id = 'child';
+      subject.appendChild(child);
+      assert.isTrue(subject.matches('#subject:has(:empty)'));
+      child.appendChild(document.createElement('div'));
+      assert.isTrue(subject.matches('#subject:has(:not(:empty))'));
+      child.replaceChildren();
+      assert.isTrue(subject.matches('#subject:has(:empty)'));
+      assert.isFalse(subject.matches('#subject:has(:not(:empty))'));
+      child.textContent = 'Test';
+      assert.isTrue(subject.matches('#subject:has(:not(:empty))'));
+      child.textContent = '';
+      assert.isTrue(subject.matches('#subject:has(:empty)'));
+      assert.isFalse(subject.matches('#subject:has(:not(:empty))'));
+    });
+  });
+
   describe('css/selectors/invalidation/has-complexity.html', () => {
     it('should get matched node(s)', async () => {
       const html = `
@@ -2360,6 +2385,47 @@ describe('local wpt test cases', () => {
       assert.isFalse(subject.matches('main:has(span) .subject'));
       assert.isTrue(subject.matches('main .subject'));
     }).timeout(10 * 1000);
+  });
+
+  describe('css/selectors/invalidation/has-unstyled.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <main id=main>
+          <div id=subject>
+            <div id=subject_child class="none">
+              <div id=subject_descendant></div>
+            </div>
+          </div>
+          <div id=sibling class="none">
+            <div id=sibling_child>
+              <div id=sibling_descendant></div>
+            </div>
+          </div>
+        </main>
+      `;
+      document.body.innerHTML = html;
+      const subject = document.getElementById('subject');
+      const subject_descendant = document.getElementById('subject_descendant');
+      const sibling_descendant = document.getElementById('sibling_descendant');
+      const subject_child = document.getElementById('subject_child');
+      const sibling_child = document.getElementById('sibling_child');
+      subject_descendant.classList.add('test');
+      assert.isTrue(subject.matches('#subject:has(.test)'));
+      subject_descendant.classList.remove('test');
+      assert.isFalse(subject.matches('#subject:has(.test)'));
+      sibling_descendant.classList.add('test');
+      assert.isTrue(subject.matches('#subject:has(~ #sibling .test)'));
+      sibling_descendant.classList.remove('test');
+      assert.isFalse(subject.matches('#subject:has(~ #sibling .test)'));
+      subject_child.classList.add('test_inner');
+      assert.isTrue(subject.matches('#subject:has(:is(.test_inner #subject_descendant))'));
+      subject_child.classList.remove('test_inner');
+      assert.isFalse(subject.matches('#subject:has(:is(.test_inner #subject_descendant))'));
+      sibling_child.classList.add('test_inner');
+      assert.isTrue(subject.matches('#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'));
+      sibling_child.classList.remove('test_inner');
+      assert.isFalse(subject.matches('#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'));
+    });
   });
 
   describe('css/selectors/invalidation/has-with-pseudo-class.html', () => {
