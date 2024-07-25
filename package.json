@@ -40,7 +40,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.8.3",
     "eslint-plugin-regexp": "^2.6.0",
-    "eslint-plugin-unicorn": "^54.0.0",
+    "eslint-plugin-unicorn": "^55.0.0",
     "happy-dom": "^14.12.3",
     "jsdom": "^24.1.1",
     "linkedom": "^0.18.4",
@@ -60,5 +60,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "5.0.2"
+  "version": "5.0.3"
 }

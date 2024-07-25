@@ -75,6 +75,7 @@ export const REG_FORM_CTRL: RegExp;
 export const REG_FORM_VALID: RegExp;
 export const REG_HEX: RegExp;
 export const REG_INTERACT: RegExp;
+export const REG_INVALIDATE_PSEUDO: RegExp;
 export const REG_INVALID_SELECTOR: RegExp;
 export const REG_LANG: RegExp;
 export const REG_LANG_QUOTED: RegExp;
