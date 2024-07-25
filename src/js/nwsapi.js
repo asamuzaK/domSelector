@@ -18,12 +18,13 @@ import {
  * @returns {object} - nwsapi
  */
 export const initNwsapi = (window, document) => {
-  if (!window?.document) {
+  if (!window || !window.DOMException) {
     const type =
       Object.prototype.toString.call(window).slice(TYPE_FROM, TYPE_TO);
     const msg = `Unexpected global object ${type}`;
     throw new TypeError(msg);
-  } else if (document?.nodeType !== DOCUMENT_NODE) {
+  }
+  if (document?.nodeType !== DOCUMENT_NODE) {
     document = window.document;
   }
   const nw = nwsapi({
