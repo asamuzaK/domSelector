@@ -7096,6 +7096,7 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: true,
         hasLogicalPseudoFunc: true,
         hasNestedSelector: true
       }

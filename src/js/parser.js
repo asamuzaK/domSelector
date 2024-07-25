@@ -195,6 +195,9 @@ export const walkAST = (ast = {}) => {
           if (REG_LOGICAL_PSEUDO.test(node.name)) {
             info.set('hasNestedSelector', true);
             info.set('hasLogicalPseudoFunc', true);
+            if (node.name === 'has') {
+              info.set('hasHasPseudoFunc', true);
+            }
           }
           break;
         }
