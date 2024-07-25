@@ -60,6 +60,23 @@ describe('init nwsapi', () => {
     assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
       'nwsapi.select');
   });
+
+  it('should get nwsapi', () => {
+    const iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    const iframeDocument = iframe.contentDocument;
+    const iframeWindow = iframeDocument.defaultView;
+    assert.notDeepEqual(window, iframeWindow, 'window');
+    const res = func(iframeWindow);
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+      'nwsapi.match');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+      'nwsapi.closest');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+      'nwsapi.first');
+    assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+      'nwsapi.select');
+  });
 });
 
 describe('filter selector', () => {
