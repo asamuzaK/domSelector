@@ -1823,7 +1823,7 @@ export class Finder {
             break;
           }
           case SELECTOR_PSEUDO_CLASS: {
-            if (/^(?:(?:any-)?link|defined)$/.test(leaf.name)) {
+            if (/^(?:(?:any-)?link|defined|dir)$/.test(leaf.name)) {
               cacheable = false;
             }
             break;
