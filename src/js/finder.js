@@ -180,7 +180,8 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches, info: { hasHasPseudo: invalidate } } = walkAST(cssAst);
+      const { branches, info: { hasHasPseudo } } = walkAST(cssAst);
+      const invalidate = !!hasHasPseudo;
       let descendant = false;
       let i = 0;
       ast = [];
@@ -249,11 +250,11 @@ export class Finder {
       cachedItem.set(`${selector}`, {
         ast,
         descendant,
-        invalidate: !!invalidate
+        invalidate
       });
       this.#documentCache.set(this.#document, cachedItem);
       this.#descendant = descendant;
-      this.#invalidate = !!invalidate;
+      this.#invalidate = invalidate;
     }
     return [
       ast,
