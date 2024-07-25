@@ -16,12 +16,12 @@ import {
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
   EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
-  REG_FORM_VALID, REG_INTERACT, REG_INVALIDATE_PSEUDO, REG_LOGICAL_PSEUDO,
-  REG_SHADOW_HOST, REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE,
-  REG_TYPE_RESET, REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
-  TARGET_SELF, TEXT_NODE, WALKER_FILTER
+  REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
+  REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
+  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
+  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
+  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
+  WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -59,6 +59,7 @@ export class Finder {
   #documentCache;
   #event;
   #invalidate;
+  #invalidateResults;
   #node;
   #nodes;
   #noexcept;
@@ -79,6 +80,7 @@ export class Finder {
     this.#window = window;
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
+    this.#invalidateResults = new WeakMap();
     this.#results = new WeakMap();
   }
 
@@ -126,8 +128,8 @@ export class Finder {
     [this.#document, this.#root, this.#walker] = resolveContent(node);
     this.#shadow = isInShadowTree(node);
     [this.#ast, this.#nodes] = this._correspond(selector);
+    this.#invalidateResults = new WeakMap();
     this.#walkers = new WeakMap();
-    this.#invalidate = false;
     return node;
   }
 
@@ -154,6 +156,7 @@ export class Finder {
   _correspond(selector) {
     const nodes = [];
     this.#descendant = false;
+    this.#invalidate = false;
     let ast;
     if (this.#documentCache.has(this.#document)) {
       const cachedItem = this.#documentCache.get(this.#document);
@@ -180,8 +183,8 @@ export class Finder {
       } catch (e) {
         this._onError(e);
       }
-      const { branches, info: { hasHasPseudo } } = walkAST(cssAst);
-      const invalidate = !!hasHasPseudo;
+      const { branches, info: { hasHasPseudoFunc } } = walkAST(cssAst);
+      const invalidate = !!hasHasPseudoFunc;
       let descendant = false;
       let i = 0;
       ast = [];
@@ -1797,7 +1800,12 @@ export class Finder {
    */
   _matchLeaves(leaves, node, opt) {
     let bool;
-    let result = this.#results.get(leaves);
+    let result;
+    if (this.#invalidate) {
+      result = this.#invalidateResults.get(leaves);
+    } else {
+      result = this.#results.get(leaves);
+    }
     if (result && result.has(node)) {
       const { matched } = result.get(node);
       bool = matched;
@@ -1815,7 +1823,7 @@ export class Finder {
             break;
           }
           case SELECTOR_PSEUDO_CLASS: {
-            if (REG_INVALIDATE_PSEUDO.test(leaf.name)) {
+            if (/^(?:(?:any-)?link|defined)$/.test(leaf.name)) {
               cacheable = false;
             }
             break;
@@ -1827,14 +1835,18 @@ export class Finder {
           break;
         }
       }
-      if (cacheable && !this.#invalidate) {
+      if (cacheable) {
         if (!result) {
           result = new WeakMap();
         }
         result.set(node, {
           matched: bool
         });
-        this.#results.set(leaves, result);
+        if (this.#invalidate) {
+          this.#invalidateResults.set(leaves, result);
+        } else {
+          this.#results.set(leaves, result);
+        }
       }
     }
     return !!bool;

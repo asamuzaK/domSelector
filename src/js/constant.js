@@ -105,8 +105,6 @@ export const REG_FORM_CTRL =
 export const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
 export const REG_HEX = /^([\da-f]{1,6}\s?)/i;
 export const REG_INTERACT = /^(?:details|dialog)$/;
-export const REG_INVALIDATE_PSEUDO =
-  /^(?:(?:any-)?link|defined|dir|has|host(?:-context)?|not)$/;
 export const REG_INVALID_SELECTOR = /^$|^\s*>|,\s*$/;
 export const REG_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 export const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
