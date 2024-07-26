@@ -73,8 +73,6 @@ export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
-// LOGICAL_KEY: :has() and :where() are excluded
-export const LOGICAL_KEY = '(?:is|not)';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
@@ -89,14 +87,14 @@ export const COMPOUND_B =
 export const COMPOUND_I =
   `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
 export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
+export const KEY_IS_NOT = '(?:is|not)';
 export const LOGICAL_COMPLEX =
-  `${LOGICAL_KEY}\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
+  `${KEY_IS_NOT}\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 export const LOGICAL_COMPOUND =
-  `${LOGICAL_KEY}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
+  `${KEY_IS_NOT}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
-export const REG_CHILD_INDEXED = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FORM = /^(?:button|fieldset|form|input|select|textarea)$/;
@@ -113,8 +111,9 @@ export const REG_LOGICAL_COMPLEX =
 export const REG_LOGICAL_COMPOUND =
   new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
 export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
-export const REG_LOGICAL_KEY = new RegExp(`:${LOGICAL_KEY}\\(`);
+export const REG_LOGICAL_IS_NOT = new RegExp(`:${KEY_IS_NOT}\\(`);
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
+export const REG_PSEUDO_FILTER = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_SHADOW_HOST = /^host(?:-context)?$/;
 export const REG_SHADOW_MODE = /^(?:close|open)$/;
 export const REG_SHADOW_PSEUDO = /^part|slotted$/;

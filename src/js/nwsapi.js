@@ -7,8 +7,8 @@ import nwsapi from '@asamuzakjp/nwsapi';
 
 /* constants */
 import {
-  DOCUMENT_NODE, REG_CHILD_INDEXED, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY, TYPE_FROM, TYPE_TO
+  DOCUMENT_NODE, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY,
+  REG_LOGICAL_IS_NOT, REG_PSEUDO_FILTER, TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /**
@@ -65,8 +65,8 @@ export const filterSelector = (selector, opt = {}) => {
   // filter pseudo-classes
   if (selector.includes(':')) {
     let reg;
-    if (REG_LOGICAL_KEY.test(selector)) {
-      // filter empty :is() and :where()
+    if (REG_LOGICAL_IS_NOT.test(selector)) {
+      // filter empty :is()
       if (REG_LOGICAL_EMPTY.test(selector)) {
         return false;
       }
@@ -77,7 +77,7 @@ export const filterSelector = (selector, opt = {}) => {
         reg = REG_LOGICAL_COMPOUND;
       }
     } else {
-      reg = REG_CHILD_INDEXED;
+      reg = REG_PSEUDO_FILTER;
     }
     if (reg.test(selector)) {
       return false;
