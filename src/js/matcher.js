@@ -9,7 +9,7 @@ import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 /* constants */
 import {
   ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, REG_LANG,
-  SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  REG_TAG_NAME, SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /* Matcher */
@@ -297,7 +297,8 @@ export class Matcher {
     let {
       prefix: astPrefix, localName: astLocalName
     } = parseAstName(astName, node);
-    if (node.ownerDocument.contentType === 'text/html') {
+    if (node.ownerDocument.contentType === 'text/html' &&
+        REG_TAG_NAME.test(localName)) {
       astPrefix = astPrefix.toLowerCase();
       astLocalName = astLocalName.toLowerCase();
     }

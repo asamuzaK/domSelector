@@ -3763,6 +3763,20 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/selectors-case-sensitive-001.html', () => {
+    it('should get matched node(s)', () => {
+      const html = '<div id="container"></div>';
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      const test_element = document.createElement('\u212A');
+      container.appendChild(test_element);
+      const test_element_with_ns = document.createElementNS('https://dummy.ns', '\u212A');
+      container.appendChild(test_element_with_ns);
+      assert.isTrue(test_element.matches('\u212A'));
+      assert.isTrue(test_element_with_ns.matches('\u212A'));
+    });
+  });
+
   describe('dom/nodes/Element-matches.html', () => {
     it('should match', () => {
       const html = `<div id="universal">

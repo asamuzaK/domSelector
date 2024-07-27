@@ -97,6 +97,8 @@ export const LOGICAL_COMPOUND =
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
+export const REG_FILTER_CHAR = /[\w\s\-#$%&()*+,./:;<>=?@[\]^"'｀]/;
+export const REG_FILTER_PSEUDO = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_FORM = /^(?:button|fieldset|form|input|select|textarea)$/;
 export const REG_FORM_CTRL =
   /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
@@ -113,10 +115,10 @@ export const REG_LOGICAL_COMPOUND =
 export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
 export const REG_LOGICAL_IS_NOT = new RegExp(`:${KEY_IS_NOT}\\(`);
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
-export const REG_PSEUDO_FILTER = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_SHADOW_HOST = /^host(?:-context)?$/;
 export const REG_SHADOW_MODE = /^(?:close|open)$/;
 export const REG_SHADOW_PSEUDO = /^part|slotted$/;
+export const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 export const REG_TYPE_CHECK = /^(?:checkbox|radio)$/;
 export const REG_TYPE_DATE = /^(?:date(?:time-local)?|month|time|week)$/;
 export const REG_TYPE_RANGE =
