@@ -8658,6 +8658,7 @@ describe('Finder', () => {
             </div>
           `;
         }
+
         _onClick(event) {
           if (this._internals.states.has('checked')) {
             this._internals.states.delete('checked');
@@ -8729,6 +8730,7 @@ describe('Finder', () => {
             </div>
           `;
         }
+
         _onClick(event) {
           if (this._internals.states.has('checked')) {
             this._internals.states.delete('checked');

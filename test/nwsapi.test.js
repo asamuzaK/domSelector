@@ -419,4 +419,9 @@ describe('filter selector', () => {
     const res = func(':is(:not(:is(.foo, .bar)), .baz)');
     assert.isFalse(res, 'result');
   });
+
+  it('should get false', () => {
+    const res = func('\u212A');
+    assert.isFalse(res, 'result');
+  });
 });
