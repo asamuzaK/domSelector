@@ -853,8 +853,20 @@ export class Finder {
           case 'state': {
             if (isCustomElement(node)) {
               const [{ value: stateValue }] = astChildren;
-              if (stateValue && node[stateValue]) {
-                matched.add(node);
+              if (stateValue) {
+                if (node[stateValue]) {
+                  matched.add(node);
+                } else {
+                  for (const i in node) {
+                    const prop = node[i];
+                    if (prop instanceof this.#window.ElementInternals) {
+                      if (prop?.states?.has(stateValue)) {
+                        matched.add(node);
+                      }
+                      break;
+                    }
+                  }
+                }
               }
             }
             break;

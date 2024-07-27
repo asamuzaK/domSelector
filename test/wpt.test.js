@@ -3291,8 +3291,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/invalidation/state-in-has.html', () => {
-    // jsdom fails: elementInternals.states not implemented
-    xit('should get matched node', () => {
+    it('should get matched node', () => {
       const html = `
         <div id="subject">
           <my-element id="child"></my-element>
@@ -3302,6 +3301,10 @@ describe('local wpt test cases', () => {
       window.customElements.define('my-element', class MyElement extends window.HTMLElement {
         connectedCallback() {
           this.elementInternals = this.attachInternals();
+          // patch CustomStateSet
+          if (!this.elementInternals.states) {
+            this.elementInternals.states = new Set();
+          }
         }
       });
       const subject = document.getElementById('subject');
