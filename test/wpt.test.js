@@ -2304,6 +2304,32 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/dir-pseudo-class-in-has.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <section><div id="ltr1" class="ltr"></div></section>
+        <section id="ltr2" dir="rtl"><div class="ltr"><span></span></div></section>
+        <section dir="ltr"><div class="ltr"><span></span></div></section>
+        <section><div id="rtl1" class="rtl"><span></span></div></section>
+        <section id="rtl2"><div class="rtl"><span></span></div></section>
+      `;
+      document.body.innerHTML = html;
+      await sleep();
+      const ltr1 = document.getElementById('ltr1');
+      const ltr2 = document.getElementById('ltr2');
+      const rtl1 = document.getElementById('rtl1');
+      const rtl2 = document.getElementById('rtl2');
+      ltr1.appendChild(document.createElement('span'));
+      ltr2.dir = 'ltr';
+      rtl1.dir = 'rtl';
+      rtl2.dir = 'rtl';
+      assert.isTrue(ltr1.matches('.ltr:has(*:dir(ltr))'));
+      assert.isTrue(ltr2.firstElementChild.matches('.ltr:has(*:dir(ltr))'));
+      assert.isTrue(rtl1.matches('.rtl:has(*:dir(rtl))'));
+      assert.isTrue(rtl2.firstElementChild.matches('.rtl:has(*:dir(rtl))'));
+    });
+  });
+
   describe('css/selectors/invalidation/empty-pseudo-in-has.html', () => {
     it('should get matched node(s)', async () => {
       const html = '<div id="subject"></div>';
@@ -2751,6 +2777,289 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/is-pseudo-containing-sibling-relationship-in-has.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="test-container">
+          <div id="target1">
+            <div class="item" id="item1">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">This text should have a green background</div>
+          </div>
+          <div id="target2">
+            <div class="item" id="item2">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">This text should have a green background</div>
+          </div>
+          <div id="target3">
+            <div class="item"></div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child" id="item3">(FAIL if you see this text)</span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target4">
+            <div class="item"></div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child" id="item4">(FAIL if you see this text)</span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target5">
+            <div class="item" id="item5">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target6">
+            <div class="item" id="item6">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target7">
+            <div class="item"></div>
+            <div class="item" id="item7">FAIL if you see this text</div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target8">
+            <div class="item"></div>
+            <div class="item" id="item8">FAIL if you see this text</div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target9">
+            <div class="item"></div>
+            <div class="item" id="item9">FAIL if you see this text</div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target10">
+            <div class="item" id="item10">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">This text should have a green background</div>
+          </div>
+          <div id="target11">
+            <div class="item"></div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child" id="item11">(FAIL if you see this text)</span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target12">
+            <div class="item">This text should have a green background</div>
+            <div class="item"></div>
+            <div class="item" id="item12">FAIL if you see this text</div>
+          </div>
+          <div id="target13">
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+              <span class="child"></span>
+              <span class="child" id="item13">(FAIL if you see this text)</span>
+            </div>
+            <div class="item"></div>
+            <div class="item"></div>
+          </div>
+          <div id="target14">
+            <div class="item" id="item14">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target15">
+            <div class="item" id="item15">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target16">
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+            </div>
+            <div class="item"></div>
+            <div class="item" id="item16">FAIL if you see this text</div>
+          </div>
+          <div id="target17">
+            <div class="item">
+              <span class="child">This text should have a green background</span>
+              <span class="child"></span>
+              <span class="child"></span>
+            </div>
+            <div class="item"></div>
+            <div class="item" id="item17">FAIL if you see this text</div>
+          </div>
+          <div id="target18">
+            <div class="item" id="item18">FAIL if you see this text</div>
+            <div class="item"></div>
+            <div class="item">This text should have a green background</div>
+          </div>
+          <div id="target19">
+            <div class="item"></div>
+            <div class="item" id="item19">FAIL if you see this text</div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+          <div id="target20">
+            <div class="item"></div>
+            <div class="item" id="item20">FAIL if you see this text</div>
+            <div class="item">
+              <span class="child"></span>
+              <span class="child"></span>
+              <span class="child">This text should have a green background</span>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const target1 = document.getElementById('target1');
+      const target2 = document.getElementById('target2');
+      const target3 = document.getElementById('target3');
+      const target4 = document.getElementById('target4');
+      const target5 = document.getElementById('target5');
+      const target6 = document.getElementById('target6');
+      const target7 = document.getElementById('target7');
+      const target8 = document.getElementById('target8');
+      const target9 = document.getElementById('target9');
+      const target10 = document.getElementById('target10');
+      const target11 = document.getElementById('target11');
+      const target12 = document.getElementById('target12');
+      const target13 = document.getElementById('target13');
+      const target14 = document.getElementById('target14');
+      const target15 = document.getElementById('target15');
+      const target16 = document.getElementById('target16');
+      const target17 = document.getElementById('target17');
+      const target18 = document.getElementById('target18');
+      const target19 = document.getElementById('target19');
+      const target20 = document.getElementById('target20');
+
+      const item1 = document.getElementById('item1');
+      const item2 = document.getElementById('item2');
+      const item3 = document.getElementById('item3');
+      const item4 = document.getElementById('item4');
+      const item5 = document.getElementById('item5');
+      const item6 = document.getElementById('item6');
+      const item7 = document.getElementById('item7');
+      const item8 = document.getElementById('item8');
+      const item9 = document.getElementById('item9');
+      const item10 = document.getElementById('item10');
+      const item11 = document.getElementById('item11');
+      const item12 = document.getElementById('item12');
+      const item13 = document.getElementById('item13');
+      const item14 = document.getElementById('item14');
+      const item15 = document.getElementById('item15');
+      const item16 = document.getElementById('item16');
+      const item17 = document.getElementById('item17');
+      const item18 = document.getElementById('item18');
+      const item19 = document.getElementById('item19');
+      const item20 = document.getElementById('item20');
+
+      assert.isTrue(target1.matches('#target1:has(:is(.item + .item + .item))'));
+      item1.remove();
+      assert.isFalse(target1.matches('#target1:has(:is(.item + .item + .item))'));
+      assert.isTrue(target2.matches('#target2:has(:is(.invalid .item, .item + .item + .item))'));
+      item2.remove();
+      assert.isFalse(target2.matches('#target2:has(:is(.invalid .item, .item + .item + .item))'));
+
+      assert.isTrue(target3.matches('#target3:has(:is(.item + .item + .item > .child + .child + .child))'));
+      item3.remove();
+      assert.isFalse(target3.matches('#target3:has(:is(.item + .item + .item > .child + .child + .child))'));
+
+      assert.isTrue(target4.matches('#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'));
+      item4.remove();
+      assert.isFalse(target4.matches('#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'));
+
+      assert.isTrue(target5.matches('#target5:has(:is(.item + .item + .item > .child))'));
+      item5.remove();
+      assert.isFalse(target5.matches('#target5:has(:is(.item + .item + .item > .child))'));
+
+      assert.isTrue(target6.matches('#target6:has(:is(.invalid .item, .item + .item + .item > .child))'));
+      item6.remove();
+      assert.isFalse(target6.matches('#target6:has(:is(.invalid .item, .item + .item + .item > .child))'));
+
+      assert.isTrue(target7.matches('#target7:has(:is(.item + .item + .item > .child + .child + .child))'));
+      item7.remove();
+      assert.isFalse(target7.matches('#target7:has(:is(.item + .item + .item > .child + .child + .child))'));
+
+      assert.isTrue(target8.matches('#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'));
+      item8.remove();
+      assert.isFalse(target8.matches('#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'));
+
+      assert.isTrue(target9.matches('#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'));
+      item9.remove();
+      assert.isFalse(target9.matches('#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'));
+
+      assert.isTrue(target10.matches('#target10:has(:is(.item:nth-child(3)))'));
+      item10.remove();
+      assert.isFalse(target10.matches('#target10:has(:is(.item:nth-child(3)))'));
+
+      assert.isTrue(target11.matches('#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'));
+      item11.remove();
+      assert.isFalse(target11.matches('#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'));
+
+      assert.isTrue(target12.matches('#target12:has(:is(.item:nth-last-child(3)))'));
+      item12.remove();
+      assert.isFalse(target12.matches('#target12:has(:is(.item:nth-last-child(3)))'));
+
+      assert.isTrue(target13.matches('#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'));
+      item13.remove();
+      assert.isFalse(target13.matches('#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'));
+
+      assert.isTrue(target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'));
+      item14.remove();
+      assert.isFalse(target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'));
+
+      assert.isTrue(target15.matches('#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'));
+      item15.remove();
+      assert.isFalse(target15.matches('#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'));
+
+      assert.isTrue(target16.matches('#target16:has(:is(.item:nth-last-child(3) > .child))'));
+      item16.remove();
+      assert.isFalse(target16.matches('#target16:has(:is(.item:nth-last-child(3) > .child))'));
+
+      assert.isTrue(target17.matches('#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'));
+      item17.remove();
+      assert.isFalse(target17.matches('#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'));
+
+      /* parsed CSS nesting */
+      assert.isTrue(target18.matches('#target18:has(.item + .item + .item)'));
+      item18.remove();
+      assert.isFalse(target18.matches('#target18:has(.item + .item + .item)'));
+
+      assert.isTrue(target19.matches('#target19:has(:is(.item + .item + .item > .child + .child + .child))'));
+      item19.remove();
+      assert.isFalse(target19.matches('#target19:has(:is(.item + .item + .item > .child + .child + .child))'));
+
+      assert.isTrue(target20.matches('#target20:has(:is(.item + .item + .item > .child + .child + .child))'));
+      item20.remove();
+      assert.isFalse(target20.matches('#target20:has(:is(.item + .item + .item > .child + .child + .child))'));
+    });
+  });
+
   describe('css/selectors/invalidation/not-002.html', () => {
     it('should get matched node(s)', () => {
       const html = `
@@ -2867,6 +3176,154 @@ describe('local wpt test cases', () => {
       assert.isTrue(target.matches(selector), 'result empty placeholder text');
       input.removeAttribute('placeholder');
       assert.isFalse(target.matches(selector), 'result remove placeholder');
+    });
+  });
+
+  describe('css/selectors/invalidation/sibling.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div>
+          <div id="t1">
+            <div class="sibling"></div>
+            <div id="r1"></div>
+            <div id="u1"></div>
+          </div>
+        </div>
+        <div>
+          <div id="t2">
+            <div class="sibling"></div>
+            <div></div>
+            <div id="r2"></div>
+          </div>
+        </div>
+        <div>
+          <div id="t3"></div>
+          <div class="sibling"></div>
+          <div id="r3"></div>
+        </div>
+        <div>
+          <div id="t4"></div>
+          <div id="r4" class="sibling"></div>
+          <div id="u4" class="sibling"></div>
+        </div>
+        <div>
+          <div id="t5"></div>
+          <div id="r5"></div>
+          <div id="u5"></div>
+        </div>
+        <div>
+          <div id="t6"></div>
+          <div></div>
+          <div id="r6" class="sibling">
+            <div id="r6b"></div>
+          </div>
+          <div id="u6"></div>
+        </div>
+        <div>
+          <div id="t7">
+            <div class="child"></div>
+          </div>
+          <div></div>
+          <div>
+            <div id="r7" class="child"></div>
+          </div>
+          <div>
+            <div id="u7" class="child"></div>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const t1 = document.getElementById('t1');
+      const t2 = document.getElementById('t2');
+      const t3 = document.getElementById('t3');
+      const t4 = document.getElementById('t4');
+      const t5 = document.getElementById('t5');
+      const t6 = document.getElementById('t6');
+      const t7 = document.getElementById('t7');
+
+      const r1 = document.getElementById('r1');
+      const r2 = document.getElementById('r2');
+      const r3 = document.getElementById('r3');
+      const r4 = document.getElementById('r4');
+      const r5 = document.getElementById('r5');
+      const r6 = document.getElementById('r6');
+      const r7 = document.getElementById('r7');
+
+      const u1 = document.getElementById('u1');
+      const u4 = document.getElementById('u4');
+      const u5 = document.getElementById('u5');
+      const u6 = document.getElementById('u6');
+      const u7 = document.getElementById('u7');
+
+      assert.isFalse(r1.matches('.t1 .sibling + *'));
+      t1.className = 't1';
+      assert.isTrue(r1.matches('.t1 .sibling + *'));
+      assert.isFalse(u1.matches('.t1 .sibling + *'));
+
+      assert.isFalse(r2.matches('.t2 .sibling ~ *'));
+      t2.className = 't2';
+      assert.isTrue(r2.matches('.t2 .sibling ~ *'));
+
+      assert.isFalse(r3.matches('.t3 + .sibling + *'));
+      t3.className = 't3';
+      assert.isTrue(r3.matches('.t3 + .sibling + *'));
+
+      assert.isFalse(r4.matches('.t4 + .sibling'));
+      t4.className = 't4';
+      assert.isTrue(r4.matches('.t4 + .sibling'));
+      assert.isFalse(u4.matches('.t4 + .sibling'));
+
+      assert.isFalse(r5.matches('.t5 + *'));
+      t5.className = 't5';
+      assert.isTrue(r5.matches('.t5 + *'));
+      assert.isFalse(u5.matches('.t5 + *'));
+
+      assert.isFalse(r6.matches('.t6 ~ .sibling'));
+      t6.className = 't6';
+      assert.isTrue(r6.matches('.t6 ~ .sibling'));
+      assert.isFalse(u6.matches('.t6 ~ .sibling'));
+
+      assert.isFalse(r7.matches('.t7 + * + * .child'));
+      t7.className = 't7';
+      assert.isTrue(r7.matches('.t7 + * + * .child'));
+      assert.isFalse(u7.matches('.t7 + * + * .child'));
+    });
+  });
+
+  describe('css/selectors/invalidation/state-in-has.html', () => {
+    // jsdom fails: elementInternals.states not implemented
+    xit('should get matched node', () => {
+      const html = `
+        <div id="subject">
+          <my-element id="child"></my-element>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      window.customElements.define('my-element', class MyElement extends window.HTMLElement {
+        connectedCallback() {
+          this.elementInternals = this.attachInternals();
+        }
+      });
+      const subject = document.getElementById('subject');
+      const child = document.getElementById('child');
+      child.elementInternals.states.add('--green');
+      assert.isTrue(subject.matches('#subject:has(:state(--green))'));
+      child.elementInternals.states.clear();
+      assert.isFalse(subject.matches('#subject:has(:state(--green))'));
+
+      child.elementInternals.states.add('--blue');
+      assert.isTrue(subject.matches('#subject:has(:state(--blue))'));
+      child.elementInternals.states.clear();
+      assert.isFalse(subject.matches('#subject:has(:state(--blue))'));
+
+      child.elementInternals.states.add('--green');
+      child.elementInternals.states.add('--blue');
+      assert.isTrue(subject.matches('#subject:has(:state(--blue))'));
+      child.elementInternals.states.delete('--blue');
+      assert.isFalse(subject.matches('#subject:has(:state(--blue))'));
+      assert.isTrue(subject.matches('#subject:has(:state(--green))'));
+      child.elementInternals.states.delete('--green');
+      assert.isFalse(subject.matches('#subject:has(:state(--green))'));
     });
   });
 
