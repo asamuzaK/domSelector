@@ -3770,10 +3770,13 @@ describe('local wpt test cases', () => {
       const container = document.getElementById('container');
       const test_element = document.createElement('\u212A');
       container.appendChild(test_element);
-      const test_element_with_ns = document.createElementNS('https://dummy.ns', '\u212A');
+      const test_element_with_ns =
+        document.createElementNS('https://dummy.ns', '\u212A');
       container.appendChild(test_element_with_ns);
       assert.isTrue(test_element.matches('\u212A'));
       assert.isTrue(test_element_with_ns.matches('\u212A'));
+      assert.isNull(container.querySelector('k'));
+      assert.isNull(container.querySelector('\u212A'.toLowerCase()));
     });
   });
 
