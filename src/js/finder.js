@@ -184,7 +184,7 @@ export class Finder {
         this._onError(e);
       }
       const { branches, info: { hasHasPseudoFunc } } = walkAST(cssAst);
-      const invalidate = !!hasHasPseudoFunc;
+      let invalidate = !!hasHasPseudoFunc;
       let descendant = false;
       let i = 0;
       ast = [];
@@ -203,6 +203,8 @@ export class Finder {
               const itemName = item.name;
               if (/^[\s>]$/.test(itemName)) {
                 descendant = true;
+              } else {
+                invalidate = true;
               }
               branch.push({
                 combo: item,
