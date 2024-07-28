@@ -2331,7 +2331,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/invalidation/empty-pseudo-in-has.html', () => {
-    it('should get matched node(s)', async () => {
+    it('should get matched node(s)', () => {
       const html = '<div id="subject"></div>';
       document.body.innerHTML = html;
       const subject = document.getElementById('subject');
@@ -2356,7 +2356,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/invalidation/has-complexity.html', () => {
-    it('should get matched node(s)', async () => {
+    it('should get matched node(s)', () => {
       const html = `
         <main>
           <div id=container>
