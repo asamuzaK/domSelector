@@ -6,7 +6,6 @@
  */
 
 /* import */
-import { sortNodes } from './js/dom-util.js';
 import { Finder } from './js/finder.js';
 import { filterSelector, initNwsapi } from './js/nwsapi.js';
 
@@ -139,7 +138,7 @@ export class DOMSelector extends Finder {
       const nodes = this._find(TARGET_FIRST);
       nodes.delete(node);
       if (nodes.size) {
-        [res] = sortNodes(nodes);
+        [res] = nodes;
       }
     } catch (e) {
       this._onError(e);

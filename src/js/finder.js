@@ -2867,7 +2867,9 @@ export class Finder {
         }
       }
     }
-    if (targetType === TARGET_ALL && sort) {
+    if (targetType === TARGET_FIRST && nodes.size > 1) {
+      nodes = new Set(sortNodes(nodes));
+    } else if (targetType === TARGET_ALL && sort) {
       nodes = new Set(sortNodes(nodes));
     }
     return nodes;
