@@ -136,7 +136,6 @@ export class DOMSelector extends Finder {
       }
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_FIRST);
-      nodes.delete(node);
       if (nodes.size) {
         [res] = nodes;
       }
@@ -175,7 +174,6 @@ export class DOMSelector extends Finder {
       }
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_ALL);
-      nodes.delete(node);
       if (nodes.size) {
         res = [...nodes];
       }
