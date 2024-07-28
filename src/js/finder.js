@@ -483,7 +483,7 @@ export class Finder {
    */
   _collectNthOfType(anb, node) {
     const { a, b, reverse } = anb;
-    const { localName, parentNode, prefix } = node;
+    const { localName, namespaceURI, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
       const walker = this.#walker;
@@ -505,8 +505,12 @@ export class Finder {
           }
           let j = 0;
           while (refNode) {
-            const { localName: itemLocalName, prefix: itemPrefix } = refNode;
-            if (itemLocalName === localName && itemPrefix === prefix) {
+            const {
+              localName: itemLocalName, namespaceURI: itemNamespaceURI,
+              prefix: itemPrefix
+            } = refNode;
+            if (itemLocalName === localName && itemPrefix === prefix &&
+                itemNamespaceURI === namespaceURI) {
               if (j === b - 1) {
                 matched.add(refNode);
                 break;
@@ -537,8 +541,12 @@ export class Finder {
           }
           let j = a > 0 ? 0 : b - 1;
           while (refNode) {
-            const { localName: itemLocalName, prefix: itemPrefix } = refNode;
-            if (itemLocalName === localName && itemPrefix === prefix) {
+            const {
+              localName: itemLocalName, namespaceURI: itemNamespaceURI,
+              prefix: itemPrefix
+            } = refNode;
+            if (itemLocalName === localName && itemPrefix === prefix &&
+                itemNamespaceURI === namespaceURI) {
               if (j === nth) {
                 matched.add(refNode);
                 nth += a;

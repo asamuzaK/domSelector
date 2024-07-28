@@ -3722,6 +3722,42 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/nth-of-type-namespace.html', () => {
+    it('should get matched node(s)', () => {
+      const html = '<div id="container"></div>';
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      for (let i = 0; i < 99; i++) {
+        container.appendChild(document.createElement('span'));
+      }
+      const test_span = document.createElement('span');
+      test_span.setAttribute('test-span', '');
+      container.appendChild(test_span);
+      for (let i = 0; i < 99; i++) {
+        container.appendChild(document.createElementNS('http://dummy1/', 'span'));
+      }
+      const test_span_ns1 = document.createElementNS('http://dummy1/', 'span');
+      test_span_ns1.setAttribute('test-span', '');
+      container.appendChild(test_span_ns1);
+      for (let i = 0; i < 99; i++) {
+        container.appendChild(document.createElementNS('http://dummy2/', 'span'));
+      }
+      const test_span_ns2 = document.createElementNS('http://dummy2/', 'span');
+      test_span_ns2.setAttribute('test-span', '');
+      container.appendChild(test_span_ns2);
+      const qsa = container.querySelectorAll('[test-span]');
+      assert.deepEqual(qsa, [
+        test_span,
+        test_span_ns1,
+        test_span_ns2
+      ]);
+      for (const node of qsa) {
+        assert.isTrue(node.matches('[test-span]:nth-of-type(100)'),
+          `${node.localName} with ${node.namespaceURI} matches`);
+      }
+    });
+  });
+
   describe('css/selectors/scope-selector.html', () => {
     it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
       const html = '<div id=\'shadowHost\'></div>';
