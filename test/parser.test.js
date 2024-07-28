@@ -183,11 +183,11 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo < bar'), DOMException);;
+      assert.throws(() => func('foo < bar'), DOMException); ;
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo<bar'), DOMException);;
+      assert.throws(() => func('foo<bar'), DOMException); ;
     });
   });
 
