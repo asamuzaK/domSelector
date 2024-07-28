@@ -28,7 +28,7 @@ const {
 
 ### matches(selector, node, opt)
 
-matches - same functionality as [Element.matches()][64]
+matches - equivalent to [Element.matches()][64]
 
 #### Parameters
 
@@ -44,7 +44,7 @@ Returns **[boolean][61]** `true` if matched, `false` otherwise
 
 ### closest(selector, node, opt)
 
-closest - same functionality as [Element.closest()][65]
+closest - equivalent to [Element.closest()][65]
 
 #### Parameters
 
@@ -60,7 +60,7 @@ Returns **[object][60]?** matched node
 
 ### querySelector(selector, node, opt)
 
-querySelector - same functionality as [Document.querySelector()][66], [DocumentFragment.querySelector()][67], [Element.querySelector()][68]
+querySelector - equivalent to [Document.querySelector()][66], [DocumentFragment.querySelector()][67] and [Element.querySelector()][68]
 
 #### Parameters
 
@@ -76,7 +76,7 @@ Returns **[object][60]?** matched node
 
 ### querySelectorAll(selector, node, opt)
 
-querySelectorAll - same functionality as [Document.querySelectorAll()][69], [DocumentFragment.querySelectorAll()][70], [Element.querySelectorAll()][71]  
+querySelectorAll - equivalent to [Document.querySelectorAll()][69], [DocumentFragment.querySelectorAll()][70] and [Element.querySelectorAll()][71]  
 **NOTE**: returns Array, not NodeList
 
 #### Parameters
