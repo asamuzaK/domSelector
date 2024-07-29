@@ -370,10 +370,9 @@ describe('filter selector', () => {
 
   it('should get false', () => {
     const res = func(':not(.foo > .bar)', {
-      complex: true,
-      descendant: false
+      complex: true
     });
-    assert.isFalse(res, 'result');
+    assert.isTrue(res, 'result');
   });
 
   it('should get true', () => {
@@ -393,26 +392,23 @@ describe('filter selector', () => {
 
   it('should get true', () => {
     const res = func(':not(:is(.foo .bar))', {
-      complex: true,
-      descendant: true
+      complex: true
     });
     assert.isTrue(res, 'result');
   });
 
   it('should get true', () => {
     const res = func(':not(:is(.foo > .bar))', {
-      complex: true,
-      descendant: true
+      complex: true
     });
     assert.isTrue(res, 'result');
   });
 
   it('should get false', () => {
     const res = func(':not(:is(.foo > .bar))', {
-      complex: true,
-      descendant: false
+      complex: true
     });
-    assert.isFalse(res, 'result');
+    assert.isTrue(res, 'result');
   });
 
   it('should get false', () => {

@@ -49,7 +49,6 @@ export class DOMSelector extends Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: REG_COMPLEX.test(selector),
-          descendant: true,
           target: TARGET_SELF
         };
         if (filterSelector(selector, filterOpt)) {
@@ -83,7 +82,6 @@ export class DOMSelector extends Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: REG_COMPLEX.test(selector),
-          descendant: true,
           target: TARGET_LINEAL
         };
         if (filterSelector(selector, filterOpt)) {
@@ -127,7 +125,6 @@ export class DOMSelector extends Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: false,
-          descendant: false,
           target: TARGET_FIRST
         };
         if (filterSelector(selector, filterOpt)) {
@@ -165,7 +162,6 @@ export class DOMSelector extends Finder {
       if (document === this.#document && document.contentType === 'text/html') {
         const filterOpt = {
           complex: false,
-          descendant: true,
           target: TARGET_ALL
         };
         if (filterSelector(selector, filterOpt)) {
