@@ -80,7 +80,13 @@ describe('DOMSelector', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).matches());
+      assert.throws(() => new DOMSelector(window).matches(),
+        'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).matches(null, document),
+        'Unexpected node #document');
     });
 
     it('should get true', () => {
@@ -213,6 +219,11 @@ describe('DOMSelector', () => {
 
   describe('closest', () => {
     it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).closest(null),
+        'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
       assert.throws(() => new DOMSelector(window).closest('body', document),
         'Unexpected node #document');
     });
@@ -336,6 +347,11 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelector', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).querySelector(),
+        'Unexpected type Undefined');
+    });
+
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
         .querySelector('[foo=bar baz]', document));
@@ -491,6 +507,11 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).querySelectorAll(),
+        'Unexpected type Undefined');
+    });
+
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
         .querySelectorAll('[foo=bar baz]', document));

@@ -12,7 +12,7 @@ import { filterSelector, initNwsapi } from './js/nwsapi.js';
 /* constants */
 import {
   DOCUMENT_NODE, ELEMENT_NODE, REG_COMPLEX, TARGET_ALL, TARGET_FIRST,
-  TARGET_LINEAL, TARGET_SELF
+  TARGET_LINEAL, TARGET_SELF, TYPE_FROM, TYPE_TO
 } from './js/constant.js';
 
 export class DOMSelector extends Finder {
@@ -39,9 +39,14 @@ export class DOMSelector extends Finder {
    * @returns {boolean} - `true` if matched `false` otherwise
    */
   matches(selector, node, opt) {
-    if (node?.nodeType !== ELEMENT_NODE) {
-      const e = new TypeError(`Unexpected node ${node?.nodeName}`);
-      this._onError(e);
+    if (!node?.nodeType) {
+      const type =
+        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+      const e = new TypeError(`Unexpected type ${type}`);
+      this._onError(e, opt);
+    } else if (node.nodeType !== ELEMENT_NODE) {
+      const e = new TypeError(`Unexpected node ${node.nodeName}`);
+      this._onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -64,7 +69,7 @@ export class DOMSelector extends Finder {
       const nodes = this._find(TARGET_SELF);
       res = nodes.size;
     } catch (e) {
-      this._onError(e);
+      this._onError(e, opt);
     }
     return !!res;
   }
@@ -77,9 +82,14 @@ export class DOMSelector extends Finder {
    * @returns {?object} - matched node
    */
   closest(selector, node, opt) {
-    if (node?.nodeType !== ELEMENT_NODE) {
-      const e = new TypeError(`Unexpected node ${node?.nodeName}`);
-      this._onError(e);
+    if (!node?.nodeType) {
+      const type =
+        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+      const e = new TypeError(`Unexpected type ${type}`);
+      this._onError(e, opt);
+    } else if (node.nodeType !== ELEMENT_NODE) {
+      const e = new TypeError(`Unexpected node ${node.nodeName}`);
+      this._onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -111,7 +121,7 @@ export class DOMSelector extends Finder {
         }
       }
     } catch (e) {
-      this._onError(e);
+      this._onError(e, opt);
     }
     return res ?? null;
   }
@@ -124,11 +134,17 @@ export class DOMSelector extends Finder {
    * @returns {?object} - matched node
    */
   querySelector(selector, node, opt) {
+    if (!node?.nodeType) {
+      const type =
+        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+      const e = new TypeError(`Unexpected type ${type}`);
+      this._onError(e, opt);
+    }
     let document;
-    if (node?.nodeType === DOCUMENT_NODE) {
+    if (node.nodeType === DOCUMENT_NODE) {
       document = node;
     } else {
-      document = node?.ownerDocument;
+      document = node.ownerDocument;
     }
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
@@ -152,7 +168,7 @@ export class DOMSelector extends Finder {
         [res] = nodes;
       }
     } catch (e) {
-      this._onError(e);
+      this._onError(e, opt);
     }
     return res ?? null;
   }
@@ -166,11 +182,17 @@ export class DOMSelector extends Finder {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   querySelectorAll(selector, node, opt) {
+    if (!node?.nodeType) {
+      const type =
+        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
+      const e = new TypeError(`Unexpected type ${type}`);
+      this._onError(e, opt);
+    }
     let document;
-    if (node?.nodeType === DOCUMENT_NODE) {
+    if (node.nodeType === DOCUMENT_NODE) {
       document = node;
     } else {
-      document = node?.ownerDocument;
+      document = node.ownerDocument;
     }
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
@@ -194,7 +216,7 @@ export class DOMSelector extends Finder {
         res = [...nodes];
       }
     } catch (e) {
-      this._onError(e);
+      this._onError(e, opt);
     }
     return res ?? [];
   }
