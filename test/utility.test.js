@@ -1411,6 +1411,11 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
+    it('should get true', () => {
+      const res = func('[foo="bar\tbaz"]');
+      assert.isTrue(res, 'result');
+    });
+
     it('should get false', () => {
       const res = func('[foo i]');
       assert.isFalse(res, 'result');
