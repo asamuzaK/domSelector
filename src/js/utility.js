@@ -10,10 +10,10 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_CHARACTER,
-  REG_FILTER_PSEUDO, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY_IS_NOT, REG_SHADOW_MODE, TEXT_NODE,
-  TYPE_FROM, TYPE_TO, WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_PSEUDO,
+  REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY,
+  REG_LOGICAL_KEY_IS_NOT, REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO,
+  WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -496,8 +496,12 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  // filter char
-  if (!REG_FILTER_CHARACTER.test(selector)) {
+  // filter non-ascii
+  // filter namespaced selectors, e.g. ns|E
+  // filter pseudo-element selectors
+  // filter attribute selectors with case flag, e.g. [attr i]
+  // filter unclosed quotes
+  if (/[^\u0000-\u007F]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
     return false;
   }
   // filter missing close square bracket
@@ -507,13 +511,6 @@ export const filterSelector = (selector, opt = {}) => {
     if (sel.lastIndexOf(']') < 0) {
       return false;
     }
-  }
-  // filter namespaced selectors, e.g. ns|E
-  // filter pseudo-element selectors
-  // filter attribute selectors with case flag, e.g. [attr i]
-  // filter unclosed quotes
-  if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
-    return false;
   }
   // filter pseudo-classes
   if (selector.includes(':')) {
