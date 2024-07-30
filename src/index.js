@@ -52,7 +52,12 @@ export class DOMSelector extends Finder {
           target: TARGET_SELF
         };
         if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.match(selector, node);
+          try {
+            res = this.#nwsapi.match(selector, node);
+            return res;
+          } catch (e) {
+            res = null;
+          }
         }
       }
       this._setup(selector, node, opt);
@@ -85,7 +90,12 @@ export class DOMSelector extends Finder {
           target: TARGET_LINEAL
         };
         if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.closest(selector, node);
+          try {
+            res = this.#nwsapi.closest(selector, node);
+            return res;
+          } catch (e) {
+            res = null;
+          }
         }
       }
       this._setup(selector, node, opt);
@@ -128,7 +138,12 @@ export class DOMSelector extends Finder {
           target: TARGET_FIRST
         };
         if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.first(selector, node);
+          try {
+            res = this.#nwsapi.first(selector, node);
+            return res;
+          } catch (e) {
+            res = null;
+          }
         }
       }
       this._setup(selector, node, opt);
@@ -165,7 +180,12 @@ export class DOMSelector extends Finder {
           target: TARGET_ALL
         };
         if (filterSelector(selector, filterOpt)) {
-          return this.#nwsapi.select(selector, node);
+          try {
+            res = this.#nwsapi.select(selector, node);
+            return res;
+          } catch (e) {
+            res = null;
+          }
         }
       }
       this._setup(selector, node, opt);

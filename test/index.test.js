@@ -202,6 +202,13 @@ describe('DOMSelector', () => {
       const res = domSelector.matches('#main p:not(.foo)', p2);
       assert.isTrue(res, 'result');
     });
+
+    it('should get true', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.getElementById('li3');
+      const res = domSelector.matches(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
+      assert.isTrue(res, 'result');
+    });
   });
 
   describe('closest', () => {
@@ -318,6 +325,13 @@ describe('DOMSelector', () => {
       parent.appendChild(ul);
       const res = new DOMSelector(window).closest(':nth-child(2n+1 of .noted)', p7);
       assert.deepEqual(res, l7, 'result');
+    });
+
+    it('should get matched node', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.getElementById('li3');
+      const res = domSelector.closest(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
+      assert.deepEqual(res, node, 'result');
     });
   });
 
@@ -466,6 +480,14 @@ describe('DOMSelector', () => {
       const res = domSelector.querySelector(':nth-child(even)', node);
       assert.deepEqual(res, document.getElementById('li2'), 'result');
     });
+
+    it('should get matched node', () => {
+      const domSelector = new DOMSelector(window);
+      const parent = document.getElementById('div1');
+      const node = document.getElementById('ul1');
+      const res = domSelector.querySelector(':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))', parent);
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {
@@ -593,6 +615,16 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [
         root.firstElementChild,
         root.lastElementChild
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const domSelector = new DOMSelector(window);
+      const parent = document.getElementById('div1');
+      const node = document.getElementById('ul1');
+      const res = domSelector.querySelectorAll(':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))', parent);
+      assert.deepEqual(res, [
+        node
       ], 'result');
     });
   });
