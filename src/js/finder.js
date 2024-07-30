@@ -88,11 +88,13 @@ export class Finder {
    * handle error
    * @private
    * @param {Error} e - Error
+   * @param {object} opt - options
    * @throws Error
    * @returns {void}
    */
-  _onError(e) {
-    if (!this.#noexcept) {
+  _onError(e, opt = {}) {
+    const noexcept = opt.noexcept ?? this.#noexcept;
+    if (!noexcept) {
       if (e instanceof DOMException ||
           e instanceof this.#window.DOMException) {
         if (e.name === NOT_SUPPORTED_ERR) {

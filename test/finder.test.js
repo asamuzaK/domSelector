@@ -133,6 +133,15 @@ describe('Finder', () => {
       assert.isUndefined(res, 'result');
     });
 
+    it('should not throw', () => {
+      const err = new TypeError('Unexpected type');
+      const finder = new Finder(window);
+      const res = finder._onError(err, {
+        noexcept: true
+      });
+      assert.isUndefined(res, 'result');
+    });
+
     it('should warn', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
