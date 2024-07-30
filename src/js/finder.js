@@ -3,14 +3,14 @@
  */
 
 /* import */
-import {
-  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
-  sortNodes, traverseNode
-} from './dom-util.js';
 import { matcher } from './matcher.js';
 import {
   generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
+import {
+  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
+  sortNodes, traverseNode
+} from './utility.js';
 
 /* constants */
 import {

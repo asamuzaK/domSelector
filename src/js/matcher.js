@@ -3,13 +3,13 @@
  */
 
 /* import */
-import { getDirectionality, isNamespaceDeclared } from './dom-util.js';
 import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
+import { getDirectionality, getType, isNamespaceDeclared } from './utility.js';
 
 /* constants */
 import {
   ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, REG_LANG,
-  REG_TAG_NAME, SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO
+  REG_TAG_NAME, SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR
 } from './constant.js';
 
 /* Matcher */
@@ -25,10 +25,7 @@ export class Matcher {
    */
   matchPseudoElementSelector(astName, opt = {}) {
     if (!astName || typeof astName !== 'string') {
-      const nodeType =
-        Object.prototype.toString.call(astName).slice(TYPE_FROM, TYPE_TO);
-      const msg = `Unexpected type ${nodeType}`;
-      throw new TypeError(msg);
+      throw new TypeError(`Unexpected type ${getType(astName)}`);
     }
     const { forgive, warn } = opt;
     switch (astName) {
@@ -45,28 +42,28 @@ export class Matcher {
       case 'selection':
       case 'target-text': {
         if (warn) {
-          const msg = `Unsupported pseudo-element ::${astName}`;
-          throw new DOMException(msg, NOT_SUPPORTED_ERR);
+          throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+            NOT_SUPPORTED_ERR);
         }
         break;
       }
       case 'part':
       case 'slotted': {
         if (warn) {
-          const msg = `Unsupported pseudo-element ::${astName}()`;
-          throw new DOMException(msg, NOT_SUPPORTED_ERR);
+          throw new DOMException(`Unsupported pseudo-element ::${astName}()`,
+            NOT_SUPPORTED_ERR);
         }
         break;
       }
       default: {
         if (astName.startsWith('-webkit-')) {
           if (warn) {
-            const msg = `Unsupported pseudo-element ::${astName}`;
-            throw new DOMException(msg, NOT_SUPPORTED_ERR);
+            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+              NOT_SUPPORTED_ERR);
           }
         } else if (!forgive) {
-          const msg = `Unknown pseudo-element ::${astName}`;
-          throw new DOMException(msg, SYNTAX_ERR);
+          throw new DOMException(`Unknown pseudo-element ::${astName}`,
+            SYNTAX_ERR);
         }
       }
     }
@@ -85,8 +82,7 @@ export class Matcher {
     } = ast;
     if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
       const css = generateCSS(ast);
-      const msg = `Invalid selector ${css}`;
-      throw new DOMException(msg, SYNTAX_ERR);
+      throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
     }
     const { attributes } = node;
     let res;
@@ -334,8 +330,8 @@ export class Matcher {
             res = node;
           }
         } else if (!forgive && !astNS) {
-          const msg = `Undeclared namespace ${astPrefix}`;
-          throw new DOMException(msg, SYNTAX_ERR);
+          throw new DOMException(`Undeclared namespace ${astPrefix}`,
+            SYNTAX_ERR);
         }
       }
     }
@@ -455,18 +451,11 @@ export class Matcher {
    */
   matchSelector(ast, node, opt) {
     if (!ast || !ast.type) {
-      const nodeType =
-        Object.prototype.toString.call(ast).slice(TYPE_FROM, TYPE_TO);
-      const msg = `Unexpected node ${nodeType}`;
-      throw new TypeError(msg);
+      throw new TypeError(`Unexpected node ${getType(ast)}`);
     } else if (!node || !node.nodeType) {
-      const nodeType =
-        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-      const msg = `Unexpected node ${nodeType}`;
-      throw new TypeError(msg);
+      throw new TypeError(`Unexpected node ${getType(node)}`);
     } else if (node.nodeType !== ELEMENT_NODE) {
-      const msg = `Unexpected node ${node.nodeName}`;
-      throw new TypeError(msg);
+      throw new TypeError(`Unexpected node ${node.nodeName}`);
     }
     let matched;
     switch (ast.type) {
