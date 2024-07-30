@@ -496,11 +496,9 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  // filter non-ascii and control characters (except for white spaces)
-  // filter namespaced selectors, e.g. ns|E
-  // filter pseudo-element selectors
-  // filter attribute selectors with case flag, e.g. [attr i]
-  // filter unclosed quotes
+  // filter non-ASCII, control characters other than whitespace,
+  // namespace selectors, e.g. ns|E, pseudo-element selectors, and
+  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes
   if (/[^\u0021-\u007F\s]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
     return false;
   }

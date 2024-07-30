@@ -15,6 +15,7 @@ import {
   TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 
+/* DOMSelector */
 export class DOMSelector extends Finder {
   /* private fields */
   #document;
