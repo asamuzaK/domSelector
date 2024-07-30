@@ -97,7 +97,7 @@ export const LOGICAL_COMPOUND =
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
-export const REG_FILTER_CHAR = /[\w\s\-#$%&()*+,./:;<>=?@[\]^"'｀]/;
+export const REG_FILTER_CHARACTER = /[\w\s\-#$%&()*+,./:;<>=?@[\]^"'｀]/;
 export const REG_FILTER_PSEUDO = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 export const REG_FORM = /^(?:button|fieldset|form|input|select|textarea)$/;
 export const REG_FORM_CTRL =
@@ -113,7 +113,7 @@ export const REG_LOGICAL_COMPLEX =
 export const REG_LOGICAL_COMPOUND =
   new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
 export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
-export const REG_LOGICAL_IS_NOT = new RegExp(`:${KEY_IS_NOT}\\(`);
+export const REG_LOGICAL_KEY_IS_NOT = new RegExp(`:${KEY_IS_NOT}\\(`);
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
 export const REG_SHADOW_HOST = /^host(?:-context)?$/;
 export const REG_SHADOW_MODE = /^(?:close|open)$/;

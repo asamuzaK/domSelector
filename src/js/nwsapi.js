@@ -7,8 +7,9 @@ import nwsapi from '@asamuzakjp/nwsapi';
 
 /* constants */
 import {
-  DOCUMENT_NODE, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND, REG_FILTER_CHAR,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_IS_NOT, REG_FILTER_PSEUDO, TYPE_FROM, TYPE_TO
+  DOCUMENT_NODE, REG_FILTER_CHARACTER, REG_FILTER_PSEUDO, REG_LOGICAL_COMPLEX,
+  REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY, REG_LOGICAL_KEY_IS_NOT,
+  TYPE_FROM, TYPE_TO
 } from './constant.js';
 
 /**
@@ -48,7 +49,7 @@ export const filterSelector = (selector, opt = {}) => {
     return false;
   }
   // filter char
-  if (!REG_FILTER_CHAR.test(selector)) {
+  if (!REG_FILTER_CHARACTER.test(selector)) {
     return false;
   }
   // filter missing close square bracket
@@ -69,7 +70,7 @@ export const filterSelector = (selector, opt = {}) => {
   // filter pseudo-classes
   if (selector.includes(':')) {
     let reg;
-    if (REG_LOGICAL_IS_NOT.test(selector)) {
+    if (REG_LOGICAL_KEY_IS_NOT.test(selector)) {
       // filter empty :is()
       if (REG_LOGICAL_EMPTY.test(selector)) {
         return false;
