@@ -39,27 +39,27 @@ export class DOMSelector extends Finder {
    * @returns {boolean} - `true` if matched `false` otherwise
    */
   matches(selector, node, opt) {
-    let res;
-    try {
-      if (node?.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node?.nodeName}`;
-        throw new TypeError(msg);
-      }
-      const document = node.ownerDocument;
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          target: TARGET_SELF
-        };
-        if (filterSelector(selector, filterOpt)) {
-          try {
-            res = this.#nwsapi.match(selector, node);
-            return res;
-          } catch (e) {
-            res = null;
-          }
+    if (node?.nodeType !== ELEMENT_NODE) {
+      const e = new TypeError(`Unexpected node ${node?.nodeName}`);
+      this._onError(e);
+    }
+    const document = node.ownerDocument;
+    if (document === this.#document && document.contentType === 'text/html') {
+      const filterOpt = {
+        complex: REG_COMPLEX.test(selector),
+        target: TARGET_SELF
+      };
+      if (filterSelector(selector, filterOpt)) {
+        try {
+          const res = this.#nwsapi.match(selector, node);
+          return res;
+        } catch (e) {
+          // fall through
         }
       }
+    }
+    let res;
+    try {
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_SELF);
       res = nodes.size;
@@ -77,27 +77,27 @@ export class DOMSelector extends Finder {
    * @returns {?object} - matched node
    */
   closest(selector, node, opt) {
-    let res;
-    try {
-      if (node?.nodeType !== ELEMENT_NODE) {
-        const msg = `Unexpected node ${node?.nodeName}`;
-        throw new TypeError(msg);
-      }
-      const document = node.ownerDocument;
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          target: TARGET_LINEAL
-        };
-        if (filterSelector(selector, filterOpt)) {
-          try {
-            res = this.#nwsapi.closest(selector, node);
-            return res;
-          } catch (e) {
-            res = null;
-          }
+    if (node?.nodeType !== ELEMENT_NODE) {
+      const e = new TypeError(`Unexpected node ${node?.nodeName}`);
+      this._onError(e);
+    }
+    const document = node.ownerDocument;
+    if (document === this.#document && document.contentType === 'text/html') {
+      const filterOpt = {
+        complex: REG_COMPLEX.test(selector),
+        target: TARGET_LINEAL
+      };
+      if (filterSelector(selector, filterOpt)) {
+        try {
+          const res = this.#nwsapi.closest(selector, node);
+          return res;
+        } catch (e) {
+          // fall through
         }
       }
+    }
+    let res;
+    try {
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_LINEAL);
       if (nodes.size) {
@@ -124,28 +124,28 @@ export class DOMSelector extends Finder {
    * @returns {?object} - matched node
    */
   querySelector(selector, node, opt) {
-    let res;
-    try {
-      let document;
-      if (node?.nodeType === DOCUMENT_NODE) {
-        document = node;
-      } else {
-        document = node?.ownerDocument;
-      }
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: false,
-          target: TARGET_FIRST
-        };
-        if (filterSelector(selector, filterOpt)) {
-          try {
-            res = this.#nwsapi.first(selector, node);
-            return res;
-          } catch (e) {
-            res = null;
-          }
+    let document;
+    if (node?.nodeType === DOCUMENT_NODE) {
+      document = node;
+    } else {
+      document = node?.ownerDocument;
+    }
+    if (document === this.#document && document.contentType === 'text/html') {
+      const filterOpt = {
+        complex: false,
+        target: TARGET_FIRST
+      };
+      if (filterSelector(selector, filterOpt)) {
+        try {
+          const res = this.#nwsapi.first(selector, node);
+          return res;
+        } catch (e) {
+          // fall through
         }
       }
+    }
+    let res;
+    try {
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_FIRST);
       if (nodes.size) {
@@ -166,28 +166,28 @@ export class DOMSelector extends Finder {
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
   querySelectorAll(selector, node, opt) {
-    let res;
-    try {
-      let document;
-      if (node?.nodeType === DOCUMENT_NODE) {
-        document = node;
-      } else {
-        document = node?.ownerDocument;
-      }
-      if (document === this.#document && document.contentType === 'text/html') {
-        const filterOpt = {
-          complex: false,
-          target: TARGET_ALL
-        };
-        if (filterSelector(selector, filterOpt)) {
-          try {
-            res = this.#nwsapi.select(selector, node);
-            return res;
-          } catch (e) {
-            res = null;
-          }
+    let document;
+    if (node?.nodeType === DOCUMENT_NODE) {
+      document = node;
+    } else {
+      document = node?.ownerDocument;
+    }
+    if (document === this.#document && document.contentType === 'text/html') {
+      const filterOpt = {
+        complex: false,
+        target: TARGET_ALL
+      };
+      if (filterSelector(selector, filterOpt)) {
+        try {
+          const res = this.#nwsapi.select(selector, node);
+          return res;
+        } catch (e) {
+          // fall through
         }
       }
+    }
+    let res;
+    try {
       this._setup(selector, node, opt);
       const nodes = this._find(TARGET_ALL);
       if (nodes.size) {
