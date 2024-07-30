@@ -8,10 +8,10 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import * as domUtil from '../src/js/dom-util.js';
+import * as util from '../src/js/utility.js';
 import { WALKER_FILTER } from '../src/js/constant.js';
 
-describe('DOM utility functions', () => {
+describe('utility functions', () => {
   const domStr = `<!doctype html>
     <html lang="en">
       <head>
@@ -44,8 +44,40 @@ describe('DOM utility functions', () => {
     document = null;
   });
 
-  describe('verify node', () => {
-    const func = domUtil.verifyNode;
+  describe('getType', () => {
+    const func = util.getType;
+
+    it('should get Undefined', () => {
+      assert.strictEqual(func(), 'Undefined');
+    });
+
+    it('should get Null', () => {
+      assert.strictEqual(func(null), 'Null');
+    });
+
+    it('should get Object', () => {
+      assert.strictEqual(func({}), 'Object');
+    });
+
+    it('should get Array', () => {
+      assert.strictEqual(func([]), 'Array');
+    });
+
+    it('should get Boolean', () => {
+      assert.strictEqual(func(true), 'Boolean');
+    });
+
+    it('should get Number', () => {
+      assert.strictEqual(func(1), 'Number');
+    });
+
+    it('should get String', () => {
+      assert.strictEqual(func('a'), 'String');
+    });
+  });
+
+  describe('resolve content document, root node and tree walker', () => {
+    const func = util.resolveContent;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -68,27 +100,6 @@ describe('DOM utility functions', () => {
       const comment = new window.Comment('foo');
       assert.throws(() => func(comment), TypeError, 'Unexpected node #comment');
     });
-
-    it('should get result', () => {
-      const res = func(document);
-      assert.deepEqual(res, document, 'result');
-    });
-
-    it('should get result', () => {
-      const frag = document.createDocumentFragment();
-      const res = func(frag);
-      assert.deepEqual(res, frag, 'result');
-    });
-
-    it('should get result', () => {
-      const node = document.createElement('div');
-      const res = func(node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
-  describe('resolve content document, root node and tree walker', () => {
-    const func = domUtil.resolveContent;
 
     it('should get result', () => {
       const res = func(document);
@@ -163,7 +174,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('traverse node tree', () => {
-    const func = domUtil.traverseNode;
+    const func = util.traverseNode;
     let treeWalker;
     beforeEach(() => {
       treeWalker = document.createTreeWalker(document, WALKER_FILTER);
@@ -232,7 +243,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('is custom element', () => {
-    const func = domUtil.isCustomElement;
+    const func = util.isCustomElement;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -314,7 +325,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('is in shadow tree', () => {
-    const func = domUtil.isInShadowTree;
+    const func = util.isInShadowTree;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -395,7 +406,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('get slotted text content', () => {
-    const func = domUtil.getSlottedTextContent;
+    const func = util.getSlottedTextContent;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -478,7 +489,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('get directionality of node', () => {
-    const func = domUtil.getDirectionality;
+    const func = util.getDirectionality;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -931,7 +942,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('is content editable', () => {
-    const func = domUtil.isContentEditable;
+    const func = util.isContentEditable;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -1020,7 +1031,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('get namespace URI', () => {
-    const func = domUtil.getNamespaceURI;
+    const func = util.getNamespaceURI;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -1082,7 +1093,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('is namespace declared', () => {
-    const func = domUtil.isNamespaceDeclared;
+    const func = util.isNamespaceDeclared;
 
     it('should get result', () => {
       const res = func();
@@ -1128,7 +1139,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('is preceding', () => {
-    const func = domUtil.isPreceding;
+    const func = util.isPreceding;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -1218,7 +1229,7 @@ describe('DOM utility functions', () => {
   });
 
   describe('sort nodes', () => {
-    const func = domUtil.sortNodes;
+    const func = util.sortNodes;
 
     it('should get matched node(s)', () => {
       const ul = document.createElement('ul');
@@ -1274,6 +1285,404 @@ describe('DOM utility functions', () => {
       assert.deepEqual([...res], [
         node1, node2, node3
       ], 'result');
+    });
+  });
+
+  describe('init nwsapi', () => {
+    const func = util.initNwsapi;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError,
+        'Unexpected global object Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(document), TypeError,
+        'Unexpected global object Document');
+    });
+
+    it('should get nwsapi', () => {
+      const res = func(window);
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+        'nwsapi.match');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        'nwsapi.closest');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+        'nwsapi.first');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+        'nwsapi.select');
+    });
+
+    it('should get nwsapi', () => {
+      const res = func(window, document);
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+        'nwsapi.match');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        'nwsapi.closest');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+        'nwsapi.first');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+        'nwsapi.select');
+    });
+
+    it('should get nwsapi', () => {
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      const iframeDocument = iframe.contentDocument;
+      const iframeWindow = iframeDocument.defaultView;
+      assert.notDeepEqual(window, iframeWindow, 'window');
+      const res = func(iframeWindow);
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
+        'nwsapi.match');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        'nwsapi.closest');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
+        'nwsapi.first');
+      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
+        'nwsapi.select');
+    });
+  });
+
+  describe('filter selector', () => {
+    const func = util.filterSelector;
+
+    it('should get false', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('*');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('*|*');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('|*');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('p');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('ns|p');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('::slotted');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('.foo');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('#foo');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('[id]');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[id');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[ns|id]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('[foo="bar baz"]');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo="bar baz" i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo="bar baz" qux i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func("[foo='bar baz' qux i]");
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo="bar \'baz\'" i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo=\'bar "baz"\' i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo="bar baz\']');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo=\'bar baz"]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo="bar baz\' i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo=\'bar baz" i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo bar baz i]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('[foo|=bar]');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':enabled');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':disabled');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':empty');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':indeterminate');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':root');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':target');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':after');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':host');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(even)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-of-type( odd )');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':nth-child(foo)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':nth-child(even of .foo)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(2)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(-1)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(n)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(+n)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(-n)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(2n+1)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(2n + 1)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':nth-child(-2n - 1)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':nth-child(n of .foo)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':nth-child(2n+1 of .foo)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(p)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':is( p, div )');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':is(:nth-child(2n+1), :nth-child(3n+1))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':is()');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':where()');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(p.foo, div.bar)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':not(.foo .bar)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(.foo .bar)', {
+        complex: true,
+        descendant: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(.foo > .bar)', {
+        complex: true,
+        descendant: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':not(.foo > .bar)', {
+        complex: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(:is(.foo, .bar))');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':not(:not(.foo, .bar))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':not(:is(.foo > .bar))');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(:is(.foo .bar))', {
+        complex: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':not(:is(.foo > .bar))', {
+        complex: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':not(:is(.foo > .bar))', {
+        complex: true
+      });
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':is(:not(:is(.foo, .bar)), .baz)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('\u212A');
+      assert.isFalse(res, 'result');
     });
   });
 });

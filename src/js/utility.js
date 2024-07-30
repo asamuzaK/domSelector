@@ -1,43 +1,28 @@
 /**
- * dom-util.js
+ * utility.js
  */
 
 /* import */
+import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
 import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_SHADOW_MODE,
-  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_CHARACTER,
+  REG_FILTER_PSEUDO, REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND,
+  REG_LOGICAL_EMPTY, REG_LOGICAL_KEY_IS_NOT, REG_SHADOW_MODE, TEXT_NODE,
+  TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
- * verify node
- * @param {*} node - node
- * @throws
- * @returns {object} - Document, DocumentFragment, Element node
+ * get type
+ * @param {*} o - object to check
+ * @returns {string} - type of object
  */
-export const verifyNode = node => {
-  if (!node?.nodeType) {
-    const type = Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-    const msg = `Unexpected type ${type}`;
-    throw new TypeError(msg);
-  }
-  switch (node.nodeType) {
-    case DOCUMENT_NODE:
-    case DOCUMENT_FRAGMENT_NODE:
-    case ELEMENT_NODE: {
-      break;
-    }
-    default: {
-      const msg = `Unexpected node ${node.nodeName}`;
-      throw new TypeError(msg);
-    }
-  }
-  return node;
-};
+export const getType = o =>
+  Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
 
 /**
  * resolve content document, root node and tree walker
@@ -45,7 +30,9 @@ export const verifyNode = node => {
  * @returns {Array.<object>} - array of document, root node, tree walker
  */
 export const resolveContent = node => {
-  verifyNode(node);
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
   let document;
   let root;
   switch (node.nodeType) {
@@ -59,8 +46,7 @@ export const resolveContent = node => {
       root = node;
       break;
     }
-    case ELEMENT_NODE:
-    default: {
+    case ELEMENT_NODE: {
       document = node.ownerDocument;
       let parent = node;
       while (parent) {
@@ -72,6 +58,9 @@ export const resolveContent = node => {
       }
       root = parent;
       break;
+    }
+    default : {
+      throw new TypeError(`Unexpected node ${node.nodeName}`);
     }
   }
   const walker = document.createTreeWalker(root, WALKER_FILTER);
@@ -91,8 +80,7 @@ export const resolveContent = node => {
  */
 export const traverseNode = (node, walker) => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let current;
   if (walker?.currentNode) {
@@ -141,8 +129,7 @@ export const traverseNode = (node, walker) => {
  */
 export const isCustomElement = (node, opt = {}) => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let bool;
   if (node.nodeType === ELEMENT_NODE) {
@@ -176,8 +163,7 @@ export const isCustomElement = (node, opt = {}) => {
  */
 export const isInShadowTree = node => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let bool;
   if (node.nodeType === ELEMENT_NODE ||
@@ -203,8 +189,7 @@ export const isInShadowTree = node => {
  */
 export const getSlottedTextContent = node => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let res;
   if (node.localName === 'slot' && isInShadowTree(node)) {
@@ -231,8 +216,7 @@ export const getSlottedTextContent = node => {
  */
 export const getDirectionality = node => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let res;
   if (node.nodeType === ELEMENT_NODE) {
@@ -356,8 +340,7 @@ export const getDirectionality = node => {
  */
 export const isContentEditable = node => {
   if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let res;
   if (node.nodeType === ELEMENT_NODE) {
@@ -392,12 +375,9 @@ export const isContentEditable = node => {
  */
 export const getNamespaceURI = (ns, node) => {
   if (typeof ns !== 'string') {
-    const type = Object.prototype.toString.call(ns).slice(TYPE_FROM, TYPE_TO);
-    const msg = `Unexpected type ${type}`;
-    throw new TypeError(msg);
+    throw new TypeError(`Unexpected type ${getType(ns)}`);
   } else if (!node?.nodeType) {
-    // throws
-    verifyNode(node);
+    throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   let res;
   if (ns && node.nodeType === ELEMENT_NODE) {
@@ -449,11 +429,9 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
  */
 export const isPreceding = (nodeA, nodeB) => {
   if (!nodeA?.nodeType) {
-    // throws
-    verifyNode(nodeA);
+    throw new TypeError(`Unexpected type ${getType(nodeA)}`);
   } else if (!nodeB?.nodeType) {
-    // throws
-    verifyNode(nodeB);
+    throw new TypeError(`Unexpected type ${getType(nodeB)}`);
   }
   let res;
   if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
@@ -483,4 +461,80 @@ export const sortNodes = (nodes = []) => {
     });
   }
   return arr;
+};
+
+/**
+ * init nwsapi
+ * @param {object} window - Window
+ * @param {object} document - Document
+ * @returns {object} - nwsapi
+ */
+export const initNwsapi = (window, document) => {
+  if (!window?.DOMException) {
+    throw new TypeError(`Unexpected global object ${getType(window)}`);
+  }
+  if (document?.nodeType !== DOCUMENT_NODE) {
+    document = window.document;
+  }
+  const nw = nwsapi({
+    document,
+    DOMException: window.DOMException
+  });
+  nw.configure({
+    LOGERRORS: false
+  });
+  return nw;
+};
+
+/**
+ * filter selector (for nwsapi)
+ * @param {string} selector - selector
+ * @param {object} opt - options
+ * @returns {boolean} - result
+ */
+export const filterSelector = (selector, opt = {}) => {
+  if (!selector || typeof selector !== 'string') {
+    return false;
+  }
+  // filter char
+  if (!REG_FILTER_CHARACTER.test(selector)) {
+    return false;
+  }
+  // filter missing close square bracket
+  if (selector.includes('[')) {
+    const index = selector.lastIndexOf('[');
+    const sel = selector.substring(index);
+    if (sel.lastIndexOf(']') < 0) {
+      return false;
+    }
+  }
+  // filter namespaced selectors, e.g. ns|E
+  // filter pseudo-element selectors
+  // filter attribute selectors with case flag, e.g. [attr i]
+  // filter unclosed quotes
+  if (/\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
+    return false;
+  }
+  // filter pseudo-classes
+  if (selector.includes(':')) {
+    let reg;
+    if (REG_LOGICAL_KEY_IS_NOT.test(selector)) {
+      // filter empty :is()
+      if (REG_LOGICAL_EMPTY.test(selector)) {
+        return false;
+      }
+      const { complex } = opt;
+      if (complex) {
+        reg = REG_LOGICAL_COMPLEX;
+      } else {
+        reg = REG_LOGICAL_COMPOUND;
+      }
+    } else {
+      reg = REG_FILTER_PSEUDO;
+    }
+    if (reg.test(selector)) {
+      return false;
+    }
+  }
+  return true;
 };

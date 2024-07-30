@@ -4,6 +4,7 @@
 
 /* import */
 import { findAll, parse, toPlainObject, walk } from 'css-tree';
+import { getType } from './utility.js';
 
 /* constants */
 import {
@@ -11,7 +12,7 @@ import {
   DUO, EMPTY, HEX, NTH, REG_HEX, REG_INVALID_SELECTOR, REG_LANG_QUOTED,
   REG_LOGICAL_EMPTY, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
   SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
-  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, TYPE_FROM, TYPE_TO, U_FFFD
+  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, U_FFFD
 } from './constant.js';
 
 /**
@@ -106,8 +107,7 @@ export const preprocess = (...args) => {
     selector = selector.replace(/\f|\r\n?/g, '\n')
       .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD);
   } else if (selector === undefined || selector === null) {
-    selector = Object.prototype.toString.call(selector)
-      .slice(TYPE_FROM, TYPE_TO).toLowerCase();
+    selector = getType(selector).toLowerCase();
   } else if (Array.isArray(selector)) {
     selector = selector.join(',');
   } else if (Object.prototype.hasOwnProperty.call(selector, 'toString')) {

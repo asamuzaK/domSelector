@@ -7,12 +7,12 @@
 
 /* import */
 import { Finder } from './js/finder.js';
-import { filterSelector, initNwsapi } from './js/nwsapi.js';
+import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
   DOCUMENT_NODE, ELEMENT_NODE, REG_COMPLEX, TARGET_ALL, TARGET_FIRST,
-  TARGET_LINEAL, TARGET_SELF, TYPE_FROM, TYPE_TO
+  TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 
 export class DOMSelector extends Finder {
@@ -40,9 +40,7 @@ export class DOMSelector extends Finder {
    */
   matches(selector, node, opt) {
     if (!node?.nodeType) {
-      const type =
-        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-      const e = new TypeError(`Unexpected type ${type}`);
+      const e = new TypeError(`Unexpected type ${getType(node)}`);
       this._onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
@@ -83,9 +81,7 @@ export class DOMSelector extends Finder {
    */
   closest(selector, node, opt) {
     if (!node?.nodeType) {
-      const type =
-        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-      const e = new TypeError(`Unexpected type ${type}`);
+      const e = new TypeError(`Unexpected type ${getType(node)}`);
       this._onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
@@ -135,9 +131,7 @@ export class DOMSelector extends Finder {
    */
   querySelector(selector, node, opt) {
     if (!node?.nodeType) {
-      const type =
-        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-      const e = new TypeError(`Unexpected type ${type}`);
+      const e = new TypeError(`Unexpected type ${getType(node)}`);
       this._onError(e, opt);
     }
     let document;
@@ -183,9 +177,7 @@ export class DOMSelector extends Finder {
    */
   querySelectorAll(selector, node, opt) {
     if (!node?.nodeType) {
-      const type =
-        Object.prototype.toString.call(node).slice(TYPE_FROM, TYPE_TO);
-      const e = new TypeError(`Unexpected type ${type}`);
+      const e = new TypeError(`Unexpected type ${getType(node)}`);
       this._onError(e, opt);
     }
     let document;
