@@ -42,10 +42,10 @@ export class DOMSelector extends Finder {
   matches(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -64,11 +64,11 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_SELF);
+      this.setup(selector, node, opt);
+      const nodes = this.find(TARGET_SELF);
       res = nodes.size;
     } catch (e) {
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     return !!res;
   }
@@ -83,10 +83,10 @@ export class DOMSelector extends Finder {
   closest(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -105,8 +105,8 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_LINEAL);
+      this.setup(selector, node, opt);
+      const nodes = this.find(TARGET_LINEAL);
       if (nodes.size) {
         let refNode = node;
         while (refNode) {
@@ -118,7 +118,7 @@ export class DOMSelector extends Finder {
         }
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     return res ?? null;
   }
@@ -133,7 +133,7 @@ export class DOMSelector extends Finder {
   querySelector(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     let document;
     if (node.nodeType === DOCUMENT_NODE) {
@@ -157,13 +157,13 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_FIRST);
+      this.setup(selector, node, opt);
+      const nodes = this.find(TARGET_FIRST);
       if (nodes.size) {
         [res] = nodes;
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     return res ?? null;
   }
@@ -179,7 +179,7 @@ export class DOMSelector extends Finder {
   querySelectorAll(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     let document;
     if (node.nodeType === DOCUMENT_NODE) {
@@ -203,13 +203,13 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_ALL);
+      this.setup(selector, node, opt);
+      const nodes = this.find(TARGET_ALL);
       if (nodes.size) {
         res = [...nodes];
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.onError(e, opt);
     }
     return res ?? [];
   }
