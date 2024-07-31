@@ -16,9 +16,10 @@ import {
 } from './js/constant.js';
 
 /* DOMSelector */
-export class DOMSelector extends Finder {
+export class DOMSelector {
   /* private fields */
   #document;
+  #finder;
   #nwsapi;
 
   /**
@@ -27,8 +28,8 @@ export class DOMSelector extends Finder {
    * @param {object} document - document
    */
   constructor(window, document) {
-    super(window);
     this.#document = document ?? window.document;
+    this.#finder = new Finder(window);
     this.#nwsapi = initNwsapi(window, document);
   }
 
@@ -42,10 +43,10 @@ export class DOMSelector extends Finder {
   matches(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -64,11 +65,11 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_SELF);
+      this.#finder.setup(selector, node, opt);
+      const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
     } catch (e) {
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     return !!res;
   }
@@ -83,10 +84,10 @@ export class DOMSelector extends Finder {
   closest(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new TypeError(`Unexpected node ${node.nodeName}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html') {
@@ -105,8 +106,8 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_LINEAL);
+      this.#finder.setup(selector, node, opt);
+      const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
         let refNode = node;
         while (refNode) {
@@ -118,7 +119,7 @@ export class DOMSelector extends Finder {
         }
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     return res ?? null;
   }
@@ -133,7 +134,7 @@ export class DOMSelector extends Finder {
   querySelector(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     let document;
     if (node.nodeType === DOCUMENT_NODE) {
@@ -157,13 +158,13 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_FIRST);
+      this.#finder.setup(selector, node, opt);
+      const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
         [res] = nodes;
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     return res ?? null;
   }
@@ -179,7 +180,7 @@ export class DOMSelector extends Finder {
   querySelectorAll(selector, node, opt) {
     if (!node?.nodeType) {
       const e = new TypeError(`Unexpected type ${getType(node)}`);
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     let document;
     if (node.nodeType === DOCUMENT_NODE) {
@@ -203,13 +204,13 @@ export class DOMSelector extends Finder {
     }
     let res;
     try {
-      this._setup(selector, node, opt);
-      const nodes = this._find(TARGET_ALL);
+      this.#finder.setup(selector, node, opt);
+      const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {
         res = [...nodes];
       }
     } catch (e) {
-      this._onError(e, opt);
+      this.#finder.onError(e, opt);
     }
     return res ?? [];
   }

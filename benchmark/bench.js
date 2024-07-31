@@ -508,7 +508,7 @@ suite.on('start', () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('happydom', selectors[0], 'p');
-}).add(`linkedom querySelectorRandom('${selectors[0]}')`, () => {
+}).add(`linkedom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('linkedom', selectors[0], 'p');
 }).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('patched-jsdom', selectors[0], 'p');

@@ -86,13 +86,12 @@ export class Finder {
 
   /**
    * handle error
-   * @private
    * @param {Error} e - Error
    * @param {object} opt - options
    * @throws Error
    * @returns {void}
    */
-  _onError(e, opt = {}) {
+  onError(e, opt = {}) {
     const noexcept = opt.noexcept ?? this.#noexcept;
     if (!noexcept) {
       if (e instanceof DOMException ||
@@ -112,7 +111,6 @@ export class Finder {
 
   /**
    * setup finder
-   * @private
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} opt - options
@@ -121,7 +119,7 @@ export class Finder {
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - node
    */
-  _setup(selector, node, opt = {}) {
+  setup(selector, node, opt = {}) {
     const { event, noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
@@ -183,7 +181,7 @@ export class Finder {
       try {
         cssAst = parseSelector(selector);
       } catch (e) {
-        this._onError(e);
+        this.onError(e);
       }
       const { branches, info: { hasHasPseudoFunc } } = walkAST(cssAst);
       let invalidate = !!hasHasPseudoFunc;
@@ -2712,11 +2710,10 @@ export class Finder {
 
   /**
    * find matched nodes
-   * @private
    * @param {string} targetType - target type
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _find(targetType) {
+  find(targetType) {
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       this._prepareQuerySelectorWalker();
     }
