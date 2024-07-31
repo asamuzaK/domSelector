@@ -78,6 +78,23 @@ describe('DOMSelector', () => {
     document = null;
   });
 
+  describe('DOMSelector', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector());
+    });
+
+    it('should create instance', () => {
+      const res = new DOMSelector(window);
+      assert.isUndefined(res.onError, 'onError is undefined');
+      assert.isUndefined(res.setup, 'setup is undefined');
+      assert.isUndefined(res.find, 'find is undefined');
+      assert.isFunction(res.matches, 'matches');
+      assert.isFunction(res.closest, 'closest');
+      assert.isFunction(res.querySelector, 'querySelector');
+      assert.isFunction(res.querySelectorAll, 'querySelectorAll');
+    });
+  });
+
   describe('matches', () => {
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).matches(),
