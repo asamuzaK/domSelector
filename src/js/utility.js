@@ -11,8 +11,8 @@ import isCustomElementName from 'is-potential-custom-element-name';
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_COMPLEX,
-  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_LOGICAL_EMPTY, REG_SHADOW_MODE,
-  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
+  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_SHADOW_MODE, TEXT_NODE,
+  TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -496,9 +496,10 @@ export const filterSelector = (selector, opt = {}) => {
     return false;
   }
   // filter non-ASCII, control characters other than whitespace,
-  // namespace selectors, e.g. ns|E, pseudo-element selectors, and
-  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes
-  if (/[^\u0021-\u007F\s]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]/.test(selector)) {
+  // namespace selectors, e.g. ns|E, pseudo-element selectors,
+  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
+  // and empty :is() / :where()
+  if (/[^\u0021-\u007F\s]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
   }
   // filter missing close square bracket
@@ -513,10 +514,6 @@ export const filterSelector = (selector, opt = {}) => {
   if (selector.includes(':')) {
     let reg;
     if (/:(?:is|not)\(/.test(selector)) {
-      // filter empty :is()
-      if (REG_LOGICAL_EMPTY.test(selector)) {
-        return false;
-      }
       const { complex } = opt;
       if (complex) {
         reg = REG_FILTER_COMPLEX;

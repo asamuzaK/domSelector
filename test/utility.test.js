@@ -1607,6 +1607,11 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
+      const res = func(':is( )');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
       const res = func(':where()');
       assert.isFalse(res, 'result');
     });
