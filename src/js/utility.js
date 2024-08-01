@@ -503,11 +503,11 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
-  // filter non-ASCII, control characters other than whitespace,
-  // namespace selectors, e.g. ns|E, pseudo-element selectors,
-  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
-  // and empty :is() / :where()
-  if (/[^\u0021-\u007F\s]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
+  // filter namespace selector, e.g. ns|E, pseudo-element selector,
+  // selector containing non-ASCII or control character other than whitespace,
+  // attribute selector with case flag, e.g. [attr i], or with unclosed quotes,
+  // and empty :is() or :where()
+  if (/\||::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
   }
   // filter pseudo-classes
