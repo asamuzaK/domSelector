@@ -1,7 +1,11 @@
 export class Finder {
     constructor(window: object);
-    private _onError;
-    private _setup;
+    onError(e: Error, opt?: object): void;
+    setup(selector: string, node: object, opt?: {
+        event?: object;
+        noexcept?: boolean;
+        warn?: boolean;
+    }): object;
     private _setEvent;
     private _correspond;
     private _createTreeWalker;
@@ -28,6 +32,6 @@ export class Finder {
     private _getCombinedNodes;
     private _matchNodeNext;
     private _matchNodePrev;
-    private _find;
+    find(targetType: string): Set<object>;
     #private;
 }

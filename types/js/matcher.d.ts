@@ -7,7 +7,5 @@ export class Matcher {
     private _matchTypeSelector;
     private _matchDirectionPseudoClass;
     private _matchLanguagePseudoClass;
-    matchSelector(ast: object, node: object, opt: object): object | null;
+    matchSelector(ast: object, node: object, opt?: object, validated?: boolean): object | null;
 }
-export const matcher: Matcher;
-export default matcher;
