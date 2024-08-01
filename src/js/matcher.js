@@ -447,15 +447,18 @@ export class Matcher {
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @param {object} opt - options
+   * @param {boolean} validated - args are validated
    * @returns {?object} - matched node
    */
-  matchSelector(ast, node, opt) {
-    if (!ast || !ast.type) {
-      throw new TypeError(`Unexpected node ${getType(ast)}`);
-    } else if (!node || !node.nodeType) {
-      throw new TypeError(`Unexpected node ${getType(node)}`);
-    } else if (node.nodeType !== ELEMENT_NODE) {
-      throw new TypeError(`Unexpected node ${node.nodeName}`);
+  matchSelector(ast, node, opt = {}, validated = false) {
+    if (!validated) {
+      if (!ast || !ast.type) {
+        throw new TypeError(`Unexpected ast type ${getType(ast)}`);
+      } else if (!node || !node.nodeType) {
+        throw new TypeError(`Unexpected node type ${getType(node)}`);
+      } else if (node.nodeType !== ELEMENT_NODE) {
+        throw new TypeError(`Unexpected node ${node.nodeName}`);
+      }
     }
     let matched;
     switch (ast.type) {
@@ -464,7 +467,7 @@ export class Matcher {
         break;
       }
       case SELECTOR_TYPE: {
-        matched = this._matchTypeSelector(ast, node, opt);
+        matched = this._matchTypeSelector(ast, node, opt ?? {});
         break;
       }
       default: {
@@ -479,6 +482,3 @@ export class Matcher {
     return matched;
   }
 }
-
-export const matcher = new Matcher();
-export default matcher;

@@ -3,7 +3,7 @@
  */
 
 /* import */
-import { matcher } from './matcher.js';
+import { Matcher } from './matcher.js';
 import {
   generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
@@ -60,6 +60,7 @@ export class Finder {
   #event;
   #invalidate;
   #invalidateResults;
+  #matcher;
   #node;
   #nodes;
   #noexcept;
@@ -78,6 +79,7 @@ export class Finder {
    */
   constructor(window) {
     this.#window = window;
+    this.#matcher = new Matcher();
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
     this.#invalidateResults = new WeakMap();
@@ -853,7 +855,7 @@ export class Finder {
           // :dir(), :lang()
           case 'dir':
           case 'lang': {
-            const res = matcher.matchSelector(ast, node);
+            const res = this.#matcher.matchSelector(ast, node, opt, true);
             if (res) {
               matched.add(res);
             }
@@ -1771,7 +1773,7 @@ export class Finder {
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case SELECTOR_PSEUDO_ELEMENT: {
-          matcher.matchPseudoElementSelector(astName, opt);
+          this.#matcher.matchPseudoElementSelector(astName, opt);
           break;
         }
         case SELECTOR_ID: {
@@ -1791,7 +1793,7 @@ export class Finder {
           return nodes;
         }
         default: {
-          const res = matcher.matchSelector(ast, node, opt);
+          const res = this.#matcher.matchSelector(ast, node, opt, true);
           if (res) {
             matched.add(res);
           }
@@ -1925,7 +1927,7 @@ export class Finder {
     } else {
       switch (leafType) {
         case SELECTOR_PSEUDO_ELEMENT: {
-          matcher.matchPseudoElementSelector(leafName, opt);
+          this.#matcher.matchPseudoElementSelector(leafName, opt);
           break;
         }
         case SELECTOR_ID: {
@@ -2326,7 +2328,7 @@ export class Finder {
     let pending = false;
     switch (leafType) {
       case SELECTOR_PSEUDO_ELEMENT: {
-        matcher.matchPseudoElementSelector(leafName, {
+        this.#matcher.matchPseudoElementSelector(leafName, {
           warn: this.#warn
         });
         break;
