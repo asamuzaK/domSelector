@@ -495,20 +495,20 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
+  // filter missing close square bracket
+  if (selector.includes('[')) {
+    const index = selector.lastIndexOf('[');
+    const sel = selector.substring(index);
+    if (sel.indexOf(']') < 0) {
+      return false;
+    }
+  }
   // filter non-ASCII, control characters other than whitespace,
   // namespace selectors, e.g. ns|E, pseudo-element selectors,
   // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
   // and empty :is() / :where()
   if (/[^\u0021-\u007F\s]|\||::|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
-  }
-  // filter missing close square bracket
-  if (selector.includes('[')) {
-    const index = selector.lastIndexOf('[');
-    const sel = selector.substring(index);
-    if (sel.lastIndexOf(']') < 0) {
-      return false;
-    }
   }
   // filter pseudo-classes
   if (selector.includes(':')) {
