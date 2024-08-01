@@ -199,8 +199,8 @@ export class Finder {
             if (item.type === COMBINATOR) {
               const [nextItem] = items;
               if (nextItem.type === COMBINATOR) {
-                const msg = `Invalid selector ${selector}`;
-                throw new DOMException(msg, SYNTAX_ERR);
+                throw new DOMException(`Invalid selector ${selector}`,
+                  SYNTAX_ERR);
               }
               const itemName = item.name;
               if (/^[\s>]$/.test(itemName)) {
@@ -887,8 +887,8 @@ export class Finder {
           case 'nth-col':
           case 'nth-last-col': {
             if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}()`;
-              throw new DOMException(msg, NOT_SUPPORTED_ERR);
+              throw new DOMException(`Unsupported pseudo-class :${astName}()`,
+                NOT_SUPPORTED_ERR);
             }
             break;
           }
@@ -900,15 +900,15 @@ export class Finder {
           // dropped from CSS Selectors 3
           case 'contains': {
             if (warn) {
-              const msg = `Unknown pseudo-class :${astName}()`;
-              throw new DOMException(msg, NOT_SUPPORTED_ERR);
+              throw new DOMException(`Unknown pseudo-class :${astName}()`,
+                NOT_SUPPORTED_ERR);
             }
             break;
           }
           default: {
             if (!forgive) {
-              const msg = `Unknown pseudo-class :${astName}()`;
-              throw new DOMException(msg, SYNTAX_ERR);
+              throw new DOMException(`Unknown pseudo-class :${astName}()`,
+                SYNTAX_ERR);
             }
           }
         }
@@ -1639,8 +1639,8 @@ export class Finder {
         case 'first-letter':
         case 'first-line': {
           if (warn) {
-            const msg = `Unsupported pseudo-element ::${astName}`;
-            throw new DOMException(msg, NOT_SUPPORTED_ERR);
+            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
+              NOT_SUPPORTED_ERR);
           }
           break;
         }
@@ -1664,20 +1664,20 @@ export class Finder {
         case 'volume-locked':
         case '-webkit-autofill': {
           if (warn) {
-            const msg = `Unsupported pseudo-class :${astName}`;
-            throw new DOMException(msg, NOT_SUPPORTED_ERR);
+            throw new DOMException(`Unsupported pseudo-class :${astName}`,
+              NOT_SUPPORTED_ERR);
           }
           break;
         }
         default: {
           if (astName.startsWith('-webkit-')) {
             if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}`;
-              throw new DOMException(msg, NOT_SUPPORTED_ERR);
+              throw new DOMException(`Unsupported pseudo-class :${astName}`,
+                NOT_SUPPORTED_ERR);
             }
           } else if (!forgive) {
-            const msg = `Unknown pseudo-class :${astName}`;
-            throw new DOMException(msg, SYNTAX_ERR);
+            throw new DOMException(`Unknown pseudo-class :${astName}`,
+              SYNTAX_ERR);
           }
         }
       }
@@ -1706,8 +1706,7 @@ export class Finder {
           const { type: leafType } = leaf;
           if (leafType === COMBINATOR) {
             const css = generateCSS(ast);
-            const msg = `Invalid selector ${css}`;
-            throw new DOMException(msg, SYNTAX_ERR);
+            throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
           }
           bool = this._matchSelector(leaf, host).has(host);
           if (!bool) {
@@ -1725,8 +1724,7 @@ export class Finder {
             const { type: leafType } = leaf;
             if (leafType === COMBINATOR) {
               const css = generateCSS(ast);
-              const msg = `Invalid selector ${css}`;
-              throw new DOMException(msg, SYNTAX_ERR);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
             }
             bool = this._matchSelector(leaf, parent).has(parent);
             if (!bool) {
@@ -1746,8 +1744,7 @@ export class Finder {
     } else if (astName === 'host') {
       res = node;
     } else {
-      const msg = `Invalid selector :${astName}`;
-      throw new DOMException(msg, SYNTAX_ERR);
+      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     }
     return res ?? null;
   }
