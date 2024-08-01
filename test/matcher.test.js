@@ -8,12 +8,12 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import defaultMatcher, { matcher, Matcher } from '../src/js/matcher.js';
+import { Matcher } from '../src/js/matcher.js';
 import {
   EMPTY, IDENTIFIER, SELECTOR_ATTR, SELECTOR_PSEUDO_CLASS, SELECTOR_TYPE, STRING
 } from '../src/js/constant.js';
 
-describe('matcher', () => {
+describe('Matcher', () => {
   const domStr = `<!doctype html>
     <html lang="en">
       <head>
@@ -80,19 +80,8 @@ describe('matcher', () => {
     document = null;
   });
 
-  describe('matcher', () => {
-    it('should be instance of Matcher', () => {
-      assert.instanceOf(matcher, Matcher, 'instance');
-    });
-
-    it('should be instance of Matcher', () => {
-      assert.instanceOf(defaultMatcher, Matcher, 'instance');
-      assert.deepEqual(defaultMatcher, matcher, 'result');
-    });
-  });
-
   describe('match pseudo-element selector', () => {
-    const func = matcher.matchPseudoElementSelector.bind(matcher);
+    const func = (new Matcher()).matchPseudoElementSelector;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -210,7 +199,7 @@ describe('matcher', () => {
   });
 
   describe('match attribute selector', () => {
-    const func = matcher._matchAttributeSelector.bind(matcher);
+    const func = (new Matcher())._matchAttributeSelector;
 
     it('should throw', () => {
       const ast = {
@@ -1750,7 +1739,7 @@ describe('matcher', () => {
   });
 
   describe('match type selector', () => {
-    const func = matcher._matchTypeSelector.bind(matcher);
+    const func = (new Matcher())._matchTypeSelector;
 
     it('should get matched node(s)', () => {
       const ast = {
@@ -2059,7 +2048,7 @@ describe('matcher', () => {
   });
 
   describe('match directionality pseudo-class', () => {
-    const func = matcher._matchDirectionPseudoClass.bind(matcher);
+    const func = (new Matcher())._matchDirectionPseudoClass;
 
     it('should get matched node', () => {
       const ast = {
@@ -2300,7 +2289,7 @@ describe('matcher', () => {
   });
 
   describe('match language pseudo-class', () => {
-    const func = matcher._matchLanguagePseudoClass.bind(matcher);
+    const func = (new Matcher())._matchLanguagePseudoClass;
 
     it('should not match', () => {
       const ast = {
@@ -2534,14 +2523,11 @@ describe('matcher', () => {
   });
 
   describe('match selector', () => {
+    const matcher = new Matcher();
     const func = matcher.matchSelector.bind(matcher);
 
     it('should throw', () => {
-      assert.throws(() => func(), TypeError, 'Unexpected node Undefined');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => func({}), TypeError, 'Unexpected node Object');
+      assert.throws(() => func(), TypeError, 'Unexpected ast type Undefined');
     });
 
     it('should throw', () => {
@@ -2549,15 +2535,8 @@ describe('matcher', () => {
         name: 'li',
         type: SELECTOR_TYPE
       };
-      assert.throws(() => func(ast), TypeError, 'Unexpected node Undefined');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: SELECTOR_TYPE
-      };
-      assert.throws(() => func(ast, {}), TypeError, 'Unexpected node Object');
+      assert.throws(() => func(ast), TypeError,
+        'Unexpected node type Undefined');
     });
 
     it('should throw', () => {
@@ -2576,6 +2555,16 @@ describe('matcher', () => {
       };
       const node = document.getElementById('li1');
       const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ast = {
+        name: 'li',
+        type: SELECTOR_TYPE
+      };
+      const node = document.getElementById('li1');
+      const res = func(ast, node, null, true);
       assert.deepEqual(res, node, 'result');
     });
 
