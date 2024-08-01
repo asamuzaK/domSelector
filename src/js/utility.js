@@ -10,10 +10,9 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_PSEUDO,
-  REG_LOGICAL_COMPLEX, REG_LOGICAL_COMPOUND, REG_LOGICAL_EMPTY,
-  REG_LOGICAL_KEY_IS_NOT, REG_SHADOW_MODE, TEXT_NODE, TYPE_FROM, TYPE_TO,
-  WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_COMPLEX,
+  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_LOGICAL_EMPTY, REG_SHADOW_MODE,
+  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -513,19 +512,19 @@ export const filterSelector = (selector, opt = {}) => {
   // filter pseudo-classes
   if (selector.includes(':')) {
     let reg;
-    if (REG_LOGICAL_KEY_IS_NOT.test(selector)) {
+    if (/:(?:is|not)\(/.test(selector)) {
       // filter empty :is()
       if (REG_LOGICAL_EMPTY.test(selector)) {
         return false;
       }
       const { complex } = opt;
       if (complex) {
-        reg = REG_LOGICAL_COMPLEX;
+        reg = REG_FILTER_COMPLEX;
       } else {
-        reg = REG_LOGICAL_COMPOUND;
+        reg = REG_FILTER_COMPOUND;
       }
     } else {
-      reg = REG_FILTER_PSEUDO;
+      reg = REG_FILTER_SIMPLE;
     }
     if (reg.test(selector)) {
       return false;
