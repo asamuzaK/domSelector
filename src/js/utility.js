@@ -11,8 +11,8 @@ import isCustomElementName from 'is-potential-custom-element-name';
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_COMPLEX,
-  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_SHADOW_MODE, TEXT_NODE,
-  TYPE_FROM, TYPE_TO, WALKER_FILTER
+  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_SHADOW_MODE, REG_TYPE_INPUT,
+  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 
 /**
@@ -360,6 +360,68 @@ export const isContentEditable = node => {
           }
           parent = parent.parentNode;
         }
+      }
+    }
+  }
+  return !!res;
+};
+
+/**
+ * is focus visible
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+export const isFocusVisible = node => {
+  let res;
+  if (node?.nodeType === ELEMENT_NODE) {
+    const { localName, type } = node;
+    switch (localName) {
+      case 'input': {
+        if (!type || REG_TYPE_INPUT.test(type)) {
+          res = true;
+        }
+        break;
+      }
+      case 'textarea': {
+        res = true;
+        break;
+      }
+      default: {
+        res = isContentEditable(node);
+      }
+    }
+  }
+  return !!res;
+};
+
+/**
+ * is focusable
+ * NOTE: workaround for jsdom issue: https://github.com/jsdom/jsdom/issues/3464
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+export const isFocusable = node => {
+  let res;
+  if (node?.nodeType === ELEMENT_NODE) {
+    const window = node.ownerDocument.defaultView;
+    let refNode = node;
+    res = true;
+    while (refNode) {
+      if (refNode.disabled || refNode.hasAttribute('disabled') ||
+          refNode.hidden || refNode.hasAttribute('hidden')) {
+        res = false;
+        break;
+      } else {
+        const { display, visibility } = window.getComputedStyle(refNode);
+        res = !(display === 'none' || visibility === 'hidden');
+        if (!res) {
+          break;
+        }
+      }
+      if (refNode.parentNode && refNode.parentNode.nodeType === ELEMENT_NODE) {
+        refNode = refNode.parentNode;
+      } else {
+        break;
       }
     }
   }

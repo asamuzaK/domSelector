@@ -1030,6 +1030,140 @@ describe('utility functions', () => {
     });
   });
 
+  describe('is focus visible', () => {
+    const func = util.isFocusVisible;
+
+    it('should get false', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(document);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.type = 'radio';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('textarea');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'true');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('is focusable', () => {
+    const func = util.isFocusable;
+
+    it('should get false', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(document);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.disabled = true;
+      form.appendChild(field);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.setAttribute('disabled', '');
+      form.appendChild(field);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      form.setAttribute('style', 'display: none');
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      form.style.visibility = 'hidden';
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+  });
+
   describe('get namespace URI', () => {
     const func = util.getNamespaceURI;
 

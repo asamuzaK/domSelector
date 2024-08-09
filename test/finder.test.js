@@ -157,6 +157,22 @@ describe('Finder', () => {
     });
   });
 
+  describe('register event listeners', () => {
+    it('should register listeners', () => {
+      const finder = new Finder(window);
+      const res = finder._registerEventListeners();
+      assert.deepEqual(res, [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      ], 'result');
+    });
+  });
+
   describe('setup finder', () => {
     it('should get value', () => {
       const finder = new Finder(window);
@@ -3621,6 +3637,63 @@ describe('Finder', () => {
       node.id = 'foo';
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':hover', node);
+      node.dispatchEvent(new window.MouseEvent('mouseover'));
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'hover',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':hover', node);
+      node.dispatchEvent(new window.MouseEvent('mouseover'));
+      node.dispatchEvent(new window.MouseEvent('mousedown'));
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'hover',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':hover', node);
+      node.dispatchEvent(new window.MouseEvent('mouseover'));
+      node.dispatchEvent(new window.MouseEvent('mouseout'));
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'hover',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
       let event;
       node.addEventListener('mouseover', evt => {
         event = evt;
@@ -3675,6 +3748,49 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':active', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'active',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':active', node);
+      node.dispatchEvent(new window.MouseEvent('mousedown', {
+        buttons: 1
+      }));
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'active',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('div');
+      node.id = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':active', node);
+      node.dispatchEvent(new window.MouseEvent('mousedown', {
+        buttons: 1
+      }));
+      node.dispatchEvent(new window.MouseEvent('mouseup', {
+        buttons: 1
+      }));
       const res = finder._matchPseudoClassSelector(leaf, node);
       assert.deepEqual([...res], [], 'result');
     });
@@ -3948,6 +4064,25 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus', node);
+      node.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
     it('should not match', () => {
       const leaf = {
         children: null,
@@ -4202,11 +4337,53 @@ describe('Finder', () => {
       const parent = document.createElement('form');
       parent.appendChild(node);
       document.getElementById('div0').appendChild(parent);
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
       node.focus();
       const finder = new Finder(window);
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node);
       assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node);
+      node.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node);
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
+      node.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
     });
 
     it('should get matched node', () => {
@@ -4223,7 +4400,9 @@ describe('Finder', () => {
       node.addEventListener('keydown', evt => {
         event = evt;
       });
-      node.dispatchEvent(new window.KeyboardEvent('keydown'));
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
       node.focus();
       const finder = new Finder(window);
       finder.setup(':focus-visible', node, {
@@ -4233,6 +4412,90 @@ describe('Finder', () => {
       assert.deepEqual([...res], [
         node
       ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node);
+      node.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node);
+      node.focus();
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        isComposing: true,
+        key: 'a'
+      }));
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('input');
+      const node2 = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node2);
+      node.focus();
+      node2.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node2);
+      assert.deepEqual([...res], [
+        node2
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: SELECTOR_PSEUDO_CLASS
+      };
+      const node = document.createElement('button');
+      const node2 = document.createElement('button');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node2);
+      node.focus();
+      node2.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node2);
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should get matched node(s)', () => {

@@ -8,16 +8,16 @@ import {
   generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 import {
-  isContentEditable, isCustomElement, isInShadowTree, resolveContent,
-  sortNodes, traverseNode
+  isContentEditable, isCustomElement, isFocusVisible, isFocusable,
+  isInShadowTree, resolveContent, sortNodes, traverseNode
 } from './utility.js';
 
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
+  EMPTY, KEY_TAB, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
   REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
-  REG_TYPE_CHECK, REG_TYPE_DATE, REG_TYPE_RANGE, REG_TYPE_RESET,
+  REG_TYPE_CHECK, REG_TYPE_INPUT, REG_TYPE_RANGE, REG_TYPE_RESET,
   REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
   SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
   SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
@@ -58,6 +58,7 @@ export class Finder {
   #document;
   #documentCache;
   #event;
+  #focus;
   #invalidate;
   #invalidateResults;
   #matcher;
@@ -84,6 +85,7 @@ export class Finder {
     this.#documentCache = new WeakMap();
     this.#invalidateResults = new WeakMap();
     this.#results = new WeakMap();
+    this._registerEventListeners();
   }
 
   /**
@@ -109,6 +111,38 @@ export class Finder {
         throw e;
       }
     }
+  }
+
+  /**
+   * register event listeners
+   * @private
+   * @returns {Array.<void>} - results
+   */
+  _registerEventListeners() {
+    const opt = {
+      capture: true,
+      passive: true
+    };
+    const func = [];
+    const mouseKeys = ['mouseover', 'mousedown', 'mouseup', 'mouseout'];
+    for (const key of mouseKeys) {
+      func.push(this.#window.addEventListener(key, evt => {
+        this.#event = evt;
+      }, opt));
+    }
+    const keyboardKeys = ['keydown', 'keyup'];
+    for (const key of keyboardKeys) {
+      func.push(this.#window.addEventListener(key, evt => {
+        if (evt.isComposing || evt.repeat || evt.key !== KEY_TAB) {
+          return;
+        }
+        this.#event = evt;
+      }, opt));
+    }
+    func.push(this.#window.addEventListener('focusin', evt => {
+      this.#focus = evt;
+    }, opt));
+    return func;
   }
 
   /**
@@ -938,7 +972,7 @@ export class Finder {
         }
         case 'hover': {
           const { target, type } = this.#event ?? {};
-          if ((type === 'mouseover' || type === 'pointerover') &&
+          if (/^(?:mouse|pointer)(?:down|over|up)$/.test(type) &&
               node.contains(target)) {
             matched.add(node);
           }
@@ -946,8 +980,8 @@ export class Finder {
         }
         case 'active': {
           const { buttons, target, type } = this.#event ?? {};
-          if ((type === 'mousedown' || type === 'pointerdown') &&
-              buttons & BIT_01 && node.contains(target)) {
+          if (/(?:mouse|pointer)down/.test(type) && buttons & BIT_01 &&
+              node.contains(target)) {
             matched.add(node);
           }
           break;
@@ -985,78 +1019,50 @@ export class Finder {
           }
           break;
         }
-        case 'focus':
-        case 'focus-visible': {
-          const { target, type } = this.#event ?? {};
+        case 'focus': {
           if (node === this.#document.activeElement && node.tabIndex >= 0 &&
-              (astName === 'focus' ||
-               (type === 'keydown' && node.contains(target)))) {
-            let refNode = node;
-            let focus = true;
-            while (refNode) {
-              if (refNode.disabled || refNode.hasAttribute('disabled') ||
-                  refNode.hidden || refNode.hasAttribute('hidden')) {
-                focus = false;
-                break;
+              isFocusable(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'focus-visible': {
+          if (node === this.#document.activeElement && node.tabIndex >= 0) {
+            let bool;
+            if (isFocusVisible(node)) {
+              bool = true;
+            } else {
+              const { key, target, type } = this.#event ?? {};
+              if (/^key(?:down|up)$/.test(type) && key === KEY_TAB &&
+                  node.contains(target)) {
+                bool = true;
               } else {
-                const { display, visibility } =
-                  this.#window.getComputedStyle(refNode);
-                focus = !(display === 'none' || visibility === 'hidden');
-                if (!focus) {
-                  break;
+                const { relatedTarget } = this.#focus ?? {};
+                if (relatedTarget && isFocusVisible(relatedTarget)) {
+                  bool = true;
                 }
               }
-              if (refNode.parentNode &&
-                  refNode.parentNode.nodeType === ELEMENT_NODE) {
-                refNode = refNode.parentNode;
-              } else {
-                break;
-              }
             }
-            if (focus) {
+            if (bool && isFocusable(node)) {
               matched.add(node);
             }
           }
           break;
         }
         case 'focus-within': {
-          let active;
+          let bool;
           let current = this.#document.activeElement;
           if (current.tabIndex >= 0) {
             while (current) {
               if (current === node) {
-                active = true;
+                bool = true;
                 break;
               }
               current = current.parentNode;
             }
           }
-          if (active) {
-            let refNode = node;
-            let focus = true;
-            while (refNode) {
-              if (refNode.disabled || refNode.hasAttribute('disabled') ||
-                  refNode.hidden || refNode.hasAttribute('hidden')) {
-                focus = false;
-                break;
-              } else {
-                const { display, visibility } =
-                  this.#window.getComputedStyle(refNode);
-                focus = !(display === 'none' || visibility === 'hidden');
-                if (!focus) {
-                  break;
-                }
-              }
-              if (refNode.parentNode &&
-                  refNode.parentNode.nodeType === ELEMENT_NODE) {
-                refNode = refNode.parentNode;
-              } else {
-                break;
-              }
-            }
-            if (focus) {
-              matched.add(node);
-            }
+          if (bool && isFocusable(node)) {
+            matched.add(node);
           }
           break;
         }
@@ -1189,8 +1195,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || REG_TYPE_DATE.test(node.type) ||
-                   REG_TYPE_TEXT.test(node.type)) &&
+              if ((!node.type || REG_TYPE_INPUT.test(node.type)) &&
                   (node.readonly || node.hasAttribute('readonly') ||
                    node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1215,8 +1220,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || REG_TYPE_DATE.test(node.type) ||
-                   REG_TYPE_TEXT.test(node.type)) &&
+              if ((!node.type || REG_TYPE_INPUT.test(node.type)) &&
                   !(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1473,8 +1477,7 @@ export class Finder {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
               if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_TYPE_DATE.test(inputType) ||
-                  REG_TYPE_TEXT.test(inputType)) {
+                  REG_TYPE_INPUT.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1495,8 +1498,7 @@ export class Finder {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
               if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_TYPE_DATE.test(inputType) ||
-                  REG_TYPE_TEXT.test(inputType)) {
+                  REG_TYPE_INPUT.test(inputType)) {
                 targetNode = node;
               }
             } else {
