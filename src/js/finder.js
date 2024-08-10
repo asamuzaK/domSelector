@@ -1031,13 +1031,16 @@ export class Finder {
             if (isFocusVisible(node)) {
               bool = true;
             } else {
-              const { key, target, type } = this.#event ?? {};
+              const { key, target: eventTarget, type } = this.#event ?? {};
               if (/^key(?:down|up)$/.test(type) && key === KEY_TAB &&
-                  node.contains(target)) {
+                  node.contains(eventTarget)) {
                 bool = true;
               } else {
-                const { relatedTarget } = this.#focus ?? {};
-                if (relatedTarget && isFocusVisible(relatedTarget)) {
+                const {
+                  target: focusTarget, relatedTarget
+                } = this.#focus ?? {};
+                if (relatedTarget && isFocusVisible(relatedTarget) &&
+                    node.contains(focusTarget)) {
                   bool = true;
                 }
               }
