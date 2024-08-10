@@ -129,11 +129,11 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E:current(s)|Unsupported| |
 |E:past|Unsupported| |
 |E:future|Unsupported| |
-|E:active|✓|Enabled if a `mousedown` / `pointerdown` event is passed as an option.|
-|E:hover|✓|Enabled if a `mouseover` / `pointerover` event is passed as an option.|
+|E:active|✓| |
+|E:hover|✓| |
 |E:focus|✓| |
 |E:focus&#8209;within|✓| |
-|E:focus&#8209;visible|✓|Enabled if a `keydown` event is passed as an option.|
+|E:focus&#8209;visible|✓| |
 |E:open<br>E:closed|Partially supported|Matching with &lt;select&gt;, e.g. `select:open`, is not supported.|
 |E:enabled<br>E:disabled|✓| |
 |E:read&#8209;write<br>E:read&#8209;only|✓| |
