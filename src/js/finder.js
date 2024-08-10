@@ -85,6 +85,8 @@ export class Finder {
     this.#documentCache = new WeakMap();
     this.#invalidateResults = new WeakMap();
     this.#results = new WeakMap();
+    this.#event = null;
+    this.#focus = null;
     this._registerEventListeners();
   }
 
@@ -111,6 +113,30 @@ export class Finder {
         throw e;
       }
     }
+  }
+
+  /**
+   * setup finder
+   * @param {string} selector - CSS selector
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} opt - options
+   * @param {object} [opt.event] - MouseEvent, KeyboardEvent
+   * @param {boolean} [opt.noexcept] - no exception
+   * @param {boolean} [opt.warn] - console warn
+   * @returns {object} - node
+   */
+  setup(selector, node, opt = {}) {
+    const { event, noexcept, warn } = opt;
+    this.#noexcept = !!noexcept;
+    this.#warn = !!warn;
+    this.#node = node;
+    [this.#document, this.#root, this.#walker] = resolveContent(node);
+    this.#shadow = isInShadowTree(node);
+    [this.#ast, this.#nodes] = this._correspond(selector);
+    this.#invalidateResults = new WeakMap();
+    this.#walkers = new WeakMap();
+    this._setEvent(event);
+    return node;
   }
 
   /**
@@ -145,41 +171,18 @@ export class Finder {
   }
 
   /**
-   * setup finder
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
-   * @param {object} [opt.event] - MouseEvent, KeyboardEvent
-   * @param {boolean} [opt.noexcept] - no exception
-   * @param {boolean} [opt.warn] - console warn
-   * @returns {object} - node
-   */
-  setup(selector, node, opt = {}) {
-    const { event, noexcept, warn } = opt;
-    this.#noexcept = !!noexcept;
-    this.#warn = !!warn;
-    this.#event = this._setEvent(event);
-    this.#node = node;
-    [this.#document, this.#root, this.#walker] = resolveContent(node);
-    this.#shadow = isInShadowTree(node);
-    [this.#ast, this.#nodes] = this._correspond(selector);
-    this.#invalidateResults = new WeakMap();
-    this.#walkers = new WeakMap();
-    return node;
-  }
-
-  /**
    * set event
    * @private
    * @param {object} event - instance of KeyboardEvent, MouseEvent
-   * @returns {object} - result
+   * @returns {object} - event
    */
   _setEvent(event) {
     // NOTE: PointerEvent not implemented in jsdom
-    return (event instanceof this.#window.KeyboardEvent ||
-            event instanceof this.#window.MouseEvent)
-      ? event
-      : null;
+    if (event instanceof this.#window.KeyboardEvent ||
+        event instanceof this.#window.MouseEvent) {
+      this.#event = event;
+    }
+    return this.#event;
   }
 
   /**
@@ -1031,18 +1034,13 @@ export class Finder {
             if (isFocusVisible(node)) {
               bool = true;
             } else {
-              const { key, target: eventTarget, type } = this.#event ?? {};
-              if (/^key(?:down|up)$/.test(type) && key === KEY_TAB &&
-                  node.contains(eventTarget)) {
+              const { target: eventTarget, type } = this.#event ?? {};
+              const { target: focusTarget, relatedTarget } = this.#focus ?? {};
+              if (/^key(?:down|up)$/.test(type) && node.contains(eventTarget)) {
                 bool = true;
-              } else {
-                const {
-                  target: focusTarget, relatedTarget
-                } = this.#focus ?? {};
-                if (relatedTarget && isFocusVisible(relatedTarget) &&
-                    node.contains(focusTarget)) {
-                  bool = true;
-                }
+              } else if (relatedTarget && isFocusVisible(relatedTarget) &&
+                         node.contains(focusTarget)) {
+                bool = true;
               }
             }
             if (bool && isFocusable(node)) {

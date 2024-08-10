@@ -157,22 +157,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('register event listeners', () => {
-    it('should register listeners', () => {
-      const finder = new Finder(window);
-      const res = finder._registerEventListeners();
-      assert.deepEqual(res, [
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      ], 'result');
-    });
-  });
-
   describe('setup finder', () => {
     it('should get value', () => {
       const finder = new Finder(window);
@@ -207,6 +191,22 @@ describe('Finder', () => {
         invalidate: true
       });
       assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('register event listeners', () => {
+    it('should register listeners', () => {
+      const finder = new Finder(window);
+      const res = finder._registerEventListeners();
+      assert.deepEqual(res, [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      ], 'result');
     });
   });
 
