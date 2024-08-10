@@ -133,10 +133,9 @@ export class Finder {
     const keyboardKeys = ['keydown', 'keyup'];
     for (const key of keyboardKeys) {
       func.push(this.#window.addEventListener(key, evt => {
-        if (evt.isComposing || evt.repeat || evt.key !== KEY_TAB) {
-          return;
+        if (evt.key === KEY_TAB) {
+          this.#event = evt;
         }
-        this.#event = evt;
       }, opt));
     }
     func.push(this.#window.addEventListener('focusin', evt => {
