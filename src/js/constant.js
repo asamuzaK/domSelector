@@ -7,7 +7,6 @@ export const AN_PLUS_B = 'AnPlusB';
 export const COMBINATOR = 'Combinator';
 export const EMPTY = '__EMPTY__';
 export const IDENTIFIER = 'Identifier';
-export const KEY_TAB = 'Tab';
 export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
 export const RAW = 'Raw';
