@@ -35,7 +35,6 @@ matches - equivalent to [Element.matches()][64]
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
-  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -51,7 +50,6 @@ closest - equivalent to [Element.closest()][65]
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Element node
 - `opt` **[object][60]?** options
-  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -67,7 +65,6 @@ querySelector - equivalent to [Document.querySelector()][66], [DocumentFragment.
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
-  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
@@ -84,7 +81,6 @@ querySelectorAll - equivalent to [Document.querySelectorAll()][69], [DocumentFra
 - `selector` **[string][59]** CSS selector
 - `node` **[object][60]** Document, DocumentFragment or Element node
 - `opt` **[object][60]?** options
-  - `opt.event` **[object][60]?** instance of MouseEvent, KeyboardEvent
   - `opt.noexcept` **[boolean][61]?** no exception
   - `opt.warn` **[boolean][61]?** console warn e.g. unsupported pseudo-class
 
