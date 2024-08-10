@@ -7,6 +7,7 @@ export const AN_PLUS_B = 'AnPlusB';
 export const COMBINATOR = 'Combinator';
 export const EMPTY = '__EMPTY__';
 export const IDENTIFIER = 'Identifier';
+export const KEY_TAB = 'Tab';
 export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
 export const RAW = 'Raw';
@@ -118,9 +119,10 @@ export const REG_SHADOW_MODE = /^(?:close|open)$/;
 export const REG_SHADOW_PSEUDO = /^part|slotted$/;
 export const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 export const REG_TYPE_CHECK = /^(?:checkbox|radio)$/;
-export const REG_TYPE_DATE = /^(?:date(?:time-local)?|month|time|week)$/;
+export const REG_TYPE_INPUT =
+  /^(?:date(?:time-local)?|email|month|number|password|search|tel|text|time|url|week)$/;
 export const REG_TYPE_RANGE =
-  /(?:date(?:time-local)?|month|number|range|time|week)$/;
+  /^(?:date(?:time-local)?|month|number|range|time|week)$/;
 export const REG_TYPE_RESET = /^(?:button|reset)$/;
 export const REG_TYPE_SUBMIT = /^(?:image|submit)$/;
 export const REG_TYPE_TEXT = /^(?:email|number|password|search|tel|text|url)$/;
