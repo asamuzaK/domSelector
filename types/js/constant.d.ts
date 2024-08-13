@@ -87,7 +87,7 @@ export const REG_SHADOW_MODE: RegExp;
 export const REG_SHADOW_PSEUDO: RegExp;
 export const REG_TAG_NAME: RegExp;
 export const REG_TYPE_CHECK: RegExp;
-export const REG_TYPE_DATE: RegExp;
+export const REG_TYPE_INPUT: RegExp;
 export const REG_TYPE_RANGE: RegExp;
 export const REG_TYPE_RESET: RegExp;
 export const REG_TYPE_SUBMIT: RegExp;

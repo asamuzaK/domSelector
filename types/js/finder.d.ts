@@ -6,6 +6,7 @@ export class Finder {
         noexcept?: boolean;
         warn?: boolean;
     }): object;
+    private _registerEventListeners;
     private _setEvent;
     private _correspond;
     private _createTreeWalker;
