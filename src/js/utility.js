@@ -407,18 +407,22 @@ export const isFocusable = node => {
     let refNode = node;
     res = true;
     while (refNode) {
-      if (refNode.disabled || refNode.hasAttribute('disabled') ||
-          refNode.hidden || refNode.hasAttribute('hidden')) {
-        res = false;
-        break;
-      } else {
-        const { display, visibility } = window.getComputedStyle(refNode);
-        res = !(display === 'none' || visibility === 'hidden');
-        if (!res) {
-          break;
-        }
+      if (refNode.disabled || refNode.hasAttribute('disabled')) {
+        return false;
       }
-      if (refNode.parentNode && refNode.parentNode.nodeType === ELEMENT_NODE) {
+      if (refNode.hidden || refNode.hasAttribute('hidden')) {
+        res = false;
+      }
+      const {
+        contentVisibility, display, visibility
+      } = window.getComputedStyle(refNode);
+      if (display === 'none' || /^(?:collapse|hidden)$/.test(visibility) ||
+          contentVisibility === 'hidden') {
+        res = false;
+      } else {
+        res = true;
+      }
+      if (res && refNode?.parentNode?.nodeType === ELEMENT_NODE) {
         refNode = refNode.parentNode;
       } else {
         break;

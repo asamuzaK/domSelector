@@ -1162,6 +1162,46 @@ describe('utility functions', () => {
       const res = func(node);
       assert.isFalse(res, 'result');
     });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      form.style.visibility = 'collapse';
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      form.style.contentVisibility = 'hidden';
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      form.appendChild(field);
+      form.hidden = true;
+      form.style.display = 'block';
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
   });
 
   describe('get namespace URI', () => {
