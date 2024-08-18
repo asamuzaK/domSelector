@@ -1030,6 +1030,74 @@ describe('utility functions', () => {
     });
   });
 
+  describe('is node visible', () => {
+    const func = util.isVisible;
+
+    it('should get false', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(document);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.style.display = 'none';
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.style.visibility = 'hidden';
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.style.visibility = 'collapse';
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.hidden = true;
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.style.display = 'block';
+      node.hidden = true;
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('is focus visible', () => {
     const func = util.isFocusVisible;
 

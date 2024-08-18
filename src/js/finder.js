@@ -9,7 +9,7 @@ import {
 } from './parser.js';
 import {
   isContentEditable, isCustomElement, isFocusVisible, isFocusable,
-  isInShadowTree, resolveContent, sortNodes, traverseNode
+  isInShadowTree, isVisible, resolveContent, sortNodes, traverseNode
 } from './utility.js';
 
 /* constants */
@@ -376,9 +376,7 @@ export class Finder {
         refNode = traverseNode(parentNode, walker);
         refNode = walker.firstChild();
         while (refNode) {
-          const { display, visibility } =
-            this.#window.getComputedStyle(refNode);
-          if (display !== 'none' && visibility !== 'hidden') {
+          if (isVisible(refNode)) {
             let bool;
             for (const leaves of selectorBranches) {
               bool = this._matchLeaves(leaves, refNode, opt);
@@ -1623,11 +1621,8 @@ export class Finder {
           break;
         }
         case 'popover-open': {
-          if (node.popover) {
-            const { display } = this.#window.getComputedStyle(node);
-            if (display !== 'none') {
-              matched.add(node);
-            }
+          if (node.popover && isVisible(node)) {
+            matched.add(node);
           }
           break;
         }

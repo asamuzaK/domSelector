@@ -1270,6 +1270,390 @@ describe('Finder', () => {
     });
 
     it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1'; // odd
+      l2.id = 'l2'; // none
+      l3.id = 'l3'; // even
+      l4.id = 'l4'; // none
+      l5.id = 'l5'; // odd
+      l6.id = 'l6'; // even
+      l7.id = 'l7'; // none
+      l8.id = 'l8'; // odd
+      l9.id = 'l9'; // even
+      l10.id = 'l10'; // none
+      l2.style.display = 'none';
+      l4.style.display = 'none';
+      l7.style.display = 'none';
+      l10.style.display = 'none';
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 1,
+        selector: {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              flags: null,
+                              loc: null,
+                              matcher: null,
+                              name: {
+                                loc: null,
+                                name: 'hidden',
+                                type: IDENTIFIER
+                              },
+                              type: SELECTOR_ATTR,
+                              value: null
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'not',
+                  type: SELECTOR_PSEUDO_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }
+      };
+      const finder = new Finder(window);
+      finder.setup(':nth-child(odd of :not([hidden]))', l1);
+      const res = finder._collectNthChild(anb, l1);
+      assert.strictEqual(res.size, 3, 'size');
+      assert.deepEqual([...res], [
+        l1,
+        l5,
+        l8
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1'; // odd
+      l2.id = 'l2'; // none
+      l3.id = 'l3'; // even
+      l4.id = 'l4'; // none
+      l5.id = 'l5'; // odd
+      l6.id = 'l6'; // even
+      l7.id = 'l7'; // none
+      l8.id = 'l8'; // odd
+      l9.id = 'l9'; // even
+      l10.id = 'l10'; // none
+      l2.style.display = 'none';
+      l4.style.display = 'none';
+      l7.style.display = 'none';
+      l10.style.display = 'none';
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 0,
+        selector: {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              flags: null,
+                              loc: null,
+                              matcher: null,
+                              name: {
+                                loc: null,
+                                name: 'hidden',
+                                type: IDENTIFIER
+                              },
+                              type: SELECTOR_ATTR,
+                              value: null
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'not',
+                  type: SELECTOR_PSEUDO_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }
+      };
+      const finder = new Finder(window);
+      finder.setup(':nth-child(even of :not([hidden]))', l1);
+      const res = finder._collectNthChild(anb, l1);
+      assert.strictEqual(res.size, 3, 'size');
+      assert.deepEqual([...res], [
+        l3,
+        l6,
+        l9
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1'; // odd
+      l2.id = 'l2'; // hidden
+      l3.id = 'l3'; // even
+      l4.id = 'l4'; // hidden
+      l5.id = 'l5'; // odd
+      l6.id = 'l6'; // even
+      l7.id = 'l7'; // hidden
+      l8.id = 'l8'; // odd
+      l9.id = 'l9'; // even
+      l10.id = 'l10'; // hidden
+      l2.style.visibility = 'hidden';
+      l4.style.visibility = 'hidden';
+      l7.style.visibility = 'hidden';
+      l10.style.visibility = 'hidden';
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 1,
+        selector: {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              flags: null,
+                              loc: null,
+                              matcher: null,
+                              name: {
+                                loc: null,
+                                name: 'hidden',
+                                type: IDENTIFIER
+                              },
+                              type: SELECTOR_ATTR,
+                              value: null
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'not',
+                  type: SELECTOR_PSEUDO_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }
+      };
+      const finder = new Finder(window);
+      finder.setup(':nth-child(odd of :not([hidden]))', l1);
+      const res = finder._collectNthChild(anb, l1);
+      assert.strictEqual(res.size, 3, 'size');
+      assert.deepEqual([...res], [
+        l1,
+        l5,
+        l8
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const ul = document.createElement('ul');
+      const l1 = document.createElement('li');
+      const l2 = document.createElement('li');
+      const l3 = document.createElement('li');
+      const l4 = document.createElement('li');
+      const l5 = document.createElement('li');
+      const l6 = document.createElement('li');
+      const l7 = document.createElement('li');
+      const l8 = document.createElement('li');
+      const l9 = document.createElement('li');
+      const l10 = document.createElement('li');
+      l1.id = 'l1'; // odd
+      l2.id = 'l2'; // hidden
+      l3.id = 'l3'; // even
+      l4.id = 'l4'; // hidden
+      l5.id = 'l5'; // odd
+      l6.id = 'l6'; // even
+      l7.id = 'l7'; // hidden
+      l8.id = 'l8'; // odd
+      l9.id = 'l9'; // even
+      l10.id = 'l10'; // hidden
+      l2.style.visibility = 'hidden';
+      l4.style.visibility = 'hidden';
+      l7.style.visibility = 'hidden';
+      l10.style.visibility = 'hidden';
+      ul.appendChild(l1);
+      ul.appendChild(l2);
+      ul.appendChild(l3);
+      ul.appendChild(l4);
+      ul.appendChild(l5);
+      ul.appendChild(l6);
+      ul.appendChild(l7);
+      ul.appendChild(l8);
+      ul.appendChild(l9);
+      ul.appendChild(l10);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const anb = {
+        a: 2,
+        b: 0,
+        selector: {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        {
+                          children: [
+                            {
+                              flags: null,
+                              loc: null,
+                              matcher: null,
+                              name: {
+                                loc: null,
+                                name: 'hidden',
+                                type: IDENTIFIER
+                              },
+                              type: SELECTOR_ATTR,
+                              value: null
+                            }
+                          ],
+                          loc: null,
+                          type: SELECTOR
+                        }
+                      ],
+                      loc: null,
+                      type: SELECTOR_LIST
+                    }
+                  ],
+                  loc: null,
+                  name: 'not',
+                  type: SELECTOR_PSEUDO_CLASS
+                }
+              ],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        }
+      };
+      const finder = new Finder(window);
+      finder.setup(':nth-child(even of :not([hidden]))', l1);
+      const res = finder._collectNthChild(anb, l1);
+      assert.strictEqual(res.size, 3, 'size');
+      assert.deepEqual([...res], [
+        l3,
+        l6,
+        l9
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
       const node = document.createElement('div');
       const anb = {
         a: 0,
