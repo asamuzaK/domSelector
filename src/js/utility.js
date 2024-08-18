@@ -367,6 +367,23 @@ export const isContentEditable = node => {
 };
 
 /**
+ * is node visible
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+export const isVisible = node => {
+  let res;
+  if (node?.nodeType === ELEMENT_NODE) {
+    const window = node.ownerDocument.defaultView;
+    const { display, visibility } = window.getComputedStyle(node);
+    if (display !== 'none' && visibility === 'visible') {
+      res = true;
+    }
+  }
+  return !!res;
+};
+
+/**
  * is focus visible
  * @param {object} node - Element node
  * @returns {boolean} - result
@@ -416,8 +433,8 @@ export const isFocusable = node => {
       const {
         contentVisibility, display, visibility
       } = window.getComputedStyle(refNode);
-      if (display === 'none' || /^(?:collapse|hidden)$/.test(visibility) ||
-          contentVisibility === 'hidden') {
+      if (display === 'none' || visibility !== 'visible' ||
+          (contentVisibility === 'hidden' && refNode !== node)) {
         res = false;
       } else {
         res = true;
