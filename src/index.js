@@ -18,6 +18,7 @@ import {
 /* DOMSelector */
 export class DOMSelector {
   /* private fields */
+  #window;
   #document;
   #finder;
   #nwsapi;
@@ -28,6 +29,7 @@ export class DOMSelector {
    * @param {object} document - document
    */
   constructor(window, document) {
+    this.#window = window;
     this.#document = document ?? window.document;
     this.#finder = new Finder(window);
     this.#nwsapi = initNwsapi(window, document);
@@ -42,10 +44,10 @@ export class DOMSelector {
    */
   matches(selector, node, opt) {
     if (!node?.nodeType) {
-      const e = new TypeError(`Unexpected type ${getType(node)}`);
+      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
-      const e = new TypeError(`Unexpected node ${node.nodeName}`);
+      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
@@ -83,10 +85,10 @@ export class DOMSelector {
    */
   closest(selector, node, opt) {
     if (!node?.nodeType) {
-      const e = new TypeError(`Unexpected type ${getType(node)}`);
+      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
-      const e = new TypeError(`Unexpected node ${node.nodeName}`);
+      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
@@ -133,7 +135,7 @@ export class DOMSelector {
    */
   querySelector(selector, node, opt) {
     if (!node?.nodeType) {
-      const e = new TypeError(`Unexpected type ${getType(node)}`);
+      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
     let document;
@@ -179,7 +181,7 @@ export class DOMSelector {
    */
   querySelectorAll(selector, node, opt) {
     if (!node?.nodeType) {
-      const e = new TypeError(`Unexpected type ${getType(node)}`);
+      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
     let document;

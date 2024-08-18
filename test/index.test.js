@@ -97,13 +97,13 @@ describe('DOMSelector', () => {
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).matches(),
+      assert.throws(() => new DOMSelector(window).matches(), window.TypeError,
         'Unexpected type Undefined');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).matches(null, document),
-        'Unexpected node #document');
+        window.TypeError, 'Unexpected node #document');
     });
 
     it('should get true', () => {
@@ -132,12 +132,13 @@ describe('DOMSelector', () => {
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).matches('body', document),
-        'Unexpected node #document');
+        window.TypeError, 'Unexpected node #document');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
-        .matches('[foo=bar baz]', document.body));
+        .matches('[foo=bar baz]', document.body), window.DOMException,
+      'Invalid selector [foo=bar baz]');
     });
 
     it('should warn', () => {
@@ -237,17 +238,18 @@ describe('DOMSelector', () => {
   describe('closest', () => {
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).closest(null),
-        'Unexpected type Undefined');
+        window.TypeError, 'Unexpected type Undefined');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).closest('body', document),
-        'Unexpected node #document');
+        window.TypeError, 'Unexpected node #document');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
-        .closest('[foo=bar baz]', document.getElementById('div0')));
+        .closest('[foo=bar baz]', document.getElementById('div0')),
+      window.DOMException, 'Invalid selector [foo=bar baz]');
     });
 
     it('should warn', () => {
@@ -366,12 +368,13 @@ describe('DOMSelector', () => {
   describe('querySelector', () => {
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).querySelector(),
-        'Unexpected type Undefined');
+        window.TypeError, 'Unexpected type Undefined');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
-        .querySelector('[foo=bar baz]', document));
+        .querySelector('[foo=bar baz]', document),
+      window.DOMException, 'Invalid selector [foo=bar baz]');
     });
 
     it('should warn', () => {
@@ -526,12 +529,13 @@ describe('DOMSelector', () => {
   describe('querySelectorAll', () => {
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).querySelectorAll(),
-        'Unexpected type Undefined');
+        window.TypeError, 'Unexpected type Undefined');
     });
 
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window)
-        .querySelectorAll('[foo=bar baz]', document));
+        .querySelectorAll('[foo=bar baz]', document),
+      window.DOMException, 'Invalid selector [foo=bar baz]');
     });
 
     it('should warn', () => {
@@ -771,7 +775,8 @@ describe('patched JSDOM', () => {
 
   describe('Element.matches()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.matches('*|'));
+      assert.throws(() => document.body.matches('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should match', () => {
@@ -909,7 +914,8 @@ describe('patched JSDOM', () => {
 
   describe('Element.closest()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.closest('*|'));
+      assert.throws(() => document.body.closest('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1013,7 +1019,8 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelector(), Element.querySelector()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelector('*|'));
+      assert.throws(() => document.querySelector('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1073,7 +1080,8 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelector('*|'));
+      assert.throws(() => document.body.querySelector('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1134,7 +1142,8 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('*|'));
+      assert.throws(() => frag.querySelector('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1198,7 +1207,8 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelectorAll('*|'));
+      assert.throws(() => document.querySelectorAll('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1360,7 +1370,8 @@ describe('patched JSDOM', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('*|'));
+      assert.throws(() => document.body.querySelectorAll('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1425,7 +1436,8 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('*|'));
+      assert.throws(() => frag.querySelectorAll('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
