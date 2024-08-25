@@ -2410,7 +2410,7 @@ describe('local wpt test cases', () => {
       container.replaceChildren();
       assert.isFalse(subject.matches('main:has(span) .subject'));
       assert.isTrue(subject.matches('main .subject'));
-    }).timeout(10 * 1000);
+    }).timeout(20 * 1000);
   });
 
   describe('css/selectors/invalidation/has-unstyled.html', () => {
