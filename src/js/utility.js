@@ -595,15 +595,18 @@ export const filterSelector = (selector, opt = {}) => {
   }
   // filter pseudo-classes
   if (selector.includes(':')) {
+    const { complex, descend } = opt;
     let reg;
     if (/:(?:is|not)\(/.test(selector)) {
-      const { complex } = opt;
       if (complex) {
         reg = REG_FILTER_COMPLEX;
       } else {
         reg = REG_FILTER_COMPOUND;
       }
     } else {
+      if (descend) {
+        return false;
+      }
       reg = REG_FILTER_SIMPLE;
     }
     if (reg.test(selector)) {

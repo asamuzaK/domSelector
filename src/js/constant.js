@@ -76,6 +76,7 @@ export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
+export const DESCEND = '\\s?[\\s>]\\s?';
 export const NESTED_LOGICAL_A =
   `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 export const NESTED_LOGICAL_B =
@@ -96,6 +97,7 @@ export const LOGICAL_COMPOUND =
 /* regexp */
 export const REG_ANCHOR = /^a(?:rea)?$/;
 export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
+export const REG_DESCEND = new RegExp(`${DESCEND}${COMPOUND_I}`, 'i');
 export const REG_DIR = /^(?:ltr|rtl)$/;
 export const REG_FILTER_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX})`);

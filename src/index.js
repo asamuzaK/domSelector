@@ -11,8 +11,8 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  DOCUMENT_NODE, ELEMENT_NODE, REG_COMPLEX, TARGET_ALL, TARGET_FIRST,
-  TARGET_LINEAL, TARGET_SELF
+  DOCUMENT_NODE, ELEMENT_NODE, REG_COMPLEX, REG_DESCEND, TARGET_ALL,
+  TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 
 /* DOMSelector */
@@ -54,6 +54,7 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
+        descend: false,
         target: TARGET_SELF
       };
       if (filterSelector(selector, filterOpt)) {
@@ -95,6 +96,7 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
+        descend: false,
         target: TARGET_LINEAL
       };
       if (filterSelector(selector, filterOpt)) {
@@ -147,6 +149,7 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: false,
+        descend: REG_DESCEND.test(selector),
         target: TARGET_FIRST
       };
       if (filterSelector(selector, filterOpt)) {
@@ -193,6 +196,7 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: false,
+        descend: REG_DESCEND.test(selector),
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {
