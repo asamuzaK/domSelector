@@ -232,8 +232,10 @@ export class Finder {
       } catch (e) {
         this.onError(e);
       }
-      const { branches, info: { hasHasPseudoFunc } } = walkAST(cssAst);
-      let invalidate = !!hasHasPseudoFunc;
+      const {
+        branches, info: { hasHasPseudoFunc, hasNthChildOfSelector }
+      } = walkAST(cssAst);
+      let invalidate = !!(hasHasPseudoFunc || hasNthChildOfSelector);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -364,12 +366,9 @@ export class Finder {
       if (this.#astCache.has(selector)) {
         selectorBranches = this.#astCache.get(selector);
       } else {
-        const { branches, info } = walkAST(selector);
+        const { branches } = walkAST(selector);
         selectorBranches = branches;
         this.#astCache.set(selector, selectorBranches);
-        if (info.hasLogicalPseudoFunc) {
-          this.#invalidate = true;
-        }
       }
     }
     if (parentNode) {
@@ -2884,6 +2883,9 @@ export class Finder {
       if (sort && nodes.size > 1) {
         nodes = new Set(sortNodes(nodes));
       }
+    }
+    if (this.#invalidate) {
+      this.#invalidateResults = new WeakMap();
     }
     return nodes;
   }

@@ -7308,7 +7308,8 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: true
       }
     }, 'result');
   });
@@ -7399,7 +7400,8 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: true
       }
     }, 'result');
   });
@@ -7529,7 +7531,8 @@ describe('walk AST', () => {
       ],
       info: {
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: true
       }
     }, 'result');
   });
