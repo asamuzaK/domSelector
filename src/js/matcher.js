@@ -8,8 +8,8 @@ import { getDirectionality, getType, isNamespaceDeclared } from './utility.js';
 
 /* constants */
 import {
-  ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, REG_LANG,
-  REG_TAG_NAME, SELECTOR_ATTR, SELECTOR_TYPE, SYNTAX_ERR
+  ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, SELECTOR_ATTR,
+  SELECTOR_TYPE, SYNTAX_ERR
 } from './constant.js';
 
 /* Matcher */
@@ -294,7 +294,7 @@ export class Matcher {
       prefix: astPrefix, localName: astLocalName
     } = parseAstName(astName, node);
     if (node.ownerDocument.contentType === 'text/html' &&
-        REG_TAG_NAME.test(localName)) {
+        /[A-Z][\\w-]*/i.test(localName)) {
       astPrefix = astPrefix.toLowerCase();
       astLocalName = astLocalName.toLowerCase();
     }
@@ -393,7 +393,8 @@ export class Matcher {
         }
       }
     } else if (astName) {
-      if (REG_LANG.test(astName)) {
+      const reg = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+      if (reg.test(astName)) {
         let regExtendedLang;
         if (astName.indexOf('-') > -1) {
           const [langMain, langSub, ...langRest] = astName.split('-');

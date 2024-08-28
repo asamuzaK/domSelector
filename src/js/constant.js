@@ -95,35 +95,6 @@ export const LOGICAL_COMPOUND =
   `${KEY_IS_NOT}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 
 /* regexp */
-export const REG_ANCHOR = /^a(?:rea)?$/;
-export const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
-export const REG_DESCEND = new RegExp(`${DESCEND}${COMPOUND_I}`, 'i');
-export const REG_DIR = /^(?:ltr|rtl)$/;
-export const REG_FILTER_COMPLEX =
-  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX})`);
-export const REG_FILTER_COMPOUND =
-  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
-export const REG_FILTER_SIMPLE = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
-export const REG_FORM = /^(?:button|fieldset|form|input|select|textarea)$/;
-export const REG_FORM_CTRL =
-  /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
-export const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
-export const REG_HEX = /^([\da-f]{1,6}\s?)/i;
-export const REG_INTERACT = /^(?:details|dialog)$/;
-export const REG_INVALID_SELECTOR = /^$|^\s*>|,\s*$/;
-export const REG_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
-export const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
-export const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
 export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
-export const REG_SHADOW_HOST = /^host(?:-context)?$/;
-export const REG_SHADOW_MODE = /^(?:close|open)$/;
-export const REG_SHADOW_PSEUDO = /^part|slotted$/;
-export const REG_TAG_NAME = /[A-Z][\\w-]*/i;
-export const REG_TYPE_CHECK = /^(?:checkbox|radio)$/;
 export const REG_TYPE_INPUT =
   /^(?:date(?:time-local)?|email|month|number|password|search|tel|text|time|url|week)$/;
-export const REG_TYPE_RANGE =
-  /^(?:date(?:time-local)?|month|number|range|time|week)$/;
-export const REG_TYPE_RESET = /^(?:button|reset)$/;
-export const REG_TYPE_SUBMIT = /^(?:image|submit)$/;
-export const REG_TYPE_TEXT = /^(?:email|number|password|search|tel|text|url)$/;

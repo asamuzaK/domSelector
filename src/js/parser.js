@@ -9,11 +9,13 @@ import { getType } from './utility.js';
 /* constants */
 import {
   BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, EMPTY, HEX, NTH, REG_HEX, REG_INVALID_SELECTOR, REG_LANG_QUOTED,
-  REG_LOGICAL_EMPTY, REG_LOGICAL_PSEUDO, REG_SHADOW_PSEUDO, SELECTOR,
-  SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS,
-  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR, U_FFFD
+  DUO, EMPTY, HEX, NTH, REG_LOGICAL_PSEUDO, SELECTOR, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SYNTAX_ERR, U_FFFD
 } from './constant.js';
+const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
+const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
+const REG_SHADOW_PSEUDO = /^part|slotted$/;
 
 /**
  * unescape selector
@@ -29,7 +31,7 @@ export const unescapeSelector = (selector = '') => {
       if (item === '' && i === l - 1) {
         item = U_FFFD;
       } else {
-        const hexExists = REG_HEX.exec(item);
+        const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
         if (hexExists) {
           const [, hex] = hexExists;
           let str;
@@ -126,7 +128,7 @@ export const preprocess = (...args) => {
 export const parseSelector = selector => {
   selector = preprocess(selector);
   // invalid selectors
-  if (REG_INVALID_SELECTOR.test(selector)) {
+  if (/^$|^\s*>|,\s*$/.test(selector)) {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   let res;

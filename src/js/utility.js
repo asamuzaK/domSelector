@@ -10,10 +10,15 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, REG_DIR, REG_FILTER_COMPLEX,
-  REG_FILTER_COMPOUND, REG_FILTER_SIMPLE, REG_SHADOW_MODE, REG_TYPE_INPUT,
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, N_TH, LOGICAL_COMPLEX,
+  LOGICAL_COMPOUND, PSEUDO_CLASSES, REG_TYPE_INPUT,
   TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
+const REG_LOGICAL_COMPLEX =
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPLEX})`);
+const REG_LOGICAL_COMPOUND =
+  new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH}|${LOGICAL_COMPOUND})`);
+const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASSES}|${N_TH})`);
 
 /**
  * get type
@@ -171,7 +176,7 @@ export const isInShadowTree = node => {
     while (refNode) {
       const { host, mode, nodeType, parentNode } = refNode;
       if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
-          REG_SHADOW_MODE.test(mode)) {
+          /^(?:close|open)$/.test(mode)) {
         bool = true;
         break;
       }
@@ -221,7 +226,7 @@ export const getDirectionality = node => {
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
     const { getEmbeddingLevels } = bidiFactory();
-    if (REG_DIR.test(nodeDir)) {
+    if (/^(?:ltr|rtl)$/.test(nodeDir)) {
       res = nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
@@ -253,7 +258,7 @@ export const getDirectionality = node => {
               text = itemTextContent.trim();
             } else if (itemNodeType === ELEMENT_NODE) {
               if (!/^(?:bdi|script|style|textarea)$/.test(itemLocalName) &&
-                  (!itemDir || !REG_DIR.test(itemDir))) {
+                  (!itemDir || !/^(?:ltr|rtl)$/.test(itemDir))) {
                 if (itemLocalName === 'slot') {
                   text = getSlottedTextContent(item);
                 } else {
@@ -596,21 +601,16 @@ export const filterSelector = (selector, opt = {}) => {
   // filter pseudo-classes
   if (selector.includes(':')) {
     const { complex, descend } = opt;
-    let reg;
     if (/:(?:is|not)\(/.test(selector)) {
       if (complex) {
-        reg = REG_FILTER_COMPLEX;
+        return !REG_LOGICAL_COMPLEX.test(selector);
       } else {
-        reg = REG_FILTER_COMPOUND;
+        return !REG_LOGICAL_COMPOUND.test(selector);
       }
-    } else {
-      if (descend) {
-        return false;
-      }
-      reg = REG_FILTER_SIMPLE;
-    }
-    if (reg.test(selector)) {
+    } else if (descend) {
       return false;
+    } else {
+      return !REG_WO_LOGICAL.test(selector);
     }
   }
   return true;

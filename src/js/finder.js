@@ -15,17 +15,25 @@ import {
 /* constants */
 import {
   BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_ANCHOR, REG_FORM, REG_FORM_CTRL,
-  REG_FORM_VALID, REG_INTERACT, REG_LOGICAL_PSEUDO, REG_SHADOW_HOST,
-  REG_TYPE_CHECK, REG_TYPE_INPUT, REG_TYPE_RANGE, REG_TYPE_RESET,
-  REG_TYPE_SUBMIT, REG_TYPE_TEXT, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SHOW_ALL,
-  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
-  WALKER_FILTER
+  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_TYPE_INPUT, SELECTOR_ATTR,
+  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
+  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
+  TARGET_SELF, TEXT_NODE, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEY_TAB = 'Tab';
+const REG_ANCHOR = /^a(?:rea)?$/;
+const REG_FORM_CTRL =
+  /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
+const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
+const REG_INTERACT = /^(?:details|dialog)$/;
+const REG_SHADOW_HOST = /^host(?:-context)?$/;
+const REG_TYPE_CHECK = /^(?:checkbox|radio)$/;
+const REG_TYPE_RANGE = /^(?:date(?:time-local)?|month|number|range|time|week)$/;
+const REG_TYPE_RESET = /^(?:button|reset)$/;
+const REG_TYPE_SUBMIT = /^(?:image|submit)$/;
+const REG_TYPE_TEXT = /^(?:email|number|password|search|tel|text|url)$/;
 
 /**
  * Finder
@@ -1831,7 +1839,8 @@ export class Finder {
     }
     if (typeof bool !== 'boolean') {
       let cacheable = true;
-      if (node.nodeType === ELEMENT_NODE && REG_FORM.test(node.localName)) {
+      if (node.nodeType === ELEMENT_NODE &&
+          /^(?:button|fieldset|form|input|select|textarea)$/.test(node.localName)) {
         cacheable = false;
       }
       for (const leaf of leaves) {
