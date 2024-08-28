@@ -11,10 +11,13 @@ import * as parser from '../src/js/parser.js';
 
 /* constants */
 import {
-  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR,
-  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
-  STRING, TYPE_SELECTOR
+  ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR,
+  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, TYPE_SELECTOR
 } from '../src/js/constant.js';
+const AN_PLUS_B = 'AnPlusB';
+const RAW = 'Raw';
+const SELECTOR_LIST = 'SelectorList';
+const STRING = 'String';
 
 describe('unescape selector', () => {
   const func = parser.unescapeSelector;

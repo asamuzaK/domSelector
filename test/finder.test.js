@@ -13,10 +13,13 @@ import { Finder } from '../src/js/finder.js';
 
 /* constants */
 import {
-  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, EMPTY, IDENT,
+  ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, EMPTY, IDENT,
   ID_SELECTOR, NOT_SUPPORTED_ERR, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR,
-  RAW, SELECTOR, SELECTOR_LIST, SYNTAX_ERR, TYPE_SELECTOR
+  SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from '../src/js/constant.js';
+const AN_PLUS_B = 'AnPlusB';
+const RAW = 'Raw';
+const SELECTOR_LIST = 'SelectorList';
 
 describe('Finder', () => {
   const domStr = `<!doctype html>

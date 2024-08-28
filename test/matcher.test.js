@@ -10,8 +10,9 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import { Matcher } from '../src/js/matcher.js';
 import {
-  ATTR_SELECTOR, EMPTY, IDENT, PS_CLASS_SELECTOR, STRING, TYPE_SELECTOR
+  ATTR_SELECTOR, EMPTY, IDENT, PS_CLASS_SELECTOR, TYPE_SELECTOR
 } from '../src/js/constant.js';
+const STRING = 'String';
 
 describe('Matcher', () => {
   const domStr = `<!doctype html>

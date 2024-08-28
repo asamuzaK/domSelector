@@ -3,7 +3,6 @@
  */
 
 /* string */
-export const AN_PLUS_B = 'AnPlusB';
 export const ATTR_SELECTOR = 'AttributeSelector';
 export const CLASS_SELECTOR = 'ClassSelector';
 export const COMBINATOR = 'Combinator';
@@ -14,17 +13,13 @@ export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
 export const PS_CLASS_SELECTOR = 'PseudoClassSelector';
 export const PS_ELEMENT_SELECTOR = 'PseudoElementSelector';
-export const RAW = 'Raw';
 export const SELECTOR = 'Selector';
-export const SELECTOR_LIST = 'SelectorList';
-export const STRING = 'String';
 export const SYNTAX_ERR = 'SyntaxError';
 export const TARGET_ALL = 'all';
 export const TARGET_FIRST = 'first';
 export const TARGET_LINEAL = 'lineal';
 export const TARGET_SELF = 'self';
 export const TYPE_SELECTOR = 'TypeSelector';
-export const U_FFFD = '\uFFFD';
 
 /* numeric */
 export const BIT_01 = 1;

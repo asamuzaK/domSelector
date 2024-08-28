@@ -10,11 +10,12 @@ import { getType } from './utility.js';
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
   CLASS_SELECTOR, DUO, EMPTY, HEX, HYPHEN, ID_SELECTOR, NTH, PS_CLASS_SELECTOR,
-  PS_ELEMENT_SELECTOR, REG_LOGICAL, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR, U_FFFD
+  PS_ELEMENT_SELECTOR, REG_LOGICAL, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
 const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
 const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
 const REG_SHADOW_PSEUDO = /^part|slotted$/;
+const U_FFFD = '\uFFFD';
 
 /**
  * unescape selector
