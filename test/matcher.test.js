@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import { Matcher } from '../src/js/matcher.js';
 import {
-  EMPTY, IDENTIFIER, SELECTOR_ATTR, SELECTOR_PSEUDO_CLASS, SELECTOR_TYPE, STRING
+  ATTR_SELECTOR, EMPTY, IDENT, PS_CLASS_SELECTOR, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 describe('Matcher', () => {
@@ -207,12 +207,12 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           name: 'bar',
-          type: IDENTIFIER
+          type: IDENT
         }
       };
       const node = document.createElement('div');
@@ -229,9 +229,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -248,9 +248,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -267,9 +267,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '|Foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -286,9 +286,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -305,9 +305,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '*|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -324,9 +324,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '*|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -343,9 +343,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '*|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -362,9 +362,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: '*|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -381,9 +381,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'baz|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       document.documentElement.setAttribute('xmlns:baz',
@@ -402,9 +402,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'baz|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -421,9 +421,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'Baz|Foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       document.documentElement.setAttribute('xmlns:Baz',
@@ -442,9 +442,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'Baz|Foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -461,9 +461,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'Baz|Foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       document.documentElement.setAttribute('xmlns:baz',
@@ -482,9 +482,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'Baz|Foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       document.documentElement.setAttribute('xmlns:baz',
@@ -503,9 +503,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'baz|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       document.documentElement.setAttribute('xmlns:Baz',
@@ -524,9 +524,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'baz|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -543,9 +543,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -562,9 +562,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -581,9 +581,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -600,9 +600,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -619,9 +619,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -638,9 +638,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.createElement('div');
@@ -657,12 +657,12 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           name: 'bar',
-          type: IDENTIFIER
+          type: IDENT
         }
       };
       const node = document.createElement('div');
@@ -679,12 +679,12 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           name: 'Bar',
-          type: IDENTIFIER
+          type: IDENT
         }
       };
       const node = document.createElement('div');
@@ -701,12 +701,12 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           name: 'bar',
-          type: IDENTIFIER
+          type: IDENT
         }
       };
       const node = document.createElement('div');
@@ -723,12 +723,12 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           name: 'bar',
-          type: IDENTIFIER
+          type: IDENT
         }
       };
       const node = document.createElement('div');
@@ -745,9 +745,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -767,9 +767,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -789,9 +789,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -811,9 +811,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar baz'
@@ -833,9 +833,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'baz|foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'qux'
@@ -858,9 +858,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'xml|lang',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'en'
@@ -881,9 +881,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'xml:lang',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'en'
@@ -904,9 +904,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -926,9 +926,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -948,9 +948,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -970,9 +970,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -992,9 +992,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1014,9 +1014,9 @@ describe('Matcher', () => {
         matcher: '~=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: ''
@@ -1036,9 +1036,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1058,9 +1058,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -1080,9 +1080,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1102,9 +1102,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1124,9 +1124,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -1146,9 +1146,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1168,9 +1168,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1190,9 +1190,9 @@ describe('Matcher', () => {
         matcher: '|=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: ''
@@ -1212,9 +1212,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1234,9 +1234,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1256,9 +1256,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1278,9 +1278,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1300,9 +1300,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -1322,9 +1322,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1344,9 +1344,9 @@ describe('Matcher', () => {
         matcher: '^=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: ''
@@ -1366,9 +1366,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1388,9 +1388,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1410,9 +1410,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1432,9 +1432,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1454,9 +1454,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -1476,9 +1476,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1498,9 +1498,9 @@ describe('Matcher', () => {
         matcher: '$=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: ''
@@ -1520,9 +1520,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1542,9 +1542,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1564,9 +1564,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1586,9 +1586,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1608,9 +1608,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'Bar'
@@ -1630,9 +1630,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'bar'
@@ -1652,9 +1652,9 @@ describe('Matcher', () => {
         matcher: '*=',
         name: {
           name: 'foo',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: ''
@@ -1674,9 +1674,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'baz',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'qux'
@@ -1697,9 +1697,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'baz',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'qux'
@@ -1720,9 +1720,9 @@ describe('Matcher', () => {
         matcher: '=',
         name: {
           name: 'baz',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: {
           type: STRING,
           value: 'qux'
@@ -1744,7 +1744,7 @@ describe('Matcher', () => {
     it('should get matched node(s)', () => {
       const ast = {
         name: '|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('', 'div');
       const parent = document.getElementById('div0');
@@ -1756,7 +1756,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       const res = func(ast, node);
@@ -1766,7 +1766,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('https://example.com/foo', 'div');
       const parent = document.getElementById('div0');
@@ -1778,7 +1778,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       const res = func(ast, node);
@@ -1788,7 +1788,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -1802,7 +1802,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -1816,7 +1816,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
         document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -1829,7 +1829,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'foo|*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
@@ -1842,7 +1842,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo|bar',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const nsroot = document.createElement('div');
       nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
@@ -1860,7 +1860,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'foo|bar',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:baz');
@@ -1874,7 +1874,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'foo|bar',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElement('foo:qux');
       const parent = document.getElementById('div0');
@@ -1888,7 +1888,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '|div',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('', 'div');
       const parent = document.getElementById('div0');
@@ -1900,7 +1900,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '|div',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       const res = func(ast, node);
@@ -1910,7 +1910,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('', 'foo');
       const parent = document.getElementById('div0');
@@ -1922,7 +1922,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'h',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('urn:ns', 'h');
       const parent = document.getElementById('div0');
@@ -1934,7 +1934,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*|h',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElementNS('urn:ns', 'h');
       const parent = document.getElementById('div0');
@@ -1946,7 +1946,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       const res = func(ast, node);
@@ -1956,7 +1956,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:bar');
@@ -1969,7 +1969,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'div',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
       const res = func(ast, node);
@@ -1979,7 +1979,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'div',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:div');
@@ -1992,7 +1992,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*|div',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node =
           document.createElementNS('https://example.com/foo', 'foo:div');
@@ -2015,7 +2015,7 @@ describe('Matcher', () => {
       const doc = new window.DOMParser().parseFromString(domStr, 'text/html');
       const ast = {
         name: 'foo|bar',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = doc.getElementById('foobar');
       const res = func(ast, node);
@@ -2025,7 +2025,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'null',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElement('null');
       const parent = document.getElementById('div0');
@@ -2037,7 +2037,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'undefined',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.createElement('undefined');
       const parent = document.getElementById('div0');
@@ -2053,7 +2053,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('bdo');
       node.setAttribute('dir', 'ltr');
@@ -2064,7 +2064,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('dir', 'ltr');
@@ -2077,7 +2077,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'rtl',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('dir', 'rtl');
@@ -2090,7 +2090,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const root = document.documentElement;
       const res = func(ast, root);
@@ -2100,7 +2100,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'tel');
@@ -2113,7 +2113,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'tel');
@@ -2127,7 +2127,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'tel');
@@ -2141,7 +2141,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('textarea');
       node.setAttribute('dir', 'auto');
@@ -2154,7 +2154,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -2168,7 +2168,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('dir', 'auto');
@@ -2181,7 +2181,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('bdi');
       node.textContent = 'foo';
@@ -2194,7 +2194,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'rtl',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('bdi');
       node.textContent = '\u05EA';
@@ -2207,7 +2207,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('bdi');
       const parent = document.getElementById('div0');
@@ -2219,7 +2219,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const html = `
           <template id="template">
@@ -2251,7 +2251,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -2263,7 +2263,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'rtl',
-        type: IDENTIFIER
+        type: IDENT
       };
       const root = document.documentElement;
       root.setAttribute('dir', 'rtl');
@@ -2277,7 +2277,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'ltr',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -2294,7 +2294,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: EMPTY,
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', '');
@@ -2307,7 +2307,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', '');
@@ -2320,7 +2320,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.lang = 'en';
@@ -2333,7 +2333,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'en');
@@ -2346,7 +2346,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -2358,7 +2358,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '\\*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.lang = 'en';
@@ -2371,7 +2371,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: '\\*-FR',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.lang = 'fr-FR';
@@ -2384,7 +2384,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', '');
@@ -2397,7 +2397,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: '*',
-        type: IDENTIFIER
+        type: IDENT
       };
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
@@ -2409,7 +2409,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'en',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'en');
@@ -2422,7 +2422,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'en',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'en-US');
@@ -2435,7 +2435,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'en',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -2447,7 +2447,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'en',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'de');
@@ -2460,7 +2460,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'en',
-        type: IDENTIFIER
+        type: IDENT
       };
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
@@ -2472,7 +2472,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'de-DE',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'de-Latn-DE-1996');
@@ -2485,7 +2485,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'de-Latn-DE',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'de-Latn-DE-1996');
@@ -2498,7 +2498,7 @@ describe('Matcher', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'de-de',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'de-DE');
@@ -2511,7 +2511,7 @@ describe('Matcher', () => {
     it('should not match', () => {
       const ast = {
         name: 'de-de',
-        type: IDENTIFIER
+        type: IDENT
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'de-Deva');
@@ -2533,7 +2533,7 @@ describe('Matcher', () => {
     it('should throw', () => {
       const ast = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       assert.throws(() => func(ast), TypeError,
         'Unexpected node type Undefined');
@@ -2542,7 +2542,7 @@ describe('Matcher', () => {
     it('should throw', () => {
       const ast = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       assert.throws(() => func(ast, document), TypeError,
         'Unexpected node #document');
@@ -2551,7 +2551,7 @@ describe('Matcher', () => {
     it('should get matched node(s)', () => {
       const ast = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('li1');
       const res = func(ast, node);
@@ -2561,7 +2561,7 @@ describe('Matcher', () => {
     it('should get matched node(s)', () => {
       const ast = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('li1');
       const res = func(ast, node, null, true);
@@ -2574,9 +2574,9 @@ describe('Matcher', () => {
         matcher: null,
         name: {
           name: 'id',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.getElementById('li1');
@@ -2589,11 +2589,11 @@ describe('Matcher', () => {
         children: [
           {
             name: 'ltr',
-            type: IDENTIFIER
+            type: IDENT
           }
         ],
         name: 'dir',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -2608,11 +2608,11 @@ describe('Matcher', () => {
         children: [
           {
             name: 'en',
-            type: IDENTIFIER
+            type: IDENT
           }
         ],
         name: 'lang',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'en');

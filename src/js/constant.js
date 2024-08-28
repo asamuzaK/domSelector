@@ -4,26 +4,26 @@
 
 /* string */
 export const AN_PLUS_B = 'AnPlusB';
+export const ATTR_SELECTOR = 'AttributeSelector';
+export const CLASS_SELECTOR = 'ClassSelector';
 export const COMBINATOR = 'Combinator';
 export const EMPTY = '__EMPTY__';
-export const IDENTIFIER = 'Identifier';
+export const IDENT = 'Identifier';
+export const ID_SELECTOR = 'IdSelector';
 export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
+export const PS_CLASS_SELECTOR = 'PseudoClassSelector';
+export const PS_ELEMENT_SELECTOR = 'PseudoElementSelector';
 export const RAW = 'Raw';
 export const SELECTOR = 'Selector';
-export const SELECTOR_ATTR = 'AttributeSelector';
-export const SELECTOR_CLASS = 'ClassSelector';
-export const SELECTOR_ID = 'IdSelector';
 export const SELECTOR_LIST = 'SelectorList';
-export const SELECTOR_PSEUDO_CLASS = 'PseudoClassSelector';
-export const SELECTOR_PSEUDO_ELEMENT = 'PseudoElementSelector';
-export const SELECTOR_TYPE = 'TypeSelector';
 export const STRING = 'String';
 export const SYNTAX_ERR = 'SyntaxError';
 export const TARGET_ALL = 'all';
 export const TARGET_FIRST = 'first';
 export const TARGET_LINEAL = 'lineal';
 export const TARGET_SELF = 'self';
+export const TYPE_SELECTOR = 'TypeSelector';
 export const U_FFFD = '\uFFFD';
 
 /* numeric */
@@ -34,9 +34,9 @@ export const BIT_08 = 8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
 export const BIT_FFFF = 0xFFFF;
-export const BIT_HYPHEN = 0x2D;
 export const DUO = 2;
 export const HEX = 16;
+export const HYPHEN = 0x2D;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 
@@ -61,7 +61,7 @@ export const ALPHA_NUM = '[A-Z\\d]+';
 export const CHILD_IDX = '(?:first|last|only)-(?:child|of-type)';
 export const DIGIT = '(?:0|[1-9]\\d*)';
 export const LANG_PART = `(?:-${ALPHA_NUM})*`;
-export const PSEUDO_CLASSES =
+export const PSEUDO_CLASS =
   `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|root|target|visited`;
 export const ANB =
   `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
@@ -95,6 +95,6 @@ export const LOGICAL_COMPOUND =
   `${KEY_IS_NOT}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 
 /* regexp */
-export const REG_LOGICAL_PSEUDO = /^(?:has|is|not|where)$/;
-export const REG_TYPE_INPUT =
+export const REG_LOGICAL = /^(?:has|is|not|where)$/;
+export const REG_INPUT_TYPE =
   /^(?:date(?:time-local)?|email|month|number|password|search|tel|text|time|url|week)$/;

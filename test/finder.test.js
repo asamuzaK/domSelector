@@ -13,9 +13,9 @@ import { Finder } from '../src/js/finder.js';
 
 /* constants */
 import {
-  AN_PLUS_B, COMBINATOR, EMPTY, IDENTIFIER, NOT_SUPPORTED_ERR, NTH, RAW,
-  SELECTOR, SELECTOR_ATTR, SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST,
-  SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, SYNTAX_ERR
+  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, EMPTY, IDENT,
+  ID_SELECTOR, NOT_SUPPORTED_ERR, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR,
+  RAW, SELECTOR, SELECTOR_LIST, SYNTAX_ERR, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 describe('Finder', () => {
@@ -283,13 +283,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -311,13 +311,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -327,7 +327,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -359,13 +359,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -387,13 +387,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -403,7 +403,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -718,7 +718,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -786,7 +786,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -856,7 +856,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -924,7 +924,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -993,7 +993,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1062,7 +1062,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1142,9 +1142,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1158,7 +1158,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1238,9 +1238,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1254,7 +1254,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1334,9 +1334,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1350,7 +1350,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1430,9 +1430,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1446,7 +1446,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1526,9 +1526,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1542,7 +1542,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1622,9 +1622,9 @@ describe('Finder', () => {
                               name: {
                                 loc: null,
                                 name: 'hidden',
-                                type: IDENTIFIER
+                                type: IDENT
                               },
-                              type: SELECTOR_ATTR,
+                              type: ATTR_SELECTOR,
                               value: null
                             }
                           ],
@@ -1638,7 +1638,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1719,7 +1719,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1752,7 +1752,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -1785,7 +1785,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'noted',
-                  type: SELECTOR_CLASS
+                  type: CLASS_SELECTOR
                 }
               ],
               loc: null,
@@ -2082,7 +2082,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'even',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2104,7 +2104,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'odd',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2126,7 +2126,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'odd',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: {
           children: [
@@ -2135,7 +2135,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dt',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ],
               loc: null,
@@ -2163,7 +2163,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'even',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2291,7 +2291,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'even',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2311,7 +2311,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'odd',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2332,7 +2332,7 @@ describe('Finder', () => {
       const leaf = {
         nth: {
           name: 'even',
-          type: IDENTIFIER
+          type: IDENT
         },
         selector: null,
         type: NTH
@@ -2454,7 +2454,7 @@ describe('Finder', () => {
       const node = document.getElementById('dl1');
       const leaves = [{
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       }];
       const finder = new Finder(window);
       finder.setup(':has(li)', node);
@@ -2466,7 +2466,7 @@ describe('Finder', () => {
       const node = document.getElementById('dl1');
       const leaves = [{
         name: 'dd',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       }];
       const finder = new Finder(window);
       finder.setup(':has(dd)', node);
@@ -2479,7 +2479,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'dd',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           name: ' ',
@@ -2487,7 +2487,7 @@ describe('Finder', () => {
         },
         {
           name: 'p',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -2501,7 +2501,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'dd',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           name: ' ',
@@ -2509,7 +2509,7 @@ describe('Finder', () => {
         },
         {
           name: 'span',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -2531,7 +2531,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2557,12 +2557,12 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_CLASS
+            type: CLASS_SELECTOR
           }
         ]
       ];
@@ -2588,7 +2588,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2609,7 +2609,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2630,7 +2630,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'dd',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -2640,7 +2640,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'span',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2667,7 +2667,7 @@ describe('Finder', () => {
                       {
                         loc: null,
                         name: 'li',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -2680,7 +2680,7 @@ describe('Finder', () => {
             ],
             loc: null,
             name: 'has',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ];
@@ -2701,14 +2701,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2729,14 +2729,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2755,7 +2755,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -2767,7 +2767,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -2789,7 +2789,7 @@ describe('Finder', () => {
                       {
                         loc: null,
                         name: 'ol',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -2802,14 +2802,14 @@ describe('Finder', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2834,7 +2834,7 @@ describe('Finder', () => {
                             {
                               loc: null,
                               name: 'ol',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -2847,7 +2847,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ]
             }
@@ -2859,7 +2859,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -2881,7 +2881,7 @@ describe('Finder', () => {
                       {
                         loc: null,
                         name: 'dl',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -2894,14 +2894,14 @@ describe('Finder', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2926,7 +2926,7 @@ describe('Finder', () => {
                             {
                               loc: null,
                               name: 'dl',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -2939,7 +2939,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'not',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ]
             }
@@ -2951,7 +2951,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -2967,14 +2967,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -2993,7 +2993,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3005,7 +3005,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3021,14 +3021,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -3047,12 +3047,12 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 },
                 {
                   loc: null,
                   name: 'ul1',
-                  type: SELECTOR_ID
+                  type: ID_SELECTOR
                 }
               ]
             }
@@ -3064,12 +3064,12 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 },
                 {
                   loc: null,
                   name: 'dl1',
-                  type: SELECTOR_ID
+                  type: ID_SELECTOR
                 }
               ]
             }
@@ -3085,7 +3085,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -3095,7 +3095,7 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -3105,14 +3105,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dd',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -3135,7 +3135,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             },
@@ -3149,7 +3149,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'li',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             },
@@ -3159,7 +3159,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'li',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3175,14 +3175,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -3201,7 +3201,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ol',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3213,7 +3213,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3229,14 +3229,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -3255,7 +3255,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ul',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3267,7 +3267,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3283,14 +3283,14 @@ describe('Finder', () => {
           {
             loc: null,
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'dl',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ];
@@ -3309,7 +3309,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'ol',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3321,7 +3321,7 @@ describe('Finder', () => {
                 {
                   loc: null,
                   name: 'dl',
-                  type: SELECTOR_TYPE
+                  type: TYPE_SELECTOR
                 }
               ]
             }
@@ -3343,7 +3343,7 @@ describe('Finder', () => {
                       {
                         loc: null,
                         name: 'li',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -3354,7 +3354,7 @@ describe('Finder', () => {
                       {
                         loc: null,
                         name: 'dd',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -3367,7 +3367,7 @@ describe('Finder', () => {
             ],
             loc: null,
             name: 'is',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ];
@@ -3392,7 +3392,7 @@ describe('Finder', () => {
                             {
                               loc: null,
                               name: 'li',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -3403,7 +3403,7 @@ describe('Finder', () => {
                             {
                               loc: null,
                               name: 'dd',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -3416,7 +3416,7 @@ describe('Finder', () => {
                   ],
                   loc: null,
                   name: 'is',
-                  type: SELECTOR_PSEUDO_CLASS
+                  type: PS_CLASS_SELECTOR
                 }
               ]
             }
@@ -3438,7 +3438,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ],
                 loc: null,
@@ -3449,7 +3449,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'dl',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ],
                 loc: null,
@@ -3462,7 +3462,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'is',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
@@ -3479,14 +3479,14 @@ describe('Finder', () => {
           {
             nth: {
               name: 'even',
-              type: IDENTIFIER
+              type: IDENT
             },
             selector: null,
             type: NTH
           }
         ],
         name: 'nth-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
@@ -3504,11 +3504,11 @@ describe('Finder', () => {
         children: [
           {
             name: 'ltr',
-            type: IDENTIFIER
+            type: IDENT
           }
         ],
         name: 'dir',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('dir', 'ltr');
@@ -3527,11 +3527,11 @@ describe('Finder', () => {
         children: [
           {
             name: 'en',
-            type: IDENTIFIER
+            type: IDENT
           }
         ],
         name: 'lang',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('lang', 'en');
@@ -3555,7 +3555,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'state',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('x-div');
       const parent = document.getElementById('div0');
@@ -3577,7 +3577,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'state',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -3640,7 +3640,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'state',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -3706,7 +3706,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'current',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3727,7 +3727,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'current',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3748,7 +3748,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3757,7 +3757,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3776,7 +3776,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3785,7 +3785,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3806,7 +3806,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'foobar',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3827,7 +3827,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'contains',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3848,7 +3848,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'contains',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3871,7 +3871,7 @@ describe('Finder', () => {
         ],
         loc: null,
         name: 'foobar',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -3888,7 +3888,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'any-link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.setAttribute('href', 'https://example.com/');
@@ -3906,7 +3906,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'any-link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href',
@@ -3923,7 +3923,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'any-link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       const parent = document.getElementById('div0');
@@ -3938,7 +3938,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.setAttribute('href', 'https://example.com/');
@@ -3956,7 +3956,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'local-link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.setAttribute('href', './#foo');
@@ -3974,7 +3974,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'local-link',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.setAttribute('href', 'https://example.com');
@@ -3990,7 +3990,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'visited',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
       node.href = 'https://example.com';
@@ -4006,7 +4006,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4022,7 +4022,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4041,7 +4041,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4061,7 +4061,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4079,7 +4079,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4104,7 +4104,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'hover',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4131,7 +4131,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4147,7 +4147,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4168,7 +4168,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4190,7 +4190,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4217,7 +4217,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4246,7 +4246,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'active',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4271,7 +4271,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4289,7 +4289,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'bar';
@@ -4305,7 +4305,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
@@ -4321,7 +4321,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4339,7 +4339,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4357,7 +4357,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'target-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'bar';
@@ -4373,7 +4373,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'scope',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4391,7 +4391,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'scope',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const refPoint = document.createElement('div');
       const node = document.createElement('div');
@@ -4409,7 +4409,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'scope',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.documentElement;
       const finder = new Finder(window);
@@ -4424,7 +4424,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'scope',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.id = 'foo';
@@ -4440,7 +4440,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4459,7 +4459,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4478,7 +4478,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup(':focus', document.body);
@@ -4490,7 +4490,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4506,7 +4506,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4524,7 +4524,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4542,7 +4542,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4560,7 +4560,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4578,7 +4578,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4596,7 +4596,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4614,7 +4614,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4632,7 +4632,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4650,7 +4650,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4668,7 +4668,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4686,7 +4686,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4704,7 +4704,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4722,7 +4722,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4742,7 +4742,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4759,7 +4759,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4781,7 +4781,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4809,7 +4809,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.createElement('form');
@@ -4828,7 +4828,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.createElement('form');
@@ -4851,7 +4851,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const node2 = document.createElement('button');
@@ -4873,7 +4873,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const node2 = document.createElement('button');
@@ -4893,7 +4893,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4912,7 +4912,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4928,7 +4928,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup(':focus-within', document.body);
@@ -4940,7 +4940,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4958,7 +4958,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4976,7 +4976,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -4994,7 +4994,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5012,7 +5012,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5030,7 +5030,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5048,7 +5048,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5067,7 +5067,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5083,7 +5083,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5101,7 +5101,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5119,7 +5119,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5137,7 +5137,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5155,7 +5155,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5173,7 +5173,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.createElement('form');
@@ -5191,7 +5191,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('details');
       node.setAttribute('open', 'open');
@@ -5209,7 +5209,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('details');
       const parent = document.getElementById('div0');
@@ -5224,7 +5224,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'closed',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('details');
       const parent = document.getElementById('div0');
@@ -5241,7 +5241,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'closed',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('details');
       node.setAttribute('open', 'open');
@@ -5257,7 +5257,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
@@ -5275,7 +5275,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -5290,7 +5290,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const div = document.createElement('div');
@@ -5309,7 +5309,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('x-input', class extends window.HTMLElement {
         static formAssociated = true;
@@ -5330,7 +5330,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('x-input',
         class extends window.HTMLElement {});
@@ -5348,7 +5348,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node1 = document.createElement('input');
       const node2 = document.createElement('fieldset');
@@ -5368,7 +5368,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node1 = document.createElement('input');
       const node2 = document.createElement('legend');
@@ -5388,7 +5388,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'disabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const field = document.createElement('fieldset');
       const legend = document.createElement('legend');
@@ -5408,7 +5408,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -5425,7 +5425,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node = document.createElement('input');
@@ -5444,7 +5444,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('x-input', class extends window.HTMLElement {
         static formAssociated = true;
@@ -5464,7 +5464,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('x-input',
         class extends window.HTMLElement {});
@@ -5481,7 +5481,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
@@ -5497,7 +5497,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const field = document.createElement('fieldset');
       const legend = document.createElement('legend');
@@ -5519,7 +5519,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const field = document.createElement('fieldset');
       const div = document.createElement('div');
@@ -5541,7 +5541,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
@@ -5562,7 +5562,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'enabled',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -5580,7 +5580,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('readonly', 'readonly');
@@ -5598,7 +5598,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -5617,7 +5617,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -5636,7 +5636,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -5653,7 +5653,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
@@ -5671,7 +5671,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -5686,7 +5686,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('readonly', 'readonly');
@@ -5704,7 +5704,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('disabled', 'disabled');
@@ -5722,7 +5722,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       const parent = document.getElementById('div0');
@@ -5737,7 +5737,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -5754,7 +5754,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-only',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'true');
@@ -5770,7 +5770,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -5787,7 +5787,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -5805,7 +5805,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -5823,7 +5823,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -5839,7 +5839,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('readonly', 'readonly');
@@ -5855,7 +5855,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('disabled', 'disabled');
@@ -5871,7 +5871,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       const parent = document.getElementById('div0');
@@ -5888,7 +5888,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('readonly', 'readonly');
@@ -5904,7 +5904,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('disabled', 'disabled');
@@ -5920,7 +5920,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'true');
@@ -5938,7 +5938,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'read-write',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -5953,7 +5953,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('placeholder', 'foo');
@@ -5972,7 +5972,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -5992,7 +5992,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'hidden');
@@ -6010,7 +6010,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('placeholder', 'foo');
@@ -6027,7 +6027,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('placeholder', ' ');
@@ -6046,7 +6046,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('placeholder', '');
@@ -6065,7 +6065,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.placeholder = 'foo';
@@ -6084,7 +6084,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.placeholder = '';
@@ -6103,7 +6103,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.placeholder = 'foo\r\nbar';
@@ -6120,7 +6120,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('placeholder', 'foo');
@@ -6139,7 +6139,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'checked',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6158,7 +6158,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'checked',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -6177,7 +6177,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'checked',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -6194,7 +6194,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'checked',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const node = document.createElement('option');
@@ -6214,7 +6214,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6233,7 +6233,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6249,7 +6249,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('progress');
       const parent = document.getElementById('div0');
@@ -6266,7 +6266,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('progress');
       node.setAttribute('value', '0');
@@ -6282,7 +6282,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node1 = document.createElement('input');
@@ -6311,7 +6311,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node1 = document.createElement('input');
@@ -6339,7 +6339,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node1 = document.createElement('input');
@@ -6365,7 +6365,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       form.id = 'form1';
@@ -6400,7 +6400,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6419,7 +6419,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6436,7 +6436,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -6452,7 +6452,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -6469,7 +6469,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -6488,7 +6488,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -6504,7 +6504,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const group = document.createElement('optgroup');
@@ -6528,7 +6528,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const group = document.createElement('optgroup');
@@ -6550,7 +6550,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const group = document.createElement('optgroup');
@@ -6576,7 +6576,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const group = document.createElement('optgroup');
@@ -6597,7 +6597,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const node = document.createElement('option');
@@ -6616,7 +6616,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       const node = document.createElement('option');
@@ -6636,7 +6636,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       container.setAttribute('multiple', 'multiple');
@@ -6656,7 +6656,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('select');
       container.setAttribute('multiple', 'multiple');
@@ -6680,7 +6680,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('datalist');
       const prev = document.createElement('option');
@@ -6702,7 +6702,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const container = document.createElement('datalist');
       const prev = document.createElement('option');
@@ -6721,7 +6721,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const p = document.createElement('p');
@@ -6742,7 +6742,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       const parent = document.getElementById('div0');
@@ -6757,7 +6757,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node = document.createElement('button');
@@ -6777,7 +6777,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('button');
       node.setAttribute('type', 'submit');
@@ -6793,7 +6793,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node = document.createElement('input');
@@ -6813,7 +6813,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'submit');
@@ -6829,7 +6829,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const form = document.createElement('form');
       const node = document.createElement('input');
@@ -6849,7 +6849,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'default',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'image');
@@ -6865,7 +6865,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -6885,7 +6885,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -6903,7 +6903,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -6925,7 +6925,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -6945,7 +6945,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -6967,7 +6967,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -6987,7 +6987,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7010,7 +7010,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7031,7 +7031,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7054,7 +7054,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'valid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7075,7 +7075,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -7095,7 +7095,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -7113,7 +7113,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7135,7 +7135,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7155,7 +7155,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7179,7 +7179,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7201,7 +7201,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7222,7 +7222,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('form');
       const input = document.createElement('input');
@@ -7245,7 +7245,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7266,7 +7266,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'invalid',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
@@ -7289,7 +7289,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.readonly = true;
@@ -7309,7 +7309,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.disabled = true;
@@ -7329,7 +7329,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('hidden', 'hidden');
@@ -7348,7 +7348,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -7367,7 +7367,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('min', '1');
@@ -7385,7 +7385,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7406,7 +7406,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -7427,7 +7427,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -7447,7 +7447,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -7466,7 +7466,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7485,7 +7485,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'in-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7504,7 +7504,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.readonly = true;
@@ -7520,7 +7520,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('hidden', 'hidden');
@@ -7536,7 +7536,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7557,7 +7557,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7578,7 +7578,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7597,7 +7597,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('required', 'required');
@@ -7615,7 +7615,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -7634,7 +7634,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7653,7 +7653,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -7670,7 +7670,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -7689,7 +7689,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -7708,7 +7708,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'file');
@@ -7727,7 +7727,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       node.setAttribute('required', 'required');
@@ -7745,7 +7745,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('select');
       node.setAttribute('required', 'required');
@@ -7763,7 +7763,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'required',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -7778,7 +7778,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
@@ -7795,7 +7795,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
@@ -7813,7 +7813,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
@@ -7831,7 +7831,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
@@ -7847,7 +7847,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
@@ -7865,7 +7865,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
@@ -7883,7 +7883,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('select');
       const parent = document.getElementById('div0');
@@ -7900,7 +7900,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('textarea');
       const parent = document.getElementById('div0');
@@ -7917,7 +7917,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'optional',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
       node.setAttribute('required', 'required');
@@ -7933,7 +7933,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'root',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.documentElement;
       const finder = new Finder(window);
@@ -7948,7 +7948,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'root',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -7963,7 +7963,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'empty',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const d1 = document.createElement('div');
       const p1 = document.createElement('p');
@@ -8017,7 +8017,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'first-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const next = document.createElement('div');
@@ -8036,7 +8036,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'first-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const prev = document.createElement('div');
       const node = document.createElement('div');
@@ -8053,7 +8053,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'first-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8068,7 +8068,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'last-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const next = document.createElement('div');
@@ -8085,7 +8085,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'last-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const prev = document.createElement('div');
       const node = document.createElement('div');
@@ -8104,7 +8104,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'last-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8119,7 +8119,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'only-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -8136,7 +8136,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'only-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const prev = document.createElement('div');
       const node = document.createElement('div');
@@ -8155,7 +8155,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'only-child',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8170,7 +8170,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.getElementById('dt2');
       const finder = new Finder(window);
@@ -8185,7 +8185,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8200,7 +8200,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.getElementById('dt2');
       const finder = new Finder(window);
@@ -8215,7 +8215,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8230,7 +8230,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const parent = document.createElement('dl');
       const node1 = document.createElement('dt');
@@ -8250,7 +8250,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       const finder = new Finder(window);
@@ -8265,7 +8265,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       document.getElementById('div0').appendChild(node);
@@ -8281,7 +8281,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('asdf');
       document.getElementById('div0').appendChild(node);
@@ -8298,7 +8298,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('sw-rey',
         class extends window.HTMLElement {});
@@ -8316,7 +8316,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('sw-finn',
         class extends window.HTMLElement {}, { extends: 'p' });
@@ -8335,7 +8335,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('sw-han');
       document.getElementById('div0').appendChild(node);
@@ -8349,7 +8349,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       node.setAttribute('is', 'sw-luke');
@@ -8364,7 +8364,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       node.setAttribute('is', 'asdf');
@@ -8379,7 +8379,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       window.customElements.define('foo-', class extends window.HTMLElement {});
       const node = document.createElement('foo-');
@@ -8396,7 +8396,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node =
         document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -8413,7 +8413,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node =
         document.createElementNS('http://www.w3.org/2000/svg', 'foo');
@@ -8431,7 +8431,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node =
         document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
@@ -8446,7 +8446,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'defined',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElementNS('http://www.example.com', 'foo');
       document.getElementById('div0').appendChild(node);
@@ -8461,7 +8461,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       document.getElementById('div0').appendChild(node);
@@ -8475,7 +8475,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       node.showPopover = () => {
@@ -8494,7 +8494,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       node.showPopover = () => {
@@ -8516,7 +8516,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('p');
       node.hidePopover = () => {
@@ -8536,7 +8536,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8550,7 +8550,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8565,7 +8565,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'after',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8579,7 +8579,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'after',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8596,7 +8596,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'autofill',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8610,7 +8610,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'autofill',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8627,7 +8627,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8641,7 +8641,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8657,7 +8657,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: '-webkit-foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8671,7 +8671,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: '-webkit-foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8687,7 +8687,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'webkit-foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8701,7 +8701,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: 'webkit-foo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8717,7 +8717,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: '-webkitfoo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8731,7 +8731,7 @@ describe('Finder', () => {
       const leaf = {
         children: null,
         name: '-webkitfoo',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
@@ -8749,7 +8749,7 @@ describe('Finder', () => {
       const ast = {
         children: null,
         name: 'foobar',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -8784,7 +8784,7 @@ describe('Finder', () => {
       const ast = {
         children: null,
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -8819,7 +8819,7 @@ describe('Finder', () => {
       const ast = {
         children: null,
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -8857,7 +8857,7 @@ describe('Finder', () => {
             children: [
               {
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               },
               {
                 name: ' ',
@@ -8865,14 +8865,14 @@ describe('Finder', () => {
               },
               {
                 name: 'foobar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             type: SELECTOR
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -8911,7 +8911,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -8919,7 +8919,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -8958,7 +8958,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'foobar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -8966,7 +8966,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9004,7 +9004,7 @@ describe('Finder', () => {
             children: [
               {
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               },
               {
                 name: ' ',
@@ -9012,14 +9012,14 @@ describe('Finder', () => {
               },
               {
                 name: 'foobar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             type: SELECTOR
           }
         ],
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9058,7 +9058,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -9066,7 +9066,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9105,7 +9105,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -9113,7 +9113,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9152,7 +9152,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'foobar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -9160,7 +9160,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host-context',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9206,7 +9206,7 @@ describe('Finder', () => {
                 ],
                 loc: null,
                 name: 'state',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -9214,7 +9214,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -9285,7 +9285,7 @@ describe('Finder', () => {
                 ],
                 loc: null,
                 name: 'state',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -9293,7 +9293,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -9357,7 +9357,7 @@ describe('Finder', () => {
                 ],
                 loc: null,
                 name: 'state',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -9365,7 +9365,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -9428,7 +9428,7 @@ describe('Finder', () => {
                 ],
                 loc: null,
                 name: 'state',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -9436,7 +9436,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       class LabeledCheckbox extends window.HTMLElement {
         constructor() {
@@ -9498,7 +9498,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const ast = {
         name: EMPTY,
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup(':is()', document);
@@ -9510,7 +9510,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const ast = {
         name: 'foo',
-        type: SELECTOR_CLASS
+        type: CLASS_SELECTOR
       };
       const node = document.getElementById('div5');
       const finder = new Finder(window);
@@ -9525,7 +9525,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo',
-        type: SELECTOR_CLASS
+        type: CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.classList.add('foo');
@@ -9543,7 +9543,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const ast = {
         name: 'bar',
-        type: SELECTOR_CLASS
+        type: CLASS_SELECTOR
       };
       const node = document.createElement('div');
       node.classList.add('foo');
@@ -9559,7 +9559,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'div0',
-        type: SELECTOR_ID
+        type: ID_SELECTOR
       };
       const node = document.getElementById('div0');
       const finder = new Finder(window);
@@ -9574,7 +9574,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const ast = {
         name: 'foo',
-        type: SELECTOR_ID
+        type: ID_SELECTOR
       };
       const node = document.getElementById('div0');
       const finder = new Finder(window);
@@ -9587,7 +9587,7 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const ast = {
         name: 'foo\\ bar',
-        type: SELECTOR_ID
+        type: ID_SELECTOR
       };
       const node = document.createElement('div');
       node.setAttribute('id', 'foo bar');
@@ -9608,9 +9608,9 @@ describe('Finder', () => {
         finder: null,
         name: {
           name: 'hidden',
-          type: IDENTIFIER
+          type: IDENT
         },
-        type: SELECTOR_ATTR,
+        type: ATTR_SELECTOR,
         value: null
       };
       const node = document.getElementById('span3');
@@ -9626,7 +9626,7 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const ast = {
         name: 'dt',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
@@ -9647,7 +9647,7 @@ describe('Finder', () => {
                 children: [
                   {
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ],
                 type: SELECTOR
@@ -9657,7 +9657,7 @@ describe('Finder', () => {
           }
         ],
         name: 'is',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
@@ -9673,7 +9673,7 @@ describe('Finder', () => {
       const ast = {
         children: null,
         name: 'before',
-        type: SELECTOR_PSEUDO_ELEMENT
+        type: PS_ELEMENT_SELECTOR
       };
       const node = document.documentElement;
       const finder = new Finder(window);
@@ -9691,7 +9691,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -9699,7 +9699,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9740,7 +9740,7 @@ describe('Finder', () => {
               {
                 loc: null,
                 name: 'foobar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -9748,7 +9748,7 @@ describe('Finder', () => {
           }
         ],
         name: 'host',
-        type: SELECTOR_PSEUDO_CLASS
+        type: PS_CLASS_SELECTOR
       };
       const html = `
           <template id="template">
@@ -9785,11 +9785,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li1',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         },
         {
           name: 'li',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         }
       ];
       const node = document.getElementById('li1');
@@ -9803,11 +9803,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li1',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         },
         {
           name: 'foobar',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         }
       ];
       const node = document.getElementById('li1');
@@ -9835,12 +9835,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'last-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const items = document.getElementsByTagName('li');
@@ -9861,7 +9861,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'foobar',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         }
       ];
       const parent = document.createElement('div');
@@ -9879,7 +9879,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: '\\*',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const node = document.getElementById('ul1');
@@ -9894,7 +9894,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li3',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -9912,7 +9912,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'foobar',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -9927,7 +9927,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'ul1',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -9942,11 +9942,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li3',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         },
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -9964,11 +9964,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li3',
-          type: SELECTOR_ID
+          type: ID_SELECTOR
         },
         {
           name: 'foobar',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -9983,7 +9983,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10002,12 +10002,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         },
         {
           children: null,
           name: 'first-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10024,7 +10024,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'foobar',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10039,7 +10039,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'div',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const doc =
@@ -10065,7 +10065,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: '*|li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10080,7 +10080,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10099,12 +10099,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'first-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10121,7 +10121,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'ol',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const refNode = document.getElementById('div1');
@@ -10136,7 +10136,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'before',
-          type: SELECTOR_PSEUDO_ELEMENT
+          type: PS_ELEMENT_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10154,9 +10154,9 @@ describe('Finder', () => {
           finder: null,
           name: {
             name: 'hidden',
-            type: IDENTIFIER
+            type: IDENT
           },
-          type: SELECTOR_ATTR,
+          type: ATTR_SELECTOR,
           value: null
         }
       ];
@@ -10173,7 +10173,7 @@ describe('Finder', () => {
         {
           children: null,
           name: 'first-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const refNode = document.getElementById('ul1');
@@ -10195,7 +10195,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10217,7 +10217,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10237,7 +10237,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10261,7 +10261,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10283,7 +10283,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10306,7 +10306,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10326,7 +10326,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10351,7 +10351,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10373,7 +10373,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10395,7 +10395,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10415,7 +10415,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_CLASS
+            type: CLASS_SELECTOR
           }
         ]
       };
@@ -10441,7 +10441,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'foobar',
-            type: SELECTOR_CLASS
+            type: CLASS_SELECTOR
           }
         ]
       };
@@ -10463,7 +10463,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10485,7 +10485,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -10505,7 +10505,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_CLASS
+            type: CLASS_SELECTOR
           }
         ]
       };
@@ -10531,7 +10531,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'foobar',
-            type: SELECTOR_CLASS
+            type: CLASS_SELECTOR
           }
         ]
       };
@@ -10553,7 +10553,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'dd2',
-            type: SELECTOR_ID
+            type: ID_SELECTOR
           }
         ]
       };
@@ -10577,7 +10577,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'foobar',
-            type: SELECTOR_ID
+            type: ID_SELECTOR
           }
         ]
       };
@@ -10685,11 +10685,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         },
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10706,11 +10706,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'foo',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         },
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10728,7 +10728,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const leaf = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('li', node);
@@ -10743,7 +10743,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const leaf = {
         name: 'li',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('ul > li', node);
@@ -10760,7 +10760,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const leaf = {
         name: 'ul',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('ul', node);
@@ -10775,7 +10775,7 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const leaf = {
         name: 'ol',
-        type: SELECTOR_TYPE
+        type: TYPE_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('ol', node);
@@ -10790,7 +10790,7 @@ describe('Finder', () => {
       const node = document.getElementById('li2');
       const leaf = {
         name: 'li',
-        type: SELECTOR_CLASS
+        type: CLASS_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('li.li', node);
@@ -10807,7 +10807,7 @@ describe('Finder', () => {
       const node = document.getElementById('li2');
       const leaf = {
         name: 'li',
-        type: SELECTOR_CLASS
+        type: CLASS_SELECTOR
       };
       const finder = new Finder(window);
       finder.setup('li + li.li', node);
@@ -10826,11 +10826,11 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_CLASS
+          type: CLASS_SELECTOR
         },
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10847,7 +10847,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'ol',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10915,12 +10915,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'last-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10942,12 +10942,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'last-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10970,7 +10970,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -10997,7 +10997,7 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         }
       ];
       const finder = new Finder(window);
@@ -11101,12 +11101,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'last-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const node = document.getElementById('ul1');
@@ -11129,12 +11129,12 @@ describe('Finder', () => {
       const leaves = [
         {
           name: 'li',
-          type: SELECTOR_TYPE
+          type: TYPE_SELECTOR
         },
         {
           children: null,
           name: 'last-child',
-          type: SELECTOR_PSEUDO_CLASS
+          type: PS_CLASS_SELECTOR
         }
       ];
       const node = document.getElementById('ul1');
@@ -11829,13 +11829,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -11857,13 +11857,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -11873,7 +11873,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -11906,13 +11906,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -11934,13 +11934,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -11950,7 +11950,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -11983,13 +11983,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12011,13 +12011,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -12027,7 +12027,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12064,13 +12064,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'last-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12092,13 +12092,13 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   },
                   {
                     children: null,
                     loc: null,
                     name: 'first-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               },
@@ -12108,7 +12108,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12169,7 +12169,7 @@ describe('Finder', () => {
                     ],
                     loc: null,
                     name: 'nth-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12200,7 +12200,7 @@ describe('Finder', () => {
                     ],
                     loc: null,
                     name: 'nth-of-type',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12257,7 +12257,7 @@ describe('Finder', () => {
                     ],
                     loc: null,
                     name: 'nth-child',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12288,7 +12288,7 @@ describe('Finder', () => {
                     ],
                     loc: null,
                     name: 'nth-of-type',
-                    type: SELECTOR_PSEUDO_CLASS
+                    type: PS_CLASS_SELECTOR
                   }
                 ]
               }
@@ -12332,7 +12332,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'div',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12375,7 +12375,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'root',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12411,7 +12411,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: '*',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12421,7 +12421,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12461,7 +12461,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: '*',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12471,7 +12471,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12511,7 +12511,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12521,7 +12521,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: '*',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12559,7 +12559,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12569,7 +12569,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: '*',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12607,7 +12607,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul1',
-                    type: SELECTOR_ID
+                    type: ID_SELECTOR
                   }
                 ]
               },
@@ -12617,7 +12617,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li1',
-                    type: SELECTOR_ID
+                    type: ID_SELECTOR
                   }
                 ]
               }
@@ -12655,7 +12655,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12665,7 +12665,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li1',
-                    type: SELECTOR_ID
+                    type: ID_SELECTOR
                   }
                 ]
               }
@@ -12703,7 +12703,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul1',
-                    type: SELECTOR_ID
+                    type: ID_SELECTOR
                   }
                 ]
               },
@@ -12713,7 +12713,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12751,7 +12751,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12762,12 +12762,12 @@ describe('Finder', () => {
                     children: null,
                     loc: null,
                     name: 'after',
-                    type: SELECTOR_PSEUDO_ELEMENT
+                    type: PS_ELEMENT_SELECTOR
                   },
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12804,12 +12804,12 @@ describe('Finder', () => {
                     children: null,
                     loc: null,
                     name: 'before',
-                    type: SELECTOR_PSEUDO_ELEMENT
+                    type: PS_ELEMENT_SELECTOR
                   },
                   {
                     loc: null,
                     name: 'ul',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               },
@@ -12819,7 +12819,7 @@ describe('Finder', () => {
                   {
                     loc: null,
                     name: 'li',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ]
               }
@@ -12848,7 +12848,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -12871,7 +12871,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };
@@ -12896,7 +12896,7 @@ describe('Finder', () => {
         leaves: [
           {
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       };

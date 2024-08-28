@@ -14,11 +14,11 @@ import {
 
 /* constants */
 import {
-  BIT_01, COMBINATOR, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, ELEMENT_NODE,
-  EMPTY, NOT_SUPPORTED_ERR, REG_LOGICAL_PSEUDO, REG_TYPE_INPUT, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
-  TARGET_SELF, TEXT_NODE, WALKER_FILTER
+  ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, NOT_SUPPORTED_ERR,
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, REG_INPUT_TYPE, REG_LOGICAL,
+  SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF,
+  TEXT_NODE, TYPE_SELECTOR, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -838,7 +838,7 @@ export class Finder {
     } = opt;
     const matched = new Set();
     // :has(), :is(), :not(), :where()
-    if (REG_LOGICAL_PSEUDO.test(astName)) {
+    if (REG_LOGICAL.test(astName)) {
       let astData;
       if (this.#astCache.has(ast)) {
         astData = this.#astCache.get(ast);
@@ -1204,7 +1204,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || REG_TYPE_INPUT.test(node.type)) &&
+              if ((!node.type || REG_INPUT_TYPE.test(node.type)) &&
                   (node.readonly || node.hasAttribute('readonly') ||
                    node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1229,7 +1229,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if ((!node.type || REG_TYPE_INPUT.test(node.type)) &&
+              if ((!node.type || REG_INPUT_TYPE.test(node.type)) &&
                   !(node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled'))) {
                 matched.add(node);
@@ -1486,7 +1486,7 @@ export class Finder {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
               if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_TYPE_INPUT.test(inputType)) {
+                  REG_INPUT_TYPE.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1507,7 +1507,7 @@ export class Finder {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
               if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_TYPE_INPUT.test(inputType)) {
+                  REG_INPUT_TYPE.test(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1777,23 +1777,23 @@ export class Finder {
     }
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
-        case SELECTOR_PSEUDO_ELEMENT: {
+        case PS_ELEMENT_SELECTOR: {
           this.#matcher.matchPseudoElementSelector(astName, opt);
           break;
         }
-        case SELECTOR_ID: {
+        case ID_SELECTOR: {
           if (node.id === astName) {
             matched.add(node);
           }
           break;
         }
-        case SELECTOR_CLASS: {
+        case CLASS_SELECTOR: {
           if (node.classList.contains(astName)) {
             matched.add(node);
           }
           break;
         }
-        case SELECTOR_PSEUDO_CLASS: {
+        case PS_CLASS_SELECTOR: {
           const nodes = this._matchPseudoClassSelector(ast, node, opt);
           return nodes;
         }
@@ -1804,9 +1804,9 @@ export class Finder {
           }
         }
       }
-    } else if (this.#shadow && astType === SELECTOR_PSEUDO_CLASS &&
+    } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (astName !== 'has' && REG_LOGICAL_PSEUDO.test(astName)) {
+      if (astName !== 'has' && REG_LOGICAL.test(astName)) {
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
       } else if (REG_SHADOW_HOST.test(astName)) {
@@ -1847,12 +1847,12 @@ export class Finder {
       }
       for (const leaf of leaves) {
         switch (leaf.type) {
-          case SELECTOR_ATTR:
-          case SELECTOR_ID: {
+          case ATTR_SELECTOR:
+          case ID_SELECTOR: {
             cacheable = false;
             break;
           }
-          case SELECTOR_PSEUDO_CLASS: {
+          case PS_CLASS_SELECTOR: {
             if (/^(?:(?:any-)?link|defined|dir)$/.test(leaf.name)) {
               cacheable = false;
             }
@@ -1932,11 +1932,11 @@ export class Finder {
       pending = true;
     } else {
       switch (leafType) {
-        case SELECTOR_PSEUDO_ELEMENT: {
+        case PS_ELEMENT_SELECTOR: {
           this.#matcher.matchPseudoElementSelector(leafName, opt);
           break;
         }
-        case SELECTOR_ID: {
+        case ID_SELECTOR: {
           if (this.#root.nodeType === ELEMENT_NODE) {
             pending = true;
           } else {
@@ -1954,7 +1954,7 @@ export class Finder {
           }
           break;
         }
-        case SELECTOR_CLASS: {
+        case CLASS_SELECTOR: {
           const items = baseNode.getElementsByClassName(leafName);
           nodes = this._matchHTMLCollection(items, {
             compound,
@@ -1962,7 +1962,7 @@ export class Finder {
           });
           break;
         }
-        case SELECTOR_TYPE: {
+        case TYPE_SELECTOR: {
           if (this.#document.contentType === 'text/html' &&
               !/[*|]/.test(leafName)) {
             const items = baseNode.getElementsByTagName(leafName);
@@ -2333,13 +2333,13 @@ export class Finder {
     let filtered = false;
     let pending = false;
     switch (leafType) {
-      case SELECTOR_PSEUDO_ELEMENT: {
+      case PS_ELEMENT_SELECTOR: {
         this.#matcher.matchPseudoElementSelector(leafName, {
           warn: this.#warn
         });
         break;
       }
-      case SELECTOR_ID: {
+      case ID_SELECTOR: {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
@@ -2370,7 +2370,7 @@ export class Finder {
         }
         break;
       }
-      case SELECTOR_CLASS: {
+      case CLASS_SELECTOR: {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
@@ -2394,7 +2394,7 @@ export class Finder {
         }
         break;
       }
-      case SELECTOR_TYPE: {
+      case TYPE_SELECTOR: {
         if (targetType === TARGET_SELF) {
           [nodes, filtered] = this._matchSelf(leaves);
         } else if (targetType === TARGET_LINEAL) {
@@ -2484,19 +2484,19 @@ export class Finder {
               type: lastType
             }]
           } = lastTwig;
-          if (lastType === SELECTOR_PSEUDO_ELEMENT ||
-              lastType === SELECTOR_ID) {
+          if (lastType === PS_ELEMENT_SELECTOR ||
+              lastType === ID_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
-          } else if (firstType === SELECTOR_PSEUDO_ELEMENT ||
-                     firstType === SELECTOR_ID) {
+          } else if (firstType === PS_ELEMENT_SELECTOR ||
+                     firstType === ID_SELECTOR) {
             dir = DIR_NEXT;
             twig = firstTwig;
           } else if (targetType === TARGET_ALL) {
-            if (firstName === '*' && firstType === SELECTOR_TYPE) {
+            if (firstName === '*' && firstType === TYPE_SELECTOR) {
               dir = DIR_PREV;
               twig = lastTwig;
-            } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
+            } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
               dir = DIR_NEXT;
               twig = firstTwig;
             } else if (branchLen === 2) {
@@ -2512,17 +2512,17 @@ export class Finder {
               dir = DIR_NEXT;
               twig = firstTwig;
             }
-          } else if (lastName === '*' && lastType === SELECTOR_TYPE) {
+          } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
             dir = DIR_NEXT;
             twig = firstTwig;
-          } else if (firstName === '*' && firstType === SELECTOR_TYPE) {
+          } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
           } else {
             let bool;
             for (const { combo, leaves: [leaf] } of branch) {
               const { name: leafName, type: leafType } = leaf;
-              if (leafType === SELECTOR_PSEUDO_CLASS && leafName === 'dir') {
+              if (leafType === PS_CLASS_SELECTOR && leafName === 'dir') {
                 bool = false;
                 break;
               }

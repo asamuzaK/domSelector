@@ -11,9 +11,9 @@ import * as parser from '../src/js/parser.js';
 
 /* constants */
 import {
-  AN_PLUS_B, COMBINATOR, IDENTIFIER, NTH, RAW, SELECTOR, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_LIST, SELECTOR_PSEUDO_CLASS,
-  SELECTOR_PSEUDO_ELEMENT, SELECTOR_TYPE, STRING
+  AN_PLUS_B, ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR,
+  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, RAW, SELECTOR, SELECTOR_LIST,
+  STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 describe('unescape selector', () => {
@@ -201,7 +201,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'undefined',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -222,7 +222,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'undefined',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -243,7 +243,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'null',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -264,7 +264,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'eof\u{FFFD}',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -289,13 +289,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'align',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'center',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -321,7 +321,7 @@ describe('create AST from CSS selector', () => {
                       {
                         loc: null,
                         name: 'foo',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -330,7 +330,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'slotted',
-                type: SELECTOR_PSEUDO_ELEMENT
+                type: PS_ELEMENT_SELECTOR
               }
             ],
             loc: null,
@@ -351,7 +351,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo bar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -372,7 +372,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\1 2',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -393,7 +393,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\u{2003}',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -414,7 +414,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\u{A0}',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -435,7 +435,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\12345 ',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -456,7 +456,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\12345 foo',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -477,7 +477,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'div',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -488,7 +488,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'foo',
-                            type: SELECTOR_CLASS
+                            type: CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -501,7 +501,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'not',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -524,7 +524,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -545,7 +545,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '|*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -566,7 +566,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*|*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -587,7 +587,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo|*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -608,7 +608,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -618,7 +618,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -639,7 +639,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -649,7 +649,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -670,12 +670,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -696,12 +696,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -722,7 +722,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '*',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 flags: null,
@@ -731,9 +731,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -757,7 +757,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -778,7 +778,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -789,7 +789,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -810,7 +810,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '|foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -831,7 +831,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo|bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -866,7 +866,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -887,7 +887,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '-foo',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -908,7 +908,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\123',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -929,7 +929,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '-\\123',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -950,12 +950,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -980,12 +980,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '|foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -1006,17 +1006,17 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               },
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -1051,7 +1051,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1072,7 +1072,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '-foo',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1093,7 +1093,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\123',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1114,7 +1114,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '-\\123',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1135,12 +1135,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1165,12 +1165,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '|foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1191,7 +1191,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: '\\30 nextIsWhiteSpace',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1212,7 +1212,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo\\ bar',
-                type: SELECTOR_ID
+                type: ID_SELECTOR
               }
             ],
             loc: null,
@@ -1247,9 +1247,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1271,7 +1271,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 flags: null,
@@ -1280,9 +1280,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1308,9 +1308,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: '|foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1336,9 +1336,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: '*|foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1364,9 +1364,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo|bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: null
               }
             ],
@@ -1392,13 +1392,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1424,9 +1424,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1456,9 +1456,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1488,9 +1488,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1520,9 +1520,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo|bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1552,13 +1552,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1584,13 +1584,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1616,13 +1616,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1648,13 +1648,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1680,13 +1680,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1712,13 +1712,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1744,13 +1744,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1776,9 +1776,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1808,9 +1808,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1840,9 +1840,9 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   type: STRING,
@@ -1872,13 +1872,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1904,13 +1904,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1937,13 +1937,13 @@ describe('create AST from CSS selector', () => {
                 name: {
                   loc: null,
                   name: 'foo',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
-                type: SELECTOR_ATTR,
+                type: ATTR_SELECTOR,
                 value: {
                   loc: null,
                   name: 'bar',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               }
             ],
@@ -1972,7 +1972,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -1993,13 +1993,13 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: null,
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2021,13 +2021,13 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'foo-bar',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 children: null,
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2055,7 +2055,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2083,7 +2083,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2105,7 +2105,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'any-link',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2127,7 +2127,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'link',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2149,7 +2149,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'visited',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2171,7 +2171,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'local-link',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2193,7 +2193,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'target',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2215,7 +2215,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'target-within',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2237,7 +2237,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'scope',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2259,7 +2259,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'current',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2288,7 +2288,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'current',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2310,7 +2310,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'past',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2332,7 +2332,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'future',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2354,7 +2354,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'active',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2376,7 +2376,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'hover',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2398,7 +2398,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'focus',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2420,7 +2420,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'focus-within',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2442,7 +2442,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'focus-visible',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2464,7 +2464,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'enabled',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2486,7 +2486,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'disabled',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2508,7 +2508,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'read-write',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2530,7 +2530,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'read-only',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2552,7 +2552,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'placeholder-shown',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2574,7 +2574,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'default',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2596,7 +2596,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'checked',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2618,7 +2618,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'indeterminate',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2640,7 +2640,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'valid',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2662,7 +2662,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'invalid',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2684,7 +2684,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'in-range',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2706,7 +2706,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'out-of-range',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2728,7 +2728,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'required',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2750,7 +2750,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'optional',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2772,7 +2772,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'blank',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2794,7 +2794,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'user-invalid',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2816,7 +2816,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'root',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2838,7 +2838,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'empty',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2860,7 +2860,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'first-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2882,7 +2882,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2904,7 +2904,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'only-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2926,7 +2926,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'first-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2948,7 +2948,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'last-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -2970,7 +2970,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'only-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3003,7 +3003,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'foo',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3016,7 +3016,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'not',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3049,7 +3049,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'foo',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3062,7 +3062,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'is',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3073,7 +3073,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3086,7 +3086,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'not',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3119,7 +3119,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'foo',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3132,7 +3132,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'not',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3143,7 +3143,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3156,7 +3156,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'not',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3183,7 +3183,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '*|*',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3196,7 +3196,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'not',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3225,7 +3225,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '__EMPTY__',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3238,7 +3238,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3265,7 +3265,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '__EMPTY__',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3278,7 +3278,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3311,7 +3311,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: '__EMPTY__',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3324,7 +3324,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'is',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3337,7 +3337,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3364,7 +3364,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'foo',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3377,7 +3377,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3410,7 +3410,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'foo',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3423,7 +3423,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'not',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3434,7 +3434,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3447,7 +3447,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3474,7 +3474,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '*|*',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3487,7 +3487,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'is',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3516,7 +3516,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '__EMPTY__',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3529,7 +3529,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3556,7 +3556,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '__EMPTY__',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3569,7 +3569,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3602,7 +3602,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: '__EMPTY__',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3615,7 +3615,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'where',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3628,7 +3628,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3655,7 +3655,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'foo',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3668,7 +3668,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3701,7 +3701,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'foo',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -3714,7 +3714,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'not',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3725,7 +3725,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3738,7 +3738,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3765,7 +3765,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '*|*',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3778,7 +3778,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'where',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -3805,7 +3805,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -3821,7 +3821,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3834,7 +3834,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -3844,7 +3844,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -3865,7 +3865,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -3881,7 +3881,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           },
                           {
                             loc: null,
@@ -3891,7 +3891,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'baz',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3904,7 +3904,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -3914,7 +3914,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'qux',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -3935,7 +3935,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -3946,7 +3946,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -3959,7 +3959,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -3969,7 +3969,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -3990,7 +3990,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4001,7 +4001,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4012,7 +4012,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'baz',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4025,7 +4025,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -4035,7 +4035,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'qux',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -4056,7 +4056,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4072,7 +4072,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4088,7 +4088,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'baz',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4101,7 +4101,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -4111,7 +4111,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'qux',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -4132,7 +4132,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4149,7 +4149,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'bar',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -4160,7 +4160,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'baz',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -4173,7 +4173,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'is',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           },
                           {
                             loc: null,
@@ -4183,7 +4183,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'qux',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4196,7 +4196,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4217,7 +4217,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4239,7 +4239,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'bar',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -4250,7 +4250,7 @@ describe('create AST from CSS selector', () => {
                                       {
                                         loc: null,
                                         name: 'baz',
-                                        type: SELECTOR_TYPE
+                                        type: TYPE_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -4263,7 +4263,7 @@ describe('create AST from CSS selector', () => {
                             ],
                             loc: null,
                             name: 'is',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           },
                           {
                             loc: null,
@@ -4273,7 +4273,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'qux',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4286,7 +4286,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4307,7 +4307,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4318,7 +4318,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: '*|*',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4331,7 +4331,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4352,7 +4352,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4363,7 +4363,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4376,7 +4376,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4397,7 +4397,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 children: [
@@ -4413,7 +4413,7 @@ describe('create AST from CSS selector', () => {
                           {
                             loc: null,
                             name: 'bar',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4426,7 +4426,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4459,7 +4459,7 @@ describe('create AST from CSS selector', () => {
                             children: null,
                             loc: null,
                             name: 'scope',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -4472,7 +4472,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'has',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4507,7 +4507,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'even',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -4515,7 +4515,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4540,7 +4540,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -4548,7 +4548,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4582,7 +4582,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4616,7 +4616,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4655,7 +4655,7 @@ describe('create AST from CSS selector', () => {
                             {
                               loc: null,
                               name: 'foo',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -4670,7 +4670,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4695,7 +4695,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: {
                       children: [
@@ -4714,9 +4714,9 @@ describe('create AST from CSS selector', () => {
                                           name: {
                                             loc: null,
                                             name: 'hidden',
-                                            type: IDENTIFIER
+                                            type: IDENT
                                           },
-                                          type: SELECTOR_ATTR,
+                                          type: ATTR_SELECTOR,
                                           value: null
                                         }
                                       ],
@@ -4730,7 +4730,7 @@ describe('create AST from CSS selector', () => {
                               ],
                               loc: null,
                               name: 'not',
-                              type: SELECTOR_PSEUDO_CLASS
+                              type: PS_CLASS_SELECTOR
                             }
                           ],
                           loc: null,
@@ -4745,7 +4745,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4770,7 +4770,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: {
                       children: [
@@ -4785,7 +4785,7 @@ describe('create AST from CSS selector', () => {
                                         {
                                           loc: null,
                                           name: 'foo',
-                                          type: SELECTOR_CLASS
+                                          type: CLASS_SELECTOR
                                         }
                                       ],
                                       loc: null,
@@ -4798,7 +4798,7 @@ describe('create AST from CSS selector', () => {
                               ],
                               loc: null,
                               name: 'not',
-                              type: SELECTOR_PSEUDO_CLASS
+                              type: PS_CLASS_SELECTOR
                             }
                           ],
                           loc: null,
@@ -4813,7 +4813,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4846,7 +4846,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'even',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -4854,7 +4854,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4879,7 +4879,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -4887,7 +4887,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4921,7 +4921,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4955,7 +4955,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -4994,7 +4994,7 @@ describe('create AST from CSS selector', () => {
                             {
                               loc: null,
                               name: 'foo',
-                              type: SELECTOR_TYPE
+                              type: TYPE_SELECTOR
                             }
                           ],
                           loc: null,
@@ -5009,7 +5009,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-child',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5042,7 +5042,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'even',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -5050,7 +5050,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5075,7 +5075,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -5083,7 +5083,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5117,7 +5117,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5151,7 +5151,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5188,7 +5188,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'even',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -5196,7 +5196,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5221,7 +5221,7 @@ describe('create AST from CSS selector', () => {
                     nth: {
                       loc: null,
                       name: 'odd',
-                      type: IDENTIFIER
+                      type: IDENT
                     },
                     selector: null,
                     type: NTH
@@ -5229,7 +5229,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5263,7 +5263,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5297,7 +5297,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-of-type',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5330,7 +5330,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-col',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5359,7 +5359,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'nth-last-col',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5384,12 +5384,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'foo',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'dir',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5412,12 +5412,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'ltr',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'dir',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5440,12 +5440,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'rtr',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'dir',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5468,12 +5468,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'auto',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'dir',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5496,12 +5496,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'de',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5524,12 +5524,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'de-DE',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5553,17 +5553,17 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'de',
-                    type: IDENTIFIER
+                    type: IDENT
                   },
                   {
                     loc: null,
                     name: 'fr',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5586,12 +5586,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: '\\*-Latn',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5614,12 +5614,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: '\\*',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5642,12 +5642,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: 'en-US',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5670,12 +5670,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: '\\*-Latn',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5698,12 +5698,12 @@ describe('create AST from CSS selector', () => {
                   {
                     loc: null,
                     name: '__EMPTY__',
-                    type: IDENTIFIER
+                    type: IDENT
                   }
                 ],
                 loc: null,
                 name: 'lang',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5733,7 +5733,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'state',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5765,7 +5765,7 @@ describe('create AST from CSS selector', () => {
                         ],
                         loc: null,
                         name: 'state',
-                        type: SELECTOR_PSEUDO_CLASS
+                        type: PS_CLASS_SELECTOR
                       }
                     ],
                     loc: null,
@@ -5774,7 +5774,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'host',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5798,7 +5798,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'host',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5831,7 +5831,7 @@ describe('create AST from CSS selector', () => {
                       {
                         loc: null,
                         name: 'foo',
-                        type: SELECTOR_CLASS
+                        type: CLASS_SELECTOR
                       }
                     ],
                     loc: null,
@@ -5840,7 +5840,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'host',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5865,7 +5865,7 @@ describe('create AST from CSS selector', () => {
                       {
                         loc: null,
                         name: 'foo',
-                        type: SELECTOR_CLASS
+                        type: CLASS_SELECTOR
                       }
                     ],
                     loc: null,
@@ -5874,7 +5874,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'host-context',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5902,7 +5902,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'before',
-                type: SELECTOR_PSEUDO_ELEMENT
+                type: PS_ELEMENT_SELECTOR
               }
             ],
             loc: null,
@@ -5925,7 +5925,7 @@ describe('create AST from CSS selector', () => {
                 children: null,
                 loc: null,
                 name: 'before',
-                type: SELECTOR_PSEUDO_CLASS
+                type: PS_CLASS_SELECTOR
               }
             ],
             loc: null,
@@ -5950,7 +5950,7 @@ describe('create AST from CSS selector', () => {
                       {
                         loc: null,
                         name: 'foo',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -5959,7 +5959,7 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'slotted',
-                type: SELECTOR_PSEUDO_ELEMENT
+                type: PS_ELEMENT_SELECTOR
               }
             ],
             loc: null,
@@ -5982,7 +5982,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -5992,7 +5992,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6013,7 +6013,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6023,12 +6023,12 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
                 name: 'baz',
-                type: SELECTOR_CLASS
+                type: CLASS_SELECTOR
               },
               {
                 loc: null,
@@ -6038,7 +6038,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'qux',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6059,7 +6059,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6069,7 +6069,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6090,7 +6090,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6116,7 +6116,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6126,7 +6126,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6147,7 +6147,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6178,7 +6178,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6199,7 +6199,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6209,7 +6209,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6230,7 +6230,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6261,7 +6261,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6292,7 +6292,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'foo',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               },
               {
                 loc: null,
@@ -6307,7 +6307,7 @@ describe('create AST from CSS selector', () => {
               {
                 loc: null,
                 name: 'bar',
-                type: SELECTOR_TYPE
+                type: TYPE_SELECTOR
               }
             ],
             loc: null,
@@ -6340,7 +6340,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'ul',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               loc: null,
@@ -6350,7 +6350,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'li',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             }
           ],
           loc: null,
@@ -6367,7 +6367,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -6377,7 +6377,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ],
@@ -6393,7 +6393,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'ul',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               loc: null,
@@ -6403,7 +6403,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'li',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             }
           ],
           loc: null,
@@ -6414,7 +6414,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'ol',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               loc: null,
@@ -6424,7 +6424,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'li',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             }
           ],
           loc: null,
@@ -6441,7 +6441,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -6451,14 +6451,14 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ],
         [
           {
             loc: null,
             name: 'ol',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -6468,7 +6468,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'li',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           }
         ]
       ],
@@ -6484,7 +6484,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'ul',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               loc: null,
@@ -6494,7 +6494,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'only-child',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6511,7 +6511,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'ul',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             loc: null,
@@ -6521,7 +6521,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'only-child',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6537,7 +6537,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'defined',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6554,7 +6554,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'defined',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6572,12 +6572,12 @@ describe('walk AST', () => {
                 {
                   loc: null,
                   name: 'auto',
-                  type: IDENTIFIER
+                  type: IDENT
                 }
               ],
               loc: null,
               name: 'dir',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6596,12 +6596,12 @@ describe('walk AST', () => {
               {
                 loc: null,
                 name: 'auto',
-                type: IDENTIFIER
+                type: IDENT
               }
             ],
             loc: null,
             name: 'dir',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6617,7 +6617,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'div',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               children: [
@@ -6628,7 +6628,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'foo',
-                          type: SELECTOR_CLASS
+                          type: CLASS_SELECTOR
                         }
                       ],
                       loc: null,
@@ -6641,7 +6641,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'not',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6658,7 +6658,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'div',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             children: [
@@ -6669,7 +6669,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: 'foo',
-                        type: SELECTOR_CLASS
+                        type: CLASS_SELECTOR
                       }
                     ],
                     loc: null,
@@ -6682,7 +6682,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6707,7 +6707,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: '*',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
@@ -6720,7 +6720,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'not',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6743,7 +6743,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: '*',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -6756,7 +6756,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6781,7 +6781,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: '*|*',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
@@ -6794,7 +6794,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'not',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6817,7 +6817,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: '*|*',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -6830,7 +6830,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -6853,7 +6853,7 @@ describe('walk AST', () => {
                     {
                       loc: null,
                       name: 'foo',
-                      type: SELECTOR_TYPE
+                      type: TYPE_SELECTOR
                     }
                   ],
                   loc: null,
@@ -6862,7 +6862,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'slotted',
-              type: SELECTOR_PSEUDO_ELEMENT
+              type: PS_ELEMENT_SELECTOR
             }
           ],
           loc: null,
@@ -6883,7 +6883,7 @@ describe('walk AST', () => {
                   {
                     loc: null,
                     name: 'foo',
-                    type: SELECTOR_TYPE
+                    type: TYPE_SELECTOR
                   }
                 ],
                 loc: null,
@@ -6892,7 +6892,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'slotted',
-            type: SELECTOR_PSEUDO_ELEMENT
+            type: PS_ELEMENT_SELECTOR
           }
         ]
       ],
@@ -6910,7 +6910,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'div',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               children: [
@@ -6921,7 +6921,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'ul',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         },
                         {
                           loc: null,
@@ -6931,7 +6931,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'li',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
@@ -6944,7 +6944,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'not',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -6961,7 +6961,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'div',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             children: [
@@ -6972,7 +6972,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: 'ul',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       },
                       {
                         loc: null,
@@ -6982,7 +6982,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: 'li',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -6995,7 +6995,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'not',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -7014,7 +7014,7 @@ describe('walk AST', () => {
             {
               loc: null,
               name: 'div',
-              type: SELECTOR_TYPE
+              type: TYPE_SELECTOR
             },
             {
               children: [
@@ -7025,7 +7025,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'ul',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         },
                         {
                           loc: null,
@@ -7035,7 +7035,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'li',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
@@ -7048,7 +7048,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'has',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -7065,7 +7065,7 @@ describe('walk AST', () => {
           {
             loc: null,
             name: 'div',
-            type: SELECTOR_TYPE
+            type: TYPE_SELECTOR
           },
           {
             children: [
@@ -7076,7 +7076,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: 'ul',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       },
                       {
                         loc: null,
@@ -7086,7 +7086,7 @@ describe('walk AST', () => {
                       {
                         loc: null,
                         name: 'li',
-                        type: SELECTOR_TYPE
+                        type: TYPE_SELECTOR
                       }
                     ],
                     loc: null,
@@ -7099,7 +7099,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'has',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -7123,13 +7123,13 @@ describe('walk AST', () => {
               name: {
                 loc: null,
                 name: 'foo',
-                type: IDENTIFIER
+                type: IDENT
               },
-              type: SELECTOR_ATTR,
+              type: ATTR_SELECTOR,
               value: {
                 loc: null,
                 name: 'bar',
-                type: IDENTIFIER
+                type: IDENT
               }
             }
           ],
@@ -7151,13 +7151,13 @@ describe('walk AST', () => {
             name: {
               loc: null,
               name: 'foo',
-              type: IDENTIFIER
+              type: IDENT
             },
-            type: SELECTOR_ATTR,
+            type: ATTR_SELECTOR,
             value: {
               loc: null,
               name: 'bar',
-              type: IDENTIFIER
+              type: IDENT
             }
           }
         ]
@@ -7178,7 +7178,7 @@ describe('walk AST', () => {
                   nth: {
                     loc: null,
                     name: 'odd',
-                    type: IDENTIFIER
+                    type: IDENT
                   },
                   selector: {
                     children: [
@@ -7197,9 +7197,9 @@ describe('walk AST', () => {
                                         name: {
                                           loc: null,
                                           name: 'hidden',
-                                          type: IDENTIFIER
+                                          type: IDENT
                                         },
-                                        type: SELECTOR_ATTR,
+                                        type: ATTR_SELECTOR,
                                         value: null
                                       }
                                     ],
@@ -7213,7 +7213,7 @@ describe('walk AST', () => {
                             ],
                             loc: null,
                             name: 'not',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -7228,7 +7228,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'nth-child',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -7249,7 +7249,7 @@ describe('walk AST', () => {
                 nth: {
                   loc: null,
                   name: 'odd',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
                 selector: {
                   children: [
@@ -7268,9 +7268,9 @@ describe('walk AST', () => {
                                       name: {
                                         loc: null,
                                         name: 'hidden',
-                                        type: IDENTIFIER
+                                        type: IDENT
                                       },
-                                      type: SELECTOR_ATTR,
+                                      type: ATTR_SELECTOR,
                                       value: null
                                     }
                                   ],
@@ -7284,7 +7284,7 @@ describe('walk AST', () => {
                           ],
                           loc: null,
                           name: 'not',
-                          type: SELECTOR_PSEUDO_CLASS
+                          type: PS_CLASS_SELECTOR
                         }
                       ],
                       loc: null,
@@ -7299,7 +7299,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'nth-child',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -7322,7 +7322,7 @@ describe('walk AST', () => {
                   nth: {
                     loc: null,
                     name: 'odd',
-                    type: IDENTIFIER
+                    type: IDENT
                   },
                   selector: {
                     children: [
@@ -7331,7 +7331,7 @@ describe('walk AST', () => {
                           {
                             loc: null,
                             name: 'foo',
-                            type: SELECTOR_TYPE
+                            type: TYPE_SELECTOR
                           }
                         ],
                         loc: null,
@@ -7346,7 +7346,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'nth-child',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -7367,7 +7367,7 @@ describe('walk AST', () => {
                 nth: {
                   loc: null,
                   name: 'odd',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
                 selector: {
                   children: [
@@ -7376,7 +7376,7 @@ describe('walk AST', () => {
                         {
                           loc: null,
                           name: 'foo',
-                          type: SELECTOR_TYPE
+                          type: TYPE_SELECTOR
                         }
                       ],
                       loc: null,
@@ -7391,7 +7391,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'nth-child',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -7413,7 +7413,7 @@ describe('walk AST', () => {
                   nth: {
                     loc: null,
                     name: 'odd',
-                    type: IDENTIFIER
+                    type: IDENT
                   },
                   selector: {
                     children: [
@@ -7428,7 +7428,7 @@ describe('walk AST', () => {
                                       {
                                         loc: null,
                                         name: 'foo',
-                                        type: SELECTOR_CLASS
+                                        type: CLASS_SELECTOR
                                       }
                                     ],
                                     loc: null,
@@ -7441,7 +7441,7 @@ describe('walk AST', () => {
                             ],
                             loc: null,
                             name: 'not',
-                            type: SELECTOR_PSEUDO_CLASS
+                            type: PS_CLASS_SELECTOR
                           }
                         ],
                         loc: null,
@@ -7456,7 +7456,7 @@ describe('walk AST', () => {
               ],
               loc: null,
               name: 'nth-child',
-              type: SELECTOR_PSEUDO_CLASS
+              type: PS_CLASS_SELECTOR
             }
           ],
           loc: null,
@@ -7477,7 +7477,7 @@ describe('walk AST', () => {
                 nth: {
                   loc: null,
                   name: 'odd',
-                  type: IDENTIFIER
+                  type: IDENT
                 },
                 selector: {
                   children: [
@@ -7492,7 +7492,7 @@ describe('walk AST', () => {
                                     {
                                       loc: null,
                                       name: 'foo',
-                                      type: SELECTOR_CLASS
+                                      type: CLASS_SELECTOR
                                     }
                                   ],
                                   loc: null,
@@ -7505,7 +7505,7 @@ describe('walk AST', () => {
                           ],
                           loc: null,
                           name: 'not',
-                          type: SELECTOR_PSEUDO_CLASS
+                          type: PS_CLASS_SELECTOR
                         }
                       ],
                       loc: null,
@@ -7520,7 +7520,7 @@ describe('walk AST', () => {
             ],
             loc: null,
             name: 'nth-child',
-            type: SELECTOR_PSEUDO_CLASS
+            type: PS_CLASS_SELECTOR
           }
         ]
       ],
@@ -7537,45 +7537,45 @@ describe('sort AST', () => {
 
   it('should get leaves', () => {
     const leaves = [
-      { type: SELECTOR_ATTR }
+      { type: ATTR_SELECTOR }
     ];
     const res = func(leaves);
     assert.deepEqual(res, [
-      { type: SELECTOR_ATTR }
+      { type: ATTR_SELECTOR }
     ], 'result');
   });
 
   it('should get sorted leaves', () => {
     const leaves = [
-      { type: SELECTOR_ATTR },
-      { type: SELECTOR_CLASS, name: 'foo' }
+      { type: ATTR_SELECTOR },
+      { type: CLASS_SELECTOR, name: 'foo' }
     ];
     const res = func(leaves);
     assert.deepEqual(res, [
-      { type: SELECTOR_CLASS, name: 'foo' },
-      { type: SELECTOR_ATTR }
+      { type: CLASS_SELECTOR, name: 'foo' },
+      { type: ATTR_SELECTOR }
     ], 'result');
   });
 
   it('should get sorted leaves', () => {
     const leaves = [
-      { type: SELECTOR_ATTR },
-      { type: SELECTOR_CLASS, name: 'bar' },
-      { type: SELECTOR_ID },
-      { type: SELECTOR_PSEUDO_CLASS },
-      { type: SELECTOR_CLASS, name: 'foo' },
-      { type: SELECTOR_PSEUDO_ELEMENT },
-      { type: SELECTOR_TYPE }
+      { type: ATTR_SELECTOR },
+      { type: CLASS_SELECTOR, name: 'bar' },
+      { type: ID_SELECTOR },
+      { type: PS_CLASS_SELECTOR },
+      { type: CLASS_SELECTOR, name: 'foo' },
+      { type: PS_ELEMENT_SELECTOR },
+      { type: TYPE_SELECTOR }
     ];
     const res = func(leaves);
     assert.deepEqual(res, [
-      { type: SELECTOR_PSEUDO_ELEMENT },
-      { type: SELECTOR_ID },
-      { type: SELECTOR_CLASS, name: 'bar' },
-      { type: SELECTOR_CLASS, name: 'foo' },
-      { type: SELECTOR_TYPE },
-      { type: SELECTOR_ATTR },
-      { type: SELECTOR_PSEUDO_CLASS }
+      { type: PS_ELEMENT_SELECTOR },
+      { type: ID_SELECTOR },
+      { type: CLASS_SELECTOR, name: 'bar' },
+      { type: CLASS_SELECTOR, name: 'foo' },
+      { type: TYPE_SELECTOR },
+      { type: ATTR_SELECTOR },
+      { type: PS_CLASS_SELECTOR }
     ], 'result');
   });
 });

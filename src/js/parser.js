@@ -8,10 +8,9 @@ import { getType } from './utility.js';
 
 /* constants */
 import {
-  BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF, BIT_HYPHEN,
-  DUO, EMPTY, HEX, NTH, REG_LOGICAL_PSEUDO, SELECTOR, SELECTOR_ATTR,
-  SELECTOR_CLASS, SELECTOR_ID, SELECTOR_PSEUDO_CLASS, SELECTOR_PSEUDO_ELEMENT,
-  SELECTOR_TYPE, SYNTAX_ERR, U_FFFD
+  ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
+  CLASS_SELECTOR, DUO, EMPTY, HEX, HYPHEN, ID_SELECTOR, NTH, PS_CLASS_SELECTOR,
+  PS_ELEMENT_SELECTOR, REG_LOGICAL, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR, U_FFFD
 } from './constant.js';
 const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
 const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
@@ -90,7 +89,7 @@ export const preprocess = (...args) => {
         throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
       }
       const codePoint = postHash.codePointAt(0);
-      if (codePoint === BIT_HYPHEN) {
+      if (codePoint === HYPHEN) {
         if (/^\d$/.test(postHash.substring(1, 2))) {
           throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
         }
@@ -193,8 +192,8 @@ export const walkAST = (ast = {}) => {
           branches.add(node.children);
           break;
         }
-        case SELECTOR_PSEUDO_CLASS: {
-          if (REG_LOGICAL_PSEUDO.test(node.name)) {
+        case PS_CLASS_SELECTOR: {
+          if (REG_LOGICAL.test(node.name)) {
             info.set('hasNestedSelector', true);
             info.set('hasLogicalPseudoFunc', true);
             if (node.name === 'has') {
@@ -203,7 +202,7 @@ export const walkAST = (ast = {}) => {
           }
           break;
         }
-        case SELECTOR_PSEUDO_ELEMENT: {
+        case PS_ELEMENT_SELECTOR: {
           if (REG_SHADOW_PSEUDO.test(node.name)) {
             info.set('hasNestedSelector', true);
           }
@@ -223,12 +222,11 @@ export const walkAST = (ast = {}) => {
   if (info.get('hasNestedSelector')) {
     findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === SELECTOR_PSEUDO_CLASS &&
-            REG_LOGICAL_PSEUDO.test(node.name)) {
+        if (node.type === PS_CLASS_SELECTOR && REG_LOGICAL.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
-              type === SELECTOR_PSEUDO_CLASS && REG_LOGICAL_PSEUDO.test(name);
+              type === PS_CLASS_SELECTOR && REG_LOGICAL.test(name);
             return res;
           });
           for (const { children } of itemList) {
@@ -242,12 +240,12 @@ export const walkAST = (ast = {}) => {
               }
             }
           }
-        } else if (node.type === SELECTOR_PSEUDO_ELEMENT &&
+        } else if (node.type === PS_ELEMENT_SELECTOR &&
                    REG_SHADOW_PSEUDO.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
-              type === SELECTOR_PSEUDO_ELEMENT && REG_SHADOW_PSEUDO.test(name);
+              type === PS_ELEMENT_SELECTOR && REG_SHADOW_PSEUDO.test(name);
             return res;
           });
           for (const { children } of itemList) {
@@ -292,12 +290,12 @@ export const sortAST = asts => {
   const arr = [...asts];
   if (arr.length > 1) {
     const order = new Map([
-      [SELECTOR_PSEUDO_ELEMENT, BIT_01],
-      [SELECTOR_ID, BIT_02],
-      [SELECTOR_CLASS, BIT_04],
-      [SELECTOR_TYPE, BIT_08],
-      [SELECTOR_ATTR, BIT_16],
-      [SELECTOR_PSEUDO_CLASS, BIT_32]
+      [PS_ELEMENT_SELECTOR, BIT_01],
+      [ID_SELECTOR, BIT_02],
+      [CLASS_SELECTOR, BIT_04],
+      [TYPE_SELECTOR, BIT_08],
+      [ATTR_SELECTOR, BIT_16],
+      [PS_CLASS_SELECTOR, BIT_32]
     ]);
     arr.sort((a, b) => {
       const { type: typeA } = a;

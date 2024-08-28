@@ -8,8 +8,8 @@ import { getDirectionality, getType, isNamespaceDeclared } from './utility.js';
 
 /* constants */
 import {
-  ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR, SELECTOR_ATTR,
-  SELECTOR_TYPE, SYNTAX_ERR
+  ALPHA_NUM, ATTR_SELECTOR, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR,
+  SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
 
 /* Matcher */
@@ -463,11 +463,11 @@ export class Matcher {
     }
     let matched;
     switch (ast.type) {
-      case SELECTOR_ATTR: {
+      case ATTR_SELECTOR: {
         matched = this._matchAttributeSelector(ast, node);
         break;
       }
-      case SELECTOR_TYPE: {
+      case TYPE_SELECTOR: {
         matched = this._matchTypeSelector(ast, node, opt ?? {});
         break;
       }
