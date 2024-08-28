@@ -2368,7 +2368,8 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const container = document.getElementById('container');
       const subject = document.getElementById('subject');
-      const count = 25000;
+      /* jsdom hangs. recursive call to ChildNode.remove() costs very high */
+      const count = 10000; // 25000;
       /* Before appending ${count} elements */
       assert.isTrue(subject.matches('main:has(span) .subject'));
       /* After appending ${count} elements */
@@ -2398,11 +2399,9 @@ describe('local wpt test cases', () => {
       assert.isFalse(subject.matches('main:has(div div span) .subject'));
       assert.isTrue(subject.matches('main:has(span + final) .subject'));
       /* After removing ${count} elements one-by-one */
-      /* jsdom hangs. recursive call to ChildNode.remove() costs very high
       for (let i = 0; i < count; ++i) {
         container.lastChild.remove();
       }
-      */
       container.lastChild.remove();
       assert.isFalse(subject.matches('main:has(span + final) .subject'));
       assert.isTrue(subject.matches('main:has(span + span) .subject'));
@@ -2410,7 +2409,7 @@ describe('local wpt test cases', () => {
       container.replaceChildren();
       assert.isFalse(subject.matches('main:has(span) .subject'));
       assert.isTrue(subject.matches('main .subject'));
-    }).timeout(20 * 1000);
+    }).timeout(60 * 1000);
   });
 
   describe('css/selectors/invalidation/has-unstyled.html', () => {
