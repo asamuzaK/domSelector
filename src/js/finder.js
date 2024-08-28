@@ -363,13 +363,8 @@ export class Finder {
     const matched = new Set();
     let selectorBranches;
     if (selector) {
-      if (this.#astCache.has(selector)) {
-        selectorBranches = this.#astCache.get(selector);
-      } else {
-        const { branches } = walkAST(selector);
-        selectorBranches = branches;
-        this.#astCache.set(selector, selectorBranches);
-      }
+      const { branches } = walkAST(selector);
+      selectorBranches = branches;
     }
     if (parentNode) {
       const walker = this.#walker;
