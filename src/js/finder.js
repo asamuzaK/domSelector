@@ -118,6 +118,8 @@ export class Finder {
         } else {
           throw new this.#window.DOMException(e.message, e.name);
         }
+      } else if (e.name in this.#window) {
+        throw new this.#window[e.name](e.message);
       } else {
         throw e;
       }

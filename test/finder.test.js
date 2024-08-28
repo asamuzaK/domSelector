@@ -110,7 +110,14 @@ describe('Finder', () => {
     it('should throw', () => {
       const err = new TypeError('error');
       const finder = new Finder(window);
-      assert.throws(() => finder.onError(err), TypeError, 'error');
+      assert.throws(() => finder.onError(err), window.TypeError, 'error');
+    });
+
+    it('should throw', () => {
+      const err = new Error('error');
+      err.name = 'UnknownError';
+      const finder = new Finder(window);
+      assert.throws(() => finder.onError(err), Error, 'error');
     });
 
     it('should throw', () => {
