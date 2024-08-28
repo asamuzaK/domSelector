@@ -212,6 +212,7 @@ export const walkAST = (ast = {}) => {
         case NTH: {
           if (node.selector) {
             info.set('hasNestedSelector', true);
+            info.set('hasNthChildOfSelector', true);
           }
           break;
         }

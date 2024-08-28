@@ -3059,6 +3059,173 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/is-where-pseudo-containing-hard-pseudo.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <style>
+          .container {
+            color: grey;
+          }
+          #subject1:is(.other-match, :has(.descendant)) {
+            color: red;
+          }
+          #subject1:is(.parent > .other-match, .parent > :has(.descendant)) {
+            color: orangered;
+          }
+          #subject2:where(.other-match, :has(.descendant)) {
+            color: darkred;
+          }
+          #subject2:where(.parent > .other-match, .parent > :has(.descendant)) {
+            color: pink;
+          }
+          #subject3:is(.other-match, :nth-child(1000 of .another-match)) {
+            color: green;
+          }
+          #subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match)) {
+            color: lightgreen;
+          }
+          #subject4:where(.other-match, :nth-child(1000 of .another-match)) {
+            color: darkgreen;
+          }
+          #subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match)) {
+            color: yellowgreen;
+          }
+        </style>
+        <div id="par">
+          <div id="subject1" class="container"></div>
+          <div id="subject2" class="container"></div>
+          <div id="subject3" class="container another-match"></div>
+          <div id="subject4" class="container another-match"></div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const par = document.getElementById('par');
+      const subject1 = document.getElementById('subject1');
+      const subject2 = document.getElementById('subject2');
+      const subject3 = document.getElementById('subject3');
+      const subject4 = document.getElementById('subject4');
+
+      const cls = 'other-match';
+      const parentCls = 'parent';
+
+      // grey
+      assert.isTrue(subject1.matches('.container'));
+      assert.isFalse(subject1.matches('#subject1:is(.other-match, :has(.descendant))'));
+      assert.isFalse(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // red
+      subject1.classList.add(cls);
+      assert.isTrue(subject1.matches('.container'));
+      assert.isTrue(subject1.matches('#subject1:is(.other-match, :has(.descendant))'));
+      assert.isFalse(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // orangered
+      par.classList.add(parentCls);
+      assert.isTrue(subject1.matches('.container'));
+      assert.isTrue(subject1.matches('#subject1:is(.other-match, :has(.descendant))'));
+      assert.isTrue(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // red
+      par.classList.remove(parentCls);
+      assert.isTrue(subject1.matches('.container'));
+      assert.isTrue(subject1.matches('#subject1:is(.other-match, :has(.descendant))'));
+      assert.isFalse(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // grey
+      subject1.classList.remove(cls);
+      assert.isTrue(subject1.matches('.container'));
+      assert.isFalse(subject1.matches('#subject1:is(.other-match, :has(.descendant))'));
+      assert.isFalse(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // grey
+      assert.isTrue(subject2.matches('.container'));
+      assert.isFalse(subject2.matches('#subject2:where(.other-match, :has(.descendant))'));
+      assert.isFalse(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // darkred
+      subject2.classList.add(cls);
+      assert.isTrue(subject2.matches('.container'));
+      assert.isTrue(subject2.matches('#subject2:where(.other-match, :has(.descendant))'));
+      assert.isFalse(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // pink
+      par.classList.add(parentCls);
+      assert.isTrue(subject2.matches('.container'));
+      assert.isTrue(subject2.matches('#subject2:where(.other-match, :has(.descendant))'));
+      assert.isTrue(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // darkred
+      par.classList.remove(parentCls);
+      assert.isTrue(subject2.matches('.container'));
+      assert.isTrue(subject2.matches('#subject2:where(.other-match, :has(.descendant))'));
+      assert.isFalse(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // grey
+      subject2.classList.remove(cls);
+      assert.isTrue(subject2.matches('.container'));
+      assert.isFalse(subject2.matches('#subject2:where(.other-match, :has(.descendant))'));
+      assert.isFalse(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'));
+
+      // grey
+      assert.isTrue(subject3.matches('.container'));
+      assert.isFalse(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // green
+      subject3.classList.add(cls);
+      assert.isTrue(subject3.matches('.container'));
+      assert.isTrue(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // lightgreen
+      par.classList.add(parentCls);
+      assert.isTrue(subject3.matches('.container'));
+      assert.isTrue(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isTrue(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // green
+      par.classList.remove(parentCls);
+      assert.isTrue(subject3.matches('.container'));
+      assert.isTrue(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // grey
+      subject3.classList.remove(cls);
+      assert.isTrue(subject3.matches('.container'));
+      assert.isFalse(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // grey
+      assert.isTrue(subject4.matches('.container'));
+      assert.isFalse(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // darkgreen
+      subject4.classList.add(cls);
+      assert.isTrue(subject4.matches('.container'));
+      assert.isTrue(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // yellowgreen
+      par.classList.add(parentCls);
+      assert.isTrue(subject4.matches('.container'));
+      assert.isTrue(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isTrue(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // darkgreen
+      par.classList.remove(parentCls);
+      assert.isTrue(subject4.matches('.container'));
+      assert.isTrue(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+
+      // grey
+      subject4.classList.remove(cls);
+      assert.isTrue(subject4.matches('.container'));
+      assert.isFalse(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
+      assert.isFalse(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+    });
+  });
+
   describe('css/selectors/invalidation/not-002.html', () => {
     it('should get matched node(s)', () => {
       const html = `
