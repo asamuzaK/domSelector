@@ -232,10 +232,12 @@ export class Finder {
       } catch (e) {
         this.onError(e);
       }
+      const { branches, info } = walkAST(cssAst);
       const {
-        branches, info: { hasHasPseudoFunc, hasNthChildOfSelector }
-      } = walkAST(cssAst);
-      let invalidate = !!(hasHasPseudoFunc || hasNthChildOfSelector);
+        hasHasPseudoFunc, hasLogicalPseudoFunc, hasNthChildOfSelector
+      } = info;
+      let invalidate =
+        hasHasPseudoFunc || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       let descendant = false;
       let i = 0;
       ast = [];
@@ -363,6 +365,15 @@ export class Finder {
     const matched = new Set();
     let selectorBranches;
     if (selector) {
+      if (this.#astCache.has(selector)) {
+        selectorBranches = this.#astCache.get(selector);
+      } else {
+        const { branches } = walkAST(selector);
+        selectorBranches = branches;
+        if (!this.#invalidate) {
+          this.#astCache.set(selector, selectorBranches);
+        }
+      }
       const { branches } = walkAST(selector);
       selectorBranches = branches;
     }
@@ -877,7 +888,9 @@ export class Finder {
           twigBranches,
           selector: selectors.join(',')
         };
-        this.#astCache.set(ast, astData);
+        if (!this.#invalidate) {
+          this.#astCache.set(ast, astData);
+        }
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
       if (res) {
@@ -2878,9 +2891,6 @@ export class Finder {
       if (sort && nodes.size > 1) {
         nodes = new Set(sortNodes(nodes));
       }
-    }
-    if (this.#invalidate) {
-      this.#invalidateResults = new WeakMap();
     }
     return nodes;
   }
