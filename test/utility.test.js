@@ -1936,5 +1936,10 @@ describe('utility functions', () => {
       const res = func('\u212A');
       assert.isFalse(res, 'result');
     });
+
+    it('should get false', () => {
+      const res = func('div:nth-child(odd of :not(.c))');
+      assert.isFalse(res, 'result');
+    });
   });
 });
