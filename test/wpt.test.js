@@ -177,6 +177,106 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/css-scoping/host-has-001.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 100px;
+                background-color: red;
+              }
+              :host(:has(section)) div {
+                background-color: green;
+              }
+            </style>
+            <div id="target"></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const target = root.getElementById('target');
+      const res = target.matches(':host(:has(section)) div');
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-has-002.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 100px;
+                background-color: red;
+              }
+              :host(:has(section)) div {
+                background-color: green;
+              }
+            </style>
+            <div id="target"></div>
+            <slot></slot>
+          </template>
+          <section>
+            <h1></h1>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const target = root.getElementById('target');
+      const res = target.matches(':host(:has(section h1)) div');
+      assert.isTrue(res, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-has-003.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 100px;
+                background-color: red;
+              }
+              :host(:has(section)) div {
+                background-color: green;
+              }
+            </style>
+            <div id="target"></div>
+            <slot></slot>
+          </template>
+          <section>
+            <h1></h1>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const target = root.getElementById('target');
+      const res = target.matches(':host(:has(h1)) div');
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('css/css-scoping/host-is-001.html', () => {
     it('should match', () => {
       const host = document.createElement('div');
@@ -237,6 +337,257 @@ describe('local wpt test cases', () => {
       host.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
       const res = node.matches('::slotted(div)');
       assert.isFalse(res, 'result');
+    });
+  });
+
+  describe('css/selectors/featureless-001.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 50px;
+              }
+              .red { background-color: red; }
+              .green { background-color: green; }
+              :host div.red {
+                /* Make sure :host matches the host element... */
+                background-color: green;
+              }
+              div > div.green {
+                /* And make sure *other* selectors *don't* match it. */
+                background-color: red;
+              }
+            </style>
+            <div id=div1 class=red></div>
+            <div id=div2 class=green></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const div1 = root.getElementById('div1');
+      const div2 = root.getElementById('div2');
+      const res1 = div1.matches(':host div.red');
+      const res2 = div2.matches('.green');
+      const res3 = div2.matches('div > div.green');
+      assert.isTrue(res1, 'result');
+      assert.isTrue(res2, 'result');
+      assert.isFalse(res3, 'result');
+    });
+  });
+
+  describe('css/selectors/featureless-002.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host" class=host>
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 50px;
+              }
+              .red { background-color: red; }
+              .green { background-color: green; }
+              :host div.red {
+                /* Make sure :host matches the host element... */
+                background-color: green;
+              }
+              div > div.green {
+                /* And make sure *other* selectors *don't* match it. */
+                background-color: red;
+              }
+            </style>
+            <div id="div1" class="red t1"></div>
+            <div id="div2" class="green t2"></div>
+            <div id="div3" class="green t3"></div>
+            <div id="div4" class="green t4"></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const div1 = root.getElementById('div1');
+      const div2 = root.getElementById('div2');
+      const div3 = root.getElementById('div3');
+      const div4 = root.getElementById('div4');
+      const res1 = div1.matches(':host:host .t1');
+      const res2 = div2.matches('.green');
+      const res3 = div2.matches('div:host > .t2');
+      const res4 = div3.matches('.green');
+      const res5 = div3.matches(':host.host > .t3');
+      const res6 = div4.matches('.green');
+      const res7 = div4.matches('*:host > .t4');
+      assert.isTrue(res1, 'result');
+      assert.isTrue(res2, 'result');
+      assert.isFalse(res3, 'result');
+      assert.isTrue(res4, 'result');
+      assert.isFalse(res5, 'result');
+      assert.isTrue(res6, 'result');
+      assert.isFalse(res7, 'result');
+    });
+  });
+
+  describe('css/selectors/featureless-003.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host" class=host>
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 25px;
+              }
+              .red { background-color: red; }
+              .green { background-color: green; }
+              :host div.red {
+                /* Make sure :host matches the host element... */
+                background-color: green;
+              }
+              div > div.green {
+                /* And make sure *other* selectors *don't* match it. */
+                background-color: red;
+              }
+            </style>
+            <div id="div1" class="red t1"></div>
+            <div id="div2" class="green t2"></div>
+            <div id="div3" class="green t3"></div>
+            <div id="div4" class="green t4"></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const div1 = root.getElementById('div1');
+      const div2 = root.getElementById('div2');
+      const div3 = root.getElementById('div3');
+      const res1 = div1.matches(':host .t1, .error');
+      const res2 = div2.matches('div:host .t2, :host .t2');
+      const res3 = div3.matches('div:host .t3, *:host .t3');
+      assert.isTrue(res1, 'result');
+      assert.isTrue(res2, 'result');
+      assert.isFalse(res3, 'result');
+    });
+  });
+
+  describe('css/selectors/featureless-004.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host" class=host>
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 20px;
+              }
+              .red { background-color: red; }
+              .green { background-color: green; }
+
+              :is(:host, aside) .t1 {
+                background-color: green;
+              }
+              :not(:not(:host)) .t2 {
+                background-color: green;
+              }
+              :not(aside) .t3 {
+                background-color: red;
+              }
+              :not(.foo:host) .t4 {
+                background-color: red;
+              }
+              :not(:host > .foo) .t5 {
+                background-color: red;
+              }
+            </style>
+            <div id="div1" class="red t1"></div>
+            <div id="div2" class="red t2"></div>
+            <div id="div3" class="green t3"></div>
+            <div id="div4" class="green t4"></div>
+            <div id="div5" class="green t5"></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const div1 = root.getElementById('div1');
+      const div2 = root.getElementById('div2');
+      const div3 = root.getElementById('div3');
+      const div4 = root.getElementById('div4');
+      const div5 = root.getElementById('div5');
+      const res1 = div1.matches(':is(:host, aside) .t1');
+      const res2 = div2.matches(':not(:not(:host)) .t2');
+      const res3 = div3.matches(':not(aside) .t3');
+      const res4 = div4.matches(':not(.foo:host) .t4');
+      const res5 = div5.matches(':not(:host > .foo) .t5');
+      assert.isTrue(res1, 'result');
+      assert.isTrue(res2, 'result');
+      assert.isFalse(res3, 'result');
+      // FIXME: 4 and 5 fails
+      assert.isFalse(res4, 'result');
+      assert.isFalse(res5, 'result');
+    });
+  });
+
+  describe('css/selectors/featureless-005.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host" class=host>
+          <template id="template">
+            <style>
+              div {
+                width: 100px;
+                height: 50px;
+              }
+              .red { background-color: red; }
+              .green { background-color: green; }
+              :host:has(.t1) .t1 {
+                background-color: green;
+              }
+              :has(.t2) .t2 {
+                background-color: red;
+              }
+            </style>
+            <div id="div1" class="red t1"></div>
+            <div id="div2" class="green t2"></div>
+            <slot></slot>
+          </template>
+          <section></section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const div1 = root.getElementById('div1');
+      const div2 = root.getElementById('div2');
+      const res1 = div1.matches(':host:has(.t1) .t1');
+      const res2 = div2.matches(':has(.t2) .t2');
+      // FIXME: fails 1
+      assert.isTrue(res1, 'result');
+      assert.isFalse(res2, 'result');
     });
   });
 
@@ -2368,7 +2719,8 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const container = document.getElementById('container');
       const subject = document.getElementById('subject');
-      /* jsdom hangs. recursive call to ChildNode.remove() costs very high */
+      // NOTE: recursive call to ChildNode.remove() costs very high on jsdom
+      // so decreasing max count
       const count = 10000; // 25000;
       /* Before appending ${count} elements */
       assert.isTrue(subject.matches('main:has(span) .subject'));

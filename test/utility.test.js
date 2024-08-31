@@ -1941,5 +1941,10 @@ describe('utility functions', () => {
       const res = func('div:nth-child(odd of :not(.c))');
       assert.isFalse(res, 'result');
     });
+
+    it('should get false', () => {
+      const res = func(':nth-child()');
+      assert.isFalse(res, 'result');
+    });
   });
 });
