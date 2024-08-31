@@ -78,6 +78,7 @@ export class Finder {
   #results;
   #root;
   #shadow;
+  #verifyShadowHost;
   #walker;
   #walkers;
   #warn;
@@ -146,6 +147,7 @@ export class Finder {
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#walkers = new WeakMap();
+    this.#verifyShadowHost = null;
     this._setEvent(event);
     return node;
   }
@@ -767,7 +769,13 @@ export class Finder {
         }
       }
       if (bool) {
-        res = node;
+        if (isShadowRoot) {
+          if (this.#verifyShadowHost) {
+            res = node;
+          }
+        } else {
+          res = node;
+        }
       }
     } else {
       if (isShadowRoot) {
@@ -1840,6 +1848,7 @@ export class Finder {
       } else if (REG_SHADOW_HOST.test(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node, opt);
         if (res) {
+          this.#verifyShadowHost = true;
           matched.add(res);
         }
       }
