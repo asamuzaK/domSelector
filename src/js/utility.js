@@ -583,7 +583,7 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  // filter missing close square bracket
+  // exclude missing close square bracket
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
     const sel = selector.substring(index);
@@ -591,14 +591,14 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
-  // filter namespace selector, escaped selector, pseudo-element selector,
-  // selector containing non-ASCII or control character other than whitespace,
-  // attribute selector with case flag, e.g. [attr i], or with unclosed quotes,
+  // exclude namespaced selectors, escaped selectors, pseudo-element selectors,
+  // selectors containing non-ASCII or control character other than whitespace,
+  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
   // and empty :is() or :where()
   if (/[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
   }
-  // filter pseudo-classes
+  // include pseudo-classes that are known to work correctly
   if (selector.includes(':')) {
     const { complex, descend } = opt;
     if (/:(?:is|not)\(/.test(selector)) {
