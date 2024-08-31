@@ -2719,7 +2719,7 @@ describe('local wpt test cases', () => {
       const subject = document.getElementById('subject');
       // NOTE: recursive call to ChildNode.remove() costs very high on jsdom
       // so decreasing max count
-      const count = 10000; // 25000;
+      const count = 5000; // 25000;
       /* Before appending ${count} elements */
       assert.isTrue(subject.matches('main:has(span) .subject'));
       /* After appending ${count} elements */
