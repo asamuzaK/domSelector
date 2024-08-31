@@ -756,6 +756,7 @@ export class Finder {
    */
   _matchLogicalPseudoFunc(astData, node, opt = {}) {
     const { astName, branches, twigBranches } = astData;
+    const { isShadowRoot } = opt;
     let res;
     if (astName === 'has') {
       let bool;
@@ -769,6 +770,13 @@ export class Finder {
         res = node;
       }
     } else {
+      if (isShadowRoot) {
+        for (const branch of branches) {
+          if (branch.length > 1) {
+            return null;
+          }
+        }
+      }
       const forgive = /^(?:is|where)$/.test(astName);
       opt.forgive = forgive;
       const l = twigBranches.length;
@@ -896,6 +904,7 @@ export class Finder {
           }
           astData = {
             astName,
+            branches,
             twigBranches
           };
           if (!this.#invalidate) {
@@ -1825,6 +1834,7 @@ export class Finder {
     } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       if (REG_LOGICAL.test(astName)) {
+        opt.isShadowRoot = true;
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
       } else if (REG_SHADOW_HOST.test(astName)) {
