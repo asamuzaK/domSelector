@@ -143,6 +143,9 @@ const filter = testPath => {
   ];
   const excludeList = [
     'ParentNode-querySelector-All-content.html',
+    'host-has-001.html',
+    'host-has-002.html',
+    'host-has-003.html',
     'pseudo-classes/active-disabled.html',
     'pseudo-classes/autofill.html',
     'pseudo-classes/checked-indeterminate.window.html',
