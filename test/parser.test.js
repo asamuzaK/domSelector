@@ -4302,6 +4302,95 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func(':has(:is(:has(foo, bar)))');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        children: [
+                                          {
+                                            children: [
+                                              {
+                                                children: [
+                                                  {
+                                                    loc: null,
+                                                    name: 'foo',
+                                                    type: TYPE_SELECTOR
+                                                  }
+                                                ],
+                                                loc: null,
+                                                type: SELECTOR
+                                              },
+                                              {
+                                                children: [
+                                                  {
+                                                    loc: null,
+                                                    name: 'bar',
+                                                    type: TYPE_SELECTOR
+                                                  }
+                                                ],
+                                                loc: null,
+                                                type: SELECTOR
+                                              }
+                                            ],
+                                            loc: null,
+                                            type: SELECTOR_LIST
+                                          }
+                                        ],
+                                        loc: null,
+                                        name: 'has',
+                                        type: PS_CLASS_SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR
+                                  }
+                                ],
+                                loc: null,
+                                type: SELECTOR_LIST
+                              }
+                            ],
+                            loc: null,
+                            name: 'is',
+                            type: PS_CLASS_SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR
+                      }
+                    ],
+                    loc: null,
+                    type: SELECTOR_LIST
+                  }
+                ],
+                loc: null,
+                name: 'has',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func('foo:has(*|*)');
       assert.deepEqual(res, {
         children: [
