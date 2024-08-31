@@ -2543,8 +2543,7 @@ describe('Finder', () => {
       finder.setup(':has(> li)', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: '> li'
+        branches
       }, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -2574,8 +2573,7 @@ describe('Finder', () => {
       finder.setup(':has(> li.li)', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: '> li.li'
+        branches
       }, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -2600,8 +2598,7 @@ describe('Finder', () => {
       finder.setup(':has(> li)', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: '> li'
+        branches
       }, node);
       assert.isNull(res, 'result');
     });
@@ -2621,8 +2618,7 @@ describe('Finder', () => {
       finder.setup(':has(li)', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: 'li'
+        branches
       }, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -2652,8 +2648,7 @@ describe('Finder', () => {
       finder.setup(':has(dd > span)', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: 'dd > span'
+        branches
       }, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -2692,8 +2687,7 @@ describe('Finder', () => {
       finder.setup(':has(:has(li))', node);
       const res = finder._matchLogicalPseudoFunc({
         astName: 'has',
-        branches,
-        selector: ':has(li)'
+        branches
       }, node);
       assert.isNull(res, 'result');
     });
@@ -2721,7 +2715,32 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'not',
         branches,
-        selector: 'ol,dl'
+        twigBranches: [
+          [
+            {
+              combo: null,
+              leaves: [
+                {
+                  loc: null,
+                  name: 'ol',
+                  type: TYPE_SELECTOR
+                }
+              ]
+            }
+          ],
+          [
+            {
+              combo: null,
+              leaves: [
+                {
+                  loc: null,
+                  name: 'dl',
+                  type: TYPE_SELECTOR
+                }
+              ]
+            }
+          ]
+        ]
       }, node);
       assert.deepEqual(res, node, 'result');
     });
@@ -2749,7 +2768,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'not',
         branches,
-        selector: 'ul,dl',
         twigBranches: [
           [
             {
@@ -2822,7 +2840,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'not',
         branches,
-        selector: ':not(ol),ul',
         twigBranches: [
           [
             {
@@ -2914,7 +2931,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'not',
         branches,
-        selector: ':not(dl),ul',
         twigBranches: [
           [
             {
@@ -2987,7 +3003,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'is',
         branches,
-        selector: 'ul,dl',
         twigBranches: [
           [
             {
@@ -3041,7 +3056,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'is',
         branches,
-        selector: 'ul#ul1,dl#dl1',
         twigBranches: [
           [
             {
@@ -3125,7 +3139,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'is',
         branches,
-        selector: 'li~li',
         twigBranches: [
           [
             {
@@ -3195,7 +3208,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'is',
         branches,
-        selector: 'ol,dl',
         twigBranches: [
           [
             {
@@ -3249,7 +3261,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'where',
         branches,
-        selector: 'ul,dl',
         twigBranches: [
           [
             {
@@ -3303,7 +3314,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'where',
         branches,
-        selector: 'ol,dl',
         twigBranches: [
           [
             {
@@ -3380,7 +3390,6 @@ describe('Finder', () => {
       const res = finder._matchLogicalPseudoFunc({
         astName: 'not',
         branches,
-        selector: ':is(li, dd)',
         twigBranches: [
           [
             {
@@ -3474,6 +3483,224 @@ describe('Finder', () => {
       assert.deepEqual([...res], [
         node
       ], 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '>',
+                    type: COMBINATOR
+                  },
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'has',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('ul1').parentNode;
+      const finder = new Finder(window);
+      finder.setup(':has(> :has(li))', node);
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node),
+        'Invalid selector :has(>:has(li))');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'li',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      },
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'dd',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR_LIST
+                                  }
+                                ],
+                                loc: null,
+                                name: 'has',
+                                type: PS_CLASS_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'is',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('ul1').parentNode;
+      const finder = new Finder(window);
+      finder.setup(':has(:is(:has(li, dd)))', node);
+      const res = finder._matchPseudoClassSelector(leaf, node);
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'li',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      },
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'dd',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR_LIST
+                                  }
+                                ],
+                                loc: null,
+                                name: 'has',
+                                type: PS_CLASS_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'not',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('ul1').parentNode;
+      const finder = new Finder(window);
+      finder.setup(':has(:is(:has(li, dd)))', node);
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node),
+        'Invalid selector :has(:not(:has(li,dd)))');
     });
 
     it('should get matched node(s)', () => {

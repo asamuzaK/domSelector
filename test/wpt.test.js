@@ -544,7 +544,6 @@ describe('local wpt test cases', () => {
       assert.isTrue(res1, 'result');
       assert.isTrue(res2, 'result');
       assert.isFalse(res3, 'result');
-      // FIXME: 4 and 5 fails
       assert.isFalse(res4, 'result');
       assert.isFalse(res5, 'result');
     });
@@ -585,7 +584,6 @@ describe('local wpt test cases', () => {
       const div2 = root.getElementById('div2');
       const res1 = div1.matches(':host:has(.t1) .t1');
       const res2 = div2.matches(':has(.t2) .t2');
-      // FIXME: fails 1
       assert.isTrue(res1, 'result');
       assert.isFalse(res2, 'result');
     });

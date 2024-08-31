@@ -5,7 +5,7 @@
 /* import */
 import { Matcher } from './matcher.js';
 import {
-  generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
+  findAST, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 import {
   isContentEditable, isCustomElement, isFocusVisible, isFocusable,
@@ -78,6 +78,7 @@ export class Finder {
   #results;
   #root;
   #shadow;
+  #verifyShadowHost;
   #walker;
   #walkers;
   #warn;
@@ -146,6 +147,7 @@ export class Finder {
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#walkers = new WeakMap();
+    this.#verifyShadowHost = null;
     this._setEvent(event);
     return node;
   }
@@ -755,26 +757,34 @@ export class Finder {
    * @returns {?object} - matched node
    */
   _matchLogicalPseudoFunc(astData, node, opt = {}) {
-    const {
-      astName = '', branches = [], selector = '', twigBranches = []
-    } = astData;
+    const { astName, branches, twigBranches } = astData;
+    const { isShadowRoot } = opt;
     let res;
     if (astName === 'has') {
-      if (selector.includes(':has(')) {
-        res = null;
-      } else {
-        let bool;
-        for (const leaves of branches) {
-          bool = this._matchHasPseudoFunc(leaves, node, opt);
-          if (bool) {
-            break;
-          }
-        }
+      let bool;
+      for (const leaves of branches) {
+        bool = this._matchHasPseudoFunc(leaves, node, opt);
         if (bool) {
+          break;
+        }
+      }
+      if (bool) {
+        if (isShadowRoot) {
+          if (this.#verifyShadowHost) {
+            res = node;
+          }
+        } else {
           res = node;
         }
       }
     } else {
+      if (isShadowRoot) {
+        for (const branch of branches) {
+          if (branch.length > 1) {
+            return null;
+          }
+        }
+      }
       const forgive = /^(?:is|where)$/.test(astName);
       opt.forgive = forgive;
       const l = twigBranches.length;
@@ -849,47 +859,65 @@ export class Finder {
         astData = this.#astCache.get(ast);
       } else {
         const { branches } = walkAST(ast);
-        const selectors = [];
-        const twigBranches = [];
-        for (const [...leaves] of branches) {
-          for (const leaf of leaves) {
-            const css = generateCSS(leaf);
-            selectors.push(css);
-          }
-          const branch = [];
-          const leavesSet = new Set();
-          let item = leaves.shift();
-          while (item) {
-            if (item.type === COMBINATOR) {
-              branch.push({
-                combo: item,
-                leaves: [...leavesSet]
-              });
-              leavesSet.clear();
-            } else if (item) {
-              leavesSet.add(item);
-            }
-            if (leaves.length) {
-              item = leaves.shift();
-            } else {
-              branch.push({
-                combo: null,
-                leaves: [...leavesSet]
-              });
-              leavesSet.clear();
-              break;
+        if (astName === 'has') {
+          for (const child of astChildren) {
+            const item = findAST(child, leaf => {
+              if (REG_LOGICAL.test(leaf.name) &&
+                  findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')) {
+                return leaf;
+              }
+              return null;
+            });
+            if (item) {
+              if (/^(?:is|where)$/.test(item.name)) {
+                return matched;
+              } else {
+                const css = generateCSS(ast);
+                throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+              }
             }
           }
-          twigBranches.push(branch);
-        }
-        astData = {
-          astName,
-          branches,
-          twigBranches,
-          selector: selectors.join(',')
-        };
-        if (!this.#invalidate) {
-          this.#astCache.set(ast, astData);
+          astData = {
+            astName,
+            branches
+          };
+        } else {
+          const twigBranches = [];
+          for (const [...leaves] of branches) {
+            const branch = [];
+            const leavesSet = new Set();
+            let item = leaves.shift();
+            while (item) {
+              if (item.type === COMBINATOR) {
+                branch.push({
+                  combo: item,
+                  leaves: [...leavesSet]
+                });
+                leavesSet.clear();
+              } else if (item) {
+                leavesSet.add(item);
+              }
+              if (leaves.length) {
+                item = leaves.shift();
+              } else {
+                branch.push({
+                  combo: null,
+                  leaves: [...leavesSet]
+                });
+                leavesSet.clear();
+                break;
+              }
+            }
+            twigBranches.push(branch);
+          }
+          astData = {
+            astName,
+            branches,
+            twigBranches
+          };
+          if (!this.#invalidate) {
+            this.#astCache.set(ast, astData);
+          }
         }
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
@@ -1772,7 +1800,7 @@ export class Finder {
    * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchSelector(ast, node, opt) {
+  _matchSelector(ast, node, opt = {}) {
     const { type: astType } = ast;
     const matched = new Set();
     if (ast.name === EMPTY) {
@@ -1813,12 +1841,14 @@ export class Finder {
       }
     } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (astName !== 'has' && REG_LOGICAL.test(astName)) {
+      if (REG_LOGICAL.test(astName)) {
+        opt.isShadowRoot = true;
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
       } else if (REG_SHADOW_HOST.test(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node, opt);
         if (res) {
+          this.#verifyShadowHost = true;
           matched.add(res);
         }
       }

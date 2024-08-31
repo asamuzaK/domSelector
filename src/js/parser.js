@@ -227,8 +227,7 @@ export const walkAST = (ast = {}) => {
         if (node.type === PS_CLASS_SELECTOR && REG_LOGICAL.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            const res =
-              type === PS_CLASS_SELECTOR && REG_LOGICAL.test(name);
+            const res = type === PS_CLASS_SELECTOR && REG_LOGICAL.test(name);
             return res;
           });
           for (const { children } of itemList) {
@@ -343,4 +342,4 @@ export const parseAstName = selector => {
 };
 
 /* export */
-export { generate as generateCSS } from 'css-tree';
+export { find as findAST, generate as generateCSS } from 'css-tree';
