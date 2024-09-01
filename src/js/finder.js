@@ -107,8 +107,8 @@ export class Finder {
    * @throws Error
    * @returns {void}
    */
-  onError(e, opt = {}) {
-    const noexcept = opt.noexcept ?? this.#noexcept;
+  onError(e, opt) {
+    const noexcept = opt?.noexcept ?? this.#noexcept;
     if (!noexcept) {
       if (e instanceof DOMException ||
           e instanceof this.#window.DOMException) {
@@ -701,7 +701,7 @@ export class Finder {
    * @param {object} opt - options
    * @returns {boolean} - result
    */
-  _matchHasPseudoFunc(astLeaves, node, opt = {}) {
+  _matchHasPseudoFunc(astLeaves, node, opt) {
     let bool;
     if (Array.isArray(astLeaves) && astLeaves.length) {
       const leaves = astLeaves.map(i => i);
@@ -756,7 +756,7 @@ export class Finder {
    * @param {object} opt - options
    * @returns {?object} - matched node
    */
-  _matchLogicalPseudoFunc(astData, node, opt = {}) {
+  _matchLogicalPseudoFunc(astData, node, opt) {
     const { astName, branches, twigBranches } = astData;
     const { isShadowRoot } = opt;
     let res;
@@ -840,11 +840,9 @@ export class Finder {
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @param {object} opt - options
-   * @param {boolean} [opt.forgive] - forgive unknown pseudo-class
-   * @param {boolean} [opt.warn] - warn unsupported pseudo-class
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchPseudoClassSelector(ast, node, opt = {}) {
+  _matchPseudoClassSelector(ast, node, opt) {
     const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
     const {
@@ -1926,7 +1924,7 @@ export class Finder {
    * @param {object} opt - options
    * @returns {Set.<object>} - matched nodes
    */
-  _matchHTMLCollection(items, opt = {}) {
+  _matchHTMLCollection(items, opt) {
     const { compound, filterLeaves } = opt;
     const nodes = new Set();
     const l = items.length;
@@ -2031,7 +2029,7 @@ export class Finder {
    * @param {object} opt - option
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchCombinator(twig, node, opt = {}) {
+  _matchCombinator(twig, node, opt) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
     const { parentNode } = node;
@@ -2161,12 +2159,10 @@ export class Finder {
    * find matched node from #qswalker
    * @private
    * @param {Array.<object>} leaves - AST leaves
-   * @param {object} [opt] - options
-   * @param {object} [opt.node] - node to start from
+   * @param {object} node - node to start from
    * @returns {?object} - matched node
    */
-  _findNode(leaves, opt) {
-    const { node } = opt;
+  _findNode(leaves, node) {
     const walker = this.#qswalker;
     let refNode = traverseNode(node, walker);
     let matchedNode;
@@ -2218,7 +2214,7 @@ export class Finder {
    * @param {object} opt - options
    * @returns {Array} - [nodes, filtered]
    */
-  _findLineal(leaves, opt = {}) {
+  _findLineal(leaves, opt) {
     const { complex } = opt;
     const nodes = [];
     let bool = this._matchLeaves(leaves, this.#node, {
@@ -2257,9 +2253,7 @@ export class Finder {
    */
   _findFirst(leaves) {
     const nodes = [];
-    const node = this._findNode(leaves, {
-      node: this.#node
-    });
+    const node = this._findNode(leaves, this.#node);
     let filtered = false;
     if (node) {
       nodes.push(node);
@@ -2273,11 +2267,9 @@ export class Finder {
    * @private
    * @param {object} items - HTML collection
    * @param {object} opt - options
-   * @param {boolean} [opt.compound] - compound selector
-   * @param {Array} [opt.filterLeaves] - filter leaves
    * @returns {Array} - [nodes, filtered]
    */
-  _findFromHTMLCollection(items, opt = {}) {
+  _findFromHTMLCollection(items, opt) {
     const { complex, compound, filterLeaves, targetType } = opt;
     let nodes = [];
     let filtered = false;
@@ -2861,9 +2853,7 @@ export class Finder {
           if (!matched && !collected) {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
-            let refNode = this._findNode(entryLeaves, {
-              node: entryNode
-            });
+            let refNode = this._findNode(entryLeaves, entryNode);
             while (refNode) {
               matched = this._matchNodeNext(branch, new Set([refNode]), {
                 combo: entryCombo,
@@ -2873,9 +2863,7 @@ export class Finder {
                 nodes.add(matched);
                 break;
               }
-              refNode = this._findNode(entryLeaves, {
-                node: refNode
-              });
+              refNode = this._findNode(entryLeaves, refNode);
             }
           }
         } else {
@@ -2892,9 +2880,7 @@ export class Finder {
           if (!matched && !collected && targetType === TARGET_FIRST) {
             const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
-            let refNode = this._findNode(entryLeaves, {
-              node: entryNode
-            });
+            let refNode = this._findNode(entryLeaves, entryNode);
             while (refNode) {
               matched = this._matchNodePrev(branch, refNode, {
                 index: lastIndex - 1
@@ -2903,9 +2889,7 @@ export class Finder {
                 nodes.add(refNode);
                 break;
               }
-              refNode = this._findNode(entryLeaves, {
-                node: refNode
-              });
+              refNode = this._findNode(entryLeaves, refNode);
             }
           }
         }
