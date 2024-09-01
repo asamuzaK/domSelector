@@ -135,7 +135,7 @@ export class Finder {
    * @param {object} [opt.event] - MouseEvent, KeyboardEvent
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
-   * @returns {object} - node
+   * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
     const { event, noexcept, warn } = opt;
@@ -149,7 +149,7 @@ export class Finder {
     this.#walkers = new WeakMap();
     this.#verifyShadowHost = null;
     this._setEvent(event);
-    return node;
+    return this;
   }
 
   /**

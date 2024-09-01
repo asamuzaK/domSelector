@@ -173,7 +173,7 @@ describe('Finder', () => {
       const res = finder.setup('*', document, {
         warn: true
       });
-      assert.deepEqual(res, document, 'result');
+      assert.deepEqual(res, finder, 'result');
     });
 
     it('should get value', () => {
@@ -182,7 +182,7 @@ describe('Finder', () => {
       const res = finder.setup('*', frag, {
         warn: true
       });
-      assert.deepEqual(res, frag, 'result');
+      assert.deepEqual(res, finder, 'result');
     });
 
     it('should get value', () => {
@@ -191,7 +191,7 @@ describe('Finder', () => {
       const res = finder.setup('*', node, {
         warn: true
       });
-      assert.deepEqual(res, node, 'result');
+      assert.deepEqual(res, finder, 'result');
     });
 
     it('should get value', () => {
@@ -200,7 +200,7 @@ describe('Finder', () => {
       const res = finder.setup('*', node, {
         invalidate: true
       });
-      assert.deepEqual(res, node, 'result');
+      assert.deepEqual(res, finder, 'result');
     });
   });
 
