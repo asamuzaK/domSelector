@@ -1402,28 +1402,27 @@ export class Finder {
           }
           break;
         }
-        case 'in-range': {
-          if (localName === 'input' &&
-              !(node.readonly || node.hasAttribute('readonly')) &&
-              !(node.disabled || node.hasAttribute('disabled')) &&
-              node.hasAttribute('type') &&
-              REG_TYPE_RANGE.test(node.getAttribute('type')) &&
-              !(node.validity.rangeUnderflow ||
-                node.validity.rangeOverflow) &&
-              (node.hasAttribute('min') || node.hasAttribute('max') ||
-               node.getAttribute('type') === 'range')) {
-            matched.add(node);
-          }
-          break;
-        }
+        case 'in-range':
         case 'out-of-range': {
           if (localName === 'input' &&
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              REG_TYPE_RANGE.test(node.getAttribute('type')) &&
-              (node.validity.rangeUnderflow || node.validity.rangeOverflow)) {
-            matched.add(node);
+              REG_TYPE_RANGE.test(node.getAttribute('type'))) {
+            let inrange;
+            if (!(node.validity.rangeUnderflow ||
+                  node.validity.rangeOverflow) &&
+                (node.hasAttribute('min') || node.hasAttribute('max') ||
+                node.getAttribute('type') === 'range')) {
+              inrange = true;
+            }
+            if (inrange) {
+              if (astName === 'in-range') {
+                matched.add(node);
+              }
+            } else if (astName === 'out-of-range') {
+              matched.add(node);
+            }
           }
           break;
         }
