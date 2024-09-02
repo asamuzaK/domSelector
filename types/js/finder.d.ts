@@ -1,6 +1,6 @@
 export class Finder {
     constructor(window: object);
-    onError(e: Error, opt?: object): void;
+    onError(e: Error, opt: object): void;
     setup(selector: string, node: object, opt?: {
         event?: object;
         noexcept?: boolean;
