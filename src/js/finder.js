@@ -1108,31 +1108,33 @@ export class Finder {
           }
           break;
         }
-        case 'open': {
-          if (REG_INTERACT.test(localName) && node.hasAttribute('open')) {
-            matched.add(node);
-          }
-          break;
-        }
+        case 'open':
         case 'closed': {
-          if (REG_INTERACT.test(localName) && !node.hasAttribute('open')) {
-            matched.add(node);
+          if (REG_INTERACT.test(localName)) {
+            if (node.hasAttribute('open')) {
+              if (astName === 'open') {
+                matched.add(node);
+              }
+            } else if (astName === 'closed') {
+              matched.add(node);
+            }
           }
           break;
         }
-        case 'disabled': {
+        case 'disabled':
+        case 'enabled': {
           if (REG_FORM_CTRL.test(localName) ||
               isCustomElement(node, { formAssociated: true })) {
+            let disabled;
             if (node.disabled || node.hasAttribute('disabled')) {
-              matched.add(node);
+              disabled = true;
             } else if (node.localName === 'option') {
               if (parentNode.localName === 'optgroup' &&
                   (parentNode.disabled ||
                    parentNode.hasAttribute('disabled'))) {
-                matched.add(node);
+                disabled = true;
               }
             } else if (node.localName !== 'optgroup') {
-              let bool;
               let parent = parentNode;
               while (parent) {
                 if (parent.localName === 'fieldset' &&
@@ -1148,10 +1150,10 @@ export class Finder {
                   }
                   if (refNode) {
                     if (!refNode.contains(node)) {
-                      bool = true;
+                      disabled = true;
                     }
                   } else {
-                    bool = true;
+                    disabled = true;
                   }
                   break;
                 } else if (parent.localName === 'form') {
@@ -1166,114 +1168,56 @@ export class Finder {
                   break;
                 }
               }
-              if (bool) {
+            }
+            if (disabled) {
+              if (astName === 'disabled') {
                 matched.add(node);
               }
-            }
-          }
-          break;
-        }
-        case 'enabled': {
-          if ((REG_FORM_CTRL.test(localName) ||
-               isCustomElement(node, { formAssociated: true })) &&
-              !(node.disabled && node.hasAttribute('disabled'))) {
-            if (node.localName === 'optgroup') {
+            } else if (astName === 'enabled') {
               matched.add(node);
-            } else if (node.localName === 'option') {
-              if (parentNode.localName !== 'optgroup' ||
-                  !(parentNode.disabled ||
-                    parentNode.hasAttribute('disabled'))) {
-                matched.add(node);
-              }
-            } else {
-              let bool;
-              let parent = parentNode;
-              while (parent) {
-                if (parent.localName === 'fieldset' &&
-                    (parent.disabled || parent.hasAttribute('disabled'))) {
-                  const walker = this.#walker;
-                  let refNode = traverseNode(parent, walker);
-                  refNode = walker.firstChild();
-                  while (refNode) {
-                    if (refNode.localName === 'legend') {
-                      break;
-                    }
-                    refNode = walker.nextSibling();
-                  }
-                  if (refNode) {
-                    if (!refNode.contains(node)) {
-                      bool = true;
-                    }
-                  } else {
-                    bool = true;
-                  }
-                  break;
-                } else if (parent.localName === 'form') {
-                  break;
-                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
-                  if (parent.parentNode.localName === 'form') {
-                    break;
-                  } else {
-                    parent = parent.parentNode;
-                  }
-                } else {
-                  break;
-                }
-              }
-              if (!bool) {
-                matched.add(node);
-              }
             }
           }
           break;
         }
-        case 'read-only': {
+        case 'read-only':
+        case 'read-write': {
+          let readonly;
+          let writable;
           switch (localName) {
             case 'textarea': {
               if (node.readonly || node.hasAttribute('readonly') ||
                   node.disabled || node.hasAttribute('disabled')) {
-                matched.add(node);
+                readonly = true;
+              } else {
+                writable = true;
               }
               break;
             }
             case 'input': {
-              if ((!node.type || REG_INPUT_TYPE.test(node.type)) &&
-                  (node.readonly || node.hasAttribute('readonly') ||
-                   node.disabled || node.hasAttribute('disabled'))) {
-                matched.add(node);
-              }
-              break;
-            }
-            default: {
-              if (!isContentEditable(node)) {
-                matched.add(node);
-              }
-            }
-          }
-          break;
-        }
-        case 'read-write': {
-          switch (localName) {
-            case 'textarea': {
-              if (!(node.readonly || node.hasAttribute('readonly') ||
-                    node.disabled || node.hasAttribute('disabled'))) {
-                matched.add(node);
-              }
-              break;
-            }
-            case 'input': {
-              if ((!node.type || REG_INPUT_TYPE.test(node.type)) &&
-                  !(node.readonly || node.hasAttribute('readonly') ||
-                    node.disabled || node.hasAttribute('disabled'))) {
-                matched.add(node);
+              if (!node.type || REG_INPUT_TYPE.test(node.type)) {
+                if (node.readonly || node.hasAttribute('readonly') ||
+                    node.disabled || node.hasAttribute('disabled')) {
+                  readonly = true;
+                } else {
+                  writable = true;
+                }
               }
               break;
             }
             default: {
               if (isContentEditable(node)) {
-                matched.add(node);
+                writable = true;
+              } else {
+                readonly = true;
               }
             }
+          }
+          if (readonly) {
+            if (astName === 'read-only') {
+              matched.add(node);
+            }
+          } else if (astName === 'read-write' && writable) {
+            matched.add(node);
           }
           break;
         }
@@ -1402,85 +1346,57 @@ export class Finder {
           }
           break;
         }
-        case 'valid': {
+        case 'valid':
+        case 'invalid': {
           if (REG_FORM_VALID.test(localName)) {
+            let valid;
             if (node.checkValidity()) {
               if (node.maxLength >= 0) {
                 if (node.maxLength >= node.value.length) {
-                  matched.add(node);
+                  valid = true;
                 }
               } else {
+                valid = true;
+              }
+            }
+            if (valid) {
+              if (astName === 'valid') {
                 matched.add(node);
               }
-            }
-          } else if (localName === 'fieldset') {
-            const walker = this.#walker;
-            let refNode = traverseNode(node, walker);
-            refNode = walker.firstChild();
-            let bool;
-            if (!refNode) {
-              bool = true;
-            } else {
-              while (refNode && node.contains(refNode)) {
-                if (REG_FORM_VALID.test(refNode.localName)) {
-                  if (refNode.checkValidity()) {
-                    if (refNode.maxLength >= 0) {
-                      bool = refNode.maxLength >= refNode.value.length;
-                    } else {
-                      bool = true;
-                    }
-                  } else {
-                    bool = false;
-                  }
-                  if (!bool) {
-                    break;
-                  }
-                }
-                refNode = walker.nextNode();
-              }
-            }
-            if (bool) {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'invalid': {
-          if (REG_FORM_VALID.test(localName)) {
-            if (node.checkValidity()) {
-              if (node.maxLength >= 0 && node.maxLength < node.value.length) {
-                matched.add(node);
-              }
-            } else {
+            } else if (astName === 'invalid') {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
             const walker = this.#walker;
             let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
-            let bool;
+            let valid;
             if (!refNode) {
-              bool = true;
+              valid = true;
             } else {
               while (refNode && node.contains(refNode)) {
                 if (REG_FORM_VALID.test(refNode.localName)) {
                   if (refNode.checkValidity()) {
                     if (refNode.maxLength >= 0) {
-                      bool = refNode.maxLength >= refNode.value.length;
+                      valid = refNode.maxLength >= refNode.value.length;
                     } else {
-                      bool = true;
+                      valid = true;
                     }
                   } else {
-                    bool = false;
+                    valid = false;
                   }
-                  if (!bool) {
+                  if (!valid) {
                     break;
                   }
                 }
                 refNode = walker.nextNode();
               }
             }
-            if (!bool) {
+            if (valid) {
+              if (astName === 'valid') {
+                matched.add(node);
+              }
+            } else if (astName === 'invalid') {
               matched.add(node);
             }
           }
@@ -1511,27 +1427,7 @@ export class Finder {
           }
           break;
         }
-        case 'required': {
-          let targetNode;
-          if (/^(?:select|textarea)$/.test(localName)) {
-            targetNode = node;
-          } else if (localName === 'input') {
-            if (node.hasAttribute('type')) {
-              const inputType = node.getAttribute('type');
-              if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_INPUT_TYPE.test(inputType)) {
-                targetNode = node;
-              }
-            } else {
-              targetNode = node;
-            }
-          }
-          if (targetNode &&
-              (node.required || node.hasAttribute('required'))) {
-            matched.add(node);
-          }
-          break;
-        }
+        case 'required':
         case 'optional': {
           let targetNode;
           if (/^(?:select|textarea)$/.test(localName)) {
@@ -1547,9 +1443,14 @@ export class Finder {
               targetNode = node;
             }
           }
-          if (targetNode &&
-              !(node.required || node.hasAttribute('required'))) {
-            matched.add(node);
+          if (targetNode) {
+            if (node.required || node.hasAttribute('required')) {
+              if (astName === 'required') {
+                matched.add(node);
+              }
+            } else if (astName === 'optional') {
+              matched.add(node);
+            }
           }
           break;
         }
