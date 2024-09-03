@@ -1411,18 +1411,13 @@ export class Finder {
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
               REG_TYPE_RANGE.test(node.getAttribute('type'))) {
-            let inrange;
-            if (!(node.validity.rangeUnderflow ||
-                  node.validity.rangeOverflow) &&
-                (node.hasAttribute('min') || node.hasAttribute('max') ||
-                node.getAttribute('type') === 'range')) {
-              inrange = true;
-            }
-            if (inrange) {
-              if (astName === 'in-range') {
-                matched.add(node);
-              }
-            } else if (astName === 'out-of-range') {
+            const flowed =
+              node.validity.rangeUnderflow || node.validity.rangeOverflow;
+            if (astName === 'out-of-range' && flowed) {
+              matched.add(node);
+            } else if (astName === 'in-range' && !flowed &&
+                       (node.hasAttribute('min') || node.hasAttribute('max') ||
+                       node.getAttribute('type') === 'range')) {
               matched.add(node);
             }
           }

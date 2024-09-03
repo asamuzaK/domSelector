@@ -4775,6 +4775,115 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('html/semantics/selectors/pseudo-classes/inrange-outofrange.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <input type=number value=0 min=0 max=10 id=number1>
+        <input type=number value=0 min=0 max=10 id=number2 disabled>
+        <input type=number value=0 min=1 max=10 id=number3>
+        <input type=number value=11 min=0 max=10 id=number4>
+        <input type=number value=0 min=0 max=10 id=number5 readonly>
+
+        <input type="date" min="2005-10-10" max="2020-10-10" value="2010-10-10" id="datein">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2005-10-10" id="dateunder">
+        <input type="date" min="2010-10-10" max="2020-10-10" value="2030-10-10" id="dateover">
+
+        <input type="time" min="01:00:00" max="05:00:00" value="02:00:00" id="timein">
+        <input type="time" min="02:00:00" max="05:00:00" value="01:00:00" id="timeunder">
+        <input type="time" min="02:00:00" max="05:00:00" value="07:00:00" id="timeover">
+
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W07" id="weekin">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W02" id="weekunder">
+        <input type="week" min="2016-W05" max="2016-W10" value="2016-W26" id="weekover">
+
+        <input type="month" min="2000-04" max="2000-09" value="2000-06" id="monthin">
+        <input type="month" min="2000-04" max="2000-09" value="2000-02" id="monthunder">
+        <input type="month" min="2000-04" max="2000-09" value="2000-11" id="monthover">
+
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2012-11-28T23:59:59" id="datetimelocalin">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2008-03-01T23:59:59" id="datetimelocalunder">
+        <input type="datetime-local" min="2008-03-12T23:59:59" max="2015-02-13T23:59:59" value="2016-01-01T23:59:59" id="datetimelocalover">
+
+        <!-- None of the following have range limitations since they have neither min nor max attributes -->
+        <input type="number" value="0" id="numbernolimit">
+        <input type="date" value="2010-10-10" id="datenolimit">
+        <input type="time" value="02:00:00" id="timenolimit">
+        <input type="week" value="2016-W07" id="weeknolimit">
+        <input type="month" value="2000-06" id="monthnolimit">
+        <input type="datetime-local" value="2012-11-28T23:59:59" id="datetimelocalnolimit">
+
+        <!-- range inputs have default minimum of 0 and default maximum of 100 -->
+        <input type="range" value="50" id="range0">
+
+        <!-- range input's value gets immediately clamped to the nearest boundary point -->
+        <input type="range" min="2" max="7" value="5" id="range1">
+        <input type="range" min="2" max="7" value="1" id="range2">
+        <input type="range" min="2" max="7" value="9" id="range3">
+
+        <!-- None of the following input types can have range limitations -->
+        <input min="1" value="0" type="text">
+        <input min="1" value="0" type="search">
+        <input min="1" value="0" type="url">
+        <input min="1" value="0" type="tel">
+        <input min="1" value="0" type="email">
+        <input min="1" value="0" type="password">
+        <input min="1" value="#000000" type="color">
+        <input min="1" value="0" type="checkbox">
+        <input min="1" value="0" type="radio">
+        <input min="1" value="0" type="file">
+        <input min="1" value="0" type="submit">
+        <input min="1" value="0" type="image">
+        <!-- The following types are also barred from constraint validation -->
+        <input min="1" value="0" type="hidden">
+        <input min="1" value="0" type="button">
+        <input min="1" value="0" type="reset">
+      `;
+      document.body.innerHTML = html;
+      const getElementsByIds = ids => {
+        const result = [];
+        ids.forEach(id => {
+          result.push(document.getElementById(id));
+        });
+        return result;
+      };
+      const testSelectorIdsMatch = (selector, ids, testName) => {
+        const elements = document.querySelectorAll(selector);
+        assert.deepEqual([...elements], getElementsByIds(ids));
+      };
+      testSelectorIdsMatch(':in-range', [
+        'number1', 'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin',
+        'range0', 'range1', 'range2', 'range3'
+      ]);
+      testSelectorIdsMatch(':out-of-range', [
+        'number3', 'number4', 'dateunder', 'dateover', 'timeunder', 'timeover',
+        'weekunder', 'weekover', 'monthunder', 'monthover',
+        'datetimelocalunder', 'datetimelocalover'
+      ]);
+
+      document.getElementById('number1').value = -10;
+      testSelectorIdsMatch(':in-range', [
+        'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin', 'range0',
+        'range1', 'range2', 'range3'
+      ]);
+      testSelectorIdsMatch(':out-of-range', [
+        'number1', 'number3', 'number4', 'dateunder', 'dateover', 'timeunder',
+        'timeover', 'weekunder', 'weekover', 'monthunder', 'monthover',
+        'datetimelocalunder', 'datetimelocalover'
+      ]);
+
+      document.getElementById('number3').min = 0;
+      testSelectorIdsMatch(':in-range', [
+        'number3', 'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin',
+        'range0', 'range1', 'range2', 'range3'
+      ]);
+      testSelectorIdsMatch(':out-of-range', [
+        'number1', 'number4', 'dateunder', 'dateover', 'timeunder', 'timeover',
+        'weekunder', 'weekover', 'monthunder', 'monthover',
+        'datetimelocalunder', 'datetimelocalover'
+      ]);
+    });
+  });
+
   describe('html/semantics/selectors/pseudo-classes/inrange-outofrange-type-change.html', () => {
     it('should get matched node', () => {
       const html = `
