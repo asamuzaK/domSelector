@@ -1064,14 +1064,16 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement && node.tabIndex >= 0 &&
+          if (node === this.#document.activeElement &&
+              (node.hasAttribute('autofocus') || node.tabIndex >= 0) &&
               isFocusable(node)) {
             matched.add(node);
           }
           break;
         }
         case 'focus-visible': {
-          if (node === this.#document.activeElement && node.tabIndex >= 0) {
+          if (node === this.#document.activeElement &&
+              (node.hasAttribute('autofocus') || node.tabIndex >= 0)) {
             let bool;
             if (isFocusVisible(node)) {
               bool = true;
@@ -1094,7 +1096,7 @@ export class Finder {
         case 'focus-within': {
           let bool;
           let current = this.#document.activeElement;
-          if (current.tabIndex >= 0) {
+          if (current.hasAttribute('autofocus') || current.tabIndex >= 0) {
             while (current) {
               if (current === node) {
                 bool = true;

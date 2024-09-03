@@ -20,6 +20,7 @@ describe('local wpt test cases', () => {
   const domOpt = {
     runScripts: 'dangerously',
     url: 'http://localhost/',
+    pretendToBeVisual: true,
     beforeParse: window => {
       const domSelector = new DOMSelector(window);
       window.Element.prototype.matches = function (...args) {
@@ -2028,6 +2029,37 @@ describe('local wpt test cases', () => {
       assert.isFalse(document.body.matches(':focus'), 'body');
       // jsdom fails
       // assert.isTrue(document.body === document.activeElement, 'active');
+    });
+  });
+
+  describe('css/selectors/focus-visible-009.html', () => {
+    // `autofocus` not implemented in jsdom
+    xit('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            #button:focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          #button:focus:not(:focus-visible) {
+            background-color: red;
+            outline: 0;
+          }
+        </style>
+        <button id="button" autofocus tabindex="-1">I will be focused automatically.</button>
+      `;
+      document.body.innerHTML = html;
+      const button = document.getElementById('button');
+      await new Promise((resolve, reject) => {
+        window.requestAnimationFrame(resolve);
+      });
+      assert.deepEqual(document.activeElement, button);
+      assert.isTrue(button.matches(':focus-visible'));
     });
   });
 
