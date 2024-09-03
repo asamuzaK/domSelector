@@ -1154,6 +1154,221 @@ describe('utility functions', () => {
     });
   });
 
+  describe('is focasable area', () => {
+    const func = util.isFocusableArea;
+
+    it('should get false', () => {
+      const res = func();
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(document);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(document.body);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      node.tabIndex = -1;
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', '');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('a');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('a');
+      node.href = 'about:blank';
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('iframe');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.disabled = true;
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.setAttribute('disabled', '');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.hidden = true;
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.setAttribute('hidden', '');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('summary');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const parent = document.createElement('details');
+      const node = document.createElement('summary');
+      parent.appendChild(node);
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const parent = document.createElement('details');
+      const nodeBefore = document.createElement('summary');
+      const node = document.createElement('summary');
+      parent.appendChild(nodeBefore);
+      parent.appendChild(node);
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const parent = document.createElement('details');
+      const nodeBefore = document.createElement('div');
+      const node = document.createElement('summary');
+      parent.appendChild(nodeBefore);
+      parent.appendChild(node);
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('button');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('button');
+      node.disabled = true;
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      node.tabIndex = -1;
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const parent =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      node.tabIndex = -1;
+      parent.appendChild(node)
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const parent =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+      node.tabIndex = -1;
+      parent.appendChild(node)
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const parent =
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const node =
+        document.createElementNS('http://www.w3.org/2000/svg', 'a');
+      node.setAttribute('href', 'about:blank');
+      parent.appendChild(node)
+      document.body.appendChild(parent);
+      const res = func(node);
+      assert.isTrue(res, 'result');
+    });
+  });
+
   describe('is focusable', () => {
     const func = util.isFocusable;
 

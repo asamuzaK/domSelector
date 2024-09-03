@@ -417,6 +417,98 @@ export const isFocusVisible = node => {
 };
 
 /**
+ * is focusable area
+ * @param {object} node - Element node
+ * @returns {boolean} - result
+ */
+export const isFocusableArea = node => {
+  if (node?.nodeType === ELEMENT_NODE) {
+    if (!node.isConnected) {
+      return false;
+    }
+    const window = node.ownerDocument.defaultView;
+    if (node instanceof window.HTMLElement) {
+      if (!Number.isNaN(parseInt(node.getAttribute('tabindex')))) {
+        return true;
+      }
+      if (isContentEditable(node)) {
+        return true;
+      }
+      const { localName, parentNode } = node;
+      switch (localName) {
+        case 'a': {
+          if (node.href || node.hasAttribute('href')) {
+            return true;
+          }
+          return false;
+        }
+        case 'iframe': {
+          return true;
+        }
+        case 'input': {
+          if (node.disabled || node.hasAttribute('disabled') ||
+              node.hidden || node.hasAttribute('hidden')) {
+            return false;
+          }
+          return true;
+        }
+        case 'summary': {
+          if (parentNode.localName === 'details') {
+            let child = parentNode.firstElementChild;
+            while (child) {
+              if (child.localName === 'summary') {
+                return node === child;
+              }
+              child = child.nextElementSibling;
+            }
+          }
+          return false;
+        }
+        default: {
+          const keys = new Set(['button', 'select', 'textarea']);
+          if (keys.has(localName) &&
+              !(node.disabled || node.hasAttribute('disabled'))) {
+            return true;
+          }
+          return false;
+        }
+      }
+    } else if (node instanceof window.SVGElement) {
+      if (!Number.isNaN(parseInt(node.getAttributeNS(null, 'tabindex')))) {
+        const keys = new Set([
+          'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
+          'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',
+          'title'
+        ]);
+        const ns = 'http://www.w3.org/2000/svg';
+        let bool;
+        let refNode = node;
+        while (refNode.namespaceURI === ns) {
+          bool = keys.has(refNode.localName);
+          if (bool) {
+            break;
+          }
+          if (refNode?.parentNode?.namespaceURI === ns) {
+            refNode = refNode.parentNode;
+          } else {
+            break;
+          }
+        }
+        if (bool) {
+          return false;
+        }
+        return true;
+      }
+      if (node.localName === 'a' &&
+          (node.href || node.hasAttributeNS(null, 'href'))) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+/**
  * is focusable
  * NOTE: workaround for jsdom issue: https://github.com/jsdom/jsdom/issues/3464
  * @param {object} node - Element node

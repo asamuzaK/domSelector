@@ -9,7 +9,8 @@ import {
 } from './parser.js';
 import {
   isContentEditable, isCustomElement, isFocusVisible, isFocusable,
-  isInShadowTree, isVisible, resolveContent, sortNodes, traverseNode
+  isFocusableArea, isInShadowTree, isVisible, resolveContent, sortNodes,
+  traverseNode
 } from './utility.js';
 
 /* constants */
@@ -1064,16 +1065,14 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement &&
-              (node.hasAttribute('autofocus') || node.tabIndex >= 0) &&
+          if (node === this.#document.activeElement && isFocusableArea(node) &&
               isFocusable(node)) {
             matched.add(node);
           }
           break;
         }
         case 'focus-visible': {
-          if (node === this.#document.activeElement &&
-              (node.hasAttribute('autofocus') || node.tabIndex >= 0)) {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
             let bool;
             if (isFocusVisible(node)) {
               bool = true;
@@ -1096,7 +1095,7 @@ export class Finder {
         case 'focus-within': {
           let bool;
           let current = this.#document.activeElement;
-          if (current.hasAttribute('autofocus') || current.tabIndex >= 0) {
+          if (isFocusableArea(current)) {
             while (current) {
               if (current === node) {
                 bool = true;
