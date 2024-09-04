@@ -97,7 +97,7 @@ export const KEY_INPUT_TEXT =
   Object.freeze(['email', 'number', 'password', 'search', 'tel', 'text']);
 export const KEY_INPUT_TYPE =
   Object.freeze([...KEY_INPUT_DATE, ...KEY_INPUT_TEXT, 'url']);
-export const KEY_FORGIVE = Object.freeze(['is', 'where']);
-export const KEY_LOGICAL = Object.freeze([...KEY_FORGIVE, 'has', 'not']);
-export const KEY_NTH_CHILD = Object.freeze(['nth-child', 'nth-last-child']);
-export const KEY_NTH_TYPE = Object.freeze(['nth-of-type', 'nth-last-of-type']);
+export const KEY_LOGICAL = Object.freeze(['has', 'is', 'not', 'where']);
+export const KEY_NTH = Object.freeze([
+  'nth-child', 'nth-last-child', 'nth-of-type', 'nth-last-of-type'
+]);

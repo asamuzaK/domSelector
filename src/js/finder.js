@@ -15,11 +15,11 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORGIVE, KEY_FORM_FOCUS,
-  KEY_INPUT_DATE, KEY_INPUT_TEXT, KEY_INPUT_TYPE, KEY_LOGICAL, KEY_NTH_CHILD,
-  KEY_NTH_TYPE, NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR,
-  SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF,
-  TEXT_NODE, TYPE_SELECTOR, WALKER_FILTER
+  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORM_FOCUS,
+  KEY_INPUT_DATE, KEY_INPUT_TEXT, KEY_INPUT_TYPE, KEY_LOGICAL, KEY_NTH,
+  NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL,
+  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
+  TYPE_SELECTOR, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -229,7 +229,6 @@ export class Finder {
       } = info;
       let invalidate =
         hasHasPseudoFunc || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
-      const invalidateKeys = ['+', '~'];
       let descendant = false;
       let i = 0;
       ast = [];
@@ -239,13 +238,14 @@ export class Finder {
         if (item && item.type !== COMBINATOR) {
           const leaves = new Set();
           while (item) {
+            let itemName = item.name;
             if (item.type === COMBINATOR) {
               const [nextItem] = items;
               if (nextItem.type === COMBINATOR) {
                 throw new DOMException(`Invalid selector ${selector}`,
                   SYNTAX_ERR);
               }
-              if (invalidateKeys.includes(item.name)) {
+              if (itemName === '+' || itemName === '~') {
                 invalidate = true;
               } else {
                 descendant = true;
@@ -256,7 +256,6 @@ export class Finder {
               });
               leaves.clear();
             } else if (item) {
-              let { name: itemName } = item;
               if (itemName && typeof itemName === 'string') {
                 itemName = unescapeSelector(itemName);
                 if (typeof itemName === 'string' && itemName !== item.name) {
@@ -667,14 +666,14 @@ export class Finder {
         anbMap.set('reverse', true);
       }
     }
-    if (KEY_NTH_CHILD.includes(nthName)) {
+    if (nthName === 'nth-child' || nthName === 'nth-last-child') {
       if (selector) {
         anbMap.set('selector', selector);
       }
       const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthChild(anb, node, opt);
       return nodes;
-    } else if (KEY_NTH_TYPE.includes(nthName)) {
+    } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
       const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthOfType(anb, node);
       return nodes;
@@ -774,7 +773,7 @@ export class Finder {
           }
         }
       }
-      opt.forgive = KEY_FORGIVE.includes(astName); ;
+      opt.forgive = (astName === 'is' || astName === 'where');
       const l = twigBranches.length;
       let bool;
       for (let i = 0; i < l; i++) {
@@ -855,7 +854,8 @@ export class Finder {
               return null;
             });
             if (item) {
-              if (KEY_FORGIVE.includes(item.name)) {
+              const itemName = item.name;
+              if (itemName === 'is' || itemName === 'where') {
                 return matched;
               } else {
                 const css = generateCSS(ast);
@@ -912,7 +912,7 @@ export class Finder {
       }
     } else if (Array.isArray(astChildren)) {
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if ([...KEY_NTH_CHILD, ...KEY_NTH_TYPE].includes(astName)) {
+      if (KEY_NTH.includes(astName)) {
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
@@ -983,13 +983,15 @@ export class Finder {
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (['a', 'area'].includes(localName) && node.hasAttribute('href')) {
+          if ((localName === 'a' || localName === 'area') &&
+              node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (['a', 'area'].includes(localName) && node.hasAttribute('href')) {
+          if ((localName === 'a' || localName === 'area') &&
+              node.hasAttribute('href')) {
             const { href, origin, pathname } = new URL(this.#document.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
@@ -1065,7 +1067,7 @@ export class Finder {
             } else {
               const { target: eventTarget, type } = this.#event ?? {};
               const { target: focusTarget, relatedTarget } = this.#focus ?? {};
-              if (['keydown', 'keyup'].includes(type) &&
+              if ((type === 'keydown' || type === 'keyup') &&
                   node.contains(eventTarget)) {
                 bool = true;
               } else if (relatedTarget && isFocusVisible(relatedTarget) &&
@@ -1098,7 +1100,7 @@ export class Finder {
         }
         case 'open':
         case 'closed': {
-          if (['details', 'dialog'].includes(localName)) {
+          if (localName === 'details' || localName === 'dialog') {
             if (node.hasAttribute('open')) {
               if (astName === 'open') {
                 matched.add(node);
@@ -1238,9 +1240,9 @@ export class Finder {
           break;
         }
         case 'checked': {
+          const attrType = node.getAttribute('type');
           if ((node.checked && localName === 'input' &&
-               node.hasAttribute('type') &&
-               ['checkbox', 'radio'].includes(node.getAttribute('type'))) ||
+               (attrType === 'checkbox' || attrType === 'radio')) ||
               (node.selected && localName === 'option')) {
             matched.add(node);
           }
@@ -1293,11 +1295,11 @@ export class Finder {
           const chekcKeys = ['checkbox', 'radio'];
           const resetKeys = ['button', 'reset'];
           const submitKeys = ['image', 'submit'];
+          const attrType = node.getAttribute('type');
           if ((localName === 'button' &&
-               !(node.hasAttribute('type') &&
-                 resetKeys.includes(node.getAttribute('type')))) ||
+               !(node.hasAttribute('type') && resetKeys.includes(attrType))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               submitKeys.includes(node.getAttribute('type')))) {
+               submitKeys.includes(attrType))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1311,13 +1313,14 @@ export class Finder {
               nextNode = walker.firstChild();
               while (nextNode && form.contains(nextNode)) {
                 const nodeName = nextNode.localName;
+                const nodeAttrType = nextNode.getAttribute('type');
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    resetKeys.includes(nextNode.getAttribute('type')));
+                    resetKeys.includes(nodeAttrType));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    submitKeys.includes(nextNode.getAttribute('type'));
+                    submitKeys.includes(nodeAttrType);
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1330,7 +1333,7 @@ export class Finder {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     chekcKeys.includes(node.getAttribute('type')) &&
+                     chekcKeys.includes(attrType) &&
                      node.hasAttribute('checked')) {
             matched.add(node);
           // option
@@ -1399,18 +1402,18 @@ export class Finder {
         case 'in-range':
         case 'out-of-range': {
           const keys = [...KEY_INPUT_DATE, 'number', 'range'];
+          const attrType = node.getAttribute('type');
           if (localName === 'input' &&
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
-              node.hasAttribute('type') &&
-              keys.includes(node.getAttribute('type'))) {
+              keys.includes(attrType)) {
             const flowed =
               node.validity.rangeUnderflow || node.validity.rangeOverflow;
             if (astName === 'out-of-range' && flowed) {
               matched.add(node);
             } else if (astName === 'in-range' && !flowed &&
                        (node.hasAttribute('min') || node.hasAttribute('max') ||
-                       node.getAttribute('type') === 'range')) {
+                       attrType === 'range')) {
               matched.add(node);
             }
           }
@@ -1419,14 +1422,13 @@ export class Finder {
         case 'required':
         case 'optional': {
           let targetNode;
-          if (['select', 'textarea'].includes(localName)) {
+          if (localName === 'select' || localName === 'textarea') {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              const inputType = node.getAttribute('type');
-              if (inputType === 'file' ||
-                  ['checkbox', 'radio'].includes(inputType) ||
-                  KEY_INPUT_TYPE.includes(inputType)) {
+              const keys = [...KEY_INPUT_TYPE, 'checkbox', 'file', 'radio'];
+              const attrType = node.getAttribute('type');
+              if (keys.includes(attrType)) {
                 targetNode = node;
               }
             } else {
@@ -1734,7 +1736,7 @@ export class Finder {
         opt.isShadowRoot = true;
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
-      } else if (['host', 'host-context'].includes(astName)) {
+      } else if (astName === 'host' || astName === 'host-context') {
         const res = this._matchShadowHostPseudoClass(ast, node, opt);
         if (res) {
           this.#verifyShadowHost = true;
@@ -2343,7 +2345,7 @@ export class Finder {
       }
       default: {
         if (targetType !== TARGET_LINEAL &&
-            ['host', 'host-context'].includes(leafName)) {
+            (leafName === 'host' || leafName === 'host-context')) {
           if (this.#shadow &&
               this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
@@ -2406,7 +2408,6 @@ export class Finder {
               type: lastType
             }]
           } = lastTwig;
-          const comboKeys = ['+', '~'];
           if (lastType === PS_ELEMENT_SELECTOR ||
               lastType === ID_SELECTOR) {
             dir = DIR_PREV;
@@ -2424,7 +2425,7 @@ export class Finder {
               twig = firstTwig;
             } else if (branchLen === 2) {
               const { name: comboName } = firstCombo;
-              if (comboKeys.includes(comboName)) {
+              if (comboName === '+' || comboName === '~') {
                 dir = DIR_PREV;
                 twig = lastTwig;
               } else {
@@ -2451,7 +2452,7 @@ export class Finder {
               }
               if (!bool && combo) {
                 const { name: comboName } = combo;
-                if (comboKeys.includes(comboName)) {
+                if (comboName === '+' || comboName === '~') {
                   bool = true;
                 }
               }

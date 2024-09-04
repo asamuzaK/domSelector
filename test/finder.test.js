@@ -4167,6 +4167,39 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
+        name: 'any-link',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('area');
+      node.setAttribute('href', 'https://example.com/');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':any-link', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'any-link',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('area');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':any-link', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
         name: 'link',
         type: PS_CLASS_SELECTOR
       };
@@ -4207,6 +4240,40 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('a');
+      node.setAttribute('href', 'https://example.com');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':local-link', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'local-link',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('area');
+      node.setAttribute('href', './#foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':local-link', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'local-link',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('area');
       node.setAttribute('href', 'https://example.com');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -5474,6 +5541,72 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('details');
+      node.setAttribute('open', 'open');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':closed', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'open',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('dialog');
+      node.setAttribute('open', 'open');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'open',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('dialog');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'closed',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('dialog');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':closed', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'closed',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('dialog');
       node.setAttribute('open', 'open');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
