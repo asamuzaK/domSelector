@@ -9,8 +9,8 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, EMPTY, HEX, HYPHEN, ID_SELECTOR, NTH, PS_CLASS_SELECTOR,
-  PS_ELEMENT_SELECTOR, REG_LOGICAL, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
+  CLASS_SELECTOR, DUO, EMPTY, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
 const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
 const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
@@ -194,7 +194,7 @@ export const walkAST = (ast = {}) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (REG_LOGICAL.test(node.name)) {
+          if (KEY_LOGICAL.includes(node.name)) {
             info.set('hasNestedSelector', true);
             info.set('hasLogicalPseudoFunc', true);
             if (node.name === 'has') {
@@ -224,11 +224,11 @@ export const walkAST = (ast = {}) => {
   if (info.get('hasNestedSelector')) {
     findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === PS_CLASS_SELECTOR && REG_LOGICAL.test(node.name)) {
+        if (node.type === PS_CLASS_SELECTOR &&
+            KEY_LOGICAL.includes(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            const res = type === PS_CLASS_SELECTOR && REG_LOGICAL.test(name);
-            return res;
+            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.includes(name);
           });
           for (const { children } of itemList) {
             // SelectorList

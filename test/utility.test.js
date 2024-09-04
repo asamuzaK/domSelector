@@ -1338,7 +1338,7 @@ describe('utility functions', () => {
       const node =
         document.createElementNS('http://www.w3.org/2000/svg', 'text');
       node.tabIndex = -1;
-      parent.appendChild(node)
+      parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
       assert.isTrue(res, 'result');
@@ -1350,7 +1350,7 @@ describe('utility functions', () => {
       const node =
         document.createElementNS('http://www.w3.org/2000/svg', 'mask');
       node.tabIndex = -1;
-      parent.appendChild(node)
+      parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
       assert.isFalse(res, 'result');
@@ -1362,7 +1362,7 @@ describe('utility functions', () => {
       const node =
         document.createElementNS('http://www.w3.org/2000/svg', 'a');
       node.setAttribute('href', 'about:blank');
-      parent.appendChild(node)
+      parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
       assert.isTrue(res, 'result');
