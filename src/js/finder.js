@@ -694,7 +694,7 @@ export class Finder {
   _matchHasPseudoFunc(astLeaves, node, opt) {
     let bool;
     if (Array.isArray(astLeaves) && astLeaves.length) {
-      const leaves = astLeaves.map(i => i);
+      const leaves = [...astLeaves];
       const [leaf] = leaves;
       const { type: leafType } = leaf;
       let combo;
