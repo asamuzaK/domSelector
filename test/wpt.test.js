@@ -1988,8 +1988,10 @@ describe('local wpt test cases', () => {
     });
   });
 
+  // test is planned to be updated
+  // @see https://github.com/whatwg/html/pull/8392
   describe('css/selectors/focus-display-none-001.html', () => {
-    it('should match', async () => {
+    xit('should match', async () => {
       const html = `<div id="wrapper">
         <input id="input">
       </div>
@@ -2006,11 +2008,10 @@ describe('local wpt test cases', () => {
       await sleep();
       assert.isFalse(node.matches(':focus'), 'after');
       assert.isFalse(document.body.matches(':focus'), 'body');
-      // jsdom fails
-      // assert.isTrue(document.body === document.activeElement, 'active');
+      assert.isTrue(document.body === document.activeElement, 'active');
     });
 
-    it('should match', async () => {
+    xit('should match', async () => {
       const html = `<div id="wrapper">
         <input id="input">
       </div>
@@ -2027,8 +2028,7 @@ describe('local wpt test cases', () => {
       await sleep();
       assert.isFalse(node.matches(':focus'), 'after');
       assert.isFalse(document.body.matches(':focus'), 'body');
-      // jsdom fails
-      // assert.isTrue(document.body === document.activeElement, 'active');
+      assert.isTrue(document.body === document.activeElement, 'active');
     });
   });
 

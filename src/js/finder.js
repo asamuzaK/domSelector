@@ -8,9 +8,8 @@ import {
   findAST, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 import {
-  isContentEditable, isCustomElement, isFocusVisible, isFocusable,
-  isFocusableArea, isInShadowTree, isVisible, resolveContent, sortNodes,
-  traverseNode
+  isContentEditable, isCustomElement, isFocusVisible, isFocusableArea,
+  isInShadowTree, isVisible, resolveContent, sortNodes, traverseNode
 } from './utility.js';
 
 /* constants */
@@ -1053,8 +1052,7 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement && isFocusableArea(node) &&
-              isFocusable(node)) {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
             matched.add(node);
           }
           break;
@@ -1075,7 +1073,7 @@ export class Finder {
                 bool = true;
               }
             }
-            if (bool && isFocusable(node)) {
+            if (bool) {
               matched.add(node);
             }
           }
@@ -1093,7 +1091,7 @@ export class Finder {
               current = current.parentNode;
             }
           }
-          if (bool && isFocusable(node)) {
+          if (bool) {
             matched.add(node);
           }
           break;
