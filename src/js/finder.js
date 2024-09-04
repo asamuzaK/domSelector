@@ -16,25 +16,14 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, NOT_SUPPORTED_ERR,
-  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, REG_INPUT_TYPE, REG_LOGICAL,
+  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORGIVE, KEY_FORM_FOCUS,
+  KEY_INPUT_DATE, KEY_INPUT_TEXT, KEY_INPUT_TYPE, KEY_LOGICAL, KEY_NTH_CHILD,
+  KEY_NTH_TYPE, NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR,
   SHOW_ALL, SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF,
   TEXT_NODE, TYPE_SELECTOR, WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const KEY_TAB = 'Tab';
-const REG_ANCHOR = /^a(?:rea)?$/;
-const REG_FORM_CTRL =
-  /^(?:button|fieldset|input|optgroup|option|select|textarea)$/;
-const REG_FORM_VALID = /^(?:button|form|input|select|textarea)$/;
-const REG_INTERACT = /^(?:details|dialog)$/;
-const REG_SHADOW_HOST = /^host(?:-context)?$/;
-const REG_TYPE_CHECK = /^(?:checkbox|radio)$/;
-const REG_TYPE_RANGE = /^(?:date(?:time-local)?|month|number|range|time|week)$/;
-const REG_TYPE_RESET = /^(?:button|reset)$/;
-const REG_TYPE_SUBMIT = /^(?:image|submit)$/;
-const REG_TYPE_TEXT = /^(?:email|number|password|search|tel|text|url)$/;
 
 /**
  * Finder
@@ -173,7 +162,7 @@ export class Finder {
     const keyboardKeys = ['keydown', 'keyup'];
     for (const key of keyboardKeys) {
       func.push(this.#window.addEventListener(key, evt => {
-        if (evt.key === KEY_TAB) {
+        if (evt.key === 'Tab') {
           this.#event = evt;
         }
       }, opt));
@@ -241,6 +230,7 @@ export class Finder {
       } = info;
       let invalidate =
         hasHasPseudoFunc || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      const invalidateKeys = ['+', '~'];
       let descendant = false;
       let i = 0;
       ast = [];
@@ -256,11 +246,10 @@ export class Finder {
                 throw new DOMException(`Invalid selector ${selector}`,
                   SYNTAX_ERR);
               }
-              const itemName = item.name;
-              if (/^[\s>]$/.test(itemName)) {
-                descendant = true;
-              } else {
+              if (invalidateKeys.includes(item.name)) {
                 invalidate = true;
+              } else {
+                descendant = true;
               }
               branch.push({
                 combo: item,
@@ -679,14 +668,14 @@ export class Finder {
         anbMap.set('reverse', true);
       }
     }
-    if (/^nth-(?:last-)?child$/.test(nthName)) {
+    if (KEY_NTH_CHILD.includes(nthName)) {
       if (selector) {
         anbMap.set('selector', selector);
       }
       const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthChild(anb, node, opt);
       return nodes;
-    } else if (/^nth-(?:last-)?of-type$/.test(nthName)) {
+    } else if (KEY_NTH_TYPE.includes(nthName)) {
       const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthOfType(anb, node);
       return nodes;
@@ -705,7 +694,7 @@ export class Finder {
   _matchHasPseudoFunc(astLeaves, node, opt) {
     let bool;
     if (Array.isArray(astLeaves) && astLeaves.length) {
-      const leaves = astLeaves.map(i => i);
+      const leaves = [...astLeaves];
       const [leaf] = leaves;
       const { type: leafType } = leaf;
       let combo;
@@ -786,8 +775,7 @@ export class Finder {
           }
         }
       }
-      const forgive = /^(?:is|where)$/.test(astName);
-      opt.forgive = forgive;
+      opt.forgive = KEY_FORGIVE.includes(astName); ;
       const l = twigBranches.length;
       let bool;
       for (let i = 0; i < l; i++) {
@@ -852,7 +840,7 @@ export class Finder {
     } = opt;
     const matched = new Set();
     // :has(), :is(), :not(), :where()
-    if (REG_LOGICAL.test(astName)) {
+    if (KEY_LOGICAL.includes(astName)) {
       let astData;
       if (this.#astCache.has(ast)) {
         astData = this.#astCache.get(ast);
@@ -861,14 +849,14 @@ export class Finder {
         if (astName === 'has') {
           for (const child of astChildren) {
             const item = findAST(child, leaf => {
-              if (REG_LOGICAL.test(leaf.name) &&
+              if (KEY_LOGICAL.includes(leaf.name) &&
                   findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')) {
                 return leaf;
               }
               return null;
             });
             if (item) {
-              if (/^(?:is|where)$/.test(item.name)) {
+              if (KEY_FORGIVE.includes(item.name)) {
                 return matched;
               } else {
                 const css = generateCSS(ast);
@@ -925,7 +913,7 @@ export class Finder {
       }
     } else if (Array.isArray(astChildren)) {
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
+      if ([...KEY_NTH_CHILD, ...KEY_NTH_TYPE].includes(astName)) {
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
@@ -996,13 +984,13 @@ export class Finder {
       switch (astName) {
         case 'any-link':
         case 'link': {
-          if (REG_ANCHOR.test(localName) && node.hasAttribute('href')) {
+          if (['a', 'area'].includes(localName) && node.hasAttribute('href')) {
             matched.add(node);
           }
           break;
         }
         case 'local-link': {
-          if (REG_ANCHOR.test(localName) && node.hasAttribute('href')) {
+          if (['a', 'area'].includes(localName) && node.hasAttribute('href')) {
             const { href, origin, pathname } = new URL(this.#document.URL);
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
@@ -1017,7 +1005,7 @@ export class Finder {
         }
         case 'hover': {
           const { target, type } = this.#event ?? {};
-          if (/^(?:mouse|pointer)(?:down|over|up)$/.test(type) &&
+          if (['mousedown', 'mouseover', 'mouseup'].includes(type) &&
               node.contains(target)) {
             matched.add(node);
           }
@@ -1025,7 +1013,7 @@ export class Finder {
         }
         case 'active': {
           const { buttons, target, type } = this.#event ?? {};
-          if (/(?:mouse|pointer)down/.test(type) && buttons & BIT_01 &&
+          if (type === 'mousedown' && buttons & BIT_01 &&
               node.contains(target)) {
             matched.add(node);
           }
@@ -1079,7 +1067,8 @@ export class Finder {
             } else {
               const { target: eventTarget, type } = this.#event ?? {};
               const { target: focusTarget, relatedTarget } = this.#focus ?? {};
-              if (/^key(?:down|up)$/.test(type) && node.contains(eventTarget)) {
+              if (['keydown', 'keyup'].includes(type) &&
+                  node.contains(eventTarget)) {
                 bool = true;
               } else if (relatedTarget && isFocusVisible(relatedTarget) &&
                          node.contains(focusTarget)) {
@@ -1111,7 +1100,7 @@ export class Finder {
         }
         case 'open':
         case 'closed': {
-          if (REG_INTERACT.test(localName)) {
+          if (['details', 'dialog'].includes(localName)) {
             if (node.hasAttribute('open')) {
               if (astName === 'open') {
                 matched.add(node);
@@ -1124,7 +1113,8 @@ export class Finder {
         }
         case 'disabled':
         case 'enabled': {
-          if (REG_FORM_CTRL.test(localName) ||
+          const keys = [...KEY_FORM_FOCUS, 'fieldset', 'optgroup', 'option'];
+          if (keys.includes(localName) ||
               isCustomElement(node, { formAssociated: true })) {
             let disabled;
             if (node.disabled || node.hasAttribute('disabled')) {
@@ -1195,7 +1185,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if (!node.type || REG_INPUT_TYPE.test(node.type)) {
+              if (!node.type || KEY_INPUT_TYPE.includes(node.type)) {
                 if (node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled')) {
                   readonly = true;
@@ -1235,7 +1225,8 @@ export class Finder {
               targetNode = node;
             } else if (localName === 'input') {
               if (node.hasAttribute('type')) {
-                if (REG_TYPE_TEXT.test(node.getAttribute('type'))) {
+                const keys = [...KEY_INPUT_TEXT, 'url'];
+                if (keys.includes(node.getAttribute('type'))) {
                   targetNode = node;
                 }
               } else {
@@ -1251,7 +1242,7 @@ export class Finder {
         case 'checked': {
           if ((node.checked && localName === 'input' &&
                node.hasAttribute('type') &&
-               REG_TYPE_CHECK.test(node.getAttribute('type'))) ||
+               ['checkbox', 'radio'].includes(node.getAttribute('type'))) ||
               (node.selected && localName === 'option')) {
             matched.add(node);
           }
@@ -1301,11 +1292,14 @@ export class Finder {
         }
         case 'default': {
           // button[type="submit"], input[type="submit"], input[type="image"]
+          const chekcKeys = ['checkbox', 'radio'];
+          const resetKeys = ['button', 'reset'];
+          const submitKeys = ['image', 'submit'];
           if ((localName === 'button' &&
                !(node.hasAttribute('type') &&
-                 REG_TYPE_RESET.test(node.getAttribute('type')))) ||
+                 resetKeys.includes(node.getAttribute('type')))) ||
               (localName === 'input' && node.hasAttribute('type') &&
-               REG_TYPE_SUBMIT.test(node.getAttribute('type')))) {
+               submitKeys.includes(node.getAttribute('type')))) {
             let form = node.parentNode;
             while (form) {
               if (form.localName === 'form') {
@@ -1322,10 +1316,10 @@ export class Finder {
                 let m;
                 if (nodeName === 'button') {
                   m = !(nextNode.hasAttribute('type') &&
-                    REG_TYPE_RESET.test(nextNode.getAttribute('type')));
+                    resetKeys.includes(nextNode.getAttribute('type')));
                 } else if (nodeName === 'input') {
                   m = nextNode.hasAttribute('type') &&
-                    REG_TYPE_SUBMIT.test(nextNode.getAttribute('type'));
+                    submitKeys.includes(nextNode.getAttribute('type'));
                 }
                 if (m) {
                   if (nextNode === node) {
@@ -1338,7 +1332,7 @@ export class Finder {
             }
           // input[type="checkbox"], input[type="radio"]
           } else if (localName === 'input' && node.hasAttribute('type') &&
-                     REG_TYPE_CHECK.test(node.getAttribute('type')) &&
+                     chekcKeys.includes(node.getAttribute('type')) &&
                      node.hasAttribute('checked')) {
             matched.add(node);
           // option
@@ -1349,7 +1343,8 @@ export class Finder {
         }
         case 'valid':
         case 'invalid': {
-          if (REG_FORM_VALID.test(localName)) {
+          const keys = [...KEY_FORM_FOCUS, 'form'];
+          if (keys.includes(localName)) {
             let valid;
             if (node.checkValidity()) {
               if (node.maxLength >= 0) {
@@ -1376,7 +1371,7 @@ export class Finder {
               valid = true;
             } else {
               while (refNode && node.contains(refNode)) {
-                if (REG_FORM_VALID.test(refNode.localName)) {
+                if (keys.includes(refNode.localName)) {
                   if (refNode.checkValidity()) {
                     if (refNode.maxLength >= 0) {
                       valid = refNode.maxLength >= refNode.value.length;
@@ -1405,11 +1400,12 @@ export class Finder {
         }
         case 'in-range':
         case 'out-of-range': {
+          const keys = [...KEY_INPUT_DATE, 'number', 'range'];
           if (localName === 'input' &&
               !(node.readonly || node.hasAttribute('readonly')) &&
               !(node.disabled || node.hasAttribute('disabled')) &&
               node.hasAttribute('type') &&
-              REG_TYPE_RANGE.test(node.getAttribute('type'))) {
+              keys.includes(node.getAttribute('type'))) {
             const flowed =
               node.validity.rangeUnderflow || node.validity.rangeOverflow;
             if (astName === 'out-of-range' && flowed) {
@@ -1425,13 +1421,14 @@ export class Finder {
         case 'required':
         case 'optional': {
           let targetNode;
-          if (/^(?:select|textarea)$/.test(localName)) {
+          if (['select', 'textarea'].includes(localName)) {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const inputType = node.getAttribute('type');
-              if (inputType === 'file' || REG_TYPE_CHECK.test(inputType) ||
-                  REG_INPUT_TYPE.test(inputType)) {
+              if (inputType === 'file' ||
+                  ['checkbox', 'radio'].includes(inputType) ||
+                  KEY_INPUT_TYPE.includes(inputType)) {
                 targetNode = node;
               }
             } else {
@@ -1735,11 +1732,11 @@ export class Finder {
       }
     } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
                node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (REG_LOGICAL.test(astName)) {
+      if (KEY_LOGICAL.includes(astName)) {
         opt.isShadowRoot = true;
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
-      } else if (REG_SHADOW_HOST.test(astName)) {
+      } else if (['host', 'host-context'].includes(astName)) {
         const res = this._matchShadowHostPseudoClass(ast, node, opt);
         if (res) {
           this.#verifyShadowHost = true;
@@ -1772,8 +1769,9 @@ export class Finder {
     }
     if (typeof bool !== 'boolean') {
       let cacheable = true;
-      if (node.nodeType === ELEMENT_NODE &&
-          /^(?:button|fieldset|form|input|select|textarea)$/.test(node.localName)) {
+      const formKeys = [...KEY_FORM_FOCUS, 'fieldset', 'form'];
+      const pseudoKeys = ['any-link', 'defined', 'dir', 'link'];
+      if (node.nodeType === ELEMENT_NODE && formKeys.includes(node.localName)) {
         cacheable = false;
       }
       for (const leaf of leaves) {
@@ -1784,7 +1782,7 @@ export class Finder {
             break;
           }
           case PS_CLASS_SELECTOR: {
-            if (/^(?:(?:any-)?link|defined|dir)$/.test(leaf.name)) {
+            if (pseudoKeys.includes(leaf.name)) {
               cacheable = false;
             }
             break;
@@ -2346,7 +2344,8 @@ export class Finder {
         break;
       }
       default: {
-        if (targetType !== TARGET_LINEAL && REG_SHADOW_HOST.test(leafName)) {
+        if (targetType !== TARGET_LINEAL &&
+            ['host', 'host-context'].includes(leafName)) {
           if (this.#shadow &&
               this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
             const node = this._matchShadowHostPseudoClass(leaf, this.#node);
@@ -2409,6 +2408,7 @@ export class Finder {
               type: lastType
             }]
           } = lastTwig;
+          const comboKeys = ['+', '~'];
           if (lastType === PS_ELEMENT_SELECTOR ||
               lastType === ID_SELECTOR) {
             dir = DIR_PREV;
@@ -2426,7 +2426,7 @@ export class Finder {
               twig = firstTwig;
             } else if (branchLen === 2) {
               const { name: comboName } = firstCombo;
-              if (/^[+~]$/.test(comboName)) {
+              if (comboKeys.includes(comboName)) {
                 dir = DIR_PREV;
                 twig = lastTwig;
               } else {
@@ -2453,7 +2453,7 @@ export class Finder {
               }
               if (!bool && combo) {
                 const { name: comboName } = combo;
-                if (/^[+~]$/.test(comboName)) {
+                if (comboKeys.includes(comboName)) {
                   bool = true;
                 }
               }

@@ -83,13 +83,21 @@ export const COMPOUND_B =
 export const COMPOUND_I =
   `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
 export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
-export const KEY_IS_NOT = '(?:is|not)';
 export const LOGICAL_COMPLEX =
-  `${KEY_IS_NOT}\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
+  `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 export const LOGICAL_COMPOUND =
-  `${KEY_IS_NOT}\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
+  `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 
-/* regexp */
-export const REG_LOGICAL = /^(?:has|is|not|where)$/;
-export const REG_INPUT_TYPE =
-  /^(?:date(?:time-local)?|email|month|number|password|search|tel|text|time|url|week)$/;
+/* array */
+export const KEY_FORM_FOCUS =
+  Object.freeze(['button', 'input', 'select', 'textarea']);
+export const KEY_INPUT_DATE =
+  Object.freeze(['date', 'datetime-local', 'month', 'time', 'week']);
+export const KEY_INPUT_TEXT =
+  Object.freeze(['email', 'number', 'password', 'search', 'tel', 'text']);
+export const KEY_INPUT_TYPE =
+  Object.freeze([...KEY_INPUT_DATE, ...KEY_INPUT_TEXT, 'url']);
+export const KEY_FORGIVE = Object.freeze(['is', 'where']);
+export const KEY_LOGICAL = Object.freeze([...KEY_FORGIVE, 'has', 'not']);
+export const KEY_NTH_CHILD = Object.freeze(['nth-child', 'nth-last-child']);
+export const KEY_NTH_TYPE = Object.freeze(['nth-of-type', 'nth-last-of-type']);

@@ -10,9 +10,9 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, N_TH, LOGICAL_COMPLEX,
-  LOGICAL_COMPOUND, PSEUDO_CLASS, REG_INPUT_TYPE, TEXT_NODE, TYPE_FROM,
-  TYPE_TO, WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, KEY_INPUT_TYPE, LOGICAL_COMPLEX,
+  LOGICAL_COMPOUND, N_TH, PSEUDO_CLASS, TEXT_NODE, TYPE_FROM, TYPE_TO,
+  WALKER_FILTER
 } from './constant.js';
 const REG_LOGICAL_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGICAL_COMPLEX})`);
@@ -399,7 +399,7 @@ export const isFocusVisible = node => {
     const { localName, type } = node;
     switch (localName) {
       case 'input': {
-        if (!type || REG_INPUT_TYPE.test(type)) {
+        if (!type || KEY_INPUT_TYPE.includes(type)) {
           res = true;
         }
         break;

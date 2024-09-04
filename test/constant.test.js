@@ -15,7 +15,10 @@ describe('constants', () => {
     it('should get string or number or regexp', () => {
       assert.isTrue(/^[A-Z][A-Z_\d]+$/.test(key), 'key');
       assert.isTrue(typeof value === 'string' || Number.isInteger(value) ||
-        value instanceof RegExp, 'value');
+        Array.isArray(value), 'value');
+      if (Array.isArray(value)) {
+        assert.throws(() => { value[0] = 'foo'; });
+      }
     });
   }
 });
