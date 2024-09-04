@@ -510,7 +510,11 @@ export const isFocusableArea = node => {
 
 /**
  * is focusable
- * NOTE: workaround for jsdom issue: https://github.com/jsdom/jsdom/issues/3464
+ * NOTE: not applied, need fix in jsdom itself
+ * @see https://github.com/whatwg/html/pull/8392
+ * @see https://phabricator.services.mozilla.com/D156219
+ * @see https://github.com/jsdom/jsdom/issues/3029
+ * @see https://github.com/jsdom/jsdom/issues/3464
  * @param {object} node - Element node
  * @returns {boolean} - result
  */

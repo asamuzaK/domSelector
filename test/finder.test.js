@@ -4768,7 +4768,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4786,7 +4786,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4804,7 +4804,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4822,7 +4822,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4840,7 +4840,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4858,7 +4858,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4876,7 +4876,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4894,7 +4894,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4912,7 +4912,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4930,7 +4930,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5202,7 +5202,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5220,7 +5220,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5238,7 +5238,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5256,7 +5256,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5309,7 +5309,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5327,7 +5327,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5345,7 +5345,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5363,7 +5363,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5381,7 +5381,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5399,7 +5399,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    xit('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
