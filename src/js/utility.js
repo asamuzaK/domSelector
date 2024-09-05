@@ -228,17 +228,19 @@ export const getDirectionality = node => {
       return nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
-      const valueKeys =
-        [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden', 'url'];
-      const ltrKeys = [
-        'checkbox', 'color', 'date', 'image', 'number', 'radio', 'range', 'time'
-      ];
       switch (localName) {
         case 'input': {
+          const valueKeys = [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden'];
           if (!node.type || valueKeys.includes(node.type)) {
             text = node.value;
-          } else if (ltrKeys.includes(node.type)) {
-            return 'ltr';
+          } else {
+            const ltrKeys = [
+              'checkbox', 'color', 'date', 'image', 'number', 'range', 'radio',
+              'time'
+            ];
+            if (ltrKeys.includes(node.type)) {
+              return 'ltr';
+            }
           }
           break;
         }

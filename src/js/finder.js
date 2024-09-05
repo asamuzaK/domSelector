@@ -16,7 +16,7 @@ import {
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORM_FOCUS,
-  KEY_INPUT_DATE, KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL, KEY_NTH,
+  KEY_INPUT_DATE, KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL,
   NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL,
   SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
   TYPE_SELECTOR, WALKER_FILTER
@@ -759,10 +759,10 @@ export class Finder {
       if (bool) {
         if (isShadowRoot) {
           if (this.#verifyShadowHost) {
-            res = node;
+            return node;
           }
         } else {
-          res = node;
+          return node;
         }
       }
     } else {
@@ -811,10 +811,10 @@ export class Finder {
       }
       if (astName === 'not') {
         if (!bool) {
-          res = node;
+          return node;
         }
       } else if (bool) {
-        res = node;
+        return node;
       }
     }
     return res ?? null;
@@ -912,7 +912,7 @@ export class Finder {
       }
     } else if (Array.isArray(astChildren)) {
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (KEY_NTH.includes(astName)) {
+      if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
@@ -1225,7 +1225,7 @@ export class Finder {
               targetNode = node;
             } else if (localName === 'input') {
               if (node.hasAttribute('type')) {
-                const keys = [...KEY_INPUT_TEXT, 'number', 'url'];
+                const keys = [...KEY_INPUT_TEXT, 'number'];
                 if (keys.includes(node.getAttribute('type'))) {
                   targetNode = node;
                 }
@@ -1648,7 +1648,7 @@ export class Finder {
           }
         }
         if (bool) {
-          res = node;
+          return node;
         }
       } else if (astName === 'host-context') {
         let parent = host;
@@ -1672,11 +1672,11 @@ export class Finder {
           }
         }
         if (bool) {
-          res = node;
+          return node;
         }
       }
     } else if (astName === 'host') {
-      res = node;
+      return node;
     } else {
       throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     }
