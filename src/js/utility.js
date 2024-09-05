@@ -10,9 +10,9 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, KEY_INPUT_TYPE, LOGICAL_COMPLEX,
-  LOGICAL_COMPOUND, N_TH, PSEUDO_CLASS, TEXT_NODE, TYPE_FROM, TYPE_TO,
-  WALKER_FILTER
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, KEY_INPUT_BUTTON, KEY_INPUT_EDIT,
+  KEY_INPUT_TEXT, LOGICAL_COMPLEX, LOGICAL_COMPOUND, N_TH, PSEUDO_CLASS,
+  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
 } from './constant.js';
 const REG_LOGICAL_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGICAL_COMPLEX})`);
@@ -90,13 +90,12 @@ export const traverseNode = (node, walker) => {
   if (walker?.currentNode) {
     let refNode = walker.currentNode;
     if (refNode === node) {
-      current = refNode;
+      return refNode;
     } else if (refNode.contains(node)) {
       refNode = walker.nextNode();
       while (refNode) {
         if (refNode === node) {
-          current = refNode;
-          break;
+          return refNode;
         }
         refNode = walker.nextNode();
       }
@@ -112,8 +111,7 @@ export const traverseNode = (node, walker) => {
       if (node.nodeType === ELEMENT_NODE) {
         while (refNode) {
           if (refNode === node) {
-            current = refNode;
-            break;
+            return refNode;
           }
           refNode = walker.nextNode();
         }
@@ -176,7 +174,7 @@ export const isInShadowTree = node => {
     while (refNode) {
       const { host, mode, nodeType, parentNode } = refNode;
       if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
-          /^(?:close|open)$/.test(mode)) {
+          (mode === 'close' || mode === 'open')) {
         bool = true;
         break;
       }
@@ -226,16 +224,21 @@ export const getDirectionality = node => {
   if (node.nodeType === ELEMENT_NODE) {
     const { dir: nodeDir, localName, parentNode } = node;
     const { getEmbeddingLevels } = bidiFactory();
-    if (/^(?:ltr|rtl)$/.test(nodeDir)) {
-      res = nodeDir;
+    if (nodeDir === 'ltr' || nodeDir === 'rtl') {
+      return nodeDir;
     } else if (nodeDir === 'auto') {
       let text;
+      const valueKeys =
+        [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden', 'url'];
+      const ltrKeys = [
+        'checkbox', 'color', 'date', 'image', 'number', 'radio', 'range', 'time'
+      ];
       switch (localName) {
         case 'input': {
-          if (!node.type || /^(?:button|email|hidden|password|reset|search|submit|tel|text|url)$/.test(node.type)) {
+          if (!node.type || valueKeys.includes(node.type)) {
             text = node.value;
-          } else if (/^(?:checkbox|color|date|image|number|radio|range|time)$/.test(node.type)) {
-            res = 'ltr';
+          } else if (ltrKeys.includes(node.type)) {
+            return 'ltr';
           }
           break;
         }
@@ -257,8 +260,9 @@ export const getDirectionality = node => {
             if (itemNodeType === TEXT_NODE) {
               text = itemTextContent.trim();
             } else if (itemNodeType === ELEMENT_NODE) {
-              if (!/^(?:bdi|script|style|textarea)$/.test(itemLocalName) &&
-                  (!itemDir || !/^(?:ltr|rtl)$/.test(itemDir))) {
+              const keys = ['bdi', 'script', 'style', 'textarea'];
+              if (!keys.includes(itemLocalName) &&
+                  (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))) {
                 if (itemLocalName === 'slot') {
                   text = getSlottedTextContent(item);
                 } else {
@@ -275,22 +279,21 @@ export const getDirectionality = node => {
       if (text) {
         const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = 'rtl';
-        } else {
-          res = 'ltr';
+          return 'rtl';
         }
+        return 'ltr';
       }
       if (!res) {
         if (parentNode) {
           const { nodeType: parentNodeType } = parentNode;
           if (parentNodeType === ELEMENT_NODE) {
-            res = getDirectionality(parentNode);
+            return getDirectionality(parentNode);
           } else if (parentNodeType === DOCUMENT_NODE ||
                      parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-            res = 'ltr';
+            return 'ltr';
           }
         } else {
-          res = 'ltr';
+          return 'ltr';
         }
       }
     } else if (localName === 'bdi') {
@@ -298,39 +301,37 @@ export const getDirectionality = node => {
       if (text) {
         const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          res = 'rtl';
-        } else {
-          res = 'ltr';
+          return 'rtl';
         }
+        return 'ltr';
       }
       if (!(res || parentNode)) {
-        res = 'ltr';
+        return 'ltr';
       }
     } else if (localName === 'input' && node.type === 'tel') {
-      res = 'ltr';
+      return 'ltr';
     } else if (parentNode) {
       if (localName === 'slot') {
         const text = getSlottedTextContent(node);
         if (text) {
           const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
           if (level % 2 === 1) {
-            res = 'rtl';
-          } else {
-            res = 'ltr';
+            return 'rtl';
           }
+          return 'ltr';
         }
       }
       if (!res) {
         const { nodeType: parentNodeType } = parentNode;
         if (parentNodeType === ELEMENT_NODE) {
-          res = getDirectionality(parentNode);
+          return getDirectionality(parentNode);
         } else if (parentNodeType === DOCUMENT_NODE ||
                    parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-          res = 'ltr';
+          return 'ltr';
         }
       }
     } else {
-      res = 'ltr';
+      return 'ltr';
     }
   }
   return res ?? null;
@@ -349,21 +350,33 @@ export const isContentEditable = node => {
   let res;
   if (node.nodeType === ELEMENT_NODE) {
     if (typeof node.isContentEditable === 'boolean') {
-      res = node.isContentEditable;
+      return node.isContentEditable;
     } else if (node.ownerDocument.designMode === 'on') {
-      res = true;
+      return true;
     } else if (node.hasAttribute('contenteditable')) {
       const attr = node.getAttribute('contenteditable');
-      if (attr === '' || /^(?:plaintext-only|true)$/.test(attr)) {
-        res = true;
-      } else if (attr === 'inherit') {
-        let parent = node.parentNode;
-        while (parent) {
-          if (isContentEditable(parent)) {
-            res = true;
-            break;
+      switch (attr) {
+        case '':
+        case 'true': {
+          return true;
+        }
+        case 'plaintext-only': {
+          // FIXME: the element's raw text is editable,
+          // but rich text formatting is disabled
+          return true;
+        }
+        case 'false': {
+          return false;
+        }
+        default: {
+          let parent = node.parentNode;
+          while (parent) {
+            if (isContentEditable(parent)) {
+              return true;
+            }
+            parent = parent.parentNode;
           }
-          parent = parent.parentNode;
+          break;
         }
       }
     }
@@ -382,7 +395,7 @@ export const isVisible = node => {
     const window = node.ownerDocument.defaultView;
     const { display, visibility } = window.getComputedStyle(node);
     if (display !== 'none' && visibility === 'visible') {
-      res = true;
+      return true;
     }
   }
   return !!res;
@@ -399,17 +412,16 @@ export const isFocusVisible = node => {
     const { localName, type } = node;
     switch (localName) {
       case 'input': {
-        if (!type || KEY_INPUT_TYPE.includes(type)) {
-          res = true;
+        if (!type || KEY_INPUT_EDIT.includes(type)) {
+          return true;
         }
         break;
       }
       case 'textarea': {
-        res = true;
-        break;
+        return true;
       }
       default: {
-        res = isContentEditable(node);
+        return isContentEditable(node);
       }
     }
   }
@@ -568,11 +580,10 @@ export const getNamespaceURI = (ns, node) => {
     for (const attr of attributes) {
       const { name, namespaceURI, prefix, value } = attr;
       if (name === `xmlns:${ns}`) {
-        res = value;
-        break;
-      } else if (prefix === ns) {
-        res = namespaceURI;
-        break;
+        return value;
+      }
+      if (prefix === ns) {
+        return namespaceURI;
       }
     }
   }

@@ -91,12 +91,13 @@ export const LOGICAL_COMPOUND =
 /* array */
 export const KEY_FORM_FOCUS =
   Object.freeze(['button', 'input', 'select', 'textarea']);
+export const KEY_INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
 export const KEY_INPUT_DATE =
   Object.freeze(['date', 'datetime-local', 'month', 'time', 'week']);
 export const KEY_INPUT_TEXT =
-  Object.freeze(['email', 'number', 'password', 'search', 'tel', 'text']);
-export const KEY_INPUT_TYPE =
-  Object.freeze([...KEY_INPUT_DATE, ...KEY_INPUT_TEXT, 'url']);
+  Object.freeze(['email', 'password', 'search', 'tel', 'text']);
+export const KEY_INPUT_EDIT =
+  Object.freeze([...KEY_INPUT_DATE, ...KEY_INPUT_TEXT, 'number', 'url']);
 export const KEY_LOGICAL = Object.freeze(['has', 'is', 'not', 'where']);
 export const KEY_NTH = Object.freeze([
   'nth-child', 'nth-last-child', 'nth-of-type', 'nth-last-of-type'

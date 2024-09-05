@@ -16,7 +16,7 @@ import {
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORM_FOCUS,
-  KEY_INPUT_DATE, KEY_INPUT_TEXT, KEY_INPUT_TYPE, KEY_LOGICAL, KEY_NTH,
+  KEY_INPUT_DATE, KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL, KEY_NTH,
   NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL,
   SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
   TYPE_SELECTOR, WALKER_FILTER
@@ -1185,7 +1185,7 @@ export class Finder {
               break;
             }
             case 'input': {
-              if (!node.type || KEY_INPUT_TYPE.includes(node.type)) {
+              if (!node.type || KEY_INPUT_EDIT.includes(node.type)) {
                 if (node.readonly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled')) {
                   readonly = true;
@@ -1225,7 +1225,7 @@ export class Finder {
               targetNode = node;
             } else if (localName === 'input') {
               if (node.hasAttribute('type')) {
-                const keys = [...KEY_INPUT_TEXT, 'url'];
+                const keys = [...KEY_INPUT_TEXT, 'number', 'url'];
                 if (keys.includes(node.getAttribute('type'))) {
                   targetNode = node;
                 }
@@ -1426,7 +1426,7 @@ export class Finder {
             targetNode = node;
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              const keys = [...KEY_INPUT_TYPE, 'checkbox', 'file', 'radio'];
+              const keys = [...KEY_INPUT_EDIT, 'checkbox', 'file', 'radio'];
               const attrType = node.getAttribute('type');
               if (keys.includes(attrType)) {
                 targetNode = node;

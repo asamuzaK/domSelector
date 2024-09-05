@@ -1202,6 +1202,14 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
+      const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'false');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
       const node = document.createElement('a');
       document.body.appendChild(node);
       const res = func(node);
