@@ -773,7 +773,7 @@ export class Finder {
           }
         }
       }
-      opt.forgive = (astName === 'is' || astName === 'where');
+      opt.forgive = astName === 'is' || astName === 'where';
       const l = twigBranches.length;
       let bool;
       for (let i = 0; i < l; i++) {
