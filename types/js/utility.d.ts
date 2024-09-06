@@ -8,6 +8,7 @@ export function getDirectionality(node: object): string | null;
 export function isContentEditable(node: object): boolean;
 export function isVisible(node: object): boolean;
 export function isFocusVisible(node: object): boolean;
+export function isFocusableArea(node: object): boolean;
 export function isFocusable(node: object): boolean;
 export function getNamespaceURI(ns: string, node: any[]): string | null;
 export function isNamespaceDeclared(ns?: string, node?: object): boolean;
