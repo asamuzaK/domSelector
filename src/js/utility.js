@@ -442,7 +442,7 @@ export const isFocusableArea = node => {
     }
     const window = node.ownerDocument.defaultView;
     if (node instanceof window.HTMLElement) {
-      if (!Number.isNaN(parseInt(node.getAttribute('tabindex')))) {
+      if (Number.isInteger(parseInt(node.getAttribute('tabindex')))) {
         return true;
       }
       if (isContentEditable(node)) {
@@ -488,7 +488,7 @@ export const isFocusableArea = node => {
         }
       }
     } else if (node instanceof window.SVGElement) {
-      if (!Number.isNaN(parseInt(node.getAttributeNS(null, 'tabindex')))) {
+      if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
         const keys = new Set([
           'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
           'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',

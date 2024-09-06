@@ -12953,6 +12953,147 @@ describe('Finder', () => {
     });
 
     it('should get list and matrix', () => {
+      const container = document.getElementById('div0');
+      const ancestor = document.createElement('div');
+      const parent = document.createElement('p');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      ancestor.appendChild(parent);
+      container.appendChild(ancestor);
+      const finder = new Finder(window);
+      finder.setup('* > ul > *', container);
+      finder._prepareQuerySelectorWalker(container);
+      const res = finder._collectNodes('all');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            container,
+            ancestor,
+            parent,
+            child
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
+      const container = document.getElementById('div0');
+      const ancestor = document.createElement('div');
+      const parent = document.createElement('p');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      ancestor.appendChild(parent);
+      container.appendChild(ancestor);
+      const finder = new Finder(window);
+      finder.setup('* > ul > *', container);
+      finder._prepareQuerySelectorWalker(container);
+      const res = finder._collectNodes('first');
+      assert.deepEqual(res, [
+        [
+          {
+            branch: [
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: {
+                  loc: null,
+                  name: '>',
+                  type: COMBINATOR
+                },
+                leaves: [
+                  {
+                    loc: null,
+                    name: 'ul',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              },
+              {
+                combo: null,
+                leaves: [
+                  {
+                    loc: null,
+                    name: '*',
+                    type: TYPE_SELECTOR
+                  }
+                ]
+              }
+            ],
+            collected: false,
+            dir: 'prev',
+            filtered: true,
+            find: true
+          }
+        ],
+        [
+          [
+            ancestor
+          ]
+        ]
+      ], 'result');
+    });
+
+    it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('#ul1 > #li1', document);
       finder._prepareQuerySelectorWalker(document);

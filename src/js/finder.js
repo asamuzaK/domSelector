@@ -2436,12 +2436,12 @@ export class Finder {
               dir = DIR_NEXT;
               twig = firstTwig;
             }
-          } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
-            dir = DIR_NEXT;
-            twig = firstTwig;
           } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
+          } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
           } else {
             let bool;
             for (const { combo, leaves: [leaf] } of branch) {
@@ -2667,7 +2667,7 @@ export class Finder {
               const node = entryNodes[j];
               if (node !== this.#node && this.#node.contains(node)) {
                 nodes.add(node);
-                if (targetType !== TARGET_ALL) {
+                if (targetType === TARGET_FIRST) {
                   break;
                 }
               }
