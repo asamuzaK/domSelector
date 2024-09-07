@@ -5168,6 +5168,28 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      const parent = document.createElement('form');
+      parent.appendChild(node);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':focus-visible', node);
+      node.focus();
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+      node.blur();
+      const res2 = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res2], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
