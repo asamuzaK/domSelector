@@ -2063,6 +2063,36 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/focus-visible-014.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            background: lime;
+          }
+          :focus:not(:focus-visible) {
+            background-color: red;
+          }
+        </style>
+        <input id="input"></input>
+        <div id="target" tabindex="0">Target</div>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const target = document.getElementById('target');
+      input.focus();
+      assert.isTrue(input.matches(':focus-visible'));
+      target.focus();
+      assert.isTrue(target.matches(':focus-visible'));
+    });
+  });
+
   describe('css/selectors/has-basic.html', () => {
     it('should get matched node(s)', () => {
       const html = `

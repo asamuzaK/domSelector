@@ -166,9 +166,12 @@ export class Finder {
         }
       }, opt));
     }
-    func.push(this.#window.addEventListener('focusin', evt => {
-      this.#focus = evt;
-    }, opt));
+    const focusKeys = ['focus', 'focusin'];
+    for (const key of focusKeys) {
+      func.push(this.#window.addEventListener(key, evt => {
+        this.#focus = evt;
+      }, opt));
+    }
     return func;
   }
 
@@ -1065,14 +1068,13 @@ export class Finder {
             if (isFocusVisible(node)) {
               bool = true;
             } else {
-              const { target: eventTarget, type } = this.#event ?? {};
               const { target: focusTarget, relatedTarget } = this.#focus ?? {};
-              if ((type === 'keydown' || type === 'keyup') &&
-                  node.contains(eventTarget)) {
-                bool = true;
-              } else if (relatedTarget && isFocusVisible(relatedTarget) &&
-                         node.contains(focusTarget)) {
-                bool = true;
+              if (node === focusTarget) {
+                if (isFocusVisible(relatedTarget)) {
+                  bool = true;
+                } else if (!this.#event && !relatedTarget && isFocusableArea(node)) {
+                  bool = true;
+                }
               }
             }
             if (bool) {
