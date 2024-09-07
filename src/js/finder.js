@@ -166,7 +166,7 @@ export class Finder {
         }
       }, opt));
     }
-    const focusKeys = ['focus', 'focusin'];
+    const focusKeys = ['focus', 'focusin', 'blur', 'focusout'];
     for (const key of focusKeys) {
       func.push(this.#window.addEventListener(key, evt => {
         this.#focus = evt;
@@ -1068,11 +1068,12 @@ export class Finder {
             if (isFocusVisible(node)) {
               bool = true;
             } else {
-              const { target: focusTarget, relatedTarget } = this.#focus ?? {};
-              if (node === focusTarget) {
+              const { target, relatedTarget, type } = this.#focus ?? {};
+              if (node === target && (type === 'focus' || type === 'focusin')) {
                 if (isFocusVisible(relatedTarget)) {
                   bool = true;
-                } else if (!this.#event && !relatedTarget && isFocusableArea(node)) {
+                } else if (!this.#event && !relatedTarget &&
+                           isFocusableArea(node)) {
                   bool = true;
                 }
               }

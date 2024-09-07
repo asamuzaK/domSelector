@@ -216,6 +216,8 @@ describe('Finder', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
+        undefined,
         undefined
       ], 'result');
     });
