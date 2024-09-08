@@ -1056,7 +1056,9 @@ export class Finder {
             } else {
               const { relatedTarget, target: focusTarget } = this.#focus ?? {};
               if (focusTarget === node) {
-                if (this.#event) {
+                if (isFocusVisible(relatedTarget)) {
+                  bool = true;
+                } else if (this.#event) {
                   const {
                     key: eventKey, target: eventTarget, type: eventType
                   } = this.#event;

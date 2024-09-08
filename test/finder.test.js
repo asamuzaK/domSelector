@@ -5073,6 +5073,34 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-visible',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      const node2 = document.createElement('button');
+      const parent = document.createElement('form');
+      node.setAttribute('tabindex', '-1');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      document.getElementById('div0').appendChild(parent);
+      const finder = new Finder(window);
+      node.focus();
+      finder.setup(':focus-visible', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+      node2.focus();
+      finder.setup(':focus-visible', node2);
+      const res2 = finder._matchPseudoClassSelector(leaf, node2, {});
+      assert.deepEqual([...res2], [
+        node2
+      ], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
