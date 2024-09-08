@@ -59,6 +59,7 @@ export class Finder {
   #focus;
   #invalidate;
   #invalidateResults;
+  #lastFocusVisible;
   #matcher;
   #node;
   #nodes;
@@ -86,6 +87,7 @@ export class Finder {
     this.#results = new WeakMap();
     this.#event = null;
     this.#focus = null;
+    this.#lastFocusVisible = null;
     this._registerEventListeners();
   }
 
@@ -127,7 +129,7 @@ export class Finder {
    * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
-    const { event, noexcept, warn } = opt;
+    const { noexcept, warn } = opt;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
@@ -137,7 +139,6 @@ export class Finder {
     this.#invalidateResults = new WeakMap();
     this.#walkers = new WeakMap();
     this.#verifyShadowHost = null;
-    this._setEvent(event);
     return this;
   }
 
@@ -173,21 +174,6 @@ export class Finder {
       }, opt));
     }
     return func;
-  }
-
-  /**
-   * set event
-   * @private
-   * @param {object} event - instance of KeyboardEvent, MouseEvent
-   * @returns {object} - event
-   */
-  _setEvent(event) {
-    // NOTE: PointerEvent not implemented in jsdom
-    if (event instanceof this.#window.KeyboardEvent ||
-        event instanceof this.#window.MouseEvent) {
-      this.#event = event;
-    }
-    return this.#event;
   }
 
   /**
@@ -1068,18 +1054,31 @@ export class Finder {
             if (isFocusVisible(node)) {
               bool = true;
             } else {
-              const { target, relatedTarget } = this.#focus ?? {};
-              if (node === target) {
-                if (isFocusVisible(relatedTarget)) {
-                  bool = true;
-                } else if (!this.#event && !relatedTarget &&
-                           isFocusableArea(node)) {
+              const { relatedTarget, target: focusTarget } = this.#focus ?? {};
+              if (focusTarget === node) {
+                if (this.#event) {
+                  const {
+                    key: eventKey, target: eventTarget, type: eventType
+                  } = this.#event;
+                  if (eventKey === 'Tab' &&
+                      ((eventType === 'keydown' && eventTarget !== node) ||
+                       (eventType === 'keyup' && eventTarget === node))) {
+                    bool = true;
+                  } else if (!this.#lastFocusVisible ||
+                             relatedTarget === this.#lastFocusVisible) {
+                    bool = true;
+                  }
+                } else if (relatedTarget === null ||
+                           relatedTarget === this.#lastFocusVisible) {
                   bool = true;
                 }
               }
             }
             if (bool) {
+              this.#lastFocusVisible = node;
               matched.add(node);
+            } else if (this.#lastFocusVisible === node) {
+              this.#lastFocusVisible = null;
             }
           }
           break;
