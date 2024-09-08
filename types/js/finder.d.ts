@@ -7,7 +7,6 @@ export class Finder {
         warn?: boolean;
     }): object;
     private _registerEventListeners;
-    private _setEvent;
     private _correspond;
     private _createTreeWalker;
     private _prepareQuerySelectorWalker;
