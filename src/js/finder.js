@@ -1053,8 +1053,8 @@ export class Finder {
             let bool;
             if (isFocusVisible(node)) {
               bool = true;
-            } else {
-              const { relatedTarget, target: focusTarget } = this.#focus ?? {};
+            } else if (this.#focus) {
+              const { relatedTarget, target: focusTarget } = this.#focus;
               if (focusTarget === node) {
                 if (isFocusVisible(relatedTarget)) {
                   bool = true;
