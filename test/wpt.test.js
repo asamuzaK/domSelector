@@ -1,7 +1,7 @@
 /**
  * wpt.test.js
  */
-/* eslint-disable camelcase */
+/* eslint-disable camelcase, no-await-in-loop */
 
 /* api */
 import { assert } from 'chai';
@@ -2032,6 +2032,411 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/focus-visible-001.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: red;
+          }
+        </style>
+        <div id="el" tabindex="0">Focus me.</div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('el');
+      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
+      node.focus();
+      assert.isTrue(node.matches(':focus-visible'),
+        'node matches :focus-visible');
+      assert.isFalse(node.matches(':focus:not(:focus-visible)'),
+        'node does not match :focus:not(:focus-visible)');
+      const focusVisiblePseudoAll = document.querySelectorAll(':focus-visible');
+      assert.strictEqual(focusVisiblePseudoAll.length, 1);
+      const focusVisiblePseudo = document.querySelector(':focus-visible');
+      assert.deepEqual(node, focusVisiblePseudo);
+    });
+  });
+
+  describe('css/selectors/focus-visible-002.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: red;
+          }
+        </style>
+        <div>
+          <input class="check" id="input1" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input2" type="text" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input3" type="email" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input4" type="password" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input5" type="search" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input6" type="telephone" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input7" type="url" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="input8" type="number" value="10000">
+        </div>
+        <div>
+          <input class="check" id="input9" type="date">
+        </div>
+        <div>
+          <input class="check" id="input10" type="datetime-local">
+        </div>
+        <div>
+          <input class="check" id="input11" type="month">
+        </div>
+        <div>
+          <input class="check" id="input12" type="time">
+        </div>
+        <div>
+          <input class="check" id="input13" type="week">
+        </div>
+        <div>
+          <textarea class="check" id="input14">Focus me.</textarea>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const elements = document.querySelectorAll('.check');
+      for (const target of elements) {
+        await userMouseClick(target);
+        assert.isTrue(target.matches(':focus-visible'),
+          `${target.id} matches :focus-visible`);
+        assert.isFalse(target.matches(':focus:not(:focus-visible)'),
+          `${target.id} does not match :focus:not(:focus-visible)`);
+      }
+    });
+  });
+
+  describe('css/selectors/focus-visible-003.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: red solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: lime;
+          }
+        </style>
+        <div>
+          <span class="check" id="el-1" tabindex="1">Focus me</span>
+        </div>
+        <div>
+          <span class="check" id="el-2" tabindex="-1">Focus me</span>
+        </div>
+        <div>
+          <span class="check" id="el-3" tabindex="0">Focus me</span>
+        </div>
+        <div>
+          <button class="check" id="el-4">Focus me</span>
+        </div>
+        <div>
+          <input class="check" id="el-5" type="button" value="Focus me">
+        </div>
+        <div>
+          <input class="check" id="el-6" type="image" alt="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="el-7" type="reset" value="Focus me.">
+        </div>
+        <div>
+          <input class="check" id="el-8" type="submit" value="Focus me.">
+        </div>
+        <div>
+          <label>
+            <input class="check" id="el-9" type="checkbox">
+            Focus me.
+          </label>
+        </div>
+        <div>
+          <label>
+            <input class="check" id="el-10" type="radio">
+            Focus me.
+          </label>
+        </div>
+        <div>
+          <!-- Focusing file input triggers a modal, so only test manually -->
+          <input id="el-11" type="file" value="Focus me.">
+        </div>
+        <div>
+          <label><input class="check" id="el-12" type="range"> Focus me.</label>
+        </div>
+        <div>
+          <!-- Ensure the color input is last, as it has a pop-up which
+               obscures other elements -->
+          <label>
+            <input class="check" id="el-13" type="color">
+            Focus me.
+          </label>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const elements = document.querySelectorAll('.check');
+      for (const target of elements) {
+        await userMouseClick(target);
+        assert.isFalse(target.matches(':focus-visible'),
+          `${target.id} does not match :focus-visible`);
+        assert.isTrue(target.matches(':focus:not(:focus-visible)'),
+          `${target.id} matches :focus:not(:focus-visible)`);
+      }
+    });
+  });
+
+  describe('css/selectors/focus-visible-005.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: red solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: lime;
+          }
+        </style>
+        <button id="button">Click me.</button>
+        <div id="el" tabindex="-1">I will be focused programmatically.</div>
+      `;
+      document.body.innerHTML = html;
+      const button = document.getElementById('button');
+      const target = document.getElementById('el');
+      button.addEventListener('click', () => {
+        target.focus();
+      });
+      button.click();
+      assert.isFalse(target.matches(':focus-visible'),
+        `${target.id} does not match :focus-visible`);
+      assert.isTrue(target.matches(':focus:not(:focus-visible)'),
+        `${target.id} matches :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-006.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: red;
+          }
+        </style>
+        <div>
+          <span id="el" contenteditable>Focus me</span>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const node = document.getElementById('el');
+      await userMouseClick(node);
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} does not match :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-007.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          [data-hadkeydown] :focus-visible {
+            outline: green solid 5px;
+          }
+          [data-hadmousedown] :focus-visible {
+            outline: red solid 5px;
+          }
+          [data-hadkeydown] :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: red;
+          }
+          [data-hadmousedown] :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: lime;
+          }
+        </style>
+        <div id="one" tabindex="0">Click me.</div>
+      `;
+      document.body.innerHTML = html;
+      const setHadkeydown = () => {
+        delete document.body.dataset.hadmousedown;
+        document.body.dataset.hadkeydown = '';
+      };
+      const setHadmousedown = () => {
+        delete document.body.dataset.hadkeydown;
+        document.body.dataset.hadmousedown = '';
+      };
+      document.body.addEventListener('keydown', setHadkeydown, true);
+      document.body.addEventListener('mousedown', setHadmousedown, true);
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const one = document.getElementById('one');
+      await userMouseClick(one);
+      assert.isTrue(one.matches('[data-hadmousedown] :focus'),
+        'one matches [data-hadmousedown] :focus');
+      assert.isTrue(
+        one.matches('[data-hadmousedown] :focus:not(:focus-visible)'),
+        'one matches [data-hadmousedown] :focus:not(:focus-visible)');
+      one.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: '\uE007'
+      }));
+      one.dispatchEvent(new window.KeyboardEvent('keyup', {
+        key: '\uE007'
+      }));
+      assert.isTrue(one.matches('[data-hadkeydown] :focus-visible'),
+        'one matches [data-hadkeydown] :focus-visible');
+      document.body.removeEventListener('keydown', setHadkeydown, true);
+      document.body.removeEventListener('mousedown', setHadmousedown, true);
+      delete document.body.dataset.hadmousedown;
+      delete document.body.dataset.hadkeydown;
+    });
+  });
+
+  describe('css/selectors/focus-visible-008.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            #el:focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          #el:focus:not(:focus-visible) {
+            background-color: red;
+            outline: 0;
+          }
+        </style>
+        <button id="button">Tab to me and press ENTER.</button>
+        <div id="el" tabindex="-1">I will be focused programmatically.</div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const button = document.getElementById('button');
+      const node = document.getElementById('el');
+      button.addEventListener('click', () => {
+        node.focus();
+      });
+      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
+      button.focus();
+      button.dispatchEvent(new window.KeyboardEvent('keyup', {
+        key: 'Tab'
+      }));
+      await userMouseClick(button);
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(node.matches('#el:focus:not(:focus-visible)'),
+        `${node.id} does not match #el:focus:not(:focus-visible)`);
+    });
+  });
+
   describe('css/selectors/focus-visible-009.html', () => {
     // `autofocus` not implemented in jsdom
     xit('should match', async () => {
@@ -2051,7 +2456,9 @@ describe('local wpt test cases', () => {
             outline: 0;
           }
         </style>
-        <button id="button" autofocus tabindex="-1">I will be focused automatically.</button>
+        <button id="button" autofocus tabindex="-1">
+          I will be focused automatically.
+        </button>
       `;
       document.body.innerHTML = html;
       const button = document.getElementById('button');
@@ -2059,7 +2466,205 @@ describe('local wpt test cases', () => {
         window.requestAnimationFrame(resolve);
       });
       assert.deepEqual(document.activeElement, button);
-      assert.isTrue(button.matches(':focus-visible'));
+      assert.isTrue(button.matches(':focus-visible'),
+        `${button.id} matches :focus-visible`);
+      assert.isFalse(button.matches('#button:focus:not(:focus-visible)'),
+        `${button.id} does not match #button:focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-010.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            background-color: red;
+            outline: 0;
+          }
+        </style>
+        <div id="el" tabindex="-1">I will be focused automatically.</div>
+      `;
+      document.body.innerHTML = html;
+      const node = document.getElementById('el');
+      node.focus();
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} does not match :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-011.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: green solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            background-color: red;
+            outline: 0;
+          }
+        </style>
+        <div id="target" tabindex="0">Click here and press right arrow.</div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const node = document.getElementById('target');
+      node.addEventListener('keydown', (e) => {
+        e.preventDefault();
+      });
+      node.addEventListener('keyup', (e) => {
+        e.preventDefault();
+      });
+      node.addEventListener('keypress', (e) => {
+        e.preventDefault();
+      });
+      await userMouseClick(node);
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'ArrowRight'
+      }));
+      node.dispatchEvent(new window.KeyboardEvent('keyup', {
+        key: 'ArrowRight'
+      }));
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} does not match :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-012.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: 0;
+            outline-color: red;
+            background-color: red;
+          }
+          :focus:not(:focus-visible) {
+            outline: green solid 5px;
+          }
+        </style>
+        <div id="el" tabindex="0">Click me, then use a keyboard shortcut.</div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const node = document.getElementById('el');
+      await userMouseClick(node);
+      assert.isTrue(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} matches :focus:not(:focus-visible)`);
+      assert.isFalse(node.matches(':focus-visible'),
+        `${node.id} does not match :focus-visible`);
+      node.dispatchEvent(new window.KeyboardEvent('keydown', {
+        ctrlKey: true,
+        key: 'y'
+      }));
+      node.dispatchEvent(new window.KeyboardEvent('keyup', {
+        ctrlKey: true,
+        key: 'y'
+      }));
+      assert.isTrue(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} matches :focus:not(:focus-visible)`);
+      assert.isFalse(node.matches(':focus-visible'),
+        `${node.id} does not match :focus-visible`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-013.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+            }
+          }
+          #initial:focus-visible {
+            outline: green solid 5px;
+          }
+          #initial:focus:not(:focus-visible) {
+            outline: red solid 5px;
+          }
+          #target:focus-visible {
+            outline: red solid 5px;
+          }
+          #target:focus:not(:focus-visible) {
+            outline: green solid 5px;
+          }
+        </style>
+        <div id="initial" tabindex="0">Initial</div>
+        <div id="target" tabindex="0">Target</div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const initial = document.getElementById('initial');
+      const node = document.getElementById('target');
+      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Tab'
+      }));
+      initial.focus();
+      initial.dispatchEvent(new window.KeyboardEvent('keyup', {
+        key: 'Tab'
+      }));
+      assert.isTrue(initial.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(initial.matches(':focus:not(:focus-visible)'),
+        `${node.id} does not match :focus:not(:focus-visible)`);
+      await userMouseClick(node);
+      assert.isTrue(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} matches :focus:not(:focus-visible)`);
+      assert.isFalse(node.matches(':focus-visible'),
+        `${node.id} does not match :focus-visible`);
     });
   });
 
@@ -2080,7 +2685,7 @@ describe('local wpt test cases', () => {
             background-color: red;
           }
         </style>
-        <input id="input"></input>
+        <input id="input">
         <div id="target" tabindex="0">Target</div>
       `;
       document.body.innerHTML = html;
@@ -2090,6 +2695,225 @@ describe('local wpt test cases', () => {
       assert.isTrue(input.matches(':focus-visible'));
       target.focus();
       assert.isTrue(target.matches(':focus-visible'));
+    });
+  });
+
+  describe('css/selectors/focus-visible-015.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            background: red;
+          }
+          :focus:not(:focus-visible) {
+            background-color: lime;
+          }
+        </style>
+        <div id="initial" tabindex="0">Initial</div>
+        <div id="target" tabindex="0">Target</div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const initial = document.getElementById('initial');
+      const node = document.getElementById('target');
+      let initialFocus = false;
+      initial.addEventListener('focus', () => {
+        initialFocus = true;
+        assert.isFalse(initial.matches(':focus-visible'),
+          `${initial.id} does not match :focus-visible`);
+        assert.isTrue(initial.matches(':focus:not(:focus-visible)'),
+          `${initial.id} matches :focus:not(:focus-visible)`);
+        node.focus();
+      });
+      await userMouseClick(initial);
+      assert.isTrue(initialFocus, `${initial.id} on focus called`);
+      assert.isFalse(node.matches(':focus-visible'),
+        `${node.id} does not match :focus-visible`);
+      assert.isTrue(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} matches :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-016.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          div:focus-visible {
+            background: red;
+          }
+          div:focus:not(:focus-visible) {
+            background-color: lime;
+          }
+          input:focus-visible {
+            background: lime;
+          }
+          input:focus:not(:focus-visible) {
+            background-color: red;
+          }
+        </style>
+        <div id="initial" tabindex="0">Initial</div>
+        <input id="target" />
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const initial = document.getElementById('initial');
+      const node = document.getElementById('target');
+      let initialFocus = false;
+      initial.addEventListener('focus', () => {
+        initialFocus = true;
+        assert.isFalse(initial.matches(':focus-visible'),
+          `${initial.id} does not match :focus-visible`);
+        assert.isTrue(initial.matches(':focus:not(:focus-visible)'),
+          `${initial.id} matches :focus:not(:focus-visible)`);
+        node.focus();
+      });
+      await userMouseClick(initial);
+      assert.isTrue(initialFocus, `${initial.id} on focus called`);
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+      assert.isFalse(node.matches(':focus:not(:focus-visible)'),
+        `${node.id} does not match :focus:not(:focus-visible)`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-027.html', () => {
+    it('should match', async () => {
+      const html = `
+        <input id="input" type="button" value="+">
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const node = document.getElementById('input');
+      node.addEventListener('click', function () {
+        if (this.type !== 'button') {
+          return;
+        }
+        this.value = '';
+        this.type = 'text';
+      });
+      await userMouseClick(node);
+      assert.strictEqual(node.type, 'text', `${node.id} type is text`);
+      assert.isTrue(node.matches(':focus-visible'),
+        `${node.id} matches :focus-visible`);
+    });
+  });
+
+  describe('css/selectors/focus-visible-028.html', () => {
+    it('should match', async () => {
+      const html = `
+        <style>
+          @supports not selector(:focus-visible) {
+            :focus {
+              outline: red solid 5px;
+              background-color: red;
+            }
+          }
+          :focus-visible {
+            outline: blue solid 5px;
+          }
+          :focus:not(:focus-visible) {
+            outline: 0;
+            background-color: lime;
+          }
+        </style>
+        <button id="button">Click me</button>
+        <div id="container">
+          <button id="btn1">I will be focused programmatically.</button>
+          <button id="btn2">Button 2</button>
+          <button id="btn3">Button 3</button>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const userMouseClick = async target => {
+        target.dispatchEvent(new window.MouseEvent('mousedown', {
+          buttons: 1
+        }));
+        target.focus();
+        target.dispatchEvent(new window.MouseEvent('mouseup', {
+          buttons: 0
+        }));
+        target.click();
+      };
+      const focusTrap = target => {
+        target.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          e.preventDefault();
+          const btns = target.querySelectorAll('button');
+          const currentIndex = Array.from(btns).indexOf(document.activeElement);
+          let nextIndex;
+          if (e.key === 'ArrowRight') {
+            nextIndex = (currentIndex + 1) % btns.length;
+          } else if (e.key === 'ArrowLeft') {
+            nextIndex = (currentIndex - 1 + btns.length) % btns.length;
+          }
+          btns[nextIndex].focus();
+        }, true);
+      };
+      const button = document.getElementById('button');
+      const container = document.getElementById('container');
+      const btn1 = document.getElementById('btn1');
+      const btn2 = document.getElementById('btn2');
+      let btn2Focused = false;
+      button.addEventListener('click', () => {
+        btn1.focus();
+      });
+      focusTrap(container);
+      btn2.addEventListener('focus', () => {
+        btn2Focused = true;
+        assert.isTrue(btn2.matches(':focus-visible'),
+          `${btn2.id} matches :focus-visible`);
+        assert.isFalse(btn2.matches(':focus:not(:focus-visible)'),
+          `${btn2.id} does not match :focus:not(:focus-visible)`);
+      });
+      await userMouseClick(button);
+      assert.deepEqual(document.activeElement, btn1,
+        `active element is ${btn1.id}`);
+      btn1.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'ArrowRight'
+      }));
+      btn1.dispatchEvent(new window.KeyboardEvent('keyup', {
+        key: 'ArrowRight'
+      }));
+      assert.isTrue(btn2Focused, `${btn2.id} gained focus`);
     });
   });
 

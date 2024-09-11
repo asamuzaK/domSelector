@@ -153,7 +153,9 @@ export class Finder {
       passive: true
     };
     const func = [];
-    const mouseKeys = ['mouseover', 'mousedown', 'mouseup', 'mouseout'];
+    const mouseKeys = [
+      'click', 'mouseover', 'mousedown', 'mouseup', 'mouseout'
+    ];
     for (const key of mouseKeys) {
       func.push(this.#window.addEventListener(key, evt => {
         this.#event = evt;
@@ -162,7 +164,13 @@ export class Finder {
     const keyboardKeys = ['keydown', 'keyup'];
     for (const key of keyboardKeys) {
       func.push(this.#window.addEventListener(key, evt => {
-        if (evt.key === 'Tab') {
+        const { key } = evt;
+        const specialKeys = [
+          'Alt', 'AltGraph', 'CapsLock', 'Control', 'Dead', 'Fn', 'FnLock',
+          'Hyper', 'Meta', 'NumLock', 'ScrollLock', 'Shift', 'Super', 'Symbol',
+          'SymbolLock', 'Unidentified'
+        ];
+        if (!specialKeys.includes(key)) {
           this.#event = evt;
         }
       }, opt));
@@ -995,7 +1003,7 @@ export class Finder {
         }
         case 'hover': {
           const { target, type } = this.#event ?? {};
-          if (['mousedown', 'mouseover', 'mouseup'].includes(type) &&
+          if (/^(?:click|mouse(?:down|over|up))$/.test(type) &&
               node.contains(target)) {
             matched.add(node);
           }
@@ -1062,13 +1070,32 @@ export class Finder {
                   const {
                     key: eventKey, target: eventTarget, type: eventType
                   } = this.#event;
-                  if (eventKey === 'Tab' &&
-                      ((eventType === 'keydown' && eventTarget !== node) ||
-                       (eventType === 'keyup' && eventTarget === node))) {
-                    bool = true;
-                  } else if (!this.#lastFocusVisible ||
-                             relatedTarget === this.#lastFocusVisible) {
-                    bool = true;
+                  // this.#event is irrelevant if eventTarget === relatedTarget
+                  if (eventTarget === relatedTarget) {
+                    if (this.#lastFocusVisible === null) {
+                      bool = true;
+                    } else if (focusTarget === this.#lastFocusVisible) {
+                      bool = true;
+                    }
+                  } else if (eventKey === 'Tab') {
+                    if ((eventType === 'keydown' && eventTarget !== node) ||
+                        (eventType === 'keyup' && eventTarget === node)) {
+                      if (eventTarget === focusTarget) {
+                        if (this.#lastFocusVisible === null) {
+                          bool = true;
+                        } else if (eventTarget === this.#lastFocusVisible &&
+                                   relatedTarget === null) {
+                          bool = true;
+                        }
+                      } else {
+                        bool = true;
+                      }
+                    }
+                  } else if (eventKey) {
+                    if ((eventType === 'keydown' || eventType === 'keyup') &&
+                        eventTarget === node) {
+                      bool = true;
+                    }
                   }
                 } else if (relatedTarget === null ||
                            relatedTarget === this.#lastFocusVisible) {
