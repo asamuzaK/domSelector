@@ -45,8 +45,8 @@
     "jsdom": "^25.0.0",
     "linkedom": "^0.18.4",
     "mocha": "^10.7.3",
-    "sinon": "^18.0.0",
-    "typescript": "^5.5.4",
+    "sinon": "^18.0.1",
+    "typescript": "^5.6.2",
     "wpt-runner": "^5.0.0"
   },
   "overrides": {
@@ -63,5 +63,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.0.4"
+  "version": "6.0.5"
 }
