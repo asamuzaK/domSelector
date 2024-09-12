@@ -41,7 +41,7 @@
     "eslint-plugin-jsdoc": "^50.2.2",
     "eslint-plugin-regexp": "^2.6.0",
     "eslint-plugin-unicorn": "^55.0.0",
-    "happy-dom": "^15.7.3",
+    "happy-dom": "^15.7.4",
     "jsdom": "^25.0.0",
     "linkedom": "^0.18.4",
     "mocha": "^10.7.3",
