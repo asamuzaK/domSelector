@@ -479,8 +479,8 @@ export const isFocusableArea = node => {
           return false;
         }
         default: {
-          const keys = new Set(['button', 'select', 'textarea']);
-          if (keys.has(localName) &&
+          const keys = ['button', 'select', 'textarea'];
+          if (keys.includes(localName) &&
               !(node.disabled || node.hasAttribute('disabled'))) {
             return true;
           }
@@ -489,16 +489,16 @@ export const isFocusableArea = node => {
       }
     } else if (node instanceof window.SVGElement) {
       if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
-        const keys = new Set([
+        const keys = [
           'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
           'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',
           'title'
-        ]);
+        ];
         const ns = 'http://www.w3.org/2000/svg';
         let bool;
         let refNode = node;
         while (refNode.namespaceURI === ns) {
-          bool = keys.has(refNode.localName);
+          bool = keys.includes(refNode.localName);
           if (bool) {
             break;
           }
