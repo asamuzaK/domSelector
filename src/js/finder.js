@@ -154,12 +154,10 @@ export class Finder {
       passive: true
     };
     const func = [];
-    const mouseKeys = [
-      'click', 'mouseover', 'mousedown', 'mouseup', 'mouseout'
-    ];
-    for (const key of mouseKeys) {
+    const focusKeys = ['focus', 'focusin'];
+    for (const key of focusKeys) {
       func.push(this.#window.addEventListener(key, evt => {
-        this.#event = evt;
+        this.#focus = evt;
       }, opt));
     }
     const keyboardKeys = ['keydown', 'keyup'];
@@ -171,10 +169,12 @@ export class Finder {
         }
       }, opt));
     }
-    const focusKeys = ['focus', 'focusin'];
-    for (const key of focusKeys) {
+    const mouseKeys = [
+      'mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'
+    ];
+    for (const key of mouseKeys) {
       func.push(this.#window.addEventListener(key, evt => {
-        this.#focus = evt;
+        this.#event = evt;
       }, opt));
     }
     return func;
