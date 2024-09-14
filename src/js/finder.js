@@ -1766,7 +1766,7 @@ export class Finder {
         case ATTR_SELECTOR: {
           const res = matchAttributeSelector(ast, node);
           if (res) {
-            matched.add(res);
+            matched.add(node);
           }
           break;
         }
@@ -1789,7 +1789,7 @@ export class Finder {
         case TYPE_SELECTOR: {
           const res = matchTypeSelector(ast, node, opt);
           if (res) {
-            matched.add(res);
+            matched.add(node);
           }
           break;
         }
