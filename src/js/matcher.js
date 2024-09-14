@@ -179,7 +179,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
  * match attribute selector
  * @param {object} ast - AST
  * @param {object} node - Element node
- * @returns {?object} - matched node
+ * @returns {boolean} - result
  */
 export const matchAttributeSelector = (ast, node) => {
   const {
@@ -295,9 +295,7 @@ export const matchAttributeSelector = (ast, node) => {
       }
       switch (astMatcher) {
         case '=': {
-          if (typeof attrValue === 'string' && attrValues.has(attrValue)) {
-            res = node;
-          }
+          res = typeof attrValue === 'string' && attrValues.has(attrValue);
           break;
         }
         case '~=': {
@@ -305,7 +303,7 @@ export const matchAttributeSelector = (ast, node) => {
             for (const value of attrValues) {
               const item = new Set(value.split(/\s+/));
               if (item.has(attrValue)) {
-                res = node;
+                res = true;
                 break;
               }
             }
@@ -322,7 +320,7 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = node;
+              res = true;
             }
           }
           break;
@@ -337,7 +335,7 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = node;
+              res = true;
             }
           }
           break;
@@ -352,7 +350,7 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = node;
+              res = true;
             }
           }
           break;
@@ -367,19 +365,19 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = node;
+              res = true;
             }
           }
           break;
         }
         case null:
         default: {
-          res = node;
+          res = true;
         }
       }
     }
   }
-  return res ?? null;
+  return !!res;
 };
 
 /**
@@ -388,7 +386,7 @@ export const matchAttributeSelector = (ast, node) => {
  * @param {object} node - Element node
  * @param {object} opt - options
  * @param {boolean} [opt.forgive] - forgive undeclared namespace
- * @returns {?object} - matched node
+ * @returns {boolean} - result
  */
 export const matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
@@ -416,13 +414,13 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     case '': {
       if (!nodePrefix && !namespaceURI &&
             (astLocalName === '*' || astLocalName === nodeLocalName)) {
-        res = node;
+        res = true;
       }
       break;
     }
     case '*': {
       if (astLocalName === '*' || astLocalName === nodeLocalName) {
-        res = node;
+        res = true;
       }
       break;
     }
@@ -431,12 +429,12 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
       if (astNS === nodeNS && astPrefix === nodePrefix) {
         if (astLocalName === '*' || astLocalName === nodeLocalName) {
-          res = node;
+          res = true;
         }
       } else if (!forgive && !astNS) {
         throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
       }
     }
   }
-  return res ?? null;
+  return !!res;
 };
