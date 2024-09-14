@@ -3,7 +3,10 @@
  */
 
 /* import */
-import { Matcher } from './matcher.js';
+import {
+  matchAttributeSelector, matchDirectionPseudoClass, matchLanguagePseudoClass,
+  matchPseudoElementSelector, matchTypeSelector
+} from './matcher.js';
 import {
   findAST, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
@@ -60,7 +63,6 @@ export class Finder {
   #invalidate;
   #invalidateResults;
   #lastFocusVisible;
-  #matcher;
   #node;
   #nodes;
   #noexcept;
@@ -80,7 +82,6 @@ export class Finder {
    */
   constructor(window) {
     this.#window = window;
-    this.#matcher = new Matcher();
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
     this.#invalidateResults = new WeakMap();
@@ -915,10 +916,19 @@ export class Finder {
         return nodes;
       } else {
         switch (astName) {
-          // :dir(), :lang()
-          case 'dir':
+          // :dir()
+          case 'dir': {
+            const [astChild] = astChildren;
+            const res = matchDirectionPseudoClass(astChild, node);
+            if (res) {
+              matched.add(res);
+            }
+            break;
+          }
+          // :lang()
           case 'lang': {
-            const res = this.#matcher.matchSelector(ast, node, opt, true);
+            const [astChild] = astChildren;
+            const res = matchLanguagePseudoClass(astChild, node, opt);
             if (res) {
               matched.add(res);
             }
@@ -1734,8 +1744,11 @@ export class Finder {
     }
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
-        case PS_ELEMENT_SELECTOR: {
-          this.#matcher.matchPseudoElementSelector(astName, opt);
+        case ATTR_SELECTOR: {
+          const res = matchAttributeSelector(ast, node);
+          if (res) {
+            matched.add(res);
+          }
           break;
         }
         case ID_SELECTOR: {
@@ -1754,11 +1767,16 @@ export class Finder {
           const nodes = this._matchPseudoClassSelector(ast, node, opt);
           return nodes;
         }
-        default: {
-          const res = this.#matcher.matchSelector(ast, node, opt, true);
+        case TYPE_SELECTOR: {
+          const res = matchTypeSelector(ast, node, opt);
           if (res) {
             matched.add(res);
           }
+          break;
+        }
+        case PS_ELEMENT_SELECTOR:
+        default: {
+          matchPseudoElementSelector(astName, astType, opt);
         }
       }
     } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
@@ -1893,7 +1911,7 @@ export class Finder {
     } else {
       switch (leafType) {
         case PS_ELEMENT_SELECTOR: {
-          this.#matcher.matchPseudoElementSelector(leafName, opt);
+          matchPseudoElementSelector(leafName, leafType, opt);
           break;
         }
         case ID_SELECTOR: {
@@ -2288,7 +2306,7 @@ export class Finder {
     let pending = false;
     switch (leafType) {
       case PS_ELEMENT_SELECTOR: {
-        this.#matcher.matchPseudoElementSelector(leafName, {
+        matchPseudoElementSelector(leafName, leafType, {
           warn: this.#warn
         });
         break;

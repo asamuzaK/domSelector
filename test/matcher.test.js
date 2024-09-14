@@ -8,13 +8,13 @@ import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
-import { Matcher } from '../src/js/matcher.js';
+import * as matcher from '../src/js/matcher.js';
 import {
-  ATTR_SELECTOR, EMPTY, IDENT, PS_CLASS_SELECTOR, TYPE_SELECTOR
+  ATTR_SELECTOR, EMPTY, IDENT, PS_ELEMENT_SELECTOR, TYPE_SELECTOR
 } from '../src/js/constant.js';
 const STRING = 'String';
 
-describe('Matcher', () => {
+describe('matcher', () => {
   const domStr = `<!doctype html>
     <html lang="en">
       <head>
@@ -65,7 +65,8 @@ describe('Matcher', () => {
           </div>
         </div>
       </body>
-    </html>`;
+    </html>
+  `;
   const domOpt = {
     runScripts: 'dangerously',
     url: 'http://localhost/#foo'
@@ -82,65 +83,68 @@ describe('Matcher', () => {
   });
 
   describe('match pseudo-element selector', () => {
-    const func = (new Matcher()).matchPseudoElementSelector;
+    const func = matcher.matchPseudoElementSelector;
 
     it('should throw', () => {
-      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      assert.throws(() => func('foo'), TypeError,
+        'Unexpected ast type Undefined');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('after');
+      const res = func('after', PS_ELEMENT_SELECTOR);
       assert.isUndefined(res, 'result');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('after', { warn: true }),
+      assert.throws(() => func('after', PS_ELEMENT_SELECTOR, { warn: true }),
         DOMException, 'Unsupported pseudo-element ::after');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('part');
+      const res = func('part', PS_ELEMENT_SELECTOR);
       assert.isUndefined(res, 'result');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('part', { warn: true }),
+      assert.throws(() => func('part', PS_ELEMENT_SELECTOR, { warn: true }),
         DOMException, 'Unsupported pseudo-element ::part()');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('slotted');
+      const res = func('slotted', PS_ELEMENT_SELECTOR);
       assert.isUndefined(res, 'result');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('slotted', { warn: true }),
+      assert.throws(() => func('slotted', PS_ELEMENT_SELECTOR, { warn: true }),
         DOMException, 'Unsupported pseudo-element ::slotted()');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('foo'),
+      assert.throws(() => func('foo', PS_ELEMENT_SELECTOR),
         DOMException, 'Unknown pseudo-element ::foo');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('foo', {
+      const res = func('foo', PS_ELEMENT_SELECTOR, {
         forgive: true
       });
       assert.isUndefined(res, 'result');
@@ -149,32 +153,29 @@ describe('Matcher', () => {
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('-webkit-foo');
+      const res = func('-webkit-foo', PS_ELEMENT_SELECTOR);
       assert.isUndefined(res, 'result');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(
-        () => func('-webkit-foo', { warn: true }),
-        DOMException, 'Unsupported pseudo-element ::-webkit-foo'
-      );
+      assert.throws(() => func('-webkit-foo', PS_ELEMENT_SELECTOR, {
+        warn: true
+      }), DOMException, 'Unsupported pseudo-element ::-webkit-foo');
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(
-        () => func('webkit-foo'),
-        DOMException, 'Unknown pseudo-element ::webkit-foo'
-      );
+      assert.throws(() => func('webkit-foo', PS_ELEMENT_SELECTOR),
+        DOMException, 'Unknown pseudo-element ::webkit-foo');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('webkit-foo', {
+      const res = func('webkit-foo', PS_ELEMENT_SELECTOR, {
         forgive: true
       });
       assert.isUndefined(res, 'result');
@@ -183,24 +184,497 @@ describe('Matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(
-        () => func('-webkitfoo'),
-        DOMException, 'Unknown pseudo-element ::-webkitfoo'
-      );
+      assert.throws(() => func('-webkitfoo', PS_ELEMENT_SELECTOR),
+        DOMException, 'Unknown pseudo-element ::-webkitfoo');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      const res = func('-webkitfoo', {
+      const res = func('-webkitfoo', PS_ELEMENT_SELECTOR, {
         forgive: true
       });
       assert.isUndefined(res, 'result');
     });
   });
 
+  describe('match directionality pseudo-class', () => {
+    const func = matcher.matchDirectionPseudoClass;
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('bdo');
+      node.setAttribute('dir', 'ltr');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'ltr');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'rtl');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const root = document.documentElement;
+      const res = func(ast, root);
+      assert.deepEqual(res, root, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      node.setAttribute('dir', 'foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'tel');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('textarea');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('dir', 'auto');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('bdi');
+      node.textContent = 'foo';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENT
+      };
+      const node = document.createElement('bdi');
+      node.textContent = '\u05EA';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('bdi');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar" dir="auto">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'rtl',
+        type: IDENT
+      };
+      const root = document.documentElement;
+      root.setAttribute('dir', 'rtl');
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'ltr',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      parent.setAttribute('dir', 'ltr');
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+  });
+
+  describe('match language pseudo-class', () => {
+    const func = matcher.matchLanguagePseudoClass;
+
+    it('should not match', () => {
+      const ast = {
+        name: EMPTY,
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.lang = 'en';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '\\*',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.lang = 'en';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: '\\*-FR',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.lang = 'fr-FR';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en-US');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-DE',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-Latn-DE',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Latn-DE-1996');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-DE');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'de-Deva');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isNull(res, node, 'result');
+    });
+  });
+
   describe('match attribute selector', () => {
-    const func = (new Matcher())._matchAttributeSelector;
+    const func = matcher.matchAttributeSelector;
 
     it('should throw', () => {
       const ast = {
@@ -1740,7 +2214,7 @@ describe('Matcher', () => {
   });
 
   describe('match type selector', () => {
-    const func = (new Matcher())._matchTypeSelector;
+    const func = matcher.matchTypeSelector;
 
     it('should get matched node(s)', () => {
       const ast = {
@@ -2041,582 +2515,6 @@ describe('Matcher', () => {
         type: TYPE_SELECTOR
       };
       const node = document.createElement('undefined');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
-  describe('match directionality pseudo-class', () => {
-    const func = (new Matcher())._matchDirectionPseudoClass;
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('bdo');
-      node.setAttribute('dir', 'ltr');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('dir', 'ltr');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'rtl',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('dir', 'rtl');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const root = document.documentElement;
-      const res = func(ast, root);
-      assert.deepEqual(res, root, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'tel');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'tel');
-      node.setAttribute('dir', 'foo');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'tel');
-      node.setAttribute('dir', 'auto');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('textarea');
-      node.setAttribute('dir', 'auto');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'text');
-      node.setAttribute('dir', 'auto');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('dir', 'auto');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('bdi');
-      node.textContent = 'foo';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'rtl',
-        type: IDENT
-      };
-      const node = document.createElement('bdi');
-      node.textContent = '\u05EA';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('bdi');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar" dir="auto">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
-      const container = document.getElementById('div0');
-      container.innerHTML = html;
-      class MyElement extends window.HTMLElement {
-        constructor() {
-          super();
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          const template = document.getElementById('template');
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      };
-      window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'rtl',
-        type: IDENT
-      };
-      const root = document.documentElement;
-      root.setAttribute('dir', 'rtl');
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'ltr',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      parent.setAttribute('dir', 'ltr');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-  });
-
-  describe('match language pseudo-class', () => {
-    const func = (new Matcher())._matchLanguagePseudoClass;
-
-    it('should not match', () => {
-      const ast = {
-        name: EMPTY,
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', '');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: '',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', '');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: '*',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.lang = 'en';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: '*',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'en');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: '*',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: '\\*',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.lang = 'en';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: '\\*-FR',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.lang = 'fr-FR';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: '*',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', '');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: '*',
-        type: IDENT
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      frag.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'en',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'en');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'en',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'en-US');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'en',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: 'en',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'de');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: 'en',
-        type: IDENT
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      frag.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'de-DE',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'de-Latn-DE-1996');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'de-Latn-DE',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'de-Latn-DE-1996');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        name: 'de-de',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'de-DE');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        name: 'de-de',
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'de-Deva');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, node, 'result');
-    });
-  });
-
-  describe('match selector', () => {
-    const matcher = new Matcher();
-    const func = matcher.matchSelector.bind(matcher);
-
-    it('should throw', () => {
-      assert.throws(() => func(), TypeError, 'Unexpected ast type Undefined');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: TYPE_SELECTOR
-      };
-      assert.throws(() => func(ast), TypeError,
-        'Unexpected node type Undefined');
-    });
-
-    it('should throw', () => {
-      const ast = {
-        name: 'li',
-        type: TYPE_SELECTOR
-      };
-      assert.throws(() => func(ast, document), TypeError,
-        'Unexpected node #document');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        name: 'li',
-        type: TYPE_SELECTOR
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        name: 'li',
-        type: TYPE_SELECTOR
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node, null, true);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ast = {
-        flags: null,
-        matcher: null,
-        name: {
-          name: 'id',
-          type: IDENT
-        },
-        type: ATTR_SELECTOR,
-        value: null
-      };
-      const node = document.getElementById('li1');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        children: [
-          {
-            name: 'ltr',
-            type: IDENT
-          }
-        ],
-        name: 'dir',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      parent.setAttribute('dir', 'ltr');
-      const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        children: [
-          {
-            name: 'en',
-            type: IDENT
-          }
-        ],
-        name: 'lang',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', 'en');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
