@@ -25,7 +25,7 @@
   "dependencies": {
     "@asamuzakjp/nwsapi": "^2.2.16",
     "bidi-js": "^1.0.3",
-    "css-tree": "^2.3.1",
+    "css-tree": "^3.0.0",
     "is-potential-custom-element-name": "^1.0.1"
   },
   "devDependencies": {

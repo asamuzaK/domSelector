@@ -113,7 +113,7 @@ Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched n
 |E\[foo\|="en"\]|✓| |
 |E:defined|Partially supported|Matching with MathML is not yet supported.|
 |E:dir(ltr)|✓| |
-|E:lang(en)|Partially supported|Comma-separated list of language codes, e.g. `:lang(en, fr)`, is not yet supported.|
+|E:lang(en)|✓| |
 |E:any&#8209;link|✓| |
 |E:link|✓| |
 |E:visited|✓|Returns `false` or `null` to prevent fingerprinting.|

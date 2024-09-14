@@ -8,8 +8,8 @@ import { getDirectionality, getType, isNamespaceDeclared } from './utility.js';
 
 /* constants */
 import {
-  ALPHA_NUM, ELEMENT_NODE, EMPTY, LANG_PART, NOT_SUPPORTED_ERR,
-  PS_ELEMENT_SELECTOR, SYNTAX_ERR
+  ALPHA_NUM, ELEMENT_NODE, IDENT, LANG_PART, NOT_SUPPORTED_ERR,
+  PS_ELEMENT_SELECTOR, STRING, SYNTAX_ERR
 } from './constant.js';
 
 /**
@@ -73,15 +73,20 @@ export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
  * match directionality pseudo-class - :dir()
  * @param {object} ast - AST
  * @param {object} node - Element node
- * @returns {?object} - matched node
+ * @returns {boolean} - result
  */
 export const matchDirectionPseudoClass = (ast, node) => {
-  const dir = getDirectionality(node);
-  let res;
-  if (ast.name === dir) {
-    res = node;
+  if (!ast.name) {
+    let type;
+    if (ast.name === '') {
+      type = '(empty String)';
+    } else {
+      type = getType(ast.name);
+    }
+    throw new TypeError(`Unexpected ast type ${type}`);
   }
-  return res ?? null;
+  const dir = getDirectionality(node);
+  return ast.name === dir;
 };
 
 /**
@@ -89,21 +94,24 @@ export const matchDirectionPseudoClass = (ast, node) => {
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} ast - AST
  * @param {object} node - Element node
- * @returns {?object} - matched node
+ * @returns {boolean} - result
  */
 export const matchLanguagePseudoClass = (ast, node) => {
-  if (ast.name === EMPTY) {
-    return null;
+  const { name, type, value } = ast;
+  let astName;
+  if (type === STRING && value) {
+    astName = value;
+  } else if (type === IDENT && name) {
+    astName = unescapeSelector(name);
   }
-  const astName = unescapeSelector(ast.name);
-  if (typeof astName === 'string' && astName !== ast.name) {
-    ast.name = astName;
+  if (!astName) {
+    return false;
   }
   let res;
   if (astName === '*') {
     if (node.hasAttribute('lang')) {
       if (node.getAttribute('lang')) {
-        res = node;
+        res = true;
       }
     } else {
       let parent = node.parentNode;
@@ -111,7 +119,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
         if (parent.nodeType === ELEMENT_NODE) {
           if (parent.hasAttribute('lang')) {
             if (parent.getAttribute('lang')) {
-              res = node;
+              res = true;
             }
             break;
           }
@@ -147,18 +155,13 @@ export const matchLanguagePseudoClass = (ast, node) => {
         regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
       }
       if (node.hasAttribute('lang')) {
-        if (regExtendedLang.test(node.getAttribute('lang'))) {
-          res = node;
-        }
+        res = regExtendedLang.test(node.getAttribute('lang'));
       } else {
         let parent = node.parentNode;
         while (parent) {
           if (parent.nodeType === ELEMENT_NODE) {
             if (parent.hasAttribute('lang')) {
-              const value = parent.getAttribute('lang');
-              if (regExtendedLang.test(value)) {
-                res = node;
-              }
+              res = regExtendedLang.test(parent.getAttribute('lang'));
               break;
             }
             parent = parent.parentNode;
@@ -169,7 +172,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
       }
     }
   }
-  return res ?? null;
+  return !!res;
 };
 
 /**

@@ -18,11 +18,11 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE, ELEMENT_NODE, EMPTY, ID_SELECTOR, KEY_FORM_FOCUS,
-  KEY_INPUT_DATE, KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL,
-  NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL,
-  SYNTAX_ERR, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE,
-  TYPE_SELECTOR, WALKER_FILTER
+  DOCUMENT_NODE, ELEMENT_NODE, ID_SELECTOR, KEY_FORM_FOCUS, KEY_INPUT_DATE,
+  KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL, NOT_SUPPORTED_ERR,
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL, SYNTAX_ERR, TARGET_ALL,
+  TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR,
+  WALKER_FILTER
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -836,7 +836,11 @@ export class Finder {
     } = opt;
     const matched = new Set();
     // :has(), :is(), :not(), :where()
-    if (KEY_LOGICAL.includes(astName)) {
+    if (Array.isArray(astChildren) && KEY_LOGICAL.includes(astName)) {
+      if (!astChildren.length && astName !== 'is' && astName !== 'where') {
+        const css = generateCSS(ast);
+        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      }
       let astData;
       if (this.#astCache.has(ast)) {
         astData = this.#astCache.get(ast);
@@ -911,6 +915,10 @@ export class Finder {
     } else if (Array.isArray(astChildren)) {
       // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
+        if (astChildren.length !== 1) {
+          const css = generateCSS(ast);
+          throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
@@ -918,19 +926,32 @@ export class Finder {
         switch (astName) {
           // :dir()
           case 'dir': {
+            if (astChildren.length !== 1) {
+              const css = generateCSS(ast);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            }
             const [astChild] = astChildren;
             const res = matchDirectionPseudoClass(astChild, node);
             if (res) {
-              matched.add(res);
+              matched.add(node);
             }
             break;
           }
           // :lang()
           case 'lang': {
-            const [astChild] = astChildren;
-            const res = matchLanguagePseudoClass(astChild, node, opt);
-            if (res) {
-              matched.add(res);
+            if (!astChildren.length) {
+              const css = generateCSS(ast);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            }
+            let bool;
+            for (const astChild of astChildren) {
+              bool = matchLanguagePseudoClass(astChild, node);
+              if (bool) {
+                break;
+              }
+            }
+            if (bool) {
+              matched.add(node);
             }
             break;
           }
@@ -1671,6 +1692,10 @@ export class Finder {
     const { children: astChildren, name: astName } = ast;
     let res;
     if (Array.isArray(astChildren)) {
+      if (astChildren.length !== 1) {
+        const css = generateCSS(ast);
+        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      }
       const { branches } = walkAST(astChildren[0]);
       const [branch] = branches;
       const [...leaves] = branch;
@@ -1735,13 +1760,7 @@ export class Finder {
   _matchSelector(ast, node, opt = {}) {
     const { type: astType } = ast;
     const matched = new Set();
-    if (ast.name === EMPTY) {
-      return matched;
-    }
     const astName = unescapeSelector(ast.name);
-    if (typeof astName === 'string' && astName !== ast.name) {
-      ast.name = astName;
-    }
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case ATTR_SELECTOR: {
