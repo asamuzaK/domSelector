@@ -9,12 +9,11 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, EMPTY, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
+  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
   PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
-const REG_LANG_QUOTED = /(:lang\(\s*("[A-Za-z\d\-*]*")\s*\))/;
-const REG_LOGICAL_EMPTY = /(:(is|where)\(\s*\))/;
-const REG_SHADOW_PSEUDO = /^part|slotted$/;
+const REG_EMPTY_PSEUDO_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where)\()\s+\)/g;
+const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 const U_FFFD = '\uFFFD';
 
 /**
@@ -140,23 +139,8 @@ export const parseSelector = selector => {
     res = toPlainObject(ast);
   } catch (e) {
     const { message } = e;
-    // workaround for https://github.com/csstree/csstree/issues/265
-    if (message === 'Identifier is expected' &&
-        REG_LANG_QUOTED.test(selector)) {
-      const [, lang, range] = REG_LANG_QUOTED.exec(selector);
-      const escapedRange =
-        range.replaceAll('*', '\\*').replace(/^"/, '').replace(/"$/, '');
-      let escapedLang = lang.replace(range, escapedRange);
-      if (escapedLang === ':lang()') {
-        escapedLang = `:lang(${EMPTY})`;
-      }
-      res = parseSelector(selector.replace(lang, escapedLang));
-    } else if (/^(?:Identifier|Selector) is expected$/.test(message) &&
-               REG_LOGICAL_EMPTY.test(selector)) {
-      const [, sel, name] = REG_LOGICAL_EMPTY.exec(selector);
-      res = parseSelector(selector.replace(sel, `:${name}(${EMPTY})`));
-    } else if (/^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(message) &&
-               !selector.endsWith(']')) {
+    if (/^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(message) &&
+        !selector.endsWith(']')) {
       const index = selector.lastIndexOf('[');
       const sel = selector.substring(index);
       if (sel.includes('"')) {
@@ -169,8 +153,16 @@ export const parseSelector = selector => {
       } else {
         res = parseSelector(`${selector}]`);
       }
-    } else if (message === '")" is expected' && !selector.endsWith(')')) {
-      res = parseSelector(`${selector})`);
+    } else if (message === '")" is expected') {
+      // workaround for https://github.com/csstree/csstree/issues/283
+      if (REG_EMPTY_PSEUDO_FUNC.test(selector)) {
+        res =
+          parseSelector(`${selector.replaceAll(REG_EMPTY_PSEUDO_FUNC, ')')}`);
+      } else if (!selector.endsWith(')')) {
+        res = parseSelector(`${selector})`);
+      } else {
+        throw new DOMException(message, SYNTAX_ERR);
+      }
     } else {
       throw new DOMException(message, SYNTAX_ERR);
     }
@@ -204,7 +196,7 @@ export const walkAST = (ast = {}) => {
           break;
         }
         case PS_ELEMENT_SELECTOR: {
-          if (REG_SHADOW_PSEUDO.test(node.name)) {
+          if (REG_SHADOW_PS_ELEMENT.test(node.name)) {
             info.set('hasNestedSelector', true);
           }
           break;
@@ -242,11 +234,11 @@ export const walkAST = (ast = {}) => {
             }
           }
         } else if (node.type === PS_ELEMENT_SELECTOR &&
-                   REG_SHADOW_PSEUDO.test(node.name)) {
+                   REG_SHADOW_PS_ELEMENT.test(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
-              type === PS_ELEMENT_SELECTOR && REG_SHADOW_PSEUDO.test(name);
+              type === PS_ELEMENT_SELECTOR && REG_SHADOW_PS_ELEMENT.test(name);
             return res;
           });
           for (const { children } of itemList) {

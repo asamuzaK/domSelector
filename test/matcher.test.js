@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as matcher from '../src/js/matcher.js';
 import {
-  ATTR_SELECTOR, EMPTY, IDENT, PS_ELEMENT_SELECTOR, TYPE_SELECTOR
+  ATTR_SELECTOR, IDENT, PS_ELEMENT_SELECTOR, TYPE_SELECTOR
 } from '../src/js/constant.js';
 const STRING = 'String';
 
@@ -201,7 +201,24 @@ describe('matcher', () => {
   describe('match directionality pseudo-class', () => {
     const func = matcher.matchDirectionPseudoClass;
 
-    it('should get matched node', () => {
+    it('should throw', () => {
+      const ast = {};
+      const node = document.createElement('bdo');
+      assert.throws(() => func(ast, node), TypeError,
+        'Unexpected ast type Undefined');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        name: '',
+        type: IDENT
+      };
+      const node = document.createElement('bdo');
+      assert.throws(() => func(ast, node), TypeError,
+        'Unexpected ast type (empty String)');
+    });
+
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -209,10 +226,10 @@ describe('matcher', () => {
       const node = document.createElement('bdo');
       node.setAttribute('dir', 'ltr');
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -222,10 +239,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -235,20 +252,20 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
       };
       const root = document.documentElement;
       const res = func(ast, root);
-      assert.deepEqual(res, root, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -258,10 +275,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -272,10 +289,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should not match', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -286,10 +303,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -299,10 +316,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -313,10 +330,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -326,10 +343,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -339,10 +356,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -352,7 +369,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should not match', () => {
@@ -364,10 +381,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -396,10 +413,10 @@ describe('matcher', () => {
       const shadow = document.getElementById('baz');
       const node = shadow.shadowRoot.getElementById('foo');
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -408,10 +425,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -422,10 +439,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -435,25 +452,12 @@ describe('matcher', () => {
       parent.appendChild(node);
       parent.setAttribute('dir', 'ltr');
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
   });
 
   describe('match language pseudo-class', () => {
     const func = matcher.matchLanguagePseudoClass;
-
-    it('should not match', () => {
-      const ast = {
-        name: EMPTY,
-        type: IDENT
-      };
-      const node = document.createElement('div');
-      node.setAttribute('lang', '');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const res = func(ast, node);
-      assert.isNull(res, 'result');
-    });
 
     it('should not match', () => {
       const ast = {
@@ -465,10 +469,23 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
+      const ast = {
+        type: STRING,
+        value: ''
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should match', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -478,10 +495,23 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
+      const ast = {
+        type: STRING,
+        value: '*'
+      };
+      const node = document.createElement('div');
+      node.lang = 'en';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should match', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -491,10 +521,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -503,10 +533,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: '\\*',
         type: IDENT
@@ -516,10 +546,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: '\\*-FR',
         type: IDENT
@@ -529,7 +559,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should not match', () => {
@@ -542,7 +572,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
     it('should not match', () => {
@@ -554,10 +584,10 @@ describe('matcher', () => {
       const node = document.createElement('div');
       frag.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -567,10 +597,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -580,10 +610,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -592,7 +622,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should not match', () => {
@@ -605,7 +635,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
     it('should not match', () => {
@@ -617,10 +647,10 @@ describe('matcher', () => {
       const node = document.createElement('div');
       frag.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'de-DE',
         type: IDENT
@@ -630,10 +660,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'de-Latn-DE',
         type: IDENT
@@ -643,10 +673,10 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'de-de',
         type: IDENT
@@ -656,7 +686,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should not match', () => {
@@ -669,7 +699,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isNull(res, node, 'result');
+      assert.isFalse(res, node, 'result');
     });
   });
 

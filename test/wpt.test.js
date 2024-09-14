@@ -1007,8 +1007,7 @@ describe('local wpt test cases', () => {
       assert.isTrue(res, 'result');
     });
 
-    // FIXME: not yet supported
-    xit('lang-011.html, should match', () => {
+    it('lang-011.html, should match', () => {
       const html =
         '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
       document.body.innerHTML = html;
@@ -1017,17 +1016,16 @@ describe('local wpt test cases', () => {
       assert.isTrue(res, 'result');
     });
 
-    // FIXME: not yet supported
-    xit('lang-012.html, should match', () => {
+    it('lang-012.html, should match', () => {
       const html =
         '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
       document.body.innerHTML = html;
       const node = document.getElementById('target');
-      const res = node.matches(':lang(fr, nl, de)');
+      const res = node.matches(':lang(de, nl, fr)');
       assert.isTrue(res, 'result');
     });
 
-    // FIXME: not yet supported
+    // FIXME: throws which is expected, need to fix test
     xit('lang-013.html, should not match', () => {
       const html =
         '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
@@ -1037,7 +1035,7 @@ describe('local wpt test cases', () => {
       assert.isFalse(res, 'result');
     });
 
-    // FIXME: CSSTree throws
+    // FIXME: throws which is expected, need to fix test
     xit('lang-014.html, should not match', () => {
       const html =
         '<div class="test"><span id="target" lang="0">This should be green</span></div>';

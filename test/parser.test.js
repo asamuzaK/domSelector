@@ -4,20 +4,19 @@
 
 /* api */
 import { assert } from 'chai';
-import { describe, it, xit } from 'mocha';
+import { describe, it } from 'mocha';
 
 /* test */
 import * as parser from '../src/js/parser.js';
 
 /* constants */
 import {
-  ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR,
-  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, TYPE_SELECTOR
+  ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR, NTH, OPERATOR,
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, STRING, TYPE_SELECTOR
 } from '../src/js/constant.js';
 const AN_PLUS_B = 'AnPlusB';
 const RAW = 'Raw';
 const SELECTOR_LIST = 'SelectorList';
-const STRING = 'String';
 
 describe('unescape selector', () => {
   const func = parser.unescapeSelector;
@@ -2987,8 +2986,48 @@ describe('create AST from CSS selector', () => {
   });
 
   describe('negation pseudo-class', () => {
-    it('should throw', () => {
-      assert.throws(() => func(':not()'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':not()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'not',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':not( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'not',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -3220,25 +3259,7 @@ describe('create AST from CSS selector', () => {
           {
             children: [
               {
-                children: [
-                  {
-                    children: [
-                      {
-                        children: [
-                          {
-                            loc: null,
-                            name: '__EMPTY__',
-                            type: TYPE_SELECTOR
-                          }
-                        ],
-                        loc: null,
-                        type: SELECTOR
-                      }
-                    ],
-                    loc: null,
-                    type: SELECTOR_LIST
-                  }
-                ],
+                children: [],
                 loc: null,
                 name: 'is',
                 type: PS_CLASS_SELECTOR
@@ -3260,25 +3281,7 @@ describe('create AST from CSS selector', () => {
           {
             children: [
               {
-                children: [
-                  {
-                    children: [
-                      {
-                        children: [
-                          {
-                            loc: null,
-                            name: '__EMPTY__',
-                            type: TYPE_SELECTOR
-                          }
-                        ],
-                        loc: null,
-                        type: SELECTOR
-                      }
-                    ],
-                    loc: null,
-                    type: SELECTOR_LIST
-                  }
-                ],
+                children: [],
                 loc: null,
                 name: 'is',
                 type: PS_CLASS_SELECTOR
@@ -3306,25 +3309,7 @@ describe('create AST from CSS selector', () => {
                       {
                         children: [
                           {
-                            children: [
-                              {
-                                children: [
-                                  {
-                                    children: [
-                                      {
-                                        loc: null,
-                                        name: '__EMPTY__',
-                                        type: TYPE_SELECTOR
-                                      }
-                                    ],
-                                    loc: null,
-                                    type: SELECTOR
-                                  }
-                                ],
-                                loc: null,
-                                type: SELECTOR_LIST
-                              }
-                            ],
+                            children: [],
                             loc: null,
                             name: 'is',
                             type: PS_CLASS_SELECTOR
@@ -3511,25 +3496,7 @@ describe('create AST from CSS selector', () => {
           {
             children: [
               {
-                children: [
-                  {
-                    children: [
-                      {
-                        children: [
-                          {
-                            loc: null,
-                            name: '__EMPTY__',
-                            type: TYPE_SELECTOR
-                          }
-                        ],
-                        loc: null,
-                        type: SELECTOR
-                      }
-                    ],
-                    loc: null,
-                    type: SELECTOR_LIST
-                  }
-                ],
+                children: [],
                 loc: null,
                 name: 'where',
                 type: PS_CLASS_SELECTOR
@@ -3551,25 +3518,7 @@ describe('create AST from CSS selector', () => {
           {
             children: [
               {
-                children: [
-                  {
-                    children: [
-                      {
-                        children: [
-                          {
-                            loc: null,
-                            name: '__EMPTY__',
-                            type: TYPE_SELECTOR
-                          }
-                        ],
-                        loc: null,
-                        type: SELECTOR
-                      }
-                    ],
-                    loc: null,
-                    type: SELECTOR_LIST
-                  }
-                ],
+                children: [],
                 loc: null,
                 name: 'where',
                 type: PS_CLASS_SELECTOR
@@ -3597,25 +3546,7 @@ describe('create AST from CSS selector', () => {
                       {
                         children: [
                           {
-                            children: [
-                              {
-                                children: [
-                                  {
-                                    children: [
-                                      {
-                                        loc: null,
-                                        name: '__EMPTY__',
-                                        type: TYPE_SELECTOR
-                                      }
-                                    ],
-                                    loc: null,
-                                    type: SELECTOR
-                                  }
-                                ],
-                                loc: null,
-                                type: SELECTOR_LIST
-                              }
-                            ],
+                            children: [],
                             loc: null,
                             name: 'where',
                             type: PS_CLASS_SELECTOR
@@ -3795,8 +3726,48 @@ describe('create AST from CSS selector', () => {
   });
 
   describe('relational pseudo-class', () => {
-    it('should throw', () => {
-      assert.throws(() => func(':has()'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':has()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'has',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':has( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'has',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -4579,11 +4550,51 @@ describe('create AST from CSS selector', () => {
 
   describe('An+B notation pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':nth-child()'), DOMException);
+      assert.throws(() => func(':nth-child(foo)'), DOMException);
     });
 
-    it('should throw', () => {
-      assert.throws(() => func(':nth-child(foo)'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':nth-child()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-child',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':nth-child( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-child',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -4918,11 +4929,51 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child()'), DOMException);
+      assert.throws(() => func(':nth-last-child(foo)'), DOMException);
     });
 
-    it('should throw', () => {
-      assert.throws(() => func(':nth-last-child(foo)'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':nth-last-child()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-last-child',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':nth-last-child( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-last-child',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -5114,11 +5165,51 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type()'), DOMException);
+      assert.throws(() => func(':nth-of-type(foo)'), DOMException);
     });
 
-    it('should throw', () => {
-      assert.throws(() => func(':nth-of-type(foo)'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':nth-of-type()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-of-type',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':nth-of-type( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-of-type',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -5260,11 +5351,51 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type()'), DOMException);
+      assert.throws(() => func(':nth-last-of-type(foo)'), DOMException);
     });
 
-    it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type(foo)'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':nth-last-of-type()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-last-of-type',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':nth-last-of-type( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'nth-last-of-type',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should get selector list', () => {
@@ -5464,7 +5595,51 @@ describe('create AST from CSS selector', () => {
     });
   });
 
-  describe('linguistic pseudo-class', () => {
+  describe('directionality pseudo-class', () => {
+    it('should get selector list', () => {
+      const res = func(':dir()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'dir',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':dir( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'dir',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
     it('should get selector list', () => {
       const res = func(':dir(foo)');
       assert.deepEqual(res, {
@@ -5522,7 +5697,7 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
-      const res = func(':dir(rtr)');
+      const res = func(':dir(rtl)');
       assert.deepEqual(res, {
         children: [
           {
@@ -5531,7 +5706,7 @@ describe('create AST from CSS selector', () => {
                 children: [
                   {
                     loc: null,
-                    name: 'rtr',
+                    name: 'rtl',
                     type: IDENT
                   }
                 ],
@@ -5565,6 +5740,57 @@ describe('create AST from CSS selector', () => {
                 ],
                 loc: null,
                 name: 'dir',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(':dir(ltr,rtl)'), DOMException,
+        '")" is expected');
+    });
+  });
+
+  describe('linguistic pseudo-class', () => {
+    it('should get selector list', () => {
+      const res = func(':lang()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'lang',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'lang',
                 type: PS_CLASS_SELECTOR
               }
             ],
@@ -5633,8 +5859,7 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    // FIXME: expect to parse
-    xit('should get selector list', () => {
+    it('should get selector list', () => {
       const res = func(':lang(de, fr)');
       assert.deepEqual(res, {
         children: [
@@ -5646,6 +5871,11 @@ describe('create AST from CSS selector', () => {
                     loc: null,
                     name: 'de',
                     type: IDENT
+                  },
+                  {
+                    loc: null,
+                    type: OPERATOR,
+                    value: ','
                   },
                   {
                     loc: null,
@@ -5705,8 +5935,8 @@ describe('create AST from CSS selector', () => {
                 children: [
                   {
                     loc: null,
-                    name: '\\*',
-                    type: IDENT
+                    type: STRING,
+                    value: '*'
                   }
                 ],
                 loc: null,
@@ -5733,8 +5963,46 @@ describe('create AST from CSS selector', () => {
                 children: [
                   {
                     loc: null,
-                    name: 'en-US',
-                    type: IDENT
+                    type: STRING,
+                    value: 'en-US'
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang("de", "fr")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: STRING,
+                    value: 'de'
+                  },
+                  {
+                    loc: null,
+                    type: OPERATOR,
+                    value: ','
+                  },
+                  {
+                    loc: null,
+                    type: STRING,
+                    value: 'fr'
                   }
                 ],
                 loc: null,
@@ -5761,8 +6029,8 @@ describe('create AST from CSS selector', () => {
                 children: [
                   {
                     loc: null,
-                    name: '\\*-Latn',
-                    type: IDENT
+                    type: STRING,
+                    value: '*-Latn'
                   }
                 ],
                 loc: null,
@@ -5789,8 +6057,40 @@ describe('create AST from CSS selector', () => {
                 children: [
                   {
                     loc: null,
-                    name: '__EMPTY__',
-                    type: IDENT
+                    type: STRING,
+                    value: ''
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func(':lang(0)'), DOMException);
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang("0")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: STRING,
+                    value: '0'
                   }
                 ],
                 loc: null,
@@ -5902,8 +6202,92 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
-    it('should throw', () => {
-      assert.throws(() => func(':host()'), DOMException);
+    it('should get selector list', () => {
+      const res = func(':host()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'host',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'host',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host-context()');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'host-context',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':host-context( )');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [],
+                loc: null,
+                name: 'host-context',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
     });
 
     it('should throw', () => {
