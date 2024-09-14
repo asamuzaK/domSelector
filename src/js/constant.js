@@ -103,3 +103,7 @@ export const KEY_INPUT_LTR = Object.freeze([
   'checkbox', 'color', 'date', 'image', 'number', 'range', 'radio', 'time'
 ]);
 export const KEY_LOGICAL = Object.freeze(['has', 'is', 'not', 'where']);
+export const KEY_MODIFIER = Object.freeze([
+  'Alt', 'AltGraph', 'CapsLock', 'Control', 'Fn', 'FnLock', 'Hyper', 'Meta',
+  'NumLock', 'ScrollLock', 'Shift', 'Super', 'Symbol', 'SymbolLock'
+]);
