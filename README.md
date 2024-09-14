@@ -87,6 +87,86 @@ querySelectorAll - equivalent to [Document.querySelectorAll()][69], [DocumentFra
 Returns **[Array][62]&lt;([object][60] \| [undefined][63])>** array of matched nodes
 
 
+## Monkey patch jsdom
+
+``` javascript
+import { DOMSelector } from '@asamuzakjp/dom-selector';
+import { JSDOM } from 'jsdom';
+
+const dom = new JSDOM('', {
+  runScripts: 'dangerously',
+  url: 'http://localhost/',
+  beforeParse: window => {
+    const domSelector = new DOMSelector(window);
+
+    const matches = domSelector.matches.bind(domSelector);
+    window.Element.prototype.matches = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return matches(selector, this);
+    };
+
+    const closest = domSelector.closest.bind(domSelector);
+    window.Element.prototype.closest = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return closest(selector, this);
+    };
+
+    const querySelector = domSelector.querySelector.bind(domSelector);
+    window.Document.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+    window.DocumentFragment.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+    window.Element.prototype.querySelector = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelector(selector, this);
+    };
+
+    const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
+    window.Document.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+    window.DocumentFragment.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+    window.Element.prototype.querySelectorAll = function (...args) {
+      if (!args.length) {
+        throw new window.TypeError('1 argument required, but only 0 present.');
+      }
+      const [selector] = args;
+      return querySelectorAll(selector, this);
+    };
+  }
+});
+```
+
+
 ## Supported CSS selectors
 
 |Pattern|Supported|Note|
@@ -195,86 +275,6 @@ class LabeledCheckbox extends window.HTMLElement {
     this.checked = !this.checked;
   }
 }
-```
-
-
-## Monkey patch jsdom
-
-``` javascript
-import { DOMSelector } from '@asamuzakjp/dom-selector';
-import { JSDOM } from 'jsdom';
-
-const dom = new JSDOM('', {
-  runScripts: 'dangerously',
-  url: 'http://localhost/',
-  beforeParse: window => {
-    const domSelector = new DOMSelector(window);
-
-    const matches = domSelector.matches.bind(domSelector);
-    window.Element.prototype.matches = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return matches(selector, this);
-    };
-
-    const closest = domSelector.closest.bind(domSelector);
-    window.Element.prototype.closest = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return closest(selector, this);
-    };
-
-    const querySelector = domSelector.querySelector.bind(domSelector);
-    window.Document.prototype.querySelector = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelector(selector, this);
-    };
-    window.DocumentFragment.prototype.querySelector = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelector(selector, this);
-    };
-    window.Element.prototype.querySelector = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelector(selector, this);
-    };
-
-    const querySelectorAll = domSelector.querySelectorAll.bind(domSelector);
-    window.Document.prototype.querySelectorAll = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelectorAll(selector, this);
-    };
-    window.DocumentFragment.prototype.querySelectorAll = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelectorAll(selector, this);
-    };
-    window.Element.prototype.querySelectorAll = function (...args) {
-      if (!args.length) {
-        throw new window.TypeError('1 argument required, but only 0 present.');
-      }
-      const [selector] = args;
-      return querySelectorAll(selector, this);
-    };
-  }
-});
 ```
 
 
