@@ -683,7 +683,6 @@ export class Finder {
    * @returns {boolean} - result
    */
   _matchHasPseudoFunc(astLeaves, node, opt) {
-    let bool;
     if (Array.isArray(astLeaves) && astLeaves.length) {
       const leaves = [...astLeaves];
       const [leaf] = leaves;
@@ -715,18 +714,20 @@ export class Finder {
       const nodes = this._matchCombinator(twig, node, opt);
       if (nodes.size) {
         if (leaves.length) {
+          let bool;
           for (const nextNode of nodes) {
             bool = this._matchHasPseudoFunc(leaves, nextNode, opt);
             if (bool) {
               break;
             }
           }
-        } else {
-          bool = true;
+          return !!bool;
         }
+        return true;
       }
+      return false;
     }
-    return !!bool;
+    return false;
   }
 
   /**
@@ -740,7 +741,6 @@ export class Finder {
   _matchLogicalPseudoFunc(astData, node, opt) {
     const { astName, branches, twigBranches } = astData;
     const { isShadowRoot } = opt;
-    let res;
     if (astName === 'has') {
       let bool;
       for (const leaves of branches) {
@@ -754,10 +754,12 @@ export class Finder {
           if (this.#verifyShadowHost) {
             return node;
           }
+          return null;
         } else {
           return node;
         }
       }
+      return null;
     } else {
       if (isShadowRoot) {
         for (const branch of branches) {
@@ -803,14 +805,15 @@ export class Finder {
         }
       }
       if (astName === 'not') {
-        if (!bool) {
-          return node;
+        if (bool) {
+          return null;
         }
+        return node;
       } else if (bool) {
         return node;
       }
+      return null;
     }
-    return res ?? null;
   }
 
   /**
@@ -1685,7 +1688,6 @@ export class Finder {
    */
   _matchShadowHostPseudoClass(ast, node) {
     const { children: astChildren, name: astName } = ast;
-    let res;
     if (Array.isArray(astChildren)) {
       if (astChildren.length !== 1) {
         const css = generateCSS(ast);
@@ -1711,6 +1713,7 @@ export class Finder {
         if (bool) {
           return node;
         }
+        return null;
       } else if (astName === 'host-context') {
         let parent = host;
         let bool;
@@ -1735,13 +1738,14 @@ export class Finder {
         if (bool) {
           return node;
         }
+        return null;
       }
+      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     } else if (astName === 'host') {
       return node;
     } else {
       throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     }
-    return res ?? null;
   }
 
   /**
@@ -1754,8 +1758,8 @@ export class Finder {
    */
   _matchSelector(ast, node, opt = {}) {
     const { type: astType } = ast;
-    const matched = new Set();
     const astName = unescapeSelector(ast.name);
+    const matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case ATTR_SELECTOR: {
@@ -1819,7 +1823,6 @@ export class Finder {
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node, opt) {
-    let bool;
     let result;
     if (this.#invalidate) {
       result = this.#invalidateResults.get(leaves);
@@ -1828,15 +1831,15 @@ export class Finder {
     }
     if (result && result.has(node)) {
       const { matched } = result.get(node);
-      bool = matched;
-    }
-    if (typeof bool !== 'boolean') {
+      return matched;
+    } else {
       let cacheable = true;
       const formKeys = [...KEY_FORM_FOCUS, 'fieldset', 'form'];
       const pseudoKeys = ['any-link', 'defined', 'dir', 'link'];
       if (node.nodeType === ELEMENT_NODE && formKeys.includes(node.localName)) {
         cacheable = false;
       }
+      let bool;
       for (const leaf of leaves) {
         switch (leaf.type) {
           case ATTR_SELECTOR:
@@ -1870,8 +1873,8 @@ export class Finder {
           this.#results.set(leaves, result);
         }
       }
+      return bool;
     }
-    return !!bool;
   }
 
   /**
@@ -1882,24 +1885,23 @@ export class Finder {
    * @returns {Set.<object>} - matched nodes
    */
   _matchHTMLCollection(items, opt) {
-    const { compound, filterLeaves } = opt;
-    const nodes = new Set();
-    const l = items.length;
-    if (l) {
+    if (items.length) {
+      const { compound, filterLeaves } = opt;
       if (compound) {
-        for (let i = 0; i < l; i++) {
-          const item = items[i];
+        const nodes = new Set();
+        for (const item of items) {
           const bool = this._matchLeaves(filterLeaves, item, opt);
           if (bool) {
             nodes.add(item);
           }
         }
+        return nodes;
       } else {
         const arr = [].slice.call(items);
         return new Set(arr);
       }
     }
-    return nodes;
+    return new Set();
   }
 
   /**
@@ -1915,9 +1917,6 @@ export class Finder {
     const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    if (typeof leafName === 'string' && leafName !== leaf.name) {
-      leaf.name = leafName;
-    }
     let nodes = new Set();
     let pending = false;
     if (this.#shadow) {
@@ -2153,10 +2152,10 @@ export class Finder {
    */
   _matchSelf(leaves) {
     const nodes = [];
+    let filtered = false;
     const bool = this._matchLeaves(leaves, this.#node, {
       warn: this.#warn
     });
-    let filtered = false;
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2174,10 +2173,10 @@ export class Finder {
   _findLineal(leaves, opt) {
     const { complex } = opt;
     const nodes = [];
+    let filtered = false;
     let bool = this._matchLeaves(leaves, this.#node, {
       warn: this.#warn
     });
-    let filtered = false;
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
@@ -2210,8 +2209,8 @@ export class Finder {
    */
   _findFirst(leaves) {
     const nodes = [];
-    const node = this._findNode(leaves, this.#node);
     let filtered = false;
+    const node = this._findNode(leaves, this.#node);
     if (node) {
       nodes.push(node);
       filtered = true;
@@ -2231,11 +2230,9 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     let collected = false;
-    const l = items.length;
-    if (l) {
+    if (items.length) {
       if (this.#node.nodeType === ELEMENT_NODE) {
-        for (let i = 0; i < l; i++) {
-          const node = items[i];
+        for (const node of items) {
           if (node !== this.#node &&
               (this.#node.contains(node) || node.contains(this.#node))) {
             if (compound) {
@@ -2260,8 +2257,7 @@ export class Finder {
         }
       } else if (complex) {
         if (compound) {
-          for (let i = 0; i < l; i++) {
-            const node = items[i];
+          for (const node of items) {
             const bool = this._matchLeaves(filterLeaves, node, {
               warn: this.#warn
             });
@@ -2279,8 +2275,7 @@ export class Finder {
           collected = true;
         }
       } else if (compound) {
-        for (let i = 0; i < l; i++) {
-          const node = items[i];
+        for (const node of items) {
           const bool = this._matchLeaves(filterLeaves, node, {
             warn: this.#warn
           });
@@ -2656,19 +2651,18 @@ export class Finder {
       leaves
     };
     const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
-    let res;
     if (nextNodes.size) {
       if (index === branch.length - 1) {
         const [nextNode] = sortNodes(nextNodes);
-        res = nextNode;
+        return nextNode;
       } else {
-        res = this._matchNodeNext(branch, nextNodes, {
+        return this._matchNodeNext(branch, nextNodes, {
           combo: nextCombo,
           index: index + 1
         });
       }
     }
-    return res ?? null;
+    return null;
   }
 
   /**
@@ -2685,22 +2679,26 @@ export class Finder {
     const twig = branch[index];
     const nodes = new Set([node]);
     const nextNodes = this._getCombinedNodes(twig, nodes, DIR_PREV);
-    let res;
     if (nextNodes.size) {
       if (index === 0) {
-        res = node;
+        return node;
       } else {
+        let matched;
         for (const nextNode of nextNodes) {
-          const matched = this._matchNodePrev(branch, nextNode, {
+          matched = this._matchNodePrev(branch, nextNode, {
             index: index - 1
           });
           if (matched) {
-            return node;
+            break;
           }
         }
+        if (matched) {
+          return node;
+        }
+        return null;
       }
     }
-    return res ?? null;
+    return null;
   }
 
   /**

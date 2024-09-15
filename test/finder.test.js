@@ -2419,6 +2419,15 @@ describe('Finder', () => {
 
   describe('match :has() pseudo-class function', () => {
     it('should not match', () => {
+      const node = document.getElementById('ul1');
+      const leaves = [];
+      const finder = new Finder(window);
+      finder.setup(':has()', node);
+      const res = finder._matchHasPseudoFunc(leaves, node, {});
+      assert.isFalse(res, 'result');
+    });
+
+    it('should not match', () => {
       const node = document.getElementById('dl1');
       const leaves = [{
         name: 'li',
@@ -9267,6 +9276,51 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':foobar div', node);
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
+        DOMException, 'Invalid selector :foobar');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        children: [
+          {
+            children: [
+              {
+                name: 'baz',
+                type: ID_SELECTOR
+              }
+            ],
+            type: SELECTOR
+          }
+        ],
+        name: 'foobar',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':foobar(#baz) div', node);
       assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
         DOMException, 'Invalid selector :foobar');
     });
