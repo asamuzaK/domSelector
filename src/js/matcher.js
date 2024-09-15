@@ -76,17 +76,18 @@ export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
  * @returns {boolean} - result
  */
 export const matchDirectionPseudoClass = (ast, node) => {
-  if (!ast.name) {
+  const { name } = ast;
+  if (!name) {
     let type;
-    if (ast.name === '') {
+    if (name === '') {
       type = '(empty String)';
     } else {
-      type = getType(ast.name);
+      type = getType(name);
     }
     throw new TypeError(`Unexpected ast type ${type}`);
   }
   const dir = getDirectionality(node);
-  return ast.name === dir;
+  return name === dir;
 };
 
 /**
@@ -104,17 +105,15 @@ export const matchLanguagePseudoClass = (ast, node) => {
   } else if (type === IDENT && name) {
     astName = unescapeSelector(name);
   }
-  if (!astName) {
-    return false;
-  }
-  let res;
   if (astName === '*') {
     if (node.hasAttribute('lang')) {
       if (node.getAttribute('lang')) {
-        res = true;
+        return true;
       }
+      return false;
     } else {
       let parent = node.parentNode;
+      let res;
       while (parent) {
         if (parent.nodeType === ELEMENT_NODE) {
           if (parent.hasAttribute('lang')) {
@@ -128,6 +127,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
           break;
         }
       }
+      return !!res;
     }
   } else if (astName) {
     const reg = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
@@ -150,14 +150,15 @@ export const matchLanguagePseudoClass = (ast, node) => {
           }
         }
         regExtendedLang =
-            new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
+          new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
       } else {
         regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
       }
       if (node.hasAttribute('lang')) {
-        res = regExtendedLang.test(node.getAttribute('lang'));
+        return regExtendedLang.test(node.getAttribute('lang'));
       } else {
         let parent = node.parentNode;
+        let res;
         while (parent) {
           if (parent.nodeType === ELEMENT_NODE) {
             if (parent.hasAttribute('lang')) {
@@ -169,10 +170,12 @@ export const matchLanguagePseudoClass = (ast, node) => {
             break;
           }
         }
+        return !!res;
       }
     }
+    return false;
   }
-  return !!res;
+  return false;
 };
 
 /**
@@ -190,7 +193,6 @@ export const matchAttributeSelector = (ast, node) => {
     throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
   }
   const { attributes } = node;
-  let res;
   if (attributes && attributes.length) {
     const contentType = node.ownerDocument.contentType;
     let caseInsensitive;
@@ -295,11 +297,11 @@ export const matchAttributeSelector = (ast, node) => {
       }
       switch (astMatcher) {
         case '=': {
-          res = typeof attrValue === 'string' && attrValues.has(attrValue);
-          break;
+          return typeof attrValue === 'string' && attrValues.has(attrValue);
         }
         case '~=': {
           if (attrValue && typeof attrValue === 'string') {
+            let res;
             for (const value of attrValues) {
               const item = new Set(value.split(/\s+/));
               if (item.has(attrValue)) {
@@ -307,8 +309,9 @@ export const matchAttributeSelector = (ast, node) => {
                 break;
               }
             }
+            return !!res;
           }
-          break;
+          return false;
         }
         case '|=': {
           if (attrValue && typeof attrValue === 'string') {
@@ -320,10 +323,11 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = true;
+              return true;
             }
+            return false;
           }
-          break;
+          return false;
         }
         case '^=': {
           if (attrValue && typeof attrValue === 'string') {
@@ -335,10 +339,11 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = true;
+              return true;
             }
+            return false;
           }
-          break;
+          return false;
         }
         case '$=': {
           if (attrValue && typeof attrValue === 'string') {
@@ -350,10 +355,11 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = true;
+              return true;
             }
+            return false;
           }
-          break;
+          return false;
         }
         case '*=': {
           if (attrValue && typeof attrValue === 'string') {
@@ -365,19 +371,21 @@ export const matchAttributeSelector = (ast, node) => {
               }
             }
             if (item) {
-              res = true;
+              return true;
             }
+            return false;
           }
-          break;
+          return false;
         }
         case null:
         default: {
-          res = true;
+          return true;
         }
       }
     }
+    return false;
   }
-  return !!res;
+  return false;
 };
 
 /**
@@ -409,32 +417,32 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     nodePrefix = prefix || '';
     nodeLocalName = localName;
   }
-  let res;
   switch (astPrefix) {
     case '': {
       if (!nodePrefix && !namespaceURI &&
             (astLocalName === '*' || astLocalName === nodeLocalName)) {
-        res = true;
+        return true;
       }
-      break;
+      return false;
     }
     case '*': {
       if (astLocalName === '*' || astLocalName === nodeLocalName) {
-        res = true;
+        return true;
       }
-      break;
+      return false;
     }
     default: {
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
       if (astNS === nodeNS && astPrefix === nodePrefix) {
         if (astLocalName === '*' || astLocalName === nodeLocalName) {
-          res = true;
+          return true;
         }
+        return false;
       } else if (!forgive && !astNS) {
         throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
       }
+      return false;
     }
   }
-  return !!res;
 };

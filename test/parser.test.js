@@ -6106,6 +6106,62 @@ describe('create AST from CSS selector', () => {
         type: SELECTOR_LIST
       }, 'result');
     });
+
+    it('should get selector list', () => {
+      const res = func(':lang(日本語)');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '日本語',
+                    type: IDENT
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func(':lang("日本語")');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: STRING,
+                    value: '日本語'
+                  }
+                ],
+                loc: null,
+                name: 'lang',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
   });
 
   describe('custom state pseudo-class', () => {

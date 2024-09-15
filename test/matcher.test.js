@@ -701,6 +701,32 @@ describe('matcher', () => {
       const res = func(ast, node);
       assert.isFalse(res, node, 'result');
     });
+
+    it('should not match', () => {
+      const ast = {
+        name: '日本語',
+        type: IDENT
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '日本語');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isFalse(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        type: STRING,
+        value: '日本語'
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', '日本語');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.isFalse(res, node, 'result');
+    });
   });
 
   describe('match attribute selector', () => {
