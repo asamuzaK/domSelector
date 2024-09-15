@@ -86,41 +86,47 @@ export const traverseNode = (node, walker) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let current;
-  if (walker?.currentNode) {
-    let refNode = walker.currentNode;
-    if (refNode === node) {
-      return refNode;
-    } else if (refNode.contains(node)) {
+  if (!walker) {
+    return null;
+  }
+  let refNode = walker.currentNode;
+  if (refNode === node) {
+    return refNode;
+  } else if (refNode.contains(node)) {
+    refNode = walker.nextNode();
+    while (refNode) {
+      if (refNode === node) {
+        break;
+      }
       refNode = walker.nextNode();
+    }
+    return refNode;
+  } else {
+    if (refNode !== walker.root) {
+      while (refNode) {
+        if (refNode === walker.root || refNode === node) {
+          break;
+        }
+        refNode = walker.parentNode();
+      }
+    }
+    if (node.nodeType === ELEMENT_NODE) {
+      let bool;
       while (refNode) {
         if (refNode === node) {
-          return refNode;
+          bool = true;
+          break;
         }
         refNode = walker.nextNode();
       }
+      if (bool) {
+        return refNode;
+      }
+      return null;
     } else {
-      if (refNode !== walker.root) {
-        while (refNode) {
-          if (refNode === walker.root || refNode === node) {
-            break;
-          }
-          refNode = walker.parentNode();
-        }
-      }
-      if (node.nodeType === ELEMENT_NODE) {
-        while (refNode) {
-          if (refNode === node) {
-            return refNode;
-          }
-          refNode = walker.nextNode();
-        }
-      } else {
-        current = refNode;
-      }
+      return refNode;
     }
   }
-  return current ?? null;
 };
 
 /**
@@ -133,29 +139,28 @@ export const isCustomElement = (node, opt = {}) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let bool;
-  if (node.nodeType === ELEMENT_NODE) {
-    const { localName, ownerDocument } = node;
-    const { formAssociated } = opt;
-    const window = ownerDocument.defaultView;
-    let elmConstructor;
-    const attr = node.getAttribute('is');
-    if (attr) {
-      elmConstructor =
-        isCustomElementName(attr) && window.customElements.get(attr);
-    } else {
-      elmConstructor =
-        isCustomElementName(localName) && window.customElements.get(localName);
-    }
-    if (elmConstructor) {
-      if (formAssociated) {
-        bool = elmConstructor.formAssociated;
-      } else {
-        bool = true;
-      }
-    }
+  if (node.nodeType !== ELEMENT_NODE) {
+    return false;
   }
-  return !!bool;
+  const { localName, ownerDocument } = node;
+  const { formAssociated } = opt;
+  const window = ownerDocument.defaultView;
+  let elmConstructor;
+  const attr = node.getAttribute('is');
+  if (attr) {
+    elmConstructor =
+      isCustomElementName(attr) && window.customElements.get(attr);
+  } else {
+    elmConstructor =
+      isCustomElementName(localName) && window.customElements.get(localName);
+  }
+  if (elmConstructor) {
+    if (formAssociated) {
+      return !!elmConstructor.formAssociated;
+    }
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -167,21 +172,22 @@ export const isInShadowTree = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let bool;
-  if (node.nodeType === ELEMENT_NODE ||
-      node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-    let refNode = node;
-    while (refNode) {
-      const { host, mode, nodeType, parentNode } = refNode;
-      if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
-          (mode === 'close' || mode === 'open')) {
-        bool = true;
-        break;
-      }
-      refNode = parentNode;
-    }
+  if (node.nodeType !== ELEMENT_NODE &&
+      node.nodeType !== DOCUMENT_FRAGMENT_NODE) {
+    return false;
   }
-  return !!bool;
+  let refNode = node;
+  let bool = false;
+  while (refNode) {
+    const { host, mode, nodeType, parentNode } = refNode;
+    if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
+        (mode === 'close' || mode === 'open')) {
+      bool = true;
+      break;
+    }
+    refNode = parentNode;
+  }
+  return bool;
 };
 
 /**
@@ -193,21 +199,21 @@ export const getSlottedTextContent = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let res;
-  if (node.localName === 'slot' && isInShadowTree(node)) {
-    const nodes = node.assignedNodes();
-    if (nodes.length) {
-      for (const item of nodes) {
-        res = item.textContent.trim();
-        if (res) {
-          break;
-        }
-      }
-    } else {
-      res = node.textContent.trim();
-    }
+  if (node.localName !== 'slot' || !isInShadowTree(node)) {
+    return null;
   }
-  return res ?? null;
+  const nodes = node.assignedNodes();
+  if (nodes.length) {
+    let text;
+    for (const item of nodes) {
+      text = item.textContent.trim();
+      if (text) {
+        break;
+      }
+    }
+    return text;
+  }
+  return node.textContent.trim();
 };
 
 /**
@@ -220,86 +226,94 @@ export const getDirectionality = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let res;
-  if (node.nodeType === ELEMENT_NODE) {
-    const { dir: nodeDir, localName, parentNode } = node;
-    const { getEmbeddingLevels } = bidiFactory();
-    if (nodeDir === 'ltr' || nodeDir === 'rtl') {
-      return nodeDir;
-    } else if (nodeDir === 'auto') {
-      let text;
-      switch (localName) {
-        case 'input': {
-          const valueKeys = [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden'];
-          if (!node.type || valueKeys.includes(node.type)) {
-            text = node.value;
-          } else {
-            const ltrKeys = [
-              'checkbox', 'color', 'date', 'image', 'number', 'range', 'radio',
-              'time'
-            ];
-            if (ltrKeys.includes(node.type)) {
-              return 'ltr';
-            }
-          }
-          break;
-        }
-        case 'slot': {
-          text = getSlottedTextContent(node);
-          break;
-        }
-        case 'textarea': {
+  if (node.nodeType !== ELEMENT_NODE) {
+    return null;
+  }
+  const { dir: nodeDir, localName, parentNode } = node;
+  const { getEmbeddingLevels } = bidiFactory();
+  if (nodeDir === 'ltr' || nodeDir === 'rtl') {
+    return nodeDir;
+  } else if (nodeDir === 'auto') {
+    let text;
+    switch (localName) {
+      case 'input': {
+        const valueKeys = [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden'];
+        if (!node.type || valueKeys.includes(node.type)) {
           text = node.value;
-          break;
-        }
-        default: {
-          const items = [].slice.call(node.childNodes);
-          for (const item of items) {
-            const {
-              dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
-              textContent: itemTextContent
-            } = item;
-            if (itemNodeType === TEXT_NODE) {
-              text = itemTextContent.trim();
-            } else if (itemNodeType === ELEMENT_NODE) {
-              const keys = ['bdi', 'script', 'style', 'textarea'];
-              if (!keys.includes(itemLocalName) &&
-                  (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))) {
-                if (itemLocalName === 'slot') {
-                  text = getSlottedTextContent(item);
-                } else {
-                  text = itemTextContent.trim();
-                }
-              }
-            }
-            if (text) {
-              break;
-            }
-          }
-        }
-      }
-      if (text) {
-        const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
-        if (level % 2 === 1) {
-          return 'rtl';
-        }
-        return 'ltr';
-      }
-      if (!res) {
-        if (parentNode) {
-          const { nodeType: parentNodeType } = parentNode;
-          if (parentNodeType === ELEMENT_NODE) {
-            return getDirectionality(parentNode);
-          } else if (parentNodeType === DOCUMENT_NODE ||
-                     parentNodeType === DOCUMENT_FRAGMENT_NODE) {
+        } else {
+          const ltrKeys = [
+            'checkbox', 'color', 'date', 'image', 'number', 'range', 'radio',
+            'time'
+          ];
+          if (ltrKeys.includes(node.type)) {
             return 'ltr';
           }
-        } else {
-          return 'ltr';
+        }
+        break;
+      }
+      case 'slot': {
+        text = getSlottedTextContent(node);
+        break;
+      }
+      case 'textarea': {
+        text = node.value;
+        break;
+      }
+      default: {
+        const items = [].slice.call(node.childNodes);
+        for (const item of items) {
+          const {
+            dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
+            textContent: itemTextContent
+          } = item;
+          if (itemNodeType === TEXT_NODE) {
+            text = itemTextContent.trim();
+          } else if (itemNodeType === ELEMENT_NODE) {
+            const keys = ['bdi', 'script', 'style', 'textarea'];
+            if (!keys.includes(itemLocalName) &&
+                (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))) {
+              if (itemLocalName === 'slot') {
+                text = getSlottedTextContent(item);
+              } else {
+                text = itemTextContent.trim();
+              }
+            }
+          }
+          if (text) {
+            break;
+          }
         }
       }
-    } else if (localName === 'bdi') {
-      const text = node.textContent.trim();
+    }
+    if (text) {
+      const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
+      if (level % 2 === 1) {
+        return 'rtl';
+      }
+      return 'ltr';
+    } else if (parentNode) {
+      const { nodeType: parentNodeType } = parentNode;
+      if (parentNodeType === ELEMENT_NODE) {
+        return getDirectionality(parentNode);
+      }
+      return 'ltr';
+    }
+    return 'ltr';
+  } else if (localName === 'bdi') {
+    const text = node.textContent.trim();
+    if (text) {
+      const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
+      if (level % 2 === 1) {
+        return 'rtl';
+      }
+      return 'ltr';
+    }
+    return 'ltr';
+  } else if (localName === 'input' && node.type === 'tel') {
+    return 'ltr';
+  } else if (parentNode) {
+    if (localName === 'slot') {
+      const text = getSlottedTextContent(node);
       if (text) {
         const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
@@ -307,36 +321,14 @@ export const getDirectionality = node => {
         }
         return 'ltr';
       }
-      if (!(res || parentNode)) {
-        return 'ltr';
-      }
-    } else if (localName === 'input' && node.type === 'tel') {
-      return 'ltr';
-    } else if (parentNode) {
-      if (localName === 'slot') {
-        const text = getSlottedTextContent(node);
-        if (text) {
-          const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
-          if (level % 2 === 1) {
-            return 'rtl';
-          }
-          return 'ltr';
-        }
-      }
-      if (!res) {
-        const { nodeType: parentNodeType } = parentNode;
-        if (parentNodeType === ELEMENT_NODE) {
-          return getDirectionality(parentNode);
-        } else if (parentNodeType === DOCUMENT_NODE ||
-                   parentNodeType === DOCUMENT_FRAGMENT_NODE) {
-          return 'ltr';
-        }
-      }
-    } else {
-      return 'ltr';
     }
+    const { nodeType: parentNodeType } = parentNode;
+    if (parentNodeType === ELEMENT_NODE) {
+      return getDirectionality(parentNode);
+    }
+    return 'ltr';
   }
-  return res ?? null;
+  return 'ltr';
 };
 
 /**
@@ -349,41 +341,43 @@ export const isContentEditable = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  let res;
-  if (node.nodeType === ELEMENT_NODE) {
-    if (typeof node.isContentEditable === 'boolean') {
-      return node.isContentEditable;
-    } else if (node.ownerDocument.designMode === 'on') {
-      return true;
-    } else if (node.hasAttribute('contenteditable')) {
-      const attr = node.getAttribute('contenteditable');
-      switch (attr) {
-        case '':
-        case 'true': {
-          return true;
-        }
-        case 'plaintext-only': {
-          // FIXME: the element's raw text is editable,
-          // but rich text formatting is disabled
-          return true;
-        }
-        case 'false': {
-          return false;
-        }
-        default: {
-          let parent = node.parentNode;
-          while (parent) {
-            if (isContentEditable(parent)) {
-              return true;
-            }
-            parent = parent.parentNode;
+  if (node.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  if (typeof node.isContentEditable === 'boolean') {
+    return node.isContentEditable;
+  } else if (node.ownerDocument.designMode === 'on') {
+    return true;
+  } else if (node.hasAttribute('contenteditable')) {
+    const attr = node.getAttribute('contenteditable');
+    switch (attr) {
+      case '':
+      case 'true': {
+        return true;
+      }
+      case 'plaintext-only': {
+        // FIXME: the element's raw text is editable,
+        // but rich text formatting is disabled
+        return true;
+      }
+      case 'false': {
+        return false;
+      }
+      default: {
+        let parent = node.parentNode;
+        let bool = false;
+        while (parent) {
+          if (isContentEditable(parent)) {
+            bool = true;
+            break;
           }
-          break;
+          parent = parent.parentNode;
         }
+        return bool;
       }
     }
   }
-  return !!res;
+  return false;
 };
 
 /**
@@ -392,15 +386,15 @@ export const isContentEditable = node => {
  * @returns {boolean} - result
  */
 export const isVisible = node => {
-  let res;
-  if (node?.nodeType === ELEMENT_NODE) {
-    const window = node.ownerDocument.defaultView;
-    const { display, visibility } = window.getComputedStyle(node);
-    if (display !== 'none' && visibility === 'visible') {
-      return true;
-    }
+  if (node?.nodeType !== ELEMENT_NODE) {
+    return false;
   }
-  return !!res;
+  const window = node.ownerDocument.defaultView;
+  const { display, visibility } = window.getComputedStyle(node);
+  if (display !== 'none' && visibility === 'visible') {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -409,25 +403,24 @@ export const isVisible = node => {
  * @returns {boolean} - result
  */
 export const isFocusVisible = node => {
-  let res;
-  if (node?.nodeType === ELEMENT_NODE) {
-    const { localName, type } = node;
-    switch (localName) {
-      case 'input': {
-        if (!type || KEY_INPUT_EDIT.includes(type)) {
-          return true;
-        }
-        break;
-      }
-      case 'textarea': {
+  if (node?.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  const { localName, type } = node;
+  switch (localName) {
+    case 'input': {
+      if (!type || KEY_INPUT_EDIT.includes(type)) {
         return true;
       }
-      default: {
-        return isContentEditable(node);
-      }
+      return false;
+    }
+    case 'textarea': {
+      return true;
+    }
+    default: {
+      return isContentEditable(node);
     }
   }
-  return !!res;
 };
 
 /**
@@ -436,88 +429,90 @@ export const isFocusVisible = node => {
  * @returns {boolean} - result
  */
 export const isFocusableArea = node => {
-  if (node?.nodeType === ELEMENT_NODE) {
-    if (!node.isConnected) {
-      return false;
+  if (node?.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  if (!node.isConnected) {
+    return false;
+  }
+  const window = node.ownerDocument.defaultView;
+  if (node instanceof window.HTMLElement) {
+    if (Number.isInteger(parseInt(node.getAttribute('tabindex')))) {
+      return true;
     }
-    const window = node.ownerDocument.defaultView;
-    if (node instanceof window.HTMLElement) {
-      if (Number.isInteger(parseInt(node.getAttribute('tabindex')))) {
+    if (isContentEditable(node)) {
+      return true;
+    }
+    const { localName, parentNode } = node;
+    switch (localName) {
+      case 'a': {
+        if (node.href || node.hasAttribute('href')) {
+          return true;
+        }
+        return false;
+      }
+      case 'iframe': {
         return true;
       }
-      if (isContentEditable(node)) {
-        return true;
-      }
-      const { localName, parentNode } = node;
-      switch (localName) {
-        case 'a': {
-          if (node.href || node.hasAttribute('href')) {
-            return true;
-          }
+      case 'input': {
+        if (node.disabled || node.hasAttribute('disabled') ||
+            node.hidden || node.hasAttribute('hidden')) {
           return false;
         }
-        case 'iframe': {
-          return true;
-        }
-        case 'input': {
-          if (node.disabled || node.hasAttribute('disabled') ||
-              node.hidden || node.hasAttribute('hidden')) {
-            return false;
-          }
-          return true;
-        }
-        case 'summary': {
-          if (parentNode.localName === 'details') {
-            let child = parentNode.firstElementChild;
-            while (child) {
-              if (child.localName === 'summary') {
-                return node === child;
-              }
-              child = child.nextElementSibling;
+        return true;
+      }
+      case 'summary': {
+        if (parentNode.localName === 'details') {
+          let child = parentNode.firstElementChild;
+          while (child) {
+            if (child.localName === 'summary') {
+              return node === child;
             }
+            child = child.nextElementSibling;
           }
-          return false;
         }
-        default: {
-          const keys = ['button', 'select', 'textarea'];
-          if (keys.includes(localName) &&
-              !(node.disabled || node.hasAttribute('disabled'))) {
-            return true;
-          }
-          return false;
-        }
+        return false;
       }
-    } else if (node instanceof window.SVGElement) {
-      if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
-        const keys = [
-          'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
-          'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',
-          'title'
-        ];
-        const ns = 'http://www.w3.org/2000/svg';
-        let bool;
-        let refNode = node;
-        while (refNode.namespaceURI === ns) {
-          bool = keys.includes(refNode.localName);
-          if (bool) {
-            break;
-          }
-          if (refNode?.parentNode?.namespaceURI === ns) {
-            refNode = refNode.parentNode;
-          } else {
-            break;
-          }
+      default: {
+        const keys = ['button', 'select', 'textarea'];
+        if (keys.includes(localName) &&
+            !(node.disabled || node.hasAttribute('disabled'))) {
+          return true;
         }
-        if (bool) {
-          return false;
-        }
-        return true;
-      }
-      if (node.localName === 'a' &&
-          (node.href || node.hasAttributeNS(null, 'href'))) {
-        return true;
+        return false;
       }
     }
+  } else if (node instanceof window.SVGElement) {
+    if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
+      const keys = [
+        'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
+        'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',
+        'title'
+      ];
+      const ns = 'http://www.w3.org/2000/svg';
+      let bool;
+      let refNode = node;
+      while (refNode.namespaceURI === ns) {
+        bool = keys.includes(refNode.localName);
+        if (bool) {
+          break;
+        }
+        if (refNode?.parentNode?.namespaceURI === ns) {
+          refNode = refNode.parentNode;
+        } else {
+          break;
+        }
+      }
+      if (bool) {
+        return false;
+      }
+      return true;
+    }
+    if (node.localName === 'a' &&
+        (node.href || node.hasAttributeNS(null, 'href'))) {
+      return true;
+    }
+    return false;
   }
   return false;
 };
@@ -533,35 +528,36 @@ export const isFocusableArea = node => {
  * @returns {boolean} - result
  */
 export const isFocusable = node => {
-  let res;
-  if (node?.nodeType === ELEMENT_NODE) {
-    const window = node.ownerDocument.defaultView;
-    let refNode = node;
-    res = true;
-    while (refNode) {
-      if (refNode.disabled || refNode.hasAttribute('disabled')) {
-        return false;
-      }
-      if (refNode.hidden || refNode.hasAttribute('hidden')) {
-        res = false;
-      }
-      const {
-        contentVisibility, display, visibility
-      } = window.getComputedStyle(refNode);
-      if (display === 'none' || visibility !== 'visible' ||
-          (contentVisibility === 'hidden' && refNode !== node)) {
-        res = false;
-      } else {
-        res = true;
-      }
-      if (res && refNode?.parentNode?.nodeType === ELEMENT_NODE) {
-        refNode = refNode.parentNode;
-      } else {
-        break;
-      }
+  if (node?.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  const window = node.ownerDocument.defaultView;
+  let refNode = node;
+  let res = true;
+  while (refNode) {
+    if (refNode.disabled || refNode.hasAttribute('disabled')) {
+      res = false;
+      break;
+    }
+    if (refNode.hidden || refNode.hasAttribute('hidden')) {
+      res = false;
+    }
+    const {
+      contentVisibility, display, visibility
+    } = window.getComputedStyle(refNode);
+    if (display === 'none' || visibility !== 'visible' ||
+        (contentVisibility === 'hidden' && refNode !== node)) {
+      res = false;
+    } else {
+      res = true;
+    }
+    if (res && refNode?.parentNode?.nodeType === ELEMENT_NODE) {
+      refNode = refNode.parentNode;
+    } else {
+      break;
     }
   }
-  return !!res;
+  return res;
 };
 
 /**
@@ -576,17 +572,20 @@ export const getNamespaceURI = (ns, node) => {
   } else if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
+  if (!ns || node.nodeType !== ELEMENT_NODE) {
+    return null;
+  }
+  const { attributes } = node;
   let res;
-  if (ns && node.nodeType === ELEMENT_NODE) {
-    const { attributes } = node;
-    for (const attr of attributes) {
-      const { name, namespaceURI, prefix, value } = attr;
-      if (name === `xmlns:${ns}`) {
-        return value;
-      }
-      if (prefix === ns) {
-        return namespaceURI;
-      }
+  for (const attr of attributes) {
+    const { name, namespaceURI, prefix, value } = attr;
+    if (name === `xmlns:${ns}`) {
+      res = value;
+    } else if (prefix === ns) {
+      res = namespaceURI;
+    }
+    if (res) {
+      break;
     }
   }
   return res ?? null;
@@ -599,20 +598,21 @@ export const getNamespaceURI = (ns, node) => {
  * @returns {boolean} - result
  */
 export const isNamespaceDeclared = (ns = '', node = {}) => {
+  if (!ns || typeof ns !== 'string' || node?.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  if (node.lookupNamespaceURI(ns)) {
+    return true;
+  }
+  const root = node.ownerDocument.documentElement;
+  let parent = node;
   let res;
-  if (ns && typeof ns === 'string' && node.nodeType === ELEMENT_NODE) {
-    res = node.lookupNamespaceURI(ns);
-    if (!res) {
-      const root = node.ownerDocument.documentElement;
-      let parent = node;
-      while (parent) {
-        res = getNamespaceURI(ns, parent);
-        if (res || parent === root) {
-          break;
-        }
-        parent = parent.parentNode;
-      }
+  while (parent) {
+    res = getNamespaceURI(ns, parent);
+    if (res || parent === root) {
+      break;
     }
+    parent = parent.parentNode;
   }
   return !!res;
 };
@@ -629,12 +629,12 @@ export const isPreceding = (nodeA, nodeB) => {
   } else if (!nodeB?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(nodeB)}`);
   }
-  let res;
-  if (nodeA.nodeType === ELEMENT_NODE && nodeB.nodeType === ELEMENT_NODE) {
-    const posBit = nodeB.compareDocumentPosition(nodeA);
-    res = posBit & DOCUMENT_POSITION_PRECEDING ||
-          posBit & DOCUMENT_POSITION_CONTAINS;
+  if (nodeA.nodeType !== ELEMENT_NODE || nodeB.nodeType !== ELEMENT_NODE) {
+    return false;
   }
+  const posBit = nodeB.compareDocumentPosition(nodeA);
+  const res = posBit & DOCUMENT_POSITION_PRECEDING ||
+              posBit & DOCUMENT_POSITION_CONTAINS;
   return !!res;
 };
 

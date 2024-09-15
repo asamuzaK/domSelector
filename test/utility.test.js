@@ -433,6 +433,34 @@ describe('utility functions', () => {
       const html = `
         <template id="template">
           <div>
+            <slot id="foo" name="bar"></slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, '', 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+        <template id="template">
+          <div>
             <slot id="foo" name="bar">Foo</slot>
           </div>
         </template>
@@ -497,6 +525,11 @@ describe('utility functions', () => {
 
     it('should throw', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
+    it('should get null', () => {
+      const res = func(document);
+      assert.isNull(res, 'result');
     });
 
     it('should get value', () => {
@@ -1375,6 +1408,14 @@ describe('utility functions', () => {
       const res = func(node);
       assert.isTrue(res, 'result');
     });
+
+    it('should get false', () => {
+      const node =
+        document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
+      document.body.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
   });
 
   describe('is focusable', () => {
@@ -1513,6 +1554,11 @@ describe('utility functions', () => {
     it('should throw', () => {
       assert.throws(() => func('foo', 'bar'), TypeError,
         'Unexpected type String');
+    });
+
+    it('should get null', () => {
+      const res = func('foo', document);
+      assert.isNull(res, 'result');
     });
 
     it('should get null', () => {

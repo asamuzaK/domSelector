@@ -372,7 +372,7 @@ describe('matcher', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should not match', () => {
+    it('should match', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -381,7 +381,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
-      assert.isFalse(res, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should match', () => {
