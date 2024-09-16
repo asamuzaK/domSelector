@@ -201,6 +201,12 @@ describe('utility functions', () => {
       assert.deepEqual(res, document, 'result');
     });
 
+    it('should get null', () => {
+      const frag = document.createDocumentFragment();
+      const res = func(frag, treeWalker);
+      assert.isNull(res, 'result');
+    });
+
     it('should get matched node', () => {
       const node = document.getElementById('ul1');
       const res = func(node, treeWalker);
@@ -239,6 +245,20 @@ describe('utility functions', () => {
       func(node, walker);
       const res = func(frag, walker);
       assert.deepEqual(res, frag, 'result');
+    });
+
+    it('should get matched node', () => {
+      const frag = document.createDocumentFragment();
+      const parent = document.createElement('ol');
+      const node = document.createElement('li');
+      const node2 = document.createElement('li');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      frag.appendChild(parent);
+      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      func(node, walker);
+      const res = func(node2, walker);
+      assert.deepEqual(res, node2, 'result');
     });
   });
 

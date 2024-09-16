@@ -3411,6 +3411,100 @@ describe('Finder', () => {
       }, node, {});
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should not match', () => {
+      const branches = [
+        [
+          {
+            loc: null,
+            name: 'host',
+            type: PS_CLASS_SELECTOR
+          },
+          {
+            loc: null,
+            name: '>',
+            type: COMBINATOR
+          },
+          {
+            loc: null,
+            name: 'span',
+            type: TYPE_SELECTOR
+          }
+        ]
+      ];
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':not(:host > span)', node);
+      const res = finder._matchLogicalPseudoFunc({
+        astName: 'not',
+        branches
+      }, node, {});
+      assert.isNull(res, 'result');
+    });
+
+    it('should not match', () => {
+      const branches = [
+        [
+          {
+            loc: null,
+            name: 'div',
+            type: TYPE_SELECTOR
+          }
+        ]
+      ];
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      };
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':not(div)', node);
+      const res = finder._matchLogicalPseudoFunc({
+        astName: 'not',
+        branches
+      }, node, {});
+      assert.isNull(res, 'result');
+    });
   });
 
   describe('match pseudo class selector', () => {

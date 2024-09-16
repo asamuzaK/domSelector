@@ -77,7 +77,6 @@ export const resolveContent = node => {
 
 /**
  * traverse node tree
- * @private
  * @param {object} node - node
  * @param {object} walker - tree walker
  * @returns {?object} - current node
@@ -103,11 +102,18 @@ export const traverseNode = (node, walker) => {
     return refNode;
   } else {
     if (refNode !== walker.root) {
+      let bool;
       while (refNode) {
-        if (refNode === walker.root || refNode === node) {
+        if (refNode === node) {
+          bool = true;
+          break;
+        } else if (refNode === walker.root) {
           break;
         }
         refNode = walker.parentNode();
+      }
+      if (bool) {
+        return refNode;
       }
     }
     if (node.nodeType === ELEMENT_NODE) {
@@ -122,11 +128,9 @@ export const traverseNode = (node, walker) => {
       if (bool) {
         return refNode;
       }
-      return null;
-    } else {
-      return refNode;
     }
   }
+  return null;
 };
 
 /**
@@ -290,14 +294,13 @@ export const getDirectionality = node => {
       if (level % 2 === 1) {
         return 'rtl';
       }
-      return 'ltr';
     } else if (parentNode) {
       const { nodeType: parentNodeType } = parentNode;
       if (parentNodeType === ELEMENT_NODE) {
         return getDirectionality(parentNode);
       }
-      return 'ltr';
     }
+  } else if (localName === 'input' && node.type === 'tel') {
     return 'ltr';
   } else if (localName === 'bdi') {
     const text = node.textContent.trim();
@@ -306,11 +309,7 @@ export const getDirectionality = node => {
       if (level % 2 === 1) {
         return 'rtl';
       }
-      return 'ltr';
     }
-    return 'ltr';
-  } else if (localName === 'input' && node.type === 'tel') {
-    return 'ltr';
   } else if (parentNode) {
     if (localName === 'slot') {
       const text = getSlottedTextContent(node);
@@ -326,7 +325,6 @@ export const getDirectionality = node => {
     if (parentNodeType === ELEMENT_NODE) {
       return getDirectionality(parentNode);
     }
-    return 'ltr';
   }
   return 'ltr';
 };
@@ -464,12 +462,15 @@ export const isFocusableArea = node => {
       case 'summary': {
         if (parentNode.localName === 'details') {
           let child = parentNode.firstElementChild;
+          let bool = false;
           while (child) {
             if (child.localName === 'summary') {
-              return node === child;
+              bool = child === node;
+              break;
             }
             child = child.nextElementSibling;
           }
+          return bool;
         }
         return false;
       }
@@ -479,7 +480,6 @@ export const isFocusableArea = node => {
             !(node.disabled || node.hasAttribute('disabled'))) {
           return true;
         }
-        return false;
       }
     }
   } else if (node instanceof window.SVGElement) {
@@ -512,7 +512,6 @@ export const isFocusableArea = node => {
         (node.href || node.hasAttributeNS(null, 'href'))) {
       return true;
     }
-    return false;
   }
   return false;
 };

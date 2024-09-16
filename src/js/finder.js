@@ -714,18 +714,17 @@ export class Finder {
       const nodes = this._matchCombinator(twig, node, opt);
       if (nodes.size) {
         if (leaves.length) {
-          let bool;
+          let bool = false;
           for (const nextNode of nodes) {
             bool = this._matchHasPseudoFunc(leaves, nextNode, opt);
             if (bool) {
               break;
             }
           }
-          return !!bool;
+          return bool;
         }
         return true;
       }
-      return false;
     }
     return false;
   }
@@ -740,7 +739,8 @@ export class Finder {
    */
   _matchLogicalPseudoFunc(astData, node, opt) {
     const { astName, branches, twigBranches } = astData;
-    const { isShadowRoot } = opt;
+    const isShadowRoot = opt.isShadowRoot ||
+      (this.#shadow && node.nodeType === DOCUMENT_FRAGMENT_NODE);
     if (astName === 'has') {
       let bool;
       for (const leaves of branches) {
@@ -754,18 +754,28 @@ export class Finder {
           if (this.#verifyShadowHost) {
             return node;
           }
-          return null;
         } else {
           return node;
         }
       }
-      return null;
     } else {
+      // check for invalid shadow root
       if (isShadowRoot) {
+        let invalid;
         for (const branch of branches) {
           if (branch.length > 1) {
-            return null;
+            invalid = true;
+            break;
+          } else if (astName === 'not') {
+            const [{ type: childAstType }] = branch;
+            if (childAstType !== PS_CLASS_SELECTOR) {
+              invalid = true;
+              break;
+            }
           }
+        }
+        if (invalid) {
+          return null;
         }
       }
       opt.forgive = astName === 'is' || astName === 'where';
@@ -812,8 +822,8 @@ export class Finder {
       } else if (bool) {
         return node;
       }
-      return null;
     }
+    return null;
   }
 
   /**
@@ -845,6 +855,8 @@ export class Finder {
       } else {
         const { branches } = walkAST(ast);
         if (astName === 'has') {
+          // check for nested :has()
+          let forgiven;
           for (const child of astChildren) {
             const item = findAST(child, leaf => {
               if (KEY_LOGICAL.includes(leaf.name) &&
@@ -856,12 +868,16 @@ export class Finder {
             if (item) {
               const itemName = item.name;
               if (itemName === 'is' || itemName === 'where') {
-                return matched;
+                forgiven = true;
+                break;
               } else {
                 const css = generateCSS(ast);
                 throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
               }
             }
+          }
+          if (forgiven) {
+            return matched;
           }
           astData = {
             astName,
@@ -2695,7 +2711,6 @@ export class Finder {
         if (matched) {
           return node;
         }
-        return null;
       }
     }
     return null;

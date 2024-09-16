@@ -110,7 +110,6 @@ export const matchLanguagePseudoClass = (ast, node) => {
       if (node.getAttribute('lang')) {
         return true;
       }
-      return false;
     } else {
       let parent = node.parentNode;
       let res;
@@ -173,7 +172,6 @@ export const matchLanguagePseudoClass = (ast, node) => {
         return !!res;
       }
     }
-    return false;
   }
   return false;
 };
@@ -383,7 +381,6 @@ export const matchAttributeSelector = (ast, node) => {
         }
       }
     }
-    return false;
   }
   return false;
 };

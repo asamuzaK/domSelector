@@ -12,7 +12,7 @@ import {
   CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
   PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
-const REG_EMPTY_PSEUDO_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where)\()\s+\)/g;
+const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where)\()\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 const U_FFFD = '\uFFFD';
 
@@ -77,13 +77,13 @@ export const preprocess = (...args) => {
   if (typeof selector === 'string') {
     let index = 0;
     while (index >= 0) {
+      // @see https://drafts.csswg.org/selectors/#id-selectors
       index = selector.indexOf('#', index);
       if (index < 0) {
         break;
       }
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
-      // @see https://drafts.csswg.org/selectors/#id-selectors
       // @see https://drafts.csswg.org/css-syntax-3/#ident-token-diagram
       if (/^\d$/.test(postHash.substring(0, 1))) {
         throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
@@ -155,9 +155,8 @@ export const parseSelector = selector => {
       }
     } else if (message === '")" is expected') {
       // workaround for https://github.com/csstree/csstree/issues/283
-      if (REG_EMPTY_PSEUDO_FUNC.test(selector)) {
-        res =
-          parseSelector(`${selector.replaceAll(REG_EMPTY_PSEUDO_FUNC, ')')}`);
+      if (REG_EMPTY_PS_FUNC.test(selector)) {
+        res = parseSelector(`${selector.replaceAll(REG_EMPTY_PS_FUNC, ')')}`);
       } else if (!selector.endsWith(')')) {
         res = parseSelector(`${selector})`);
       } else {
