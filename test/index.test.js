@@ -989,7 +989,7 @@ describe('patched JSDOM', () => {
     it('should not match, should not throw', () => {
       const domstr =
         '<html><body><div><button id="test"></button></div></body></html>';
-      const doc = new DOMParser().parseFromString(domstr, 'text/html');
+      const doc = new window.DOMParser().parseFromString(domstr, 'text/html');
       const node = doc.getElementById('test');
       const res = node.closest('.foo');
       assert.isNull(res, 'result');

@@ -388,7 +388,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -416,7 +416,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -469,7 +469,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -497,7 +497,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -527,7 +527,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -689,7 +689,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -717,7 +717,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foobar');
@@ -747,7 +747,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foobar');
@@ -775,7 +775,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -803,7 +803,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -904,7 +904,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -932,7 +932,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
@@ -960,7 +960,7 @@ describe('utility functions', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');

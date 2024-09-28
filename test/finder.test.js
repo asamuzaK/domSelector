@@ -3451,7 +3451,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -3493,7 +3493,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9364,7 +9364,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9409,7 +9409,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9444,7 +9444,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9479,7 +9479,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9514,7 +9514,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9549,7 +9549,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9602,7 +9602,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9649,7 +9649,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9696,7 +9696,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9749,7 +9749,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9796,7 +9796,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9843,7 +9843,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -9890,7 +9890,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -10417,7 +10417,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -10466,7 +10466,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
@@ -12493,7 +12493,7 @@ describe('Finder', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
