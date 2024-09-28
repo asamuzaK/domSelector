@@ -2879,4 +2879,4 @@ export class Finder {
     }
     return nodes;
   }
-};
+}

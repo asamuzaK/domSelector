@@ -408,7 +408,7 @@ describe('matcher', () => {
           const template = document.getElementById('template');
           shadowRoot.appendChild(template.content.cloneNode(true));
         }
-      };
+      }
       window.customElements.define('my-element', MyElement);
       const shadow = document.getElementById('baz');
       const node = shadow.shadowRoot.getElementById('foo');

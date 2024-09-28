@@ -3528,7 +3528,7 @@ describe('local wpt test cases', () => {
       assert.isFalse(b1.matches(':defined + #b1'));
       assert.isFalse(c1.matches(':defined > #c1'));
       assert.isFalse(d1.matches('div + :defined + * #d1'));
-      class ElucidateLate extends window.HTMLElement {};
+      class ElucidateLate extends window.HTMLElement {}
       window.customElements.define('elucidate-late', ElucidateLate);
       assert.isTrue(a1.matches('#a1:defined'));
       assert.isTrue(b1.matches(':defined + #b1'));
