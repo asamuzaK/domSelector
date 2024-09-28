@@ -26,7 +26,9 @@ export default [
     },
     languageOptions: {
       globals: {
-        ...globals.node
+        ...globals.browser,
+        ...globals.node,
+        ...globals.webextensions
       },
       ecmaVersion: 'latest',
       sourceType: 'module'
