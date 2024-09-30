@@ -191,7 +191,7 @@ export const matchAttributeSelector = (ast, node) => {
     throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
   }
   const { attributes } = node;
-  if (attributes && attributes.length) {
+  if (attributes?.length) {
     const contentType = node.ownerDocument.contentType;
     let caseInsensitive;
     if (contentType === 'text/html') {
@@ -417,7 +417,7 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   switch (astPrefix) {
     case '': {
       if (!nodePrefix && !namespaceURI &&
-            (astLocalName === '*' || astLocalName === nodeLocalName)) {
+          (astLocalName === '*' || astLocalName === nodeLocalName)) {
         return true;
       }
       return false;
