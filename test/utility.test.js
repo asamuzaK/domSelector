@@ -107,7 +107,8 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         document,
         document,
-        tree
+        tree,
+        false
       ]);
     });
 
@@ -118,7 +119,8 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         document,
         node,
-        tree
+        tree,
+        false
       ]);
     });
 
@@ -129,7 +131,8 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         document,
         document,
-        tree
+        tree,
+        false
       ]);
     });
 
@@ -142,7 +145,8 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         document,
         frag,
-        tree
+        tree,
+        false
       ]);
     });
 
@@ -155,7 +159,8 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         document,
         parent,
-        tree
+        tree,
+        false
       ]);
     });
 
@@ -168,8 +173,77 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         doc,
         doc,
-        tree
+        tree,
+        false
       ]);
+    });
+
+    it('should get result', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const tree = document.createTreeWalker(node, WALKER_FILTER);
+      const res = func(node);
+      assert.deepEqual(res, [
+        document,
+        node,
+        tree,
+        true
+      ], 'result');
+    });
+
+    it('should get result', () => {
+      const html = `
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="quux">Qux</span>
+        </my-element>
+      `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot.getElementById('foo');
+      const tree = document.createTreeWalker(host.shadowRoot, WALKER_FILTER);
+      const res = func(node);
+      assert.deepEqual(res, [
+        document,
+        host.shadowRoot,
+        tree,
+        true
+      ], 'result');
     });
   });
 
@@ -344,87 +418,6 @@ describe('utility functions', () => {
     });
   });
 
-  describe('is in shadow tree', () => {
-    const func = util.isInShadowTree;
-
-    it('should throw', () => {
-      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
-    });
-
-    it('should not match', () => {
-      const html = `
-        <div>
-          <slot id="foo" name="bar">Foo</slot>
-        </div>
-      `;
-      const container = document.getElementById('div0');
-      container.innerHTML = html;
-      const node = document.getElementById('foo');
-      const res = func(node);
-      assert.isFalse(res, 'result');
-    });
-
-    it('should match', () => {
-      const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
-      `;
-      const container = document.getElementById('div0');
-      container.innerHTML = html;
-      class MyElement extends window.HTMLElement {
-        constructor() {
-          super();
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          const template = document.getElementById('template');
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      }
-      window.customElements.define('my-element', MyElement);
-      const host = document.getElementById('baz');
-      const node = host.shadowRoot;
-      const res = func(node);
-      assert.isTrue(res, 'result');
-    });
-
-    it('should match', () => {
-      const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
-      `;
-      const container = document.getElementById('div0');
-      container.innerHTML = html;
-      class MyElement extends window.HTMLElement {
-        constructor() {
-          super();
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          const template = document.getElementById('template');
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      }
-      window.customElements.define('my-element', MyElement);
-      const host = document.getElementById('baz');
-      const node = host.shadowRoot.getElementById('foo');
-      const res = func(node);
-      assert.isTrue(res, 'result');
-    });
-  });
-
   describe('get slotted text content', () => {
     const func = util.getSlottedTextContent;
 
@@ -437,6 +430,15 @@ describe('utility functions', () => {
     });
 
     it('should get null', () => {
+      const html = `<div id="foo" name="bar">Foo</div>`;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      const node = document.getElementById('foo');
+      const res = func(node);
+      assert.isNull(res, 'result');
+    });
+
+    it('should get value', () => {
       const html = `
         <div>
           <slot id="foo" name="bar">Foo</slot>
@@ -446,7 +448,7 @@ describe('utility functions', () => {
       container.innerHTML = html;
       const node = document.getElementById('foo');
       const res = func(node);
-      assert.isNull(res, 'result');
+      assert.strictEqual(res, 'Foo', 'result');
     });
 
     it('should get value', () => {

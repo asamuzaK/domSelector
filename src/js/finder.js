@@ -12,7 +12,7 @@ import {
 } from './parser.js';
 import {
   isContentEditable, isCustomElement, isFocusVisible, isFocusableArea,
-  isInShadowTree, isVisible, resolveContent, sortNodes, traverseNode
+  isVisible, resolveContent, sortNodes, traverseNode
 } from './utility.js';
 
 /* constants */
@@ -134,9 +134,16 @@ export class Finder {
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
-    [this.#document, this.#root, this.#walker] = resolveContent(node);
-    this.#shadow = isInShadowTree(node);
-    [this.#ast, this.#nodes] = this._correspond(selector);
+    [
+      this.#document,
+      this.#root,
+      this.#walker,
+      this.#shadow
+    ] = resolveContent(node);
+    [
+      this.#ast,
+      this.#nodes
+    ] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#walkers = new WeakMap();
     this.#verifyShadowHost = null;
