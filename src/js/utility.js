@@ -29,9 +29,10 @@ export const getType = o =>
   Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
 
 /**
- * resolve content document, root node and tree walker
+ * resolve content document, root node and tree walker, is in shadow
  * @param {object} node - Document, DocumentFragment, Element node
- * @returns {Array.<object>} - array of document, root node, tree walker
+ * @returns {Array.<object|boolean>}
+ *   - array of document, root node , tree walker, node is in shadow
  */
 export const resolveContent = node => {
   if (!node?.nodeType) {
