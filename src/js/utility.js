@@ -39,6 +39,7 @@ export const resolveContent = node => {
   }
   let document;
   let root;
+  let shadow;
   switch (node.nodeType) {
     case DOCUMENT_NODE: {
       document = node;
@@ -46,21 +47,27 @@ export const resolveContent = node => {
       break;
     }
     case DOCUMENT_FRAGMENT_NODE: {
-      document = node.ownerDocument;
+      const { host, mode, ownerDocument } = node;
+      document = ownerDocument;
       root = node;
+      shadow = host && (mode === 'close' || mode === 'open');
       break;
     }
     case ELEMENT_NODE: {
       document = node.ownerDocument;
-      let parent = node;
-      while (parent) {
-        if (parent.parentNode) {
-          parent = parent.parentNode;
+      let refNode = node;
+      while (refNode) {
+        const { host, mode, nodeType, parentNode } = refNode;
+        if (nodeType === DOCUMENT_FRAGMENT_NODE) {
+          shadow = host && (mode === 'close' || mode === 'open');
+          break;
+        } else if (parentNode) {
+          refNode = parentNode;
         } else {
           break;
         }
       }
-      root = parent;
+      root = refNode;
       break;
     }
     default : {
@@ -71,7 +78,8 @@ export const resolveContent = node => {
   return [
     document,
     root,
-    walker
+    walker,
+    !!shadow
   ];
 };
 
@@ -168,33 +176,6 @@ export const isCustomElement = (node, opt = {}) => {
 };
 
 /**
- * is in shadow tree
- * @param {object} node - node
- * @returns {boolean} - result;
- */
-export const isInShadowTree = node => {
-  if (!node?.nodeType) {
-    throw new TypeError(`Unexpected type ${getType(node)}`);
-  }
-  if (node.nodeType !== ELEMENT_NODE &&
-      node.nodeType !== DOCUMENT_FRAGMENT_NODE) {
-    return false;
-  }
-  let refNode = node;
-  let bool = false;
-  while (refNode) {
-    const { host, mode, nodeType, parentNode } = refNode;
-    if (host && mode && nodeType === DOCUMENT_FRAGMENT_NODE &&
-        (mode === 'close' || mode === 'open')) {
-      bool = true;
-      break;
-    }
-    refNode = parentNode;
-  }
-  return bool;
-};
-
-/**
  * get slotted text content
  * @param {object} node - Element node
  * @returns {?string} - text content
@@ -203,7 +184,7 @@ export const getSlottedTextContent = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
-  if (node.localName !== 'slot' || !isInShadowTree(node)) {
+  if (typeof node.assignedNodes !== 'function') {
     return null;
   }
   const nodes = node.assignedNodes();
@@ -233,11 +214,11 @@ export const getDirectionality = node => {
   if (node.nodeType !== ELEMENT_NODE) {
     return null;
   }
-  const { dir: nodeDir, localName, parentNode } = node;
+  const { dir: dirAttr, localName, parentNode } = node;
   const { getEmbeddingLevels } = bidiFactory();
-  if (nodeDir === 'ltr' || nodeDir === 'rtl') {
-    return nodeDir;
-  } else if (nodeDir === 'auto') {
+  if (dirAttr === 'ltr' || dirAttr === 'rtl') {
+    return dirAttr;
+  } else if (dirAttr === 'auto') {
     let text;
     switch (localName) {
       case 'input': {
