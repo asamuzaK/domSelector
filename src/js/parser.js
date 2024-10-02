@@ -12,7 +12,7 @@ import {
   CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
   PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
-const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where)\()\s+\)/g;
+const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 const U_FFFD = '\uFFFD';
 
@@ -156,7 +156,7 @@ export const parseSelector = selector => {
     } else if (message === '")" is expected') {
       // workaround for https://github.com/csstree/csstree/issues/283
       if (REG_EMPTY_PS_FUNC.test(selector)) {
-        res = parseSelector(`${selector.replaceAll(REG_EMPTY_PS_FUNC, ')')}`);
+        res = parseSelector(`${selector.replaceAll(REG_EMPTY_PS_FUNC, '()')}`);
       } else if (!selector.endsWith(')')) {
         res = parseSelector(`${selector})`);
       } else {
