@@ -430,7 +430,7 @@ describe('utility functions', () => {
     });
 
     it('should get null', () => {
-      const html = `<div id="foo" name="bar">Foo</div>`;
+      const html = '<div id="foo" name="bar">Foo</div>';
       const container = document.getElementById('div0');
       container.innerHTML = html;
       const node = document.getElementById('foo');
