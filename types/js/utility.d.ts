@@ -1,8 +1,7 @@
 export function getType(o: any): string;
-export function resolveContent(node: object): Array<object>;
+export function resolveContent(node: object): Array<object | boolean>;
 export function traverseNode(node: object, walker: object): object | null;
 export function isCustomElement(node: object, opt?: object): boolean;
-export function isInShadowTree(node: object): boolean;
 export function getSlottedTextContent(node: object): string | null;
 export function getDirectionality(node: object): string | null;
 export function isContentEditable(node: object): boolean;

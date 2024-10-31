@@ -70,3 +70,4 @@ export const KEY_INPUT_EDIT: readonly string[];
 export const KEY_INPUT_LTR: readonly string[];
 export const KEY_LOGICAL: readonly string[];
 export const KEY_MODIFIER: readonly string[];
+export const KEY_SHADOW_HOST: readonly string[];
