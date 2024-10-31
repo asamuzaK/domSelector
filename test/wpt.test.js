@@ -3813,6 +3813,234 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/host-has-shadow-tree-element-at-nonsubject-position.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div class="ancestor host_context">
+          <div id="host" class="ancestor">
+            <div class="child">
+              <div class="descendant"></div>
+            </div>
+          </div>
+          <div class="sibling"></div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          div { color: red; }
+          :host:has(.descendant) .subject { color: green; }
+          :host:has(> .child) .subject { color: blue; }
+          :host:has(~ .sibling) .subject { color: yellow; }
+          :host:has(:is(.ancestor .descendant)) .subject { color: purple; }
+          :host:has(.descendant):has(> .child) .subject { color: pink; }
+          :host-context(.host_context):has(> .child > .grand_child) .subject { color: ivory; }
+          :host(.host_context):has(> .child > .grand_child) .subject { color: skyblue; }
+          :host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject { color: lightgreen; }
+        </style>
+        <div id="subject" class="subject"></div>
+        <div id="shadow_child">
+          <div id="shadow_descendant"></div>
+        </div>
+      `;
+      const subject = shadow.getElementById('subject');
+      const shadowChild = shadow.getElementById('shadow_child');
+      const shadowDesc = shadow.getElementById('shadow_descendant');
+      // Initial
+      assert.isFalse(subject.matches(':host:has(.descendant) .subject'));
+      assert.isFalse(subject.matches(':host:has(> .child) .subject'));
+      assert.isFalse(subject.matches(':host:has(~ .sibling) .subject'));
+      assert.isFalse(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'));
+      assert.isFalse(subject.matches(':host:has(.descendant):has(> .child) .subject'));
+      assert.isFalse(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'));
+      assert.isFalse(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'));
+      // Add .descendant to #shadow_child
+      shadowChild.classList.add('descendant');
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      shadowChild.classList.remove('descendant');
+      // Add .descendant to #shadow_descendant
+      shadowDesc.classList.add('descendant');
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      // Add .ancestor to #shadow_child:has(.descendant)
+      shadowChild.classList.add('ancestor');
+      assert.isTrue(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'));
+      shadowChild.classList.remove('ancestor');
+      // Add .child to #shadow_child:has(.descendant)
+      shadowChild.classList.add('child');
+      assert.isTrue(subject.matches(':host:has(.descendant):has(> .child) .subject'));
+      shadowChild.classList.remove('child');
+      shadowDesc.classList.remove('descendant');
+      // Add .child to #shadow_child
+      shadowChild.classList.add('child');
+      assert.isTrue(subject.matches(':host:has(> .child) .subject'));
+      // Add .grand_child to #shadow_descendant
+      shadowDesc.classList.add('grand_child');
+      assert.isTrue(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'));
+      // Add .host_context to #host
+      host.classList.add('host_context');
+      assert.isTrue(subject.matches(':host(.host_context):has(> .child > .grand_child) .subject'));
+      // Add .descendant to #shadow_descendant.grand_child
+      shadowDesc.classList.add('descendant');
+      assert.isTrue(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'));
+      shadowDesc.classList.remove('descendant');
+      shadowDesc.classList.remove('grand_child');
+      shadowChild.classList.remove('child');
+      // Add .child to #shadow_descendant
+      shadowDesc.classList.add('child');
+      assert.isFalse(subject.matches(':host:has(.descendant) .subject'));
+      assert.isFalse(subject.matches(':host:has(> .child) .subject'));
+      assert.isFalse(subject.matches(':host:has(~ .sibling) .subject'));
+      assert.isFalse(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'));
+      assert.isFalse(subject.matches(':host:has(.descendant):has(> .child) .subject'));
+      assert.isFalse(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'));
+      assert.isFalse(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'));
+      // Insert #first_child.descendant to shadow root
+      const div1 = document.createElement('div');
+      div1.id = 'first_child';
+      div1.classList.add('descendant');
+      shadow.insertBefore(div1, shadow.firstChild);
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      div1.remove();
+      // Insert #last_child.descendant to shadow root
+      const div2 = document.createElement('div');
+      div2.id = 'last_child';
+      div2.classList.add('descendant');
+      shadow.insertBefore(div2, null);
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      div2.remove();
+      // Insert #child_in_middle.descendant before #shadow_child
+      const div3 = document.createElement('div');
+      div3.id = 'child_in_middle.descendant';
+      div3.classList.add('descendant');
+      shadow.insertBefore(div3, shadowChild);
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      div3.remove();
+      // Insert #grand_child.descendant before #shadow_descendant
+      const div4 = document.createElement('div');
+      div4.id = 'grand_child';
+      div4.classList.add('descendant');
+      shadowChild.insertBefore(div4, shadowDesc);
+      assert.isTrue(subject.matches(':host:has(.descendant) .subject'));
+      div4.remove();
+    });
+  });
+
+  describe('css/selectors/invalidation/host-has-shadow-tree-element-at-subject-position.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div class="ancestor host_context">
+          <div id="host" class="ancestor">
+            <div class="child">
+              <div class="descendant"></div>
+            </div>
+          </div>
+          <div class="sibling"></div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          :host:has(.descendant) { color: green; }
+          :host:has(> .child) { color: blue; }
+          :host:has(~ .sibling) { color: yellow; }
+          :host:has(:is(.ancestor .descendant)) { color: purple; }
+          :host:has(.descendant):has(> .child) { color: pink; }
+          :host-context(.host_context):has(> .child > .grand_child) { color: ivory; }
+          :host(.host_context):has(> .child > .grand_child) { color: skyblue; }
+          :host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) { color: lightgreen; }
+        </style>
+        <div id="shadow_child">
+          <div id="shadow_descendant"></div>
+        </div>
+      `;
+      const shadowChild = shadow.getElementById('shadow_child');
+      const shadowDesc = shadow.getElementById('shadow_descendant');
+      // Initial
+      assert.isFalse(host.matches(':host:has(.descendant)'));
+      assert.isFalse(host.matches(':host:has(> .child)'));
+      assert.isFalse(host.matches(':host:has(~ .sibling)'));
+      assert.isFalse(host.matches(':host:has(:is(.ancestor .descendant))'));
+      assert.isFalse(host.matches(':host:has(.descendant):has(> .child)'));
+      assert.isFalse(host.matches(':host-context(.host_context):has(> .child > .grand_child)'));
+      assert.isFalse(host.matches(':host(.host_context):has(> .child > .grand_child)'));
+      assert.isFalse(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'));
+      // Add .descendant to #shadow_child
+      shadowChild.classList.add('descendant');
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      shadowChild.classList.remove('descendant');
+      // Add .descendant to #shadow_descendant
+      shadowDesc.classList.add('descendant');
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      // Add .ancestor to #shadow_child:has(.descendant)
+      shadowChild.classList.add('ancestor');
+      assert.isTrue(host.matches(':host:has(:is(.ancestor .descendant))'));
+      shadowChild.classList.remove('ancestor');
+      // Add .child to #shadow_child:has(.descendant)
+      shadowChild.classList.add('child');
+      assert.isTrue(host.matches(':host:has(.descendant):has(> .child)'));
+      shadowChild.classList.remove('child');
+      shadowDesc.classList.remove('descendant');
+      // Add .child to #shadow_child
+      shadowChild.classList.add('child');
+      assert.isTrue(host.matches(':host:has(> .child)'));
+      // Add .grand_child to #shadow_descendant
+      shadowDesc.classList.add('grand_child');
+      assert.isTrue(host.matches(':host-context(.host_context):has(> .child > .grand_child)'));
+      // Add .host_context to #host
+      host.classList.add('host_context');
+      assert.isTrue(host.matches(':host(.host_context):has(> .child > .grand_child)'));
+      // Add .descendant to #shadow_descendant.grand_child
+      shadowDesc.classList.add('descendant');
+      assert.isTrue(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'));
+      shadowDesc.classList.remove('descendant');
+      shadowDesc.classList.remove('grand_child');
+      shadowChild.classList.remove('child');
+      // Add .child to #shadow_descendant
+      shadowDesc.classList.add('child');
+      assert.isFalse(host.matches(':host:has(.descendant)'));
+      assert.isFalse(host.matches(':host:has(> .child)'));
+      assert.isFalse(host.matches(':host:has(~ .sibling)'));
+      assert.isFalse(host.matches(':host:has(:is(.ancestor .descendant))'));
+      assert.isFalse(host.matches(':host:has(.descendant):has(> .child)'));
+      assert.isFalse(host.matches(':host-context(.host_context):has(> .child > .grand_child)'));
+      assert.isFalse(host.matches(':host(.host_context):has(> .child > .grand_child)'));
+      assert.isFalse(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'));
+      shadowDesc.classList.remove('child');
+      // Insert #first_child.descendant to shadow root
+      const div1 = document.createElement('div');
+      div1.id = 'first_child';
+      div1.classList.add('descendant');
+      shadow.insertBefore(div1, shadow.firstChild);
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      div1.remove();
+      // Insert #last_child.descendant to shadow root
+      const div2 = document.createElement('div');
+      div2.id = 'last_child';
+      div2.classList.add('descendant');
+      shadow.insertBefore(div2, null);
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      div2.remove();
+      // Insert #child_in_middle.descendant before #shadow_child
+      const div3 = document.createElement('div');
+      div3.id = 'child_in_middle';
+      div3.classList.add('descendant');
+      shadow.insertBefore(div3, shadowChild);
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      div3.remove();
+      // Insert #grand_child.descendant before #shadow_descendant
+      const div4 = document.createElement('div');
+      div4.id = 'grand_child';
+      div4.classList.add('descendant');
+      shadowChild.insertBefore(div4, shadowDesc);
+      assert.isTrue(host.matches(':host:has(.descendant)'));
+      div4.remove();
+    });
+  });
+
   describe('css/selectors/invalidation/host-pseudo-class-in-has.html', () => {
     it('should get matched node(s)', () => {
       const html = `

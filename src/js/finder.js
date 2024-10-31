@@ -746,8 +746,8 @@ export class Finder {
    */
   _matchLogicalPseudoFunc(astData, node, opt) {
     const { astName, branches, twigBranches } = astData;
-    const isShadowRoot = opt.isShadowRoot ||
-      (this.#shadow && node.nodeType === DOCUMENT_FRAGMENT_NODE);
+    const isShadowRoot = (opt.isShadowRoot || this.#shadow) &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE;
     if (astName === 'has') {
       let bool;
       for (const leaves of branches) {
@@ -1942,7 +1942,7 @@ export class Finder {
     const leafName = unescapeSelector(leaf.name);
     let nodes = new Set();
     let pending = false;
-    if (this.#shadow) {
+    if (this.#shadow || baseNode.nodeType !== ELEMENT_NODE) {
       pending = true;
     } else {
       switch (leafType) {
@@ -2427,11 +2427,37 @@ export class Finder {
       default: {
         if (targetType !== TARGET_LINEAL &&
             (leafName === 'host' || leafName === 'host-context')) {
+          let shadowRoot;
           if (this.#shadow &&
               this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            const node = this._matchShadowHostPseudoClass(leaf, this.#node);
-            if (node) {
-              nodes.push(node);
+            shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
+          } else if (compound && this.#node.nodeType === ELEMENT_NODE) {
+            shadowRoot =
+              this._matchShadowHostPseudoClass(leaf, this.#node.shadowRoot);
+          }
+          if (shadowRoot) {
+            let bool;
+            if (compound) {
+              for (const item of filterLeaves) {
+                if (/^host(?:-context)?$/.test(item.name)) {
+                  const node =
+                    this._matchShadowHostPseudoClass(item, shadowRoot);
+                  bool = node === shadowRoot;
+                } else if (item.name === 'has') {
+                  bool = this._matchPseudoClassSelector(item, shadowRoot, {})
+                    .has(shadowRoot);
+                } else {
+                  bool = false;
+                }
+                if (!bool) {
+                  break;
+                }
+              }
+            } else {
+              bool = true;
+            }
+            if (bool) {
+              nodes.push(shadowRoot);
               filtered = true;
             }
           }

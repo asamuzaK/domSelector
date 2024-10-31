@@ -12509,6 +12509,187 @@ describe('Finder', () => {
       assert.isTrue(res.filtered, 'filtered');
       assert.isFalse(res.pending, 'pending');
     });
+
+    it('should get matched node', () => {
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host(#baz) div', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [twig] }]] = finder._correspond(':host(#baz) div');
+      const res = finder._findEntryNodes(twig, 'first');
+      assert.deepEqual([...res.nodes], [
+        node
+      ], 'nodes');
+      assert.isFalse(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+          <template id="template">
+            <div>
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host(#baz)', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [twig] }]] = finder._correspond(':host(#baz)');
+      const res = finder._findEntryNodes(twig, 'first');
+      assert.deepEqual([...res.nodes], [
+        node
+      ], 'nodes');
+      assert.isFalse(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
+
+    it('should not match', () => {
+      const html = `
+          <template id="template">
+            <div id="foobar">
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host:is(#baz)', node);
+      const [[{ branch: [twig] }]] = finder._correspond(':host:is(#baz)');
+      const res = finder._findEntryNodes(twig, 'self');
+      assert.deepEqual([...res.nodes], [], 'nodes');
+      assert.isTrue(res.compound, 'compound');
+      assert.isFalse(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+          <template id="template">
+            <div id="foobar">
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host:has(#foobar)', host);
+      const [[{ branch: [twig] }]] = finder._correspond(':host:has(#foobar)');
+      const res = finder._findEntryNodes(twig, 'self');
+      assert.deepEqual([...res.nodes], [
+        node
+      ], 'nodes');
+      assert.isTrue(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+          <template id="template">
+            <div id="foobar">
+              <slot id="foo" name="bar">Foo</slot>
+            </div>
+          </template>
+          <my-element id="baz">
+            <span id="qux" slot="foo">Qux</span>
+          </my-element>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const host = document.getElementById('baz');
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host:has(#foobar):host-context(#div0)', host);
+      const [[{ branch: [twig] }]] =
+        finder._correspond(':host:has(#foobar):host-context(#div0)');
+      const res = finder._findEntryNodes(twig, 'self');
+      assert.deepEqual([...res.nodes], [
+        node
+      ], 'nodes');
+      assert.isTrue(res.compound, 'compound');
+      assert.isTrue(res.filtered, 'filtered');
+      assert.isFalse(res.pending, 'pending');
+    });
   });
 
   describe('collect nodes', () => {

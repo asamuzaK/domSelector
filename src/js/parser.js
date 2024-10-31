@@ -9,8 +9,9 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, NTH,
-  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR, TYPE_SELECTOR
+  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, KEY_SHADOW_HOST,
+  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR,
+  TYPE_SELECTOR
 } from './constant.js';
 const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
@@ -191,6 +192,9 @@ export const walkAST = (ast = {}) => {
             if (node.name === 'has') {
               info.set('hasHasPseudoFunc', true);
             }
+          } else if (KEY_SHADOW_HOST.includes(node.name) &&
+                     Array.isArray(node.children) && node.children.length) {
+            info.set('hasNestedSelector', true);
           }
           break;
         }
@@ -229,6 +233,24 @@ export const walkAST = (ast = {}) => {
                 if (branches.has(greatGrandChildren)) {
                   branches.delete(greatGrandChildren);
                 }
+              }
+            }
+          }
+        } else if (node.type === PS_CLASS_SELECTOR &&
+                   KEY_SHADOW_HOST.includes(node.name) &&
+                   Array.isArray(node.children) && node.children.length) {
+          const itemList = list.filter(i => {
+            const { children, name, type } = i;
+            const res =
+              type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.includes(name) &&
+              Array.isArray(children) && children.length;
+            return res;
+          });
+          for (const { children } of itemList) {
+            // Selector
+            for (const { children: grandChildren } of children) {
+              if (branches.has(grandChildren)) {
+                branches.delete(grandChildren);
               }
             }
           }
