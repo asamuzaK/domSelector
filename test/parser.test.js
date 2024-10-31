@@ -7385,6 +7385,128 @@ describe('walk AST', () => {
                     {
                       loc: null,
                       name: 'foo',
+                      type: CLASS_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              name: 'host',
+              type: PS_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'foo',
+                    type: CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            name: 'host',
+            type: PS_CLASS_SELECTOR
+          }
+        ]
+      ],
+      info: {
+        hasNestedSelector: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: 'foo',
+                      type: CLASS_SELECTOR
+                    }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
+              loc: null,
+              name: 'host-context',
+              type: PS_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: 'foo',
+                    type: CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            name: 'host-context',
+            type: PS_CLASS_SELECTOR
+          }
+        ]
+      ],
+      info: {
+        hasNestedSelector: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      loc: null,
+                      name: 'foo',
                       type: TYPE_SELECTOR
                     }
                   ],

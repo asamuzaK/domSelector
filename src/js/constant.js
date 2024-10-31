@@ -107,3 +107,4 @@ export const KEY_MODIFIER = Object.freeze([
   'Alt', 'AltGraph', 'CapsLock', 'Control', 'Fn', 'FnLock', 'Hyper', 'Meta',
   'NumLock', 'ScrollLock', 'Shift', 'Super', 'Symbol', 'SymbolLock'
 ]);
+export const KEY_SHADOW_HOST = Object.freeze(['host', 'host-context']);
