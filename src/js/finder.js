@@ -1931,7 +1931,7 @@ export class Finder {
    * find descendant nodes
    * @private
    * @param {Array.<object>} leaves - AST leaves
-   * @param {object} baseNode - base Element node
+   * @param {object} baseNode - base Element node or Element.shadowRoot
    * @param {object} opt - options
    * @returns {object} - collection of nodes and pending state
    */
