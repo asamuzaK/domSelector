@@ -336,8 +336,9 @@ export const isContentEditable = node => {
         return true;
       }
       case 'plaintext-only': {
-        // FIXME: the element's raw text is editable,
-        // but rich text formatting is disabled
+        // FIXME:
+        // @see https://github.com/w3c/editing/issues/470
+        // @see https://github.com/whatwg/html/issues/10651
         return true;
       }
       case 'false': {
