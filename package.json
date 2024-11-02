@@ -23,7 +23,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.2.17",
+    "@asamuzakjp/nwsapi": "^2.2.19",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.0.1",
     "is-potential-custom-element-name": "^1.0.1"

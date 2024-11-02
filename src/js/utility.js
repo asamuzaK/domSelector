@@ -328,8 +328,13 @@ export const isContentEditable = node => {
     return node.isContentEditable;
   } else if (node.ownerDocument.designMode === 'on') {
     return true;
-  } else if (node.hasAttribute('contenteditable')) {
-    const attr = node.getAttribute('contenteditable');
+  } else {
+    let attr;
+    if (node.hasAttribute('contenteditable')) {
+      attr = node.getAttribute('contenteditable');
+    } else {
+      attr = 'inherit';
+    }
     switch (attr) {
       case '':
       case 'true': {
@@ -345,20 +350,13 @@ export const isContentEditable = node => {
         return false;
       }
       default: {
-        let parent = node.parentNode;
-        let bool = false;
-        while (parent) {
-          if (isContentEditable(parent)) {
-            bool = true;
-            break;
-          }
-          parent = parent.parentNode;
+        if (node?.parentNode?.nodeType === ELEMENT_NODE) {
+          return isContentEditable(node.parentNode);
         }
-        return bool;
+        return false;
       }
     }
   }
-  return false;
 };
 
 /**
