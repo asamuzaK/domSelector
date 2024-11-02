@@ -3291,6 +3291,21 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/invalidation/any-link-pseudo.html', () => {
+    it('should get matched node', () => {
+      const html = '<a id="link">This link should have a green background.</a>';
+      document.body.innerHTML = html;
+      const link = document.getElementById('link');
+      assert.isFalse(link.matches('#link:any-link'));
+      link.setAttribute('href', '');
+      assert.isTrue(link.matches('#link:any-link'));
+      link.setAttribute('href', 'not-visited.html');
+      assert.isTrue(link.matches('#link:any-link'));
+      link.removeAttribute('href');
+      assert.isFalse(link.matches('#link:any-link'));
+    });
+  });
+
   describe('css/selectors/invalidation/attribute.html', () => {
     it('should get matched node', () => {
       const html = `
@@ -4685,6 +4700,168 @@ describe('local wpt test cases', () => {
       assert.isTrue(subject4.matches('.container'));
       assert.isFalse(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'));
       assert.isFalse(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/negated-always-matches-negated-first-of-type-when-ancestor-changes.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          .some-hidden > :not(.always-matches:not(:first-of-type)) {
+            display: none;
+          }
+          .to-show {
+            color: green;
+          }
+          .to-hide {
+            color: red;
+          }
+        </style>
+        <div id="ancestor">
+          <div id="div1" class="to-hide always-matches">Hidden</div>
+          <div id="div2" class="to-show always-matches">Shown</div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.documentElement;
+      root.classList.add('reftest-wait');
+      await sleep();
+      const ancestor = document.getElementById('ancestor');
+      const div1 = document.getElementById('div1');
+      const div2 = document.getElementById('div2');
+      ancestor.classList.add("some-hidden");
+      root.classList.remove('reftest-wait');
+      assert.isTrue(div1.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'));
+      assert.isFalse(div2.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/negated-is-always-matches-negated-first-of-type-when-ancestor-changes.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          .some-hidden > :not(:is(.always-matches, :not(:first-of-type))) {
+            display: none;
+          }
+          .to-show {
+            color: green;
+          }
+        </style>
+        <div id="ancestor">
+          <div id="div1" class="to-show always-matches">Shown</div>
+          <div id="div2" class="to-show always-matches">Shown</div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.documentElement;
+      root.classList.add('reftest-wait');
+      await sleep();
+      const ancestor = document.getElementById('ancestor');
+      const div1 = document.getElementById('div1');
+      const div2 = document.getElementById('div2');
+      ancestor.classList.add("some-hidden");
+      root.classList.remove('reftest-wait');
+      assert.isFalse(div1.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'));
+      assert.isFalse(div2.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/negated-is-never-matches-negated-first-of-type-when-ancestor-changes.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          .some-hidden > :not(:is(.never-matches, :not(:first-of-type))) {
+            display: none;
+          }
+          .to-show {
+            color: green;
+          }
+          .to-hide {
+            color: red;
+          }
+        </style>
+        <div id="ancestor">
+          <div id="div1" class="to-hide">Hidden</div>
+          <div id="div2" class="to-show">Shown</div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.documentElement;
+      root.classList.add('reftest-wait');
+      await sleep();
+      const ancestor = document.getElementById('ancestor');
+      const div1 = document.getElementById('div1');
+      const div2 = document.getElementById('div2');
+      ancestor.classList.add("some-hidden");
+      root.classList.remove('reftest-wait');
+      assert.isTrue(div1.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'));
+      assert.isFalse(div2.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/negated-negated-first-of-type-when-ancestor-changes.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          .some-hidden > :not(:not(:first-of-type)) {
+            display: none;
+          }
+          .to-show {
+            color: green;
+          }
+          .to-hide {
+            color: red;
+          }
+        </style>
+        <div id="ancestor">
+          <div id="div1" class="to-hide">Hidden</div>
+          <div id="div2" class="to-show">Shown</div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.documentElement;
+      root.classList.add('reftest-wait');
+      await sleep();
+      const ancestor = document.getElementById('ancestor');
+      const div1 = document.getElementById('div1');
+      const div2 = document.getElementById('div2');
+      ancestor.classList.add("some-hidden");
+      root.classList.remove('reftest-wait');
+      assert.isTrue(div1.matches('.some-hidden > :not(:not(:first-of-type))'));
+      assert.isFalse(div2.matches('.some-hidden > :not(:not(:first-of-type))'));
+    });
+  });
+
+  describe('css/selectors/invalidation/negated-never-matches-negated-first-of-type-when-ancestor-changes.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          .some-hidden > :not(.never-matches:not(:first-of-type)) {
+            display: none;
+          }
+          .to-show {
+            color: green;
+          }
+          .to-hide {
+            color: red;
+          }
+        </style>
+        <div id="ancestor">
+          <div id="div1" class="to-hide">Hidden</div>
+          <div id="div2" class="to-hide">Hidden</div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.documentElement;
+      root.classList.add('reftest-wait');
+      await sleep();
+      const ancestor = document.getElementById('ancestor');
+      const div1 = document.getElementById('div1');
+      const div2 = document.getElementById('div2');
+      ancestor.classList.add("some-hidden");
+      root.classList.remove('reftest-wait');
+      assert.isTrue(div1.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'));
+      assert.isTrue(div2.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'));
     });
   });
 
