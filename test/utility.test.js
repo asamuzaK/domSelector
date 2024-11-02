@@ -2042,12 +2042,12 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func(':enabled');
-      assert.isTrue(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
     it('should get false', () => {
       const res = func(':disabled');
-      assert.isTrue(res, 'result');
+      assert.isFalse(res, 'result');
     });
 
     it('should get false', () => {
