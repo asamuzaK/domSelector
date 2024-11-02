@@ -5676,7 +5676,7 @@ describe('local wpt test cases', () => {
       assert.isFalse(span.matches(':read-write + span'));
       await sleep();
       input.type = '';
-      assert.isTrue(span.matches(':read-write + span'))
+      assert.isTrue(span.matches(':read-write + span'));
     });
   });
 
