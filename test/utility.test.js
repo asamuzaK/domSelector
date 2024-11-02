@@ -2081,6 +2081,11 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
+      const res = func(':visited');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
       const res = func(':after');
       assert.isFalse(res, 'result');
     });
