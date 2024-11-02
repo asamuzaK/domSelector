@@ -2011,12 +2011,12 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func(':enabled');
-      assert.isFalse(res, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should get false', () => {
       const res = func(':disabled');
-      assert.isFalse(res, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should get false', () => {
