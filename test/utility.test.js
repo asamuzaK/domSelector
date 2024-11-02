@@ -1008,6 +1008,17 @@ describe('utility functions', () => {
     });
 
     it('should get result', () => {
+      const res = func(document);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1065,6 +1076,15 @@ describe('utility functions', () => {
 
     it('should get result', () => {
       const node = document.createElement('div');
+      node.setAttribute('contenteditable', 'foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
       node.setAttribute('contenteditable', 'inherit');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1075,6 +1095,17 @@ describe('utility functions', () => {
     it('should get result', () => {
       const node1 = document.createElement('div');
       node1.setAttribute('contenteditable', 'inherit');
+      const node2 = document.createElement('div');
+      node2.setAttribute('contenteditable', 'true');
+      node2.appendChild(node1);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node2);
+      const res = func(node1);
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get result', () => {
+      const node1 = document.createElement('div');
       const node2 = document.createElement('div');
       node2.setAttribute('contenteditable', 'true');
       node2.appendChild(node1);
@@ -2011,12 +2042,22 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func(':enabled');
-      assert.isFalse(res, 'result');
+      assert.isTrue(res, 'result');
     });
 
     it('should get false', () => {
       const res = func(':disabled');
-      assert.isFalse(res, 'result');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':read-only');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':read-write');
+      assert.isTrue(res, 'result');
     });
 
     it('should get false', () => {
@@ -2037,6 +2078,11 @@ describe('utility functions', () => {
     it('should get true', () => {
       const res = func(':target');
       assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':visited');
+      assert.isFalse(res, 'result');
     });
 
     it('should get false', () => {

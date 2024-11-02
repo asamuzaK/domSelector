@@ -4729,7 +4729,7 @@ describe('local wpt test cases', () => {
       const ancestor = document.getElementById('ancestor');
       const div1 = document.getElementById('div1');
       const div2 = document.getElementById('div2');
-      ancestor.classList.add("some-hidden");
+      ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
       assert.isTrue(div1.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'));
       assert.isFalse(div2.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'));
@@ -4759,7 +4759,7 @@ describe('local wpt test cases', () => {
       const ancestor = document.getElementById('ancestor');
       const div1 = document.getElementById('div1');
       const div2 = document.getElementById('div2');
-      ancestor.classList.add("some-hidden");
+      ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
       assert.isFalse(div1.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'));
       assert.isFalse(div2.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'));
@@ -4792,7 +4792,7 @@ describe('local wpt test cases', () => {
       const ancestor = document.getElementById('ancestor');
       const div1 = document.getElementById('div1');
       const div2 = document.getElementById('div2');
-      ancestor.classList.add("some-hidden");
+      ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
       assert.isTrue(div1.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'));
       assert.isFalse(div2.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'));
@@ -4825,7 +4825,7 @@ describe('local wpt test cases', () => {
       const ancestor = document.getElementById('ancestor');
       const div1 = document.getElementById('div1');
       const div2 = document.getElementById('div2');
-      ancestor.classList.add("some-hidden");
+      ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
       assert.isTrue(div1.matches('.some-hidden > :not(:not(:first-of-type))'));
       assert.isFalse(div2.matches('.some-hidden > :not(:not(:first-of-type))'));
@@ -4858,7 +4858,7 @@ describe('local wpt test cases', () => {
       const ancestor = document.getElementById('ancestor');
       const div1 = document.getElementById('div1');
       const div2 = document.getElementById('div2');
-      ancestor.classList.add("some-hidden");
+      ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
       assert.isTrue(div1.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'));
       assert.isTrue(div2.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'));
@@ -5563,6 +5563,44 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/selectors/pseudo-enabled-disabled.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <div id="container">
+          <button id="button_enabled"></button>
+          <button id="button_disabled" disabled></button>
+          <input id="input_enabled">
+          <input id="input_disabled" disabled>
+          <select id="select_enabled"></select>
+          <select id="select_disabled" disabled></select>
+          <textarea id="textarea_enabled"></textarea>
+          <textarea id="textarea_disabled" disabled></textarea>
+          <span id="incapable"></span>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const container = document.getElementById('container');
+      const matchEnabled = container.querySelectorAll(':enabled');
+      for (const element of matchEnabled) {
+        assert.isTrue(element.id.endsWith('_enabled'), element.id);
+      }
+      const matchDisabled = container.querySelectorAll(':disabled');
+      for (const element of matchDisabled) {
+        assert.isTrue(element.id.endsWith('_disabled'), element.id);
+      }
+      const matchNotDisabled = container.querySelectorAll(':not(:disabled)');
+      for (const element of matchNotDisabled) {
+        assert.isTrue(element.id.endsWith('_enabled') ||
+                      element.id === 'incapable', element.id);
+      }
+      const matchNotEnabled = container.querySelectorAll(':not(:enabled)');
+      for (const element of matchNotEnabled) {
+        assert.isTrue(element.id.endsWith('_disabled') ||
+                      element.id === 'incapable', element.id);
+      }
+    });
+  });
+
   describe('css/selectors/scope-selector.html', () => {
     it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
       const html = '<div id=\'shadowHost\'></div>';
@@ -5618,6 +5656,27 @@ describe('local wpt test cases', () => {
       assert.isTrue(test_element_with_ns.matches('\u212A'));
       assert.isNull(container.querySelector('k'));
       assert.isNull(container.querySelector('\u212A'.toLowerCase()));
+    });
+  });
+
+  describe('css/selectors/selector-read-write-type-change-001.html', () => {
+    it('should get matched node(s)', async () => {
+      const html = `
+        <style>
+          span { color: green; }
+          :read-write + span { color: red }
+        </style>
+        <input id="input" required><span id="span">This should be green</span>
+      `;
+      document.body.innerHTML = html;
+      const input = document.getElementById('input');
+      const span = document.getElementById('span');
+      await sleep();
+      input.type = 'button';
+      assert.isFalse(span.matches(':read-write + span'));
+      await sleep();
+      input.type = '';
+      assert.isTrue(span.matches(':read-write + span'));
     });
   });
 
