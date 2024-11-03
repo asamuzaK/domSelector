@@ -890,6 +890,7 @@ describe('patched JSDOM', () => {
       const res = li1.matches(':nth-child(-n)');
       assert.isFalse(res, 'result');
     });
+
     it('should match', () => {
       const node = document.createElement('div');
       node.classList.add('qux');
@@ -909,6 +910,19 @@ describe('patched JSDOM', () => {
       node.classList.add('bar');
       const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
       assert.isFalse(res, 'result');
+    });
+
+    it('should get results', () => {
+      const div = document.createElement('div');
+      div.setAttribute('contenteditable', 'true');
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      p.appendChild(span);
+      div.appendChild(p);
+      assert.isFalse(div.matches(':read-only'), 'not match :read-only');
+      assert.isTrue(div.matches(':read-write'), 'matches :read-write');
+      assert.isFalse(span.matches(':read-only'), 'not match :read-only');
+      assert.isTrue(span.matches(':read-write'), 'matches :read-write');
     });
   });
 
