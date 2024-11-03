@@ -23,7 +23,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.2.23",
+    "@asamuzakjp/nwsapi": "^2.2.24",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.0.1",
     "is-potential-custom-element-name": "^1.0.1"
@@ -64,5 +64,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.2.1"
+  "version": "6.2.2"
 }
