@@ -14,7 +14,9 @@ import * as happyDom from 'happy-dom';
 import * as linkedom from 'linkedom';
 import { DOMSelector } from '../src/index.js';
 
-let document, happyDoc, linkedDoc, patchedDoc, selectors, total;
+let document, reflowNode, patchedDoc, patchedReflow;
+let happyDoc, happyReflow, linkedDoc, linkedReflow;
+let selectors, total;
 const errors = new Map();
 
 const prepareDom = () => {
@@ -36,6 +38,7 @@ const prepareDom = () => {
   /* prepare jsdom */
   const { window } = new JSDOM(domstr);
   document = window.document;
+  reflowNode = document.createElement('div');
 
   /* prepare happy-dom */
   const { window: happyWin } = new happyDom.Window({
@@ -45,9 +48,11 @@ const prepareDom = () => {
   });
 
   happyDoc = new happyWin.DOMParser().parseFromString(domstr, 'text/html');
+  happyReflow = happyDoc.createElement('div');
 
   /* prepare linkedom */
   linkedDoc = linkedom.parseHTML(domstr).document;
+  linkedReflow = linkedDoc.createElement('div');
 
   /* prepare patched jsdom */
   const { window: patchedWin } = new JSDOM(domstr, {
@@ -123,26 +128,33 @@ const prepareDom = () => {
   });
 
   patchedDoc = patchedWin.document;
+  patchedReflow = patchedDoc.createElement('div');
 };
 
 const benchQuerySelectorAll = api => {
-  let node;
+  let doc, reflow;
   switch (api) {
     case 'jsdom':
-      node = document;
+      doc = document;
+      reflow = reflowNode;
       break;
     case 'happydom':
-      node = happyDoc;
+      doc = happyDoc;
+      reflow = happyReflow;
       break;
     case 'linkedom':
-      node = linkedDoc;
+      doc = linkedDoc;
+      reflow = linkedReflow;
       break;
     default:
-      node = patchedDoc;
+      doc = patchedDoc;
+      reflow = patchedReflow;
   }
   for (const selector of selectors) {
     try {
-      node.querySelectorAll(selector);
+      doc.body.appendChild(reflow);
+      doc.querySelectorAll(selector);
+      doc.body.removeChild(reflow);
     } catch (e) {
       errors.set(selector, [selector, e.message]);
     }
@@ -150,23 +162,29 @@ const benchQuerySelectorAll = api => {
 };
 
 const benchQuerySelector = api => {
-  let node;
+  let doc, reflow;
   switch (api) {
     case 'jsdom':
-      node = document;
+      doc = document;
+      reflow = reflowNode;
       break;
     case 'happydom':
-      node = happyDoc;
+      doc = happyDoc;
+      reflow = happyReflow;
       break;
     case 'linkedom':
-      node = linkedDoc;
+      doc = linkedDoc;
+      reflow = linkedReflow;
       break;
     default:
-      node = patchedDoc;
+      doc = patchedDoc;
+      reflow = patchedReflow;
   }
   for (const selector of selectors) {
     try {
-      node.querySelector(selector);
+      doc.body.appendChild(reflow);
+      doc.querySelector(selector);
+      doc.body.removeChild(reflow);
     } catch (e) {
       errors.set(selector, [selector, e.message]);
     }

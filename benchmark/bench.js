@@ -11,8 +11,8 @@ import * as happyDom from 'happy-dom';
 import * as linkedom from 'linkedom';
 import { DOMSelector } from '../src/index.js';
 
-let document, targetNode, patchedDoc, patchedTarget;
-let happyDoc, happyTarget, linkedDoc, linkedTarget;
+let document, targetNode, reflowNode, patchedDoc, patchedTarget, patchedReflow;
+let happyDoc, happyTarget, happyReflow, linkedDoc, linkedTarget, linkedReflow;
 
 const prepareDom = () => {
   const doctype = '<!doctype html>';
@@ -63,6 +63,7 @@ const prepareDom = () => {
   document.body.append(container);
 
   targetNode = document.getElementById(targetId);
+  reflowNode = document.createElement('div');
 
   /* dom string */
   const domstr = new window.XMLSerializer().serializeToString(document);
@@ -76,10 +77,12 @@ const prepareDom = () => {
 
   happyDoc = new happyWin.DOMParser().parseFromString(domstr, 'text/html');
   happyTarget = happyDoc.getElementById(targetId);
+  happyReflow = happyDoc.createElement('div');
 
   /* prepare linkedom */
   linkedDoc = linkedom.parseHTML(domstr).document;
   linkedTarget = linkedDoc.getElementById(targetId);
+  linkedReflow = linkedDoc.createElement('div');
 
   /* prepare patched jsdom */
   const { window: patchedWin } = new JSDOM(domstr, {
@@ -156,6 +159,7 @@ const prepareDom = () => {
 
   patchedDoc = patchedWin.document;
   patchedTarget = patchedDoc.getElementById(targetId);
+  patchedReflow = patchedDoc.createElement('div');
 };
 
 /* selectors */
@@ -181,74 +185,102 @@ const selectors = [
 
 /* matcher tests */
 const elementMatchesRandom = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const i = Math.floor(Math.random() * 10);
   const id = `${result}${i}-9-9`;
+  doc.body.appendChild(reflow);
   const res = doc.getElementById(id).matches(selector);
+  doc.body.removeChild(reflow);
   if (res !== true) {
     throw new Error('result does not match.');
   }
 };
 
 const elementMatchesRandom2 = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const i = Math.round(Math.random()) * 4 + 5;
   const id = `${result}${i}-9-9`;
+  doc.body.appendChild(reflow);
   const res = doc.getElementById(id).matches(selector);
+  doc.body.removeChild(reflow);
   if (res !== true) {
     throw new Error('result does not match.');
   }
 };
 
 const elementMatches = (api, selector, result) => {
-  let node;
+  let node, doc, reflow;
   if (api === 'jsdom') {
     node = targetNode;
+    doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     node = happyTarget;
+    doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     node = linkedTarget;
+    doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     node = patchedTarget;
+    doc = patchedDoc;
+    reflow = patchedReflow;
   }
+  doc.body.appendChild(reflow);
   const res = node.matches(selector);
+  doc.body.removeChild(reflow);
   if (res !== result) {
     throw new Error('result does not match.');
   }
 };
 
 const elementClosestRandom = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const i = Math.floor(Math.random() * 10);
   const id = `p${i}-9-9`;
+  doc.body.appendChild(reflow);
   const res = doc.getElementById(id).closest(selector);
+  doc.body.removeChild(reflow);
   switch (result) {
     case 'container': {
       if (res?.id !== result) {
@@ -271,19 +303,25 @@ const elementClosestRandom = (api, selector, result) => {
 };
 
 const elementClosestRandom2 = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const i = Math.round(Math.random()) * 4 + 5;
   const id = `p${i}-9-9`;
+  doc.body.appendChild(reflow);
   const res = doc.getElementById(id).closest(selector);
+  doc.body.removeChild(reflow);
   switch (result) {
     case 'container': {
       if (res?.id !== result) {
@@ -306,90 +344,124 @@ const elementClosestRandom2 = (api, selector, result) => {
 };
 
 const elementClosest = (api, selector, result) => {
-  let node;
+  let node, doc, reflow;
   if (api === 'jsdom') {
     node = targetNode;
+    doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     node = happyTarget;
+    doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     node = linkedTarget;
+    doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     node = patchedTarget;
+    doc = patchedDoc;
+    reflow = patchedReflow;
   }
+  doc.body.appendChild(reflow);
   const res = node.closest(selector);
+  doc.body.removeChild(reflow);
   if (res?.id !== result) {
     throw new Error('result does not match.');
   }
 };
 
 const parentNodeQuerySelectorRandom = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const i = Math.floor(Math.random() * 10);
   const id = `box${i}`;
   const node = doc.getElementById(id);
+  doc.body.appendChild(reflow);
   const res = node.querySelector(selector);
+  doc.body.removeChild(reflow);
   if (res?.id !== `${result}${i}-0-0`) {
     throw new Error('result does not match.');
   }
 };
 
 const parentNodeQuerySelectorRandom2 = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const node = Math.round(Math.random()) > 0 ? doc : doc.body;
+  doc.body.appendChild(reflow);
   const res = node.querySelector(selector);
+  doc.body.removeChild(reflow);
   if (res?.id !== result) {
     throw new Error('result does not match.');
   }
 };
 
 const parentNodeQuerySelector = (api, selector, result) => {
-  let node;
+  let doc, reflow;
   if (api === 'jsdom') {
-    node = document;
+    doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
-    node = happyDoc;
+    doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
-    node = linkedDoc;
+    doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
-    node = patchedDoc;
+    doc = patchedDoc;
+    reflow = patchedReflow;
   }
-  const res = node.querySelector(selector);
+  doc.body.appendChild(reflow);
+  const res = doc.querySelector(selector);
+  doc.body.removeChild(reflow);
   if (res?.id !== result) {
     throw new Error('result does not match.');
   }
 };
 
 const parentNodeQuerySelectorAll = (api, selector, result) => {
-  let doc;
+  let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
+    reflow = reflowNode;
   } else if (api === 'happydom') {
     doc = happyDoc;
+    reflow = happyReflow;
   } else if (api === 'linkedom') {
     doc = linkedDoc;
+    reflow = linkedReflow;
   } else {
     doc = patchedDoc;
+    reflow = patchedReflow;
   }
   const node = Math.round(Math.random()) > 0 ? doc : doc.body;
+  doc.body.appendChild(reflow);
   const res = node.querySelectorAll(selector);
+  doc.body.removeChild(reflow);
   if (res.length !== result) {
     throw new Error('result does not match.');
   }
