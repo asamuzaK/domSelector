@@ -88,9 +88,10 @@ export const resolveContent = node => {
  * traverse node tree
  * @param {object} node - node
  * @param {object} walker - tree walker
+ * @param {boolean} force - traverse only to next node
  * @returns {?object} - current node
  */
-export const traverseNode = (node, walker) => {
+export const traverseNode = (node, walker, force = false) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -100,7 +101,7 @@ export const traverseNode = (node, walker) => {
   let refNode = walker.currentNode;
   if (refNode === node) {
     return refNode;
-  } else if (refNode.contains(node)) {
+  } else if (force || refNode.contains(node)) {
     refNode = walker.nextNode();
     while (refNode) {
       if (refNode === node) {

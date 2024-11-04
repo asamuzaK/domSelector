@@ -334,6 +334,34 @@ describe('utility functions', () => {
       const res = func(node2, walker);
       assert.deepEqual(res, node2, 'result');
     });
+
+    it('should get matched node', () => {
+      const frag = document.createDocumentFragment();
+      const parent = document.createElement('ol');
+      const node = document.createElement('li');
+      const node2 = document.createElement('li');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      frag.appendChild(parent);
+      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      func(node, walker);
+      const res = func(node2, walker, true);
+      assert.deepEqual(res, node2, 'result');
+    });
+
+    it('should get null', () => {
+      const frag = document.createDocumentFragment();
+      const parent = document.createElement('ol');
+      const node = document.createElement('li');
+      const node2 = document.createElement('li');
+      parent.appendChild(node);
+      parent.appendChild(node2);
+      frag.appendChild(parent);
+      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      func(node2, walker);
+      const res = func(node, walker, true);
+      assert.isNull(res, 'result');
+    });
   });
 
   describe('is custom element', () => {
