@@ -311,7 +311,7 @@ See [benchmark](https://github.com/asamuzaK/domSelector/actions/workflows/benchm
 
 ### querySelector()
 
-|Selector|jsdom v25.0.0 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
+|Selector|jsdom v25.0.1 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
 |simple selector:<br>`querySelector('.content')`|22,063 ops/sec ±1.06%|355,912 ops/sec ±5.48%|10,150 ops/sec ±1.18%|21,154 ops/sec ±1.12%|happydom is the fastest and 16.8 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
 |compound selector:<br>`querySelector('p.content[id]:is(:last-child, :only-child)')`|8,429 ops/sec ±0.28%|362,333 ops/sec ±0.47%|9,776 ops/sec ±0.79%|8,111 ops/sec ±0.70%|happydom is the fastest and 44.7 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
