@@ -12,7 +12,7 @@ import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, KEY_INPUT_BUTTON, KEY_INPUT_EDIT,
   KEY_INPUT_TEXT, LOGICAL_COMPLEX, LOGICAL_COMPOUND, N_TH, PSEUDO_CLASS,
-  TEXT_NODE, TYPE_FROM, TYPE_TO, WALKER_FILTER
+  TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const REG_LOGICAL_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGICAL_COMPLEX})`);
@@ -75,11 +75,9 @@ export const resolveContent = node => {
       throw new TypeError(`Unexpected node ${node.nodeName}`);
     }
   }
-  const walker = document.createTreeWalker(root, WALKER_FILTER);
   return [
     document,
     root,
-    walker,
     !!shadow
   ];
 };
@@ -88,9 +86,10 @@ export const resolveContent = node => {
  * traverse node tree
  * @param {object} node - node
  * @param {object} walker - tree walker
+ * @param {boolean} force - traverse only to next node
  * @returns {?object} - current node
  */
-export const traverseNode = (node, walker) => {
+export const traverseNode = (node, walker, force = false) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -100,7 +99,7 @@ export const traverseNode = (node, walker) => {
   let refNode = walker.currentNode;
   if (refNode === node) {
     return refNode;
-  } else if (refNode.contains(node)) {
+  } else if (force || refNode.contains(node)) {
     refNode = walker.nextNode();
     while (refNode) {
       if (refNode === node) {
