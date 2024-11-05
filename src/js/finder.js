@@ -71,7 +71,6 @@ export class Finder {
   #root;
   #shadow;
   #verifyShadowHost;
-  #walker;
   #walkers;
   #warn;
   #window;
@@ -137,7 +136,6 @@ export class Finder {
     [
       this.#document,
       this.#root,
-      this.#walker,
       this.#shadow
     ] = resolveContent(node);
     [
@@ -314,14 +312,20 @@ export class Finder {
    * create tree walker
    * @private
    * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} opt - options
+   * @param {boolean} opt.force - force new tree walker
+   * @param {number} opt.whatToShow - NodeFilter whatToShow
    * @returns {object} - tree walker
    */
-  _createTreeWalker(node) {
+  _createTreeWalker(node, opt = {}) {
+    const { force = false, whatToShow = WALKER_FILTER } = opt;
     let walker;
-    if (this.#walkers.has(node)) {
+    if (force) {
+      walker = this.#document.createTreeWalker(node, whatToShow);
+    } else if (this.#walkers.has(node)) {
       walker = this.#walkers.get(node);
     } else {
-      walker = this.#document.createTreeWalker(node, WALKER_FILTER);
+      walker = this.#document.createTreeWalker(node, whatToShow);
       this.#walkers.set(node, walker);
     }
     return walker;
@@ -368,18 +372,13 @@ export class Finder {
       selectorBranches = branches;
     }
     if (parentNode) {
-      const walker = this.#walker;
-      let refNode = traverseNode(parentNode, walker);
-      refNode = walker.firstChild();
-      let l = 0;
-      while (refNode) {
-        l++;
-        refNode = walker.nextSibling();
-      }
+      const walker = this._createTreeWalker(parentNode, {
+        force: true
+      });
+      let refNode = walker.firstChild();
       const selectorNodes = new Set();
+      let l = 0;
       if (selectorBranches) {
-        refNode = traverseNode(parentNode, walker);
-        refNode = walker.firstChild();
         while (refNode) {
           if (isVisible(refNode)) {
             let bool;
@@ -393,6 +392,12 @@ export class Finder {
               selectorNodes.add(refNode);
             }
           }
+          l++;
+          refNode = walker.nextSibling();
+        }
+      } else {
+        while (refNode) {
+          l++;
           refNode = walker.nextSibling();
         }
       }
@@ -530,7 +535,7 @@ export class Finder {
     const { localName, namespaceURI, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
-      const walker = this.#walker;
+      const walker = this._createTreeWalker(parentNode);
       let refNode = traverseNode(parentNode, walker);
       refNode = walker.firstChild();
       let l = 0;
@@ -1213,14 +1218,12 @@ export class Finder {
               while (parent) {
                 if (parent.localName === 'fieldset' &&
                     (parent.disabled || parent.hasAttribute('disabled'))) {
-                  const walker = this.#walker;
-                  let refNode = traverseNode(parent, walker);
-                  refNode = walker.firstChild();
+                  let refNode = parent.firstElementChild;
                   while (refNode) {
                     if (refNode.localName === 'legend') {
                       break;
                     }
-                    refNode = walker.nextSibling();
+                    refNode = refNode.nextElementSibling;
                   }
                   if (refNode) {
                     if (!refNode.contains(node)) {
@@ -1391,27 +1394,27 @@ export class Finder {
               form = form.parentNode;
             }
             if (form) {
-              const walker = this.#walker;
-              let nextNode = traverseNode(form, walker);
-              nextNode = walker.firstChild();
-              while (nextNode && form.contains(nextNode)) {
-                const nodeName = nextNode.localName;
-                const nodeAttrType = nextNode.getAttribute('type');
+              const walker = this._createTreeWalker(form);
+              let refNode = traverseNode(form, walker);
+              refNode = walker.firstChild();
+              while (refNode) {
+                const nodeName = refNode.localName;
+                const nodeAttrType = refNode.getAttribute('type');
                 let m;
                 if (nodeName === 'button') {
-                  m = !(nextNode.hasAttribute('type') &&
+                  m = !(refNode.hasAttribute('type') &&
                     resetKeys.includes(nodeAttrType));
                 } else if (nodeName === 'input') {
-                  m = nextNode.hasAttribute('type') &&
+                  m = refNode.hasAttribute('type') &&
                     submitKeys.includes(nodeAttrType);
                 }
                 if (m) {
-                  if (nextNode === node) {
+                  if (refNode === node) {
                     matched.add(node);
                   }
                   break;
                 }
-                nextNode = walker.nextNode();
+                refNode = walker.nextNode();
               }
             }
           // input[type="checkbox"], input[type="radio"]
@@ -1447,14 +1450,14 @@ export class Finder {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const walker = this.#walker;
+            const walker = this._createTreeWalker(node);
             let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
             let valid;
             if (!refNode) {
               valid = true;
             } else {
-              while (refNode && node.contains(refNode)) {
+              while (refNode) {
                 if (keys.includes(refNode.localName)) {
                   if (refNode.checkValidity()) {
                     if (refNode.maxLength >= 0) {
@@ -1537,7 +1540,10 @@ export class Finder {
         }
         case 'empty': {
           if (node.hasChildNodes()) {
-            const walker = this.#document.createTreeWalker(node, SHOW_ALL);
+            const walker = this._createTreeWalker(node, {
+              force: true,
+              whatToShow: SHOW_ALL
+            });
             let refNode = walker.firstChild();
             let bool;
             while (refNode) {
@@ -1997,7 +2003,7 @@ export class Finder {
     if (pending) {
       const walker = this._createTreeWalker(baseNode);
       let refNode = traverseNode(baseNode, walker);
-      refNode = walker.nextNode();
+      refNode = walker.firstChild();
       while (refNode) {
         const bool = this._matchLeaves(leaves, refNode, opt);
         if (bool) {
@@ -2037,29 +2043,25 @@ export class Finder {
         }
         case '~': {
           if (parentNode) {
-            const walker = this._createTreeWalker(parentNode);
-            let refNode = traverseNode(node, walker);
-            refNode = walker.nextSibling();
+            let refNode = node.nextElementSibling;
             while (refNode) {
               const bool = this._matchLeaves(leaves, refNode, opt);
               if (bool) {
                 matched.add(refNode);
               }
-              refNode = walker.nextSibling();
+              refNode = refNode.nextElementSibling;
             }
           }
           break;
         }
         case '>': {
-          const walker = this._createTreeWalker(node);
-          let refNode = traverseNode(node, walker);
-          refNode = walker.firstChild();
+          let refNode = node.firstElementChild;
           while (refNode) {
             const bool = this._matchLeaves(leaves, refNode, opt);
             if (bool) {
               matched.add(refNode);
             }
-            refNode = walker.nextSibling();
+            refNode = refNode.nextElementSibling;
           }
           break;
         }
@@ -2085,9 +2087,7 @@ export class Finder {
         }
         case '~': {
           if (parentNode) {
-            const walker = this._createTreeWalker(parentNode);
-            let refNode = traverseNode(parentNode, walker);
-            refNode = walker.firstChild();
+            let refNode = parentNode.firstElementChild;
             while (refNode) {
               if (refNode === node) {
                 break;
@@ -2097,7 +2097,7 @@ export class Finder {
                   matched.add(refNode);
                 }
               }
-              refNode = walker.nextSibling();
+              refNode = refNode.nextElementSibling;
             }
           }
           break;
@@ -2590,7 +2590,7 @@ export class Finder {
           walker = this.#qswalker;
         } else {
           node = this.#root;
-          walker = this.#walker;
+          walker = this._createTreeWalker(node);
         }
         let nextNode = traverseNode(node, walker);
         while (nextNode) {

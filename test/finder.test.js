@@ -395,7 +395,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
       const res = finder._createTreeWalker(document);
-      assert.deepEqual(res.root, document, 'walker');
+      assert.deepEqual(res.root, document, 'root');
     });
 
     it('should get tree walker', () => {
@@ -403,16 +403,17 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('*', node);
       const res = finder._createTreeWalker(node);
-      assert.deepEqual(res.root, node, 'walker');
+      assert.deepEqual(res.root, node, 'root');
     });
 
     it('should get tree walker', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('*', node);
-      finder._createTreeWalker(node);
-      const res = finder._createTreeWalker(node);
-      assert.deepEqual(res.root, node, 'walker');
+      const res = finder._createTreeWalker(node, {
+        whatToShow: 0xFFFFFFFF
+      });
+      assert.deepEqual(res.root, node, 'root');
     });
   });
 

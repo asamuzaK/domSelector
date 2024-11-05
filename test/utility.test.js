@@ -103,35 +103,29 @@ describe('utility functions', () => {
 
     it('should get result', () => {
       const res = func(document);
-      const tree = document.createTreeWalker(document, WALKER_FILTER);
       assert.deepEqual(res, [
         document,
         document,
-        tree,
         false
       ]);
     });
 
     it('should get result', () => {
       const node = document.createDocumentFragment();
-      const tree = document.createTreeWalker(node, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         node,
-        tree,
         false
       ]);
     });
 
     it('should get result', () => {
       const node = document.getElementById('div0');
-      const tree = document.createTreeWalker(document, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         document,
-        tree,
         false
       ]);
     });
@@ -140,12 +134,10 @@ describe('utility functions', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
-      const tree = document.createTreeWalker(frag, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         frag,
-        tree,
         false
       ]);
     });
@@ -154,12 +146,10 @@ describe('utility functions', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
       parent.appendChild(node);
-      const tree = document.createTreeWalker(parent, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         parent,
-        tree,
         false
       ]);
     });
@@ -168,12 +158,10 @@ describe('utility functions', () => {
       const domstr = '<foo id="foo"><bar id="bar" /></foo>';
       const doc = new window.DOMParser().parseFromString(domstr, 'text/xml');
       const node = doc.getElementById('bar');
-      const tree = doc.createTreeWalker(doc, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         doc,
         doc,
-        tree,
         false
       ]);
     });
@@ -202,12 +190,10 @@ describe('utility functions', () => {
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
-      const tree = document.createTreeWalker(node, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         node,
-        tree,
         true
       ], 'result');
     });
@@ -236,12 +222,10 @@ describe('utility functions', () => {
       window.customElements.define('my-element', MyElement);
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
-      const tree = document.createTreeWalker(host.shadowRoot, WALKER_FILTER);
       const res = func(node);
       assert.deepEqual(res, [
         document,
         host.shadowRoot,
-        tree,
         true
       ], 'result');
     });
