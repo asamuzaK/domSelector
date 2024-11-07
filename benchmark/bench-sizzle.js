@@ -1,5 +1,5 @@
 /**
- * selectors.js
+ * bench-sizzle.js
  * forked and modified from jquery/sizzle
  * @see {@link https://github.com/jquery/sizzle}
  */
