@@ -72,6 +72,7 @@ export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const DESCEND = '\\s?[\\s>]\\s?';
+export const ID_CLASS = '[#.][\\w-]+';
 export const NESTED_LOGICAL_A =
   `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 export const NESTED_LOGICAL_B =

@@ -1952,6 +1952,25 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
+    it('should get true', () => {
+      const res = func('p.foo');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('p.foo', {
+        compound: true
+      });
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.foo', {
+        simple: true
+      });
+      assert.isFalse(res, 'result');
+    });
+
     it('should get false', () => {
       const res = func('::slotted');
       assert.isFalse(res, 'result');

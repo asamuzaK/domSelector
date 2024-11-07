@@ -11,11 +11,12 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, TARGET_ALL,
-  TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
+  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, ID_CLASS,
+  TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
-const REG_COMPLEX = new RegExp(`${COMBO}${COMPOUND_I}`, 'i');
-const REG_DESCEND = new RegExp(`${DESCEND}${COMPOUND_I}`, 'i');
+const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
+const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
+const REG_SIMPLE = new RegExp(`^${ID_CLASS}$`);
 
 /* DOMSelector */
 export class DOMSelector {
@@ -56,7 +57,9 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
+        compound: false,
         descend: false,
+        simple: false,
         target: TARGET_SELF
       };
       if (filterSelector(selector, filterOpt)) {
@@ -98,7 +101,9 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
+        compound: false,
         descend: false,
+        simple: false,
         target: TARGET_LINEAL
       };
       if (filterSelector(selector, filterOpt)) {
@@ -151,7 +156,9 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: false,
+        compound: !REG_COMPLEX.test(selector),
         descend: REG_DESCEND.test(selector),
+        simple: REG_SIMPLE.test(selector),
         target: TARGET_FIRST
       };
       if (filterSelector(selector, filterOpt)) {
@@ -198,7 +205,9 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: false,
+        compound: false,
         descend: REG_DESCEND.test(selector),
+        simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {

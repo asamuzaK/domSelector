@@ -671,6 +671,11 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
+  const { complex, compound, descend, simple } = opt;
+  // exclude simple id / class or compound
+  if (simple || compound) {
+    return false;
+  }
   // exclude missing close square bracket
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
@@ -688,7 +693,6 @@ export const filterSelector = (selector, opt = {}) => {
   }
   // include pseudo-classes that are known to work correctly
   if (selector.includes(':')) {
-    const { complex, descend } = opt;
     if (/:(?:is|not)\(/.test(selector)) {
       if (complex) {
         return !REG_LOGICAL_COMPLEX.test(selector);
