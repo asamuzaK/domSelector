@@ -1037,6 +1037,33 @@ describe('patched JSDOM', () => {
         window.DOMException, 'Identifier or asterisk is expected');
     });
 
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelector('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
+    });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelector('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.querySelector('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
+    });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelector('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelector('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
+    });
+
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -1093,11 +1120,6 @@ describe('patched JSDOM', () => {
       assert.isNull(res, 'result');
     });
 
-    it('should throw', () => {
-      assert.throws(() => document.body.querySelector('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
-    });
-
     it('should get matched node', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -1152,12 +1174,6 @@ describe('patched JSDOM', () => {
       li3.classList.add('baz');
       const res = div1.querySelector('.qux');
       assert.isNull(res, 'result');
-    });
-
-    it('should throw', () => {
-      const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
@@ -1223,6 +1239,33 @@ describe('patched JSDOM', () => {
     it('should throw', () => {
       assert.throws(() => document.querySelectorAll('*|'),
         window.DOMException, 'Identifier or asterisk is expected');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelectorAll('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
+    });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelectorAll('*|'),
+        window.DOMException, 'Identifier or asterisk is expected');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.querySelectorAll('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
+    });
+
+    it('should throw', () => {
+      const frag = document.createDocumentFragment();
+      assert.throws(() => frag.querySelectorAll('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => document.body.querySelectorAll('.foo + .123'),
+        window.DOMException, 'Percent sign is expected');
     });
 
     it('should get matched node', () => {
@@ -1381,11 +1424,6 @@ describe('patched JSDOM', () => {
       li3.classList.add('baz');
       const res = document.querySelectorAll('.qux');
       assert.deepEqual(res, [], 'result');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
     });
 
     it('should get matched node', () => {
