@@ -1,6 +1,6 @@
 export function getType(o: any): string;
 export function resolveContent(node: object): Array<object | boolean>;
-export function traverseNode(node: object, walker: object): object | null;
+export function traverseNode(node: object, walker: object, force?: boolean): object | null;
 export function isCustomElement(node: object, opt?: object): boolean;
 export function getSlottedTextContent(node: object): string | null;
 export function getDirectionality(node: object): string | null;

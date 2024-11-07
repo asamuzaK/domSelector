@@ -19,14 +19,11 @@ export class Finder {
     private _matchShadowHostPseudoClass;
     private _matchSelector;
     private _matchLeaves;
-    private _matchHTMLCollection;
     private _findDescendantNodes;
     private _matchCombinator;
-    private _findNode;
+    private _findWalker;
     private _matchSelf;
     private _findLineal;
-    private _findFirst;
-    private _findFromHTMLCollection;
     private _findEntryNodes;
     private _collectNodes;
     private _getCombinedNodes;
