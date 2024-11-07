@@ -18,8 +18,8 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE, ELEMENT_NODE, ID_SELECTOR, KEY_FORM_FOCUS, KEY_INPUT_DATE,
-  KEY_INPUT_EDIT, KEY_INPUT_TEXT, KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR,
+  ELEMENT_NODE, ID_SELECTOR, KEY_FORM_FOCUS, KEY_INPUT_DATE, KEY_INPUT_EDIT,
+  KEY_INPUT_TEXT, KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL, SYNTAX_ERR, TARGET_ALL,
   TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR,
   WALKER_FILTER
@@ -34,7 +34,6 @@ const DIR_PREV = 'prev';
  * #nodes: Array<Nodes>
  * Ast: {
  *   branch: Array<Branch | undefined>,
- *   collected: boolean,
  *   dir: string | null,
  *   filtered: boolean,
  *   find: boolean
@@ -69,6 +68,7 @@ export class Finder {
   #qswalker;
   #results;
   #root;
+  #selector;
   #shadow;
   #verifyShadowHost;
   #walkers;
@@ -138,6 +138,7 @@ export class Finder {
       this.#root,
       this.#shadow
     ] = resolveContent(node);
+    this.#selector = selector;
     [
       this.#ast,
       this.#nodes
@@ -208,7 +209,6 @@ export class Finder {
     if (ast) {
       const l = ast.length;
       for (let i = 0; i < l; i++) {
-        ast[i].collected = false;
         ast[i].dir = null;
         ast[i].filtered = false;
         ast[i].find = false;
@@ -279,7 +279,6 @@ export class Finder {
         }
         ast.push({
           branch,
-          collected: false,
           dir: null,
           filtered: false,
           find: false
@@ -1352,23 +1351,25 @@ export class Finder {
             if (!parent) {
               parent = this.#document.documentElement;
             }
-            const items = parent.getElementsByTagName('input');
-            const l = items.length;
+            const walker = this._createTreeWalker(parent);
+            let refNode = traverseNode(parent, walker);
+            refNode = walker.firstChild();
             let checked;
-            for (let i = 0; i < l; i++) {
-              const item = items[i];
-              if (item.getAttribute('type') === 'radio') {
-                if (nodeName) {
-                  if (item.getAttribute('name') === nodeName) {
-                    checked = !!item.checked;
+            while (refNode) {
+              if (refNode.localName === 'input' &&
+                  refNode.getAttribute('type') === 'radio') {
+                if (refNode.hasAttribute('name')) {
+                  if (refNode.getAttribute('name') === nodeName) {
+                    checked = !!refNode.checked;
                   }
-                } else if (!item.hasAttribute('name')) {
-                  checked = !!item.checked;
+                } else {
+                  checked = !!refNode.checked;
                 }
                 if (checked) {
                   break;
                 }
               }
+              refNode = walker.nextNode();
             }
             if (!checked) {
               matched.add(node);
@@ -1907,33 +1908,6 @@ export class Finder {
   }
 
   /**
-   * match HTML collection
-   * @private
-   * @param {object} items - HTML collection
-   * @param {object} opt - options
-   * @returns {Set.<object>} - matched nodes
-   */
-  _matchHTMLCollection(items, opt) {
-    if (items.length) {
-      const { compound, filterLeaves } = opt;
-      if (compound) {
-        const nodes = new Set();
-        for (const item of items) {
-          const bool = this._matchLeaves(filterLeaves, item, opt);
-          if (bool) {
-            nodes.add(item);
-          }
-        }
-        return nodes;
-      } else {
-        const arr = [].slice.call(items);
-        return new Set(arr);
-      }
-    }
-    return new Set();
-  }
-
-  /**
    * find descendant nodes
    * @private
    * @param {Array.<object>} leaves - AST leaves
@@ -1946,7 +1920,7 @@ export class Finder {
     const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
     const leafName = unescapeSelector(leaf.name);
-    let nodes = new Set();
+    const nodes = new Set();
     let pending = false;
     if (this.#shadow || baseNode.nodeType !== ELEMENT_NODE) {
       pending = true;
@@ -1971,27 +1945,6 @@ export class Finder {
                 nodes.add(node);
               }
             }
-          }
-          break;
-        }
-        case CLASS_SELECTOR: {
-          const items = baseNode.getElementsByClassName(leafName);
-          nodes = this._matchHTMLCollection(items, {
-            compound,
-            filterLeaves
-          });
-          break;
-        }
-        case TYPE_SELECTOR: {
-          if (this.#document.contentType === 'text/html' &&
-              !/[*|]/.test(leafName)) {
-            const items = baseNode.getElementsByTagName(leafName);
-            nodes = this._matchHTMLCollection(items, {
-              compound,
-              filterLeaves
-            });
-          } else {
-            pending = true;
           }
           break;
         }
@@ -2136,13 +2089,16 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node to start from
-   * @param {string} targetType - target type
+   * @param {object} opt - options
+   * @param {boolean} opt.force - traverse only to next node
+   * @param {string} opt.targetType - target type
    * @returns {?object|Array.<object>} - matched node / collection of nodes
    */
-  _findWalker(leaves, node, targetType) {
+  _findWalker(leaves, node, opt = {}) {
+    const { force, targetType } = opt;
     const walker = this.#qswalker;
     const nodes = [];
-    let refNode = traverseNode(node, walker, true);
+    let refNode = traverseNode(node, walker, !!force);
     if (refNode) {
       if (refNode.nodeType !== ELEMENT_NODE) {
         refNode = walker.nextNode();
@@ -2225,84 +2181,6 @@ export class Finder {
   }
 
   /**
-   * find from HTML collection
-   * @private
-   * @param {object} items - HTML collection
-   * @param {object} opt - options
-   * @returns {Array} - [nodes, filtered]
-   */
-  _findHTMLCollection(items, opt) {
-    const { complex, compound, filterLeaves, targetType } = opt;
-    let nodes = [];
-    let filtered = false;
-    let collected = false;
-    if (items.length) {
-      if (this.#node.nodeType === ELEMENT_NODE) {
-        for (const node of items) {
-          if (node !== this.#node &&
-              (this.#node.contains(node) || node.contains(this.#node))) {
-            if (compound) {
-              const bool = this._matchLeaves(filterLeaves, node, {
-                warn: this.#warn
-              });
-              if (bool) {
-                nodes.push(node);
-                filtered = true;
-                if (targetType === TARGET_FIRST) {
-                  break;
-                }
-              }
-            } else {
-              nodes.push(node);
-              filtered = true;
-              if (targetType === TARGET_FIRST) {
-                break;
-              }
-            }
-          }
-        }
-      } else if (complex) {
-        if (compound) {
-          for (const node of items) {
-            const bool = this._matchLeaves(filterLeaves, node, {
-              warn: this.#warn
-            });
-            if (bool) {
-              nodes.push(node);
-              filtered = true;
-              if (targetType === TARGET_FIRST) {
-                break;
-              }
-            }
-          }
-        } else {
-          nodes = [].slice.call(items);
-          filtered = true;
-          collected = true;
-        }
-      } else if (compound) {
-        for (const node of items) {
-          const bool = this._matchLeaves(filterLeaves, node, {
-            warn: this.#warn
-          });
-          if (bool) {
-            nodes.push(node);
-            filtered = true;
-            if (targetType === TARGET_FIRST) {
-              break;
-            }
-          }
-        }
-      } else {
-        nodes = [].slice.call(items);
-        filtered = true;
-        collected = true;
-      }
-    }
-    return [nodes, filtered, collected];
-  }
-
-  /**
    * find entry nodes
    * @private
    * @param {object} twig - twig
@@ -2316,7 +2194,6 @@ export class Finder {
     const compound = filterLeaves.length > 0;
     const { name: leafName, type: leafType } = leaf;
     let nodes = [];
-    let collected = false;
     let filtered = false;
     let pending = false;
     switch (leafType) {
@@ -2351,7 +2228,9 @@ export class Finder {
             }
           }
         } else {
-          nodes = this._findWalker(leaves, this.#node, targetType);
+          nodes = this._findWalker(leaves, this.#node, {
+            targetType,
+          });
           if (nodes.length) {
             filtered = true;
           }
@@ -2365,18 +2244,10 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (this.#root.nodeType === DOCUMENT_NODE) {
-          const items = this.#root.getElementsByClassName(leafName);
-          if (items.length) {
-            [nodes, filtered, collected] = this._findHTMLCollection(items, {
-              complex,
-              compound,
-              filterLeaves,
-              targetType
-            });
-          }
         } else {
-          nodes = this._findWalker(leaves, this.#node, targetType);
+          nodes = this._findWalker(leaves, this.#node, {
+            targetType
+          });
           if (nodes.length) {
             filtered = true;
           }
@@ -2390,20 +2261,10 @@ export class Finder {
           [nodes, filtered] = this._findLineal(leaves, {
             complex
           });
-        } else if (this.#document.contentType === 'text/html' &&
-                   this.#root.nodeType === DOCUMENT_NODE &&
-                   !/[*|]/.test(leafName)) {
-          const items = this.#root.getElementsByTagName(leafName);
-          if (items.length) {
-            [nodes, filtered, collected] = this._findHTMLCollection(items, {
-              complex,
-              compound,
-              filterLeaves,
-              targetType
-            });
-          }
         } else {
-          nodes = this._findWalker(leaves, this.#node, targetType);
+          nodes = this._findWalker(leaves, this.#node, {
+            targetType
+          });
           if (nodes.length) {
             filtered = true;
           }
@@ -2454,7 +2315,9 @@ export class Finder {
             complex
           });
         } else if (targetType === TARGET_FIRST) {
-          nodes = this._findWalker(leaves, this.#node, targetType);
+          nodes = this._findWalker(leaves, this.#node, {
+            targetType
+          });
           if (nodes.length) {
             filtered = true;
           }
@@ -2464,7 +2327,6 @@ export class Finder {
       }
     }
     return {
-      collected,
       compound,
       filtered,
       nodes,
@@ -2504,59 +2366,21 @@ export class Finder {
               type: lastType
             }]
           } = lastTwig;
-          if (lastType === PS_ELEMENT_SELECTOR ||
-              lastType === ID_SELECTOR) {
+          dir = DIR_NEXT;
+          twig = firstTwig;
+          if (this.#selector.includes(':scope') ||
+              lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
-          } else if (firstType === PS_ELEMENT_SELECTOR ||
-                     firstType === ID_SELECTOR) {
-            dir = DIR_NEXT;
-            twig = firstTwig;
-          } else if (targetType === TARGET_ALL) {
-            if (firstName === '*' && firstType === TYPE_SELECTOR) {
-              dir = DIR_PREV;
-              twig = lastTwig;
-            } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
-              dir = DIR_NEXT;
-              twig = firstTwig;
-            } else if (branchLen === 2) {
-              const { name: comboName } = firstCombo;
-              if (comboName === '+' || comboName === '~') {
-                dir = DIR_PREV;
-                twig = lastTwig;
-              } else {
-                dir = DIR_NEXT;
-                twig = firstTwig;
-              }
-            } else {
-              dir = DIR_NEXT;
-              twig = firstTwig;
-            }
           } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
           } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
             dir = DIR_NEXT;
             twig = firstTwig;
-          } else {
-            let bool;
-            for (const { combo, leaves: [leaf] } of branch) {
-              const { name: leafName, type: leafType } = leaf;
-              if (leafType === PS_CLASS_SELECTOR && leafName === 'dir') {
-                bool = false;
-                break;
-              }
-              if (!bool && combo) {
-                const { name: comboName } = combo;
-                if (comboName === '+' || comboName === '~') {
-                  bool = true;
-                }
-              }
-            }
-            if (bool) {
-              dir = DIR_NEXT;
-              twig = firstTwig;
-            } else {
+          } else if (branchLen === 2) {
+            const { name: comboName } = firstCombo;
+            if (comboName === '+' || comboName === '~') {
               dir = DIR_PREV;
               twig = lastTwig;
             }
@@ -2566,7 +2390,7 @@ export class Finder {
           twig = firstTwig;
         }
         const {
-          collected, compound, filtered, nodes, pending
+          compound, filtered, nodes, pending
         } = this._findEntryNodes(twig, targetType, complex);
         if (nodes.length) {
           this.#ast[i].find = true;
@@ -2577,7 +2401,6 @@ export class Finder {
             ['twig', twig]
           ]));
         }
-        this.#ast[i].collected = collected;
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
         i++;
@@ -2752,7 +2575,7 @@ export class Finder {
     let sort;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, collected, dir, find } = branches[i];
+      const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
       if (branchLen && find) {
         const entryNodes = collectedNodes[i];
@@ -2843,11 +2666,13 @@ export class Finder {
               break;
             }
           }
-          if (!matched && !collected) {
+          if (!matched) {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
             let [refNode] =
-              this._findWalker(entryLeaves, entryNode, targetType);
+              this._findWalker(entryLeaves, entryNode, {
+                targetType
+              });
             while (refNode) {
               matched = this._matchNodeNext(branch, new Set([refNode]), {
                 combo: entryCombo,
@@ -2857,7 +2682,10 @@ export class Finder {
                 nodes.add(matched);
                 break;
               }
-              [refNode] = this._findWalker(entryLeaves, refNode, targetType);
+              [refNode] = this._findWalker(entryLeaves, refNode, {
+                targetType,
+                force: true
+              });
             }
           }
         } else {
@@ -2871,11 +2699,12 @@ export class Finder {
               break;
             }
           }
-          if (!matched && !collected && targetType === TARGET_FIRST) {
+          if (!matched && targetType === TARGET_FIRST) {
             const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
-            let [refNode] =
-              this._findWalker(entryLeaves, entryNode, targetType);
+            let [refNode] = this._findWalker(entryLeaves, entryNode, {
+              targetType
+            });
             while (refNode) {
               matched = this._matchNodePrev(branch, refNode, {
                 index: lastIndex - 1
@@ -2884,7 +2713,10 @@ export class Finder {
                 nodes.add(refNode);
                 break;
               }
-              [refNode] = this._findWalker(entryLeaves, refNode, targetType);
+              [refNode] = this._findWalker(entryLeaves, refNode, {
+                targetType,
+                force: true
+              });
             }
           }
         }

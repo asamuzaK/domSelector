@@ -262,7 +262,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: null,
             filtered: false,
             find: false
@@ -300,7 +299,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: null,
             filtered: false,
             find: false
@@ -338,7 +336,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: null,
             filtered: false,
             find: false
@@ -376,7 +373,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: null,
             filtered: false,
             find: false
@@ -10516,53 +10512,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('match HTML collection', () => {
-    it('should get matched nodes', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const items = document.getElementsByTagName('li');
-      const finder = new Finder(window);
-      finder.setup('li', document);
-      const res = finder._matchHTMLCollection(items, {
-        compound: false,
-        filterLeaves: leaves
-      });
-      assert.deepEqual([...res], [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
-    });
-
-    it('should get matched nodes', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        },
-        {
-          children: null,
-          name: 'last-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const items = document.getElementsByTagName('li');
-      const finder = new Finder(window);
-      finder.setup('li:last-child', document);
-      const res = finder._matchHTMLCollection(items, {
-        compound: true,
-        filterLeaves: leaves
-      });
-      assert.deepEqual([...res], [
-        document.getElementById('li3')
-      ], 'result');
-    });
-  });
-
   describe('find descendant nodes', () => {
     it('should get matched node(s)', () => {
       const leaves = [
@@ -11375,7 +11324,9 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, node, 'all');
+      const res = finder._findWalker(leaves, node, {
+        targetType: 'all'
+      });
       assert.deepEqual(res, [
         child,
         child2
@@ -11413,6 +11364,18 @@ describe('Finder', () => {
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
       const res = finder._findWalker(leaves, document.getElementById('li3'));
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      finder.setup('li', document);
+      finder._prepareQuerySelectorWalker(document);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
+      finder._findWalker(leaves, document.getElementById('li2'));
+      const res = finder._findWalker(leaves, document.getElementById('li1'), {
+        force: true
+      });
       assert.deepEqual(res, [], 'result');
     });
   });
@@ -11561,300 +11524,6 @@ describe('Finder', () => {
       assert.deepEqual(res, [
         [document.getElementById('li2')],
         true
-      ], 'result');
-    });
-  });
-
-  describe('find from HTML collection', () => {
-    it('should match', () => {
-      const finder = new Finder(window);
-      finder.setup('.li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {});
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        true
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const finder = new Finder(window);
-      finder.setup('.li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        true
-      ], 'result');
-    });
-
-    it('should not match', () => {
-      const finder = new Finder(window);
-      finder.setup('ol', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByTagName('ol');
-      const res = finder._findHTMLCollection(items, {});
-      assert.deepEqual(res, [
-        [],
-        false,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        },
-        {
-          children: null,
-          name: 'last-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const finder = new Finder(window);
-      finder.setup('li.li:last-child', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        compound: true,
-        filterLeaves: leaves
-      });
-      assert.deepEqual(res, [
-        [document.getElementById('li3')],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        },
-        {
-          children: null,
-          name: 'last-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const finder = new Finder(window);
-      finder.setup('li.li:last-child', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        compound: true,
-        filterLeaves: leaves,
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [document.getElementById('li3')],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const finder = new Finder(window);
-      finder.setup('li.li + li.li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true,
-        compound: true,
-        filterLeaves: leaves
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const finder = new Finder(window);
-      finder.setup('li.li + li.li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true,
-        compound: true,
-        filterLeaves: leaves,
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1')
-        ],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const finder = new Finder(window);
-      finder.setup('.li + .li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        true
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const finder = new Finder(window);
-      finder.setup('li.li + li.li', document);
-      finder._prepareQuerySelectorWalker(document);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true,
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        true
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('.li + .li', node);
-      finder._prepareQuerySelectorWalker(node);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('.li + .li', node);
-      finder._prepareQuerySelectorWalker(node);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        complex: true,
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [
-          document.getElementById('li1')
-        ],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        },
-        {
-          children: null,
-          name: 'last-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('li.li:last-child', node);
-      finder._prepareQuerySelectorWalker(node);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        compound: true,
-        filterLeaves: leaves
-      });
-      assert.deepEqual(res, [
-        [document.getElementById('li3')],
-        true,
-        false
-      ], 'result');
-    });
-
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        },
-        {
-          children: null,
-          name: 'last-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('li.li:last-child', node);
-      finder._prepareQuerySelectorWalker(node);
-      const items = document.getElementsByClassName('li');
-      const res = finder._findHTMLCollection(items, {
-        compound: true,
-        filterLeaves: leaves,
-        targetType: 'first'
-      });
-      assert.deepEqual(res, [
-        [document.getElementById('li3')],
-        true,
-        false
       ], 'result');
     });
   });
@@ -12735,7 +12404,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: false,
             find: false
@@ -12773,7 +12441,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -12812,7 +12479,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: false,
             find: false
@@ -12850,7 +12516,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -12889,7 +12554,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -12927,8 +12591,7 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
-            dir: 'next',
+            dir: 'prev',
             filtered: true,
             find: true
           }
@@ -12970,7 +12633,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13008,7 +12670,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: true,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13069,7 +12730,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13100,7 +12760,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13157,7 +12816,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13188,7 +12846,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13232,7 +12889,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13275,7 +12931,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13321,7 +12976,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: true,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13371,7 +13025,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: true,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13379,9 +13032,7 @@ describe('Finder', () => {
         ],
         [
           [
-            document.getElementById('li1'),
-            document.getElementById('li2'),
-            document.getElementById('li3')
+            document.getElementById('li1')
           ]
         ]
       ], 'result');
@@ -13421,7 +13072,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: true,
             dir: 'next',
             filtered: true,
             find: true
@@ -13469,7 +13119,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: true,
             dir: 'next',
             filtered: true,
             find: true
@@ -13538,7 +13187,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13609,7 +13257,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13657,7 +13304,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13705,7 +13351,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: true,
             find: true
@@ -13753,7 +13398,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'next',
             filtered: true,
             find: true
@@ -13807,7 +13451,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'prev',
             filtered: false,
             find: false
@@ -13859,7 +13502,6 @@ describe('Finder', () => {
                 ]
               }
             ],
-            collected: false,
             dir: 'next',
             filtered: false,
             find: false
