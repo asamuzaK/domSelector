@@ -13758,5 +13758,43 @@ describe('Finder', () => {
       const res = finder.find('all');
       assert.deepEqual([...res], [], 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const parent = document.getElementById('div0');
+      const div = document.createElement('div');
+      const div2 = document.createElement('div');
+      const span = document.createElement('span');
+      const span2 = document.createElement('span');
+      const span3 = document.createElement('span');
+      const span4 = document.createElement('span');
+      const span5 = document.createElement('span');
+      const span6 = document.createElement('span');
+      const span7 = document.createElement('span');
+      const span8 = document.createElement('span');
+      div.id = 'div01';
+      div.classList.add('foobar');
+      div.appendChild(span);
+      div.appendChild(span2);
+      div.appendChild(span3);
+      div.appendChild(span4);
+      div2.id = 'div02';
+      div2.classList.add('foobar');
+      div2.appendChild(span5);
+      div2.appendChild(span6);
+      div2.appendChild(span7);
+      div2.appendChild(span8);
+      parent.append(div, div2);
+      const finder = new Finder(window);
+      finder.setup('.foobar > :not([hidden]) ~ :not([hidden])', parent);
+      const res = finder.find('all');
+      assert.deepEqual([...res], [
+        span2,
+        span3,
+        span4,
+        span6,
+        span7,
+        span8
+      ], 'result');
+    });
   });
 });

@@ -1019,18 +1019,18 @@ describe('utility functions', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const res = func(document);
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1038,7 +1038,7 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node = document.createElement('div');
       Object.defineProperty(node, 'isContentEditable', {
         value: true,
@@ -1050,7 +1050,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1059,7 +1059,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'true');
       const parent = document.getElementById('div0');
@@ -1068,7 +1068,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'plaintext-only');
       const parent = document.getElementById('div0');
@@ -1077,7 +1077,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', '');
       const parent = document.getElementById('div0');
@@ -1086,7 +1086,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'foo');
       const parent = document.getElementById('div0');
@@ -1095,7 +1095,7 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'inherit');
       const parent = document.getElementById('div0');
@@ -1104,7 +1104,7 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node1 = document.createElement('div');
       node1.setAttribute('contenteditable', 'inherit');
       const node2 = document.createElement('div');
@@ -1116,7 +1116,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
       node2.setAttribute('contenteditable', 'true');
@@ -1671,12 +1671,12 @@ describe('utility functions', () => {
   describe('is namespace declared', () => {
     const func = util.isNamespaceDeclared;
 
-    it('should get result', () => {
+    it('should get false', () => {
       const res = func();
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('foo:div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1684,7 +1684,7 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
       const parent = document.getElementById('div0');
@@ -1693,7 +1693,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const frag = document.createDocumentFragment();
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
@@ -1702,7 +1702,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const frag = document.createDocumentFragment();
       const node =
         document.createElementNS('https://example.com/foo', 'foo:div');
@@ -1736,7 +1736,7 @@ describe('utility functions', () => {
         'Unexpected type String');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const nodeA = document.createElement('ul');
       const nodeB = document.createElement('li');
       const parent = document.getElementById('div0');
@@ -1746,7 +1746,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('ul');
       const parent = document.getElementById('div0');
@@ -1756,7 +1756,7 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get true', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('li');
       const base = document.createElement('ul');
@@ -1768,7 +1768,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('li');
       const base = document.createElement('ul');
@@ -1780,20 +1780,20 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       const base = document.documentElement;
       const res = func(node, base);
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const node = document.createElement('div');
       const res = func(node, node);
       assert.isFalse(res, 'result');
     });
 
-    it('should get result', () => {
+    it('should get false', () => {
       const tmpl = document.createElement('template');
       const node = document.createElement('div');
       tmpl.appendChild(node);
@@ -2081,17 +2081,17 @@ describe('utility functions', () => {
       assert.isFalse(res, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func(':read-only');
       assert.isTrue(res, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func(':read-write');
       assert.isTrue(res, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func(':empty');
       assert.isTrue(res, 'result');
     });
@@ -2124,6 +2124,40 @@ describe('utility functions', () => {
     it('should get false', () => {
       const res = func(':host');
       assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('.foo + .bar');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':first-child :last-child');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':first-child :last-child', {
+        descend: true
+      });
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':is(.foo, .bar)');
+      assert.isTrue(res, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':is(.foo .bar, .bar)');
+      assert.isFalse(res, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':is(.foo .bar, .bar)', {
+        complex: true
+      });
+      assert.isTrue(res, 'result');
     });
 
     it('should get true', () => {
@@ -2252,7 +2286,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func(':not(.foo > .bar)', {
         complex: true
       });
@@ -2288,7 +2322,7 @@ describe('utility functions', () => {
       assert.isTrue(res, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func(':not(:is(.foo > .bar))', {
         complex: true
       });
