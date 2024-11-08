@@ -371,9 +371,12 @@ export class Finder {
       selectorBranches = branches;
     }
     if (parentNode) {
-      const nodeArr = [];
-      let refNode = parentNode.firstElementChild;
+      const walker = this._createTreeWalker(parentNode, {
+        force: true
+      });
+      let refNode = walker.firstChild();
       const selectorNodes = new Set();
+      let l = 0;
       if (selectorBranches) {
         while (refNode) {
           if (isVisible(refNode)) {
@@ -388,28 +391,26 @@ export class Finder {
               selectorNodes.add(refNode);
             }
           }
-          nodeArr.push(refNode);
-          refNode = refNode.nextElementSibling;
+          l++;
+          refNode = walker.nextSibling();
         }
       } else {
         while (refNode) {
-          nodeArr.push(refNode);
-          refNode = refNode.nextElementSibling;
+          l++;
+          refNode = walker.nextSibling();
         }
-      }
-      const l = nodeArr.length;
-      let idx;
-      if (reverse) {
-        idx = l - 1;
-      } else {
-        idx = 0;
       }
       // :first-child, :last-child, :nth-child(b of S), :nth-last-child(b of S)
       if (a === 0) {
         if (b > 0 && b <= l) {
           if (selectorNodes.size) {
+            refNode = traverseNode(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
             let i = 0;
-            refNode = nodeArr[idx];
             while (refNode) {
               if (selectorNodes.has(refNode)) {
                 if (i === b - 1) {
@@ -419,23 +420,28 @@ export class Finder {
                 i++;
               }
               if (reverse) {
-                refNode = nodeArr[--idx];
+                refNode = walker.previousSibling();
               } else {
-                refNode = nodeArr[++idx];
+                refNode = walker.nextSibling();
               }
             }
           } else if (!selector) {
+            refNode = traverseNode(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
             let i = 0;
-            refNode = nodeArr[idx];
             while (refNode) {
               if (i === b - 1) {
                 matched.add(refNode);
                 break;
               }
               if (reverse) {
-                refNode = nodeArr[--idx];
+                refNode = walker.previousSibling();
               } else {
-                refNode = nodeArr[++idx];
+                refNode = walker.nextSibling();
               }
               i++;
             }
@@ -450,9 +456,14 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
           let i = 0;
           let j = a > 0 ? 0 : b - 1;
-          refNode = nodeArr[idx];
           while (refNode) {
             if (refNode && nth >= 0 && nth < l) {
               if (selectorNodes.size) {
@@ -474,9 +485,9 @@ export class Finder {
                 nth += a;
               }
               if (reverse) {
-                refNode = nodeArr[--idx];
+                refNode = walker.previousSibling();
               } else {
-                refNode = nodeArr[++idx];
+                refNode = walker.nextSibling();
               }
               i++;
             } else {
@@ -523,24 +534,24 @@ export class Finder {
     const { localName, namespaceURI, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
-      const nodeArr = [];
-      let refNode = parentNode.firstElementChild;
+      const walker = this._createTreeWalker(parentNode);
+      let refNode = traverseNode(parentNode, walker);
+      refNode = walker.firstChild();
+      let l = 0;
       while (refNode) {
-        nodeArr.push(refNode);
-        refNode = refNode.nextElementSibling;
-      }
-      const l = nodeArr.length;
-      let idx;
-      if (reverse) {
-        idx = l - 1;
-      } else {
-        idx = 0;
+        l++;
+        refNode = walker.nextSibling();
       }
       // :first-of-type, :last-of-type
       if (a === 0) {
         if (b > 0 && b <= l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
           let j = 0;
-          refNode = nodeArr[idx];
           while (refNode) {
             const {
               localName: itemLocalName, namespaceURI: itemNamespaceURI,
@@ -555,9 +566,9 @@ export class Finder {
               j++;
             }
             if (reverse) {
-              refNode = nodeArr[--idx];
+              refNode = walker.previousSibling();
             } else {
-              refNode = nodeArr[++idx];
+              refNode = walker.nextSibling();
             }
           }
         }
@@ -570,8 +581,13 @@ export class Finder {
           }
         }
         if (nth >= 0 && nth < l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
           let j = a > 0 ? 0 : b - 1;
-          refNode = nodeArr[idx];
           while (refNode) {
             const {
               localName: itemLocalName, namespaceURI: itemNamespaceURI,
@@ -592,9 +608,9 @@ export class Finder {
               }
             }
             if (reverse) {
-              refNode = nodeArr[--idx];
+              refNode = walker.previousSibling();
             } else {
-              refNode = nodeArr[++idx];
+              refNode = walker.nextSibling();
             }
           }
         }
