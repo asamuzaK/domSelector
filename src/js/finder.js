@@ -2591,7 +2591,8 @@ export class Finder {
           }
         } else if (targetType === TARGET_ALL) {
           if (dir === DIR_NEXT) {
-            let { combo } = branch[0];
+            const { combo: firstCombo } = branch[0];
+            let combo = firstCombo;
             for (const node of entryNodes) {
               let nextNodes = new Set([node]);
               for (let j = 1; j < branchLen; j++) {
@@ -2607,8 +2608,10 @@ export class Finder {
                       const n = [...nodes];
                       nodes = new Set([...n, ...nextNodes]);
                       sort = true;
+                      combo = firstCombo;
                     } else {
                       nodes = nextNodes;
+                      combo = firstCombo;
                     }
                   } else {
                     combo = nextCombo;

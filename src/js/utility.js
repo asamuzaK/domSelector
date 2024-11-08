@@ -693,14 +693,14 @@ export const filterSelector = (selector, opt = {}) => {
   }
   // include pseudo-classes that are known to work correctly
   if (selector.includes(':')) {
-    if (/:(?:is|not)\(/.test(selector)) {
+    if (descend) {
+      return false;
+    } else if (/:(?:is|not)\(/.test(selector)) {
       if (complex) {
         return !REG_LOGICAL_COMPLEX.test(selector);
       } else {
         return !REG_LOGICAL_COMPOUND.test(selector);
       }
-    } else if (descend) {
-      return false;
     } else {
       return !REG_WO_LOGICAL.test(selector);
     }
