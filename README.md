@@ -291,46 +291,47 @@ See [benchmark](https://github.com/asamuzaK/domSelector/actions/workflows/benchm
 
 |Selector|jsdom v25.0.1 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`matches('.content')`|116,668 ops/sec ±4.10%|340,095 ops/sec ±2.49%|7,648 ops/sec ±0.60%|116,213 ops/sec ±0.35%|happydom is the fastest and 2.9 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
-|compound selector:<br>`matches('p.content[id]:is(:last-child, :only-child)')`|108,583 ops/sec ±0.34%|320,303 ops/sec ±9.69%|7,341 ops/sec ±1.03%|86,837 ops/sec ±1.04%|happydom is the fastest and 3.7 times faster than patched-jsdom. jsdom is 1.3 times faster than patched-jsdom.|
-|compound selector:<br>`matches('p.content[id]:is(:invalid-nth-child, :only-child)')`|F|338,482 ops/sec ±2.22%|F|44,358 ops/sec ±0.52%|happydom is the fastest and 7.6 times faster than patched-jsdom.|
-|compound selector:<br>`matches('p.content[id]:not(:is(.foo, .bar))')`|102,690 ops/sec ±0.59%|339,350 ops/sec ±0.54%|7,141 ops/sec ±0.68%|84,337 ops/sec ±0.52%|happydom is the fastest and 4.0 times faster than patched-jsdom. jsdom is 1.2 times faster than patched-jsdom.|
-|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|69,897 ops/sec ±0.38%|F|4,718 ops/sec ±0.87%|62,685 ops/sec ±0.67%|jsdom is the fastest and 1.1 times faster than patched-jsdom.|
-|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|4,660 ops/sec ±0.78%|14,994 ops/sec ±2.06%|patched-jsdom is the fastest.|
-|complex selector within logical pseudo-class:<br>`matches(':is(.box > .content, .block > .content)')`|95,876 ops/sec ±0.54%|F|4,885 ops/sec ±0.40%|93,044 ops/sec ±0.63%|jsdom is the fastest and 1.0 times faster than patched-jsdom.|
-|nested and chained :not() selector:<br>`matches('p:not(:is(:not(.content))):not(.foo)')`|F|F|4,350 ops/sec ±20.42%|81,318 ops/sec ±0.72%|patched-jsdom is the fastest.|
+|simple selector:<br>`matches('.content')`|116,283 ops/sec ±6.10%|352,497 ops/sec ±2.07%|8,165 ops/sec ±0.82%|116,887 ops/sec ±0.60%|happydom is the fastest and 3.0 times faster than patched-jsdom. patched-jsdom is 1.0 times faster than jsdom.|
+|compound selector:<br>`matches('p.content[id]:is(:last-child, :only-child)')`|105,845 ops/sec ±1.79%|331,734 ops/sec ±4.02%|7,846 ops/sec ±0.97%|86,644 ops/sec ±0.19%|happydom is the fastest and 3.8 times faster than patched-jsdom. jsdom is 1.2 times faster than patched-jsdom.|
+|compound selector:<br>`matches('p.content[id]:is(:invalid-nth-child, :only-child)')`|F|341,380 ops/sec ±2.72%|F|44,663 ops/sec ±1.77%|happydom is the fastest and 7.6 times faster than patched-jsdom.|
+|compound selector:<br>`matches('p.content[id]:not(:is(.foo, .bar))')`|103,273 ops/sec ±0.35%|347,609 ops/sec ±0.57%|7,707 ops/sec ±0.73%|84,748 ops/sec ±0.66%|happydom is the fastest and 4.1 times faster than patched-jsdom. jsdom is 1.2 times faster than patched-jsdom.|
+|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|67,766 ops/sec ±0.51%|F|5,090 ops/sec ±0.91%|61,711 ops/sec ±0.48%|jsdom is the fastest and 1.1 times faster than patched-jsdom.|
+|complex selector:<br>`matches('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|4,976 ops/sec ±0.59%|14,990 ops/sec ±1.10%|patched-jsdom is the fastest.|
+|complex selector within logical pseudo-class:<br>`matches(':is(.box > .content, .block > .content)')`|95,327 ops/sec ±0.61%|F|5,312 ops/sec ±0.53%|85,778 ops/sec ±0.66%|jsdom is the fastest and 1.1 times faster than patched-jsdom.|
+|nested and chained :not() selector:<br>`matches('p:not(:is(:not(.content))):not(.foo)')`|F|F|4,819 ops/sec ±11.64%|83,653 ops/sec ±1.44%|patched-jsdom is the fastest.|
 
 ### closest()
 
 |Selector|jsdom v25.0.1 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`closest('.container')`|92,111 ops/sec ±0.96%|249,153 ops/sec ±40.73%|7,500 ops/sec ±0.55%|90,885 ops/sec ±0.40%|happydom is the fastest and 2.7 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
-|compound selector:<br>`closest('div.container[id]:not(.foo, .box)')`|64,202 ops/sec ±0.68%|F|7,040 ops/sec ±0.58%|55,421 ops/sec ±0.89%|jsdom is the fastest and 1.2 times faster than patched-jsdom.|
-|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|63,845 ops/sec ±0.58%|F|4,734 ops/sec ±0.50%|58,730 ops/sec ±0.62%|jsdom is the fastest and 1.1 times faster than patched-jsdom.|
-|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|4,559 ops/sec ±0.79%|12,747 ops/sec ±0.44%|patched-jsdom is the fastest.|
-|complex selector within logical pseudo-class:<br>`closest(':is(.container > .content, .container > .box)')`|75,117 ops/sec ±0.43%|295,154 ops/sec ±0.38%|4,902 ops/sec ±0.50%|70,354 ops/sec ±0.72%|happydom is the fastest and 4.2 times faster than patched-jsdom. jsdom is 1.1 times faster than patched-jsdom.|
+|simple selector:<br>`closest('.container')`|91,669 ops/sec ±0.71%|250,234 ops/sec ±39.44%|8,164 ops/sec ±0.64%|89,613 ops/sec ±0.67%|happydom is the fastest and 2.8 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
+|compound selector:<br>`closest('div.container[id]:not(.foo, .box)')`|64,840 ops/sec ±0.44%|F|7,587 ops/sec ±0.85%|56,065 ops/sec ±0.62%|jsdom is the fastest and 1.2 times faster than patched-jsdom.|
+|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|63,753 ops/sec ±0.35%|F|5,105 ops/sec ±0.33%|60,020 ops/sec ±0.95%|jsdom is the fastest and 1.1 times faster than patched-jsdom.|
+|complex selector:<br>`closest('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|4,978 ops/sec ±0.76%|12,812 ops/sec ±0.63%|patched-jsdom is the fastest.|
+|complex selector within logical pseudo-class:<br>`closest(':is(.container > .content, .container > .box)')`|73,570 ops/sec ±0.64%|297,918 ops/sec ±0.63%|5,296 ops/sec ±0.54%|71,004 ops/sec ±0.51%|happydom is the fastest and 4.2 times faster than patched-jsdom. jsdom is 1.0 times faster than patched-jsdom.|
+|nested and chained :not() selector:<br>`closest('div:not(:is(:not(.container))):not(.box)')`|F|F|7,487 ops/sec ±0.87%|71,354 ops/sec ±0.77%|patched-jsdom is the fastest.|
 
 ### querySelector()
 
 |Selector|jsdom v25.0.1 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`querySelector('.content')`|21,778 ops/sec ±1.09%|317,148 ops/sec ±5.41%|9,044 ops/sec ±0.63%|58,022 ops/sec ±37.29%|happydom is the fastest and 5.5 times faster than patched-jsdom. patched-jsdom is 2.7 times faster than jsdom.|
-|compound selector:<br>`querySelector('p.content[id]:is(:last-child, :only-child)')`|8,249 ops/sec ±0.76%|315,336 ops/sec ±0.77%|6,667 ops/sec ±42.96%|36,653 ops/sec ±0.77%|happydom is the fastest and 8.6 times faster than patched-jsdom. patched-jsdom is 4.4 times faster than jsdom.|
-|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|201 ops/sec ±0.62%|F|1,178 ops/sec ±0.86%|605 ops/sec ±0.85%|linkedom is the fastest and 1.9 times faster than patched-jsdom. patched-jsdom is 3.0 times faster than jsdom.|
-|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|1,461 ops/sec ±0.54%|450 ops/sec ±0.54%|linkedom is the fastest and 3.2 times faster than patched-jsdom.|
-|complex selector within logical pseudo-class:<br>`querySelector(':is(.box > .content, .block > .content)')`|3,054 ops/sec ±0.78%|F|8,394 ops/sec ±0.88%|74,605 ops/sec ±0.72%|patched-jsdom is the fastest. patched-jsdom is 24.4 times faster than jsdom.|
-|nested and chained :not() selector:<br>`querySelector('p:not(:is(:not(.content))):not(.foo)')`|F|F|8,463 ops/sec ±0.65%|69,622 ops/sec ±0.77%|patched-jsdom is the fastest.|
+|simple selector:<br>`querySelector('.content')`|22,631 ops/sec ±1.24%|188,606 ops/sec ±59.77%|9,588 ops/sec ±0.83%|76,778 ops/sec ±0.84%|happydom is the fastest and 2.5 times faster than patched-jsdom. patched-jsdom is 3.4 times faster than jsdom.|
+|compound selector:<br>`querySelector('p.content[id]:is(:last-child, :only-child)')`|8,735 ops/sec ±0.49%|328,299 ops/sec ±0.56%|9,302 ops/sec ±0.67%|36,679 ops/sec ±0.91%|happydom is the fastest and 9.0 times faster than patched-jsdom. patched-jsdom is 4.2 times faster than jsdom.|
+|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|199 ops/sec ±0.95%|F|1,220 ops/sec ±0.76%|609 ops/sec ±0.53%|linkedom is the fastest and 2.0 times faster than patched-jsdom. patched-jsdom is 3.1 times faster than jsdom.|
+|complex selector:<br>`querySelector('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|1,489 ops/sec ±0.58%|445 ops/sec ±0.55%|linkedom is the fastest and 3.3 times faster than patched-jsdom.|
+|complex selector within logical pseudo-class:<br>`querySelector(':is(.box > .content, .block > .content)')`|2,980 ops/sec ±0.79%|F|8,954 ops/sec ±0.70%|71,533 ops/sec ±0.63%|patched-jsdom is the fastest. patched-jsdom is 24.0 times faster than jsdom.|
+|nested and chained :not() selector:<br>`querySelector('p:not(:is(:not(.content))):not(.foo)')`|F|F|9,045 ops/sec ±0.74%|67,579 ops/sec ±0.63%|patched-jsdom is the fastest.|
 
 ### querySelectorAll()
 
 |Selector|jsdom v25.0.1 (nwsapi)|happy-dom|linkeDom|patched-jsdom (dom-selector)|Result|
 |:-----------|:-----------|:-----------|:-----------|:-----------|:-----------|
-|simple selector:<br>`querySelectorAll('.content')`|1,300 ops/sec ±0.61%|511 ops/sec ±38.06%|1,090 ops/sec ±0.50%|1,293 ops/sec ±0.48%|jsdom is the fastest and 1.0 times faster than patched-jsdom.|
-|compound selector:<br>`querySelectorAll('p.content[id]:is(:last-child, :only-child)')`|686 ops/sec ±0.24%|581 ops/sec ±4.84%|1,065 ops/sec ±0.62%|629 ops/sec ±0.54%|linkedom is the fastest and 1.7 times faster than patched-jsdom. jsdom is 1.1 times faster than patched-jsdom.|
-|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|199 ops/sec ±0.76%|F|388 ops/sec ±0.75%|202 ops/sec ±0.42%|linkedom is the fastest and 1.9 times faster than patched-jsdom. patched-jsdom is 1.0 times faster than jsdom.|
-|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|419 ops/sec ±0.56%|177 ops/sec ±1.02%|linkedom is the fastest and 2.4 times faster than patched-jsdom.|
-|complex selector within logical pseudo-class:<br>`querySelectorAll(':is(.box > .content, .block > .content)')`|271 ops/sec ±1.06%|F|465 ops/sec ±0.39%|794 ops/sec ±1.19%|patched-jsdom is the fastest. patched-jsdom is 2.9 times faster than jsdom.|
-|nested and chained :not() selector:<br>`querySelectorAll('p:not(:is(:not(.content))):not(.foo)')`|F|F|1,111 ops/sec ±0.45%|1,274 ops/sec ±0.88%|patched-jsdom is the fastest.|
+|simple selector:<br>`querySelectorAll('.content')`|1,309 ops/sec ±0.65%|490 ops/sec ±39.19%|1,094 ops/sec ±0.63%|1,316 ops/sec ±1.08%|patched-jsdom is the fastest. patched-jsdom is 1.0 times faster than jsdom.|
+|compound selector:<br>`querySelectorAll('p.content[id]:is(:last-child, :only-child)')`|680 ops/sec ±0.58%|433 ops/sec ±46.81%|1,068 ops/sec ±0.70%|647 ops/sec ±0.61%|linkedom is the fastest and 1.7 times faster than patched-jsdom. jsdom is 1.1 times faster than patched-jsdom.|
+|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner > .content')`|182 ops/sec ±1.53%|F|389 ops/sec ±0.67%|198 ops/sec ±0.88%|linkedom is the fastest and 2.0 times faster than patched-jsdom. patched-jsdom is 1.1 times faster than jsdom.|
+|complex selector:<br>`querySelectorAll('.box:first-child ~ .box:nth-of-type(4n+1) + .box[id] .block.inner:has(> .content)')`|F|F|424 ops/sec ±0.45%|173 ops/sec ±0.45%|linkedom is the fastest and 2.4 times faster than patched-jsdom.|
+|complex selector within logical pseudo-class:<br>`querySelectorAll(':is(.box > .content, .block > .content)')`|267 ops/sec ±0.62%|F|467 ops/sec ±0.49%|829 ops/sec ±1.16%|patched-jsdom is the fastest. patched-jsdom is 3.1 times faster than jsdom.|
+|nested and chained :not() selector:<br>`querySelectorAll('p:not(:is(:not(.content))):not(.foo)')`|F|F|1,151 ops/sec ±0.27%|1,338 ops/sec ±0.69%|patched-jsdom is the fastest.|
 
 
 ## Acknowledgments
