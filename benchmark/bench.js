@@ -181,6 +181,7 @@ const selectors = [
   '.box .content',
   ':is(.box > .content, .block > .content)',
   ':is(.container > .content, .container > .box)',
+  'p:not(:is(:not(.content))):not(.foo)'
 ];
 
 /* matcher tests */
@@ -536,6 +537,14 @@ suite.on('start', () => {
   elementMatchesRandom2('linkedom', selectors[15], 'p');
 }).add(`patched-jsdom matches('${selectors[15]}')`, () => {
   elementMatchesRandom2('patched-jsdom', selectors[15], 'p');
+}).add(`jsdom matches('${selectors[17]}')`, () => {
+  elementMatchesRandom2('jsdom', selectors[17], 'p');
+}).add(`happydom matches('${selectors[17]}')`, () => {
+  elementMatchesRandom2('happydom', selectors[17], 'p');
+}).add(`linkedom matches('${selectors[17]}')`, () => {
+  elementMatchesRandom2('linkedom', selectors[17], 'p');
+}).add(`patched-jsdom matches('${selectors[17]}')`, () => {
+  elementMatchesRandom2('patched-jsdom', selectors[17], 'p');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
@@ -616,6 +625,14 @@ suite.on('start', () => {
   parentNodeQuerySelectorRandom('linkedom', selectors[15], 'p');
 }).add(`patched-jsdom querySelector('${selectors[15]}')`, () => {
   parentNodeQuerySelectorRandom('patched-jsdom', selectors[15], 'p');
+}).add(`jsdom querySelector('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorRandom('jsdom', selectors[17], 'p');
+}).add(`happydom querySelector('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorRandom('happydom', selectors[17], 'p');
+}).add(`linkedom querySelector('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorRandom('linkedom', selectors[17], 'p');
+}).add(`patched-jsdom querySelector('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorRandom('patched-jsdom', selectors[17], 'p');
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
 }).add(`happydom querySelectorAll('${selectors[0]}')`, () => {
@@ -656,6 +673,14 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('linkedom', selectors[15], 1000);
 }).add(`patched-jsdom querySelectorAll('${selectors[15]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[15], 1000);
+}).add(`jsdom querySelectorAll('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[17], 1000);
+}).add(`happydom querySelectorAll('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorAll('happydom', selectors[17], 1000);
+}).add(`linkedom querySelectorAll('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorAll('linkedom', selectors[17], 1000);
+}).add(`patched-jsdom querySelectorAll('${selectors[17]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[17], 1000);
 /*
 }).add(`jsdom matches('${selectors[11]}')`, () => {
   elementMatches('jsdom', selectors[11], false);
@@ -788,7 +813,12 @@ suite.on('start', () => {
 */
 }).on('cycle', evt => {
   const { target } = evt;
-  const str = String(target);
+  let str;
+  if (target.error) {
+    str = target.name;
+  } else {
+    str = String(target);
+  }
   if (str.startsWith('patched-jsdom')) {
     const patchedHz = target.hz;
     const jsdomHz = hz.get('jsdom');
