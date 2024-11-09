@@ -181,7 +181,8 @@ const selectors = [
   '.box .content',
   ':is(.box > .content, .block > .content)',
   ':is(.container > .content, .container > .box)',
-  'p:not(:is(:not(.content))):not(.foo)'
+  'p:not(:is(:not(.content))):not(.foo)',
+  'div:not(:is(:not(.container))):not(.box)'
 ];
 
 /* matcher tests */
@@ -585,6 +586,14 @@ suite.on('start', () => {
   elementClosestRandom2('linkedom', selectors[16], 'box');
 }).add(`patched-jsdom closest('${selectors[16]}')`, () => {
   elementClosestRandom2('patched-jsdom', selectors[16], 'box');
+}).add(`jsdom closest('${selectors[18]}')`, () => {
+  elementClosestRandom('jsdom', selectors[18], 'container');
+}).add(`happydom closest('${selectors[18]}')`, () => {
+  elementClosestRandom('happydom', selectors[18], 'container');
+}).add(`linkedom closest('${selectors[18]}')`, () => {
+  elementClosestRandom('linkedom', selectors[18], 'container');
+}).add(`patched-jsdom closest('${selectors[18]}')`, () => {
+  elementClosestRandom('patched-jsdom', selectors[18], 'container');
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
