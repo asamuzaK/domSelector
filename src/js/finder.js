@@ -2090,8 +2090,8 @@ export class Finder {
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node to start from
    * @param {object} opt - options
-   * @param {boolean} opt.force - traverse only to next node
-   * @param {string} opt.targetType - target type
+   * @param {boolean} [opt.force] - traverse only to next node
+   * @param {string} [opt.targetType] - target type
    * @returns {?object|Array.<object>} - matched node / collection of nodes
    */
   _findWalker(leaves, node, opt = {}) {
