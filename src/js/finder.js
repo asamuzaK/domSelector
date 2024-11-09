@@ -312,8 +312,8 @@ export class Finder {
    * @private
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} opt - options
-   * @param {boolean} opt.force - force new tree walker
-   * @param {number} opt.whatToShow - NodeFilter whatToShow
+   * @param {boolean} [opt.force] - force new tree walker
+   * @param {number} [opt.whatToShow] - NodeFilter whatToShow
    * @returns {object} - tree walker
    */
   _createTreeWalker(node, opt = {}) {
