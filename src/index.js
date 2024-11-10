@@ -11,12 +11,12 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, ID_CLASS,
+  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, TAG_ID_CLASS,
   TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
-const REG_SIMPLE = new RegExp(`^${ID_CLASS}$`);
+const REG_SIMPLE = new RegExp(`^${TAG_ID_CLASS}$`);
 
 /* DOMSelector */
 export class DOMSelector {
@@ -156,7 +156,7 @@ export class DOMSelector {
     if (document === this.#document && document.contentType === 'text/html') {
       const filterOpt = {
         complex: false,
-        compound: !REG_COMPLEX.test(selector),
+        compound: !(REG_SIMPLE.test(selector) || REG_COMPLEX.test(selector)),
         descend: REG_DESCEND.test(selector),
         simple: REG_SIMPLE.test(selector),
         target: TARGET_FIRST
@@ -207,7 +207,7 @@ export class DOMSelector {
         complex: false,
         compound: false,
         descend: REG_DESCEND.test(selector),
-        simple: false,
+        simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {

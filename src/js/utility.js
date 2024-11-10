@@ -672,7 +672,7 @@ export const filterSelector = (selector, opt = {}) => {
     return false;
   }
   const { complex, compound, descend, simple } = opt;
-  // exclude simple id / class or compound
+  // exclude simple selector and compound selector
   if (simple || compound) {
     return false;
   }
