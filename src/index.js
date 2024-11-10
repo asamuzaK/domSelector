@@ -207,7 +207,7 @@ export class DOMSelector {
         complex: false,
         compound: false,
         descend: REG_DESCEND.test(selector),
-        simple: REG_SIMPLE.test(selector),
+        simple: false,
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {
