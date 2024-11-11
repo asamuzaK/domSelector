@@ -6358,6 +6358,24 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('to-upstream/html/semantics/selectors/pseudo-classes/checked-002.html', () => {
+    it('should get matched node(s)', () => {
+      const html = `
+        <select id="select" multiple>
+          <option id="option" selected>Your only option</option>
+        </select>
+      `;
+      document.body.innerHTML = html;
+      const selectEl = document.querySelector("#select");
+      const optionEl = document.querySelector("#option");
+      const query1 = selectEl.querySelector(":checked");
+      assert.deepEqual(query1, optionEl);
+      selectEl.lastElementChild.selected = false;
+      const query2 = selectEl.querySelector(":checked");
+      assert.isNull(query2);
+    });
+  });
+
   describe('jsdom: to-port-to-wpts/query-selector-all.js', () => {
     it('should get matched node(s)', () => {
       const html = `
