@@ -223,10 +223,11 @@ export class Finder {
       }
       const { branches, info } = walkAST(cssAst);
       const {
-        hasHasPseudoFunc, hasLogicalPseudoFunc, hasNthChildOfSelector
+        hasHasPseudoFunc, hasLogicalPseudoFunc, hasNthChildOfSelector,
+        hasStatePseudoClass
       } = info;
-      let invalidate =
-        hasHasPseudoFunc || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      let invalidate = hasHasPseudoFunc || hasStatePseudoClass ||
+        !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       let descendant = false;
       let i = 0;
       ast = [];

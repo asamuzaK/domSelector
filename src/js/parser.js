@@ -9,9 +9,9 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, KEY_SHADOW_HOST,
-  NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, SYNTAX_ERR,
-  TYPE_SELECTOR
+  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, KEY_PS_STATE,
+  KEY_SHADOW_HOST, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR,
+  SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
 const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
@@ -192,6 +192,8 @@ export const walkAST = (ast = {}) => {
             if (node.name === 'has') {
               info.set('hasHasPseudoFunc', true);
             }
+          } else if (KEY_PS_STATE.includes(node.name)) {
+            info.set('hasStatePseudoClass', true);
           } else if (KEY_SHADOW_HOST.includes(node.name) &&
                      Array.isArray(node.children) && node.children.length) {
             info.set('hasNestedSelector', true);

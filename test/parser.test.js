@@ -7100,6 +7100,41 @@ describe('walk AST', () => {
         {
           children: [
             {
+              loc: null,
+              name: 'checked',
+              type: PS_CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(res, {
+      branches: [
+        [
+          {
+            loc: null,
+            name: 'checked',
+            type: PS_CLASS_SELECTOR
+          }
+        ]
+      ],
+      info: {
+        hasStatePseudoClass: true
+      }
+    }, 'result');
+  });
+
+  it('should get selectors and info', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
               children: [
                 {
                   loc: null,

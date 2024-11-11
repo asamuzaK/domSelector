@@ -107,4 +107,9 @@ export const KEY_MODIFIER = Object.freeze([
   'Alt', 'AltGraph', 'CapsLock', 'Control', 'Fn', 'FnLock', 'Hyper', 'Meta',
   'NumLock', 'ScrollLock', 'Shift', 'Super', 'Symbol', 'SymbolLock'
 ]);
+export const KEY_PS_STATE = Object.freeze([
+  'enabled', 'disabled', 'valid', 'invalid', 'in-range', 'out-of-range',
+  'checked', 'indeterminate', 'read-only', 'read-write', 'open', 'closed',
+  'placeholder-shown'
+]);
 export const KEY_SHADOW_HOST = Object.freeze(['host', 'host-context']);
