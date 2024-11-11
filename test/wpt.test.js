@@ -6366,12 +6366,12 @@ describe('local wpt test cases', () => {
         </select>
       `;
       document.body.innerHTML = html;
-      const selectEl = document.querySelector("#select");
-      const optionEl = document.querySelector("#option");
-      const query1 = selectEl.querySelector(":checked");
+      const selectEl = document.querySelector('#select');
+      const optionEl = document.querySelector('#option');
+      const query1 = selectEl.querySelector(':checked');
       assert.deepEqual(query1, optionEl);
       selectEl.lastElementChild.selected = false;
-      const query2 = selectEl.querySelector(":checked");
+      const query2 = selectEl.querySelector(':checked');
       assert.isNull(query2);
     });
   });
