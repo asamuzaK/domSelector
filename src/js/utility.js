@@ -115,7 +115,7 @@ export const traverseNode = (node, walker, force = false) => {
         if (refNode === node) {
           bool = true;
           break;
-        } else if (refNode === walker.root) {
+        } else if (refNode === walker.root || refNode.contains(node)) {
           break;
         }
         refNode = walker.parentNode();
