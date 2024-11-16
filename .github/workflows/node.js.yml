@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ main ]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     strategy:
@@ -24,4 +28,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm run lint
-      - run: npm test
+      - name: Test Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: npm run test-win
+      - name: Test
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: npm test

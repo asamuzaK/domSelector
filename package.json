@@ -56,8 +56,9 @@
     "build": "npm run tsc && npm run lint && npm test && npm run compat",
     "compat": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
     "lint": "eslint --fix .",
-    "test": "node --test --experimental-test-coverage test/*.test.js",
-    "test-wpt": "node test/wpt/wpt-runner.js",
+    "test": "node --test --experimental-test-coverage **/*.test.js",
+    "test-win": "node --test --experimental-test-coverage \"test/*.test.js\"",
+    "test-wpt": "node wpt/wpt-runner.js",
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },

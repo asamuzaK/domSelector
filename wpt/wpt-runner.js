@@ -1,9 +1,10 @@
 /**
  * wpt-runner.js
  */
+/* eslint-disable no-await-in-loop, n/no-callback-literal */
 
 import wptRunner from 'wpt-runner';
-import { DOMSelector } from '../../src/index.js';
+import { DOMSelector } from '../src/index.js';
 
 const setup = window => {
   const domSelector = new DOMSelector(window);
@@ -198,7 +199,7 @@ const rootURLs = [
 (async () => {
   const res = [];
   for (const rootURL of rootURLs) {
-    await wptRunner(`test/wpt/wpt/${rootURL}`, {
+    await wptRunner(`wpt/wpt/${rootURL}`, {
       rootURL,
       setup,
       filter
