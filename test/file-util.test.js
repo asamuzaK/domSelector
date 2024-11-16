@@ -1,9 +1,9 @@
 /* api */
+import { strict as assert } from 'node:assert';
 import fs, { promises as fsPromise } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'mocha';
-import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 
 /* test */
 import {
@@ -15,18 +15,18 @@ const TMPDIR = process.env.TMP || process.env.TMPDIR || process.env.TEMP ||
                os.tmpdir();
 
 describe('getStat', () => {
-  it('should be an object', () => {
+  it('should get stat', () => {
     const p = path.resolve('test', 'file', 'test.txt');
-    assert.property(getStat(p), 'mode');
+    assert.strictEqual(getStat(p) instanceof fs.Stats, true);
   });
 
   it('should get null if given argument is not string', () => {
-    assert.isNull(getStat());
+    assert.deepEqual(getStat(), null);
   });
 
   it('should get null if file does not exist', () => {
     const p = path.resolve('test', 'file', 'foo.txt');
-    assert.isNull(getStat(p));
+    assert.deepEqual(getStat(p), null);
   });
 });
 
@@ -45,20 +45,20 @@ describe('isDir', () => {
 describe('isFile', () => {
   it('should get true if file exists', () => {
     const p = path.resolve('test', 'file', 'test.txt');
-    assert.isTrue(isFile(p));
+    assert.strictEqual(isFile(p), true);
   });
 
   it('should get false if file does not exist', () => {
     const p = path.resolve('test', 'file', 'foo.txt');
-    assert.isFalse(isFile(p));
+    assert.strictEqual(isFile(p), false);
   });
 });
 
 describe('removeDir', () => {
   it('should throw', () => {
     const foo = path.resolve('foo');
-    assert.isFalse(isDir(foo));
-    assert.throws(() => removeDir(foo), `No such directory: ${foo}`);
+    assert.strictEqual(isDir(foo), false);
+    assert.throws(() => removeDir(foo), Error, `No such directory: ${foo}`);
   });
 
   it("should remove dir and it's files", async () => {
@@ -98,7 +98,7 @@ describe('readFile', () => {
     const p = path.resolve('test', 'file', 'test.txt');
     const opt = { encoding: 'utf8', flag: 'r' };
     const file = await readFile(p, opt);
-    assert.isTrue(/^test file\r?\n$/.test(file));
+    assert.strictEqual(/^test file\r?\n$/.test(file), true);
   });
 });
 
@@ -121,16 +121,16 @@ describe('createFile', () => {
 
   it('should throw if first argument is not a string', () => {
     createFile().catch(e => {
-      assert.instanceOf(e, TypeError, 'error');
-      assert.strictEqual(e.message, 'Expected String but got Undefined.');
+      assert.deepStrictEqual(e,
+        new TypeError('Expected String but got Undefined.'));
     });
   });
 
   it('should throw if second argument is not a string', () => {
     const file = path.join(dirPath, 'test.txt');
     createFile(file).catch(e => {
-      assert.instanceOf(e, TypeError, 'error');
-      assert.strictEqual(e.message, 'Expected String but got Undefined.');
+      assert.deepStrictEqual(e,
+        new TypeError('Expected String but got Undefined.'));
     });
   });
 });

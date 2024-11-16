@@ -3,8 +3,8 @@
  */
 
 /* api */
-import { assert } from 'chai';
-import { describe, it } from 'mocha';
+import { strict as assert } from 'node:assert';
+import { describe, it } from 'node:test';
 
 /* test */
 import * as parser from '../src/js/parser.js';

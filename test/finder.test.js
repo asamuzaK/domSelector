@@ -3,9 +3,9 @@
  */
 
 /* api */
-import { assert } from 'chai';
+import { strict as assert } from 'node:assert';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import { JSDOM } from 'jsdom';
-import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
@@ -91,12 +91,12 @@ describe('Finder', () => {
   describe('Finder', () => {
     it('should be instance of Finder', () => {
       const finder = new Finder(window);
-      assert.instanceOf(finder, Finder, 'result');
+      assert.strictEqual(finder instanceof Finder, true, 'result');
     });
 
     it('should be instance of Finder', () => {
       const finder = new Finder(window, document);
-      assert.instanceOf(finder, Finder, 'result');
+      assert.strictEqual(finder instanceof Finder, true, 'result');
     });
   });
 
@@ -124,14 +124,14 @@ describe('Finder', () => {
     });
 
     it('should throw', () => {
+      const err = new DOMException('error', SYNTAX_ERR);
       try {
-        const err = new DOMException('error', SYNTAX_ERR);
         const finder = new Finder(window);
         finder.setup('*', document);
         finder.onError(err);
       } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'error', 'message');
+        assert.strictEqual(e instanceof window.DOMException, true);
+        assert.strictEqual(e.message, 'error');
       }
     });
 
@@ -140,7 +140,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
       const res = finder.onError(err);
-      assert.isUndefined(res, 'result');
+      assert.deepEqual(res, undefined, 'result');
     });
 
     it('should not throw', () => {
@@ -149,7 +149,7 @@ describe('Finder', () => {
       const res = finder.onError(err, {
         noexcept: true
       });
-      assert.isUndefined(res, 'result');
+      assert.deepEqual(res, undefined, 'result');
     });
 
     it('should warn', () => {
@@ -162,8 +162,8 @@ describe('Finder', () => {
       const res = finder.onError(err);
       const { called } = stubWarn;
       stubWarn.restore();
-      assert.isTrue(called, 'called');
-      assert.isUndefined(res, 'result');
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual(res, undefined, 'result');
     });
   });
 
@@ -226,15 +226,19 @@ describe('Finder', () => {
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('[foo==bar]'),
-        'Identifier is expected');
+      assert.throws(() => finder._correspond('[foo==bar]'), {
+        name: 'SyntaxError',
+        message: 'Identifier is expected'
+      });
     });
 
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('li ++ li'),
-        'Invalid selector li ++ li');
+      assert.throws(() => finder._correspond('li ++ li'), {
+        name: 'SyntaxError',
+        message: 'Invalid selector li ++ li'
+      });
     });
 
     it('should get result', () => {
@@ -2421,7 +2425,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has()', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -2433,7 +2437,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(li)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -2445,7 +2449,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -2467,7 +2471,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd p)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -2489,7 +2493,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd span)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -2571,7 +2575,7 @@ describe('Finder', () => {
         astName: 'has',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -2660,7 +2664,7 @@ describe('Finder', () => {
         astName: 'has',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -2766,7 +2770,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -2857,7 +2861,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3206,7 +3210,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3312,7 +3316,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3458,7 +3462,7 @@ describe('Finder', () => {
         astName: 'not',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -3500,7 +3504,7 @@ describe('Finder', () => {
         astName: 'not',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -3515,8 +3519,10 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup(':has()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :has()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :has()'
+      });
     });
 
     it('should throw', () => {
@@ -3529,8 +3535,10 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup(':not()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :not()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :not()'
+      });
     });
 
     it('should get matched node', () => {
@@ -3630,8 +3638,10 @@ describe('Finder', () => {
       const node = document.getElementById('ul1').parentNode;
       const finder = new Finder(window);
       finder.setup(':has(> :has(li))', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        'Invalid selector :has(>:has(li))');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :has(>:has(li))'
+      });
     });
 
     it('should not match', () => {
@@ -3792,8 +3802,10 @@ describe('Finder', () => {
       const node = document.getElementById('ul1').parentNode;
       const finder = new Finder(window);
       finder.setup(':has(:is(:has(li, dd)))', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        'Invalid selector :has(:not(:has(li,dd)))');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :has(:not(:has(li,dd)))'
+      });
     });
 
     it('should throw', () => {
@@ -3805,8 +3817,10 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-child()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-child()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :nth-child()'
+      });
     });
 
     it('should throw', () => {
@@ -3818,8 +3832,10 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-last-child()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-last-child()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :nth-last-child()'
+      });
     });
 
     it('should throw', () => {
@@ -3831,8 +3847,10 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-of-type()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-of-type()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :nth-of-type()'
+      });
     });
 
     it('should throw', () => {
@@ -3844,8 +3862,10 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-last-of-type()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-last-of-type()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :nth-last-of-type()'
+      });
     });
 
     it('should get matched node(s)', () => {
@@ -3885,8 +3905,10 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':dir()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :dir()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :dir()'
+      });
     });
 
     it('should get matched node', () => {
@@ -3923,8 +3945,10 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':lang()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :lang()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :lang()'
+      });
     });
 
     it('should get matched node', () => {
@@ -4003,69 +4027,6 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
-      const leaf = {
-        children: [
-          {
-            type: RAW,
-            value: 'checked'
-          }
-        ],
-        loc: null,
-        name: 'state',
-        type: PS_CLASS_SELECTOR
-      };
-      class LabeledCheckbox extends window.HTMLElement {
-        constructor() {
-          super();
-          this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
-          if (!this._internals.states) {
-            this._internals.states = new Set();
-          }
-          this.addEventListener('click', this._onClick.bind(this));
-          const shadowRoot = this.attachShadow({ mode: 'closed' });
-          shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <slot>Label</slot>
-          `;
-        }
-
-        get checked() {
-          return this._internals.states.has('checked');
-        }
-
-        set checked(flag) {
-          if (flag) {
-            this._internals.states.add('checked');
-          } else {
-            this._internals.states.delete('checked');
-          }
-        }
-
-        _onClick(event) {
-          this.checked = !this.checked;
-        }
-      }
-      window.customElements.define('labeled-checkbox', LabeledCheckbox);
-      const node = document.createElement('labeled-checkbox');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':state(checked)', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
     it('should get matched node', () => {
       const leaf = {
         children: [
@@ -4123,13 +4084,20 @@ describe('Finder', () => {
       const node = document.createElement('labeled-checkbox');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      node.click();
       const finder = new Finder(window);
       finder.setup(':state(checked)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [
+      assert.deepEqual([...res], [], 'result');
+
+      node.click();
+      const res2 = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res2], [
         node
       ], 'result');
+
+      node.click();
+      const res3 = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res3], [], 'result');
     });
 
     it('should not match', () => {
@@ -4172,8 +4140,10 @@ describe('Finder', () => {
       finder.setup(':current(foo)', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :current()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'NotSupportedError',
+        message: 'Unsupported pseudo-class :current()'
+      });
     });
 
     it('should not match', () => {
@@ -4249,8 +4219,10 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':foobar(foo)', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :foobar()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Unknown pseudo-class :foobar()'
+      });
     });
 
     it('should not match', () => {
@@ -4293,8 +4265,10 @@ describe('Finder', () => {
       finder.setup(':contains(foo)', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :contains()');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'NotSupportedError',
+        message: 'Unknown pseudo-class :contains()'
+      });
     });
 
     it('should not match', () => {
@@ -4933,7 +4907,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4951,7 +4925,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4969,7 +4943,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -4987,7 +4961,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5005,7 +4979,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5023,7 +4997,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5041,7 +5015,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5059,7 +5033,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5077,7 +5051,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5095,7 +5069,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5497,7 +5471,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5515,7 +5489,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5533,7 +5507,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5551,7 +5525,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5604,7 +5578,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5622,7 +5596,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5640,7 +5614,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5658,7 +5632,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5676,7 +5650,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5694,7 +5668,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    xit('should not match', () => {
+    it.skip('should not match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -8879,7 +8853,8 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.isTrue(node instanceof window.HTMLUnknownElement, 'instance');
+      assert.strictEqual(node instanceof window.HTMLUnknownElement, true,
+        'instance');
       assert.deepEqual([...res], [
         node
       ], 'result');
@@ -9178,8 +9153,10 @@ describe('Finder', () => {
       finder.setup(':after', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-element ::after');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'NotSupportedError',
+        message: 'Unsupported pseudo-element ::after'
+      });
     });
 
     // not supported
@@ -9209,8 +9186,10 @@ describe('Finder', () => {
       finder.setup(':autofill', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :autofill');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'NotSupportedError',
+        message: 'Unsupported pseudo-class :autofill'
+      });
     });
 
     // unknown
@@ -9224,8 +9203,10 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':foo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :foo');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Unknown pseudo-class :foo'
+      });
     });
 
     it('should not match', () => {
@@ -9270,8 +9251,10 @@ describe('Finder', () => {
       finder.setup(':-webkit-foo', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :-webkit-foo');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'NotSupportedError',
+        message: 'Unsupported pseudo-class :-webkit-foo'
+      });
     });
 
     it('should throw', () => {
@@ -9284,8 +9267,10 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':webkit-foo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :webkit-foo');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Unknown pseudo-class :webkit-foo'
+      });
     });
 
     it('should not match', () => {
@@ -9314,8 +9299,10 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':-webkitfoo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :-webkitfoo');
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}), {
+        name: 'SyntaxError',
+        message: 'Unknown pseudo-class :-webkitfoo'
+      });
     });
 
     it('should not match', () => {
@@ -9367,8 +9354,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':foobar div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :foobar');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :foobar'
+      });
     });
 
     it('should throw', () => {
@@ -9412,8 +9401,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':foobar(#baz) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :foobar');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :foobar'
+      });
     });
 
     it('should throw', () => {
@@ -9447,8 +9438,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :host-context'
+      });
     });
 
     it('should throw', () => {
@@ -9482,8 +9475,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host() div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host()');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :host()'
+      });
     });
 
     it('should throw', () => {
@@ -9517,8 +9512,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context() div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context()');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :host-context()'
+      });
     });
 
     it('should get matched node', () => {
@@ -9605,8 +9602,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#baz #foobar) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host(#baz #foobar)');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :host(#baz #foobar)'
+      });
     });
 
     it('should get matched node', () => {
@@ -9700,7 +9699,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(#foobar) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should throw', () => {
@@ -9752,8 +9751,10 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context(#baz #foobar) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context(#baz #foobar)');
+      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node), {
+        name: 'SyntaxError',
+        message: 'Invalid selector :host-context(#baz #foobar)'
+      });
     });
 
     it('should get matched node', () => {
@@ -9894,229 +9895,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context(#foobar) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    loc: null,
-                    type: 'Raw',
-                    value: 'checked'
-                  }
-                ],
-                loc: null,
-                name: 'state',
-                type: PS_CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        name: 'host',
-        type: PS_CLASS_SELECTOR
-      };
-      class LabeledCheckbox extends window.HTMLElement {
-        constructor() {
-          super();
-          this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
-          if (!this._internals.states) {
-            this._internals.states = new Set();
-          }
-          this.addEventListener('click', this._onClick.bind(this));
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
-          `;
-        }
-
-        get checked() {
-          return this._internals.states.has('checked');
-        }
-
-        set checked(flag) {
-          if (flag) {
-            this._internals.states.add('checked');
-          } else {
-            this._internals.states.delete('checked');
-          }
-        }
-
-        _onClick(event) {
-          this.checked = !this.checked;
-        }
-      }
-      window.customElements.define('labeled-checkbox', LabeledCheckbox);
-      const host = document.createElement('labeled-checkbox');
-      const parent = document.getElementById('div0');
-      parent.appendChild(host);
-      const node = host.shadowRoot;
-      const finder = new Finder(window);
-      finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
-    });
-
-    it('should get matched node', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    loc: null,
-                    type: 'Raw',
-                    value: 'checked'
-                  }
-                ],
-                loc: null,
-                name: 'state',
-                type: PS_CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        name: 'host',
-        type: PS_CLASS_SELECTOR
-      };
-      class LabeledCheckbox extends window.HTMLElement {
-        constructor() {
-          super();
-          this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
-          if (!this._internals.states) {
-            this._internals.states = new Set();
-          }
-          this.addEventListener('click', this._onClick.bind(this));
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
-          `;
-        }
-
-        _onClick(event) {
-          if (this._internals.states.has('checked')) {
-            this._internals.states.delete('checked');
-          } else {
-            this._internals.states.add('checked');
-          }
-        }
-      }
-      window.customElements.define('labeled-checkbox', LabeledCheckbox);
-      const host = document.createElement('labeled-checkbox');
-      const parent = document.getElementById('div0');
-      parent.appendChild(host);
-      const node = host.shadowRoot;
-      host.click();
-      const finder = new Finder(window);
-      finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    loc: null,
-                    type: 'Raw',
-                    value: 'checked'
-                  }
-                ],
-                loc: null,
-                name: 'state',
-                type: PS_CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        name: 'host',
-        type: PS_CLASS_SELECTOR
-      };
-      class LabeledCheckbox extends window.HTMLElement {
-        constructor() {
-          super();
-          this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
-          if (!this._internals.states) {
-            this._internals.states = new Set();
-          }
-          this.addEventListener('click', this._onClick.bind(this));
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
-          `;
-        }
-
-        _onClick(event) {
-          if (this._internals.states.has('checked')) {
-            this._internals.states.delete('checked');
-          } else {
-            this._internals.states.add('checked');
-          }
-        }
-      }
-      window.customElements.define('labeled-checkbox', LabeledCheckbox);
-      const host = document.createElement('labeled-checkbox');
-      const parent = document.getElementById('div0');
-      parent.appendChild(host);
-      const node = host.shadowRoot;
-      const finder = new Finder(window);
-      finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -10192,11 +9971,97 @@ describe('Finder', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(host);
       const node = host.shadowRoot;
-      host.click();
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      assert.deepEqual(res, null, 'result');
+
+      host.click();
+      const res2 = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res2, node, 'result');
+
+      host.click();
+      const res3 = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res3, null, 'result');
+    });
+
+    it('should get matched node', () => {
+      const ast = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    type: 'Raw',
+                    value: 'checked'
+                  }
+                ],
+                loc: null,
+                name: 'state',
+                type: PS_CLASS_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        name: 'host',
+        type: PS_CLASS_SELECTOR
+      };
+      class LabeledCheckbox extends window.HTMLElement {
+        constructor() {
+          super();
+          this._internals = this.attachInternals();
+          // ElementInternals.states is not implemented in jsdom
+          if (!this._internals.states) {
+            this._internals.states = new Set();
+          }
+          this.addEventListener('click', this._onClick.bind(this));
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          shadowRoot.innerHTML = `
+            <style>
+              :host::before {
+                content: '[ ]';
+                white-space: pre;
+                font-family: monospace;
+              }
+              :host(:state(checked))::before {
+                content: '[x]'
+              }
+            </style>
+            <div>
+              <slot>Label</slot>
+            </div>
+          `;
+        }
+
+        _onClick(event) {
+          if (this._internals.states.has('checked')) {
+            this._internals.states.delete('checked');
+          } else {
+            this._internals.states.add('checked');
+          }
+        }
+      }
+      window.customElements.define('labeled-checkbox', LabeledCheckbox);
+      const host = document.createElement('labeled-checkbox');
+      const parent = document.getElementById('div0');
+      parent.appendChild(host);
+      const node = host.shadowRoot;
+      const finder = new Finder(window);
+      finder.setup(':host(:state(checked)) div', node);
+      const res = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res, null, 'result');
+
+      host.click();
+      const res2 = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res2, node, 'result');
+
+      host.click();
+      const res3 = finder._matchShadowHostPseudoClass(ast, node);
+      assert.deepEqual(res3, null, 'result');
     });
   });
 
@@ -10490,7 +10355,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('li#li1.li', document);
       const res = finder._matchLeaves(leaves, node);
-      assert.isTrue(res, 'nodes');
+      assert.strictEqual(res, true, 'nodes');
     });
 
     it('should not match', () => {
@@ -10508,7 +10373,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('li#li1.foobar', document);
       const res = finder._matchLeaves(leaves, node);
-      assert.isFalse(res, 'nodes');
+      assert.strictEqual(res, false, 'nodes');
     });
   });
 
@@ -11536,9 +11401,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('::before');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11550,9 +11415,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11564,9 +11429,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11576,9 +11441,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#ul1');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -11590,9 +11455,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11604,9 +11469,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11623,9 +11488,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11635,9 +11500,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#li1.foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11649,9 +11514,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11661,9 +11526,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11679,9 +11544,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11695,9 +11560,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11709,9 +11574,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11724,9 +11589,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11741,9 +11606,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11757,9 +11622,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11779,9 +11644,9 @@ describe('Finder', () => {
         parent,
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11795,9 +11660,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11809,9 +11674,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11821,9 +11686,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.dd');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11835,9 +11700,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('dd2')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11847,9 +11712,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.li');
       const res = finder._findEntryNodes(twig, 'lineal');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11860,9 +11725,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.dd');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11874,9 +11739,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11886,9 +11751,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('ul');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11900,9 +11765,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11912,9 +11777,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('ol');
       const res = finder._findEntryNodes(twig, 'lineal');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11927,9 +11792,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11942,9 +11807,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11957,9 +11822,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11970,9 +11835,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11982,9 +11847,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('dd:first-child');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11996,9 +11861,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12011,9 +11876,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12033,9 +11898,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         parent
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12045,9 +11910,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.foobar');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12062,9 +11927,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12080,9 +11945,9 @@ describe('Finder', () => {
         parent,
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12097,9 +11962,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.foo');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12112,9 +11977,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('p');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12126,9 +11991,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12141,9 +12006,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should be pended', () => {
@@ -12153,9 +12018,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond(':first-child');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isTrue(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, true, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12190,9 +12055,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12227,9 +12092,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12264,9 +12129,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12298,9 +12163,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond(':host:is(#baz)');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12334,9 +12199,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12371,9 +12236,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
   });
 
@@ -13625,7 +13490,7 @@ describe('Finder', () => {
         },
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -13639,7 +13504,7 @@ describe('Finder', () => {
         },
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -13663,7 +13528,7 @@ describe('Finder', () => {
       const res = finder._matchNodePrev(branch, node, {
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 

@@ -1,10 +1,10 @@
 /* api */
+import { strict as assert } from 'node:assert';
 import fs, { promises as fsPromise } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { describe, it } from 'node:test';
 import sinon from 'sinon';
-import { assert } from 'chai';
-import { describe, it } from 'mocha';
 
 /* test */
 import {
@@ -22,8 +22,7 @@ describe('create deno json', () => {
     const stubWrite =
       sinon.stub(fsPromise, 'writeFile').rejects(new Error('error'));
     await createDenoJson().catch(e => {
-      assert.instanceOf(e, Error, 'error');
-      assert.strictEqual(e.message, 'error', 'message');
+      assert.deepStrictEqual(e, new Error('error'));
     });
     stubWrite.restore();
   });
@@ -57,8 +56,8 @@ describe('create deno json', () => {
     stubRead.restore();
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called write');
-    assert.isFalse(infoCalled, 'not called info');
+    assert.strictEqual(writeCalled, true, 'called write');
+    assert.strictEqual(infoCalled, false, 'not called info');
     assert.strictEqual(res, filePath, 'result');
   });
 
@@ -91,8 +90,8 @@ describe('create deno json', () => {
     stubRead.restore();
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called write');
-    assert.isTrue(infoCalled, 'called info');
+    assert.strictEqual(writeCalled, true, 'called write');
+    assert.strictEqual(infoCalled, true, 'called info');
     assert.strictEqual(res, filePath, 'result');
   });
 });
@@ -102,8 +101,7 @@ describe('create deno config file', () => {
     const stubWrite =
       sinon.stub(fsPromise, 'writeFile').rejects(new Error('error'));
     await createDenoConfigFile().catch(e => {
-      assert.instanceOf(e, Error, 'error');
-      assert.strictEqual(e.message, 'error', 'message');
+      assert.deepStrictEqual(e, new Error('error'));
     });
     stubWrite.restore();
   });
@@ -116,8 +114,8 @@ describe('create deno config file', () => {
     const { called: infoCalled } = stubInfo;
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called write');
-    assert.isFalse(infoCalled, 'not called info');
+    assert.strictEqual(writeCalled, true, 'called write');
+    assert.strictEqual(infoCalled, false, 'not called info');
     assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
   });
 
@@ -131,8 +129,8 @@ describe('create deno config file', () => {
     const { called: infoCalled } = stubInfo;
     stubWrite.restore();
     stubInfo.restore();
-    assert.isTrue(writeCalled, 'called write');
-    assert.isTrue(infoCalled, 'called info');
+    assert.strictEqual(writeCalled, true, 'called write');
+    assert.strictEqual(infoCalled, true, 'called info');
     assert.strictEqual(res, path.resolve(DIR_CWD, 'deno.json'), 'result');
   });
 });
@@ -144,7 +142,7 @@ describe('clean directory', () => {
     cleanDirectory({ dir });
     const { called: rmCalled } = stubRm;
     stubRm.restore();
-    assert.isFalse(rmCalled, 'not called');
+    assert.strictEqual(rmCalled, false, 'not called rm');
   });
 
   it('should call funtion', () => {
@@ -156,8 +154,8 @@ describe('clean directory', () => {
     const { called: infoCalled } = stubInfo;
     stubRm.restore();
     stubInfo.restore();
-    assert.isTrue(rmCalled, 'called');
-    assert.isFalse(infoCalled, 'not called');
+    assert.strictEqual(rmCalled, true, 'called rm');
+    assert.strictEqual(infoCalled, false, 'not called info');
   });
 
   it('should call funtion', () => {
@@ -169,8 +167,8 @@ describe('clean directory', () => {
     const { calledOnce: infoCalled } = stubInfo;
     stubRm.restore();
     stubInfo.restore();
-    assert.isTrue(rmCalled, 'called');
-    assert.isTrue(infoCalled, 'not called');
+    assert.strictEqual(rmCalled, true, 'called rm');
+    assert.strictEqual(infoCalled, true, 'called info');
   });
 });
 

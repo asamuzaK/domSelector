@@ -3,9 +3,9 @@
  */
 
 /* api */
-import { assert } from 'chai';
+import { strict as assert } from 'node:assert';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import { JSDOM } from 'jsdom';
-import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import * as util from '../src/js/utility.js';
@@ -251,7 +251,7 @@ describe('utility functions', () => {
 
     it('should get null', () => {
       const res = func(document);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -262,7 +262,7 @@ describe('utility functions', () => {
     it('should get null', () => {
       const frag = document.createDocumentFragment();
       const res = func(frag, treeWalker);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -281,7 +281,7 @@ describe('utility functions', () => {
     it('should not match', () => {
       const node = document.createElement('ol');
       const res = func(node, treeWalker);
-      assert.isNull(res, null, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -344,7 +344,7 @@ describe('utility functions', () => {
       const walker = document.createTreeWalker(frag, WALKER_FILTER);
       func(node2, walker);
       const res = func(node, walker, true);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -362,19 +362,19 @@ describe('utility functions', () => {
     it('should not match', () => {
       const frag = document.createDocumentFragment();
       const res = func(frag);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
       const node = document.createElement('div');
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
       const node = document.createElement('x-div');
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -383,7 +383,7 @@ describe('utility functions', () => {
       const node = document.createElement('sw-rey');
       document.getElementById('div0').appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -393,7 +393,7 @@ describe('utility functions', () => {
       node.setAttribute('is', 'sw-finn');
       document.getElementById('div0').appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -403,7 +403,7 @@ describe('utility functions', () => {
       node.setAttribute('is', 'sw-rey');
       document.getElementById('div0').appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -414,7 +414,7 @@ describe('utility functions', () => {
       const res = func(node, {
         formAssociated: true
       });
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -426,7 +426,7 @@ describe('utility functions', () => {
       const res = func(node, {
         formAssociated: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -447,7 +447,7 @@ describe('utility functions', () => {
       container.innerHTML = html;
       const node = document.getElementById('foo');
       const res = func(node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get value', () => {
@@ -563,7 +563,7 @@ describe('utility functions', () => {
 
     it('should get null', () => {
       const res = func(document);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get value', () => {
@@ -1021,13 +1021,13 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func(document);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('div');
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1035,7 +1035,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1047,7 +1047,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1056,7 +1056,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.designMode = 'on';
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1065,7 +1065,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1074,7 +1074,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1083,7 +1083,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1092,7 +1092,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1101,7 +1101,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1113,7 +1113,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node2);
       const res = func(node1);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1124,7 +1124,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node2);
       const res = func(node1);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -1133,12 +1133,12 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(document);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1146,7 +1146,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1155,7 +1155,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       node.style.display = 'none';
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1164,7 +1164,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       node.style.visibility = 'hidden';
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1173,7 +1173,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       node.style.visibility = 'collapse';
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1182,7 +1182,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       node.hidden = true;
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1192,7 +1192,7 @@ describe('utility functions', () => {
       node.style.display = 'block';
       node.hidden = true;
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -1201,12 +1201,12 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(document);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1214,7 +1214,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1222,7 +1222,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1231,7 +1231,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1239,7 +1239,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1248,7 +1248,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -1257,30 +1257,30 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(document);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(document.body);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('div');
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('div');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1288,7 +1288,7 @@ describe('utility functions', () => {
       node.tabIndex = -1;
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1296,7 +1296,7 @@ describe('utility functions', () => {
       node.setAttribute('contenteditable', '');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1304,14 +1304,14 @@ describe('utility functions', () => {
       node.setAttribute('contenteditable', 'false');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('a');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1319,21 +1319,21 @@ describe('utility functions', () => {
       node.href = 'about:blank';
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const node = document.createElement('iframe');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const node = document.createElement('input');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1341,7 +1341,7 @@ describe('utility functions', () => {
       node.disabled = true;
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1349,7 +1349,7 @@ describe('utility functions', () => {
       node.setAttribute('disabled', '');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1357,7 +1357,7 @@ describe('utility functions', () => {
       node.hidden = true;
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1365,14 +1365,14 @@ describe('utility functions', () => {
       node.setAttribute('hidden', '');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('summary');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1381,7 +1381,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1392,7 +1392,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1403,14 +1403,14 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const node = document.createElement('button');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1418,7 +1418,7 @@ describe('utility functions', () => {
       node.disabled = true;
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1426,7 +1426,7 @@ describe('utility functions', () => {
         document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1435,7 +1435,7 @@ describe('utility functions', () => {
       node.tabIndex = -1;
       document.body.appendChild(node);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1447,7 +1447,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1459,7 +1459,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1471,7 +1471,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       document.body.appendChild(parent);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1479,7 +1479,7 @@ describe('utility functions', () => {
         document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
       document.body.appendChild(node);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -1488,12 +1488,12 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(document);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1505,7 +1505,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1518,7 +1518,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1531,7 +1531,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1544,7 +1544,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1557,7 +1557,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1570,7 +1570,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1583,7 +1583,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1597,7 +1597,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(form);
       const res = func(node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -1623,7 +1623,7 @@ describe('utility functions', () => {
 
     it('should get null', () => {
       const res = func('foo', document);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get null', () => {
@@ -1632,7 +1632,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get result', () => {
@@ -1653,7 +1653,7 @@ describe('utility functions', () => {
         'https://example.com/foo');
       parent.appendChild(node);
       const res = func('foo', node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get result', () => {
@@ -1673,7 +1673,7 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1681,7 +1681,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1690,7 +1690,7 @@ describe('utility functions', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1699,7 +1699,7 @@ describe('utility functions', () => {
         document.createElementNS('https://example.com/foo', 'foo:div');
       frag.appendChild(node);
       const res = func('foo', node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -1710,7 +1710,7 @@ describe('utility functions', () => {
         'https://example.com/foo');
       frag.appendChild(node);
       const res = func('foo', node);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -1743,7 +1743,7 @@ describe('utility functions', () => {
       nodeA.appendChild(nodeB);
       parent.appendChild(nodeA);
       const res = func(nodeA, nodeB);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1753,7 +1753,7 @@ describe('utility functions', () => {
       nodeB.appendChild(nodeA);
       parent.appendChild(nodeB);
       const res = func(nodeA, nodeB);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -1765,7 +1765,7 @@ describe('utility functions', () => {
       base.appendChild(nodeB);
       parent.appendChild(base);
       const res = func(nodeA, nodeB);
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
@@ -1777,20 +1777,20 @@ describe('utility functions', () => {
       base.appendChild(nodeB);
       parent.appendChild(base);
       const res = func(nodeB, nodeA);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('div');
       const base = document.documentElement;
       const res = func(node, base);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const node = document.createElement('div');
       const res = func(node, node);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
@@ -1800,7 +1800,7 @@ describe('utility functions', () => {
       document.body.appendChild(tmpl);
       const base = document.documentElement;
       const res = func(tmpl.content, base);
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -1879,26 +1879,26 @@ describe('utility functions', () => {
 
     it('should get nwsapi', () => {
       const res = func(window);
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
-        'nwsapi.match');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
-        'nwsapi.closest');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
-        'nwsapi.first');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
-        'nwsapi.select');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'match'),
+        true, 'nwsapi.match');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        true, 'nwsapi.closest');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'first'),
+        true, 'nwsapi.first');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'select'),
+        true, 'nwsapi.select');
     });
 
     it('should get nwsapi', () => {
       const res = func(window, document);
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
-        'nwsapi.match');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
-        'nwsapi.closest');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
-        'nwsapi.first');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
-        'nwsapi.select');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'match'),
+        true, 'nwsapi.match');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        true, 'nwsapi.closest');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'first'),
+        true, 'nwsapi.first');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'select'),
+        true, 'nwsapi.select');
     });
 
     it('should get nwsapi', () => {
@@ -1908,14 +1908,14 @@ describe('utility functions', () => {
       const iframeWindow = iframeDocument.defaultView;
       assert.notDeepEqual(window, iframeWindow, 'window');
       const res = func(iframeWindow);
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'match'),
-        'nwsapi.match');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'closest'),
-        'nwsapi.closest');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'first'),
-        'nwsapi.first');
-      assert.isTrue(Object.prototype.hasOwnProperty.call(res, 'select'),
-        'nwsapi.select');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'match'),
+        true, 'nwsapi.match');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'closest'),
+        true, 'nwsapi.closest');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'first'),
+        true, 'nwsapi.first');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(res, 'select'),
+        true, 'nwsapi.select');
     });
   });
 
@@ -1924,350 +1924,350 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func();
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('*');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func('*|*');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('|*');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('p');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func('ns|p');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('p.foo');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func('p.foo', {
         compound: true
       });
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('.foo', {
         simple: true
       });
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('::slotted');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('.foo');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func('#foo');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func('[id]');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func('[id');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[ns|id]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('[foo="bar baz"]');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func('[foo="bar\tbaz"]');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo="bar baz" i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo="bar baz" qux i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func("[foo='bar baz' qux i]");
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo="bar \'baz\'" i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo=\'bar "baz"\' i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo="bar baz\']');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo=\'bar baz"]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo="bar baz\' i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo=\'bar baz" i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo bar baz i]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('[foo|=bar]');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':enabled');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':disabled');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':read-only');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':read-write');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':empty');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':indeterminate');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':root');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':target');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':visited');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':after');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':host');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func('.foo + .bar');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':first-child :last-child');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':first-child :last-child', {
         descend: true
       });
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':is(.foo, .bar)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':is(.foo .bar, .bar)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':is(.foo .bar, .bar)', {
         complex: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(even)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-of-type( odd )');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':nth-child(foo)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':nth-child(even of .foo)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(2)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(-1)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(n)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(+n)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(-n)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(2n+1)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(2n + 1)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':nth-child(-2n - 1)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':nth-child(n of .foo)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':nth-child(2n+1 of .foo)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(p)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':is( p, div )');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':is(:nth-child(2n+1), :nth-child(3n+1))');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':is()');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':is( )');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':where()');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(p.foo, div.bar)');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':not(.foo .bar)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -2275,7 +2275,7 @@ describe('utility functions', () => {
         complex: true,
         descendant: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -2283,70 +2283,70 @@ describe('utility functions', () => {
         complex: true,
         descendant: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(.foo > .bar)', {
         complex: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(:is(.foo, .bar))');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':not(:not(.foo, .bar))');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':not(:is(.foo > .bar))');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(:is(.foo .bar))', {
         complex: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(:is(.foo > .bar))', {
         complex: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
       const res = func(':not(:is(.foo > .bar))', {
         complex: true
       });
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
       const res = func(':is(:not(:is(.foo, .bar)), .baz)');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('\u212A');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func('div:nth-child(odd of :not(.c))');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
       const res = func(':nth-child()');
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 });
