@@ -278,6 +278,54 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('css/css-scoping/host-in-host-selector.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template" shadowrootmode="open">
+            <style>
+              /* Should not match */
+              :host(:host) {
+                --x:FAIL;
+              }
+            </style>
+          </template>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const res = host.matches(':host(:host)');
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('css/css-scoping/host-in-host-context-selector.html', () => {
+    it('should match', () => {
+      const html = `
+        <div id="host">
+          <template id="template" shadowrootmode="open">
+            <style>
+              /* Should not match */
+              :host-context(:host) {
+                --x:FAIL;
+              }
+            </style>
+          </template>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const host = document.getElementById('host');
+      const template = document.getElementById('template');
+      const root = host.attachShadow({ mode: 'open' });
+      root.appendChild(template.content.cloneNode(true));
+      const res = host.matches(':host-context(:host)');
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
   describe('css/css-scoping/host-is-001.html', () => {
     it('should match', () => {
       const host = document.createElement('div');
