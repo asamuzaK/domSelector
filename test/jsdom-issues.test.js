@@ -3,7 +3,7 @@
  */
 
 /* api */
-import { assert } from 'chai';
+import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
@@ -171,13 +171,13 @@ describe('jsdom issues tagged with `selectors` label', () => {
     it('should get matched node', () => {
       const node = document.createElementNS('urn:ns', 'h');
       const res = node.matches('h');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node', () => {
       const node = document.createElementNS('urn:ns', 'h');
       const res = node.matches('*|h');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -221,7 +221,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
     it('should get matched node', () => {
       const node = document.createElementNS('', 'element');
       const res = node.matches('element');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -249,7 +249,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const div = document.getElementById('d1');
       const p = document.getElementById('p1');
       assert.deepEqual(div.querySelector(':scope > p'), p, 'result');
-      assert.isNull(div.querySelector(':scope > span'), 'result');
+      assert.deepEqual(div.querySelector(':scope > span'), null, 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -300,7 +300,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
     it('should not match', () => {
       const refPoint = document.getElementById('refPoint');
       const res = refPoint.querySelector(':scope > span');
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -335,7 +335,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const item = document.getElementById('item');
       item.focus();
       const res = node.matches(':focus-within');
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node', () => {
@@ -377,13 +377,15 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const li1 = document.getElementById('li1');
       const li2 = document.getElementById('li2');
       const res = refPoint.querySelectorAll(':scope > li');
+      const li1content = li1.textContent.trim();
+      const li2content = li2.textContent.trim();
       assert.deepEqual(res, [
         li1, li2
       ], 'result');
-      assert.strictEqual(li1.textContent.trim(), 'Alpha', 'content');
+      assert.strictEqual(li1content, 'Alpha', 'content');
       // NOTE: sample in #3067 seems invalid, should include Gamma, Delta
-      assert.notEqual(li2.textContent.trim(), 'Beta', 'content');
-      assert.isTrue(/^Beta\n\s+Gamma\n\s+Delta$/.test(li2.textContent.trim()),
+      assert.notEqual(li2content, 'Beta', 'content');
+      assert.strictEqual(/^Beta\n\s+Gamma\n\s+Delta$/.test(li2content), true,
         'content');
     });
   });
@@ -540,10 +542,10 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const res2 = ul.matches('ul');
       const res3 = li.matches('ul > li');
       const res4 = li.matches('UL > LI');
-      assert.isTrue(res1, 'result1');
-      assert.isTrue(res2, 'result2');
-      assert.isTrue(res3, 'result3');
-      assert.isTrue(res4, 'result4');
+      assert.strictEqual(res1, true, 'result1');
+      assert.strictEqual(res2, true, 'result2');
+      assert.strictEqual(res3, true, 'result3');
+      assert.strictEqual(res4, true, 'result4');
     });
   });
 
@@ -802,7 +804,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const doc =
         new window.DOMParser().parseFromString(domStr, 'application/xml');
       assert.deepEqual(doc.querySelector('Foo'), doc.documentElement, 'Foo');
-      assert.isNull(doc.querySelector('foo'), 'foo');
+      assert.deepEqual(doc.querySelector('foo'), null, 'foo');
       assert.deepEqual(doc.querySelector('bar'),
         doc.documentElement.firstChild, 'bar');
       assert.deepEqual(doc.querySelector('Foo bar'),
@@ -838,7 +840,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const nsb = doc.getElementById('nsb');
       const nsc = doc.getElementById('nsc');
       // NOTE: namespace should be separated with `|`
-      assert.isNull(doc.querySelector('ns\\:b'), 'result');
+      assert.deepEqual(doc.querySelector('ns\\:b'), null, 'result');
       assert.deepEqual(a.querySelector('ns|b'), nsb, 'result');
       assert.deepEqual(a.querySelector('ns|b ns|c'), nsc, 'result');
       assert.deepEqual([...doc.querySelectorAll('b')], [nsb, b], 'result');
@@ -867,7 +869,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       </root>`;
       const doc =
         new window.DOMParser().parseFromString(domStr, 'application/xml');
-      assert.isNull(doc.querySelector('ab'), 'lowercased');
+      assert.deepEqual(doc.querySelector('ab'), null, 'lowercased');
       assert.deepEqual(doc.querySelector('aB *'),
         doc.getElementById('c'), 'aB *');
       assert.deepEqual(doc.querySelector('cd *'),
@@ -882,15 +884,14 @@ describe('jsdom issues tagged with `selectors` label', () => {
         </Test>
       </elem>`;
       const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
-      assert.isNull(doc.querySelector('test'), 'lowercased');
+      assert.deepEqual(doc.querySelector('test'), null, 'lowercased');
       assert.deepEqual(doc.querySelector('Test'),
         doc.getElementById('target'), 'target');
       assert.deepEqual(doc.querySelector('my-tag'),
         doc.getElementById('tag'), 'tag');
       assert.deepEqual(doc.querySelector('Test > my-tag'),
         doc.getElementById('tag'), 'tag');
-      assert.isNull(doc.querySelector('test > my-tag'),
-        doc.getElementById('tag'), 'tag');
+      assert.deepEqual(doc.querySelector('test > my-tag'), null, 'tag');
     });
   });
 });

@@ -3,7 +3,7 @@
  */
 
 /* api */
-import { assert } from 'chai';
+import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 import sinon from 'sinon';
@@ -91,12 +91,12 @@ describe('Finder', () => {
   describe('Finder', () => {
     it('should be instance of Finder', () => {
       const finder = new Finder(window);
-      assert.instanceOf(finder, Finder, 'result');
+      assert.strictEqual(finder instanceof Finder, true, 'result');
     });
 
     it('should be instance of Finder', () => {
       const finder = new Finder(window, document);
-      assert.instanceOf(finder, Finder, 'result');
+      assert.strictEqual(finder instanceof Finder, true, 'result');
     });
   });
 
@@ -130,8 +130,7 @@ describe('Finder', () => {
         finder.setup('*', document);
         finder.onError(err);
       } catch (e) {
-        assert.instanceOf(e, window.DOMException, 'error');
-        assert.strictEqual(e.message, 'error', 'message');
+        assert.deepStrictEqual(e, new window.DOMException('error', SYNTAX_ERR));
       }
     });
 
@@ -140,7 +139,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
       const res = finder.onError(err);
-      assert.isUndefined(res, 'result');
+      assert.strictEqual(res, undefined, 'result');
     });
 
     it('should not throw', () => {
@@ -149,7 +148,7 @@ describe('Finder', () => {
       const res = finder.onError(err, {
         noexcept: true
       });
-      assert.isUndefined(res, 'result');
+      assert.strictEqual(res, undefined, 'result');
     });
 
     it('should warn', () => {
@@ -162,8 +161,8 @@ describe('Finder', () => {
       const res = finder.onError(err);
       const { called } = stubWarn;
       stubWarn.restore();
-      assert.isTrue(called, 'called');
-      assert.isUndefined(res, 'result');
+      assert.strictEqual(called, true, 'called');
+      assert.strictEqual(res, undefined, 'result');
     });
   });
 
@@ -226,14 +225,14 @@ describe('Finder', () => {
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('[foo==bar]'),
+      assert.throws(() => finder._correspond('[foo==bar]'), window.DOMException,
         'Identifier is expected');
     });
 
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('li ++ li'),
+      assert.throws(() => finder._correspond('li ++ li'), DOMException,
         'Invalid selector li ++ li');
     });
 
@@ -2421,7 +2420,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has()', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -2433,7 +2432,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(li)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -2445,7 +2444,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -2467,7 +2466,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd p)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isFalse(res, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should match', () => {
@@ -2489,7 +2488,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(dd span)', node);
       const res = finder._matchHasPseudoFunc(leaves, node, {});
-      assert.isTrue(res, 'result');
+      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -2571,7 +2570,7 @@ describe('Finder', () => {
         astName: 'has',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -2660,7 +2659,7 @@ describe('Finder', () => {
         astName: 'has',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -2766,7 +2765,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -2857,7 +2856,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3206,7 +3205,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3312,7 +3311,7 @@ describe('Finder', () => {
           ]
         ]
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -3458,7 +3457,7 @@ describe('Finder', () => {
         astName: 'not',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -3500,7 +3499,7 @@ describe('Finder', () => {
         astName: 'not',
         branches
       }, node, {});
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -3631,7 +3630,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(> :has(li))', node);
       assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        'Invalid selector :has(>:has(li))');
+        DOMException, 'Invalid selector :has(>:has(li))');
     });
 
     it('should not match', () => {
@@ -3793,7 +3792,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(:is(:has(li, dd)))', node);
       assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        'Invalid selector :has(:not(:has(li,dd)))');
+        DOMException, 'Invalid selector :has(:not(:has(li,dd)))');
     });
 
     it('should throw', () => {
@@ -8879,7 +8878,8 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.isTrue(node instanceof window.HTMLUnknownElement, 'instance');
+      assert.strictEqual(node instanceof window.HTMLUnknownElement, true,
+        'instance');
       assert.deepEqual([...res], [
         node
       ], 'result');
@@ -9700,7 +9700,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(#foobar) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should throw', () => {
@@ -9894,7 +9894,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context(#foobar) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -9973,7 +9973,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -10116,7 +10116,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
       const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should get matched node', () => {
@@ -10490,7 +10490,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('li#li1.li', document);
       const res = finder._matchLeaves(leaves, node);
-      assert.isTrue(res, 'nodes');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10508,7 +10508,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('li#li1.foobar', document);
       const res = finder._matchLeaves(leaves, node);
-      assert.isFalse(res, 'nodes');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -11536,9 +11536,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('::before');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11550,9 +11550,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11564,9 +11564,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11576,9 +11576,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#ul1');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -11590,9 +11590,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11604,9 +11604,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11623,9 +11623,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11635,9 +11635,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#li1.foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11649,9 +11649,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11661,9 +11661,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11679,9 +11679,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11695,9 +11695,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('#foobar');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11709,9 +11709,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11724,9 +11724,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11741,9 +11741,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11757,9 +11757,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11779,9 +11779,9 @@ describe('Finder', () => {
         parent,
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11795,9 +11795,9 @@ describe('Finder', () => {
         document.getElementById('li2'),
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11809,9 +11809,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11821,9 +11821,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.dd');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11835,9 +11835,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('dd2')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11847,9 +11847,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.li');
       const res = finder._findEntryNodes(twig, 'lineal');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11860,9 +11860,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.dd');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11874,9 +11874,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11886,9 +11886,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('ul');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11900,9 +11900,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('ul1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11912,9 +11912,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('ol');
       const res = finder._findEntryNodes(twig, 'lineal');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11927,9 +11927,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11942,9 +11942,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11957,9 +11957,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11970,9 +11970,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('li:first-child');
       const res = finder._findEntryNodes(twig, 'first');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -11982,9 +11982,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('dd:first-child');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -11996,9 +11996,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li3')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12011,9 +12011,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12033,9 +12033,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         parent
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12045,9 +12045,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.foobar');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12062,9 +12062,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12080,9 +12080,9 @@ describe('Finder', () => {
         parent,
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12097,9 +12097,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('.foo');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12112,9 +12112,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond('p');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12126,9 +12126,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node(s)', () => {
@@ -12141,9 +12141,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should be pended', () => {
@@ -12153,9 +12153,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond(':first-child');
       const res = finder._findEntryNodes(twig, 'all');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isTrue(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, true, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12190,9 +12190,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12227,9 +12227,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12264,9 +12264,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isFalse(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should not match', () => {
@@ -12298,9 +12298,9 @@ describe('Finder', () => {
       const [[{ branch: [twig] }]] = finder._correspond(':host:is(#baz)');
       const res = finder._findEntryNodes(twig, 'self');
       assert.deepEqual(res.nodes, [], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isFalse(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, false, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12334,9 +12334,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
 
     it('should get matched node', () => {
@@ -12371,9 +12371,9 @@ describe('Finder', () => {
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
-      assert.isTrue(res.compound, 'compound');
-      assert.isTrue(res.filtered, 'filtered');
-      assert.isFalse(res.pending, 'pending');
+      assert.strictEqual(res.compound, true, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
     });
   });
 
@@ -13625,7 +13625,7 @@ describe('Finder', () => {
         },
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
 
     it('should not match', () => {
@@ -13639,7 +13639,7 @@ describe('Finder', () => {
         },
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -13663,7 +13663,7 @@ describe('Finder', () => {
       const res = finder._matchNodePrev(branch, node, {
         index: 1
       });
-      assert.isNull(res, 'result');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
