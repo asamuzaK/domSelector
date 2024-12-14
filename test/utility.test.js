@@ -9,7 +9,9 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import * as util from '../src/js/utility.js';
-import { WALKER_FILTER } from '../src/js/constant.js';
+import {
+  TARGET_SELF, TARGET_LINEAL, WALKER_FILTER
+} from '../src/js/constant.js';
 
 describe('utility functions', () => {
   const domStr = `<!doctype html>
@@ -2334,6 +2336,60 @@ describe('utility functions', () => {
 
     it('should get false', () => {
       const res = func(':nth-child()');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':has(.foo)');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':has(.foo)', {
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':has(:checked)', {
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':has(>.foo)', {
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':has(.foo .bar)', {
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':has(.foo)', {
+        target: TARGET_LINEAL
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(':has(>.foo)', {
+        target: TARGET_LINEAL
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':has(.foo .bar)', {
+        target: TARGET_LINEAL
+      });
       assert.strictEqual(res, false, 'result');
     });
   });

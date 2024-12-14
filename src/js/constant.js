@@ -65,29 +65,33 @@ export const N_TH =
   `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 // SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
 export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
+export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_ID_CLASS = '(?:[A-Za-z][\\w-]*|[#.][\\w-]+)';
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
+export const COMPOUND_WO_PSEUDO =
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE_WO_PSEUDO})+)`;
 export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const DESCEND = '\\s?[\\s>]\\s?';
-export const NESTED_LOGICAL_A =
+export const NESTED_LOGIC_A =
   `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
-export const NESTED_LOGICAL_B =
+export const NESTED_LOGIC_B =
   `:is\\(\\s*${COMPLEX}(?:\\s*,\\s*${COMPLEX})*\\s*\\)`;
 export const COMPOUND_A =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_A})+)`;
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC_A})+)`;
 export const COMPOUND_B =
-  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGICAL_B})+)`;
+  `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC_B})+)`;
 export const COMPOUND_I =
   `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
 export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
-export const LOGICAL_COMPLEX =
+export const LOGIC_COMPLEX =
   `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
-export const LOGICAL_COMPOUND =
+export const LOGIC_COMPOUND =
   `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
+export const HAS_COMPOUND = `has\\([\\s>~+]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
 
 /* array */
 export const KEY_FORM_FOCUS =
