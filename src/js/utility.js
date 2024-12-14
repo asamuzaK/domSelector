@@ -10,14 +10,16 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, KEY_INPUT_BUTTON, KEY_INPUT_EDIT,
-  KEY_INPUT_TEXT, LOGICAL_COMPLEX, LOGICAL_COMPOUND, N_TH, PSEUDO_CLASS,
-  TEXT_NODE, TYPE_FROM, TYPE_TO
+  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, HAS_COMPOUND, KEY_INPUT_BUTTON,
+  KEY_INPUT_EDIT, KEY_INPUT_TEXT, LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH,
+  PSEUDO_CLASS, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
-const REG_LOGICAL_COMPLEX =
-  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGICAL_COMPLEX})`);
-const REG_LOGICAL_COMPOUND =
-  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGICAL_COMPOUND})`);
+const REG_LOGIC_COMPLEX =
+  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
+const REG_LOGIC_COMPOUND =
+  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`);
+const REG_LOGIC_HAS_COMPOUND =
+  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 
 /**
@@ -671,7 +673,7 @@ export const filterSelector = (selector, opt = {}) => {
   if (!selector || typeof selector !== 'string') {
     return false;
   }
-  const { complex, compound, descend, simple } = opt;
+  const { complex, compound, descend, simple, target } = opt;
   // exclude simple selector and compound selector
   if (simple || compound) {
     return false;
@@ -695,11 +697,14 @@ export const filterSelector = (selector, opt = {}) => {
   if (selector.includes(':')) {
     if (descend) {
       return false;
+    } else if ((target === TARGET_SELF || target === TARGET_LINEAL) &&
+               /:has\(/.test(selector)) {
+      return !REG_LOGIC_HAS_COMPOUND.test(selector);
     } else if (/:(?:is|not)\(/.test(selector)) {
       if (complex) {
-        return !REG_LOGICAL_COMPLEX.test(selector);
+        return !REG_LOGIC_COMPLEX.test(selector);
       } else {
-        return !REG_LOGICAL_COMPOUND.test(selector);
+        return !REG_LOGIC_COMPOUND.test(selector);
       }
     } else {
       return !REG_WO_LOGICAL.test(selector);

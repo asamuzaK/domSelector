@@ -54,7 +54,8 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
-    if (document === this.#document && document.contentType === 'text/html') {
+    if (document === this.#document && document.contentType === 'text/html' &&
+        node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -98,7 +99,8 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     const document = node.ownerDocument;
-    if (document === this.#document && document.contentType === 'text/html') {
+    if (document === this.#document && document.contentType === 'text/html' &&
+        node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
