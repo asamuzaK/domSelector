@@ -19,7 +19,7 @@
   "type": "module",
   "exports": {
     "import": "./src/index.js",
-    "require": "./dist/cjs/dom-selector.min.cjs"
+    "require": "./dist/cjs/index.js"
   },
   "types": "types/index.d.ts",
   "dependencies": {
@@ -57,7 +57,7 @@
     "bench": "node benchmark/bench.js",
     "bench-sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test && npm run bundle",
-    "bundle": "esbuild --format=cjs --platform=node --outfile=dist/cjs/dom-selector.min.cjs --bundle --minify --sourcemap src/index.js",
+    "bundle": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test-wpt": "node test/wpt/wpt-runner.js",
