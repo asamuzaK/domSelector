@@ -1,3 +1,4 @@
+export const ATRULE: "Atrule";
 export const ATTR_SELECTOR: "AttributeSelector";
 export const CLASS_SELECTOR: "ClassSelector";
 export const COMBINATOR: "Combinator";
@@ -8,7 +9,10 @@ export const NTH: "Nth";
 export const OPERATOR: "Operator";
 export const PS_CLASS_SELECTOR: "PseudoClassSelector";
 export const PS_ELEMENT_SELECTOR: "PseudoElementSelector";
+export const RULE: "Rule";
+export const SCOPE: "Scope";
 export const SELECTOR: "Selector";
+export const SELECTOR_LIST: "SelectorList";
 export const STRING: "String";
 export const SYNTAX_ERR: "SyntaxError";
 export const TARGET_ALL: "all";
