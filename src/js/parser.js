@@ -117,7 +117,7 @@ export const preprocess = (...args) => {
   } else {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
-  return selector;
+  return selector.replace(/\x26/g, ':scope');
 };
 
 /**

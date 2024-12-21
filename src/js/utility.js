@@ -5,14 +5,16 @@
 /* import */
 import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
+import { generate, parse, walk } from 'css-tree';
 import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
-  DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
+  ATRULE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, HAS_COMPOUND, KEY_INPUT_BUTTON,
   KEY_INPUT_EDIT, KEY_INPUT_TEXT, LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH,
-  PSEUDO_CLASS, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_FROM, TYPE_TO
+  PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST, TARGET_LINEAL, TARGET_SELF,
+  TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const REG_LOGIC_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
@@ -29,6 +31,28 @@ const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
  */
 export const getType = o =>
   Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
+
+/**
+ * verify array contents
+ * @param {Array} arr - array
+ * @param {string} type - expected type, e.g. 'String'
+ * @throws
+ * @returns {Array} - verified array
+ */
+export const verifyArray = (arr, type) => {
+  if (!Array.isArray(arr)) {
+    throw new TypeError(`Unexpected type ${getType(arr)}`);
+  }
+  if (typeof type !== 'string') {
+    throw new TypeError(`Unexpected type ${getType(type)}`);
+  }
+  for (const item of arr) {
+    if (getType(item) !== type) {
+      throw new TypeError(`Unexpected type ${getType(item)}`);
+    }
+  }
+  return arr;
+};
 
 /**
  * resolve content document, root node and tree walker, is in shadow
@@ -638,6 +662,151 @@ export const sortNodes = (nodes = []) => {
     });
   }
   return arr;
+};
+
+/**
+ * concat array of nested selectors into equivalent selector
+ * @param {Array.<Array.<string>>} selectors - [parents, children, ...]
+ * @returns {string} - selector
+ */
+export const concatNestedSelectors = selectors => {
+  if (!Array.isArray(selectors)) {
+    throw new TypeError(`Unexpected type ${getType(selectors)}`);
+  }
+  let selector = '';
+  if (selectors.length) {
+    selectors = selectors.reverse();
+    let child = verifyArray(selectors.shift(), 'String');
+    if (child.length === 1) {
+      [child] = child;
+    }
+    while (selectors.length) {
+      const parentArr = verifyArray(selectors.shift(), 'String');
+      if (!parentArr.length) {
+        continue;
+      }
+      let parent;
+      if (parentArr.length === 1) {
+        [parent] = parentArr;
+        if (!/^[>~+]/.test(parent) && /[\s>~+]/.test(parent)) {
+          parent = `:is(${parent})`;
+        }
+      } else {
+        parent = `:is(${parentArr.join(', ')})`;
+      }
+      if (selector.includes('\x26')) {
+        selector = selector.replace(/\x26/g, parent);
+      }
+      if (Array.isArray(child)) {
+        const items = [];
+        for (let item of child) {
+          if (item.includes('\x26')) {
+            if (/^[>~+]/.test(item)) {
+              item = `${parent} ${item.replace(/\x26/g, parent)} ${selector}`;
+            } else {
+              item = `${item.replace(/\x26/g, parent)} ${selector}`;
+            }
+          } else {
+            item = `${parent} ${item} ${selector}`;
+          }
+          items.push(item.trim());
+        }
+        selector = items.join(', ');
+      } else if (selectors.length) {
+        selector = `${child} ${selector}`;
+      } else {
+        if (child.includes('\x26')) {
+          if (/^[>~+]/.test(child)) {
+            selector =
+              `${parent} ${child.replace(/\x26/g, parent)} ${selector}`;
+          } else {
+            selector = `${child.replace(/\x26/g, parent)} ${selector}`;
+          }
+        } else {
+          selector = `${parent} ${child} ${selector}`;
+        }
+      }
+      selector = selector.trim();
+      if (selectors.length) {
+        child = parentArr.length > 1 ? parentArr : parent;
+      } else {
+        break;
+      }
+    }
+    selector = selector.replace(/\x26/g, ':scope').trim();
+  }
+  return selector;
+};
+
+/**
+ * extract nested selectors from CSSRule.cssText
+ * @param {string} css - CSSRule.cssText
+ * @returns {Array.<Array.<string>>} - array of nested selectors
+ */
+export const extractNestedSelectors = css => {
+  const ast = parse(css, {
+    context: 'rule'
+  });
+  const selectors = [];
+  let isScoped = false;
+  walk(ast, {
+    enter: node => {
+      switch (node.type) {
+        case ATRULE: {
+          if (node.name === 'scope') {
+            isScoped = true;
+          }
+          break;
+        }
+        case SCOPE: {
+          const { children, type } = node.root;
+          const arr = [];
+          if (type === SELECTOR_LIST) {
+            for (const child of children) {
+              const selector = generate(child);
+              arr.push(selector);
+            }
+            selectors.push(arr);
+          }
+          break;
+        }
+        case RULE: {
+          const { children, type } = node.prelude;
+          const arr = [];
+          if (type === SELECTOR_LIST) {
+            let hasAmp = false;
+            for (const child of children) {
+              const selector = generate(child);
+              if (isScoped && !hasAmp) {
+                hasAmp = /\x26/.test(selector);
+              }
+              arr.push(selector);
+            }
+            if (isScoped) {
+              if (hasAmp) {
+                selectors.push(arr);
+              /* FIXME:
+              } else {
+                selectors = arr;
+                isScoped = false;
+              */
+              }
+            } else {
+              selectors.push(arr);
+            }
+          }
+        }
+      }
+    },
+    leave: node => {
+      if (node.type === ATRULE) {
+        if (node.name === 'scope') {
+          isScoped = false;
+        }
+      }
+    }
+  });
+  return selectors;
 };
 
 /**

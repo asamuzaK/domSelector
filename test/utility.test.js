@@ -78,6 +78,31 @@ describe('utility functions', () => {
     });
   });
 
+  describe('verify array contents', () => {
+    const func = util.verifyArray;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func([]), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => func([1], 'String'), TypeError,
+        'Unexpected type Number');
+    });
+
+    it('should get value', () => {
+      const res = func(['foo', 'bar'], 'String');
+      assert.deepEqual(res, [
+        'foo',
+        'bar'
+      ], 'result');
+    });
+  });
+
   describe('resolve content document, root node and tree walker', () => {
     const func = util.resolveContent;
 
@@ -1862,6 +1887,259 @@ describe('utility functions', () => {
       const res = func(nodes);
       assert.deepEqual([...res], [
         node1, node2, node3
+      ], 'result');
+    });
+  });
+
+  describe('concat array of nested selectors into equivalent selector', () => {
+    const func = util.concatNestedSelectors;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should get empty string', () => {
+      const res = func([]);
+      assert.strictEqual(res, '', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['&'], ['.foo']];
+      const res = func(sel);
+      assert.strictEqual(res, ':scope .foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['& > .bar']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .bar', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], [], ['& > .bar']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .bar', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['> .baz']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .baz', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo', '.bar'], ['+ .baz', '&.qux']];
+      const res = func(sel);
+      assert.strictEqual(res, ':is(.foo, .bar) + .baz, :is(.foo, .bar).qux',
+        'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['& .bar & .baz & .qux']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo .bar .foo .baz .foo .qux', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['> .bar &', '.baz &']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .bar .foo, .baz .foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['> .bar &'], ['.baz &'], ['.qux']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .bar .foo :is(.baz .foo) .qux',
+        'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['> .bar &', '.baz &'], ['.qux']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo > .bar .foo .qux, .baz .foo .qux',
+        'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['.parent &']];
+      const res = func(sel);
+      assert.strictEqual(res, '.parent .foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], [':not(&)']];
+      const res = func(sel);
+      assert.strictEqual(res, ':not(.foo)', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['+ .bar + &']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo + .bar + .foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['&']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['&&']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo.foo', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.error', '#404'], ['&:hover > .baz']];
+      const res = func(sel);
+      assert.strictEqual(res, ':is(.error, #404):hover > .baz', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.ancestor .el'], ['.other-ancestor &']];
+      const res = func(sel);
+      assert.strictEqual(res, '.other-ancestor :is(.ancestor .el)', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['.foo'], ['& :is(.bar, &.baz)']];
+      const res = func(sel);
+      assert.strictEqual(res, '.foo :is(.bar, .foo.baz)', 'result');
+    });
+
+    it('should get value', () => {
+      const sel = [['figure'], ['> figcaption'], ['> p']];
+      const res = func(sel);
+      assert.strictEqual(res, 'figure > figcaption > p', 'result');
+    });
+  });
+
+  describe('extract nested selectors from cssText', () => {
+    const func = util.extractNestedSelectors;
+
+    it('should get value', () => {
+      const css = `
+        .foo {
+          color: red;
+          & .bar, .baz & {
+            color: green;
+            & .qux &, & > .quux > &, &.corge& {
+              color: blue;
+            }
+          }
+        }
+      `.trim();
+      const res = func(css);
+      assert.deepEqual(res, [
+        [
+          '.foo'
+        ],
+        [
+          '& .bar',
+          '.baz &'
+        ],
+        [
+          '& .qux &',
+          '&>.quux>&',
+          '&.corge&'
+        ]
+      ], 'result');
+    });
+
+    it('should get value', () => {
+      const css = `
+        html {
+          block-size: 100%;
+
+          @layer support {
+            & body {
+              min-block-size: 100%;
+            }
+          }
+        }
+      `.trim();
+      const res = func(css);
+      assert.deepEqual(res, [
+        [
+          'html'
+        ],
+        [
+          '& body'
+        ]
+      ], 'result');
+    });
+
+    it('should get value', () => {
+      const css = `
+        html {
+          @layer base {
+            block-size: 100%;
+
+            @layer support {
+              & body {
+                min-block-size: 100%;
+              }
+            }
+          }
+        }
+      `.trim();
+      const res = func(css);
+      assert.deepEqual(res, [
+        [
+          'html'
+        ],
+        [
+          '& body'
+        ]
+      ], 'result');
+    });
+
+    // upstream issue: https://github.com/csstree/csstree/issues/268
+    it.skip('should get value', () => {
+      const css = `
+        .card {
+          inline-size: 40ch;
+          aspect-ratio: 3/4;
+
+          @scope (&) {
+            :scope {
+              border: 1px solid white;
+            }
+          }
+        }
+      `.trim();
+      const res = func(css);
+      assert.deepEqual(res, [
+        [
+          ':scope'
+        ]
+      ], 'result');
+    });
+
+    it('should get value', () => {
+      const css = `
+        .parent {
+          color: blue;
+
+          @scope (& > .scope) to (& .limit) {
+            & .content {
+              color: red;
+            }
+          }
+        }
+      `.trim();
+      const res = func(css);
+      assert.deepEqual(res, [
+        [
+          '.parent'
+        ],
+        [
+          '&>.scope'
+        ],
+        [
+          '& .content'
+        ]
       ], 'result');
     });
   });
