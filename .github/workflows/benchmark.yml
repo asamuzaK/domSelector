@@ -15,6 +15,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: npm install
+      - run: npm ci
       - run: npm run bench
       - run: npm run bench-sizzle
