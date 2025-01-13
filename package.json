@@ -18,9 +18,18 @@
   ],
   "type": "module",
   "exports": {
-    "import": "./src/index.js",
-    "require": "./dist/cjs/index.js",
-    "default": "./dist/cjs/index.js"
+    "import": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "require": {
+      "types": "./dist/cjs/index.d.cts",
+      "default": "./dist/cjs/index.cjs"
+    },
+    "default": {
+      "types": "./dist/cjs/types/index.d.cts",
+      "default": "./dist/cjs/index.cjs"
+    }
   },
   "types": "types/index.d.ts",
   "dependencies": {
@@ -48,6 +57,7 @@
     "mocha": "^11.0.1",
     "neostandard": "^0.12.0",
     "sinon": "^19.0.2",
+    "tsup": "^8.3.5",
     "typescript": "^5.7.3",
     "wpt-runner": "^6.0.0"
   },
@@ -57,10 +67,11 @@
   "scripts": {
     "bench": "node benchmark/bench.js",
     "bench-sizzle": "node benchmark/bench-sizzle.js",
-    "build": "npm run tsc && npm run lint && npm test && npm run bundle",
-    "bundle": "esbuild --format=cjs --platform=node --outdir=dist/cjs/ --minify --sourcemap src/**/*.js",
+    "build": "npm run tsc && npm run lint && npm test && npm run bundle && npm run test-cjs",
+    "bundle": "tsup src/index.js --format=cjs --platform=node --outDir=dist/cjs/ --minify --sourcemap --dts",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
+    "test-cjs": "mocha --exit test/index.test.cjs",
     "test-wpt": "node test/wpt/wpt-runner.js",
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
