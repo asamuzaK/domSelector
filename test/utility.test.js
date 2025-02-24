@@ -2220,6 +2220,11 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
+    it('should get false', () => {
+      const res = func(':not(*|*)');
+      assert.strictEqual(res, false, 'result');
+    });
+
     it('should get true', () => {
       const res = func('p.foo');
       assert.strictEqual(res, true, 'result');
