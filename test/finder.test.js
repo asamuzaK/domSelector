@@ -9213,6 +9213,36 @@ describe('Finder', () => {
         DOMException, 'Unsupported pseudo-class :autofill');
     });
 
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'has-slotted',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':has-slotted', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: null,
+        name: 'has-slotted',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('div');
+      document.getElementById('div0').appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':has-slotted', node, {
+        warn: true
+      });
+      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
+        DOMException, 'Unsupported pseudo-class :has-slotted');
+    });
+
     // unknown
     it('should throw', () => {
       const leaf = {

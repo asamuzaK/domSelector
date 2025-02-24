@@ -1676,6 +1676,7 @@ export class Finder {
         case 'current':
         case 'fullscreen':
         case 'future':
+        case 'has-slotted':
         case 'modal':
         case 'muted':
         case 'past':
