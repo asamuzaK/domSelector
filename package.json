@@ -45,24 +45,24 @@
     "chai": "^5.2.0",
     "commander": "^13.1.0",
     "esbuild": "^0.25.0",
-    "eslint": "^9.20.1",
+    "eslint": "^9.22.0",
     "eslint-plugin-import-x": "^4.6.1",
     "eslint-plugin-jsdoc": "^50.6.3",
     "eslint-plugin-regexp": "^2.7.0",
     "eslint-plugin-unicorn": "^57.0.0",
-    "globals": "^15.15.0",
-    "happy-dom": "^17.1.0",
+    "globals": "^16.0.0",
+    "happy-dom": "^17.4.1",
+    "jsdom": "^26.0.0",
     "linkedom": "^0.18.9",
     "mocha": "^11.1.0",
     "neostandard": "^0.12.1",
     "sinon": "^19.0.2",
-    "tsup": "^8.3.6",
-    "typescript": "^5.7.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
     "wpt-runner": "^6.0.0"
   },
   "overrides": {
-    "esbuild": "^0.25.0",
-    "jsdom": "^26.0.0"
+    "jsdom": "$jsdom"
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
