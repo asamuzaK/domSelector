@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<title>3816</title>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3816 -->
+
+<input id="input0" />
+<input id="input1" readonly="" />
+<input id="input2" readonly="readonly" />
+
+<script>
+"use strict";
+const input0 = document.getElementById('input0');
+const input1 = document.getElementById('input1');
+const input2 = document.getElementById('input2');
+
+test(() => {
+  assert_false(input0.matches(':read-only'));
+  assert_true(input0.matches(':read-write'));
+}, 'no readonly attr');
+
+test(() => {
+  assert_true(input1.matches(':read-only'));
+  assert_false(input1.matches(':read-write'));
+}, 'readonly attr with empty string');
+
+test(() => {
+  assert_true(input2.matches(':read-only'));
+  assert_false(input2.matches(':read-write'));
+}, 'readonly attr with value');
+</script>

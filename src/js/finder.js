@@ -1262,7 +1262,7 @@ export class Finder {
           let writable;
           switch (localName) {
             case 'textarea': {
-              if (node.readonly || node.hasAttribute('readonly') ||
+              if (node.readOnly || node.hasAttribute('readonly') ||
                   node.disabled || node.hasAttribute('disabled')) {
                 readonly = true;
               } else {
@@ -1272,7 +1272,7 @@ export class Finder {
             }
             case 'input': {
               if (!node.type || KEY_INPUT_EDIT.includes(node.type)) {
-                if (node.readonly || node.hasAttribute('readonly') ||
+                if (node.readOnly || node.hasAttribute('readonly') ||
                     node.disabled || node.hasAttribute('disabled')) {
                   readonly = true;
                 } else {
