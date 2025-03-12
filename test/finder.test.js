@@ -6278,6 +6278,24 @@ describe('Finder', () => {
         name: 'read-only',
         type: PS_CLASS_SELECTOR
       };
+      const node = document.createElement('input');
+      node.readOnly = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':read-only', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PS_CLASS_SELECTOR
+      };
       const node = document.createElement('textarea');
       node.setAttribute('readonly', 'readonly');
       const parent = document.getElementById('div0');
@@ -6321,6 +6339,24 @@ describe('Finder', () => {
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
       assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'read-only',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('textarea');
+      node.readOnly = true;
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':read-only', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -7882,7 +7918,7 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
-      node.readonly = true;
+      node.readOnly = true;
       node.setAttribute('type', 'number');
       node.setAttribute('min', '1');
       node.setAttribute('max', '10');
@@ -8097,7 +8133,7 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const node = document.createElement('input');
-      node.readonly = true;
+      node.readOnly = true;
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const finder = new Finder(window);
