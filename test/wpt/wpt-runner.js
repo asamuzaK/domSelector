@@ -140,7 +140,7 @@ const filter = testPath => {
     'selector-placeholder-shown-emptify-placeholder.html',
     // dom/nodes
     'Element-webkitMatchesSelector.html',
-    'query-target-in-load-event.html'
+    'query-target-in-load-event.html',
   ];
   const excludeList = [
     'ParentNode-querySelector-All-content.html',
@@ -179,6 +179,8 @@ const filter = testPath => {
     'slotted-has-002.html',
     'slotted-has-003.html',
     'slotted-has-004.html',
+    // jsdom/issues
+    'xxx.html'
   ];
   let res;
   if (/(?:-ref|-manual)\.html$|tentative/.test(testPath)) {
@@ -196,6 +198,9 @@ const filter = testPath => {
     } else {
       res = true;
     }
+  // jsdom/issues
+  } else if (/^\d{4}\.html$/.test(testPath)) {
+    res = true;
   } else {
     res = false;
   }
@@ -234,6 +239,29 @@ const rootURLs = [
       process.exit(1);
     });
   }
+  // jsdom issues
+  await wptRunner('test/wpt/jsdom/issues/', {
+    rootURL: 'issues/',
+    setup,
+    filter
+  }).then(failures => {
+    const rootURL = 'jsdom/issues/';
+    let msg;
+    switch (failures) {
+      case 0:
+        msg = `\npassed ${rootURL}.`;
+        break;
+      case 1:
+        msg = `\n1 failure in ${rootURL}.`;
+        break;
+      default:
+        msg = `\n${failures} failures in ${rootURL}.`;
+    }
+    res.push(msg);
+  }).catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
   for (const msg of res) {
     console.log(msg);
   }
