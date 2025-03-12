@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import {
-  createFile, getStat, isDir, isFile, readFile, removeDir
+  copyFile, createFile, getStat, isDir, isFile, readFile, removeDir, removeFile
 } from '../scripts/file-util.js';
 
 /* constants */
@@ -84,6 +84,71 @@ describe('removeDir', () => {
     ]);
     assert.deepEqual(res1, [true, true, true]);
     assert.deepEqual(res2, [false, false, false]);
+  });
+});
+
+describe('removeFile', () => {
+  it('should throw', () => {
+    const foo = path.resolve('foo');
+    assert.strictEqual(isFile(foo), false);
+    assert.throws(() => removeFile(foo), Error, `No such file: ${foo}`);
+  });
+
+  it('should remove file', async () => {
+    const dirPath = path.join(TMPDIR, 'domselector');
+    fs.mkdirSync(dirPath);
+    const subDirPath = path.join(dirPath, 'foo');
+    fs.mkdirSync(subDirPath);
+    const filePath = path.join(subDirPath, 'test.txt');
+    const value = 'test file.\n';
+    await fsPromise.writeFile(filePath, value, {
+      encoding: 'utf8', flag: 'w', mode: 0o666
+    });
+    const res1 = await Promise.all([
+      fs.existsSync(dirPath),
+      fs.existsSync(subDirPath),
+      fs.existsSync(filePath)
+    ]);
+    removeFile(filePath);
+    const res2 = await Promise.all([
+      fs.existsSync(dirPath),
+      fs.existsSync(subDirPath),
+      fs.existsSync(filePath)
+    ]);
+    removeDir(dirPath);
+    assert.deepEqual(res1, [true, true, true]);
+    assert.deepEqual(res2, [true, true, false]);
+  });
+});
+
+describe('copyFile', () => {
+  it('should copy file', async () => {
+    const dirPath = path.join(TMPDIR, 'domselector');
+    fs.mkdirSync(dirPath);
+    const subDirPath = path.join(dirPath, 'foo');
+    fs.mkdirSync(subDirPath);
+    const filePath = path.join(subDirPath, 'test.txt');
+    const copyPath = path.join(subDirPath, 'test2.txt');
+    const value = 'test file.\n';
+    await fsPromise.writeFile(filePath, value, {
+      encoding: 'utf8', flag: 'w', mode: 0o666
+    });
+    const res1 = await Promise.all([
+      fs.existsSync(dirPath),
+      fs.existsSync(subDirPath),
+      fs.existsSync(filePath),
+      fs.existsSync(copyPath)
+    ]);
+    copyFile(filePath, copyPath);
+    const res2 = await Promise.all([
+      fs.existsSync(dirPath),
+      fs.existsSync(subDirPath),
+      fs.existsSync(filePath),
+      fs.existsSync(copyPath),
+    ]);
+    removeDir(dirPath);
+    assert.deepEqual(res1, [true, true, true, false]);
+    assert.deepEqual(res2, [true, true, true, true]);
   });
 });
 

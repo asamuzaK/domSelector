@@ -54,6 +54,28 @@ export const removeDir = dir => {
 };
 
 /**
+ * remove file synchronously
+ * @param {string} file - file path
+ * @returns {void}
+ */
+export const removeFile = file => {
+  if (!isFile(file)) {
+    throw new Error(`No such file: ${file}`);
+  }
+  fs.rmSync(file);
+};
+
+/**
+ * copy file synchronously
+ * @param {string} src - source file path
+ * @param {string} dest - destination path
+ * @returns {void}
+ */
+export const copyFile = (src, dest) => {
+  fs.copyFileSync(src, dest);
+};
+
+/**
  * read a file
  * @param {string} file - file path
  * @param {object} [opt] - options
