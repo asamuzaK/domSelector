@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<title>3818</title>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3818 -->
+
+<div id=":r3:"></div>
+
+<script>
+"use strict";
+const div = document.querySelector('div');
+
+test(() => {
+  assert_true(div.matches(':scope'));
+}, ':scope pseudo class');
+test(() => {
+  assert_true(div.matches('#\\:r3\\:'));
+}, 'escaped ID');
+</script>
