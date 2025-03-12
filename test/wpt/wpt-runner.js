@@ -2,8 +2,16 @@
  * wpt-runner.js
  */
 
+import path from 'node:path';
 import wptRunner from 'wpt-runner';
+import { copyFile, removeFile } from '../../scripts/file-util.js';
 import { DOMSelector } from '../../src/index.js';
+
+/* constants */
+const JSDOM_DIR = 'test/wpt/jsdom/';
+const WPT_DIR = 'test/wpt/wpt/';
+const HARNESS_JS = 'resources/testharness.js';
+const REPORT_JS = 'resources/testharnessreport.js';
 
 const setup = window => {
   const domSelector = new DOMSelector(window);
@@ -216,8 +224,18 @@ const rootURLs = [
 
 (async () => {
   const res = [];
+  await Promise.all([
+    copyFile(
+      path.resolve(WPT_DIR, HARNESS_JS),
+      path.resolve(JSDOM_DIR, HARNESS_JS)
+    ),
+    copyFile(
+      path.resolve(WPT_DIR, REPORT_JS),
+      path.resolve(JSDOM_DIR, REPORT_JS)
+    )
+  ]);
   for (const rootURL of rootURLs) {
-    await wptRunner(`test/wpt/wpt/${rootURL}`, {
+    await wptRunner(`${WPT_DIR}${rootURL}`, {
       rootURL,
       setup,
       filter
@@ -240,7 +258,7 @@ const rootURLs = [
     });
   }
   // jsdom issues
-  await wptRunner('test/wpt/jsdom/issues/', {
+  await wptRunner(`${JSDOM_DIR}issues/`, {
     rootURL: 'issues/',
     setup,
     filter
@@ -265,5 +283,9 @@ const rootURLs = [
   for (const msg of res) {
     console.log(msg);
   }
+  await Promise.all([
+    removeFile(path.resolve(JSDOM_DIR, HARNESS_JS)),
+    removeFile(path.resolve(JSDOM_DIR, REPORT_JS))
+  ]);
   process.exit();
 })();
