@@ -76,5 +76,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.4.2"
+  "version": "6.4.3"
 }
