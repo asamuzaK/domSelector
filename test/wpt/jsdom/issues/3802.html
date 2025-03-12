@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<title>3802</title>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3802 -->
+
+<script>
+"use strict";
+const xml = `
+  <bar>
+    <bar id="theBar"><child-bars/></bar>
+    <child-bars id="theChildBar"/>
+  </bar>
+`.trim();
+const doc = new DOMParser().parseFromString(xml, 'text/xml');
+const bar = doc.getElementById('theBar');
+const childBar = doc.getElementById('theChildBar');
+
+test(() => {
+  for (const bar of [...doc.querySelectorAll('bar')]) {
+    if (!bar.parentElement) continue;
+    bar.parentElement.querySelector(':scope > child-bars').appendChild(bar);
+  }
+  assert_true(bar.parentNode === childBar);
+}, 'get target with :scope');
+</script>
