@@ -1,8 +1,9 @@
 export class Finder {
     constructor(window: object);
-    onError(e: Error, opt: object): void;
+    onError(e: Error, opt?: {
+        noexcept?: boolean;
+    }): void;
     setup(selector: string, node: object, opt?: {
-        event?: object;
         noexcept?: boolean;
         warn?: boolean;
     }): object;
@@ -21,7 +22,7 @@ export class Finder {
     private _matchLeaves;
     private _findDescendantNodes;
     private _matchCombinator;
-    private _findWalker;
+    private _findQswalker;
     private _matchSelf;
     private _findLineal;
     private _findEntryNodes;

@@ -16,7 +16,7 @@ import {
  * match pseudo-element selector
  * @param {string} astName - AST name
  * @param {string} astType - AST type
- * @param {object} opt - options
+ * @param {object} [opt] - options
  * @param {boolean} [opt.forgive] - forgive unknown pseudo-element
  * @param {boolean} [opt.warn] - warn unsupported pseudo-element
  * @throws {DOMException}
@@ -389,7 +389,7 @@ export const matchAttributeSelector = (ast, node) => {
  * match type selector
  * @param {object} ast - AST
  * @param {object} node - Element node
- * @param {object} opt - options
+ * @param {object} [opt] - options
  * @param {boolean} [opt.forgive] - forgive undeclared namespace
  * @returns {boolean} - result
  */

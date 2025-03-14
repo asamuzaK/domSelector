@@ -11323,7 +11323,7 @@ describe('Finder', () => {
       finder.setup('ul', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findWalker(leaves, document);
+      const res = finder._findQswalker(leaves, document);
       assert.deepEqual(res, [
         document.getElementById('ul1')
       ], 'result');
@@ -11334,7 +11334,7 @@ describe('Finder', () => {
       finder.setup('ol', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ol');
-      const res = finder._findWalker(leaves, document);
+      const res = finder._findQswalker(leaves, document);
       assert.deepEqual(res, [], 'result');
     });
 
@@ -11346,7 +11346,7 @@ describe('Finder', () => {
       finder.setup('ul', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findWalker(leaves, node);
+      const res = finder._findQswalker(leaves, node);
       assert.deepEqual(res, [
         node
       ], 'result');
@@ -11360,7 +11360,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, node);
+      const res = finder._findQswalker(leaves, node);
       assert.deepEqual(res, [
         child
       ], 'result');
@@ -11375,7 +11375,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, node);
+      const res = finder._findQswalker(leaves, node);
       assert.deepEqual(res, [
         child
       ], 'result');
@@ -11390,7 +11390,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, node, {
+      const res = finder._findQswalker(leaves, node, {
         targetType: 'all'
       });
       assert.deepEqual(res, [
@@ -11407,7 +11407,7 @@ describe('Finder', () => {
       finder.setup('ul', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findWalker(leaves, node);
+      const res = finder._findQswalker(leaves, node);
       assert.deepEqual(res, [
         node
       ], 'result');
@@ -11418,7 +11418,7 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, document.getElementById('li1'));
+      const res = finder._findQswalker(leaves, document.getElementById('li1'));
       assert.deepEqual(res, [
         document.getElementById('li2')
       ], 'result');
@@ -11429,7 +11429,7 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findWalker(leaves, document.getElementById('li3'));
+      const res = finder._findQswalker(leaves, document.getElementById('li3'));
       assert.deepEqual(res, [], 'result');
     });
 
@@ -11438,8 +11438,8 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      finder._findWalker(leaves, document.getElementById('li2'));
-      const res = finder._findWalker(leaves, document.getElementById('li1'), {
+      finder._findQswalker(leaves, document.getElementById('li2'));
+      const res = finder._findQswalker(leaves, document.getElementById('li1'), {
         force: true
       });
       assert.deepEqual(res, [], 'result');

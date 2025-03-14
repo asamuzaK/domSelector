@@ -30,25 +30,25 @@ const DIR_PREV = 'prev';
 /**
  * Finder
  * NOTE: #ast[i] corresponds to #nodes[i]
- * #ast: Array<Ast | undefined>
- * #nodes: Array<Nodes>
+ * #ast: Array.<Ast>
+ * #nodes: Array.<Nodes>
  * Ast: {
- *   branch: Array<Branch | undefined>,
+ *   branch: Array.<Branch | undefined>,
  *   dir: string | null,
  *   filtered: boolean,
  *   find: boolean
  * }
- * Branch: Array<Twig>
+ * Branch: Array.<Twig>
  * Twig: {
  *   combo: Leaf | null,
  *   leaves: Array<Leaf>
  * }
  * Leaf: {
- *   children: Array<Leaf | undefined> | null,
+ *   children: Array.<Leaf> | null,
  *   loc: null,
  *   type: string
  * }
- * Nodes: Array<HTMLElement | undefined>
+ * Nodes: Array.<HTMLElement>
  */
 export class Finder {
   /* private fields */
@@ -94,12 +94,13 @@ export class Finder {
   /**
    * handle error
    * @param {Error} e - Error
-   * @param {object} opt - options
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.noexcept] - no exception
    * @throws Error
    * @returns {void}
    */
-  onError(e, opt) {
-    const noexcept = opt?.noexcept ?? this.#noexcept;
+  onError(e, opt = {}) {
+    const noexcept = opt.noexcept ?? this.#noexcept;
     if (!noexcept) {
       if (e instanceof DOMException ||
           e instanceof this.#window.DOMException) {
@@ -122,8 +123,7 @@ export class Finder {
    * setup finder
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
-   * @param {object} [opt.event] - MouseEvent, KeyboardEvent
+   * @param {object} [opt] - options
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - finder
@@ -190,7 +190,7 @@ export class Finder {
    * correspond ast and nodes
    * @private
    * @param {string} selector - CSS selector
-   * @returns {Array.<Array.<object|undefined>>} - array of ast and nodes
+   * @returns {Array.<Array.<object>>} - array of ast and nodes
    */
   _correspond(selector) {
     const nodes = [];
@@ -312,7 +312,7 @@ export class Finder {
    * create tree walker
    * @private
    * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @param {boolean} [opt.force] - force new tree walker
    * @param {number} [opt.whatToShow] - NodeFilter whatToShow
    * @returns {object} - tree walker
@@ -350,10 +350,10 @@ export class Finder {
    * @param {boolean} [anb.reverse] - reverse order
    * @param {object} [anb.selector] - AST
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _collectNthChild(anb, node, opt) {
+  _collectNthChild(anb, node, opt = {}) {
     const { a, b, reverse, selector } = anb;
     const { parentNode } = node;
     const matched = new Set();
@@ -632,10 +632,10 @@ export class Finder {
    * @param {object} ast - AST
    * @param {object} node - Element node
    * @param {string} nthName - nth pseudo-class name
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchAnPlusB(ast, node, nthName, opt) {
+  _matchAnPlusB(ast, node, nthName, opt = {}) {
     const {
       nth: {
         a,
@@ -691,10 +691,10 @@ export class Finder {
    * @private
    * @param {Array.<object>} astLeaves - AST leaves
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {boolean} - result
    */
-  _matchHasPseudoFunc(astLeaves, node, opt) {
+  _matchHasPseudoFunc(astLeaves, node, opt = {}) {
     if (Array.isArray(astLeaves) && astLeaves.length) {
       const leaves = [...astLeaves];
       const [leaf] = leaves;
@@ -746,10 +746,10 @@ export class Finder {
    * @private
    * @param {object} astData - AST data
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {?object} - matched node
    */
-  _matchLogicalPseudoFunc(astData, node, opt) {
+  _matchLogicalPseudoFunc(astData, node, opt = {}) {
     const { astName, branches, twigBranches } = astData;
     const isShadowRoot = (opt.isShadowRoot || this.#shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
@@ -844,10 +844,10 @@ export class Finder {
    * @see https://html.spec.whatwg.org/#pseudo-classes
    * @param {object} ast - AST
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchPseudoClassSelector(ast, node, opt) {
+  _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
     const {
@@ -1851,10 +1851,10 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {boolean} - result
    */
-  _matchLeaves(leaves, node, opt) {
+  _matchLeaves(leaves, node, opt = {}) {
     let result;
     if (this.#invalidate) {
       result = this.#invalidateResults.get(leaves);
@@ -1914,10 +1914,10 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} baseNode - base Element node or Element.shadowRoot
-   * @param {object} opt - options
-   * @returns {object} - collection of nodes and pending state
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _findDescendantNodes(leaves, baseNode, opt) {
+  _findDescendantNodes(leaves, baseNode, opt = {}) {
     const [leaf, ...filterLeaves] = leaves;
     const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
@@ -1975,10 +1975,10 @@ export class Finder {
    * @private
    * @param {object} twig - twig
    * @param {object} node - Element node
-   * @param {object} opt - option
+   * @param {object} [opt] - option
    * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchCombinator(twig, node, opt) {
+  _matchCombinator(twig, node, opt = {}) {
     const { combo, leaves } = twig;
     const { name: comboName } = combo;
     const { parentNode } = node;
@@ -2094,9 +2094,9 @@ export class Finder {
    * @param {object} opt - options
    * @param {boolean} [opt.force] - traverse only to next node
    * @param {string} [opt.targetType] - target type
-   * @returns {?object|Array.<object>} - matched node / collection of nodes
+   * @returns {Array.<object>} - collection of matched nodes
    */
-  _findWalker(leaves, node, opt = {}) {
+  _findQswalker(leaves, node, opt = {}) {
     const { force, targetType } = opt;
     const walker = this.#qswalker;
     const nodes = [];
@@ -2188,7 +2188,7 @@ export class Finder {
    * @param {object} twig - twig
    * @param {string} targetType - target type
    * @param {boolean} complex - complex selector
-   * @returns {object} - collection of nodes etc.
+   * @returns {object} - nodes and info about it's state.
    */
   _findEntryNodes(twig, targetType, complex) {
     const { leaves } = twig;
@@ -2230,7 +2230,7 @@ export class Finder {
             }
           }
         } else {
-          nodes = this._findWalker(leaves, this.#node, {
+          nodes = this._findQswalker(leaves, this.#node, {
             targetType,
           });
           if (nodes.length) {
@@ -2247,7 +2247,7 @@ export class Finder {
             complex
           });
         } else {
-          nodes = this._findWalker(leaves, this.#node, {
+          nodes = this._findQswalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2264,7 +2264,7 @@ export class Finder {
             complex
           });
         } else {
-          nodes = this._findWalker(leaves, this.#node, {
+          nodes = this._findQswalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2317,7 +2317,7 @@ export class Finder {
             complex
           });
         } else if (targetType === TARGET_FIRST) {
-          nodes = this._findWalker(leaves, this.#node, {
+          nodes = this._findQswalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2340,7 +2340,7 @@ export class Finder {
    * collect nodes
    * @private
    * @param {string} targetType - target type
-   * @returns {Array.<Array.<object|undefined>>} - #ast and #nodes
+   * @returns {Array.<Array.<object>>} - #ast and #nodes
    */
   _collectNodes(targetType) {
     const ast = this.#ast.values();
@@ -2478,7 +2478,7 @@ export class Finder {
    * @param {object} twig - twig
    * @param {object} nodes - collection of nodes
    * @param {string} dir - direction
-   * @returns {Array.<object>} - collection of matched nodes
+   * @returns {Set.<object>} - collection of matched nodes
    */
   _getCombinedNodes(twig, nodes, dir) {
     const arr = [];
@@ -2504,6 +2504,7 @@ export class Finder {
    * @param {Set.<object>} nodes - collection of Element node
    * @param {object} opt - option
    * @param {object} opt.combo - combo
+   * @param {number} opt.index - index
    * @returns {?object} - matched node
    */
   _matchNodeNext(branch, nodes, opt) {
@@ -2675,7 +2676,7 @@ export class Finder {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
             let [refNode] =
-              this._findWalker(entryLeaves, entryNode, {
+              this._findQswalker(entryLeaves, entryNode, {
                 targetType
               });
             while (refNode) {
@@ -2687,7 +2688,7 @@ export class Finder {
                 nodes.add(matched);
                 break;
               }
-              [refNode] = this._findWalker(entryLeaves, refNode, {
+              [refNode] = this._findQswalker(entryLeaves, refNode, {
                 targetType,
                 force: true
               });
@@ -2707,7 +2708,7 @@ export class Finder {
           if (!matched && targetType === TARGET_FIRST) {
             const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
-            let [refNode] = this._findWalker(entryLeaves, entryNode, {
+            let [refNode] = this._findQswalker(entryLeaves, entryNode, {
               targetType
             });
             while (refNode) {
@@ -2718,7 +2719,7 @@ export class Finder {
                 nodes.add(refNode);
                 break;
               }
-              [refNode] = this._findWalker(entryLeaves, refNode, {
+              [refNode] = this._findQswalker(entryLeaves, refNode, {
                 targetType,
                 force: true
               });

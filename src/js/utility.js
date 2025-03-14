@@ -112,7 +112,7 @@ export const resolveContent = node => {
  * traverse node tree
  * @param {object} node - node
  * @param {object} walker - tree walker
- * @param {boolean} force - traverse only to next node
+ * @param {boolean} [force] - traverse only to next node
  * @returns {?object} - current node
  */
 export const traverseNode = (node, walker, force = false) => {
@@ -170,8 +170,8 @@ export const traverseNode = (node, walker, force = false) => {
 /**
  * is custom element
  * @param {object} node - Element node
- * @param {object} opt - options
- * @returns {boolean} - result;
+ * @param {object} [opt] - options
+ * @returns {boolean} - result
  */
 export const isCustomElement = (node, opt = {}) => {
   if (!node?.nodeType) {
@@ -646,7 +646,7 @@ export const isPreceding = (nodeA, nodeB) => {
 /**
  * sort nodes
  * @param {Array.<object>|Set.<object>} nodes - collection of nodes
- * @returns {Array.<object|undefined>} - collection of sorted nodes
+ * @returns {Array.<object>} - collection of sorted nodes
  */
 export const sortNodes = (nodes = []) => {
   const arr = [...nodes];
@@ -835,7 +835,7 @@ export const initNwsapi = (window, document) => {
 /**
  * filter selector (for nwsapi)
  * @param {string} selector - selector
- * @param {object} opt - options
+ * @param {object} [opt] - options
  * @returns {boolean} - result
  */
 export const filterSelector = (selector, opt = {}) => {

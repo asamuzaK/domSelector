@@ -13,7 +13,7 @@ export function isFocusable(node: object): boolean;
 export function getNamespaceURI(ns: string, node: any[]): string | null;
 export function isNamespaceDeclared(ns?: string, node?: object): boolean;
 export function isPreceding(nodeA: object, nodeB: object): boolean;
-export function sortNodes(nodes?: Array<object> | Set<object>): Array<object | undefined>;
+export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
 export function concatNestedSelectors(selectors: Array<Array<string>>): string;
 export function extractNestedSelectors(css: string): Array<Array<string>>;
 export function initNwsapi(window: object, document: object): object;
