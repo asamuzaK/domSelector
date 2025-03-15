@@ -11,6 +11,8 @@ import { sleep } from '../scripts/common.js';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
+/* constants */
+import { SYNTAX_ERR } from '../src/js/constant.js';
 
 const globalKeys = ['DOMParser'];
 
@@ -5996,33 +5998,77 @@ describe('local wpt test cases', () => {
   describe('dom/nodes/ParentNode-querySelector-All.html', () => {
     it('should throw', () => {
       const node = document.createElement('div');
-      assert.throws(() => node.querySelector('[class= space unquoted ]'),
-        window.DOMException,
-        'Invalid selector [class=space unquoted]', 'message');
+      assert.throws(
+        () => node.querySelector('[class= space unquoted ]'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector [class=space unquoted]', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      assert.throws(() => node.querySelector('div:example'),
-        window.DOMException, 'Unknown pseudo-class :example');
+      assert.throws(
+        () => node.querySelector('div:example'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :example',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      assert.throws(() => node.querySelectorAll('div:example'),
-        window.DOMException, 'Unknown pseudo-class :example');
+      assert.throws(
+        () => node.querySelectorAll('div:example'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :example',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      assert.throws(() => node.querySelector('ns|div'), window.DOMException,
-        'Undeclared namespace ns');
+      assert.throws(
+        () => node.querySelector('ns|div'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Undeclared namespace ns',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
-      assert.throws(() => node.querySelector(':not(ns|div)'),
-        window.DOMException, 'Undeclared namespace ns');
+      assert.throws(
+        () => node.querySelector(':not(ns|div)'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Undeclared namespace ns',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node(s)', () => {

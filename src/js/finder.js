@@ -219,7 +219,7 @@ export class Finder {
       try {
         cssAst = parseSelector(selector);
       } catch (e) {
-        this.onError(e);
+        return this.onError(e);
       }
       const { branches, info } = walkAST(cssAst);
       const {
@@ -241,8 +241,10 @@ export class Finder {
             if (item.type === COMBINATOR) {
               const [nextItem] = items;
               if (nextItem.type === COMBINATOR) {
-                throw new DOMException(`Invalid selector ${selector}`,
-                  SYNTAX_ERR);
+                return this.onError(new this.#window.DOMException(
+                  `Invalid selector ${selector}`,
+                  SYNTAX_ERR
+                ));
               }
               if (itemName === '+' || itemName === '~') {
                 invalidate = true;
@@ -859,7 +861,10 @@ export class Finder {
     if (Array.isArray(astChildren) && KEY_LOGICAL.includes(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
-        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        return this.onError(new this.#window.DOMException(
+          `Invalid selector ${css}`,
+          SYNTAX_ERR
+        ));
       }
       let astData;
       if (this.#astCache.has(ast)) {
@@ -884,7 +889,10 @@ export class Finder {
                 break;
               } else {
                 const css = generateCSS(ast);
-                throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+                return this.onError(new this.#window.DOMException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR
+                ));
               }
             }
           }
@@ -943,7 +951,10 @@ export class Finder {
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
-          throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+          return this.onError(new this.#window.DOMException(
+            `Invalid selector ${css}`,
+            SYNTAX_ERR
+          ));
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
@@ -954,7 +965,10 @@ export class Finder {
           case 'dir': {
             if (astChildren.length !== 1) {
               const css = generateCSS(ast);
-              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+              return this.onError(new this.#window.DOMException(
+                `Invalid selector ${css}`,
+                SYNTAX_ERR
+              ));
             }
             const [astChild] = astChildren;
             const res = matchDirectionPseudoClass(astChild, node);
@@ -967,7 +981,10 @@ export class Finder {
           case 'lang': {
             if (!astChildren.length) {
               const css = generateCSS(ast);
-              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+              return this.onError(new this.#window.DOMException(
+                `Invalid selector ${css}`,
+                SYNTAX_ERR
+              ));
             }
             let bool;
             for (const astChild of astChildren) {
@@ -1007,8 +1024,10 @@ export class Finder {
           case 'nth-col':
           case 'nth-last-col': {
             if (warn) {
-              throw new DOMException(`Unsupported pseudo-class :${astName}()`,
-                NOT_SUPPORTED_ERR);
+              this.onError(new this.#window.DOMException(
+                `Unsupported pseudo-class :${astName}()`,
+                NOT_SUPPORTED_ERR
+              ));
             }
             break;
           }
@@ -1020,15 +1039,19 @@ export class Finder {
           // dropped from CSS Selectors 3
           case 'contains': {
             if (warn) {
-              throw new DOMException(`Unknown pseudo-class :${astName}()`,
-                NOT_SUPPORTED_ERR);
+              this.onError(new this.#window.DOMException(
+                `Unknown pseudo-class :${astName}()`,
+                NOT_SUPPORTED_ERR
+              ));
             }
             break;
           }
           default: {
             if (!forgive) {
-              throw new DOMException(`Unknown pseudo-class :${astName}()`,
-                SYNTAX_ERR);
+              this.onError(new this.#window.DOMException(
+                `Unknown pseudo-class :${astName}()`,
+                SYNTAX_ERR
+              ));
             }
           }
         }
@@ -1664,8 +1687,10 @@ export class Finder {
         case 'first-letter':
         case 'first-line': {
           if (warn) {
-            throw new DOMException(`Unsupported pseudo-element ::${astName}`,
-              NOT_SUPPORTED_ERR);
+            this.onError(new this.#window.DOMException(
+              `Unsupported pseudo-element ::${astName}`,
+              NOT_SUPPORTED_ERR
+            ));
           }
           break;
         }
@@ -1690,20 +1715,26 @@ export class Finder {
         case 'volume-locked':
         case '-webkit-autofill': {
           if (warn) {
-            throw new DOMException(`Unsupported pseudo-class :${astName}`,
-              NOT_SUPPORTED_ERR);
+            this.onError(new this.#window.DOMException(
+              `Unsupported pseudo-class :${astName}`,
+              NOT_SUPPORTED_ERR
+            ));
           }
           break;
         }
         default: {
           if (astName.startsWith('-webkit-')) {
             if (warn) {
-              throw new DOMException(`Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR);
+              this.onError(new this.#window.DOMException(
+                `Unsupported pseudo-class :${astName}`,
+                NOT_SUPPORTED_ERR
+              ));
             }
           } else if (!forgive) {
-            throw new DOMException(`Unknown pseudo-class :${astName}`,
-              SYNTAX_ERR);
+            this.onError(new this.#window.DOMException(
+              `Unknown pseudo-class :${astName}`,
+              SYNTAX_ERR
+            ));
           }
         }
       }
@@ -1723,7 +1754,10 @@ export class Finder {
     if (Array.isArray(astChildren)) {
       if (astChildren.length !== 1) {
         const css = generateCSS(ast);
-        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        return this.onError(new this.#window.DOMException(
+          `Invalid selector ${css}`,
+          SYNTAX_ERR
+        ));
       }
       const { branches } = walkAST(astChildren[0]);
       const [branch] = branches;
@@ -1735,7 +1769,10 @@ export class Finder {
           const { type: leafType } = leaf;
           if (leafType === COMBINATOR) {
             const css = generateCSS(ast);
-            throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            return this.onError(new this.#window.DOMException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR
+            ));
           }
           bool = this._matchSelector(leaf, host).has(host);
           if (!bool) {
@@ -1754,7 +1791,10 @@ export class Finder {
             const { type: leafType } = leaf;
             if (leafType === COMBINATOR) {
               const css = generateCSS(ast);
-              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+              return this.onError(new this.#window.DOMException(
+                `Invalid selector ${css}`,
+                SYNTAX_ERR
+              ));
             }
             bool = this._matchSelector(leaf, parent).has(parent);
             if (!bool) {
@@ -1772,12 +1812,13 @@ export class Finder {
         }
         return null;
       }
-      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     } else if (astName === 'host') {
       return node;
-    } else {
-      throw new DOMException(`Invalid selector :${astName}`, SYNTAX_ERR);
     }
+    return this.onError(new this.#window.DOMException(
+      `Invalid selector :${astName}`,
+      SYNTAX_ERR
+    ));
   }
 
   /**
@@ -1826,7 +1867,11 @@ export class Finder {
         }
         case PS_ELEMENT_SELECTOR:
         default: {
-          matchPseudoElementSelector(astName, astType, opt);
+          try {
+            matchPseudoElementSelector(astName, astType, opt);
+          } catch (e) {
+            this.onError(e);
+          }
         }
       }
     } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
