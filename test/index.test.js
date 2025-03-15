@@ -10,6 +10,8 @@ import sinon from 'sinon';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
+/* constants */
+import { SYNTAX_ERR } from '../src/js/constant.js';
 
 describe('DOMSelector', () => {
   const domStr = `<!doctype html>
@@ -137,9 +139,30 @@ describe('DOMSelector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window)
-        .matches('[foo=bar baz]', document.body), window.DOMException,
-      'Invalid selector [foo=bar baz]');
+      assert.throws(
+        () => new DOMSelector(window).matches('', document.body),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector ', 'message');
+          return true;
+        }
+      );
+    });
+
+    it('should throw', () => {
+      assert.throws(
+        () => new DOMSelector(window).matches('[foo=bar baz]', document.body),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should warn', () => {
@@ -248,9 +271,18 @@ describe('DOMSelector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window)
-        .closest('[foo=bar baz]', document.getElementById('div0')),
-      window.DOMException, 'Invalid selector [foo=bar baz]');
+      assert.throws(
+        () => new DOMSelector(window)
+          .closest('[foo=bar baz]', document.getElementById('div0')),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should warn', () => {
@@ -373,9 +405,17 @@ describe('DOMSelector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window)
-        .querySelector('[foo=bar baz]', document),
-      window.DOMException, 'Invalid selector [foo=bar baz]');
+      assert.throws(
+        () => new DOMSelector(window).querySelector('[foo=bar baz]', document),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should warn', () => {
@@ -534,9 +574,17 @@ describe('DOMSelector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window)
-        .querySelectorAll('[foo=bar baz]', document),
-      window.DOMException, 'Invalid selector [foo=bar baz]');
+      assert.throws(
+        () => new DOMSelector(window)
+          .querySelectorAll('[foo=bar baz]', document),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        });
     });
 
     it('should warn', () => {
@@ -776,8 +824,17 @@ describe('patched JSDOM', () => {
 
   describe('Element.matches()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.matches('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.body.matches('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should match', () => {
@@ -933,8 +990,17 @@ describe('patched JSDOM', () => {
 
   describe('Element.closest()', () => {
     it('should throw', () => {
-      assert.throws(() => document.body.closest('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.body.closest('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -1038,35 +1104,89 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelector(), Element.querySelector()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelector('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.querySelector('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelector('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.body.querySelector('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => frag.querySelector('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.querySelector('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => document.querySelector('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelector('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => frag.querySelector('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelector('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => document.body.querySelector('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -1242,35 +1362,88 @@ describe('patched JSDOM', () => {
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
     it('should throw', () => {
-      assert.throws(() => document.querySelectorAll('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.querySelectorAll('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => document.body.querySelectorAll('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => frag.querySelectorAll('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.querySelectorAll('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => document.querySelectorAll('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => frag.querySelectorAll('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => document.body.querySelectorAll('.foo + .123'),
-        window.DOMException, 'Percent sign is expected');
+      assert.throws(
+        () => document.body.querySelectorAll('.foo + .123'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Percent sign is expected',
+            'message');
+          return true;
+        });
     });
 
     it('should get matched node', () => {
@@ -1493,8 +1666,17 @@ describe('patched JSDOM', () => {
 
     it('should throw', () => {
       const frag = document.createDocumentFragment();
-      assert.throws(() => frag.querySelectorAll('*|'),
-        window.DOMException, 'Identifier or asterisk is expected');
+      assert.throws(
+        () => frag.querySelectorAll('*|'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {

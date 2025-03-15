@@ -124,14 +124,19 @@ describe('Finder', () => {
     });
 
     it('should throw', () => {
-      try {
-        const err = new DOMException('error', SYNTAX_ERR);
-        const finder = new Finder(window);
-        finder.setup('*', document);
-        finder.onError(err);
-      } catch (e) {
-        assert.deepStrictEqual(e, new window.DOMException('error', SYNTAX_ERR));
-      }
+      const err = new DOMException('error', SYNTAX_ERR);
+      const finder = new Finder(window);
+      finder.setup('*', document);
+      assert.throws(
+        () => finder.onError(err),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'error', 'message');
+          return true;
+        }
+      );
     });
 
     it('should not throw', () => {
@@ -225,15 +230,31 @@ describe('Finder', () => {
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('[foo==bar]'), window.DOMException,
-        'Identifier is expected');
+      assert.throws(
+        () => finder._correspond('[foo==bar]'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Identifier is expected', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
-      assert.throws(() => finder._correspond('li ++ li'), DOMException,
-        'Invalid selector li ++ li');
+      assert.throws(
+        () => finder._correspond('li ++ li'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector li ++ li', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get result', () => {
@@ -3514,8 +3535,16 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup(':has()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :has()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :has()', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -3528,8 +3557,16 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup(':not()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :not()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :not()', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -3629,8 +3666,17 @@ describe('Finder', () => {
       const node = document.getElementById('ul1').parentNode;
       const finder = new Finder(window);
       finder.setup(':has(> :has(li))', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :has(>:has(li))');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :has(>:has(li))',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -3791,8 +3837,17 @@ describe('Finder', () => {
       const node = document.getElementById('ul1').parentNode;
       const finder = new Finder(window);
       finder.setup(':has(:is(:has(li, dd)))', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :has(:not(:has(li,dd)))');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :has(:not(:has(li,dd)))', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -3804,8 +3859,17 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-child()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-child()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-child()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -3817,8 +3881,17 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-last-child()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-last-child()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-last-child()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -3830,8 +3903,17 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-of-type()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-of-type()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-of-type()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -3843,8 +3925,17 @@ describe('Finder', () => {
       const node = document.getElementById('dt1');
       const finder = new Finder(window);
       finder.setup(':nth-last-of-type()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :nth-last-of-type()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-last-of-type()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node(s)', () => {
@@ -3884,8 +3975,17 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':dir()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :dir()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :dir()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -3922,8 +4022,17 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':lang()', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Invalid selector :lang()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :lang()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -4152,7 +4261,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: [
           {
@@ -4167,12 +4276,18 @@ describe('Finder', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':current(foo)', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :current()');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {
@@ -4248,8 +4363,17 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':foobar(foo)', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :foobar()');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :foobar()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -4273,7 +4397,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: [
           {
@@ -4288,12 +4412,18 @@ describe('Finder', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':contains(foo)', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :contains()');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {
@@ -9202,7 +9332,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: null,
         name: 'after',
@@ -9210,12 +9340,18 @@ describe('Finder', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':after', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-element ::after');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     // not supported
@@ -9233,7 +9369,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: null,
         name: 'autofill',
@@ -9241,12 +9377,18 @@ describe('Finder', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':autofill', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :autofill');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should not match', () => {
@@ -9263,7 +9405,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: null,
         name: 'has-slotted',
@@ -9271,12 +9413,18 @@ describe('Finder', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':has-slotted', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :has-slotted');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     // unknown
@@ -9290,8 +9438,17 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':foo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :foo');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :foo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -9324,7 +9481,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should throw', () => {
+    it('should warn', () => {
       const leaf = {
         children: null,
         name: '-webkit-foo',
@@ -9332,12 +9489,18 @@ describe('Finder', () => {
       };
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
+      const stubWarn = sinon.stub(console, 'warn');
       const finder = new Finder(window);
       finder.setup(':-webkit-foo', node, {
         warn: true
       });
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unsupported pseudo-class :-webkit-foo');
+      const res = finder._matchPseudoClassSelector(leaf, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
+      assert.deepEqual([...res], [], 'result');
     });
 
     it('should throw', () => {
@@ -9350,8 +9513,17 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':webkit-foo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :webkit-foo');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :webkit-foo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -9380,8 +9552,17 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':-webkitfoo', node);
-      assert.throws(() => finder._matchPseudoClassSelector(leaf, node, {}),
-        DOMException, 'Unknown pseudo-class :-webkitfoo');
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-class :-webkitfoo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -9433,8 +9614,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':foobar div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :foobar');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :foobar',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -9478,8 +9668,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':foobar(#baz) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :foobar');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :foobar',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -9513,8 +9712,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :host-context',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -9548,8 +9756,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host() div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host()');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :host()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
@@ -9583,8 +9800,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context() div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context()');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :host-context()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -9671,8 +9897,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#baz #foobar) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host(#baz #foobar)');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :host(#baz #foobar)',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -9818,8 +10053,17 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context(#baz #foobar) div', node);
-      assert.throws(() => finder._matchShadowHostPseudoClass(ast, node),
-        DOMException, 'Invalid selector :host-context(#baz #foobar)');
+      assert.throws(
+        () => finder._matchShadowHostPseudoClass(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :host-context(#baz #foobar)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -10429,6 +10673,28 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should throw', () => {
+      const ast = {
+        children: null,
+        name: 'foo',
+        type: PS_ELEMENT_SELECTOR
+      };
+      const node = document.documentElement;
+      const finder = new Finder(window);
+      finder.setup('::foo', node);
+      assert.throws(
+        () => finder._matchSelector(ast, node),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-element ::foo',
+            'message');
+          return true;
+        }
+      );
+    });
+
     it('should not match', () => {
       const ast = {
         children: null,
@@ -10437,8 +10703,30 @@ describe('Finder', () => {
       };
       const node = document.documentElement;
       const finder = new Finder(window);
-      finder.setup('::before', document);
+      finder.setup('::before', node);
       const res = finder._matchSelector(ast, node);
+      assert.strictEqual(res.size, 0, 'size');
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should warn', () => {
+      const ast = {
+        children: null,
+        name: 'before',
+        type: PS_ELEMENT_SELECTOR
+      };
+      const node = document.documentElement;
+      const stubWarn = sinon.stub(console, 'warn');
+      const finder = new Finder(window);
+      finder.setup('::before', node, {
+        warn: true
+      });
+      const res = finder._matchSelector(ast, node, {
+        warn: true
+      });
+      const { called } = stubWarn;
+      stubWarn.restore();
+      assert.strictEqual(called, true, 'called');
       assert.strictEqual(res.size, 0, 'size');
       assert.deepEqual([...res], [], 'result');
     });
