@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>3774</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3774 -->
+
+<dl>
+  <dt id="dt1" class="a">A:</dt>
+  <dd id="dd1" class="a">A</dd>
+  <dt id="dt2" class="b">B:</dt>
+  <dd id="dd2" class="b">
+    B
+    <dl>
+      <dt id="dt3" class="c">C:</dt>
+      <dd id="dd3" class="c">C</dd>
+      <dt id="dt4" class="d">D:</dt>
+      <dd id="dd4" class="d">D</dd>
+    </dl>
+  </dd>
+  <dt id="dt5" class="e">E:</dt>
+  <dd id="dd5" class="e">E</dd>
+</dl>
+
+<script>
+"use strict";
+const dt1 = document.getElementById('dt1');
+const dt2 = document.getElementById('dt2');
+const dt3 = document.getElementById('dt3');
+const dt4 = document.getElementById('dt4');
+const dt5 = document.getElementById('dt5');
+const dd1 = document.getElementById('dd1');
+const dd2 = document.getElementById('dd2');
+const dd3 = document.getElementById('dd3');
+const dd4 = document.getElementById('dd4');
+const dd5 = document.getElementById('dd5');
+
+test(() => {
+  const items = document.querySelectorAll('dd:not(:has(dd))');
+  assert_array_equals([...items], [dd1, dd3, dd4, dd5]);
+}, ':has() without tag name');
+
+test(() => {
+  const items = document.querySelectorAll('dd:not(dd:has(dd))');
+  assert_array_equals([...items], [dd1, dd3, dd4, dd5]);
+}, ':has() with tag name');
+</script>
