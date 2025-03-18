@@ -9,6 +9,7 @@ import { DOMSelector } from '../../src/index.js';
 
 /* constants */
 const JSDOM_DIR = 'test/wpt/jsdom/';
+const WPT_ALT_DIR = 'test/wpt/wpt-alt/';
 const WPT_DIR = 'test/wpt/wpt/';
 const HARNESS_JS = 'resources/testharness.js';
 const REPORT_JS = 'resources/testharnessreport.js';
@@ -776,6 +777,29 @@ const includeFilter = testPath => {
       process.exit(1);
     });
   }
+
+  // wpt alternative tests
+  await wptRunner(WPT_ALT_DIR, {
+    rootURL: '/',
+    setup
+  }).then(failures => {
+    const rootURL = 'wpt-alt/';
+    let msg;
+    switch (failures) {
+      case 0:
+        msg = `\npassed ${rootURL}.`;
+        break;
+      case 1:
+        msg = `\n1 failure in ${rootURL}.`;
+        break;
+      default:
+        msg = `\n${failures} failures in ${rootURL}.`;
+    }
+    res.push(msg);
+  }).catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
 
   // jsdom issues
   await wptRunner(`${JSDOM_DIR}issues/`, {

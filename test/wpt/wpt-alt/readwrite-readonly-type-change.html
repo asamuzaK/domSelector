@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Selector: pseudo-classes (:read-write, :read-only) input type change</title>
+<link rel="author" title="Rune Lillesveen" href="mailto:rune@opera.com">
+<link rel="help" href="https://html.spec.whatwg.org/multipage/#pseudo-classes">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<style>
+  span {
+    color: red;
+    background-color: pink;
+  }
+  :required + span {
+    color: green;
+  }
+  :not(:optional) + span {
+    background-color: lime;
+  }
+</style>
+<input id="hiddenInput" type="hidden" required>
+<span id="sibling">This text should be green on lime background.</span>
+<script>
+  test(() => {
+    assert_false(hiddenInput.matches(':required'),
+      "Not matching :required for type=hidden");
+    assert_true(hiddenInput.matches(':optional'),
+      "Matching :optional for type=hidden");
+
+    hiddenInput.type = "text";
+
+    assert_true(hiddenInput.matches(':required'),
+      "Matching :required for type=text");
+    assert_true(hiddenInput.matches(':not(:optional)'),
+      "Matching :not(:optional) for type=text");
+  }, "Evaluation of :required and :optional changes for input type change.");
+</script>

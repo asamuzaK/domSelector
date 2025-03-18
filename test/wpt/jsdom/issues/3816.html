@@ -8,12 +8,14 @@
 <input id="input0" />
 <input id="input1" readonly="" />
 <input id="input2" readonly="readonly" />
+<input id="input3" type="checkbox" />
 
 <script>
 "use strict";
 const input0 = document.getElementById('input0');
 const input1 = document.getElementById('input1');
 const input2 = document.getElementById('input2');
+const input3 = document.getElementById('input3');
 
 test(() => {
   assert_false(input0.matches(':read-only'));
@@ -29,4 +31,9 @@ test(() => {
   assert_true(input2.matches(':read-only'));
   assert_false(input2.matches(':read-write'));
 }, 'readonly attr with value');
+
+test(() => {
+  assert_true(input3.matches(':read-only'));
+  assert_false(input3.matches(':read-write'));
+}, 'non editable input');
 </script>
