@@ -1534,28 +1534,37 @@ export class Finder {
         }
         case 'required':
         case 'optional': {
-          let targetNode;
+          let required;
+          let optional;
           if (localName === 'select' || localName === 'textarea') {
-            targetNode = node;
+            if (node.required || node.hasAttribute('required')) {
+              required = true;
+            } else {
+              optional = true;
+            }
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
               const keys = [...KEY_INPUT_EDIT, 'checkbox', 'file', 'radio'];
               const attrType = node.getAttribute('type');
               if (keys.includes(attrType)) {
-                targetNode = node;
+                if (node.required || node.hasAttribute('required')) {
+                  required = true;
+                } else {
+                  optional = true;
+                }
+              } else {
+                optional = true;
               }
+            } else if (node.required || node.hasAttribute('required')) {
+              required = true;
             } else {
-              targetNode = node;
+              optional = true;
             }
           }
-          if (targetNode) {
-            if (node.required || node.hasAttribute('required')) {
-              if (astName === 'required') {
-                matched.add(node);
-              }
-            } else if (astName === 'optional') {
-              matched.add(node);
-            }
+          if (astName === 'required' && required) {
+            matched.add(node);
+          } else if (astName === 'optional' && optional) {
+            matched.add(node);
           }
           break;
         }

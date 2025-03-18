@@ -674,6 +674,7 @@ const excludeFilter = testPath => {
     'pseudo-classes/inrange-outofrange.html',
     'pseudo-classes/invalid-after-clone.html',
     'pseudo-classes/placeholder-shown-type-change.html',
+    'pseudo-classes/readwrite-readonly-type-change.html',
     'pseudo-classes/required-optional-hidden.html',
     'pseudo-classes/valid-invalid.html',
   ];

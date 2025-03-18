@@ -6618,8 +6618,7 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const input = document.getElementById('input');
       const node = document.getElementById('sibling');
-      assert.strictEqual(node.matches(':not(:optional) + span'), true,
-        'result');
+      assert.strictEqual(node.matches(':optional + span'), true, 'result');
       input.type = 'text';
       assert.strictEqual(node.matches(':not(:optional) + span'), true,
         'result');
