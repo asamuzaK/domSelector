@@ -33,7 +33,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.3.4",
+    "@asamuzakjp/nwsapi": "^2.3.6",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.1.0",
     "is-potential-custom-element-name": "^1.0.1"
@@ -46,8 +46,8 @@
     "commander": "^13.1.0",
     "esbuild": "^0.25.1",
     "eslint": "^9.22.0",
-    "eslint-plugin-import-x": "^4.7.0",
-    "eslint-plugin-jsdoc": "^50.6.6",
+    "eslint-plugin-import-x": "^4.8.0",
+    "eslint-plugin-jsdoc": "^50.6.8",
     "eslint-plugin-regexp": "^2.7.0",
     "eslint-plugin-unicorn": "^57.0.0",
     "globals": "^16.0.0",

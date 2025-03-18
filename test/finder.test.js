@@ -6352,7 +6352,7 @@ describe('Finder', () => {
       ], 'result');
     });
 
-    it('should not match', () => {
+    it('should get matched node(s)', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6360,13 +6360,14 @@ describe('Finder', () => {
       };
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
-      node.setAttribute('readonly', 'readonly');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
     });
 
     it('should get matched node(s)', () => {

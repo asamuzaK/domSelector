@@ -1301,6 +1301,8 @@ export class Finder {
                 } else {
                   writable = true;
                 }
+              } else {
+                readonly = true;
               }
               break;
             }
