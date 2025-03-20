@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>3792</title>
+<title>3792 crash test</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <!-- Regression test for https://github.com/jsdom/jsdom/issues/3792 -->
@@ -27,5 +27,5 @@
 const div = document.querySelector('.baz');
 test(() => {
   assert_equals(window.getComputedStyle(div).backgroundColor, 'rgb(226, 232, 240)');
-}, 'getComputedStyle() should not throw');
+}, 'getComputedStyle() should not crash');
 </script>

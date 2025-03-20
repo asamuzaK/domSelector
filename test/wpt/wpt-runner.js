@@ -527,6 +527,8 @@ const excludeFilter = testPath => {
     'text-stroke-color-visited-inheritance.html',
     'user-invalid-form-submission-invalidation.html',
     'visited-inheritance.html',
+    'webkit-pseudo-element.html',
+    'x-pseudo-element.html',
     // html/semantics/selectors/
     'case-sensitivity/values.window.html',
     'pseudo-classes/active-disabled.html',
@@ -653,12 +655,15 @@ const excludeFilter = testPath => {
     'invalidation/state-in-has.html',
     'invalidation/subject-has-invalidation-with-display-none-anchor-element.html',
     'invalidation/where.html',
-    'is-where-basic.html',
-    'is-where-not.html',
+    'is-specificity-shadow.html',
     'is-where-pseudo-classes.html',
+    'is-where-shadow.html',
     'missing-right-token.html',
     'not-complex.html',
+    'not-specificity.html',
     'nth-of-type-namespace.html',
+    'parsing/parse-anplusb.html',
+    'placeholder-shown.html',
     'pseudo-enabled-disabled.html',
     'scope-selector.html',
     'selector-read-write-type-change-001.html',
@@ -681,6 +686,20 @@ const excludeFilter = testPath => {
   if (skipList.includes(testPath)) {
     return false;
   }
+  const unsupportedList = [
+    // css/selectors
+    // :modal
+    'modal-pseudo-class.html',
+    // dialog:open, select:open
+    'open-pseudo.html',
+    // :user-valid, :user-invalid
+    'user-invalid.html',
+    'user-valid.html',
+    'valid-invalid-form-fieldset.html',
+  ];
+  if (unsupportedList.includes(testPath)) {
+    return false;
+  }
   return true;
 };
 
@@ -695,7 +714,7 @@ const includeFilter = testPath => {
       return false;
     }
   }
-  if (/(?:-crash|-manual|-(?:no)?ref|tentative)\.x?html$/.test(testPath)) {
+  if (/(?:-manual|-(?:no)?ref|tentative)\.x?html$/.test(testPath)) {
     return false;
   }
   const includeFile = [
@@ -713,6 +732,10 @@ const includeFilter = testPath => {
     'query-target-in-load-event.html',
   ];
   if (includeFile.includes(testPath)) {
+    return true;
+  }
+  // jsdom/issues
+  if (/^\d+(?:-crash)?\.html$/.test(testPath)) {
     return true;
   }
   return false;
@@ -806,7 +829,7 @@ const includeFilter = testPath => {
   await wptRunner(`${JSDOM_DIR}issues/`, {
     rootURL: 'issues/',
     setup,
-    filter: excludeFilter
+    filter: includeFilter
   }).then(failures => {
     const rootURL = 'jsdom/issues/';
     let msg;
