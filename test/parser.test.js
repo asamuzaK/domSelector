@@ -12,7 +12,8 @@ import * as parser from '../src/js/parser.js';
 /* constants */
 import {
   ATTR_SELECTOR, CLASS_SELECTOR, COMBINATOR, IDENT, ID_SELECTOR, NTH, OPERATOR,
-  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, STRING, TYPE_SELECTOR
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR, STRING, SYNTAX_ERR,
+  TYPE_SELECTOR
 } from '../src/js/constant.js';
 const AN_PLUS_B = 'AnPlusB';
 const RAW = 'Raw';
@@ -136,7 +137,15 @@ describe('preprocess', () => {
   });
 
   it('should throw', () => {
-    assert.throws(() => func(1), DOMException);
+    assert.throws(
+      () => func(1),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+        return true;
+      }
+    );
   });
 
   it('should get value', () => {
@@ -165,31 +174,89 @@ describe('create AST from CSS selector', () => {
 
   describe('invalid selectors', () => {
     it('should throw', () => {
-      assert.throws(() => func(''), DOMException);
+      assert.throws(
+        () => func(''),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector ', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('>*'), DOMException);
+      assert.throws(
+        () => func('>*'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector >*', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('*,'), DOMException);
+      assert.throws(
+        () => func('*,'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector *,', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('[foo=bar baz qux]'), DOMException);
+      assert.throws(
+        () => func('[foo=bar baz qux]'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz qux]',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('*|'), DOMException);
+      assert.throws(
+        () => func('*|'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo < bar'), DOMException);
+      assert.throws(
+        () => func('foo < bar'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector foo < bar',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo<bar'), DOMException);
+      assert.throws(
+        () => func('foo<bar'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector foo<bar', 'message');
+          return true;
+        }
+      );
     });
   });
 
@@ -848,15 +915,39 @@ describe('create AST from CSS selector', () => {
 
   describe('class selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('.'), DOMException);
+      assert.throws(
+        () => func('.'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector .', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('.123'), DOMException);
+      assert.throws(
+        () => func('.123'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector .123', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('.-123'), DOMException);
+      assert.throws(
+        () => func('.-123'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector .-123', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -970,7 +1061,15 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('|.foo'), DOMException);
+      assert.throws(
+        () => func('|.foo'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector |.foo', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get namespaced selector list', () => {
@@ -1033,15 +1132,39 @@ describe('create AST from CSS selector', () => {
 
   describe('id selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('#'), DOMException);
+      assert.throws(
+        () => func('#'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector #', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('#123'), DOMException);
+      assert.throws(
+        () => func('#123'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector #123', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('#-123'), DOMException);
+      assert.throws(
+        () => func('#-123'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector #-123', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -1155,7 +1278,15 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('|#foo'), DOMException);
+      assert.throws(
+        () => func('|#foo'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector |#foo', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get namespaced selector list', () => {
@@ -1229,11 +1360,27 @@ describe('create AST from CSS selector', () => {
 
   describe('attribute selector', () => {
     it('should throw', () => {
-      assert.throws(() => func('[]'), DOMException);
+      assert.throws(
+        () => func('[]'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector []', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('[*]'), DOMException);
+      assert.throws(
+        () => func('[*]'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [*]', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -1961,7 +2108,15 @@ describe('create AST from CSS selector', () => {
 
   describe('pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':'), DOMException);
+      assert.throws(
+        () => func(':'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -4550,7 +4705,16 @@ describe('create AST from CSS selector', () => {
 
   describe('An+B notation pseudo-class', () => {
     it('should throw', () => {
-      assert.throws(() => func(':nth-child(foo)'), DOMException);
+      assert.throws(
+        () => func(':nth-child(foo)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-child(foo)',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -4732,7 +4896,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-child(2n + - 1)'), DOMException);
+      assert.throws(
+        () => func(':nth-child(2n + - 1)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-child(2n + - 1)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -4929,7 +5102,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child(foo)'), DOMException);
+      assert.throws(
+        () => func(':nth-last-child(foo)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-last-child(foo)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -5111,7 +5293,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-child(2n + - 1)'), DOMException);
+      assert.throws(
+        () => func(':nth-last-child(2n + - 1)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-last-child(2n + - 1)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -5165,7 +5356,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type(foo)'), DOMException);
+      assert.throws(
+        () => func(':nth-of-type(foo)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :nth-of-type(foo)',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -5347,11 +5547,29 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-of-type(2n + - 1)'), DOMException);
+      assert.throws(
+        () => func(':nth-of-type(2n + - 1)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-of-type(2n + - 1)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type(foo)'), DOMException);
+      assert.throws(
+        () => func(':nth-last-of-type(foo)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-last-of-type(foo)', 'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -5533,7 +5751,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':nth-last-of-type(2n + - 1)'), DOMException);
+      assert.throws(
+        () => func(':nth-last-of-type(2n + - 1)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Invalid selector :nth-last-of-type(2n + - 1)', 'message');
+          return true;
+        }
+      );
     });
 
     // NOTE: :nth-col() not yet supported
@@ -5753,8 +5980,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':dir(ltr,rtl)'), DOMException,
-        '")" is expected');
+      assert.throws(
+        () => func(':dir(ltr,rtl)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :dir(ltr,rtl)',
+            'message');
+          return true;
+        }
+      );
     });
   });
 
@@ -6076,7 +6311,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':lang(0)'), DOMException);
+      assert.throws(
+        () => func(':lang(0)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :lang(0)',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -6347,7 +6591,16 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func(':host(.foo, .bar)'), DOMException);
+      assert.throws(
+        () => func(':host(.foo, .bar)'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :host(.foo, .bar)',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -6421,7 +6674,16 @@ describe('create AST from CSS selector', () => {
 
   describe('pseudo-element', () => {
     it('should throw', () => {
-      assert.throws(() => func(':::before'), DOMException);
+      assert.throws(
+        () => func(':::before'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector :::before',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should get selector list', () => {
@@ -6805,13 +7067,45 @@ describe('create AST from CSS selector', () => {
       }, 'result');
     });
 
+    // unsupported combinators
+    it('should throw', () => {
+      assert.throws(
+        () => func('col.selected || td'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector col.selected || td',
+            'message');
+          return true;
+        }
+      );
+    });
+
     // unknown combinators
     it('should throw', () => {
-      assert.throws(() => func('foo % bar'), DOMException);
+      assert.throws(
+        () => func('foo % bar'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector foo % bar',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo - bar'), DOMException);
+      assert.throws(
+        () => func('foo - bar'),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector foo - bar',
+            'message');
+          return true;
+        }
+      );
     });
 
     // NOTE : thrown afterwards
@@ -8276,7 +8570,15 @@ describe('parse AST name', () => {
   const func = parser.parseAstName;
 
   it('should throw', () => {
-    assert.throws(() => func(), DOMException);
+    assert.throws(
+      () => func(),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector undefined', 'message');
+        return true;
+      }
+    );
   });
 
   it('should get value', () => {

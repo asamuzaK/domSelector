@@ -236,7 +236,8 @@ describe('Finder', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier is expected', 'message');
+          assert.strictEqual(e.message, 'Invalid selector [foo==bar]',
+            'message');
           return true;
         }
       );
