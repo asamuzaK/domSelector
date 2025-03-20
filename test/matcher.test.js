@@ -10,7 +10,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as matcher from '../src/js/matcher.js';
 import {
-  ATTR_SELECTOR, IDENT, PS_ELEMENT_SELECTOR, TYPE_SELECTOR
+  ATTR_SELECTOR, IDENT, NOT_SUPPORTED_ERR, PS_ELEMENT_SELECTOR, SYNTAX_ERR,
+  TYPE_SELECTOR
 } from '../src/js/constant.js';
 const STRING = 'String';
 
@@ -102,8 +103,16 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('after', PS_ELEMENT_SELECTOR, { warn: true }),
-        DOMException, 'Unsupported pseudo-element ::after');
+      assert.throws(
+        () => func('after', PS_ELEMENT_SELECTOR, { warn: true }),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
+          assert.strictEqual(e.message, 'Unsupported pseudo-element ::after',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -116,8 +125,16 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('part', PS_ELEMENT_SELECTOR, { warn: true }),
-        DOMException, 'Unsupported pseudo-element ::part()');
+      assert.throws(
+        () => func('part', PS_ELEMENT_SELECTOR, { warn: true }),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
+          assert.strictEqual(e.message, 'Unsupported pseudo-element ::part()',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -130,15 +147,31 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('slotted', PS_ELEMENT_SELECTOR, { warn: true }),
-        DOMException, 'Unsupported pseudo-element ::slotted()');
+      assert.throws(
+        () => func('slotted', PS_ELEMENT_SELECTOR, { warn: true }),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Unsupported pseudo-element ::slotted()', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('foo', PS_ELEMENT_SELECTOR),
-        DOMException, 'Unknown pseudo-element ::foo');
+      assert.throws(
+        () => func('foo', PS_ELEMENT_SELECTOR),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-element ::foo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -160,16 +193,31 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('-webkit-foo', PS_ELEMENT_SELECTOR, {
-        warn: true
-      }), DOMException, 'Unsupported pseudo-element ::-webkit-foo');
+      assert.throws(
+        () => func('-webkit-foo', PS_ELEMENT_SELECTOR, { warn: true }),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
+          assert.strictEqual(e.message,
+            'Unsupported pseudo-element ::-webkit-foo', 'message');
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('webkit-foo', PS_ELEMENT_SELECTOR),
-        DOMException, 'Unknown pseudo-element ::webkit-foo');
+      assert.throws(
+        () => func('webkit-foo', PS_ELEMENT_SELECTOR),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-element ::webkit-foo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -184,8 +232,16 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('-webkitfoo', PS_ELEMENT_SELECTOR),
-        DOMException, 'Unknown pseudo-element ::-webkitfoo');
+      assert.throws(
+        () => func('-webkitfoo', PS_ELEMENT_SELECTOR),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Unknown pseudo-element ::-webkitfoo',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should not match', () => {
@@ -750,8 +806,16 @@ describe('matcher', () => {
       node.setAttribute('foo', 'bar baz');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      assert.throws(() => func(ast, node), DOMException,
-        'Invalid selector [foo=bar baz]');
+      assert.throws(
+        () => func(ast, node),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        }
+      );
     });
 
     it('should match', () => {

@@ -830,8 +830,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -996,8 +995,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1110,8 +1108,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1124,8 +1121,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1139,8 +1135,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1153,7 +1148,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         }
@@ -1168,7 +1163,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         }
@@ -1182,7 +1177,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         }
@@ -1368,8 +1363,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1382,8 +1376,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1397,8 +1390,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );
@@ -1411,7 +1403,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         }
@@ -1426,7 +1418,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         }
@@ -1440,7 +1432,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Percent sign is expected',
+          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
             'message');
           return true;
         });
@@ -1672,8 +1664,7 @@ describe('patched JSDOM', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Identifier or asterisk is expected',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
         }
       );

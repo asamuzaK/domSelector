@@ -161,10 +161,10 @@ export const parseSelector = selector => {
       } else if (!selector.endsWith(')')) {
         res = parseSelector(`${selector})`);
       } else {
-        throw new DOMException(message, SYNTAX_ERR);
+        throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
       }
     } else {
-      throw new DOMException(message, SYNTAX_ERR);
+      throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
     }
   }
   return res;
