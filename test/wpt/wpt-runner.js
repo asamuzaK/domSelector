@@ -330,6 +330,7 @@ const excludeFilter = testPath => {
     'focus-within-shadow-005.html',
     'focus-within-shadow-006.html',
     'has-display-none-checked.html',
+    'has-specificity.html',
     'has-style-sharing-001.html',
     'has-style-sharing-002.html',
     'has-style-sharing-003.html',
@@ -634,27 +635,39 @@ const excludeFilter = testPath => {
     'invalidation/empty-pseudo-in-has.html',
     'invalidation/has-complexity.html',
     'invalidation/has-unstyled.html',
+    'invalidation/has-with-not.html',
+    'invalidation/has-with-nth-child.html',
     'invalidation/has-with-pseudo-class.html',
     'invalidation/host-context-pseudo-class-in-has.html',
     'invalidation/host-has-shadow-tree-element-at-nonsubject-position.html',
     'invalidation/host-has-shadow-tree-element-at-subject-position.html',
     'invalidation/host-pseudo-class-in-has.html',
     'invalidation/input-pseudo-classes-in-has.html',
+    'invalidation/is-pseudo-containing-complex-in-has.html',
     'invalidation/is-pseudo-containing-sibling-relationship-in-has.html',
+    'invalidation/is-where-pseudo-containing-hard-pseudo-and-never-matching.html',
     'invalidation/is-where-pseudo-containing-hard-pseudo.html',
     'invalidation/is.html',
+    'invalidation/link-pseudo-class-in-has.html',
+    'invalidation/link-pseudo-in-has.html',
     'invalidation/negated-always-matches-negated-first-of-type-when-ancestor-changes.html',
     'invalidation/negated-is-always-matches-negated-first-of-type-when-ancestor-changes.html',
     'invalidation/negated-is-never-matches-negated-first-of-type-when-ancestor-changes.html',
     'invalidation/negated-negated-first-of-type-when-ancestor-changes.html',
     'invalidation/negated-never-matches-negated-first-of-type-when-ancestor-changes.html',
     'invalidation/not-002.html',
+    'invalidation/not-pseudo-containing-complex-in-has.html',
+    'invalidation/not-pseudo-containing-sibling-relationship-in-has.html',
     'invalidation/nth-child-whole-subtree.html',
     'invalidation/placeholder-shown.html',
+    'invalidation/quirks-mode-stylesheet-dynamic-add-001.html',
     'invalidation/sibling.html',
     'invalidation/state-in-has.html',
     'invalidation/subject-has-invalidation-with-display-none-anchor-element.html',
+    'invalidation/target-pseudo-in-has.html',
+    'invalidation/typed-child-indexed-pseudo-classes-in-has.html',
     'invalidation/where.html',
+    'is-nested.html',
     'is-specificity-shadow.html',
     'is-where-pseudo-classes.html',
     'is-where-shadow.html',
@@ -688,14 +701,23 @@ const excludeFilter = testPath => {
   }
   const unsupportedList = [
     // css/selectors
+    // || column combinator
+    'is-where-error-recovery.html',
+    // :muted, :playing, :paused, :seeking
+    'invalidation/media-pseudo-classes-in-has.html',
     // :modal
+    'invalidation/modal-pseudo-class-in-has.html',
     'modal-pseudo-class.html',
     // dialog:open, select:open
     'open-pseudo.html',
     // :user-valid, :user-invalid
+    'invalidation/user-valid-user-invalid.html',
     'user-invalid.html',
     'user-valid.html',
     'valid-invalid-form-fieldset.html',
+    // ::part()
+    'invalidation/part-dir.html',
+    'invalidation/part-lang.html',
   ];
   if (unsupportedList.includes(testPath)) {
     return false;
