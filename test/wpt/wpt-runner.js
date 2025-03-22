@@ -635,6 +635,7 @@ const excludeFilter = testPath => {
     'invalidation/dir-pseudo-class-in-has.html',
     'invalidation/empty-pseudo-in-has.html',
     'invalidation/has-complexity.html',
+    'invalidation/has-sibling.html',
     'invalidation/has-unstyled.html',
     'invalidation/has-with-not.html',
     'invalidation/has-with-nth-child.html',

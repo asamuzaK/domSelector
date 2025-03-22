@@ -2649,6 +2649,13 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
+      const res = func(':has(+.foo)', {
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
       const res = func(':has(.foo .bar)', {
         target: TARGET_SELF
       });
@@ -2667,6 +2674,13 @@ describe('utility functions', () => {
         target: TARGET_LINEAL
       });
       assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(':has(+.foo)', {
+        target: TARGET_LINEAL
+      });
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
