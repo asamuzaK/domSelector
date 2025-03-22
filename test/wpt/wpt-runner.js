@@ -203,6 +203,7 @@ const excludeFilter = testPath => {
     'shadow-fallback-dynamic-004.html',
     'shadow-fallback-dynamic-005.html',
     'shadow-fallback-dynamic-006.html',
+    'shadow-host-removal-invalidation.html',
     'shadow-host-with-before-after.html',
     'shadow-link-rel-stylesheet-no-style-leak.html',
     'shadow-link-rel-stylesheet.html',
@@ -212,6 +213,7 @@ const excludeFilter = testPath => {
     'shadow-reassign-dynamic-004.html',
     'shadow-reassign-dynamic-006.html',
     'shadow-root-insert-into-document.html',
+    'shadow-shared-style-cache-001.html',
     'slotted-details-content.html',
     'slotted-file-selector-button.html',
     'slotted-has-001.html',
@@ -227,6 +229,9 @@ const excludeFilter = testPath => {
     'stylesheet-title-002.html',
     'whitespace-crash-001.html',
     // css/selectors/
+    'attribute-selectors/attribute-case/cssom.html',
+    'attribute-selectors/attribute-case/semantics.html',
+    'attribute-selectors/attribute-case/syntax.html',
     'caret-color-visited-inheritance.html',
     'case-insensitive-parent.html',
     'child-indexed-no-parent.html',
@@ -567,9 +572,11 @@ const excludeFilter = testPath => {
     'host-is-001.html',
     'host-is-003.html',
     'host-multiple-001.html',
+    'scope-pseudo-in-shadow.html',
     'slotted-matches.html',
     // css/selectors/
     'any-link-dynamic-001.html',
+    'attribute-selectors/style-attribute-selector.html',
     'child-indexed-no-parent.html',
     'dir-pseudo-in-has.html',
     'dir-pseudo-on-bdi-element.html',
@@ -581,6 +588,9 @@ const excludeFilter = testPath => {
     'featureless-003.html',
     'featureless-004.html',
     'featureless-005.html',
+    // @see https://github.com/whatwg/html/pull/8392 for focus fixup rule
+    'focus-display-none-001.html',
+    'focus-within-display-none-001.html',
     'has-argument-with-explicit-scope.html',
     'has-basic.html',
     'has-matches-to-uninserted-elements.html',
@@ -629,12 +639,19 @@ const excludeFilter = testPath => {
     'i18n/css3-selectors-lang-056.html',
     'i18n/lang-pseudo-class-empty-attribute.xhtml',
     'invalidation/any-link-pseudo.html',
+    'invalidation/attribute-or-elemental-selectors-in-has.html',
     'invalidation/attribute.html',
+    'invalidation/child-indexed-pseudo-classes-in-has.html',
     'invalidation/defined-in-has.html',
     'invalidation/defined.html',
     'invalidation/dir-pseudo-class-in-has.html',
     'invalidation/empty-pseudo-in-has.html',
     'invalidation/has-complexity.html',
+    'invalidation/has-in-adjacent-position.html',
+    'invalidation/has-in-ancestor-position.html',
+    'invalidation/has-in-parent-position.html',
+    'invalidation/has-in-sibling-position.html',
+    'invalidation/has-sibling-insertion-removal.html',
     'invalidation/has-sibling.html',
     'invalidation/has-unstyled.html',
     'invalidation/has-with-not.html',
@@ -703,8 +720,12 @@ const excludeFilter = testPath => {
   }
   const unsupportedList = [
     // css/selectors
+    // & nesting
+    'invalidation/has-css-nesting-shared.html',
     // || column combinator
     'is-where-error-recovery.html',
+    // :fullscreen
+    'invalidation/fullscreen-pseudo-class-in-has.html',
     // :muted, :playing, :paused, :seeking
     'invalidation/media-pseudo-classes-in-has.html',
     // :modal
@@ -720,6 +741,14 @@ const excludeFilter = testPath => {
     // ::part()
     'invalidation/part-dir.html',
     'invalidation/part-lang.html',
+    // ::slotted()
+    'host-descendant-invalidation.html',
+    'host-functional-descendant-invalidation.html',
+    'shadow-cascade-order-001.html',
+    'slotted-invalidation.html',
+    'slotted-link.html',
+    'slotted-nested.html',
+    'slotted-slot.html',
   ];
   if (unsupportedList.includes(testPath)) {
     return false;
@@ -745,6 +774,7 @@ const includeFilter = testPath => {
     'Element-closest.html',
     'Element-matches.html',
     'Element-webkitMatchesSelector.html',
+    'ParentNode-querySelector-All-xht.xht',
     'ParentNode-querySelector-All.html',
     'ParentNode-querySelector-case-insensitive.html',
     'ParentNode-querySelector-escapes.html',
