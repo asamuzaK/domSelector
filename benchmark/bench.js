@@ -11,10 +11,11 @@ import * as happyDom from 'happy-dom';
 import * as linkedom from 'linkedom';
 import { DOMSelector } from '../src/index.js';
 
+let domstr, targetId;
 let document, targetNode, reflowNode, patchedDoc, patchedTarget, patchedReflow;
 let happyDoc, happyTarget, happyReflow, linkedDoc, linkedTarget, linkedReflow;
 
-const prepareDom = () => {
+const prepareDomstr = () => {
   const doctype = '<!doctype html>';
   const html = '<html lang="en"><head></head><body></body></html>';
 
@@ -23,28 +24,28 @@ const prepareDom = () => {
     runScripts: 'dangerously',
     url: 'http://localhost'
   });
-  document = window.document;
+  const doc = window.document;
 
   /* create dom */
   const x = 10;
   const y = 10;
   const z = 10;
-  const targetId = `p${x - 1}-${y - 1}-${z - 1}`;
-  const xFrag = document.createDocumentFragment();
+  targetId = `p${x - 1}-${y - 1}-${z - 1}`;
+  const xFrag = doc.createDocumentFragment();
   for (let i = 0; i < x; i++) {
-    const xNode = document.createElement('div');
+    const xNode = doc.createElement('div');
     xNode.id = `box${i}`;
     xNode.classList.add('box', 'container');
-    const yFrag = document.createDocumentFragment();
+    const yFrag = doc.createDocumentFragment();
     for (let j = 0; j < y; j++) {
-      const yNode = document.createElement('div');
+      const yNode = doc.createElement('div');
       yNode.id = `div${i}-${j}`;
       yNode.classList.add('block', 'outer');
       for (let k = 0; k < z; k++) {
-        const zNode = document.createElement('div');
+        const zNode = doc.createElement('div');
         zNode.id = `div${i}-${j}-${k}`;
         zNode.classList.add('block', 'inner');
-        const p = document.createElement('p');
+        const p = doc.createElement('p');
         p.id = `p${i}-${j}-${k}`;
         p.classList.add('content');
         p.textContent = `${i}-${j}-${k}`;
@@ -56,17 +57,25 @@ const prepareDom = () => {
     xNode.append(yFrag);
     xFrag.append(xNode);
   }
-  const container = document.createElement('div');
+  const container = doc.createElement('div');
   container.setAttribute('id', 'container');
   container.classList.add('container');
   container.append(xFrag);
-  document.body.append(container);
-
-  targetNode = document.getElementById(targetId);
-  reflowNode = document.createElement('div');
+  doc.body.append(container);
 
   /* dom string */
-  const domstr = new window.XMLSerializer().serializeToString(document);
+  domstr = new window.XMLSerializer().serializeToString(doc);
+};
+
+const prepareDom = () => {
+  /* prepare jsdom */
+  const { window } = new JSDOM(domstr, {
+    runScripts: 'dangerously',
+    url: 'http://localhost'
+  });
+  document = window.document;
+  targetNode = document.getElementById(targetId);
+  reflowNode = document.createElement('div');
 
   /* prepare happy-dom */
   const { window: happyWin } = new happyDom.Window({
@@ -74,7 +83,6 @@ const prepareDom = () => {
     width: 1024,
     height: 768
   });
-
   happyDoc = new happyWin.DOMParser().parseFromString(domstr, 'text/html');
   happyTarget = happyDoc.getElementById(targetId);
   happyReflow = happyDoc.createElement('div');
@@ -156,7 +164,6 @@ const prepareDom = () => {
       };
     }
   });
-
   patchedDoc = patchedWin.document;
   patchedTarget = patchedDoc.getElementById(targetId);
   patchedReflow = patchedDoc.createElement('div');
@@ -481,6 +488,7 @@ suite.on('start', () => {
   });
   const { name: pkgName, version } = JSON.parse(value);
   console.log(`benchmark ${pkgName} v${version}`);
+  prepareDomstr();
   prepareDom();
 }).add(`jsdom matches('${selectors[0]}')`, () => {
   elementMatchesRandom('jsdom', selectors[0], 'p');
@@ -873,6 +881,7 @@ suite.on('start', () => {
     hz.set(key, target.hz);
     console.log(`* ${str}`);
   }
+  prepareDom();
 }).run({
   async: true
 });
