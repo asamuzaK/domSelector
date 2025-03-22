@@ -22,6 +22,7 @@ const REG_LOGIC_COMPOUND =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`);
 const REG_LOGIC_HAS_COMPOUND =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`);
+const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 
 /**
@@ -868,7 +869,10 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     } else if ((target === TARGET_SELF || target === TARGET_LINEAL) &&
                /:has\(/.test(selector)) {
-      return !REG_LOGIC_HAS_COMPOUND.test(selector);
+      if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
+        return false;
+      }
+      return REG_END_WITH_HAS.test(selector);
     } else if (/:(?:is|not)\(/.test(selector)) {
       if (complex) {
         return !REG_LOGIC_COMPLEX.test(selector);

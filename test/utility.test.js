@@ -2627,64 +2627,102 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should get false', () => {
+      const res = func('.bar :has(.foo)');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
       const res = func(':has(.foo)', {
-        target: TARGET_SELF
-      });
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func(':has(:checked)', {
+        complex: false,
         target: TARGET_SELF
       });
       assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
-      const res = func(':has(>.foo)', {
+      const res = func('.bar :has(.foo)', {
+        complex: true,
         target: TARGET_SELF
       });
       assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
-      const res = func(':has(+.foo)', {
-        target: TARGET_SELF
-      });
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func(':has(.foo .bar)', {
+      const res = func('.bar :has(:checked)', {
+        complex: true,
         target: TARGET_SELF
       });
       assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
+      const res = func('.bar :has(>.foo)', {
+        complex: true,
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.bar :has(+.foo)', {
+        complex: true,
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.baz :has(.foo .bar)', {
+        complex: true,
+        target: TARGET_SELF
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
       const res = func(':has(.foo)', {
+        complex: false,
+        target: TARGET_LINEAL
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('.bar :has(.foo)', {
+        complex: true,
         target: TARGET_LINEAL
       });
       assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
-      const res = func(':has(>.foo)', {
+      const res = func('.bar :has(>.foo)', {
+        complex: true,
         target: TARGET_LINEAL
       });
       assert.strictEqual(res, true, 'result');
     });
 
     it('should get false', () => {
-      const res = func(':has(+.foo)', {
+      const res = func('.baz :has(>.foo) .bar', {
+        complex: true,
         target: TARGET_LINEAL
       });
       assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {
-      const res = func(':has(.foo .bar)', {
+      const res = func('.bar :has(+.foo)', {
+        complex: true,
+        target: TARGET_LINEAL
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.baz :has(.foo .bar)', {
+        complex: true,
         target: TARGET_LINEAL
       });
       assert.strictEqual(res, false, 'result');
