@@ -785,6 +785,279 @@ describe('matcher', () => {
     });
   });
 
+  describe('match language pseudo-class - xml', () => {
+    const xmlDom = `
+      <foo id="foo" xml:lang="en">
+        <bar id="bar">
+          <baz id="baz"/>
+        </bar>
+      </foo>
+    `;
+    const func = matcher.matchLanguagePseudoClass;
+
+    it('should not match', () => {
+      const ast = {
+        name: '',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        type: STRING,
+        value: ''
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'en');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '*',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const frag = doc.createDocumentFragment();
+      const node = doc.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'en');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'en-US');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.setAttribute('xml:lang', '');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'de');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'en',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const frag = doc.createDocumentFragment();
+      const node = doc.createElement('div');
+      frag.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'de-DE',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'de-Latn-DE-1996');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'de-Latn-DE',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'de-Latn-DE-1996');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'de-DE');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: 'de-de',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', 'de-Deva');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        name: '日本語',
+        type: IDENT
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '日本語');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        type: STRING,
+        value: '日本語'
+      };
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttribute('xml:lang', '日本語');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
   describe('match attribute selector', () => {
     const func = matcher.matchAttributeSelector;
 

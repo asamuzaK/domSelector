@@ -1,0 +1,27 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="help" href="https://drafts.csswg.org/selectors/#lang-pseudo"/>
+    <style type="text/css">
+      span {background: white;display:none}
+      span:lang(de) {background: red}
+    </style>
+  </head>
+  <body>
+    <p>Tests if empty language declarations are supported</p>
+    <p xml:lang="de">
+      <span lang="" id="emptyLang"/>
+      <span xml:lang="" id="emptyXmlLang"/>
+      <span id="noLang"/>
+    </p>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+      test(() => {
+        assert_equals(document.contentType, 'application/xhtml+xml', 'contentType');
+        assert_equals(document.getElementById("emptyLang").matches('span:lang(de)'), false, 'emptyLang');
+        assert_equals(document.getElementById("emptyXmlLang").matches('span:lang(de)'), false, 'emptyXmlLang');
+        assert_equals(document.getElementById("noLang").matches('span:lang(de)'), true, 'noLang');
+      }, "Test if empty language attributes are supported");
+    </script>
+  </body>
+</html>

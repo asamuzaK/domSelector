@@ -105,9 +105,14 @@ export const matchLanguagePseudoClass = (ast, node) => {
   } else if (type === IDENT && name) {
     astName = unescapeSelector(name);
   }
+  const { contentType } = node.ownerDocument;
+  const html = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
+  const xml = /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(contentType);
   if (astName === '*') {
-    if (node.hasAttribute('lang')) {
-      if (node.getAttribute('lang')) {
+    if ((html && node.hasAttribute('lang')) ||
+        (xml && node.hasAttribute('xml:lang'))) {
+      if ((html && node.getAttribute('lang')) ||
+        (xml && node.getAttribute('xml:lang'))) {
         return true;
       }
     } else {
@@ -115,8 +120,10 @@ export const matchLanguagePseudoClass = (ast, node) => {
       let res;
       while (parent) {
         if (parent.nodeType === ELEMENT_NODE) {
-          if (parent.hasAttribute('lang')) {
-            if (parent.getAttribute('lang')) {
+          if ((html && parent.hasAttribute('lang')) ||
+              (xml && parent.hasAttribute('xml:lang'))) {
+            if ((html && parent.hasAttribute('lang')) ||
+                (xml && parent.hasAttribute('xml:lang'))) {
               res = true;
             }
             break;
@@ -153,15 +160,21 @@ export const matchLanguagePseudoClass = (ast, node) => {
       } else {
         regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
       }
-      if (node.hasAttribute('lang')) {
-        return regExtendedLang.test(node.getAttribute('lang'));
+      if ((html && node.hasAttribute('lang')) ||
+          (xml && node.hasAttribute('xml:lang'))) {
+        const attr = (html && node.getAttribute('lang')) ||
+                     (xml && node.getAttribute('xml:lang')) || '';
+        return regExtendedLang.test(attr);
       } else {
         let parent = node.parentNode;
         let res;
         while (parent) {
           if (parent.nodeType === ELEMENT_NODE) {
-            if (parent.hasAttribute('lang')) {
-              res = regExtendedLang.test(parent.getAttribute('lang'));
+            if ((html && parent.hasAttribute('lang')) ||
+                (xml && parent.hasAttribute('xml:lang'))) {
+              const attr = (html && parent.getAttribute('lang')) ||
+                           (xml && parent.getAttribute('xml:lang')) || '';
+              res = regExtendedLang.test(attr);
               break;
             }
             parent = parent.parentNode;

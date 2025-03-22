@@ -627,6 +627,7 @@ const excludeFilter = testPath => {
     'i18n/css3-selectors-lang-054.html',
     'i18n/css3-selectors-lang-055.html',
     'i18n/css3-selectors-lang-056.html',
+    'i18n/lang-pseudo-class-empty-attribute.xhtml',
     'invalidation/any-link-pseudo.html',
     'invalidation/attribute.html',
     'invalidation/defined-in-has.html',
