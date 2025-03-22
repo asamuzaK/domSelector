@@ -95,7 +95,7 @@ export const LOGIC_COMPLEX =
   `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 export const LOGIC_COMPOUND =
   `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
-export const HAS_COMPOUND = `has\\([\\s>~+]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
+export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
 
 /* array */
 export const KEY_FORM_FOCUS =
