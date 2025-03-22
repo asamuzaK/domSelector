@@ -33,7 +33,7 @@
   },
   "types": "types/index.d.ts",
   "dependencies": {
-    "@asamuzakjp/nwsapi": "^2.3.7",
+    "@asamuzakjp/nwsapi": "^2.3.8",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.1.0",
     "is-potential-custom-element-name": "^1.0.1"
@@ -45,8 +45,8 @@
     "chai": "^5.2.0",
     "commander": "^13.1.0",
     "esbuild": "^0.25.1",
-    "eslint": "^9.22.0",
-    "eslint-plugin-import-x": "^4.9.0",
+    "eslint": "^9.23.0",
+    "eslint-plugin-import-x": "^4.9.1",
     "eslint-plugin-jsdoc": "^50.6.8",
     "eslint-plugin-regexp": "^2.7.0",
     "eslint-plugin-unicorn": "^57.0.0",
@@ -56,7 +56,7 @@
     "linkedom": "^0.18.9",
     "mocha": "^11.1.0",
     "neostandard": "^0.12.1",
-    "sinon": "^19.0.2",
+    "sinon": "^19.0.4",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
     "wpt-runner": "^6.0.0"
@@ -76,5 +76,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.4.5"
+  "version": "6.4.6"
 }
