@@ -6148,6 +6148,73 @@ describe('local wpt test cases', () => {
       assert.deepEqual(res, null, 'result');
     });
 
+    it('should match', () => {
+      const html = `
+        <div id="pseudo-nth">
+          <table id="pseudo-nth-table1">
+            <tr id="pseudo-nth-tr1">
+              <td id="pseudo-nth-td1"></td>
+              <td id="pseudo-nth-td2"></td>
+              <td id="pseudo-nth-td3"></td>
+              <td id="pseudo-nth-td4"></td>
+              <td id="pseudo-nth--td5"></td>
+              <td id="pseudo-nth-td6"></td>
+            </tr>
+            <tr id="pseudo-nth-tr2">
+              <td id="pseudo-nth-td7"></td>
+              <td id="pseudo-nth-td8"></td>
+              <td id="pseudo-nth-td9"></td>
+              <td id="pseudo-nth-td10"></td>
+              <td id="pseudo-nth-td11"></td>
+              <td id="pseudo-nth-td12"></td>
+            </tr>
+            <tr id="pseudo-nth-tr3">
+              <td id="pseudo-nth-td13"></td>
+              <td id="pseudo-nth-td14"></td>
+              <td id="pseudo-nth-td15"></td>
+              <td id="pseudo-nth-td16"></td>
+              <td id="pseudo-nth-td17"></td>
+              <td id="pseudo-nth-td18"></td>
+            </tr>
+          </table>
+
+          <ol id="pseudo-nth-ol1">
+            <li id="pseudo-nth-li1"></li>
+            <li id="pseudo-nth-li2"></li>
+            <li id="pseudo-nth-li3"></li>
+            <li id="pseudo-nth-li4"></li>
+            <li id="pseudo-nth-li5"></li>
+            <li id="pseudo-nth-li6"></li>
+            <li id="pseudo-nth-li7"></li>
+            <li id="pseudo-nth-li8"></li>
+            <li id="pseudo-nth-li9"></li>
+            <li id="pseudo-nth-li10"></li>
+            <li id="pseudo-nth-li11"></li>
+            <li id="pseudo-nth-li12"></li>
+          </ol>
+
+          <p id="pseudo-nth-p1">
+            <span id="pseudo-nth-span1">span1</span>
+            <em id="pseudo-nth-em1">em1</em>
+            <!-- comment node-->
+            <em id="pseudo-nth-em2">em2</em>
+            <span id="pseudo-nth-span2">span2</span>
+            <strong id="pseudo-nth-strong1">strong1</strong>
+            <em id="pseudo-nth-em3">em3</em>
+            <span id="pseudo-nth-span3">span3</span>
+            <span id="pseudo-nth-span4">span4</span>
+            <strong id="pseudo-nth-strong2">strong2</strong>
+            <em id="pseudo-nth-em4">em4</em>
+          </p>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const res = document.querySelectorAll('#pseudo-nth-p1 em:nth-of-type(3)');
+      assert.deepEqual(res, [
+        document.getElementById('pseudo-nth-em3')
+      ], 'result');
+    });
+
     it('should not match', () => {
       const res = document.querySelectorAll('::slotted(foo)');
       assert.deepEqual(res, [], 'result');

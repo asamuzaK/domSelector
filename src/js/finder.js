@@ -537,7 +537,9 @@ export class Finder {
     const { localName, namespaceURI, parentNode, prefix } = node;
     const matched = new Set();
     if (parentNode) {
-      const walker = this._createTreeWalker(parentNode);
+      const walker = this._createTreeWalker(parentNode, {
+        force: true
+      });
       let refNode = traverseNode(parentNode, walker);
       refNode = walker.firstChild();
       let l = 0;
