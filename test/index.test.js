@@ -98,6 +98,93 @@ describe('DOMSelector', () => {
     });
   });
 
+  describe('check', () => {
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).check(), window.TypeError,
+        'Unexpected type Undefined');
+    });
+
+    it('should throw', () => {
+      assert.throws(() => new DOMSelector(window).check(null, document),
+        window.TypeError, 'Unexpected node #document');
+    });
+
+    it('should get result', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('li', node);
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('li::before', node);
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: '::before'
+      }, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement(null);
+      const res = new DOMSelector(window).check(null, node);
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
+    });
+
+    it('should throw', () => {
+      assert.throws(
+        () => new DOMSelector(window).check('[foo=bar baz]', document.body),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
+            'message');
+          return true;
+        }
+      );
+    });
+
+    it('should get true', () => {
+      const div = document.createElement('div');
+      div.id = 'main';
+      const p1 = document.createElement('p');
+      p1.id = 'p1-1';
+      p1.classList.add('foo');
+      p1.textContent = 'Foo';
+      const p2 = document.createElement('p');
+      p2.id = 'p1-2';
+      p2.textContent = 'Bar';
+      div.appendChild(p1);
+      div.appendChild(p2);
+      const parent = document.getElementById('div0');
+      parent.appendChild(div);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('#main p:not(.foo)', p2);
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
+    });
+
+    it('should get true', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.getElementById('li3');
+      const res = domSelector.check(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
+    });
+  });
+
   describe('matches', () => {
     it('should throw', () => {
       assert.throws(() => new DOMSelector(window).matches(), window.TypeError,
