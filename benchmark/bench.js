@@ -881,7 +881,7 @@ suite.on('start', () => {
     hz.set(key, target.hz);
     console.log(`* ${str}`);
   }
-  prepareDom();
+  // prepareDom();
 }).run({
   async: true
 });
