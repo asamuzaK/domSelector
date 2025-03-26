@@ -208,6 +208,18 @@ describe('Finder', () => {
       });
       assert.deepEqual(res, finder, 'result');
     });
+
+    it('should get value', () => {
+      const node = document.createElement('div');
+      const finder = new Finder(window, {
+        domSymbolTree: {},
+        idlUtils: {}
+      });
+      const res = finder.setup('*', node, {
+        domSymbolTree: {}
+      });
+      assert.deepEqual(res, finder, 'result');
+    });
   });
 
   describe('register event listeners', () => {
