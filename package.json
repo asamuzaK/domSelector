@@ -68,7 +68,7 @@
     "bench": "node benchmark/bench.js",
     "bench-sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test && npm run bundle && npm run test-cjs",
-    "bundle": "tsup src/index.js --format=cjs --platform=node --outDir=dist/cjs/ --minify --sourcemap --dts",
+    "bundle": "tsup src/index.js --format=cjs --platform=node --outDir=dist/cjs/ --sourcemap --dts",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test-cjs": "mocha --exit test/index.test.cjs",
@@ -76,5 +76,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.4.7"
+  "version": "6.5.0-a.4"
 }
