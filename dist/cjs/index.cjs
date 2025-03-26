@@ -681,6 +681,9 @@ var filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
+  if (selector.includes("/")) {
+    return false;
+  }
   if (/[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
   }
