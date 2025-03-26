@@ -2727,5 +2727,15 @@ describe('utility functions', () => {
       });
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should get false', () => {
+      const res = func('/* comment */.foo');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('// invalid comment //.foo');
+      assert.strictEqual(res, false, 'result');
+    });
   });
 });
