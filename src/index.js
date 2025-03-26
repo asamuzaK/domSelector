@@ -39,6 +39,63 @@ export class DOMSelector {
   }
 
   /**
+   * @typedef CheckResult
+   * @type {object}
+   * @property {boolean} match - match result excluding pseudo-element selector
+   * @property {string?} pseudoElement - pseudo-element selector
+   */
+
+  /**
+   * check
+   * @param {string} selector - CSS selector
+   * @param {object} node - Element node
+   * @param {object} opt - options
+   * @returns {CheckResult} - check result
+   */
+  check(selector, node, opt = {}) {
+    if (!node?.nodeType) {
+      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
+      this.#finder.onError(e, opt);
+    } else if (node.nodeType !== ELEMENT_NODE) {
+      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
+      this.#finder.onError(e, opt);
+    }
+    const document = node.ownerDocument;
+    if (document === this.#document && document.contentType === 'text/html' &&
+        node.parentNode) {
+      const filterOpt = {
+        complex: REG_COMPLEX.test(selector),
+        compound: false,
+        descend: false,
+        simple: false,
+        target: TARGET_SELF
+      };
+      if (filterSelector(selector, filterOpt)) {
+        try {
+          const match = this.#nwsapi.match(selector, node);
+          return {
+            match,
+            pseudoElement: null
+          };
+        } catch (e) {
+          // fall through
+        }
+      }
+    }
+    let res;
+    try {
+      opt.check = true;
+      opt.noexept = true;
+      opt.warn = false;
+      this.#finder.setup(selector, node, opt);
+      res = this.#finder.find(TARGET_SELF);
+    } catch (e) {
+      this.#finder.onError(e, opt);
+    }
+    return res;
+  }
+
+  /**
    * matches
    * @param {string} selector - CSS selector
    * @param {object} node - Element node

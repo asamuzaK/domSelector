@@ -54,6 +54,7 @@ export class Finder {
   /* private fields */
   #ast;
   #astCache;
+  #check;
   #descendant;
   #document;
   #documentCache;
@@ -65,6 +66,7 @@ export class Finder {
   #node;
   #nodes;
   #noexcept;
+  #pseudoElement;
   #qswalker;
   #results;
   #root;
@@ -129,7 +131,8 @@ export class Finder {
    * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
-    const { noexcept, warn } = opt;
+    const { check, noexcept, warn } = opt;
+    this.#check = !!check;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
@@ -144,6 +147,7 @@ export class Finder {
       this.#nodes
     ] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
+    this.#pseudoElement = [];
     this.#walkers = new WeakMap();
     this.#verifyShadowHost = null;
     return this;
@@ -1881,7 +1885,14 @@ export class Finder {
         case PS_ELEMENT_SELECTOR:
         default: {
           try {
-            matchPseudoElementSelector(astName, astType, opt);
+            const { check } = opt;
+            if (check) {
+              const css = generateCSS(ast);
+              this.#pseudoElement.push(css);
+              matched.add(node);
+            } else {
+              matchPseudoElementSelector(astName, astType, opt);
+            }
           } catch (e) {
             this.onError(e);
           }
@@ -2187,19 +2198,21 @@ export class Finder {
    * match self
    * @private
    * @param {Array} leaves - AST leaves
+   * @param {boolean} check - matching for check
    * @returns {Array} - [nodes, filtered]
    */
-  _matchSelf(leaves) {
+  _matchSelf(leaves, check = false) {
     const nodes = [];
     let filtered = false;
     const bool = this._matchLeaves(leaves, this.#node, {
+      check,
       warn: this.#warn
     });
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
     }
-    return [nodes, filtered];
+    return [nodes, filtered, this.#pseudoElement];
   }
 
   /**
@@ -2258,9 +2271,20 @@ export class Finder {
     let pending = false;
     switch (leafType) {
       case PS_ELEMENT_SELECTOR: {
-        matchPseudoElementSelector(leafName, leafType, {
-          warn: this.#warn
-        });
+        if (targetType === TARGET_SELF && this.#check) {
+          const css = generateCSS(leaf);
+          this.#pseudoElement.push(css);
+          if (filterLeaves.length) {
+            [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
+          } else {
+            nodes.push(this.#node);
+            filtered = true;
+          }
+        } else {
+          matchPseudoElementSelector(leafName, leafType, {
+            warn: this.#warn
+          });
+        }
         break;
       }
       case ID_SELECTOR: {
@@ -2785,6 +2809,19 @@ export class Finder {
           }
         }
       }
+    }
+    if (this.#check) {
+      const match = !!nodes.size;
+      let pseudoElement;
+      if (this.#pseudoElement.length) {
+        pseudoElement = this.#pseudoElement.join('');
+      } else {
+        pseudoElement = null;
+      }
+      return {
+        match,
+        pseudoElement
+      };
     }
     if (targetType === TARGET_FIRST) {
       nodes.delete(this.#node);
