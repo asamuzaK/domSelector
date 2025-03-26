@@ -10715,6 +10715,26 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    it('should get matched node', () => {
+      const ast = {
+        children: null,
+        name: 'before',
+        type: PS_ELEMENT_SELECTOR
+      };
+      const node = document.documentElement;
+      const finder = new Finder(window);
+      finder.setup('::before', node, {
+        check: true
+      });
+      const res = finder._matchSelector(ast, node, {
+        check: true
+      });
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
     it('should warn', () => {
       const ast = {
         children: null,
@@ -11151,6 +11171,7 @@ describe('Finder', () => {
     it('should not match', () => {
       const leaves = [
         {
+          children: null,
           name: 'before',
           type: PS_ELEMENT_SELECTOR
         }
@@ -11758,11 +11779,12 @@ describe('Finder', () => {
       const res = finder._matchSelf(leaves);
       assert.deepEqual(res, [
         [node],
-        true
+        true,
+        []
       ], 'result');
     });
 
-    it('should match', () => {
+    it('should not match', () => {
       const node = document.getElementById('li1');
       const leaves = [
         {
@@ -11779,7 +11801,42 @@ describe('Finder', () => {
       const res = finder._matchSelf(leaves);
       assert.deepEqual(res, [
         [],
-        false
+        false,
+        []
+      ], 'result');
+    });
+
+    it('should match', () => {
+      const node = document.getElementById('li1');
+      const leaves = [
+        {
+          children: null,
+          name: 'before',
+          type: PS_ELEMENT_SELECTOR
+        },
+        {
+          children: null,
+          name: 'marker',
+          type: PS_ELEMENT_SELECTOR
+        },
+        {
+          name: 'li',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'li',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const finder = new Finder(window);
+      finder.setup('li.li::before::marker', node, {
+        check: true
+      });
+      const res = finder._matchSelf(leaves, true);
+      assert.deepEqual(res, [
+        [node],
+        true,
+        ['::before', '::marker']
       ], 'result');
     });
   });
@@ -14211,6 +14268,19 @@ describe('Finder', () => {
       assert.deepEqual(res, {
         match: true,
         pseudoElement: '::before'
+      }, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('li1');
+      const finder = new Finder(window);
+      finder.setup('li.li::before::marker', node, {
+        check: true
+      });
+      const res = finder.find('self');
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: '::before::marker'
       }, 'result');
     });
 

@@ -1885,7 +1885,14 @@ export class Finder {
         case PS_ELEMENT_SELECTOR:
         default: {
           try {
-            matchPseudoElementSelector(astName, astType, opt);
+            const { check } = opt;
+            if (check) {
+              const css = generateCSS(ast);
+              this.#pseudoElement.push(css);
+              matched.add(node);
+            } else {
+              matchPseudoElementSelector(astName, astType, opt);
+            }
           } catch (e) {
             this.onError(e);
           }
@@ -2191,19 +2198,21 @@ export class Finder {
    * match self
    * @private
    * @param {Array} leaves - AST leaves
+   * @param {boolean} check - matching for check
    * @returns {Array} - [nodes, filtered]
    */
-  _matchSelf(leaves) {
+  _matchSelf(leaves, check = false) {
     const nodes = [];
     let filtered = false;
     const bool = this._matchLeaves(leaves, this.#node, {
+      check,
       warn: this.#warn
     });
     if (bool) {
       nodes.push(this.#node);
       filtered = true;
     }
-    return [nodes, filtered];
+    return [nodes, filtered, this.#pseudoElement];
   }
 
   /**
@@ -2265,9 +2274,8 @@ export class Finder {
         if (targetType === TARGET_SELF && this.#check) {
           const css = generateCSS(leaf);
           this.#pseudoElement.push(css);
-          // TODO: add support for e.g. ::before::marker
           if (filterLeaves.length) {
-            [nodes, filtered] = this._matchSelf(filterLeaves);
+            [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
           } else {
             nodes.push(this.#node);
             filtered = true;
