@@ -2374,9 +2374,9 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should get false', () => {
       const res = func(':root');
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
