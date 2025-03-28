@@ -80,10 +80,8 @@ export class DOMSelector {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const match = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const match = this.#nwsapi.match(selector, n);
           return {
             match,
             pseudoElement: null
@@ -140,10 +138,8 @@ export class DOMSelector {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.match(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -195,10 +191,8 @@ export class DOMSelector {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res = this.#nwsapi.closest(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.closest(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -261,10 +255,8 @@ export class DOMSelector {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res = this.#nwsapi.first(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.first(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -321,10 +313,8 @@ export class DOMSelector {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res = this.#nwsapi.select(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.select(selector, n);
           return res;
         } catch (e) {
           // fall through
