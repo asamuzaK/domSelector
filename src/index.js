@@ -70,7 +70,7 @@ export class DOMSelector {
       ? node._ownerDocument
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
-        node.parentNode) {
+        document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -130,7 +130,7 @@ export class DOMSelector {
       ? node._ownerDocument
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
-        node.parentNode) {
+        document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -185,7 +185,7 @@ export class DOMSelector {
       ? node._ownerDocument
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
-        node.parentNode) {
+        document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -250,7 +250,8 @@ export class DOMSelector {
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === 'text/html') {
+    if (document === this.#document && document.contentType === 'text/html' &&
+        document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: !(REG_SIMPLE.test(selector) || REG_COMPLEX.test(selector)),
@@ -309,7 +310,8 @@ export class DOMSelector {
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === 'text/html') {
+    if (document === this.#document && document.contentType === 'text/html' &&
+        document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: false,
