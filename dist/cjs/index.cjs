@@ -84,7 +84,7 @@ var ALPHA_NUM = "[A-Z\\d]+";
 var CHILD_IDX = "(?:first|last|only)-(?:child|of-type)";
 var DIGIT = "(?:0|[1-9]\\d*)";
 var LANG_PART = `(?:-${ALPHA_NUM})*`;
-var PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|root|target`;
+var PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|target`;
 var ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 var N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 var SUB_TYPE = "\\[[^|\\]]+\\]|[#.:][\\w-]+";
@@ -4167,10 +4167,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const match = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const match = this.#nwsapi.match(selector, n);
           return {
             match,
             pseudoElement: null
@@ -4221,10 +4219,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res2 = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.match(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4270,10 +4266,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res2 = this.#nwsapi.closest(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.closest(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4332,10 +4326,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res2 = this.#nwsapi.first(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.first(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4388,10 +4380,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          if (this.#idlUtils) {
-            node = this.#idlUtils.wrapperForImpl(node);
-          }
-          const res2 = this.#nwsapi.select(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.select(selector, n);
           return res2;
         } catch (e) {
         }
