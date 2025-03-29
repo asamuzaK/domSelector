@@ -4375,7 +4375,7 @@ var DOMSelector = class {
         complex: false,
         compound: false,
         descend: REG_DESCEND.test(selector),
-        simple: false,
+        simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {
