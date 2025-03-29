@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>xxx</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/xxx -->
+
+<script>
+"use strict";
+
+test(() => {
+  const domStr = '<a id="9a"><b id="target"/></a>';
+  const doc = new window.DOMParser().parseFromString(domStr, 'application/xml');
+  const target = doc.getElementById('target');
+  assert_equals(doc.documentElement.querySelector(':scope > b'), target);
+}, 'match ID starting with number');
+</script>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>3544</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3544 -->
+
+<script>
+"use strict";
+const body = document.body;
+const div = document.createElement('div');
+const ul = document.createElement('ul');
+const li = document.createElement('li');
+
+ul.appendChild(li);
+div.appendChild(ul);
+body.appendChild(div);
+
+test(() => {
+  assert_array_equals([...div.querySelectorAll('UL')], [ul]);
+});
+test(() => {
+  assert_array_equals([...div.querySelectorAll('ul')], [ul]);
+});
+test(() => {
+  assert_array_equals([...div.querySelectorAll('UL > LI')], [li]);
+});
+test(() => {
+  assert_array_equals([...div.querySelectorAll('ul > li')], [li]);
+});
+</script>

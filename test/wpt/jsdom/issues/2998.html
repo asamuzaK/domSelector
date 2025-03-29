@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>2998</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/2998 -->
+
+<div id="refPoint">
+  <div>
+    <span id="target"></span>
+  </div>
+</div>
+
+<script>
+"use strict";
+const refPoint = document.getElementById('refPoint');
+test(() => {
+  assert_equals(refPoint.querySelector(':scope > span'), null);
+}, 'should not match');
+test(() => {
+  const target = document.getElementById('target');
+  assert_equals(refPoint.querySelector(':scope span'), target);
+}, 'should match');
+</script>

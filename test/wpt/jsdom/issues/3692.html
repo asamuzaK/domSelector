@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>3692</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3692 -->
+
+<div class="sm:block">
+  <span id="target"></span>
+</div>
+
+<script>
+"use strict";
+
+const target = document.getElementById('target');
+
+test(() => {
+  const div = document.querySelector('div');
+  assert_equals(div.querySelector(':scope > span'), target);
+}, ':scope');
+
+test(() => {
+  assert_equals(document.querySelector('.sm\\:block > span'), target);
+}, 'escaped class');
+</script>

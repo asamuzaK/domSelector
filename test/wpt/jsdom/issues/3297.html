@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>3297</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3297 -->
+
+<div id="container">
+  <div id="container-inner-1"></div>
+  <div id="container-inner-2">
+    <p id="p">Foo</p>
+    <button id="button">Bar</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const container = document.getElementById('container');
+
+test(() => {
+  assert_array_equals([...container.querySelectorAll(':not(svg, svg *)')], [
+    document.getElementById('container-inner-1'),
+    document.getElementById('container-inner-2'),
+    document.getElementById('p'),
+    document.getElementById('button')
+  ]);
+}, ':not()');
+</script>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>2159</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/2159 -->
+
+<script>
+"use strict";
+const domStr = `<?xml version="1.0"?>
+<cp:coreProperties
+  xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+  xmlns:dc="http://purl.org/dc/elements/1.1/" id="target">
+  <dc:title></dc:title>
+</cp:coreProperties>`;
+
+const doc = new window.DOMParser().parseFromString(domStr, 'application/xml');
+const target = doc.getElementById('target');
+
+test(() => {
+  assert_equals(doc.querySelector('coreProperties'), target)
+}, 'match namespaced selector without prefix');
+
+test(() => {
+  assert_equals(doc.querySelector('*|coreProperties'), target)
+}, 'match namespaced selector with universal prefix');
+</script>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>3432</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/3432 -->
+
+<button>hi</button>
+<input type="submit" value="weee" id="target" />
+
+<script>
+"use strict";
+test(() => {
+  const target = document.getElementById('target');
+  assert_equals(document.querySelector(':is(:is(input))'), target);
+}, 'nested :is()');
+</script>
