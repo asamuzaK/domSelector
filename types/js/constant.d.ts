@@ -48,7 +48,7 @@ export const ALPHA_NUM: "[A-Z\\d]+";
 export const CHILD_IDX: "(?:first|last|only)-(?:child|of-type)";
 export const DIGIT: "(?:0|[1-9]\\d*)";
 export const LANG_PART: "(?:-[A-Z\\d]+)*";
-export const PSEUDO_CLASS: "(?:any-)?link|(?:first|last|only)-(?:child|of-type)|checked|empty|indeterminate|read-(?:only|write)|root|target";
+export const PSEUDO_CLASS: "(?:any-)?link|(?:first|last|only)-(?:child|of-type)|checked|empty|indeterminate|read-(?:only|write)|target";
 export const ANB: "[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+-]\\s*(?:0|[1-9]\\d*)";
 export const N_TH: "nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+-]\\s*(?:0|[1-9]\\d*))\\s*\\)";
 export const SUB_TYPE: "\\[[^|\\]]+\\]|[#.:][\\w-]+";

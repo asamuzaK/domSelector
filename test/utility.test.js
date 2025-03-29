@@ -2374,9 +2374,9 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should get false', () => {
       const res = func(':root');
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
@@ -2725,6 +2725,16 @@ describe('utility functions', () => {
         complex: true,
         target: TARGET_LINEAL
       });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('/* comment */.foo');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('// invalid comment //.foo');
       assert.strictEqual(res, false, 'result');
     });
   });

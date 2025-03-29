@@ -856,6 +856,10 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
+  // exclude '/'
+  if (selector.includes('/')) {
+    return false;
+  }
   // exclude namespaced selectors, escaped selectors, pseudo-element selectors,
   // selectors containing non-ASCII or control character other than whitespace,
   // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,

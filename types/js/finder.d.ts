@@ -4,6 +4,8 @@ export class Finder {
         noexcept?: boolean;
     }): void;
     setup(selector: string, node: object, opt?: {
+        check?: boolean;
+        domSymbolTree?: object;
         noexcept?: boolean;
         warn?: boolean;
     }): object;

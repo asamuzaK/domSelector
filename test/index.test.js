@@ -69,6 +69,7 @@ describe('DOMSelector', () => {
     runScripts: 'dangerously',
     url: 'http://localhost/#foo'
   };
+
   let window, document;
   beforeEach(() => {
     const dom = new JSDOM(domStr, domOpt);
@@ -90,6 +91,23 @@ describe('DOMSelector', () => {
       assert.strictEqual(res.onError, undefined, 'onError is undefined');
       assert.strictEqual(res.setup, undefined, 'setup is undefined');
       assert.strictEqual(res.find, undefined, 'find is undefined');
+      assert.strictEqual(typeof res.check, 'function', 'check');
+      assert.strictEqual(typeof res.matches, 'function', 'matches');
+      assert.strictEqual(typeof res.closest, 'function', 'closest');
+      assert.strictEqual(typeof res.querySelector, 'function', 'querySelector');
+      assert.strictEqual(typeof res.querySelectorAll, 'function',
+        'querySelectorAll');
+    });
+
+    it('should create instance', () => {
+      const res = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils: {}
+      });
+      assert.strictEqual(res.onError, undefined, 'onError is undefined');
+      assert.strictEqual(res.setup, undefined, 'setup is undefined');
+      assert.strictEqual(res.find, undefined, 'find is undefined');
+      assert.strictEqual(typeof res.check, 'function', 'check');
       assert.strictEqual(typeof res.matches, 'function', 'matches');
       assert.strictEqual(typeof res.closest, 'function', 'closest');
       assert.strictEqual(typeof res.querySelector, 'function', 'querySelector');
@@ -129,7 +147,7 @@ describe('DOMSelector', () => {
       }, 'result');
     });
 
-    it('should get true', () => {
+    it('should get result', () => {
       const node = document.createElement(null);
       const res = new DOMSelector(window).check(null, node);
       assert.deepEqual(res, {
@@ -152,7 +170,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get true', () => {
+    it('should get result', () => {
       const div = document.createElement('div');
       div.id = 'main';
       const p1 = document.createElement('p');
@@ -174,13 +192,55 @@ describe('DOMSelector', () => {
       }, 'result');
     });
 
-    it('should get true', () => {
+    it('should get result', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
       const res = domSelector.check(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
       assert.deepEqual(res, {
         match: true,
         pseudoElement: null
+      }, 'result');
+    });
+
+    it('should get result', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.check('li', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
+    });
+
+    it('should get result', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.check('li::before', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, {
+        match: true,
+        pseudoElement: '::before'
       }, 'result');
     });
   });
@@ -344,6 +404,42 @@ describe('DOMSelector', () => {
       const res = domSelector.matches(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
       assert.strictEqual(res, true, 'result');
     });
+
+    it('should get true', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.matches('li', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.matches('li::before', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.strictEqual(res, false, 'result');
+    });
   });
 
   describe('closest', () => {
@@ -482,6 +578,42 @@ describe('DOMSelector', () => {
       const node = document.getElementById('li3');
       const res = domSelector.closest(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
       assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.closest('li', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      node._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.closest('li::before', node);
+      delete node._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, null, 'result');
     });
   });
 
@@ -652,6 +784,63 @@ describe('DOMSelector', () => {
       const res = domSelector.querySelector(':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))', parent);
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('li + #li2', parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('li + /* comment */ #li2', parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should not match', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('#li2::before', parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, null, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {
@@ -804,6 +993,87 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [
         node
       ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelectorAll('#li2', parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should not match', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelectorAll('#li2::before', parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('dl1');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const selector = 'dt:is(:first-of-type, :last-of-type)';
+      const res = domSelector.querySelectorAll(selector, parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt3')
+      ], 'result');
+    });
+
+    it('should nott match', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('dl1');
+      const parent = node.parentNode;
+      parent._ownerDocument = document;
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const selector = 'dt:is(:first-of-type, :last-of-type)::before';
+      const res = domSelector.querySelectorAll(selector, parent);
+      delete parent._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, [], 'result');
     });
   });
 });

@@ -58,6 +58,7 @@ export class Finder {
   #descendant;
   #document;
   #documentCache;
+  #domSymbolTree;
   #event;
   #focus;
   #invalidate;
@@ -126,13 +127,16 @@ export class Finder {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
+   * @param {boolean} [opt.check] - check
+   * @param {object} [opt.domSymbolTree] - domSymbolTree
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
-    const { check, noexcept, warn } = opt;
+    const { check, domSymbolTree, noexcept, warn } = opt;
     this.#check = !!check;
+    this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;

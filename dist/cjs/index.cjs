@@ -84,7 +84,7 @@ var ALPHA_NUM = "[A-Z\\d]+";
 var CHILD_IDX = "(?:first|last|only)-(?:child|of-type)";
 var DIGIT = "(?:0|[1-9]\\d*)";
 var LANG_PART = `(?:-${ALPHA_NUM})*`;
-var PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|root|target`;
+var PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|target`;
 var ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 var N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 var SUB_TYPE = "\\[[^|\\]]+\\]|[#.:][\\w-]+";
@@ -680,6 +680,9 @@ var filterSelector = (selector, opt = {}) => {
     if (sel.indexOf("]") < 0) {
       return false;
     }
+  }
+  if (selector.includes("/")) {
+    return false;
   }
   if (/[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
     return false;
@@ -1404,6 +1407,7 @@ var Finder = class {
   #descendant;
   #document;
   #documentCache;
+  #domSymbolTree;
   #event;
   #focus;
   #invalidate;
@@ -1468,13 +1472,16 @@ var Finder = class {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
+   * @param {boolean} [opt.check] - check
+   * @param {object} [opt.domSymbolTree] - domSymbolTree
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
    * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
-    const { check, noexcept, warn } = opt;
+    const { check, domSymbolTree, noexcept, warn } = opt;
     this.#check = !!check;
+    this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     this.#node = node;
@@ -4109,17 +4116,23 @@ var DOMSelector = class {
   /* private fields */
   #window;
   #document;
+  #domSymbolTree;
   #finder;
+  #idlUtils;
   #nwsapi;
   /**
    * construct
    * @param {object} window - window
    * @param {object} document - document
+   * @param {object} [opt] - options
    */
-  constructor(window, document) {
+  constructor(window, document, opt = {}) {
+    const { domSymbolTree, idlUtils } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
+    this.#domSymbolTree = domSymbolTree;
     this.#finder = new Finder(window);
+    this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
   }
   /**
@@ -4132,7 +4145,7 @@ var DOMSelector = class {
    * check
    * @param {string} selector - CSS selector
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {CheckResult} - check result
    */
   check(selector, node, opt = {}) {
@@ -4143,8 +4156,8 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       this.#finder.onError(e, opt);
     }
-    const document = node.ownerDocument;
-    if (document === this.#document && document.contentType === "text/html" && node.parentNode) {
+    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -4154,7 +4167,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          const match = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const match = this.#nwsapi.match(selector, n);
           return {
             match,
             pseudoElement: null
@@ -4165,6 +4179,10 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
+      opt.domSymbolTree = this.#domSymbolTree;
       opt.check = true;
       opt.noexept = true;
       opt.warn = false;
@@ -4179,10 +4197,10 @@ var DOMSelector = class {
    * matches
    * @param {string} selector - CSS selector
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {boolean} - `true` if matched `false` otherwise
    */
-  matches(selector, node, opt) {
+  matches(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
@@ -4190,8 +4208,8 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       this.#finder.onError(e, opt);
     }
-    const document = node.ownerDocument;
-    if (document === this.#document && document.contentType === "text/html" && node.parentNode) {
+    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -4201,7 +4219,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          const res2 = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.match(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4209,6 +4228,10 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
+      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
@@ -4221,10 +4244,10 @@ var DOMSelector = class {
    * closest
    * @param {string} selector - CSS selector
    * @param {object} node - Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {?object} - matched node
    */
-  closest(selector, node, opt) {
+  closest(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
@@ -4232,8 +4255,8 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       this.#finder.onError(e, opt);
     }
-    const document = node.ownerDocument;
-    if (document === this.#document && document.contentType === "text/html" && node.parentNode) {
+    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const filterOpt = {
         complex: REG_COMPLEX.test(selector),
         compound: false,
@@ -4243,7 +4266,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          const res2 = this.#nwsapi.closest(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.closest(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4251,6 +4275,10 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
+      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
@@ -4272,21 +4300,23 @@ var DOMSelector = class {
    * query selector
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {?object} - matched node
    */
-  querySelector(selector, node, opt) {
+  querySelector(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
     let document;
-    if (node.nodeType === DOCUMENT_NODE) {
+    if (this.#domSymbolTree) {
+      document = node._ownerDocument;
+    } else if (node.nodeType === DOCUMENT_NODE) {
       document = node;
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === "text/html") {
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: !(REG_SIMPLE.test(selector) || REG_COMPLEX.test(selector)),
@@ -4296,7 +4326,8 @@ var DOMSelector = class {
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          const res2 = this.#nwsapi.first(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.first(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4304,6 +4335,10 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
+      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
@@ -4319,31 +4354,34 @@ var DOMSelector = class {
    * NOTE: returns Array, not NodeList
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} opt - options
+   * @param {object} [opt] - options
    * @returns {Array.<object|undefined>} - collection of matched nodes
    */
-  querySelectorAll(selector, node, opt) {
+  querySelectorAll(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
     let document;
-    if (node.nodeType === DOCUMENT_NODE) {
+    if (this.#domSymbolTree) {
+      document = node._ownerDocument;
+    } else if (node.nodeType === DOCUMENT_NODE) {
       document = node;
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === "text/html") {
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: false,
         descend: REG_DESCEND.test(selector),
-        simple: false,
+        simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
       if (filterSelector(selector, filterOpt)) {
         try {
-          const res2 = this.#nwsapi.select(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.select(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4351,6 +4389,10 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
+      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {
