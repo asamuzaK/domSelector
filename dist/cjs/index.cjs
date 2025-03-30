@@ -97,6 +97,7 @@ var COMPOUND_WO_PSEUDO = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE_WO_PSEUDO
 var COMBO = "\\s?[\\s>~+]\\s?";
 var COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 var DESCEND = "\\s?[\\s>]\\s?";
+var SIBLING = "\\s?[+~]\\s?";
 var NESTED_LOGIC_A = `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 var NESTED_LOGIC_B = `:is\\(\\s*${COMPLEX}(?:\\s*,\\s*${COMPLEX})*\\s*\\)`;
 var COMPOUND_A = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC_A})+)`;
@@ -4111,6 +4112,7 @@ var Finder = class {
 // src/index.js
 var REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, "i");
 var REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, "i");
+var REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, "i");
 var REG_SIMPLE = new RegExp(`^${TAG_ID_CLASS}$`);
 var DOMSelector = class {
   /* private fields */
@@ -4308,31 +4310,6 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
-    let document;
-    if (this.#domSymbolTree) {
-      document = node._ownerDocument;
-    } else if (node.nodeType === DOCUMENT_NODE) {
-      document = node;
-    } else {
-      document = node.ownerDocument;
-    }
-    if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
-      const filterOpt = {
-        complex: false,
-        compound: !(REG_SIMPLE.test(selector) || REG_COMPLEX.test(selector)),
-        descend: REG_DESCEND.test(selector),
-        simple: REG_SIMPLE.test(selector),
-        target: TARGET_FIRST
-      };
-      if (filterSelector(selector, filterOpt)) {
-        try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res2 = this.#nwsapi.first(selector, n);
-          return res2;
-        } catch (e) {
-        }
-      }
-    }
     let res;
     try {
       if (this.#idlUtils) {
@@ -4374,7 +4351,7 @@ var DOMSelector = class {
       const filterOpt = {
         complex: false,
         compound: false,
-        descend: REG_DESCEND.test(selector),
+        descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
         simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
