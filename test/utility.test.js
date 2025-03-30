@@ -2737,5 +2737,25 @@ describe('utility functions', () => {
       const res = func('// invalid comment //.foo');
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should get false', () => {
+      const res = func('#null');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.null');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('#undefined');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('.undefined');
+      assert.strictEqual(res, false, 'result');
+    });
   });
 });

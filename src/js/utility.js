@@ -840,7 +840,7 @@ export const initNwsapi = (window, document) => {
  * @returns {boolean} - result
  */
 export const filterSelector = (selector, opt = {}) => {
-  if (!selector || typeof selector !== 'string') {
+  if (!selector || typeof selector !== 'string' || /null|undefined/.test(selector)) {
     return false;
   }
   const { complex, compound, descend, simple, target } = opt;
