@@ -216,6 +216,10 @@ const elementMatchesRandom = (api, selector, result) => {
   if (res !== true) {
     throw new Error('result does not match.');
   }
+  const res2 = doc.getElementById(id).matches(selector);
+  if (res2 !== true) {
+    throw new Error('result does not match.');
+  }
 };
 
 const elementMatchesRandom2 = (api, selector, result) => {
@@ -239,6 +243,10 @@ const elementMatchesRandom2 = (api, selector, result) => {
   const res = doc.getElementById(id).matches(selector);
   doc.body.removeChild(reflow);
   if (res !== true) {
+    throw new Error('result does not match.');
+  }
+  const res2 = doc.getElementById(id).matches(selector);
+  if (res2 !== true) {
     throw new Error('result does not match.');
   }
 };
@@ -266,6 +274,10 @@ const elementMatches = (api, selector, result) => {
   const res = node.matches(selector);
   doc.body.removeChild(reflow);
   if (res !== result) {
+    throw new Error('result does not match.');
+  }
+  const res2 = node.matches(selector);
+  if (res2 !== result) {
     throw new Error('result does not match.');
   }
 };
@@ -305,6 +317,26 @@ const elementClosestRandom = (api, selector, result) => {
     }
     default: {
       if (res?.id !== `${result}${i}-9-9`) {
+        throw new Error('result does not match.');
+      }
+    }
+  }
+  const res2 = doc.getElementById(id).closest(selector);
+  switch (result) {
+    case 'container': {
+      if (res2?.id !== result) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    case 'box': {
+      if (res2?.id !== `${result}${i}`) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    default: {
+      if (res2?.id !== `${result}${i}-9-9`) {
         throw new Error('result does not match.');
       }
     }
@@ -350,6 +382,26 @@ const elementClosestRandom2 = (api, selector, result) => {
       }
     }
   }
+  const res2 = doc.getElementById(id).closest(selector);
+  switch (result) {
+    case 'container': {
+      if (res2?.id !== result) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    case 'box': {
+      if (res2?.id !== `${result}${i}`) {
+        throw new Error('result does not match.');
+      }
+      break;
+    }
+    default: {
+      if (res2?.id !== `${result}${i}-9-9`) {
+        throw new Error('result does not match.');
+      }
+    }
+  }
 };
 
 const elementClosest = (api, selector, result) => {
@@ -375,6 +427,10 @@ const elementClosest = (api, selector, result) => {
   const res = node.closest(selector);
   doc.body.removeChild(reflow);
   if (res?.id !== result) {
+    throw new Error('result does not match.');
+  }
+  const res2 = node.closest(selector);
+  if (res2?.id !== result) {
     throw new Error('result does not match.');
   }
 };
@@ -403,6 +459,10 @@ const parentNodeQuerySelectorRandom = (api, selector, result) => {
   if (res?.id !== `${result}${i}-0-0`) {
     throw new Error('result does not match.');
   }
+  const res2 = node.querySelector(selector);
+  if (res2?.id !== `${result}${i}-0-0`) {
+    throw new Error('result does not match.');
+  }
 };
 
 const parentNodeQuerySelectorRandom2 = (api, selector, result) => {
@@ -425,6 +485,10 @@ const parentNodeQuerySelectorRandom2 = (api, selector, result) => {
   const res = node.querySelector(selector);
   doc.body.removeChild(reflow);
   if (res?.id !== result) {
+    throw new Error('result does not match.');
+  }
+  const res2 = node.querySelector(selector);
+  if (res2?.id !== result) {
     throw new Error('result does not match.');
   }
 };
@@ -450,6 +514,10 @@ const parentNodeQuerySelector = (api, selector, result) => {
   if (res?.id !== result) {
     throw new Error('result does not match.');
   }
+  const res2 = doc.querySelector(selector);
+  if (res2?.id !== result) {
+    throw new Error('result does not match.');
+  }
 };
 
 const parentNodeQuerySelectorAll = (api, selector, result) => {
@@ -472,6 +540,10 @@ const parentNodeQuerySelectorAll = (api, selector, result) => {
   const res = node.querySelectorAll(selector);
   doc.body.removeChild(reflow);
   if (res.length !== result) {
+    throw new Error('result does not match.');
+  }
+  const res2 = node.querySelectorAll(selector);
+  if (res2.length !== result) {
     throw new Error('result does not match.');
   }
 };
