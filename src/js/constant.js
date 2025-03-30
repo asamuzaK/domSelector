@@ -80,6 +80,7 @@ export const COMPOUND_WO_PSEUDO =
 export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const DESCEND = '\\s?[\\s>]\\s?';
+export const SIBLING = '\\s?[+~]\\s?';
 export const NESTED_LOGIC_A =
   `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
 export const NESTED_LOGIC_B =

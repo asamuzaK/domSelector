@@ -155,6 +155,7 @@ const benchQuerySelectorAll = api => {
       doc.body.appendChild(reflow);
       doc.querySelectorAll(selector);
       doc.body.removeChild(reflow);
+      doc.querySelectorAll(selector);
     } catch (e) {
       errors.set(selector, [selector, e.message]);
     }
@@ -185,6 +186,7 @@ const benchQuerySelector = api => {
       doc.body.appendChild(reflow);
       doc.querySelector(selector);
       doc.body.removeChild(reflow);
+      doc.querySelector(selector);
     } catch (e) {
       errors.set(selector, [selector, e.message]);
     }

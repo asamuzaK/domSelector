@@ -11,11 +11,12 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, TAG_ID_CLASS,
-  TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
+  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, SIBLING,
+  TAG_ID_CLASS, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
+const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
 const REG_SIMPLE = new RegExp(`^${TAG_ID_CLASS}$`);
 
 /* DOMSelector */
@@ -236,33 +237,6 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
-    let document;
-    if (this.#domSymbolTree) {
-      document = node._ownerDocument;
-    } else if (node.nodeType === DOCUMENT_NODE) {
-      document = node;
-    } else {
-      document = node.ownerDocument;
-    }
-    if (document === this.#document && document.contentType === 'text/html' &&
-        document.documentElement) {
-      const filterOpt = {
-        complex: false,
-        compound: !(REG_SIMPLE.test(selector) || REG_COMPLEX.test(selector)),
-        descend: REG_DESCEND.test(selector),
-        simple: REG_SIMPLE.test(selector),
-        target: TARGET_FIRST
-      };
-      if (filterSelector(selector, filterOpt)) {
-        try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res = this.#nwsapi.first(selector, n);
-          return res;
-        } catch (e) {
-          // fall through
-        }
-      }
-    }
     let res;
     try {
       // FIXME: remove later
@@ -307,7 +281,7 @@ export class DOMSelector {
       const filterOpt = {
         complex: false,
         compound: false,
-        descend: REG_DESCEND.test(selector),
+        descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
         simple: REG_SIMPLE.test(selector),
         target: TARGET_ALL
       };
