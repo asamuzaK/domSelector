@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<title>querySelector with ancestor context in selector</title>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/jsdom/jsdom/issues/1657 -->
+
+<div id="container">
+  <section id="section1">
+    <ul id="ul1-1">
+      <li id="li1-1-1"></li>
+      <li id="li1-1-2"></li>
+    </ul>
+    <ul id="ul1-2">
+      <li id="li1-2-1"></li>
+      <li id="li1-2-2"></li>
+    </ul>
+  </section>
+  <section id="section2">
+    <ul id="ul2-1">
+      <li id="li2-1-1"></li>
+      <li id="li2-1-2"></li>
+    </ul>
+    <ul id="ul2-2">
+      <li id="li2-2-1"></li>
+      <li id="li2-2-2"></li>
+    </ul>
+  </section>
+  <section id="section3">
+    <ul id="ul3-1">
+      <li id="li3-1-1"></li>
+      <li id="li3-1-2"></li>
+    </ul>
+    <ul id="ul3-2">
+      <li id="li3-2-1"></li>
+      <li id="li3-2-2"></li>
+    </ul>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+test(() => {
+  const section = document.getElementById('section1');
+  const target = document.getElementById('li1-1-1');
+  assert_equals(section.querySelector('div section ul li'), target);
+});
+
+test(() => {
+  const section = document.getElementById('section1');
+  const target = document.getElementById('li1-1-1');
+  assert_equals(section.querySelector('div section:nth-child(2n+1) ul li'),
+    target);
+});
+
+test(() => {
+  const section = document.getElementById('section2');
+  const target = document.getElementById('li2-1-1');
+  assert_equals(section.querySelector('div section:nth-child(2n) ul li'),
+    target);
+});
+
+test(() => {
+  const section = document.getElementById('section2');
+  const target = document.getElementById('li2-1-1');
+  assert_equals(section.querySelector('div section + section ul li'),
+    target);
+});
+
+test(() => {
+  const section = document.getElementById('section3');
+  const target = document.getElementById('li3-1-1');
+  assert_equals(section.querySelector('div section:nth-child(2n+1) ul li'),
+    target);
+});
+
+test(() => {
+  const section = document.getElementById('section3');
+  const target = document.getElementById('li3-1-1');
+  assert_equals(section.querySelector('div section + section ul li'),
+    target);
+});
+
+test(() => {
+  const section = document.getElementById('section3');
+  const target = document.getElementById('li3-2-1');
+  assert_equals(section.querySelector('div section ul + ul li'),
+    target);
+});
+</script>
