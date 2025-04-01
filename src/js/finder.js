@@ -2749,30 +2749,48 @@ export class Finder {
           const { combo: entryCombo } = branch[0];
           let matched;
           for (const node of entryNodes) {
-            matched = this._matchNodeNext(branch, new Set([node]), {
+            const matchedNode = this._matchNodeNext(branch, new Set([node]), {
               combo: entryCombo,
               index: 1
             });
-            if (matched) {
-              nodes.add(matched);
-              break;
+            if (matchedNode) {
+              if (this.#node.nodeType === ELEMENT_NODE) {
+                if (matchedNode !== this.#node &&
+                    this.#node.contains(matchedNode)) {
+                  nodes.add(matchedNode);
+                  matched = true;
+                  break;
+                }
+              } else {
+                nodes.add(matchedNode);
+                matched = true;
+                break;
+              }
             }
           }
           if (!matched) {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
-            let [refNode] =
-              this._findQswalker(entryLeaves, entryNode, {
-                targetType
-              });
+            let [refNode] = this._findQswalker(entryLeaves, entryNode, {
+              targetType
+            });
             while (refNode) {
-              matched = this._matchNodeNext(branch, new Set([refNode]), {
-                combo: entryCombo,
-                index: 1
-              });
-              if (matched) {
-                nodes.add(matched);
-                break;
+              const matchedNode =
+                this._matchNodeNext(branch, new Set([refNode]), {
+                  combo: entryCombo,
+                  index: 1
+                });
+              if (matchedNode) {
+                if (this.#node.nodeType === ELEMENT_NODE) {
+                  if (matchedNode !== this.#node &&
+                      this.#node.contains(matchedNode)) {
+                    nodes.add(matchedNode);
+                    break;
+                  }
+                } else {
+                  nodes.add(matchedNode);
+                  break;
+                }
               }
               [refNode] = this._findQswalker(entryLeaves, refNode, {
                 targetType,
@@ -2783,11 +2801,12 @@ export class Finder {
         } else {
           let matched;
           for (const node of entryNodes) {
-            matched = this._matchNodePrev(branch, node, {
+            const matchedNode = this._matchNodePrev(branch, node, {
               index: lastIndex - 1
             });
-            if (matched) {
+            if (matchedNode) {
               nodes.add(node);
+              matched = true;
               break;
             }
           }
@@ -2798,10 +2817,10 @@ export class Finder {
               targetType
             });
             while (refNode) {
-              matched = this._matchNodePrev(branch, refNode, {
+              const matchedNode = this._matchNodePrev(branch, refNode, {
                 index: lastIndex - 1
               });
-              if (matched) {
+              if (matchedNode) {
                 nodes.add(refNode);
                 break;
               }
