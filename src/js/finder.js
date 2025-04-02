@@ -65,12 +65,13 @@ export class Finder {
   #invalidateResults;
   #lastFocusVisible;
   #node;
+  #nodeWalker;
   #nodes;
   #noexcept;
   #pseudoElement;
-  #qswalker;
   #results;
   #root;
+  #rootWalker;
   #selector;
   #shadow;
   #verifyShadowHost;
@@ -347,8 +348,9 @@ export class Finder {
    * @returns {object} - tree walker
    */
   _prepareQuerySelectorWalker() {
-    this.#qswalker = this._createTreeWalker(this.#node);
-    return this.#qswalker;
+    this.#nodeWalker = this._createTreeWalker(this.#node);
+    this.#rootWalker = null;
+    return this.#nodeWalker;
   }
 
   /**
@@ -2160,7 +2162,7 @@ export class Finder {
   }
 
   /**
-   * find matched node(s) from #qswalker
+   * find matched node(s) preceding this.#node
    * @private
    * @param {Array.<object>} leaves - AST leaves
    * @param {object} node - node to start from
@@ -2169,9 +2171,54 @@ export class Finder {
    * @param {string} [opt.targetType] - target type
    * @returns {Array.<object>} - collection of matched nodes
    */
-  _findQswalker(leaves, node, opt = {}) {
+  _findPrecede(leaves, node, opt = {}) {
     const { force, targetType } = opt;
-    const walker = this.#qswalker;
+    if (!this.#rootWalker) {
+      this.#rootWalker = this._createTreeWalker(this.#root);
+    }
+    const walker = this.#rootWalker;
+    const nodes = [];
+    let refNode = traverseNode(node, walker, !!force);
+    if (refNode && refNode !== this.#node) {
+      if (refNode.nodeType !== ELEMENT_NODE) {
+        refNode = walker.nextNode();
+      } else if (refNode === node) {
+        if (refNode !== this.#root) {
+          refNode = walker.nextNode();
+        }
+      }
+      while (refNode) {
+        if (refNode === this.#node) {
+          break;
+        }
+        const matched = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (matched) {
+          nodes.push(refNode);
+          if (targetType !== TARGET_ALL) {
+            break;
+          }
+        }
+        refNode = walker.nextNode();
+      }
+    }
+    return nodes;
+  }
+
+  /**
+   * find matched node(s) in #nodeWalker
+   * @private
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} node - node to start from
+   * @param {object} opt - options
+   * @param {boolean} [opt.force] - traverse only to next node
+   * @param {string} [opt.targetType] - target type
+   * @returns {Array.<object>} - collection of matched nodes
+   */
+  _findNodeWalker(leaves, node, opt = {}) {
+    const { force, targetType } = opt;
+    const walker = this.#nodeWalker;
     const nodes = [];
     let refNode = traverseNode(node, walker, !!force);
     if (refNode) {
@@ -2316,7 +2363,7 @@ export class Finder {
             }
           }
         } else {
-          nodes = this._findQswalker(leaves, this.#node, {
+          nodes = this._findNodeWalker(leaves, this.#node, {
             targetType,
           });
           if (nodes.length) {
@@ -2333,7 +2380,7 @@ export class Finder {
             complex
           });
         } else {
-          nodes = this._findQswalker(leaves, this.#node, {
+          nodes = this._findNodeWalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2350,7 +2397,7 @@ export class Finder {
             complex
           });
         } else {
-          nodes = this._findQswalker(leaves, this.#node, {
+          nodes = this._findNodeWalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2403,7 +2450,7 @@ export class Finder {
             complex
           });
         } else if (targetType === TARGET_FIRST) {
-          nodes = this._findQswalker(leaves, this.#node, {
+          nodes = this._findNodeWalker(leaves, this.#node, {
             targetType
           });
           if (nodes.length) {
@@ -2498,10 +2545,13 @@ export class Finder {
         let walker;
         if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
           node = this.#node;
-          walker = this.#qswalker;
+          walker = this.#nodeWalker;
         } else {
+          if (!this.#rootWalker) {
+            this.#rootWalker = this._createTreeWalker(this.#root);
+          }
           node = this.#root;
-          walker = this._createTreeWalker(node);
+          walker = this.#rootWalker;
         }
         let nextNode = traverseNode(node, walker);
         while (nextNode) {
@@ -2771,7 +2821,7 @@ export class Finder {
           if (!matched) {
             const { leaves: entryLeaves } = branch[0];
             const [entryNode] = entryNodes;
-            let [refNode] = this._findQswalker(entryLeaves, entryNode, {
+            let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
               targetType
             });
             while (refNode) {
@@ -2792,7 +2842,7 @@ export class Finder {
                   break;
                 }
               }
-              [refNode] = this._findQswalker(entryLeaves, refNode, {
+              [refNode] = this._findNodeWalker(entryLeaves, refNode, {
                 targetType,
                 force: true
               });
@@ -2813,7 +2863,7 @@ export class Finder {
           if (!matched && targetType === TARGET_FIRST) {
             const { leaves: entryLeaves } = branch[lastIndex];
             const [entryNode] = entryNodes;
-            let [refNode] = this._findQswalker(entryLeaves, entryNode, {
+            let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
               targetType
             });
             while (refNode) {
@@ -2824,7 +2874,7 @@ export class Finder {
                 nodes.add(refNode);
                 break;
               }
-              [refNode] = this._findQswalker(entryLeaves, refNode, {
+              [refNode] = this._findNodeWalker(entryLeaves, refNode, {
                 targetType,
                 force: true
               });
