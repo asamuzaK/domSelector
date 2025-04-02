@@ -11802,7 +11802,8 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findNodeWalker(leaves, document.getElementById('li1'));
+      const res =
+        finder._findNodeWalker(leaves, document.getElementById('li1'));
       assert.deepEqual(res, [
         document.getElementById('li2')
       ], 'result');
@@ -11813,7 +11814,8 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findNodeWalker(leaves, document.getElementById('li3'));
+      const res =
+        finder._findNodeWalker(leaves, document.getElementById('li3'));
       assert.deepEqual(res, [], 'result');
     });
 
@@ -11828,6 +11830,30 @@ describe('Finder', () => {
           force: true
         });
       assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('li1');
+      finder.setup('ul li', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('ul li');
+      const res = finder._findNodeWalker(leaves, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('li1');
+      finder.setup('ul li', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('ul li');
+      const res = finder._findNodeWalker(leaves, node, {
+        precede: true
+      });
+      assert.deepEqual(res, [
+        document.getElementById('ul1')
+      ], 'result');
     });
   });
 
@@ -12436,6 +12462,23 @@ describe('Finder', () => {
       assert.strictEqual(res.pending, false, 'pending');
     });
 
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li1');
+      const finder = new Finder(window);
+      finder.setup('ul li', node);
+      const [[{ branch: [twig] }]] = finder._correspond('ul li');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true,
+        dir: 'next'
+      });
+      assert.deepEqual(res.nodes, [
+        document.getElementById('ul1')
+      ], 'nodes');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
+    });
+
     it('should not match', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
@@ -12538,7 +12581,9 @@ describe('Finder', () => {
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [twig] }]] =
         finder._correspond('li.li:first-child + li.li');
-      const res = finder._findEntryNodes(twig, 'all', true);
+      const res = finder._findEntryNodes(twig, 'all', {
+        complex: true
+      });
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
@@ -12717,7 +12762,10 @@ describe('Finder', () => {
       finder.setup(':host div', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [twig] }]] = finder._correspond(':host div');
-      const res = finder._findEntryNodes(twig, 'first');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true,
+        dir: 'next'
+      });
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
@@ -12754,7 +12802,9 @@ describe('Finder', () => {
       finder.setup(':host(#baz) div', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [twig] }]] = finder._correspond(':host(#baz) div');
-      const res = finder._findEntryNodes(twig, 'first');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true
+      });
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
