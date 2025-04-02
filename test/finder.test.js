@@ -11644,13 +11644,70 @@ describe('Finder', () => {
     });
   });
 
-  describe('find matched node(s) from sub walker', () => {
+  describe('find matched node(s) preceding this.#node', () => {
+    it('should get matched node', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('p5');
+      finder.setup('div.foo p', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('div.foo p');
+      const res = finder._findPrecede(leaves, document);
+      assert.deepEqual(res, [
+        document.getElementById('div5')
+      ], 'result');
+    });
+
+    it('should get matched nodes', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('p5');
+      finder.setup('div.foo p', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('div.foo p');
+      const res = finder._findPrecede(leaves, document, {
+        targetType: 'all'
+      });
+      assert.deepEqual(res, [
+        document.getElementById('div5'),
+        document.getElementById('div6')
+      ], 'result');
+    });
+
+    it('should get matched node', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('p5');
+      const current = document.getElementById('div5');
+      finder.setup('div.foo p', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('div.foo p');
+      const res = finder._findPrecede(leaves, current, {
+        force: true
+      });
+      assert.deepEqual(res, [
+        document.getElementById('div6')
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('p5');
+      const current = document.getElementById('div6');
+      finder.setup('div.foo p', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('div.foo p');
+      const res = finder._findPrecede(leaves, current, {
+        force: true
+      });
+      assert.deepEqual(res, [], 'result');
+    });
+  });
+
+  describe('find matched node(s) in #nodeWalker', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);
       finder.setup('ul', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findQswalker(leaves, document);
+      const res = finder._findNodeWalker(leaves, document);
       assert.deepEqual(res, [
         document.getElementById('ul1')
       ], 'result');
@@ -11661,7 +11718,7 @@ describe('Finder', () => {
       finder.setup('ol', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ol');
-      const res = finder._findQswalker(leaves, document);
+      const res = finder._findNodeWalker(leaves, document);
       assert.deepEqual(res, [], 'result');
     });
 
@@ -11673,7 +11730,7 @@ describe('Finder', () => {
       finder.setup('ul', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findQswalker(leaves, node);
+      const res = finder._findNodeWalker(leaves, node);
       assert.deepEqual(res, [
         node
       ], 'result');
@@ -11687,7 +11744,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findQswalker(leaves, node);
+      const res = finder._findNodeWalker(leaves, node);
       assert.deepEqual(res, [
         child
       ], 'result');
@@ -11702,7 +11759,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findQswalker(leaves, node);
+      const res = finder._findNodeWalker(leaves, node);
       assert.deepEqual(res, [
         child
       ], 'result');
@@ -11717,7 +11774,7 @@ describe('Finder', () => {
       finder.setup('li', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findQswalker(leaves, node, {
+      const res = finder._findNodeWalker(leaves, node, {
         targetType: 'all'
       });
       assert.deepEqual(res, [
@@ -11734,7 +11791,7 @@ describe('Finder', () => {
       finder.setup('ul', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('ul');
-      const res = finder._findQswalker(leaves, node);
+      const res = finder._findNodeWalker(leaves, node);
       assert.deepEqual(res, [
         node
       ], 'result');
@@ -11745,7 +11802,8 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findQswalker(leaves, document.getElementById('li1'));
+      const res =
+        finder._findNodeWalker(leaves, document.getElementById('li1'));
       assert.deepEqual(res, [
         document.getElementById('li2')
       ], 'result');
@@ -11756,7 +11814,8 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      const res = finder._findQswalker(leaves, document.getElementById('li3'));
+      const res =
+        finder._findNodeWalker(leaves, document.getElementById('li3'));
       assert.deepEqual(res, [], 'result');
     });
 
@@ -11765,11 +11824,36 @@ describe('Finder', () => {
       finder.setup('li', document);
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [{ leaves }] }]] = finder._correspond('li');
-      finder._findQswalker(leaves, document.getElementById('li2'));
-      const res = finder._findQswalker(leaves, document.getElementById('li1'), {
-        force: true
-      });
+      finder._findNodeWalker(leaves, document.getElementById('li2'));
+      const res =
+        finder._findNodeWalker(leaves, document.getElementById('li1'), {
+          force: true
+        });
       assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('li1');
+      finder.setup('ul li', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('ul li');
+      const res = finder._findNodeWalker(leaves, node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const finder = new Finder(window);
+      const node = document.getElementById('li1');
+      finder.setup('ul li', node);
+      finder._prepareQuerySelectorWalker(node);
+      const [[{ branch: [{ leaves }] }]] = finder._correspond('ul li');
+      const res = finder._findNodeWalker(leaves, node, {
+        precede: true
+      });
+      assert.deepEqual(res, [
+        document.getElementById('ul1')
+      ], 'result');
     });
   });
 
@@ -12378,6 +12462,23 @@ describe('Finder', () => {
       assert.strictEqual(res.pending, false, 'pending');
     });
 
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li1');
+      const finder = new Finder(window);
+      finder.setup('ul li', node);
+      const [[{ branch: [twig] }]] = finder._correspond('ul li');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true,
+        dir: 'next'
+      });
+      assert.deepEqual(res.nodes, [
+        document.getElementById('ul1')
+      ], 'nodes');
+      assert.strictEqual(res.compound, false, 'compound');
+      assert.strictEqual(res.filtered, true, 'filtered');
+      assert.strictEqual(res.pending, false, 'pending');
+    });
+
     it('should not match', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
@@ -12480,7 +12581,9 @@ describe('Finder', () => {
       finder._prepareQuerySelectorWalker(document);
       const [[{ branch: [twig] }]] =
         finder._correspond('li.li:first-child + li.li');
-      const res = finder._findEntryNodes(twig, 'all', true);
+      const res = finder._findEntryNodes(twig, 'all', {
+        complex: true
+      });
       assert.deepEqual(res.nodes, [
         document.getElementById('li1')
       ], 'nodes');
@@ -12659,7 +12762,10 @@ describe('Finder', () => {
       finder.setup(':host div', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [twig] }]] = finder._correspond(':host div');
-      const res = finder._findEntryNodes(twig, 'first');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true,
+        dir: 'next'
+      });
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');
@@ -12696,7 +12802,9 @@ describe('Finder', () => {
       finder.setup(':host(#baz) div', node);
       finder._prepareQuerySelectorWalker(node);
       const [[{ branch: [twig] }]] = finder._correspond(':host(#baz) div');
-      const res = finder._findEntryNodes(twig, 'first');
+      const res = finder._findEntryNodes(twig, 'first', {
+        complex: true
+      });
       assert.deepEqual(res.nodes, [
         node
       ], 'nodes');

@@ -6748,6 +6748,343 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('tu-upstream/dom/nodes/ParentNode-querySelector-parent-context.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section1');
+      const target = document.getElementById('li1-1-1');
+      const res = section.querySelector('div section ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should not match', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section1');
+      const res = section.querySelector('div section ul li:nth-child(3n)');
+      assert.deepEqual(res, null, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section1');
+      const target = document.getElementById('li1-1-1');
+      const res = section.querySelector('div section:nth-child(2n+1) ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section2');
+      const target = document.getElementById('li2-1-1');
+      const res = section.querySelector('div section:nth-child(2n) ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section2');
+      const target = document.getElementById('li2-1-1');
+      const res = section.querySelector('div section + section ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section3');
+      const target = document.getElementById('li3-1-1');
+      const res = section.querySelector('div section:nth-child(2n+1) ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section3');
+      const target = document.getElementById('li3-1-1');
+      const res = section.querySelector('div section + section ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <div id="container">
+          <section id="section1">
+            <ul id="ul1-1">
+              <li id="li1-1-1"></li>
+              <li id="li1-1-2"></li>
+            </ul>
+            <ul id="ul1-2">
+              <li id="li1-2-1"></li>
+              <li id="li1-2-2"></li>
+            </ul>
+          </section>
+          <section id="section2">
+            <ul id="ul2-1">
+              <li id="li2-1-1"></li>
+              <li id="li2-1-2"></li>
+            </ul>
+            <ul id="ul2-2">
+              <li id="li2-2-1"></li>
+              <li id="li2-2-2"></li>
+            </ul>
+          </section>
+          <section id="section3">
+            <ul id="ul3-1">
+              <li id="li3-1-1"></li>
+              <li id="li3-1-2"></li>
+            </ul>
+            <ul id="ul3-2">
+              <li id="li3-2-1"></li>
+              <li id="li3-2-2"></li>
+            </ul>
+          </section>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const section = document.getElementById('section3');
+      const target = document.getElementById('li3-2-1');
+      const res = section.querySelector('div section ul + ul li');
+      assert.deepEqual(res, target, 'result');
+    });
+  });
+
   describe('to-upstream/html/semantics/selectors/pseudo-classes/checked-002.html', () => {
     it('should get matched node(s)', () => {
       const html = `
