@@ -24,7 +24,8 @@ export class Finder {
     private _matchLeaves;
     private _findDescendantNodes;
     private _matchCombinator;
-    private _findQswalker;
+    private _findPrecede;
+    private _findNodeWalker;
     private _matchSelf;
     private _findLineal;
     private _findEntryNodes;
