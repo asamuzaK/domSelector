@@ -2221,7 +2221,7 @@ export class Finder {
     const { force, precede, targetType } = opt;
     const walker = this.#nodeWalker;
     if (precede) {
-      const precedeNodes = this._findPrecede(leaves, this.#root, opt)
+      const precedeNodes = this._findPrecede(leaves, this.#root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
