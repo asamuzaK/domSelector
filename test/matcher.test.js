@@ -2913,5 +2913,25 @@ describe('matcher', () => {
       const res = func(ast, node);
       assert.strictEqual(res, true, 'result');
     });
+
+    it('should throw', () => {
+      const ast = {
+        name: 'foo|div',
+        type: TYPE_SELECTOR
+      };
+      const node =
+        document.createElementNS('https://example.com/bar', 'bar:div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(
+        () => func(ast, node),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Undeclared namespace foo', 'message');
+          return true;
+        }
+      );
+    });
   });
 });

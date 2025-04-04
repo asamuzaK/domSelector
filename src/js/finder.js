@@ -2723,13 +2723,16 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   find(targetType) {
+    let nodes = new Set();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
+      const walker = this._prepareQuerySelectorWalker();
+      if (!walker.nextNode()) {
+        return nodes;
+      }
     }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort;
-    let nodes = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
