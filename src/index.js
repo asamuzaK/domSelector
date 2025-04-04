@@ -247,7 +247,7 @@ export class DOMSelector {
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
-        [res] = nodes;
+        [res] = [...nodes];
       }
     } catch (e) {
       this.#finder.onError(e, opt);
