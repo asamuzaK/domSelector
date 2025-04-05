@@ -5996,8 +5996,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('dom/nodes/ParentNode-querySelector-All.html', () => {
-    // TODO: review tests
-    xit('should throw', () => {
+    it('should throw', () => {
       const node = document.createElement('div');
       assert.throws(
         () => node.querySelector('[class= space unquoted ]'),
@@ -6012,7 +6011,7 @@ describe('local wpt test cases', () => {
       );
     });
 
-    xit('should throw', () => {
+    it('should throw', () => {
       const node = document.createElement('div');
       assert.throws(
         () => node.querySelector('div:example'),
@@ -6027,7 +6026,7 @@ describe('local wpt test cases', () => {
       );
     });
 
-    xit('should throw', () => {
+    it('should throw', () => {
       const node = document.createElement('div');
       assert.throws(
         () => node.querySelectorAll('div:example'),
@@ -6042,7 +6041,7 @@ describe('local wpt test cases', () => {
       );
     });
 
-    xit('should throw', () => {
+    it('should throw', () => {
       const node = document.createElement('div');
       assert.throws(
         () => node.querySelector('ns|div'),
@@ -6057,7 +6056,7 @@ describe('local wpt test cases', () => {
       );
     });
 
-    xit('should throw', () => {
+    it('should throw', () => {
       const node = document.createElement('div');
       assert.throws(
         () => node.querySelector(':not(ns|div)'),
@@ -6214,6 +6213,116 @@ describe('local wpt test cases', () => {
       assert.deepEqual(res, [
         document.getElementById('pseudo-nth-em3')
       ], 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <div id="root">
+          <div id="adjacent">
+            <div id="adjacent-div1" class="adjacent-div1"></div>
+            <div id="adjacent-div2" class="adjacent-div2">
+              <div id="adjacent-div3" class="adjacent-div3"></div>
+            </div>
+            <div id="adjacent-div4" class="adjacent-div4">
+              <p id="adjacent-p1" class="adjacent-p1"></p>
+              <div id="adjacent-div5" class="adjacent-div5"></div>
+            </div>
+            <div id="adjacent-div6" class="adjacent-div6"></div>
+            <p id="adjacent-p2" class="adjacent-p2"></p>
+            <p id="adjacent-p3" class="adjacent-p3"></p>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const node = document.getElementById('adjacent-div4');
+      const detached = document.body.removeChild(root);
+      const res = detached.querySelectorAll('#adjacent-div2+div');
+      assert.deepEqual(res, [
+        node
+      ], 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <div id="root">
+          <div id="adjacent">
+            <div id="adjacent-div1" class="adjacent-div1"></div>
+            <div id="adjacent-div2" class="adjacent-div2">
+              <div id="adjacent-div3" class="adjacent-div3"></div>
+            </div>
+            <div id="adjacent-div4" class="adjacent-div4">
+              <p id="adjacent-p1" class="adjacent-p1"></p>
+              <div id="adjacent-div5" class="adjacent-div5"></div>
+            </div>
+            <div id="adjacent-div6" class="adjacent-div6"></div>
+            <p id="adjacent-p2" class="adjacent-p2"></p>
+            <p id="adjacent-p3" class="adjacent-p3"></p>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const node = document.getElementById('adjacent-div4');
+      const detached = document.body.removeChild(root);
+      const res = detached.querySelector('#adjacent-div2+div');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <div id="root">
+          <div id="sibling">
+            <div id="sibling-div1" class="sibling-div"></div>
+            <div id="sibling-div2" class="sibling-div">
+              <div id="sibling-div3" class="sibling-div"></div>
+            </div>
+            <div id="sibling-div4" class="sibling-div">
+              <p id="sibling-p1" class="sibling-p"></p>
+              <div id="sibling-div5" class="sibling-div"></div>
+            </div>
+            <div id="sibling-div6" class="sibling-div"></div>
+            <p id="sibling-p2" class="sibling-p"></p>
+            <p id="sibling-p3" class="sibling-p"></p>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const div4 = document.getElementById('sibling-div4');
+      const div6 = document.getElementById('sibling-div6');
+      const detached = document.body.removeChild(root);
+      const res = detached.querySelectorAll('#sibling-div2~div');
+      assert.deepEqual(res, [
+        div4,
+        div6
+      ], 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+        <div id="root">
+          <div id="sibling">
+            <div id="sibling-div1" class="sibling-div"></div>
+            <div id="sibling-div2" class="sibling-div">
+              <div id="sibling-div3" class="sibling-div"></div>
+            </div>
+            <div id="sibling-div4" class="sibling-div">
+              <p id="sibling-p1" class="sibling-p"></p>
+              <div id="sibling-div5" class="sibling-div"></div>
+            </div>
+            <div id="sibling-div6" class="sibling-div"></div>
+            <p id="sibling-p2" class="sibling-p"></p>
+            <p id="sibling-p3" class="sibling-p"></p>
+          </div>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const root = document.getElementById('root');
+      const div4 = document.getElementById('sibling-div4');
+      const detached = document.body.removeChild(root);
+      const res = detached.querySelector('#sibling-div2~div');
+      assert.deepEqual(res, div4, 'result');
     });
 
     it('should not match', () => {

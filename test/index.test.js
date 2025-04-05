@@ -1014,6 +1014,32 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
+    it('should get matched node(s)', () => {
+      const node = document.getElementById('li2');
+      document._ownerDocument = document;
+      const domSelector = new DOMSelector(window, document);
+      const res = domSelector.querySelectorAll('.li#li2', document);
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      document._ownerDocument = document;
+      const domSelector = new DOMSelector(window, document, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelectorAll('.li#li2', document);
+      delete document._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, [node], 'result');
+    });
+
     it('should not match', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;

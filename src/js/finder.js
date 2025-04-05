@@ -2523,6 +2523,9 @@ export class Finder {
               lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
+          } else if (firstType === ID_SELECTOR) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
           } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
@@ -2723,16 +2726,13 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   find(targetType) {
-    let nodes = new Set();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      const walker = this._prepareQuerySelectorWalker();
-      if (!walker.nextNode()) {
-        return nodes;
-      }
+      this._prepareQuerySelectorWalker();
     }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort;
+    let nodes = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find } = branches[i];
       const branchLen = branch.length;
