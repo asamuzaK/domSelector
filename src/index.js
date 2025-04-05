@@ -276,8 +276,8 @@ export class DOMSelector {
     } else {
       document = node.ownerDocument;
     }
-    if (node === this.#document && document === this.#document &&
-        document.contentType === 'text/html' && document.documentElement) {
+    if (document === this.#document && document.contentType === 'text/html' &&
+        document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: false,
