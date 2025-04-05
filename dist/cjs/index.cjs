@@ -3789,6 +3789,9 @@ var Finder = class {
           if (this.#selector.includes(":scope") || lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
+          } else if (firstType === ID_SELECTOR) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
           } else if (firstName === "*" && firstType === TYPE_SELECTOR) {
             dir = DIR_PREV;
             twig = lastTwig;
@@ -3990,16 +3993,13 @@ var Finder = class {
    * @returns {Set.<object>} - collection of matched nodes
    */
   find(targetType) {
-    let nodes = /* @__PURE__ */ new Set();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      const walker = this._prepareQuerySelectorWalker();
-      if (!walker.nextNode()) {
-        return nodes;
-      }
+      this._prepareQuerySelectorWalker();
     }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort;
+    let nodes = /* @__PURE__ */ new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find: find2 } = branches[i];
       const branchLen = branch.length;
@@ -4460,7 +4460,7 @@ var DOMSelector = class {
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
+    if (node === this.#document && document === this.#document && document.contentType === "text/html" && document.documentElement) {
       const filterOpt = {
         complex: false,
         compound: false,
