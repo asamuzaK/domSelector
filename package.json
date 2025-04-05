@@ -45,7 +45,7 @@
     "chai": "^5.2.0",
     "commander": "^13.1.0",
     "esbuild": "^0.25.2",
-    "eslint": "^9.23.0",
+    "eslint": "^9.24.0",
     "eslint-plugin-jsdoc": "^50.6.9",
     "eslint-plugin-regexp": "^2.7.0",
     "eslint-plugin-unicorn": "^58.0.0",
@@ -75,5 +75,5 @@
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update-wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.5.0-a.11"
+  "version": "6.5.0-a.12"
 }

@@ -3990,13 +3990,16 @@ var Finder = class {
    * @returns {Set.<object>} - collection of matched nodes
    */
   find(targetType) {
+    let nodes = /* @__PURE__ */ new Set();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
+      const walker = this._prepareQuerySelectorWalker();
+      if (!walker.nextNode()) {
+        return nodes;
+      }
     }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort;
-    let nodes = /* @__PURE__ */ new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find: find2 } = branches[i];
       const branchLen = branch.length;
@@ -4429,7 +4432,7 @@ var DOMSelector = class {
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
-        [res] = nodes;
+        [res] = [...nodes];
       }
     } catch (e) {
       this.#finder.onError(e, opt);
