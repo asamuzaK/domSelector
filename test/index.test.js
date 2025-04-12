@@ -651,6 +651,47 @@ describe('DOMSelector', () => {
     });
 
     it('should get matched node', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('dt1');
+      document._ownerDocument = document;
+      const domSelector = new DOMSelector(window, document, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('#dt1', document);
+      delete document._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should throw', () => {
+      const wrapperForImpl = sinon.stub().throws(new Error('error'));
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      document._ownerDocument = document;
+      const domSelector = new DOMSelector(window, document, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      assert.throws(
+        () => domSelector.querySelector('#dt1', document),
+        e => {
+          assert.strictEqual(e instanceof window.Error, true, 'instance');
+          assert.strictEqual(e.message, 'error', 'message');
+          return true;
+        }
+      );
+      delete document._ownerDocument;
+      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called twice');
+    });
+
+    it('should get matched node', () => {
       const node = document.getElementById('div1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
