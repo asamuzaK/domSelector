@@ -4423,6 +4423,22 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       this.#finder.onError(e, opt);
     }
+    let document;
+    if (this.#domSymbolTree) {
+      document = node._ownerDocument;
+    } else if (node.nodeType === DOCUMENT_NODE) {
+      document = node;
+    } else {
+      document = node.ownerDocument;
+    }
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement && REG_SIMPLE.test(selector) && selector.includes("#")) {
+      try {
+        const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+        const res2 = this.#nwsapi.first(selector, n);
+        return res2;
+      } catch (e) {
+      }
+    }
     let res;
     try {
       if (this.#idlUtils) {
