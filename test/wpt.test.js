@@ -6049,8 +6049,7 @@ describe('local wpt test cases', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Undeclared namespace ns',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector ns|div', 'message');
           return true;
         }
       );
@@ -6064,7 +6063,7 @@ describe('local wpt test cases', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Undeclared namespace ns',
+          assert.strictEqual(e.message, 'Invalid selector ns|div',
             'message');
           return true;
         }

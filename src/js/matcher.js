@@ -193,13 +193,17 @@ export const matchLanguagePseudoClass = (ast, node) => {
  * match attribute selector
  * @param {object} ast - AST
  * @param {object} node - Element node
+ * @param {object} [opt] - options
+ * @param {boolean} [opt.check] - running in internal check()
+ * @param {boolean} [opt.forgive] - forgive unknown pseudo-element
  * @returns {boolean} - result
  */
-export const matchAttributeSelector = (ast, node) => {
+export const matchAttributeSelector = (ast, node, opt = {}) => {
   const {
     flags: astFlags, matcher: astMatcher, name: astName, value: astValue
   } = ast;
-  if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags)) {
+  const { check, forgive } = opt;
+  if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = generateCSS(ast);
     throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
   }
@@ -252,6 +256,13 @@ export const matchAttributeSelector = (ast, node) => {
             break;
           }
           default: {
+            if (!check) {
+              if (forgive) {
+                return false;
+              }
+              const css = generateCSS(ast);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            }
             if (itemName.indexOf(':') > -1) {
               const [itemPrefix, itemLocalName] = itemName.split(':');
               // ignore xml:lang
@@ -403,13 +414,14 @@ export const matchAttributeSelector = (ast, node) => {
  * @param {object} ast - AST
  * @param {object} node - Element node
  * @param {object} [opt] - options
+ * @param {boolean} [opt.check] - running in internal check()
  * @param {boolean} [opt.forgive] - forgive undeclared namespace
  * @returns {boolean} - result
  */
 export const matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { forgive } = opt;
+  const { check, forgive } = opt;
   let {
     prefix: astPrefix, localName: astLocalName
   } = parseAstName(astName, node);
@@ -442,6 +454,13 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
       return false;
     }
     default: {
+      if (!check) {
+        if (forgive) {
+          return false;
+        }
+        const css = generateCSS(ast);
+        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      }
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
       if (astNS === nodeNS && astPrefix === nodePrefix) {

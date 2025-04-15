@@ -8606,6 +8606,14 @@ describe('parse AST name', () => {
   });
 
   it('should get value', () => {
+    const res = func('*|Foo');
+    assert.deepEqual(res, {
+      prefix: '*',
+      localName: 'Foo'
+    });
+  });
+
+  it('should get value', () => {
     const res = func('ns|Foo');
     assert.deepEqual(res, {
       prefix: 'ns',
