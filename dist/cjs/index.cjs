@@ -1147,14 +1147,15 @@ var matchLanguagePseudoClass = (ast, node) => {
   }
   return false;
 };
-var matchAttributeSelector = (ast, node) => {
+var matchAttributeSelector = (ast, node, opt = {}) => {
   const {
     flags: astFlags,
     matcher: astMatcher,
     name: astName,
     value: astValue
   } = ast;
-  if (typeof astFlags === "string" && !/^[is]$/i.test(astFlags)) {
+  const { check, forgive } = opt;
+  if (typeof astFlags === "string" && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = (0, import_css_tree3.generate)(ast);
     throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
   }
@@ -1207,6 +1208,13 @@ var matchAttributeSelector = (ast, node) => {
             break;
           }
           default: {
+            if (!check) {
+              if (forgive) {
+                return false;
+              }
+              const css = (0, import_css_tree3.generate)(ast);
+              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+            }
             if (itemName.indexOf(":") > -1) {
               const [itemPrefix, itemLocalName] = itemName.split(":");
               if (itemPrefix === "xml" && itemLocalName === "lang") {
@@ -1351,7 +1359,7 @@ var matchAttributeSelector = (ast, node) => {
 var matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { forgive } = opt;
+  const { check, forgive } = opt;
   let {
     prefix: astPrefix,
     localName: astLocalName
@@ -1382,6 +1390,13 @@ var matchTypeSelector = (ast, node, opt = {}) => {
       return false;
     }
     default: {
+      if (!check) {
+        if (forgive) {
+          return false;
+        }
+        const css = (0, import_css_tree3.generate)(ast);
+        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      }
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
       if (astNS === nodeNS && astPrefix === nodePrefix) {
@@ -1474,7 +1489,7 @@ var Finder = class {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
-   * @param {boolean} [opt.check] - check
+   * @param {boolean} [opt.check] - running in internal check()
    * @param {object} [opt.domSymbolTree] - domSymbolTree
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
@@ -3143,7 +3158,7 @@ var Finder = class {
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case ATTR_SELECTOR: {
-          const res = matchAttributeSelector(ast, node);
+          const res = matchAttributeSelector(ast, node, opt);
           if (res) {
             matched.add(node);
           }
@@ -3533,7 +3548,7 @@ var Finder = class {
    * match self
    * @private
    * @param {Array} leaves - AST leaves
-   * @param {boolean} check - matching for check
+   * @param {boolean} check - running in internal check()
    * @returns {Array} - [nodes, filtered]
    */
   _matchSelf(leaves, check = false) {
