@@ -128,7 +128,7 @@ export class Finder {
    * @param {string} selector - CSS selector
    * @param {object} node - Document, DocumentFragment, Element node
    * @param {object} [opt] - options
-   * @param {boolean} [opt.check] - check
+   * @param {boolean} [opt.check] - running in internal check()
    * @param {object} [opt.domSymbolTree] - domSymbolTree
    * @param {boolean} [opt.noexcept] - no exception
    * @param {boolean} [opt.warn] - console warn
@@ -1859,7 +1859,7 @@ export class Finder {
     if (node.nodeType === ELEMENT_NODE) {
       switch (astType) {
         case ATTR_SELECTOR: {
-          const res = matchAttributeSelector(ast, node);
+          const res = matchAttributeSelector(ast, node, opt);
           if (res) {
             matched.add(node);
           }
@@ -2256,7 +2256,7 @@ export class Finder {
    * match self
    * @private
    * @param {Array} leaves - AST leaves
-   * @param {boolean} check - matching for check
+   * @param {boolean} check - running in internal check()
    * @returns {Array} - [nodes, filtered]
    */
   _matchSelf(leaves, check = false) {

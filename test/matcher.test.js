@@ -1243,6 +1243,35 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
+    it('should throw', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(
+        () => func(ast, node),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector [baz|foo]',
+            'message');
+          return true;
+        }
+      );
+    });
+
     it('should match', () => {
       const ast = {
         flags: null,
@@ -1260,8 +1289,33 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'baz|foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      document.documentElement.setAttribute('xmlns:baz',
+        'https://example.com/baz');
+      const node = document.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node, {
+        forgive: true
+      });
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -1279,7 +1333,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'Baz:foo', 'qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -1300,7 +1356,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -1319,7 +1377,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -1340,7 +1400,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -1361,7 +1423,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -1382,7 +1446,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -1401,7 +1467,9 @@ describe('matcher', () => {
       node.setAttribute('foo', 'bar');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -1716,7 +1784,9 @@ describe('matcher', () => {
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -1739,7 +1809,9 @@ describe('matcher', () => {
         'en');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -1762,7 +1834,9 @@ describe('matcher', () => {
         'en');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -2667,6 +2741,27 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
+    it('should throw', () => {
+      const ast = {
+        name: 'foo|*',
+        type: TYPE_SELECTOR
+      };
+      const node =
+          document.createElementNS('https://example.com/foo', 'foo:bar');
+      node.setAttribute('xmlns:foo', 'https://example.com/foo');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      assert.throws(
+        () => func(ast, node),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector foo|*', 'message');
+          return true;
+        }
+      );
+    });
+
     it('should match', () => {
       const ast = {
         name: 'foo|*',
@@ -2677,7 +2772,9 @@ describe('matcher', () => {
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -2690,7 +2787,9 @@ describe('matcher', () => {
         document.createElementNS('https://example.com/foo', 'foo:bar');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -2702,6 +2801,7 @@ describe('matcher', () => {
       const node = document.getElementById('div0');
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const res = func(ast, node, {
+        check: true,
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -2721,7 +2821,9 @@ describe('matcher', () => {
       nsroot.appendChild(node);
       const parent = document.getElementById('div0');
       parent.appendChild(nsroot);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -2735,7 +2837,9 @@ describe('matcher', () => {
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, false, 'result');
     });
 
@@ -2748,6 +2852,7 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node, {
+        check: true,
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -2886,7 +2991,9 @@ describe('matcher', () => {
         type: TYPE_SELECTOR
       };
       const node = doc.getElementById('foobar');
-      const res = func(ast, node);
+      const res = func(ast, node, {
+        check: true
+      });
       assert.strictEqual(res, true, 'result');
     });
 
@@ -2924,7 +3031,9 @@ describe('matcher', () => {
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       assert.throws(
-        () => func(ast, node),
+        () => func(ast, node, {
+          check: true
+        }),
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');

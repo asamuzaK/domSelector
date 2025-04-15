@@ -841,8 +841,26 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const nsc = doc.getElementById('nsc');
       // NOTE: namespace should be separated with `|`
       assert.deepEqual(doc.querySelector('ns\\:b'), null, 'result');
-      assert.deepEqual(a.querySelector('ns|b'), nsb, 'result');
-      assert.deepEqual(a.querySelector('ns|b ns|c'), nsc, 'result');
+      assert.throws(
+        () => a.querySelector('ns|b'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector ns|b');
+          return true;
+        }
+      );
+      assert.throws(
+        () => a.querySelector('ns|b ns|c'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector ns|b');
+          return true;
+        }
+      );
       assert.deepEqual([...doc.querySelectorAll('b')], [nsb, b], 'result');
       assert.deepEqual([...doc.querySelectorAll('c')], [nsc, c], 'result');
     });
