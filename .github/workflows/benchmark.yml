@@ -1,4 +1,6 @@
 name: benchmark
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -15,6 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          check-latest: true
       - run: npm ci
       - run: npm run bench
       - run: npm run bench-sizzle
