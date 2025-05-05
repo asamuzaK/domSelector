@@ -20,4 +20,4 @@ jobs:
           check-latest: true
       - run: npm ci
       - run: npm run bench
-      - run: npm run bench-sizzle
+      - run: npm run bench:sizzle
