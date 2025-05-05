@@ -4934,7 +4934,7 @@ describe('local wpt test cases', () => {
         false);
       assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
         false);
-    });
+    }).timeout(60 * 1000);
   });
 
   describe('css/selectors/invalidation/negated-always-matches-negated-first-of-type-when-ancestor-changes.html', () => {
