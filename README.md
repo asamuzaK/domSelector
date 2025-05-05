@@ -172,14 +172,15 @@ const dom = new JSDOM('', {
 |Pattern|Supported|Note|
 |:--------|:-------:|:--------|
 |\*|✓| |
+|E|✓| |
 |ns\|E|✓| |
 |\*\|E|✓| |
 |\|E|✓| |
-|E|✓| |
-|E:not(s1, s2, …)|✓| |
-|E:is(s1, s2, …)|✓| |
-|E:where(s1, s2, …)|✓| |
-|E:has(rs1, rs2, …)|✓| |
+|E&nbsp;F|✓| |
+|E > F|✓| |
+|E + F|✓| |
+|E ~ F|✓| |
+|F \|\| E|Unsupported| |
 |E.warning|✓| |
 |E#myid|✓| |
 |E\[foo\]|✓| |
@@ -191,6 +192,10 @@ const dom = new JSDOM('', {
 |E\[foo$="bar"\]|✓| |
 |E\[foo*="bar"\]|✓| |
 |E\[foo\|="en"\]|✓| |
+|E:is(s1, s2, …)|✓| |
+|E:not(s1, s2, …)|✓| |
+|E:where(s1, s2, …)|✓| |
+|E:has(rs1, rs2, …)|✓| |
 |E:defined|Partially supported|Matching with MathML is not yet supported.|
 |E:dir(ltr)|✓| |
 |E:lang(en)|✓| |
@@ -201,25 +206,27 @@ const dom = new JSDOM('', {
 |E:target|✓| |
 |E:target&#8209;within|✓| |
 |E:scope|✓| |
+|E:hover|✓| |
+|E:active|✓| |
+|E:focus|✓| |
+|E:focus&#8209;visible|✓| |
+|E:focus&#8209;within|✓| |
 |E:current|Unsupported| |
 |E:current(s)|Unsupported| |
 |E:past|Unsupported| |
 |E:future|Unsupported| |
-|E:active|✓| |
-|E:hover|✓| |
-|E:focus|✓| |
-|E:focus&#8209;within|✓| |
-|E:focus&#8209;visible|✓| |
 |E:open<br>E:closed|Partially supported|Matching with &lt;select&gt;, e.g. `select:open`, is not supported.|
+|E:popover-open|✓| |
 |E:enabled<br>E:disabled|✓| |
 |E:read&#8209;write<br>E:read&#8209;only|✓| |
 |E:placeholder&#8209;shown|✓| |
 |E:default|✓| |
 |E:checked|✓| |
 |E:indeterminate|✓| |
-|E:valid<br>E:invalid|✓| |
-|E:required<br>E:optional|✓| |
 |E:blank|Unsupported| |
+|E:valid<br>E:invalid|✓| |
+|E:in-range<br>E:out-of-range|✓| |
+|E:required<br>E:optional|✓| |
 |E:user&#8209;valid<br>E:user&#8209;invalid|Unsupported| |
 |E:root|✓| |
 |E:empty|✓| |
@@ -233,21 +240,15 @@ const dom = new JSDOM('', {
 |E:first&#8209;of&#8209;type|✓| |
 |E:last&#8209;of&#8209;type|✓| |
 |E:only&#8209;of&#8209;type|✓| |
-|E&nbsp;F|✓| |
-|E > F|✓| |
-|E + F|✓| |
-|E ~ F|✓| |
-|F \|\| E|Unsupported| |
 |E:nth&#8209;col(n)|Unsupported| |
 |E:nth&#8209;last&#8209;col(n)|Unsupported| |
-|E:popover-open|✓| |
-|E:state(v)|✓|*1|
+|CE:state(v)|✓|*1|
 |:host|✓| |
 |:host(s)|✓| |
-|:host&#8209;context(s)|✓| |
 |:host(:state(v))|✓|*1|
 |:host:has(rs1, rs2, ...)|✓| |
 |:host(s):has(rs1, rs2, ...)|✓| |
+|:host&#8209;context(s)|✓| |
 |:host&#8209;context(s):has(rs1, rs2, ...)|✓| |
 |&amp;|✓|Only supports outermost `&`, i.e. equivalent to `:scope`|
 
