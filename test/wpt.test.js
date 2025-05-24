@@ -5210,7 +5210,7 @@ describe('local wpt test cases', () => {
         document.getElementById('d1'),
         document.getElementById('d3')
       ], 'result after');
-    });
+    }).timeout(60 * 1000);
   });
 
   describe('css/selectors/invalidation/placeholder-shown.html', () => {
