@@ -116,7 +116,7 @@ export class Finder {
           throw new this.#window.DOMException(e.message, e.name);
         }
       } else if (e.name in this.#window) {
-        throw new this.#window[e.name](e.message);
+        throw new this.#window[e.name](e.message, { cause: e });
       } else {
         throw e;
       }
