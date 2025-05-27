@@ -112,7 +112,7 @@ export const preprocess = (...args) => {
     selector = getType(selector).toLowerCase();
   } else if (Array.isArray(selector)) {
     selector = selector.join(',');
-  } else if (Object.prototype.hasOwnProperty.call(selector, 'toString')) {
+  } else if (Object.hasOwn(selector, 'toString')) {
     selector = selector.toString();
   } else {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
