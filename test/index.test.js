@@ -1082,7 +1082,7 @@ describe('DOMSelector', () => {
       ], 'result');
     });
 
-    it('should nott match', () => {
+    it('should not match', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
