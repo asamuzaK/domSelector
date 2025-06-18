@@ -51,10 +51,10 @@ export const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 
 /* NodeFilter */
 export const SHOW_ALL = 0xFFFFFFFF;
+export const SHOW_CONTAINER = 0x501;
 export const SHOW_DOCUMENT = 0x100;
 export const SHOW_DOCUMENT_FRAGMENT = 0x400;
 export const SHOW_ELEMENT = 1;
-export const WALKER_FILTER = 0x501;
 
 /* selectors */
 export const ALPHA_NUM = '[A-Z\\d]+';

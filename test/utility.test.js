@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as util from '../src/js/utility.js';
 import {
-  TARGET_SELF, TARGET_LINEAL, WALKER_FILTER
+  SHOW_CONTAINER, TARGET_SELF, TARGET_LINEAL
 } from '../src/js/constant.js';
 
 describe('utility functions', () => {
@@ -262,7 +262,7 @@ describe('utility functions', () => {
     const func = util.traverseNode;
     let treeWalker;
     beforeEach(() => {
-      treeWalker = document.createTreeWalker(document, WALKER_FILTER);
+      treeWalker = document.createTreeWalker(document, SHOW_CONTAINER);
     });
     afterEach(() => {
       treeWalker = null;
@@ -315,7 +315,7 @@ describe('utility functions', () => {
       const parent = document.createElement('ol');
       const node = document.createElement('li');
       parent.appendChild(node);
-      const walker = document.createTreeWalker(parent, WALKER_FILTER);
+      const walker = document.createTreeWalker(parent, SHOW_CONTAINER);
       const res = func(node, walker);
       assert.deepEqual(res, node, 'result');
     });
@@ -326,7 +326,7 @@ describe('utility functions', () => {
       const node = document.createElement('li');
       parent.appendChild(node);
       frag.appendChild(parent);
-      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      const walker = document.createTreeWalker(frag, SHOW_CONTAINER);
       func(node, walker);
       const res = func(frag, walker);
       assert.deepEqual(res, frag, 'result');
@@ -340,7 +340,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       parent.appendChild(node2);
       frag.appendChild(parent);
-      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      const walker = document.createTreeWalker(frag, SHOW_CONTAINER);
       func(node, walker);
       const res = func(node2, walker);
       assert.deepEqual(res, node2, 'result');
@@ -354,7 +354,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       parent.appendChild(node2);
       frag.appendChild(parent);
-      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      const walker = document.createTreeWalker(frag, SHOW_CONTAINER);
       func(node, walker);
       const res = func(node2, walker, true);
       assert.deepEqual(res, node2, 'result');
@@ -368,7 +368,7 @@ describe('utility functions', () => {
       parent.appendChild(node);
       parent.appendChild(node2);
       frag.appendChild(parent);
-      const walker = document.createTreeWalker(frag, WALKER_FILTER);
+      const walker = document.createTreeWalker(frag, SHOW_CONTAINER);
       func(node2, walker);
       const res = func(node, walker, true);
       assert.deepEqual(res, null, 'result');

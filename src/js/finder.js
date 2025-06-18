@@ -20,9 +20,8 @@ import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE, ID_SELECTOR, KEY_FORM_FOCUS, KEY_INPUT_DATE, KEY_INPUT_EDIT,
   KEY_INPUT_TEXT, KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR,
-  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL, SYNTAX_ERR, TARGET_ALL,
-  TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR,
-  WALKER_FILTER
+  PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SHOW_ALL, SHOW_CONTAINER, SYNTAX_ERR,
+  TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -329,7 +328,7 @@ export class Finder {
    * @returns {object} - tree walker
    */
   _createTreeWalker(node, opt = {}) {
-    const { force = false, whatToShow = WALKER_FILTER } = opt;
+    const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     let walker;
     if (force) {
       walker = this.#document.createTreeWalker(node, whatToShow);
