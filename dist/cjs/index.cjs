@@ -69,7 +69,6 @@ var BIT_32 = 32;
 var BIT_FFFF = 65535;
 var DUO = 2;
 var HEX = 16;
-var HYPHEN = 45;
 var TYPE_FROM = 8;
 var TYPE_TO = -1;
 var ELEMENT_NODE = 1;
@@ -79,7 +78,7 @@ var DOCUMENT_FRAGMENT_NODE = 11;
 var DOCUMENT_POSITION_PRECEDING = 2;
 var DOCUMENT_POSITION_CONTAINS = 8;
 var SHOW_ALL = 4294967295;
-var WALKER_FILTER = 1281;
+var SHOW_CONTAINER = 1281;
 var ALPHA_NUM = "[A-Z\\d]+";
 var CHILD_IDX = "(?:first|last|only)-(?:child|of-type)";
 var DIGIT = "(?:0|[1-9]\\d*)";
@@ -768,15 +767,8 @@ var preprocess = (...args) => {
       }
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
-      if (/^\d$/.test(postHash.substring(0, 1))) {
-        throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
-      }
       const codePoint = postHash.codePointAt(0);
-      if (codePoint === HYPHEN) {
-        if (/^\d$/.test(postHash.substring(1, 2))) {
-          throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
-        }
-      } else if (codePoint > BIT_FFFF) {
+      if (codePoint > BIT_FFFF) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
           postHash = str;
@@ -792,7 +784,7 @@ var preprocess = (...args) => {
     selector = getType(selector).toLowerCase();
   } else if (Array.isArray(selector)) {
     selector = selector.join(",");
-  } else if (Object.prototype.hasOwnProperty.call(selector, "toString")) {
+  } else if (Object.hasOwn(selector, "toString")) {
     selector = selector.toString();
   } else {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
@@ -1478,7 +1470,7 @@ var Finder = class {
           throw new this.#window.DOMException(e.message, e.name);
         }
       } else if (e.name in this.#window) {
-        throw new this.#window[e.name](e.message);
+        throw new this.#window[e.name](e.message, { cause: e });
       } else {
         throw e;
       }
@@ -1692,7 +1684,7 @@ var Finder = class {
    * @returns {object} - tree walker
    */
   _createTreeWalker(node, opt = {}) {
-    const { force = false, whatToShow = WALKER_FILTER } = opt;
+    const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     let walker;
     if (force) {
       walker = this.#document.createTreeWalker(node, whatToShow);
