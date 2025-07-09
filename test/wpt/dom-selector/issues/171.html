@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>171</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/asamuzaK/domSelector/issues/171 -->
+
+<input id="test1_1" value="foo" />
+<input id="test1_2" value=foo />
+<input id="test1_3" value="123" />
+<input id="test1_4" value=123 />
+<input id="001" value="bar" />
+
+<input id="test2_1" value="#foo" />
+<input id="test2_2" value=#foo />
+<input id="test2_3" value="#123" />
+<input id="test2_4" value=#123 />
+<input id="-001" value="bar" />
+
+<script>
+"use strict";
+
+const test1_1 = document.getElementById('test1_1');
+const test1_2 = document.getElementById('test1_2');
+const test1_3 = document.getElementById('test1_3');
+const test1_4 = document.getElementById('test1_4');
+
+const test2_1 = document.getElementById('test2_1');
+const test2_2 = document.getElementById('test2_2');
+const test2_3 = document.getElementById('test2_3');
+const test2_4 = document.getElementById('test2_4');
+
+test(() => {
+  assert_equals(test1_1.matches('[value="foo"]'), true, 'letter with quotes');
+  assert_equals(test1_2.matches('[value=foo]'), true, 'letter without quotes');
+  assert_equals(test1_3.matches('[value="123"]'), true, 'digit with quotes');
+  assert_throws_dom('SyntaxError', () => test1_4.matches('[value=123]'),
+    'digit without quotes');
+}, 'Sanity check');
+
+test(() => {
+  assert_equals(test2_1.matches('[value="#foo"]'), true, 'letter with quotes');
+  assert_throws_dom('SyntaxError', () => test2_2.matches('[value=#foo]'),
+    'letter without quotes');
+  assert_equals(test2_3.matches('[value="#123"]'), true, 'digit with quotes');
+  assert_throws_dom('SyntaxError', () => test2_4.matches('[value=#123]'),
+    'digit without quotes');
+}, 'Values with leading hash');
+</script>
