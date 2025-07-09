@@ -9,7 +9,7 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, HEX, HYPHEN, ID_SELECTOR, KEY_LOGICAL, KEY_PS_STATE,
+  CLASS_SELECTOR, DUO, HEX, ID_SELECTOR, KEY_LOGICAL, KEY_PS_STATE,
   KEY_SHADOW_HOST, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR,
   SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
@@ -85,17 +85,8 @@ export const preprocess = (...args) => {
       }
       const preHash = selector.substring(0, index + 1);
       let postHash = selector.substring(index + 1);
-      // @see https://drafts.csswg.org/css-syntax-3/#ident-token-diagram
-      if (/^\d$/.test(postHash.substring(0, 1))) {
-        throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
-      }
       const codePoint = postHash.codePointAt(0);
-      if (codePoint === HYPHEN) {
-        if (/^\d$/.test(postHash.substring(1, 2))) {
-          throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
-        }
-      // escape char above 0xFFFF
-      } else if (codePoint > BIT_FFFF) {
+      if (codePoint > BIT_FFFF) {
         const str = `\\${codePoint.toString(HEX)} `;
         if (postHash.length === DUO) {
           postHash = str;

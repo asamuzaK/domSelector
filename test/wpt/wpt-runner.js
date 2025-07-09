@@ -8,6 +8,7 @@ import { copyFile, removeFile } from '../../scripts/file-util.js';
 import { DOMSelector } from '../../src/index.js';
 
 /* constants */
+const DOM_SELECTOR_DIR = 'test/wpt/dom-selector/';
 const JSDOM_DIR = 'test/wpt/jsdom/';
 const WPT_ALT_DIR = 'test/wpt/wpt-alt/';
 const WPT_DIR = 'test/wpt/wpt/';
@@ -889,6 +890,31 @@ const includeFilter = testPath => {
     console.error(e);
     process.exit(1);
   });
+
+  // dom-selector issues
+  await wptRunner(`${DOM_SELECTOR_DIR}issues/`, {
+    rootURL: 'issues/',
+    setup,
+    filter: includeFilter
+  }).then(failures => {
+    const rootURL = 'dom-selector/issues/';
+    let msg;
+    switch (failures) {
+      case 0:
+        msg = `\npassed ${rootURL}.`;
+        break;
+      case 1:
+        msg = `\n1 failure in ${rootURL}.`;
+        break;
+      default:
+        msg = `\n${failures} failures in ${rootURL}.`;
+    }
+    res.push(msg);
+  }).catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
+
   for (const msg of res) {
     console.log(msg);
   }

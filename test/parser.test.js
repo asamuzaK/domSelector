@@ -1143,30 +1143,6 @@ describe('create AST from CSS selector', () => {
       );
     });
 
-    it('should throw', () => {
-      assert.throws(
-        () => func('#123'),
-        e => {
-          assert.strictEqual(e instanceof DOMException, true, 'instance');
-          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector #123', 'message');
-          return true;
-        }
-      );
-    });
-
-    it('should throw', () => {
-      assert.throws(
-        () => func('#-123'),
-        e => {
-          assert.strictEqual(e instanceof DOMException, true, 'instance');
-          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector #-123', 'message');
-          return true;
-        }
-      );
-    });
-
     it('should get selector list', () => {
       const res = func('#foo');
       assert.deepEqual(res, {
