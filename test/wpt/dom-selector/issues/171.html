@@ -15,6 +15,9 @@
 <input id="test2_3" value="#123" />
 <input id="test2_4" value=#123 />
 
+<input id="123" value="" />
+<input id="-456" value="" />
+
 <script>
 "use strict";
 
@@ -28,20 +31,32 @@ const test2_2 = document.getElementById('test2_2');
 const test2_3 = document.getElementById('test2_3');
 const test2_4 = document.getElementById('test2_4');
 
+const test3_1 = document.getElementById("123");
+const test3_2 = document.getElementById("-456");
+
 test(() => {
   assert_equals(test1_1.matches('[value="foo"]'), true, 'letter with quotes');
   assert_equals(test1_2.matches('[value=foo]'), true, 'letter without quotes');
   assert_equals(test1_3.matches('[value="123"]'), true, 'digit with quotes');
   assert_throws_dom('SyntaxError', () => test1_4.matches('[value=123]'),
-    'digit without quotes');
+    'digit without quotes throws');
 }, 'Sanity check');
 
 test(() => {
   assert_equals(test2_1.matches('[value="#foo"]'), true, 'letter with quotes');
   assert_throws_dom('SyntaxError', () => test2_2.matches('[value=#foo]'),
-    'letter without quotes');
+    'hashed letter without quotes throws');
   assert_equals(test2_3.matches('[value="#123"]'), true, 'digit with quotes');
   assert_throws_dom('SyntaxError', () => test2_4.matches('[value=#123]'),
-    'digit without quotes');
+    'hashed digit without quotes throws');
 }, 'Values with leading hash');
+
+test(() => {
+  assert_equals(test3_1 !== null, true, 'getElementById("123") is not null');
+  assert_throws_dom('SyntaxError', () => test3_1.matches('#123'),
+    'ID starting with digit throws');
+  assert_equals(test3_2 !== null, true, 'getElementById("-456") is not null');
+  assert_throws_dom('SyntaxError', () => test3_2.matches('#-456'),
+    'ID starting with negative digit throws');
+}, 'IDs starting with digit');
 </script>

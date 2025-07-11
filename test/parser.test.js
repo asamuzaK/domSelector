@@ -412,6 +412,48 @@ describe('create AST from CSS selector', () => {
     });
 
     it('should get selector list', () => {
+      const res = func('#123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '123',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
+      const res = func('#-123');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: '-123',
+                type: ID_SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      }, 'result');
+    });
+
+    it('should get selector list', () => {
       const res = func('#foo\u{2003}bar');
       assert.deepEqual(res, {
         children: [
@@ -7132,6 +7174,64 @@ describe('walk AST', () => {
       branches: [],
       info: {}
     }, 'result');
+  });
+
+  it('should throw', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: '123',
+              type: ID_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    assert.throws(
+      () => func(ast),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector #123', 'message');
+        return true;
+      }
+    );
+  });
+
+  it('should throw', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: '-123',
+              type: ID_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    assert.throws(
+      () => func(ast),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector #-123', 'message');
+        return true;
+      }
+    );
   });
 
   it('should get selectors', () => {
