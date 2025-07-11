@@ -838,8 +838,22 @@ var walkAST = (ast = {}) => {
   const opt = {
     enter: (node) => {
       switch (node.type) {
-        case SELECTOR: {
-          branches.add(node.children);
+        case CLASS_SELECTOR: {
+          if (/^-?\d/.test(node.name)) {
+            throw new DOMException(
+              `Invalid selector .${node.name}`,
+              SYNTAX_ERR
+            );
+          }
+          break;
+        }
+        case ID_SELECTOR: {
+          if (/^-?\d/.test(node.name)) {
+            throw new DOMException(
+              `Invalid selector #${node.name}`,
+              SYNTAX_ERR
+            );
+          }
           break;
         }
         case PS_CLASS_SELECTOR: {
@@ -867,6 +881,10 @@ var walkAST = (ast = {}) => {
             info.set("hasNestedSelector", true);
             info.set("hasNthChildOfSelector", true);
           }
+          break;
+        }
+        case SELECTOR: {
+          branches.add(node.children);
           break;
         }
         default:
