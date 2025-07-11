@@ -7234,6 +7234,64 @@ describe('walk AST', () => {
     );
   });
 
+  it('should throw', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: '123',
+              type: CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    assert.throws(
+      () => func(ast),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector .123', 'message');
+        return true;
+      }
+    );
+  });
+
+  it('should throw', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: '-123',
+              type: CLASS_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    assert.throws(
+      () => func(ast),
+      e => {
+        assert.strictEqual(e instanceof DOMException, true, 'instance');
+        assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+        assert.strictEqual(e.message, 'Invalid selector .-123', 'message');
+        return true;
+      }
+    );
+  });
+
   it('should get selectors', () => {
     const ast = {
       children: [
