@@ -176,6 +176,13 @@ export const walkAST = (ast = {}) => {
           branches.add(node.children);
           break;
         }
+        case ID_SELECTOR: {
+          if (/^-?\d/.test(node.name)) {
+            throw new DOMException(`Invalid selector #${node.name}`,
+              SYNTAX_ERR);
+          }
+          break;
+        }
         case PS_CLASS_SELECTOR: {
           if (KEY_LOGICAL.includes(node.name)) {
             info.set('hasNestedSelector', true);
