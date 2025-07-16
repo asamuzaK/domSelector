@@ -1941,7 +1941,7 @@ export class Finder {
     } else {
       let cacheable = true;
       const formKeys = [...KEY_FORM_FOCUS, 'fieldset', 'form'];
-      const pseudoKeys = ['any-link', 'defined', 'dir', 'link'];
+      const pseudoKeys = ['any-link', 'defined', 'dir', 'link', 'scope'];
       if (node.nodeType === ELEMENT_NODE && formKeys.includes(node.localName)) {
         cacheable = false;
       }
