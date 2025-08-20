@@ -857,7 +857,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, 'SyntaxError', 'name');
-          assert.strictEqual(e.message, 'Invalid selector ns|b');
+          assert.strictEqual(e.message, 'Invalid selector ns|c');
           return true;
         }
       );
