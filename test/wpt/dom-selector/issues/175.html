@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>175</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/asamuzaK/domSelector/issues/175 -->
+
+<div id="div1" class="class1">
+  <div id="div1_1" class="class2">
+    <a id="a1" name="anchor1"></a>
+  </div>
+</div>
+<div id="div2" class="class1">
+  <div id="div2_1" class="class2">
+    <a id="a2" name="anchor2"></a>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const selector_step1 = '.class1';
+const selector_step2 = '.class2 > a[name]';
+
+const selection_step1 = document.querySelectorAll(selector_step1);
+
+const div1 = document.getElementById('div1');
+const div1_1 = document.getElementById('div1-1');
+const div2 = document.getElementById('div2');
+const div2_1 = document.getElementById('div2_1');
+const a1 = document.getElementById('a1');
+const a2 = document.getElementById('a2');
+
+test(() => {
+  assert_equals(selection_step1.length, 2, 'length');
+  const [e1, e2] = [...selection_step1];
+  assert_equals(e1, div1, 'first element is div1');
+  assert_equals(e2, div2, 'second element is div2');
+
+  const e3 = e1.querySelector(selector_step2);
+  const e4 = e2.querySelector(selector_step2);
+  assert_equals(e3, a1, 'matches a1');
+  assert_equals(e4, a2, 'matches a2');
+});
+</script>

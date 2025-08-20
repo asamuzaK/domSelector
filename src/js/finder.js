@@ -2532,10 +2532,15 @@ export class Finder {
             dir = DIR_NEXT;
             twig = firstTwig;
           } else if (branchLen === 2) {
-            const { name: comboName } = firstCombo;
-            if (comboName === '+' || comboName === '~') {
+            if (targetType === TARGET_FIRST) {
               dir = DIR_PREV;
               twig = lastTwig;
+            } else {
+              const { name: comboName } = firstCombo;
+              if (comboName === '+' || comboName === '~') {
+                dir = DIR_PREV;
+                twig = lastTwig;
+              }
             }
           }
         } else {
