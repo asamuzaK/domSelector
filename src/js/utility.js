@@ -37,7 +37,7 @@ export const getType = o =>
  * verify array contents
  * @param {Array} arr - array
  * @param {string} type - expected type, e.g. 'String'
- * @throws
+ * @throws {TypeError} - TypeError
  * @returns {Array} - verified array
  */
 export const verifyArray = (arr, type) => {

@@ -9,7 +9,7 @@ const TYPE_TO = -1;
 /**
  * throw error
  * @param {!object} e - Error
- * @throws - Error
+ * @throws {Error} - Error
  */
 export const throwErr = e => {
   throw e;

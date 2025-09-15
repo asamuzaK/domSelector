@@ -99,7 +99,7 @@ export class Finder {
    * @param {Error} e - Error
    * @param {object} [opt] - options
    * @param {boolean} [opt.noexcept] - no exception
-   * @throws Error
+   * @throws {Error} - Error
    * @returns {void}
    */
   onError(e, opt = {}) {
