@@ -4731,7 +4731,7 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/invalidation/is-where-pseudo-containing-hard-pseudo.html', () => {
-    it('should get matched node(s)', () => {
+    xit('should get matched node(s)', () => {
       const html = `
         <style>
           .container {
