@@ -139,12 +139,12 @@ export class Finder {
     this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
-    this.#node = node;
     [
       this.#document,
       this.#root,
       this.#shadow
     ] = resolveContent(node);
+    this.#node = node;
     this.#selector = selector;
     [
       this.#ast,

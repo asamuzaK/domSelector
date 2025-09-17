@@ -51,7 +51,7 @@
     "eslint-plugin-unicorn": "^61.0.2",
     "globals": "^16.4.0",
     "happy-dom": "^18.0.1",
-    "jsdom": "27.0.0",
+    "jsdom": "^27.0.0-beta.2",
     "linkedom": "^0.18.12",
     "mocha": "^11.7.2",
     "neostandard": "^0.12.2",
@@ -69,11 +69,11 @@
     "build": "npm run tsc && npm run lint && npm test && npm run bundle && npm run test:cjs",
     "bundle": "tsup src/index.js --format=cjs --platform=node --outDir=dist/cjs/ --sourcemap --dts",
     "lint": "eslint --fix .",
-    "test": "c8 --reporter=text mocha --parallel --exit test/**/*.test.js",
+    "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test:cjs": "mocha --exit test/index.test.cjs",
     "test:wpt": "node test/wpt/wpt-runner.js",
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update:wpt": "git submodule update --init --recursive --remote"
   },
-  "version": "6.5.4"
+  "version": "6.5.5"
 }

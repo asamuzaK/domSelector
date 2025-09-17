@@ -1473,7 +1473,7 @@ var Finder = class {
    * @param {Error} e - Error
    * @param {object} [opt] - options
    * @param {boolean} [opt.noexcept] - no exception
-   * @throws Error
+   * @throws {Error} - Error
    * @returns {void}
    */
   onError(e, opt = {}) {
@@ -1511,12 +1511,12 @@ var Finder = class {
     this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
-    this.#node = node;
     [
       this.#document,
       this.#root,
       this.#shadow
     ] = resolveContent(node);
+    this.#node = node;
     this.#selector = selector;
     [
       this.#ast,
