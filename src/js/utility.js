@@ -681,13 +681,13 @@ export const concatNestedSelectors = selectors => {
   }
   let selector = '';
   if (selectors.length) {
-    selectors = selectors.reverse();
-    let child = verifyArray(selectors.shift(), 'String');
+    const revSelectors = selectors.toReversed();
+    let child = verifyArray(revSelectors.shift(), 'String');
     if (child.length === 1) {
       [child] = child;
     }
-    while (selectors.length) {
-      const parentArr = verifyArray(selectors.shift(), 'String');
+    while (revSelectors.length) {
+      const parentArr = verifyArray(revSelectors.shift(), 'String');
       if (!parentArr.length) {
         continue;
       }
@@ -718,7 +718,7 @@ export const concatNestedSelectors = selectors => {
           items.push(item.trim());
         }
         selector = items.join(', ');
-      } else if (selectors.length) {
+      } else if (revSelectors.length) {
         selector = `${child} ${selector}`;
       } else {
         if (child.includes('\x26')) {
@@ -733,7 +733,7 @@ export const concatNestedSelectors = selectors => {
         }
       }
       selector = selector.trim();
-      if (selectors.length) {
+      if (revSelectors.length) {
         child = parentArr.length > 1 ? parentArr : parent;
       } else {
         break;
