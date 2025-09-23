@@ -1,4 +1,4 @@
-export function getType(o: any): string;
+export function getType(o: object): string;
 export function verifyArray(arr: any[], type: string): any[];
 export function resolveContent(node: object): Array<object | boolean>;
 export function traverseNode(node: object, walker: object, force?: boolean): object | null;

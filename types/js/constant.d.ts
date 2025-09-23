@@ -52,7 +52,7 @@ export const ANB: "[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+
 export const N_TH: "nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|[+-]?(?:(?:0|[1-9]\\d*)n?|n)|(?:[+-]?(?:0|[1-9]\\d*))?n\\s*[+-]\\s*(?:0|[1-9]\\d*))\\s*\\)";
 export const SUB_TYPE: "\\[[^|\\]]+\\]|[#.:][\\w-]+";
 export const SUB_TYPE_WO_PSEUDO: "\\[[^|\\]]+\\]|[#.][\\w-]+";
-export const TAG_ID_CLASS: "(?:[A-Za-z][\\w-]*|[#.][\\w-]+)";
+export const SUB_CLASS_TYPE: "(?:\\.[\\w-]+)";
 export const TAG_TYPE: "\\*|[A-Za-z][\\w-]*";
 export const TAG_TYPE_I: "\\*|[A-Z][\\w-]*";
 export const COMPOUND: "(?:\\*|[A-Za-z][\\w-]*|(?:\\*|[A-Za-z][\\w-]*)?(?:\\[[^|\\]]+\\]|[#.:][\\w-]+)+)";
