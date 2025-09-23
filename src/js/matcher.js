@@ -426,6 +426,7 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     prefix: astPrefix, localName: astLocalName
   } = parseAstName(astName, node);
   if (node.ownerDocument.contentType === 'text/html' &&
+      (!namespaceURI || namespaceURI === "http://www.w3.org/1999/xhtml") &&
       /[A-Z][\\w-]*/i.test(localName)) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();

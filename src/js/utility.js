@@ -16,6 +16,7 @@ import {
   PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST, TARGET_LINEAL, TARGET_SELF,
   TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
+const REG_EXCLUDE_FILTER = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_LOGIC_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
 const REG_LOGIC_COMPOUND =
@@ -864,7 +865,7 @@ export const filterSelector = (selector, opt = {}) => {
   // selectors containing non-ASCII or control character other than whitespace,
   // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
   // and empty :is() or :where()
-  if (/[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/.test(selector)) {
+  if (REG_EXCLUDE_FILTER.test(selector)) {
     return false;
   }
   // include pseudo-classes that are known to work correctly
