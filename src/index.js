@@ -13,13 +13,13 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 /* constants */
 import {
   COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, SIBLING,
-  TAG_ID_CLASS, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
+  SUB_CLASS_TYPE, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
 const MAX_CACHE = 4096;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
-const REG_SIMPLE = new RegExp(`^${TAG_ID_CLASS}$`);
+const REG_SIMPLE = new RegExp(`^${SUB_CLASS_TYPE}$`);
 
 /* DOMSelector */
 export class DOMSelector {
