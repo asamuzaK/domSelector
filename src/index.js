@@ -6,18 +6,20 @@
  */
 
 /* import */
+import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
 import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
   COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, SIBLING,
-  TAG_ID_CLASS, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
+  SUB_CLASS_TYPE, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
 } from './js/constant.js';
+const MAX_CACHE = 4096;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
-const REG_SIMPLE = new RegExp(`^${TAG_ID_CLASS}$`);
+const REG_SIMPLE = new RegExp(`^${SUB_CLASS_TYPE}$`);
 
 /* DOMSelector */
 export class DOMSelector {
@@ -28,6 +30,7 @@ export class DOMSelector {
   #finder;
   #idlUtils;
   #nwsapi;
+  #cache;
 
   /**
    * construct
@@ -43,6 +46,9 @@ export class DOMSelector {
     this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
+    this.#cache = new LRUCache({
+      max: MAX_CACHE
+    });
   }
 
   /**
@@ -72,14 +78,22 @@ export class DOMSelector {
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
         document.documentElement && node.parentNode) {
-      const filterOpt = {
-        complex: REG_COMPLEX.test(selector),
-        compound: false,
-        descend: false,
-        simple: false,
-        target: TARGET_SELF
-      };
-      if (filterSelector(selector, filterOpt)) {
+      const cacheKey = `check_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        const filterOpt = {
+          complex: REG_COMPLEX.test(selector),
+          compound: false,
+          descend: false,
+          simple: false,
+          target: TARGET_SELF
+        };
+        filterMatches = filterSelector(selector, filterOpt);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
           const match = this.#nwsapi.match(selector, n);
@@ -130,14 +144,22 @@ export class DOMSelector {
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
         document.documentElement && node.parentNode) {
-      const filterOpt = {
-        complex: REG_COMPLEX.test(selector),
-        compound: false,
-        descend: false,
-        simple: false,
-        target: TARGET_SELF
-      };
-      if (filterSelector(selector, filterOpt)) {
+      const cacheKey = `matches_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        const filterOpt = {
+          complex: REG_COMPLEX.test(selector),
+          compound: false,
+          descend: false,
+          simple: false,
+          target: TARGET_SELF
+        };
+        filterMatches = filterSelector(selector, filterOpt);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
           const res = this.#nwsapi.match(selector, n);
@@ -183,14 +205,22 @@ export class DOMSelector {
       : node.ownerDocument;
     if (document === this.#document && document.contentType === 'text/html' &&
         document.documentElement && node.parentNode) {
-      const filterOpt = {
-        complex: REG_COMPLEX.test(selector),
-        compound: false,
-        descend: false,
-        simple: false,
-        target: TARGET_LINEAL
-      };
-      if (filterSelector(selector, filterOpt)) {
+      const cacheKey = `closest_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        const filterOpt = {
+          complex: REG_COMPLEX.test(selector),
+          compound: false,
+          descend: false,
+          simple: false,
+          target: TARGET_LINEAL
+        };
+        filterMatches = filterSelector(selector, filterOpt);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
           const res = this.#nwsapi.closest(selector, n);
@@ -278,14 +308,22 @@ export class DOMSelector {
     }
     if (document === this.#document && document.contentType === 'text/html' &&
         document.documentElement) {
-      const filterOpt = {
-        complex: false,
-        compound: false,
-        descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
-        simple: REG_SIMPLE.test(selector),
-        target: TARGET_ALL
-      };
-      if (filterSelector(selector, filterOpt)) {
+      const cacheKey = `querySelectorAll_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        const filterOpt = {
+          complex: false,
+          compound: false,
+          descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
+          simple: REG_SIMPLE.test(selector),
+          target: TARGET_ALL
+        };
+        filterMatches = filterSelector(selector, filterOpt);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
           const res = this.#nwsapi.select(selector, n);
