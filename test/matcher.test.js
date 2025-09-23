@@ -2906,6 +2906,18 @@ describe('matcher', () => {
 
     it('should match', () => {
       const ast = {
+        name: 'H',
+        type: TYPE_SELECTOR
+      };
+      const node = document.createElementNS('urn:ns', 'H');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match', () => {
+      const ast = {
         name: '*|h',
         type: TYPE_SELECTOR
       };
