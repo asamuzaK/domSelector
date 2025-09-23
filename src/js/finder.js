@@ -507,8 +507,7 @@ export class Finder {
         }
       }
       if (reverse && matched.size > 1) {
-        const m = [...matched];
-        return new Set(m.reverse());
+        return new Set([...matched].toReversed());
       }
     } else if (node === this.#root && (a + b) === 1) {
       if (selectorBranches) {
@@ -628,8 +627,7 @@ export class Finder {
         }
       }
       if (reverse && matched.size > 1) {
-        const m = [...matched];
-        return new Set(m.reverse());
+        return new Set([...matched].toReversed());
       }
     } else if (node === this.#root && (a + b) === 1) {
       matched.add(node);
@@ -2148,7 +2146,7 @@ export class Finder {
             refNode = refNode.parentNode;
           }
           if (arr.length) {
-            return new Set(arr.reverse());
+            return new Set(arr.toReversed());
           }
         }
       }
@@ -2754,8 +2752,7 @@ export class Finder {
             }
           } else if (targetType === TARGET_ALL) {
             if (nodes.size) {
-              const n = [...nodes];
-              nodes = new Set([...n, ...entryNodes]);
+              nodes.add(...entryNodes);
               sort = true;
             } else {
               nodes = new Set(entryNodes);
@@ -2780,8 +2777,7 @@ export class Finder {
                 if (nextNodes.size) {
                   if (j === lastIndex) {
                     if (nodes.size) {
-                      const n = [...nodes];
-                      nodes = new Set([...n, ...nextNodes]);
+                      nodes.add(...nextNodes);
                       sort = true;
                       combo = firstCombo;
                     } else {
