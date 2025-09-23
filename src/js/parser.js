@@ -67,14 +67,10 @@ export const unescapeSelector = (selector = '') => {
 /**
  * preprocess
  * @see https://drafts.csswg.org/css-syntax-3/#input-preprocessing
- * @param {...*} args - arguments
+ * @param {string} selector - string
  * @returns {string} - filtered selector string
  */
-export const preprocess = (...args) => {
-  if (!args.length) {
-    throw new TypeError('1 argument required, but only 0 present.');
-  }
-  let [selector] = args;
+export const preprocess = selector => {
   if (typeof selector === 'string') {
     let index = 0;
     while (index >= 0) {

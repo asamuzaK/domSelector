@@ -8,7 +8,7 @@ const TYPE_TO = -1;
 
 /**
  * throw error
- * @param {!object} e - Error
+ * @param {!Error} e - Error
  * @throws {Error} - Error
  */
 export const throwErr = e => {
@@ -17,7 +17,7 @@ export const throwErr = e => {
 
 /**
  * log error
- * @param {!object} e - Error
+ * @param {!Error} e - Error
  * @returns {boolean} - false
  */
 export const logErr = e => {
@@ -27,7 +27,7 @@ export const logErr = e => {
 
 /**
  * log warn
- * @param {*} msg - message
+ * @param {string|Error} msg - message
  * @returns {boolean} - false
  */
 export const logWarn = msg => {
@@ -37,8 +37,8 @@ export const logWarn = msg => {
 
 /**
  * log message
- * @param {*} msg - message
- * @returns {*} - message
+ * @param {string|Error} msg - message
+ * @returns {string|Error} - message
  */
 export const logMsg = msg => {
   msg && console.log(msg);
@@ -47,7 +47,7 @@ export const logMsg = msg => {
 
 /**
  * get type
- * @param {*} o - object to check
+ * @param {object} o - object to check
  * @returns {string} - type of object
  */
 export const getType = o =>
@@ -55,7 +55,7 @@ export const getType = o =>
 
 /**
  * is string
- * @param {*} o - object to check
+ * @param {object} o - object to check
  * @returns {boolean} - result
  */
 export const isString = o => typeof o === 'string' || o instanceof String;

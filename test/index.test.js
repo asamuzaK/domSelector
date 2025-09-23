@@ -135,6 +135,12 @@ describe('DOMSelector', () => {
         match: true,
         pseudoElement: null
       }, 'result');
+
+      const res2 = domSelector.check('li', node);
+      assert.deepEqual(res2, {
+        match: true,
+        pseudoElement: null
+      }, 'result');
     });
 
     it('should get result', () => {
@@ -330,6 +336,9 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('li', node);
       assert.strictEqual(res, true, 'result');
+
+      const res2 = domSelector.matches('li', node);
+      assert.strictEqual(res2, true, 'result');
     });
 
     it('should get true', () => {
@@ -487,6 +496,9 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.closest('div', node);
       assert.deepEqual(res, target, 'result');
+
+      const res2 = domSelector.closest('div', node);
+      assert.deepEqual(res2, target, 'result');
     });
 
     it('should get matched node', () => {
@@ -881,6 +893,13 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('dt', node);
       assert.deepEqual(res, [
+        document.getElementById('dt1'),
+        document.getElementById('dt2'),
+        document.getElementById('dt3')
+      ], 'result');
+
+      const res2 = domSelector.querySelectorAll('dt', node);
+      assert.deepEqual(res2, [
         document.getElementById('dt1'),
         document.getElementById('dt2'),
         document.getElementById('dt3')

@@ -28,7 +28,7 @@ const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 
 /**
  * get type
- * @param {*} o - object to check
+ * @param {object} o - object to check
  * @returns {string} - type of object
  */
 export const getType = o =>
