@@ -10,13 +10,17 @@ import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
-  ATRULE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_POSITION_CONTAINS,
-  DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE, HAS_COMPOUND, KEY_INPUT_BUTTON,
-  KEY_INPUT_EDIT, KEY_INPUT_TEXT, LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH,
-  PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST, TARGET_LINEAL, TARGET_SELF,
-  TEXT_NODE, TYPE_FROM, TYPE_TO
+  ATRULE, COMBO, COMPOUND_I, DESCEND, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
+  HAS_COMPOUND, KEY_INPUT_BUTTON, KEY_INPUT_EDIT, KEY_INPUT_TEXT,
+  LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST,
+  SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
 const REG_EXCLUDE_FILTER = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
+const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
+const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
+const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
 const REG_LOGIC_COMPLEX =
   new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
 const REG_LOGIC_COMPOUND =
@@ -837,16 +841,15 @@ export const initNwsapi = (window, document) => {
 /**
  * filter selector (for nwsapi)
  * @param {string} selector - selector
- * @param {object} [opt] - options
+ * @param {string} target - target type
  * @returns {boolean} - result
  */
-export const filterSelector = (selector, opt = {}) => {
-  if (!selector || typeof selector !== 'string' || /null|undefined/.test(selector)) {
+export const filterSelector = (selector, target) => {
+  if (!selector || typeof selector !== 'string' || /null|undefined/.test(selector) || target === TARGET_FIRST) {
     return false;
   }
-  const { complex, compound, descend, simple, target } = opt;
-  // exclude simple selector and compound selector
-  if (simple || compound) {
+  // exclude simple class selector
+  if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
     return false;
   }
   // exclude missing close square bracket
@@ -857,23 +860,24 @@ export const filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
-  // exclude '/'
-  if (selector.includes('/')) {
-    return false;
-  }
+  // exclude '/',
   // exclude namespaced selectors, escaped selectors, pseudo-element selectors,
   // selectors containing non-ASCII or control character other than whitespace,
   // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
   // and empty :is() or :where()
-  if (REG_EXCLUDE_FILTER.test(selector)) {
+  if (selector.includes('/') || REG_EXCLUDE_FILTER.test(selector)) {
     return false;
   }
   // include pseudo-classes that are known to work correctly
   if (selector.includes(':')) {
-    if (descend) {
+    let complex = false;
+    if (target !== TARGET_ALL) {
+      complex = REG_COMPLEX.test(selector);
+    }
+    if (target === TARGET_ALL && REG_DESCEND.test(selector) &&
+        !REG_SIBLING.test(selector)) {
       return false;
-    } else if ((target === TARGET_SELF || target === TARGET_LINEAL) &&
-               /:has\(/.test(selector)) {
+    } else if (target !== TARGET_ALL && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }

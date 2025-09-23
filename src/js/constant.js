@@ -69,8 +69,8 @@ export const N_TH =
 // SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
 export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
+export const SUB_CLASS = '(?:\\.[\\w-]+)';
 // TAG_TYPE: *, tag
-export const SUB_CLASS_TYPE = '(?:\\.[\\w-]+)';
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;

@@ -12,14 +12,10 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  COMBO, COMPOUND_I, DESCEND, DOCUMENT_NODE, ELEMENT_NODE, SIBLING,
-  SUB_CLASS_TYPE, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL, TARGET_SELF
+  DOCUMENT_NODE, ELEMENT_NODE, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
+  TARGET_SELF
 } from './js/constant.js';
 const MAX_CACHE = 4096;
-const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
-const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
-const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
-const REG_SIMPLE = new RegExp(`^${SUB_CLASS_TYPE}$`);
 
 /* DOMSelector */
 export class DOMSelector {
@@ -83,14 +79,7 @@ export class DOMSelector {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_SELF
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -149,14 +138,7 @@ export class DOMSelector {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_SELF
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -210,14 +192,7 @@ export class DOMSelector {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_LINEAL
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_LINEAL);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -313,14 +288,7 @@ export class DOMSelector {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: false,
-          compound: false,
-          descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
-          simple: REG_SIMPLE.test(selector),
-          target: TARGET_ALL
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_ALL);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
