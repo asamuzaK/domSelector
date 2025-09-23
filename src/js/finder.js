@@ -375,9 +375,7 @@ export class Finder {
       } else {
         const { branches } = walkAST(selector);
         selectorBranches = branches;
-        if (!this.#invalidate) {
-          this.#astCache.set(selector, selectorBranches);
-        }
+        this.#astCache.set(selector, selectorBranches);
       }
       const { branches } = walkAST(selector);
       selectorBranches = branches;
@@ -948,9 +946,7 @@ export class Finder {
             branches,
             twigBranches
           };
-          if (!this.#invalidate) {
-            this.#astCache.set(ast, astData);
-          }
+          this.#astCache.set(ast, astData);
         }
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
