@@ -2777,7 +2777,7 @@ export class Finder {
                 if (nextNodes.size) {
                   if (j === lastIndex) {
                     if (nodes.size) {
-                      nodes.add(...nextNodes);
+                      nodes.add([...nextNodes]);
                       sort = true;
                       combo = firstCombo;
                     } else {
