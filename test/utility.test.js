@@ -1,5 +1,5 @@
 /**
- * dom-util.test.js
+ * utility.test.js
  */
 
 /* api */
@@ -29,6 +29,7 @@ describe('utility functions', () => {
               <li id="li3" class="li"></li>
             </ul>
           </div>
+        </div>
       </body>
     </html>`;
   const domOpt = {
@@ -444,7 +445,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should match', () => {
       window.customElements.define('sw-poe', class extends window.HTMLElement {
         static formAssociated = true;
       });
@@ -1279,7 +1280,7 @@ describe('utility functions', () => {
     });
   });
 
-  describe('is focasable area', () => {
+  describe('is focusable area', () => {
     const func = util.isFocusableArea;
 
     it('should get false', () => {
@@ -1828,6 +1829,34 @@ describe('utility functions', () => {
       const base = document.documentElement;
       const res = func(tmpl.content, base);
       assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('compare nodes', () => {
+    const func = util.compareNodes;
+
+    it('should get -1', () => {
+      const ul = document.createElement('ul');
+      const node1 = document.createElement('li');
+      const node2 = document.createElement('li');
+      const node3 = document.createElement('li');
+      ul.append(node1, node2, node3);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const res = func(node1, node3);
+      assert.strictEqual(res, -1, 'result');
+    });
+
+    it('should get 1', () => {
+      const ul = document.createElement('ul');
+      const node1 = document.createElement('li');
+      const node2 = document.createElement('li');
+      const node3 = document.createElement('li');
+      ul.append(node1, node2, node3);
+      const parent = document.getElementById('div0');
+      parent.appendChild(ul);
+      const res = func(node3, node1);
+      assert.strictEqual(res, 1, 'result');
     });
   });
 
