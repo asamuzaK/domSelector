@@ -14,12 +14,16 @@ describe('constants', () => {
   for (const [key, value] of items) {
     it('should get string, number or array', () => {
       assert.strictEqual(/^[A-Z][A-Z_\d]+$/.test(key), true, 'key');
-      assert.strictEqual(typeof value === 'string' || Number.isInteger(value) ||
-        Array.isArray(value), true, 'value');
-      if (Array.isArray(value)) {
-        assert.throws(() => { value[0] = 'foo'; });
-        for (const i of value) {
-          assert.strictEqual(typeof i, 'string');
+      if (key.startsWith('KEY_')) {
+        assert.strictEqual(value instanceof Set, true, 'Set value');
+      } else {
+        assert.strictEqual(typeof value === 'string' ||
+          Number.isInteger(value) || Array.isArray(value), true, 'value');
+        if (Array.isArray(value)) {
+          assert.throws(() => { value[0] = 'foo'; });
+          for (const i of value) {
+            assert.strictEqual(typeof i, 'string');
+          }
         }
       }
     });
