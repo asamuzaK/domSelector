@@ -12,11 +12,20 @@ import isCustomElementName from 'is-potential-custom-element-name';
 import {
   ATRULE, COMBO, COMPOUND_I, DESCEND, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  HAS_COMPOUND, KEY_INPUT_BUTTON, KEY_INPUT_EDIT, KEY_INPUT_TEXT,
-  LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST,
-  SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE, TYPE_FROM, TYPE_TO
+  HAS_COMPOUND, INPUT_BUTTON, INPUT_EDIT, INPUT_LTR, INPUT_TEXT, LOGIC_COMPLEX,
+  LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST, SIBLING,
+  SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE, TYPE_FROM, TYPE_TO
 } from './constant.js';
-const REG_EXCLUDE_FILTER = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const KEY_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
+const KEY_DIR_LTR = new Set(INPUT_LTR);
+const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
+const KEY_NODE_DIR_EXCLUDE = new Set(['bdi', 'script', 'style', 'textarea']);
+const KEY_NODE_FOCUSABLE = new Set(['button', 'select', 'textarea']);
+const KEY_NODE_FOCUSABLE_SVG = new Set([
+  'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask', 'metadata',
+  'pattern', 'radialGradient', 'script', 'style', 'symbol', 'title'
+]);
+const REG_EXCLUDE_BASIC = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
@@ -254,17 +263,10 @@ export const getDirectionality = node => {
     let text;
     switch (localName) {
       case 'input': {
-        const valueKeys = [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden'];
-        if (!node.type || valueKeys.includes(node.type)) {
+        if (!node.type || KEY_DIR_AUTO.has(node.type)) {
           text = node.value;
-        } else {
-          const ltrKeys = [
-            'checkbox', 'color', 'date', 'image', 'number', 'range', 'radio',
-            'time'
-          ];
-          if (ltrKeys.includes(node.type)) {
-            return 'ltr';
-          }
+        } else if (KEY_DIR_LTR.has(node.type)) {
+          return 'ltr';
         }
         break;
       }
@@ -285,15 +287,15 @@ export const getDirectionality = node => {
           } = item;
           if (itemNodeType === TEXT_NODE) {
             text = itemTextContent.trim();
-          } else if (itemNodeType === ELEMENT_NODE) {
-            const keys = ['bdi', 'script', 'style', 'textarea'];
-            if (!keys.includes(itemLocalName) &&
-                (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))) {
-              if (itemLocalName === 'slot') {
-                text = getSlottedTextContent(item);
-              } else {
-                text = itemTextContent.trim();
-              }
+          } else if (
+            itemNodeType === ELEMENT_NODE &&
+            !KEY_NODE_DIR_EXCLUDE.has(itemLocalName) &&
+            (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))
+          ) {
+            if (itemLocalName === 'slot') {
+              text = getSlottedTextContent(item);
+            } else {
+              text = itemTextContent.trim();
             }
           }
           if (text) {
@@ -419,7 +421,7 @@ export const isFocusVisible = node => {
   const { localName, type } = node;
   switch (localName) {
     case 'input': {
-      if (!type || KEY_INPUT_EDIT.includes(type)) {
+      if (!type || KEY_INPUT_EDIT.has(type)) {
         return true;
       }
       return false;
@@ -487,8 +489,7 @@ export const isFocusableArea = node => {
         return false;
       }
       default: {
-        const keys = ['button', 'select', 'textarea'];
-        if (keys.includes(localName) &&
+        if (KEY_NODE_FOCUSABLE.has(localName) &&
             !(node.disabled || node.hasAttribute('disabled'))) {
           return true;
         }
@@ -496,16 +497,11 @@ export const isFocusableArea = node => {
     }
   } else if (node instanceof window.SVGElement) {
     if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
-      const keys = [
-        'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask',
-        'metadata', 'pattern', 'radialGradient', 'script', 'style', 'symbol',
-        'title'
-      ];
       const ns = 'http://www.w3.org/2000/svg';
       let bool;
       let refNode = node;
       while (refNode.namespaceURI === ns) {
-        bool = keys.includes(refNode.localName);
+        bool = KEY_NODE_FOCUSABLE_SVG.has(refNode.localName);
         if (bool) {
           break;
         }
@@ -865,7 +861,7 @@ export const filterSelector = (selector, target) => {
   // selectors containing non-ASCII or control character other than whitespace,
   // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
   // and empty :is() or :where()
-  if (selector.includes('/') || REG_EXCLUDE_FILTER.test(selector)) {
+  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
     return false;
   }
   // include pseudo-classes that are known to work correctly

@@ -183,15 +183,15 @@ export const walkAST = (ast = {}) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEY_LOGICAL.includes(node.name)) {
+          if (KEY_LOGICAL.has(node.name)) {
             info.set('hasNestedSelector', true);
             info.set('hasLogicalPseudoFunc', true);
             if (node.name === 'has') {
               info.set('hasHasPseudoFunc', true);
             }
-          } else if (KEY_PS_STATE.includes(node.name)) {
+          } else if (KEY_PS_STATE.has(node.name)) {
             info.set('hasStatePseudoClass', true);
-          } else if (KEY_SHADOW_HOST.includes(node.name) &&
+          } else if (KEY_SHADOW_HOST.has(node.name) &&
                      Array.isArray(node.children) && node.children.length) {
             info.set('hasNestedSelector', true);
           }
@@ -222,11 +222,10 @@ export const walkAST = (ast = {}) => {
   if (info.get('hasNestedSelector')) {
     findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === PS_CLASS_SELECTOR &&
-            KEY_LOGICAL.includes(node.name)) {
+        if (node.type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.includes(name);
+            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(name);
           });
           for (const { children } of itemList) {
             // SelectorList
@@ -240,12 +239,12 @@ export const walkAST = (ast = {}) => {
             }
           }
         } else if (node.type === PS_CLASS_SELECTOR &&
-                   KEY_SHADOW_HOST.includes(node.name) &&
+                   KEY_SHADOW_HOST.has(node.name) &&
                    Array.isArray(node.children) && node.children.length) {
           const itemList = list.filter(i => {
             const { children, name, type } = i;
             const res =
-              type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.includes(name) &&
+              type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.has(name) &&
               Array.isArray(children) && children.length;
             return res;
           });
