@@ -7167,7 +7167,13 @@ describe('walk AST', () => {
     const res = func();
     assert.deepEqual(res, {
       branches: [],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNthChildOfSelector: false,
+        hasNestedSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7336,7 +7342,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7427,7 +7439,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7480,7 +7498,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7513,7 +7537,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7547,6 +7577,10 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
         hasStatePseudoClass: true
       }
     }, 'result');
@@ -7595,7 +7629,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -7677,8 +7717,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -7751,8 +7794,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -7825,8 +7871,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -7887,7 +7936,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNestedSelector: true
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -7948,7 +8001,12 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNestedSelector: true
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+
       }
     }, 'result');
   });
@@ -8009,7 +8067,12 @@ describe('walk AST', () => {
         ]
       ],
       info: {
-        hasNestedSelector: true
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+
       }
     }, 'result');
   });
@@ -8112,8 +8175,12 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+
       }
     }, 'result');
   });
@@ -8218,7 +8285,10 @@ describe('walk AST', () => {
       info: {
         hasHasPseudoFunc: true,
         hasLogicalPseudoFunc: true,
-        hasNestedSelector: true
+        hasNestedSelector: true,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+
       }
     }, 'result');
   });
@@ -8274,7 +8344,13 @@ describe('walk AST', () => {
           }
         ]
       ],
-      info: {}
+      info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
+        hasNestedSelector: false,
+        hasNthChildOfSelector: false,
+        hasStatePseudoClass: false
+      }
     }, 'result');
   });
 
@@ -8416,9 +8492,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
         hasNestedSelector: true,
-        hasNthChildOfSelector: true
+        hasNthChildOfSelector: true,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -8509,8 +8587,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
+        hasLogicalPseudoFunc: false,
         hasNestedSelector: true,
-        hasNthChildOfSelector: true
+        hasNthChildOfSelector: true,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
@@ -8639,9 +8720,11 @@ describe('walk AST', () => {
         ]
       ],
       info: {
+        hasHasPseudoFunc: false,
         hasLogicalPseudoFunc: true,
         hasNestedSelector: true,
-        hasNthChildOfSelector: true
+        hasNthChildOfSelector: true,
+        hasStatePseudoClass: false
       }
     }, 'result');
   });
