@@ -272,6 +272,22 @@ describe('Finder', () => {
       );
     });
 
+    it('should throw', () => {
+      const finder = new Finder(window);
+      finder.setup('*', document);
+      assert.throws(
+        () => finder._correspond('.foo >'),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true,
+            'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(e.message, 'Invalid selector .foo >',
+            'message');
+          return true;
+        }
+      );
+    });
+
     it('should get result', () => {
       const finder = new Finder(window);
       finder.setup('*', document);

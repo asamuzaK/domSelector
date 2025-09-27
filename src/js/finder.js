@@ -70,6 +70,7 @@ export class Finder {
   #descendant;
   #document;
   #documentCache;
+  #documentURL;
   #domSymbolTree;
   #event;
   #focus;
@@ -157,6 +158,7 @@ export class Finder {
       this.#root,
       this.#shadow
     ] = resolveContent(node);
+    this.#documentURL = new URL(this.#document.URL);
     this.#node = node;
     this.#selector = selector;
     [
@@ -266,7 +268,7 @@ export class Finder {
             let itemName = item.name;
             if (item.type === COMBINATOR) {
               const [nextItem] = items;
-              if (nextItem.type === COMBINATOR) {
+              if (!nextItem || nextItem.type === COMBINATOR) {
                 return this.onError(new this.#window.DOMException(
                   `Invalid selector ${selector}`,
                   SYNTAX_ERR
@@ -1092,7 +1094,7 @@ export class Finder {
         case 'local-link': {
           if ((localName === 'a' || localName === 'area') &&
               node.hasAttribute('href')) {
-            const { href, origin, pathname } = new URL(this.#document.URL);
+            const { href, origin, pathname } = this.#documentURL;
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
@@ -1121,7 +1123,7 @@ export class Finder {
           break;
         }
         case 'target': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = this.#documentURL;
           if (node.id && hash === `#${node.id}` &&
               this.#document.contains(node)) {
             matched.add(node);
@@ -1129,7 +1131,7 @@ export class Finder {
           break;
         }
         case 'target-within': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = this.#documentURL;
           if (hash) {
             const id = hash.replace(/^#/, '');
             let current = this.#document.getElementById(id);
@@ -2640,7 +2642,7 @@ export class Finder {
    * @param {object} twig - twig
    * @param {object} nodes - collection of nodes
    * @param {string} dir - direction
-   * @returns {Set.<object>} - collection of matched nodes
+   * @returns {Array.<object>} - collection of matched nodes
    */
   _getCombinedNodes(twig, nodes, dir) {
     const arr = [];
@@ -2653,10 +2655,7 @@ export class Finder {
         arr.push(...matched);
       }
     }
-    if (arr.length) {
-      return new Set(arr);
-    }
-    return new Set();
+    return arr;
   }
 
   /**
@@ -2676,7 +2675,7 @@ export class Finder {
       combo,
       leaves
     };
-    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
+    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_NEXT));
     if (nextNodes.size) {
       if (index === branch.length - 1) {
         const [nextNode] = sortNodes(nextNodes);
@@ -2704,7 +2703,7 @@ export class Finder {
     const { index } = opt;
     const twig = branch[index];
     const nodes = new Set([node]);
-    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_PREV);
+    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_PREV));
     if (nextNodes.size) {
       if (index === 0) {
         return node;
@@ -2781,21 +2780,22 @@ export class Finder {
                   combo,
                   leaves
                 };
-                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
-                if (nextNodes.size) {
+                const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nodesArr.length) {
                   if (j === lastIndex) {
                     if (nodes.size) {
-                      for (const nextNode of nextNodes) {
+                      for (const nextNode of nodesArr) {
                         nodes.add(nextNode);
                       }
                       sort = true;
                       combo = firstCombo;
                     } else {
-                      nodes = nextNodes;
+                      nodes = new Set(nodesArr);
                       combo = firstCombo;
                     }
                   } else {
                     combo = nextCombo;
+                    nextNodes = new Set(nodesArr);
                   }
                 } else {
                   break;
@@ -2807,14 +2807,15 @@ export class Finder {
               let nextNodes = new Set([node]);
               for (let j = lastIndex - 1; j >= 0; j--) {
                 const twig = branch[j];
-                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
-                if (nextNodes.size) {
+                const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nodesArr.length) {
                   if (j === 0) {
                     nodes.add(node);
                     if (branchLen > 1 && nodes.size > 1) {
                       sort = true;
                     }
                   }
+                  nextNodes = new Set(nodesArr);
                 } else {
                   break;
                 }
@@ -2884,10 +2885,10 @@ export class Finder {
                   combo,
                   leaves
                 };
-                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
-                if (nextNodes.size) {
+                const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nodesArr.length) {
                   if (j === lastIndex) {
-                    for (const nextNode of nextNodes) {
+                    for (const nextNode of nodesArr) {
                       if (this.#node.contains(nextNode)) {
                         nodes.add(nextNode);
                         break;
@@ -2895,6 +2896,7 @@ export class Finder {
                     }
                   } else {
                     combo = nextCombo;
+                    nextNodes = new Set(nodesArr);
                   }
                 } else {
                   break;
