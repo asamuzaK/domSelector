@@ -8730,6 +8730,34 @@ describe('walk AST', () => {
   });
 });
 
+describe('compare AST nodes', () => {
+  const func = parser.compareASTNodes;
+
+  it('should get 0', () => {
+    const res = func(
+      { type: CLASS_SELECTOR, name: 'bar' },
+      { type: CLASS_SELECTOR, name: 'foo' }
+    );
+    assert.strictEqual(res, 0, 'result');
+  });
+
+  it('should get 1', () => {
+    const res = func(
+      { type: ATTR_SELECTOR },
+      { type: CLASS_SELECTOR, name: 'foo' }
+    );
+    assert.strictEqual(res, 1, 'result');
+  });
+
+  it('should get -1', () => {
+    const res = func(
+      { type: CLASS_SELECTOR, name: 'foo' },
+      { type: ATTR_SELECTOR }
+    );
+    assert.strictEqual(res, -1, 'result');
+  });
+});
+
 describe('sort AST', () => {
   const func = parser.sortAST;
 
