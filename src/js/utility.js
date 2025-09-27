@@ -419,6 +419,57 @@ export const getDirectionality = node => {
 };
 
 /**
+ * Finds the effective language attribute by traversing up the DOM tree.
+ * @param {object} node - The element node to start from.
+ * @returns {?string} The language attribute string, or null if not found.
+ */
+export const findLangAttribute = node => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  if (node.nodeType !== ELEMENT_NODE) {
+    return null;
+  }
+  const { contentType } = node.ownerDocument;
+  const isHtml = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
+  const isXml = /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(contentType);
+  let current = node;
+  while (current) {
+    let lang = null;
+    // Check for lang attributes based on document type.
+    if (isHtml && current.hasAttribute('lang')) {
+      lang = current.getAttribute('lang');
+    } else if (isXml && current.hasAttribute('xml:lang')) {
+      lang = current.getAttribute('xml:lang');
+    }
+    // If a language attribute is found, its value determines the language.
+    // Inheritance stops here, even if the value is an empty string.
+    if (lang !== null) {
+      return lang;
+    }
+    if (current.parentElement) {
+      current = current.parentElement;
+    } else {
+      break;
+    }
+  }
+  return null;
+};
+
+/**
+ * Determines case sensitivity for an attribute match.
+ * @param {?string} astFlags - The flags from the AST ('i' or 's').
+ * @param {string} contentType - The document's content type.
+ * @returns {boolean} True if the match should be case-sensitive.
+ */
+export const getCaseSensitivity = (astFlags, contentType) => {
+  if (contentType === 'text/html') {
+    return typeof astFlags === 'string' && /^s$/i.test(astFlags);
+  }
+  return !(typeof astFlags === 'string' && /^i$/i.test(astFlags));
+};
+
+/**
  * Check if content is editable.
  * NOTE: Not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
  * @param {object} node - The Element node.
@@ -837,6 +888,59 @@ export const extractNestedSelectors = css => {
 };
 
 /**
+ * Collects relevant attribute values from a node that match the selector's
+ * attribute name.
+ * @param {object} node - The element node.
+ * @param {object} [opt] - Options.
+ * @returns {Array.<string>} An array of matching attribute values.
+ */
+export const findAttributeValues = (node, opt = {}) => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  const { attributes } = node;
+  const {
+    astAttrName = '',
+    astLocalName = '',
+    astPrefix = '',
+    caseSensitive = false
+  } = opt;
+  if (!attributes.length || !astAttrName) {
+    return [];
+  }
+  const attrValues = new Set();
+  const hasNamespace = astAttrName.includes('|');
+  for (const attr of attributes) {
+    let { name: itemName, value: itemValue } = attr;
+    if (!caseSensitive) {
+      itemName = itemName.toLowerCase();
+      itemValue = itemValue.toLowerCase();
+    }
+    if (itemName === 'xml:lang') {
+      continue;
+    }
+    const [itemPrefix, itemLocalName] = itemName.includes(':')
+      ? itemName.split(':')
+      : ['', itemName];
+    if (hasNamespace) {
+      if (astLocalName === itemLocalName) {
+        if (astPrefix === '*' || (astPrefix === '' && itemPrefix === '')) {
+          attrValues.add(itemValue);
+        } else if (
+          astPrefix === itemPrefix &&
+          isNamespaceDeclared(astPrefix, node)
+        ) {
+          attrValues.add(itemValue);
+        }
+      }
+    } else if (astAttrName === itemLocalName) {
+      attrValues.add(itemValue);
+    }
+  }
+  return [...attrValues];
+};
+
+/**
  * Initialize nwsapi.
  * @param {object} window - The Window object.
  * @param {object} document - The Document object.
@@ -882,6 +986,15 @@ export const filterSelector = (selector, target) => {
     }
   }
   // Exclude various complex or unsupported selectors.
+  // - selectors containing '/'
+  // - namespaced selectors
+  // - escaped selectors
+  // - pseudo-element selectors
+  // - selectors containing non-ASCII
+  // - selectors containing control character other than whitespace
+  // - attribute selectors with case flag, e.g. [attr i]
+  // - attribute selectors with unclosed quotes
+  // - empty :is() or :where()
   if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
     return false;
   }

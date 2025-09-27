@@ -1036,6 +1036,236 @@ describe('utility functions', () => {
     });
   });
 
+  describe('find language attribute', () => {
+    const func = util.findLangAttribute;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should get null', () => {
+      const res = func(document);
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should get null', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should get empty string', () => {
+      const node = document.createElement('div');
+      node.setAttribute('lang', '');
+      const res = func(node);
+      assert.strictEqual(res, '', 'result');
+    });
+
+    it('should get value', () => {
+      const parent = document.createElement('div');
+      parent.setAttribute('lang', 'en');
+      const node = document.createElement('div');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, 'en', 'result');
+    });
+
+    it('should get value', () => {
+      const src = '<foo id="foo" xml:lang="en"><bar id="bar"/></foo>';
+      const doc = new window.DOMParser().parseFromString(src, 'text/xml');
+      const node = doc.getElementById('bar');
+      const res = func(node);
+      assert.strictEqual(res, 'en', 'result');
+    });
+  });
+
+  describe('get case sensitivity', () => {
+    const func = util.getCaseSensitivity;
+
+    it('should get false', () => {
+      const res = func(null, 'text/html');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('i', 'text/html');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('s', 'text/html');
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func(null, 'text/xml');
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('i', 'text/xml');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('s', 'text/xml');
+      assert.strictEqual(res, true, 'result');
+    });
+  });
+
+  describe('find attribute values', () => {
+    const func = util.findAttributeValues;
+
+    it('should throw', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should get empty array', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get empty array', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const res = func(node);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get empty array', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const res = func(node, {
+        astAttrName: 'class',
+      });
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('xml:lang', 'en');
+      node.setAttribute('lang', 'en');
+      const res = func(node, {
+        astAttrName: 'lang',
+      });
+      assert.deepEqual(res, [
+        'en'
+      ], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const res = func(node, {
+        astAttrName: 'foo',
+        astLocalName: 'foo',
+        astPrefix: '',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'bar'
+      ], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('Foo', 'bar');
+      const res = func(node, {
+        astAttrName: 'foo',
+        astLocalName: 'foo',
+        astPrefix: '',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'bar'
+      ], 'result');
+    });
+
+    it('should get empty array', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'bar');
+      const res = func(node, {
+        astAttrName: 'Foo',
+        astLocalName: 'Foo',
+        astPrefix: '',
+        caseSensitive: true,
+      });
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('xmlns:baz', 'https://example.com/baz');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const res = func(node, {
+        astAttrName: 'foo',
+        astLocalName: 'foo',
+        astPrefix: '',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'qux'
+      ], 'result');
+    });
+
+    it('should get empty array', () => {
+      const node = document.createElement('div');
+      node.setAttribute('xmlns:baz', 'https://example.com/baz');
+      node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
+      const res = func(node, {
+        astAttrName: 'Baz|Foo',
+        astLocalName: 'Foo',
+        astPrefix: 'Baz',
+        caseSensitive: true,
+      });
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('xmlns:baz', 'https://example.com/baz');
+      node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'qux');
+      const res = func(node, {
+        astAttrName: 'baz|foo',
+        astLocalName: 'foo',
+        astPrefix: 'baz',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'qux'
+      ], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'qux');
+      const res = func(node, {
+        astAttrName: '*|foo',
+        astLocalName: 'foo',
+        astPrefix: '*',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'qux'
+      ], 'result');
+    });
+
+    it('should get result', () => {
+      const node = document.createElement('div');
+      node.setAttribute('foo', 'qux');
+      const res = func(node, {
+        astAttrName: '|foo',
+        astLocalName: 'foo',
+        astPrefix: '',
+        caseSensitive: false,
+      });
+      assert.deepEqual(res, [
+        'qux'
+      ], 'result');
+    });
+  });
+
   describe('is content editable', () => {
     const func = util.isContentEditable;
 
