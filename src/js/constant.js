@@ -117,7 +117,13 @@ export const KEY_MODIFIER = new Set([
   'Alt', 'AltGraph', 'CapsLock', 'Control', 'Fn', 'FnLock', 'Hyper', 'Meta',
   'NumLock', 'ScrollLock', 'Shift', 'Super', 'Symbol', 'SymbolLock'
 ]);
-export const KEY_PS_STATE = new Set([
+export const KEY_PS_ELEMENT = new Set([
+  'after', 'backdrop', 'before', 'cue', 'cue-region', 'first-letter',
+  'first-line', 'file-selector-button', 'marker', 'placeholder', 'selection',
+  'target-text'
+]);
+export const KEY_PS_ELEMENT_FUNC = new Set(['part', 'slotted']);
+export const KEY_PS_CLASS_STATE = new Set([
   'enabled', 'disabled', 'valid', 'invalid', 'in-range', 'out-of-range',
   'checked', 'indeterminate', 'read-only', 'read-write', 'open', 'closed',
   'placeholder-shown'

@@ -9,7 +9,7 @@ import { getType } from './utility.js';
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, HEX, ID_SELECTOR, KEY_LOGICAL, KEY_PS_STATE,
+  CLASS_SELECTOR, DUO, HEX, ID_SELECTOR, KEY_LOGICAL, KEY_PS_CLASS_STATE,
   KEY_SHADOW_HOST, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR,
   SYNTAX_ERR, TYPE_SELECTOR
 } from './constant.js';
@@ -210,7 +210,7 @@ export const walkAST = (ast = {}) => {
             if (node.name === 'has') {
               info.hasHasPseudoFunc = true;
             }
-          } else if (KEY_PS_STATE.has(node.name)) {
+          } else if (KEY_PS_CLASS_STATE.has(node.name)) {
             info.hasStatePseudoClass = true;
           } else if (
             KEY_SHADOW_HOST.has(node.name) &&
