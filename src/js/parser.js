@@ -168,8 +168,8 @@ export const parseSelector = sel => {
 };
 
 /**
- * Walks the provided AST to collect top-level selector branches and gather
- * information about its contents.
+ * Walks the provided AST to collect selector branches and gather information
+ * about its contents.
  * @param {object} ast - The AST to traverse.
  * @returns {{branches: Array<object>, info: object}} An object containing the selector branches and info.
  */
@@ -327,7 +327,7 @@ export const walkAST = (ast = {}) => {
  * @param {object} b - The second AST node.
  * @returns {number} -1, 0 or 1, depending on the sort order.
  */
-export const compareAstNodes = (a, b) => {
+export const compareASTNodes = (a, b) => {
   const bitA = AST_SORT_ORDER.get(a.type);
   const bitB = AST_SORT_ORDER.get(b.type);
   if (bitA === bitB) {
@@ -347,7 +347,7 @@ export const compareAstNodes = (a, b) => {
 export const sortAST = asts => {
   const arr = [...asts];
   if (arr.length > 1) {
-    arr.sort(compareAstNodes);
+    arr.sort(compareASTNodes);
   }
   return arr;
 };
