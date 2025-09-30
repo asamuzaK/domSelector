@@ -17,4 +17,4 @@ export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
 export function concatNestedSelectors(selectors: Array<Array<string>>): string;
 export function extractNestedSelectors(css: string): Array<Array<string>>;
 export function initNwsapi(window: object, document: object): object;
-export function filterSelector(selector: string, opt?: object): boolean;
+export function filterSelector(selector: string, target: string): boolean;

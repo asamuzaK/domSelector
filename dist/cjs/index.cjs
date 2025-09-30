@@ -89,7 +89,7 @@ var ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 var N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 var SUB_TYPE = "\\[[^|\\]]+\\]|[#.:][\\w-]+";
 var SUB_TYPE_WO_PSEUDO = "\\[[^|\\]]+\\]|[#.][\\w-]+";
-var SUB_CLASS_TYPE = "(?:\\.[\\w-]+)";
+var SUB_CLASS = "(?:\\.[\\w-]+)";
 var TAG_TYPE = "\\*|[A-Za-z][\\w-]*";
 var TAG_TYPE_I = "\\*|[A-Z][\\w-]*";
 var COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
@@ -158,6 +158,10 @@ var KEY_SHADOW_HOST = Object.freeze(["host", "host-context"]);
 
 // src/js/utility.js
 var REG_EXCLUDE_FILTER = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+var REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
+var REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, "i");
+var REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, "i");
+var REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, "i");
 var REG_LOGIC_COMPLEX = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
 var REG_LOGIC_COMPOUND = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`);
 var REG_LOGIC_HAS_COMPOUND = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`);
@@ -668,12 +672,11 @@ var initNwsapi = (window, document) => {
   });
   return nw;
 };
-var filterSelector = (selector, opt = {}) => {
-  if (!selector || typeof selector !== "string" || /null|undefined/.test(selector)) {
+var filterSelector = (selector, target) => {
+  if (!selector || typeof selector !== "string" || /null|undefined/.test(selector) || target === TARGET_FIRST) {
     return false;
   }
-  const { complex, compound, descend, simple, target } = opt;
-  if (simple || compound) {
+  if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
     return false;
   }
   if (selector.includes("[")) {
@@ -683,16 +686,17 @@ var filterSelector = (selector, opt = {}) => {
       return false;
     }
   }
-  if (selector.includes("/")) {
-    return false;
-  }
-  if (REG_EXCLUDE_FILTER.test(selector)) {
+  if (selector.includes("/") || REG_EXCLUDE_FILTER.test(selector)) {
     return false;
   }
   if (selector.includes(":")) {
-    if (descend) {
+    let complex = false;
+    if (target !== TARGET_ALL) {
+      complex = REG_COMPLEX.test(selector);
+    }
+    if (target === TARGET_ALL && REG_DESCEND.test(selector) && !REG_SIBLING.test(selector)) {
       return false;
-    } else if ((target === TARGET_SELF || target === TARGET_LINEAL) && /:has\(/.test(selector)) {
+    } else if (target !== TARGET_ALL && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }
@@ -1556,7 +1560,6 @@ var Finder = class {
       "mouseover",
       "mousedown",
       "mouseup",
-      "click",
       "mouseout"
     ];
     for (const key of mouseKeys) {
@@ -1564,6 +1567,11 @@ var Finder = class {
         this.#event = evt;
       }, opt));
     }
+    func.push(this.#window.addEventListener("click", (evt) => {
+      this.#event = evt;
+      this.#invalidateResults = /* @__PURE__ */ new WeakMap();
+      this.#results = /* @__PURE__ */ new WeakMap();
+    }, opt));
     return func;
   }
   /**
@@ -1745,9 +1753,7 @@ var Finder = class {
       } else {
         const { branches: branches2 } = walkAST(selector);
         selectorBranches = branches2;
-        if (!this.#invalidate) {
-          this.#astCache.set(selector, selectorBranches);
-        }
+        this.#astCache.set(selector, selectorBranches);
       }
       const { branches } = walkAST(selector);
       selectorBranches = branches;
@@ -1877,8 +1883,7 @@ var Finder = class {
         }
       }
       if (reverse && matched.size > 1) {
-        const m = [...matched];
-        return new Set(m.reverse());
+        return new Set([...matched].toReversed());
       }
     } else if (node === this.#root && a + b === 1) {
       if (selectorBranches) {
@@ -1995,8 +2000,7 @@ var Finder = class {
         }
       }
       if (reverse && matched.size > 1) {
-        const m = [...matched];
-        return new Set(m.reverse());
+        return new Set([...matched].toReversed());
       }
     } else if (node === this.#root && a + b === 1) {
       matched.add(node);
@@ -2304,9 +2308,7 @@ var Finder = class {
             branches,
             twigBranches
           };
-          if (!this.#invalidate) {
-            this.#astCache.set(ast, astData);
-          }
+          this.#astCache.set(ast, astData);
         }
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
@@ -3456,7 +3458,7 @@ var Finder = class {
             refNode = refNode.parentNode;
           }
           if (arr.length) {
-            return new Set(arr.reverse());
+            return new Set(arr.toReversed());
           }
         }
       }
@@ -4048,8 +4050,7 @@ var Finder = class {
             }
           } else if (targetType === TARGET_ALL) {
             if (nodes.size) {
-              const n = [...nodes];
-              nodes = /* @__PURE__ */ new Set([...n, ...entryNodes]);
+              nodes.add(...entryNodes);
               sort = true;
             } else {
               nodes = new Set(entryNodes);
@@ -4074,8 +4075,9 @@ var Finder = class {
                 if (nextNodes.size) {
                   if (j === lastIndex) {
                     if (nodes.size) {
-                      const n = [...nodes];
-                      nodes = /* @__PURE__ */ new Set([...n, ...nextNodes]);
+                      for (const nextNode of nextNodes) {
+                        nodes.add(nextNode);
+                      }
                       sort = true;
                       combo = firstCombo;
                     } else {
@@ -4252,10 +4254,6 @@ var Finder = class {
 
 // src/index.js
 var MAX_CACHE = 4096;
-var REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, "i");
-var REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, "i");
-var REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, "i");
-var REG_SIMPLE = new RegExp(`^${SUB_CLASS_TYPE}$`);
 var DOMSelector = class {
   /* private fields */
   #window;
@@ -4311,14 +4309,7 @@ var DOMSelector = class {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_SELF
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -4371,14 +4362,7 @@ var DOMSelector = class {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_SELF
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -4426,14 +4410,7 @@ var DOMSelector = class {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: REG_COMPLEX.test(selector),
-          compound: false,
-          descend: false,
-          simple: false,
-          target: TARGET_LINEAL
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_LINEAL);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
@@ -4523,14 +4500,7 @@ var DOMSelector = class {
       if (this.#cache.has(cacheKey)) {
         filterMatches = this.#cache.get(cacheKey);
       } else {
-        const filterOpt = {
-          complex: false,
-          compound: false,
-          descend: REG_DESCEND.test(selector) && !REG_SIBLING.test(selector),
-          simple: REG_SIMPLE.test(selector),
-          target: TARGET_ALL
-        };
-        filterMatches = filterSelector(selector, filterOpt);
+        filterMatches = filterSelector(selector, TARGET_ALL);
         this.#cache.set(cacheKey, filterMatches);
       }
       if (filterMatches) {
