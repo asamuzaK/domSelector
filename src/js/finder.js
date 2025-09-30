@@ -184,13 +184,18 @@ export class Finder {
       }, opt));
     }
     const mouseKeys = [
-      'mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'
+      'mouseover', 'mousedown', 'mouseup', 'mouseout'
     ];
     for (const key of mouseKeys) {
       func.push(this.#window.addEventListener(key, evt => {
         this.#event = evt;
       }, opt));
     }
+    func.push(this.#window.addEventListener('click', evt => {
+      this.#event = evt;
+      this.#invalidateResults = new WeakMap();
+      this.#results = new WeakMap();
+    }, opt));
     return func;
   }
 
