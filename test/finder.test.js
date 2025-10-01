@@ -9051,6 +9051,78 @@ describe('Finder', () => {
       ], 'result');
     });
 
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'only-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':only-of-type', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'only-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.appendChild(node);
+      frag.appendChild(node2);
+      const finder = new Finder(window);
+      finder.setup(':only-of-type', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'first-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.appendChild(node);
+      frag.appendChild(node2);
+      const finder = new Finder(window);
+      finder.setup(':first-of-type', node2);
+      const res = finder._matchPseudoClassSelector(leaf, node2, {});
+      assert.deepEqual([...res], [
+        node
+      ], 'result');
+    });
+
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'last-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.appendChild(node);
+      frag.appendChild(node2);
+      const finder = new Finder(window);
+      finder.setup(':last-of-type', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [
+        node2
+      ], 'result');
+    });
+
     it('should get matched node', () => {
       const leaf = {
         children: null,
@@ -9708,7 +9780,7 @@ describe('Finder', () => {
           assert.strictEqual(e instanceof window.DOMException, true,
             'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector :foobar',
+          assert.strictEqual(e.message, 'Invalid selector :foobar()',
             'message');
           return true;
         }

@@ -4,39 +4,36 @@
 
 /* import */
 import {
-  matchAttributeSelector, matchDirectionPseudoClass, matchLanguagePseudoClass,
-  matchPseudoElementSelector, matchTypeSelector
+  matchAttributeSelector, matchDirectionPseudoClass, matchDisabledEnabledPseudo,
+  matchLanguagePseudoClass, matchPseudoElementSelector,
+  matchReadOnlyWritePseudo, matchTypeSelector
 } from './matcher.js';
 import {
   findAST, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
 } from './parser.js';
 import {
-  isContentEditable, isCustomElement, isFocusVisible, isFocusableArea,
-  isVisible, resolveContent, sortNodes, traverseNode
+  filterNodesByAnB, isCustomElement, isFocusVisible, isFocusableArea,
+  isValidShadowHostSelector, isVisible, resolveContent, sortNodes, traverseNode
 } from './utility.js';
 
 /* constants */
 import {
   ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  ELEMENT_NODE, ID_SELECTOR, INPUT_CHECK, INPUT_DATE, INPUT_EDIT, INPUT_TEXT,
-  KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR,
+  ELEMENT_NODE, FORM_PARTS, ID_SELECTOR, INPUT_CHECK, INPUT_DATE, INPUT_EDIT,
+  INPUT_TEXT, KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR, SHOW_ALL, SHOW_CONTAINER, SYNTAX_ERR, TARGET_ALL,
   TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const FORM_PARTS = ['button', 'input', 'select', 'textarea'];
+const KEY_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
+const KEY_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
 const KEY_INPUT_CHECK = new Set(INPUT_CHECK);
-const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
 const KEY_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
 const KEY_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
 const KEY_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
 const KEY_INPUT_RESET = new Set(['button', 'reset']);
 const KEY_INPUT_SUBMIT = new Set(['image', 'submit']);
-const KEY_NODE_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEY_NODE_PS_ENABLED =
-  new Set([...FORM_PARTS, 'fieldset', 'optgroup', 'option']);
-const KEY_NODE_PS_VALID = new Set([...FORM_PARTS, 'form']);
 const KEY_PS_UNCACHE = new Set(['any-link', 'defined', 'dir', 'link', 'scope']);
 
 /**
@@ -73,6 +70,7 @@ export class Finder {
   #documentURL;
   #domSymbolTree;
   #event;
+  #eventHandlers;
   #focus;
   #invalidate;
   #invalidateResults;
@@ -105,6 +103,24 @@ export class Finder {
     this.#event = null;
     this.#focus = null;
     this.#lastFocusVisible = null;
+    this.#eventHandlers = new Set([
+      {
+        keys: ['focus', 'focusin'],
+        handler: this._handleFocusEvent.bind(this)
+      },
+      {
+        keys: ['keydown', 'keyup'],
+        handler: this._handleKeyboardEvent.bind(this)
+      },
+      {
+        keys: ['mouseover', 'mousedown', 'mouseup', 'mouseout'],
+        handler: this._handleMouseEvent.bind(this)
+      },
+      {
+        keys: ['click'],
+        handler: this._handleClickEvent.bind(this)
+      }
+    ]);
     this._registerEventListeners();
   }
 
@@ -118,22 +134,24 @@ export class Finder {
    */
   onError(e, opt = {}) {
     const noexcept = opt.noexcept ?? this.#noexcept;
-    if (!noexcept) {
-      if (e instanceof DOMException ||
-          e instanceof this.#window.DOMException) {
-        if (e.name === NOT_SUPPORTED_ERR) {
-          if (this.#warn) {
-            console.warn(e.message);
-          }
-        } else {
-          throw new this.#window.DOMException(e.message, e.name);
-        }
-      } else if (e.name in this.#window) {
-        throw new this.#window[e.name](e.message, { cause: e });
-      } else {
-        throw e;
-      }
+    if (noexcept) {
+      return;
     }
+    const isDOMException =
+      e instanceof DOMException || e instanceof this.#window.DOMException;
+    if (isDOMException) {
+      if (e.name === NOT_SUPPORTED_ERR) {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
+        return;
+      }
+      throw new this.#window.DOMException(e.message, e.name);
+    }
+    if (e.name in this.#window) {
+      throw new this.#window[e.name](e.message, { cause: e });
+    }
+    throw e;
   }
 
   /**
@@ -173,6 +191,51 @@ export class Finder {
   }
 
   /**
+   * handle focus events
+   * @private
+   * @param {Event} evt - event
+   * @returns {void}
+   */
+  _handleFocusEvent(evt) {
+    this.#focus = evt;
+  }
+
+  /**
+   * handle keyboard events
+   * @private
+   * @param {Event} evt - event
+   * @returns {void}
+   */
+  _handleKeyboardEvent(evt) {
+    const { key } = evt;
+    if (!KEY_MODIFIER.has(key)) {
+      this.#event = evt;
+    }
+  }
+
+  /**
+   * handle mouse events
+   * @private
+   * @param {Event} evt - event
+   * @returns {void}
+   */
+  _handleMouseEvent(evt) {
+    this.#event = evt;
+  }
+
+  /**
+   * handle click events
+   * @private
+   * @param {Event} evt - event
+   * @returns {void}
+   */
+  _handleClickEvent(evt) {
+    this.#event = evt;
+    this.#invalidateResults = new WeakMap();
+    this.#results = new WeakMap();
+  }
+
+  /**
    * register event listeners
    * @private
    * @returns {Array.<void>} - results
@@ -183,35 +246,82 @@ export class Finder {
       passive: true
     };
     const func = [];
-    const focusKeys = ['focus', 'focusin'];
-    for (const key of focusKeys) {
-      func.push(this.#window.addEventListener(key, evt => {
-        this.#focus = evt;
-      }, opt));
+    for (const eventHandler of this.#eventHandlers) {
+      const { keys, handler } = eventHandler;
+      for (const key of keys) {
+        func.push(this.#window.addEventListener(key, handler, opt));
+      }
     }
-    const keyboardKeys = ['keydown', 'keyup'];
-    for (const key of keyboardKeys) {
-      func.push(this.#window.addEventListener(key, evt => {
-        const { key } = evt;
-        if (!KEY_MODIFIER.has(key)) {
-          this.#event = evt;
-        }
-      }, opt));
-    }
-    const mouseKeys = [
-      'mouseover', 'mousedown', 'mouseup', 'mouseout'
-    ];
-    for (const key of mouseKeys) {
-      func.push(this.#window.addEventListener(key, evt => {
-        this.#event = evt;
-      }, opt));
-    }
-    func.push(this.#window.addEventListener('click', evt => {
-      this.#event = evt;
-      this.#invalidateResults = new WeakMap();
-      this.#results = new WeakMap();
-    }, opt));
     return func;
+  }
+
+  /**
+   * generate DOMException
+   * @private
+   * @param {string} msg - error message
+   * @param {string} name - error name
+   * @returns {DOMException} - The generated DOMException object.
+   */
+  _generateDOMException(msg, name) {
+    return new this.#window.DOMException(msg, name);
+  }
+
+  /**
+   * process selector branches into the internal AST structure
+   * @private
+   * @param {Array.<Array.<object>>} branches - from walkAST
+   * @param {string} selector - original selector for error reporting
+   * @returns {object} - { ast, descendant, invalidate }
+   */
+  _processSelectorBranches(branches, selector) {
+    let invalidate = false;
+    let descendant = false;
+    const ast = [];
+    for (const [...items] of branches) {
+      const branch = [];
+      let item = items.shift();
+      if (item && item.type !== COMBINATOR) {
+        const leaves = new Set();
+        while (item) {
+          if (item.type === COMBINATOR) {
+            const [nextItem] = items;
+            if (!nextItem || nextItem.type === COMBINATOR) {
+              const msg = `Invalid selector ${selector}`;
+              this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+              // Stop processing
+              return { ast: [], descendant: false, invalidate: false };
+            }
+            if (item.name === '+' || item.name === '~') {
+              invalidate = true;
+            } else {
+              descendant = true;
+            }
+            branch.push({ combo: item, leaves: sortAST(leaves) });
+            leaves.clear();
+          } else {
+            if (item.name && typeof item.name === 'string') {
+              const unescapedName = unescapeSelector(item.name);
+              if (unescapedName !== item.name) {
+                item.name = unescapedName;
+              }
+              if (/[|:]/.test(unescapedName)) {
+                item.namespace = true;
+              }
+            }
+            leaves.add(item);
+          }
+          if (items.length) {
+            item = items.shift();
+          } else {
+            branch.push({ combo: null, leaves: sortAST(leaves) });
+            leaves.clear();
+            break;
+          }
+        }
+      }
+      ast.push({ branch, dir: null, filtered: false, find: false });
+    }
+    return { ast, descendant, invalidate };
   }
 
   /**
@@ -254,69 +364,12 @@ export class Finder {
         hasHasPseudoFunc, hasLogicalPseudoFunc, hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      let invalidate = hasHasPseudoFunc || hasStatePseudoClass ||
-        !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
-      let descendant = false;
-      let i = 0;
-      ast = [];
-      for (const [...items] of branches) {
-        const branch = [];
-        let item = items.shift();
-        if (item && item.type !== COMBINATOR) {
-          const leaves = new Set();
-          while (item) {
-            let itemName = item.name;
-            if (item.type === COMBINATOR) {
-              const [nextItem] = items;
-              if (!nextItem || nextItem.type === COMBINATOR) {
-                return this.onError(new this.#window.DOMException(
-                  `Invalid selector ${selector}`,
-                  SYNTAX_ERR
-                ));
-              }
-              if (itemName === '+' || itemName === '~') {
-                invalidate = true;
-              } else {
-                descendant = true;
-              }
-              branch.push({
-                combo: item,
-                leaves: sortAST(leaves)
-              });
-              leaves.clear();
-            } else if (item) {
-              if (itemName && typeof itemName === 'string') {
-                itemName = unescapeSelector(itemName);
-                if (typeof itemName === 'string' && itemName !== item.name) {
-                  item.name = itemName;
-                }
-                if (/[|:]/.test(itemName)) {
-                  item.namespace = true;
-                }
-              }
-              leaves.add(item);
-            }
-            if (items.length) {
-              item = items.shift();
-            } else {
-              branch.push({
-                combo: null,
-                leaves: sortAST(leaves)
-              });
-              leaves.clear();
-              break;
-            }
-          }
-        }
-        ast.push({
-          branch,
-          dir: null,
-          filtered: false,
-          find: false
-        });
-        nodes[i] = [];
-        i++;
-      }
+      const baseInvalidate = hasHasPseudoFunc || hasStatePseudoClass ||
+                           !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      const processed = this._processSelectorBranches(branches, selector);
+      ast = processed.ast;
+      this.#descendant = processed.descendant;
+      this.#invalidate = baseInvalidate || processed.invalidate;
       let cachedItem;
       if (this.#documentCache.has(this.#document)) {
         cachedItem = this.#documentCache.get(this.#document);
@@ -325,12 +378,14 @@ export class Finder {
       }
       cachedItem.set(`${selector}`, {
         ast,
-        descendant,
-        invalidate
+        descendant: this.#descendant,
+        invalidate: this.#invalidate
       });
       this.#documentCache.set(this.#document, cachedItem);
-      this.#descendant = descendant;
-      this.#invalidate = invalidate;
+      // Initialize nodes array
+      for (let i = 0; i < ast.length; i++) {
+        nodes[i] = [];
+      }
     }
     return [
       ast,
@@ -349,15 +404,14 @@ export class Finder {
    */
   _createTreeWalker(node, opt = {}) {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
-    let walker;
     if (force) {
-      walker = this.#document.createTreeWalker(node, whatToShow);
-    } else if (this.#walkers.has(node)) {
-      walker = this.#walkers.get(node);
-    } else {
-      walker = this.#document.createTreeWalker(node, whatToShow);
-      this.#walkers.set(node, walker);
+      return this.#document.createTreeWalker(node, whatToShow);
     }
+    if (this.#walkers.has(node)) {
+      return this.#walkers.get(node);
+    }
+    const walker = this.#document.createTreeWalker(node, whatToShow);
+    this.#walkers.set(node, walker);
     return walker;
   }
 
@@ -373,6 +427,55 @@ export class Finder {
   }
 
   /**
+   * get selector branches from cache or parse
+   * @private
+   * @param {object} selector - AST
+   * @returns {Array.<Array.<object>>} - selector branches
+   */
+  _getSelectorBranches(selector) {
+    if (this.#astCache.has(selector)) {
+      return this.#astCache.get(selector);
+    }
+    const { branches } = walkAST(selector);
+    this.#astCache.set(selector, branches);
+    return branches;
+  }
+
+  /**
+   * get children of a node, optionally filtered by a selector
+   * @private
+   * @param {object} parentNode - parent element
+   * @param {Array.<Array.<object>>} selectorBranches - selector branches
+   * @param {object} [opt] - options
+   * @returns {Array.<object>} - array of child nodes
+   */
+  _getFilteredChildren(parentNode, selectorBranches, opt = {}) {
+    const children = [];
+    const walker = this._createTreeWalker(parentNode, { force: true });
+    let childNode = walker.firstChild();
+    while (childNode) {
+      if (selectorBranches) {
+        if (isVisible(childNode)) {
+          let isMatch = false;
+          for (const leaves of selectorBranches) {
+            if (this._matchLeaves(leaves, childNode, opt)) {
+              isMatch = true;
+              break;
+            }
+          }
+          if (isMatch) {
+            children.push(childNode);
+          }
+        }
+      } else {
+        children.push(childNode);
+      }
+      childNode = walker.nextSibling();
+    }
+    return children;
+  }
+
+  /**
    * collect nth child
    * @private
    * @param {object} anb - An+B options
@@ -385,167 +488,32 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _collectNthChild(anb, node, opt = {}) {
-    const { a, b, reverse, selector } = anb;
+    const { a, b, selector } = anb;
     const { parentNode } = node;
-    const matched = new Set();
-    let selectorBranches;
-    if (selector) {
-      if (this.#astCache.has(selector)) {
-        selectorBranches = this.#astCache.get(selector);
-      } else {
-        const { branches } = walkAST(selector);
-        selectorBranches = branches;
-        this.#astCache.set(selector, selectorBranches);
-      }
-      const { branches } = walkAST(selector);
-      selectorBranches = branches;
-    }
-    if (parentNode) {
-      const walker = this._createTreeWalker(parentNode, {
-        force: true
-      });
-      let refNode = walker.firstChild();
-      const selectorNodes = new Set();
-      let l = 0;
-      if (selectorBranches) {
-        while (refNode) {
-          if (isVisible(refNode)) {
-            let bool;
-            for (const leaves of selectorBranches) {
-              bool = this._matchLeaves(leaves, refNode, opt);
-              if (!bool) {
-                break;
-              }
-            }
-            if (bool) {
-              selectorNodes.add(refNode);
-            }
-          }
-          l++;
-          refNode = walker.nextSibling();
-        }
-      } else {
-        while (refNode) {
-          l++;
-          refNode = walker.nextSibling();
-        }
-      }
-      // :first-child, :last-child, :nth-child(b of S), :nth-last-child(b of S)
-      if (a === 0) {
-        if (b > 0 && b <= l) {
-          if (selectorNodes.size) {
-            refNode = traverseNode(parentNode, walker);
-            if (reverse) {
-              refNode = walker.lastChild();
-            } else {
-              refNode = walker.firstChild();
-            }
-            let i = 0;
-            while (refNode) {
-              if (selectorNodes.has(refNode)) {
-                if (i === b - 1) {
-                  matched.add(refNode);
-                  break;
-                }
-                i++;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-            }
-          } else if (!selector) {
-            refNode = traverseNode(parentNode, walker);
-            if (reverse) {
-              refNode = walker.lastChild();
-            } else {
-              refNode = walker.firstChild();
-            }
-            let i = 0;
-            while (refNode) {
-              if (i === b - 1) {
-                matched.add(refNode);
-                break;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-              i++;
-            }
-          }
-        }
-      // :nth-child()
-      } else {
-        let nth = b - 1;
-        if (a > 0) {
-          while (nth < 0) {
-            nth += a;
-          }
-        }
-        if (nth >= 0 && nth < l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let i = 0;
-          let j = a > 0 ? 0 : b - 1;
-          while (refNode) {
-            if (refNode && nth >= 0 && nth < l) {
-              if (selectorNodes.size) {
-                if (selectorNodes.has(refNode)) {
-                  if (j === nth) {
-                    matched.add(refNode);
-                    nth += a;
-                  }
-                  if (a > 0) {
-                    j++;
-                  } else {
-                    j--;
-                  }
-                }
-              } else if (i === nth) {
-                if (!selector) {
-                  matched.add(refNode);
-                }
-                nth += a;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-              i++;
-            } else {
+    if (!parentNode) {
+      const matchedNode = new Set();
+      if (node === this.#root && (a * 1 + b * 1) === 1) {
+        if (selector) {
+          const selectorBranches = this._getSelectorBranches(selector);
+          for (const leaves of selectorBranches) {
+            if (this._matchLeaves(leaves, node, opt)) {
+              matchedNode.add(node);
               break;
             }
           }
+        } else {
+          matchedNode.add(node);
         }
       }
-      if (reverse && matched.size > 1) {
-        return new Set([...matched].toReversed());
-      }
-    } else if (node === this.#root && (a + b) === 1) {
-      if (selectorBranches) {
-        let bool;
-        for (const leaves of selectorBranches) {
-          bool = this._matchLeaves(leaves, node, opt);
-          if (bool) {
-            break;
-          }
-        }
-        if (bool) {
-          matched.add(node);
-        }
-      } else {
-        matched.add(node);
-      }
+      return matchedNode;
     }
-    return matched;
+    const selectorBranches = selector
+      ? this._getSelectorBranches(selector)
+      : null;
+    const children =
+      this._getFilteredChildren(parentNode, selectorBranches, opt);
+    const matchedNodes = filterNodesByAnB(children, anb);
+    return new Set(matchedNodes);
   }
 
   /**
@@ -559,100 +527,26 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _collectNthOfType(anb, node) {
-    const { a, b, reverse } = anb;
-    const { localName, namespaceURI, parentNode, prefix } = node;
-    const matched = new Set();
-    if (parentNode) {
-      const walker = this._createTreeWalker(parentNode, {
-        force: true
-      });
-      let refNode = traverseNode(parentNode, walker);
-      refNode = walker.firstChild();
-      let l = 0;
-      while (refNode) {
-        l++;
-        refNode = walker.nextSibling();
+    const { parentNode } = node;
+    if (!parentNode) {
+      if (node === this.#root && (anb.a * 1 + anb.b * 1) === 1) {
+        return new Set([node]);
       }
-      // :first-of-type, :last-of-type
-      if (a === 0) {
-        if (b > 0 && b <= l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let j = 0;
-          while (refNode) {
-            const {
-              localName: itemLocalName, namespaceURI: itemNamespaceURI,
-              prefix: itemPrefix
-            } = refNode;
-            if (itemLocalName === localName && itemPrefix === prefix &&
-                itemNamespaceURI === namespaceURI) {
-              if (j === b - 1) {
-                matched.add(refNode);
-                break;
-              }
-              j++;
-            }
-            if (reverse) {
-              refNode = walker.previousSibling();
-            } else {
-              refNode = walker.nextSibling();
-            }
-          }
-        }
-      // :nth-of-type()
-      } else {
-        let nth = b - 1;
-        if (a > 0) {
-          while (nth < 0) {
-            nth += a;
-          }
-        }
-        if (nth >= 0 && nth < l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let j = a > 0 ? 0 : b - 1;
-          while (refNode) {
-            const {
-              localName: itemLocalName, namespaceURI: itemNamespaceURI,
-              prefix: itemPrefix
-            } = refNode;
-            if (itemLocalName === localName && itemPrefix === prefix &&
-                itemNamespaceURI === namespaceURI) {
-              if (j === nth) {
-                matched.add(refNode);
-                nth += a;
-              }
-              if (nth < 0 || nth >= l) {
-                break;
-              } else if (a > 0) {
-                j++;
-              } else {
-                j--;
-              }
-            }
-            if (reverse) {
-              refNode = walker.previousSibling();
-            } else {
-              refNode = walker.nextSibling();
-            }
-          }
-        }
-      }
-      if (reverse && matched.size > 1) {
-        return new Set([...matched].toReversed());
-      }
-    } else if (node === this.#root && (a + b) === 1) {
-      matched.add(node);
+      return new Set();
     }
-    return matched;
+    const typedSiblings = [];
+    const walker = this._createTreeWalker(parentNode, { force: true });
+    let sibling = walker.firstChild();
+    while (sibling) {
+      if (sibling.localName === node.localName &&
+          sibling.namespaceURI === node.namespaceURI &&
+          sibling.prefix === node.prefix) {
+        typedSiblings.push(sibling);
+      }
+      sibling = walker.nextSibling();
+    }
+    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
+    return new Set(matchedNodes);
   }
 
   /**
@@ -771,6 +665,299 @@ export class Finder {
   }
 
   /**
+   * get nth-of-type related pseudo-class (:first-of-type, etc.)
+   * @private
+   * @param {string} astName - pseudo-class name
+   * @param {object} node - Element node
+   * @returns {?object} - matched node or null
+   */
+  _getNthOfTypePseudo(astName, node) {
+    switch (astName) {
+      case 'first-of-type': {
+        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
+        return first;
+      }
+      case 'last-of-type': {
+        const [last] =
+          this._collectNthOfType({ a: 0, b: 1, reverse: true }, node);
+        return last;
+      }
+      // case 'only-of-type' is handled by default
+      default: {
+        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
+        if (first === node) {
+          const [last] =
+            this._collectNthOfType({ a: 0, b: 1, reverse: true }, node);
+          if (last === node) {
+            return node;
+          }
+        }
+        return null;
+      }
+    }
+  }
+
+  /**
+   * match child-position pseudo-classes (:first-child, :last-child, :only-child)
+   * @private
+   * @param {string} astName - pseudo-class name
+   * @param {object} node - Element node
+   * @returns {boolean} - true if matched
+   */
+  _matchChildPositionPseudo(astName, node) {
+    if (node === this.#root) {
+      return true;
+    }
+    const { parentNode } = node;
+    switch (astName) {
+      case 'first-child': {
+        return node === parentNode.firstElementChild;
+      }
+      case 'last-child': {
+        return node === parentNode.lastElementChild;
+      }
+      // case 'only-child' is handled by default
+      default: {
+        return node === parentNode.firstElementChild &&
+               node === parentNode.lastElementChild;
+      }
+    }
+  }
+
+  /**
+   * match link-related pseudo-classes
+   * @private
+   * @param {string} astName - pseudo-class name
+   * @param {object} node - Element node
+   * @returns {boolean} - true if matched
+   */
+  _matchLinkPseudo(astName, node) {
+    const { localName } = node;
+    const isLinkElement =
+      (localName === 'a' || localName === 'area') && node.hasAttribute('href');
+    if (!isLinkElement) {
+      return false;
+    }
+    switch (astName) {
+      case 'local-link': {
+        const { href, origin, pathname } = this.#documentURL;
+        const attrURL = new URL(node.getAttribute('href'), href);
+        return attrURL.origin === origin && attrURL.pathname === pathname;
+      }
+      case 'visited': {
+        // prevent fingerprinting, so never match
+        return false;
+      }
+      // cases 'any-link' and 'link' are handled by default
+      default: {
+        return true;
+      }
+    }
+  }
+
+  /**
+   * match focus-related pseudo-classes
+   * @private
+   * @param {string} astName - pseudo-class name
+   * @param {object} node - Element node
+   * @returns {boolean} - true if matched
+   */
+  _matchFocusPseudo(astName, node) {
+    switch (astName) {
+      case 'focus-visible': {
+        if (node === this.#document.activeElement && isFocusableArea(node)) {
+          let bool = false;
+          if (isFocusVisible(node)) {
+            bool = true;
+          } else if (this.#focus) {
+            const { relatedTarget, target: focusTarget } = this.#focus;
+            if (focusTarget === node) {
+              if (isFocusVisible(relatedTarget)) {
+                bool = true;
+              } else if (this.#event) {
+                const {
+                  key: eventKey, target: eventTarget, type: eventType
+                } = this.#event;
+                // this.#event is irrelevant if eventTarget === relatedTarget
+                if (eventTarget === relatedTarget) {
+                  if (this.#lastFocusVisible === null) {
+                    bool = true;
+                  } else if (focusTarget === this.#lastFocusVisible) {
+                    bool = true;
+                  }
+                } else if (eventKey === 'Tab') {
+                  if ((eventType === 'keydown' && eventTarget !== node) ||
+                      (eventType === 'keyup' && eventTarget === node)) {
+                    if (eventTarget === focusTarget) {
+                      if (this.#lastFocusVisible === null) {
+                        bool = true;
+                      } else if (eventTarget === this.#lastFocusVisible &&
+                                 relatedTarget === null) {
+                        bool = true;
+                      }
+                    } else {
+                      bool = true;
+                    }
+                  }
+                } else if (eventKey) {
+                  if ((eventType === 'keydown' || eventType === 'keyup') &&
+                      eventTarget === node) {
+                    bool = true;
+                  }
+                }
+              } else if (relatedTarget === null ||
+                         relatedTarget === this.#lastFocusVisible) {
+                bool = true;
+              }
+            }
+          }
+          if (bool) {
+            this.#lastFocusVisible = node;
+            return true;
+          } else if (this.#lastFocusVisible === node) {
+            this.#lastFocusVisible = null;
+          }
+        }
+        return false;
+      }
+      case 'focus-within': {
+        let current = this.#document.activeElement;
+        if (isFocusableArea(current)) {
+          while (current) {
+            if (current === node) {
+              return true;
+            }
+            current = current.parentNode;
+          }
+        }
+        return false;
+      }
+      // case 'focus' is handled by default
+      default: {
+        return node === this.#document.activeElement && isFocusableArea(node);
+      }
+    }
+  }
+
+  /**
+   * match :hover and :active pseudo-classes
+   * @private
+   * @param {string} astName - pseudo-class name
+   * @param {object} node - Element node
+   * @returns {boolean} - true if matched
+   */
+  _matchHoverActivePseudo(astName, node) {
+    const { target, type, buttons } = this.#event ?? {};
+    if (!target) {
+      return false;
+    }
+    if (astName === 'hover') {
+      return /^(?:click|mouse(?:down|over|up))$/.test(type) &&
+        node.contains(target);
+    }
+    return type === 'mousedown' && buttons & BIT_01 && node.contains(target);
+  }
+
+  /**
+   * match selector branch backwards from a given node
+   * @private
+   * @param {Array.<object>} branch - AST branch
+   * @param {object} node - node to start matching from
+   * @param {object} opt - options
+   * @returns {boolean} - true if the entire branch matches
+   */
+  _matchBranchBackwards(branch, node, opt) {
+    let currentNodes = new Set([node]);
+    // Iterate from the second to last twig to the first
+    for (let i = branch.length - 2; i >= 0; i--) {
+      const twig = branch[i];
+      const matchedNodes = new Set();
+      opt.dir = DIR_PREV;
+      for (const currentNode of currentNodes) {
+        const result = this._matchCombinator(twig, currentNode, opt);
+        if (result.size) {
+          const resultArr = [...result];
+          matchedNodes.add(...resultArr);
+        }
+      }
+      if (matchedNodes.size === 0) {
+        return false;
+      }
+      currentNodes = matchedNodes;
+    }
+    // The entire chain matched
+    return true;
+  }
+
+  /**
+   * evaluate :has() pseudo-class
+   * @private
+   * @param {object} astData - AST data
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {?object} - matched node
+   */
+  _evaluateHasPseudo(astData, node, opt) {
+    const { branches } = astData;
+    let bool = false;
+    for (const leaves of branches) {
+      bool = this._matchHasPseudoFunc(leaves, node, opt);
+      if (bool) {
+        break;
+      }
+    }
+    if (!bool) {
+      return null;
+    }
+    if (
+      (opt.isShadowRoot || this.#shadow) &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE
+    ) {
+      return this.#verifyShadowHost ? node : null;
+    }
+    return node;
+  }
+
+  /**
+   * evaluate :is(), :not(), :where() pseudo-classes
+   * @private
+   * @param {object} astData - AST data
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {?object} - matched node
+   */
+  _evaluateIsWhereNotPseudo(astData, node, opt) {
+    const { astName, branches, twigBranches } = astData;
+    const isShadowRoot = (opt.isShadowRoot || this.#shadow) &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE;
+    if (isShadowRoot && !isValidShadowHostSelector(astName, branches)) {
+      return null;
+    }
+    opt.forgive = astName === 'is' || astName === 'where';
+    let branchMatched = false;
+    for (const branch of twigBranches) {
+      const lastTwig = branch[branch.length - 1];
+      const initialMatch = this._matchLeaves(lastTwig.leaves, node, opt);
+      if (!initialMatch) {
+        branchMatched = false;
+      } else if (branch.length === 1) {
+        branchMatched = true;
+        break;
+      } else {
+        // If there are combinators, match backwards
+        branchMatched = this._matchBranchBackwards(branch, node, opt);
+        if (branchMatched) {
+          break;
+        }
+      }
+    }
+    if (astName === 'not') {
+      return branchMatched ? null : node;
+    }
+    return branchMatched ? node : null;
+  }
+
+  /**
    * match logical pseudo-class functions - :has(), :is(), :not(), :where()
    * @private
    * @param {object} astData - AST data
@@ -779,92 +966,12 @@ export class Finder {
    * @returns {?object} - matched node
    */
   _matchLogicalPseudoFunc(astData, node, opt = {}) {
-    const { astName, branches, twigBranches } = astData;
-    const isShadowRoot = (opt.isShadowRoot || this.#shadow) &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE;
+    const { astName } = astData;
     if (astName === 'has') {
-      let bool;
-      for (const leaves of branches) {
-        bool = this._matchHasPseudoFunc(leaves, node, opt);
-        if (bool) {
-          break;
-        }
-      }
-      if (bool) {
-        if (isShadowRoot) {
-          if (this.#verifyShadowHost) {
-            return node;
-          }
-        } else {
-          return node;
-        }
-      }
-    } else {
-      // check for invalid shadow root
-      if (isShadowRoot) {
-        let invalid;
-        for (const branch of branches) {
-          if (branch.length > 1) {
-            invalid = true;
-            break;
-          } else if (astName === 'not') {
-            const [{ type: childAstType }] = branch;
-            if (childAstType !== PS_CLASS_SELECTOR) {
-              invalid = true;
-              break;
-            }
-          }
-        }
-        if (invalid) {
-          return null;
-        }
-      }
-      opt.forgive = astName === 'is' || astName === 'where';
-      const l = twigBranches.length;
-      let bool;
-      for (let i = 0; i < l; i++) {
-        const branch = twigBranches[i];
-        const lastIndex = branch.length - 1;
-        const { leaves } = branch[lastIndex];
-        bool = this._matchLeaves(leaves, node, opt);
-        if (bool && lastIndex > 0) {
-          let nextNodes = new Set([node]);
-          for (let j = lastIndex - 1; j >= 0; j--) {
-            const twig = branch[j];
-            const arr = [];
-            opt.dir = DIR_PREV;
-            for (const nextNode of nextNodes) {
-              const m = this._matchCombinator(twig, nextNode, opt);
-              if (m.size) {
-                arr.push(...m);
-              }
-            }
-            if (arr.length) {
-              if (j === 0) {
-                bool = true;
-              } else {
-                nextNodes = new Set(arr);
-              }
-            } else {
-              bool = false;
-              break;
-            }
-          }
-        }
-        if (bool) {
-          break;
-        }
-      }
-      if (astName === 'not') {
-        if (bool) {
-          return null;
-        }
-        return node;
-      } else if (bool) {
-        return node;
-      }
+      return this._evaluateHasPseudo(astData, node, opt);
     }
-    return null;
+    // :is(), :not(), :where()
+    return this._evaluateIsWhereNotPseudo(astData, node, opt);
   }
 
   /**
@@ -878,20 +985,15 @@ export class Finder {
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
-    const { localName, parentNode } = node;
-    const {
-      forgive,
-      warn = this.#warn
-    } = opt;
+    const { localName } = node;
+    const { forgive, warn = this.#warn } = opt;
     const matched = new Set();
-    // :has(), :is(), :not(), :where()
+    /* :has(), :is(), :not(), :where() */
     if (Array.isArray(astChildren) && KEY_LOGICAL.has(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
-        return this.onError(new this.#window.DOMException(
-          `Invalid selector ${css}`,
-          SYNTAX_ERR
-        ));
+        const msg = `Invalid selector ${css}`;
+        return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
       }
       let astData;
       if (this.#astCache.has(ast)) {
@@ -916,10 +1018,8 @@ export class Finder {
                 break;
               } else {
                 const css = generateCSS(ast);
-                return this.onError(new this.#window.DOMException(
-                  `Invalid selector ${css}`,
-                  SYNTAX_ERR
-                ));
+                const msg = `Invalid selector ${css}`;
+                return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
               }
             }
           }
@@ -976,10 +1076,8 @@ export class Finder {
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
-          return this.onError(new this.#window.DOMException(
-            `Invalid selector ${css}`,
-            SYNTAX_ERR
-          ));
+          const msg = `Invalid selector ${css}`;
+          return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
@@ -990,10 +1088,8 @@ export class Finder {
           case 'dir': {
             if (astChildren.length !== 1) {
               const css = generateCSS(ast);
-              return this.onError(new this.#window.DOMException(
-                `Invalid selector ${css}`,
-                SYNTAX_ERR
-              ));
+              const msg = `Invalid selector ${css}`;
+              return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
             }
             const [astChild] = astChildren;
             const res = matchDirectionPseudoClass(astChild, node);
@@ -1006,10 +1102,8 @@ export class Finder {
           case 'lang': {
             if (!astChildren.length) {
               const css = generateCSS(ast);
-              return this.onError(new this.#window.DOMException(
-                `Invalid selector ${css}`,
-                SYNTAX_ERR
-              ));
+              const msg = `Invalid selector ${css}`;
+              return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
             }
             let bool;
             for (const astChild of astChildren) {
@@ -1049,34 +1143,28 @@ export class Finder {
           case 'nth-col':
           case 'nth-last-col': {
             if (warn) {
-              this.onError(new this.#window.DOMException(
-                `Unsupported pseudo-class :${astName}()`,
-                NOT_SUPPORTED_ERR
-              ));
+              const msg = `Unsupported pseudo-class :${astName}()`;
+              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
             }
             break;
           }
+          // ignore
           case 'host':
           case 'host-context': {
-            // ignore
             break;
           }
           // dropped from CSS Selectors 3
           case 'contains': {
             if (warn) {
-              this.onError(new this.#window.DOMException(
-                `Unknown pseudo-class :${astName}()`,
-                NOT_SUPPORTED_ERR
-              ));
+              const msg = `Unknown pseudo-class :${astName}()`;
+              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
             }
             break;
           }
           default: {
             if (!forgive) {
-              this.onError(new this.#window.DOMException(
-                `Unknown pseudo-class :${astName}()`,
-                SYNTAX_ERR
-              ));
+              const msg = `Unknown pseudo-class :${astName}()`;
+              this.onError(this._generateDOMException(msg, SYNTAX_ERR));
             }
           }
         }
@@ -1084,40 +1172,17 @@ export class Finder {
     } else {
       switch (astName) {
         case 'any-link':
-        case 'link': {
-          if ((localName === 'a' || localName === 'area') &&
-              node.hasAttribute('href')) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'local-link': {
-          if ((localName === 'a' || localName === 'area') &&
-              node.hasAttribute('href')) {
-            const { href, origin, pathname } = this.#documentURL;
-            const attrURL = new URL(node.getAttribute('href'), href);
-            if (attrURL.origin === origin && attrURL.pathname === pathname) {
-              matched.add(node);
-            }
-          }
-          break;
-        }
+        case 'link':
+        case 'local-link':
         case 'visited': {
-          // prevent fingerprinting
-          break;
-        }
-        case 'hover': {
-          const { target, type } = this.#event ?? {};
-          if (/^(?:click|mouse(?:down|over|up))$/.test(type) &&
-              node.contains(target)) {
+          if (this._matchLinkPseudo(astName, node)) {
             matched.add(node);
           }
           break;
         }
+        case 'hover':
         case 'active': {
-          const { buttons, target, type } = this.#event ?? {};
-          if (type === 'mousedown' && buttons & BIT_01 &&
-              node.contains(target)) {
+          if (this._matchHoverActivePseudo(astName, node)) {
             matched.add(node);
           }
           break;
@@ -1155,81 +1220,10 @@ export class Finder {
           }
           break;
         }
-        case 'focus': {
-          if (node === this.#document.activeElement && isFocusableArea(node)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'focus-visible': {
-          if (node === this.#document.activeElement && isFocusableArea(node)) {
-            let bool;
-            if (isFocusVisible(node)) {
-              bool = true;
-            } else if (this.#focus) {
-              const { relatedTarget, target: focusTarget } = this.#focus;
-              if (focusTarget === node) {
-                if (isFocusVisible(relatedTarget)) {
-                  bool = true;
-                } else if (this.#event) {
-                  const {
-                    key: eventKey, target: eventTarget, type: eventType
-                  } = this.#event;
-                  // this.#event is irrelevant if eventTarget === relatedTarget
-                  if (eventTarget === relatedTarget) {
-                    if (this.#lastFocusVisible === null) {
-                      bool = true;
-                    } else if (focusTarget === this.#lastFocusVisible) {
-                      bool = true;
-                    }
-                  } else if (eventKey === 'Tab') {
-                    if ((eventType === 'keydown' && eventTarget !== node) ||
-                        (eventType === 'keyup' && eventTarget === node)) {
-                      if (eventTarget === focusTarget) {
-                        if (this.#lastFocusVisible === null) {
-                          bool = true;
-                        } else if (eventTarget === this.#lastFocusVisible &&
-                                   relatedTarget === null) {
-                          bool = true;
-                        }
-                      } else {
-                        bool = true;
-                      }
-                    }
-                  } else if (eventKey) {
-                    if ((eventType === 'keydown' || eventType === 'keyup') &&
-                        eventTarget === node) {
-                      bool = true;
-                    }
-                  }
-                } else if (relatedTarget === null ||
-                           relatedTarget === this.#lastFocusVisible) {
-                  bool = true;
-                }
-              }
-            }
-            if (bool) {
-              this.#lastFocusVisible = node;
-              matched.add(node);
-            } else if (this.#lastFocusVisible === node) {
-              this.#lastFocusVisible = null;
-            }
-          }
-          break;
-        }
+        case 'focus':
+        case 'focus-visible':
         case 'focus-within': {
-          let bool;
-          let current = this.#document.activeElement;
-          if (isFocusableArea(current)) {
-            while (current) {
-              if (current === node) {
-                bool = true;
-                break;
-              }
-              current = current.parentNode;
-            }
-          }
-          if (bool) {
+          if (this._matchFocusPseudo(astName, node)) {
             matched.add(node);
           }
           break;
@@ -1249,100 +1243,14 @@ export class Finder {
         }
         case 'disabled':
         case 'enabled': {
-          if (KEY_NODE_PS_ENABLED.has(localName) ||
-              isCustomElement(node, { formAssociated: true })) {
-            let disabled;
-            if (node.disabled || node.hasAttribute('disabled')) {
-              disabled = true;
-            } else if (node.localName === 'option') {
-              if (parentNode.localName === 'optgroup' &&
-                  (parentNode.disabled ||
-                   parentNode.hasAttribute('disabled'))) {
-                disabled = true;
-              }
-            } else if (node.localName !== 'optgroup') {
-              let parent = parentNode;
-              while (parent) {
-                if (parent.localName === 'fieldset' &&
-                    (parent.disabled || parent.hasAttribute('disabled'))) {
-                  let refNode = parent.firstElementChild;
-                  while (refNode) {
-                    if (refNode.localName === 'legend') {
-                      break;
-                    }
-                    refNode = refNode.nextElementSibling;
-                  }
-                  if (refNode) {
-                    if (!refNode.contains(node)) {
-                      disabled = true;
-                    }
-                  } else {
-                    disabled = true;
-                  }
-                  break;
-                } else if (parent.localName === 'form') {
-                  break;
-                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
-                  if (parent.parentNode.localName === 'form') {
-                    break;
-                  } else {
-                    parent = parent.parentNode;
-                  }
-                } else {
-                  break;
-                }
-              }
-            }
-            if (disabled) {
-              if (astName === 'disabled') {
-                matched.add(node);
-              }
-            } else if (astName === 'enabled') {
-              matched.add(node);
-            }
+          if (matchDisabledEnabledPseudo(astName, node)) {
+            matched.add(node);
           }
           break;
         }
         case 'read-only':
         case 'read-write': {
-          let readonly;
-          let writable;
-          switch (localName) {
-            case 'textarea': {
-              if (node.readOnly || node.hasAttribute('readonly') ||
-                  node.disabled || node.hasAttribute('disabled')) {
-                readonly = true;
-              } else {
-                writable = true;
-              }
-              break;
-            }
-            case 'input': {
-              if (!node.type || KEY_INPUT_EDIT.has(node.type)) {
-                if (node.readOnly || node.hasAttribute('readonly') ||
-                    node.disabled || node.hasAttribute('disabled')) {
-                  readonly = true;
-                } else {
-                  writable = true;
-                }
-              } else {
-                readonly = true;
-              }
-              break;
-            }
-            default: {
-              if (isContentEditable(node)) {
-                writable = true;
-              } else {
-                readonly = true;
-              }
-            }
-          }
-          if (readonly) {
-            if (astName === 'read-only') {
-              matched.add(node);
-            }
-          } else if (astName === 'read-write' && writable) {
+          if (matchReadOnlyWritePseudo(astName, node)) {
             matched.add(node);
           }
           break;
@@ -1450,10 +1358,10 @@ export class Finder {
                 let m;
                 if (nodeName === 'button') {
                   m = !(refNode.hasAttribute('type') &&
-                    KEY_INPUT_RESET.has(nodeAttrType));
+                      KEY_INPUT_RESET.has(nodeAttrType));
                 } else if (nodeName === 'input') {
                   m = refNode.hasAttribute('type') &&
-                    KEY_INPUT_SUBMIT.has(nodeAttrType);
+                      KEY_INPUT_SUBMIT.has(nodeAttrType);
                 }
                 if (m) {
                   if (refNode === node) {
@@ -1477,7 +1385,7 @@ export class Finder {
         }
         case 'valid':
         case 'invalid': {
-          if (KEY_NODE_PS_VALID.has(localName)) {
+          if (KEY_FORM_PS_VALID.has(localName)) {
             let valid;
             if (node.checkValidity()) {
               if (node.maxLength >= 0) {
@@ -1504,7 +1412,7 @@ export class Finder {
               valid = true;
             } else {
               while (refNode) {
-                if (KEY_NODE_PS_VALID.has(refNode.localName)) {
+                if (KEY_FORM_PS_VALID.has(refNode.localName)) {
                   if (refNode.checkValidity()) {
                     if (refNode.maxLength >= 0) {
                       valid = refNode.maxLength >= refNode.value.length;
@@ -1615,74 +1523,24 @@ export class Finder {
           }
           break;
         }
-        case 'first-child': {
-          if ((parentNode && node === parentNode.firstElementChild) ||
-              node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'last-child': {
-          if ((parentNode && node === parentNode.lastElementChild) ||
-              node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
+        case 'first-child':
+        case 'last-child':
         case 'only-child': {
-          if ((parentNode && node === parentNode.firstElementChild &&
-               node === parentNode.lastElementChild) || node === this.#root) {
+          if (this._matchChildPositionPseudo(astName, node)) {
             matched.add(node);
           }
           break;
         }
-        case 'first-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType({
-              a: 0,
-              b: 1
-            }, node);
-            if (node1) {
-              matched.add(node1);
-            }
-          } else if (node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'last-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType({
-              a: 0,
-              b: 1,
-              reverse: true
-            }, node);
-            if (node1) {
-              matched.add(node1);
-            }
-          } else if (node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
+        case 'first-of-type':
+        case 'last-of-type':
         case 'only-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType({
-              a: 0,
-              b: 1
-            }, node);
-            if (node1 === node) {
-              const [node2] = this._collectNthOfType({
-                a: 0,
-                b: 1,
-                reverse: true
-              }, node);
-              if (node2 === node) {
-                matched.add(node);
-              }
-            }
-          } else if (node === this.#root) {
+          if (node === this.#root) {
             matched.add(node);
+          } else {
+            const matchedNode = this._getNthOfTypePseudo(astName, node);
+            if (matchedNode) {
+              matched.add(matchedNode);
+            }
           }
           break;
         }
@@ -1715,10 +1573,8 @@ export class Finder {
         case 'first-letter':
         case 'first-line': {
           if (warn) {
-            this.onError(new this.#window.DOMException(
-              `Unsupported pseudo-element ::${astName}`,
-              NOT_SUPPORTED_ERR
-            ));
+            const msg = `Unsupported pseudo-element ::${astName}`;
+            this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
           }
           break;
         }
@@ -1743,31 +1599,80 @@ export class Finder {
         case 'volume-locked':
         case '-webkit-autofill': {
           if (warn) {
-            this.onError(new this.#window.DOMException(
-              `Unsupported pseudo-class :${astName}`,
-              NOT_SUPPORTED_ERR
-            ));
+            const msg = `Unsupported pseudo-class :${astName}`;
+            this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
           }
           break;
         }
         default: {
           if (astName.startsWith('-webkit-')) {
             if (warn) {
-              this.onError(new this.#window.DOMException(
-                `Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR
-              ));
+              const msg = `Unsupported pseudo-class :${astName}`;
+              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
             }
           } else if (!forgive) {
-            this.onError(new this.#window.DOMException(
-              `Unknown pseudo-class :${astName}`,
-              SYNTAX_ERR
-            ));
+            const msg = `Unknown pseudo-class :${astName}`;
+            this.onError(this._generateDOMException(msg, SYNTAX_ERR));
           }
         }
       }
     }
     return matched;
+  }
+
+  /**
+   * evaluate :host() pseudo-class
+   * @private
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} host - host element
+   * @param {object} ast - original AST for error reporting
+   * @returns {boolean} - true if matched
+   */
+  _evaluateHostPseudo(leaves, host, ast) {
+    for (const leaf of leaves) {
+      if (leaf.type === COMBINATOR) {
+        const css = generateCSS(ast);
+        const msg = `Invalid selector ${css}`;
+        this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+        return false;
+      }
+      if (!this._matchSelector(leaf, host).has(host)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * evaluate :host-context() pseudo-class
+   * @private
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} host - host element
+   * @param {object} ast - original AST for error reporting
+   * @returns {boolean} - true if matched
+   */
+  _evaluateHostContextPseudo(leaves, host, ast) {
+    let parent = host;
+    while (parent) {
+      let bool;
+      for (const leaf of leaves) {
+        if (leaf.type === COMBINATOR) {
+          const css = generateCSS(ast);
+          const msg = `Invalid selector ${css}`;
+          this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+          return false;
+        }
+        bool = this._matchSelector(leaf, parent).has(parent);
+        if (!bool) {
+          break;
+        }
+      }
+      if (bool) {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+    return false;
   }
 
   /**
@@ -1779,74 +1684,119 @@ export class Finder {
    */
   _matchShadowHostPseudoClass(ast, node) {
     const { children: astChildren, name: astName } = ast;
-    if (Array.isArray(astChildren)) {
-      if (astChildren.length !== 1) {
-        const css = generateCSS(ast);
-        return this.onError(new this.#window.DOMException(
-          `Invalid selector ${css}`,
-          SYNTAX_ERR
-        ));
-      }
-      const { branches } = walkAST(astChildren[0]);
-      const [branch] = branches;
-      const [...leaves] = branch;
-      const { host } = node;
+    // Guard clause for simple pseudo-class (no arguments)
+    if (!Array.isArray(astChildren)) {
       if (astName === 'host') {
-        let bool;
-        for (const leaf of leaves) {
-          const { type: leafType } = leaf;
-          if (leafType === COMBINATOR) {
-            const css = generateCSS(ast);
-            return this.onError(new this.#window.DOMException(
-              `Invalid selector ${css}`,
-              SYNTAX_ERR
-            ));
-          }
-          bool = this._matchSelector(leaf, host).has(host);
-          if (!bool) {
-            break;
-          }
-        }
-        if (bool) {
-          return node;
-        }
-        return null;
-      } else if (astName === 'host-context') {
-        let parent = host;
-        let bool;
-        while (parent) {
-          for (const leaf of leaves) {
-            const { type: leafType } = leaf;
-            if (leafType === COMBINATOR) {
-              const css = generateCSS(ast);
-              return this.onError(new this.#window.DOMException(
-                `Invalid selector ${css}`,
-                SYNTAX_ERR
-              ));
-            }
-            bool = this._matchSelector(leaf, parent).has(parent);
-            if (!bool) {
-              break;
-            }
-          }
-          if (bool) {
-            break;
-          } else {
-            parent = parent.parentNode;
-          }
-        }
-        if (bool) {
-          return node;
-        }
-        return null;
+        return node;
       }
-    } else if (astName === 'host') {
-      return node;
+      const msg = `Invalid selector :${astName}`;
+      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
     }
-    return this.onError(new this.#window.DOMException(
-      `Invalid selector :${astName}`,
-      SYNTAX_ERR
-    ));
+    // From here, we are dealing with a functional pseudo-class like :host(...)
+    // Guard clause for unsupported functional pseudo-classes
+    if (astName !== 'host' && astName !== 'host-context') {
+      const msg = `Invalid selector :${astName}()`;
+      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+    }
+    // Guard clause for invalid number of arguments
+    if (astChildren.length !== 1) {
+      const css = generateCSS(ast);
+      const msg = `Invalid selector ${css}`;
+      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+    }
+    const { host } = node;
+    const { branches } = walkAST(astChildren[0]);
+    const [branch] = branches;
+    const [...leaves] = branch;
+    if (astName === 'host') {
+      const isMatch = this._evaluateHostPseudo(leaves, host, ast);
+      return isMatch ? node : null;
+    } else { // astName === 'host-context'
+      const isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
+      return isMatch ? node : null;
+    }
+  }
+
+  /**
+   * match selector for element nodes
+   * @private
+   * @param {object} ast - AST
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchSelectorForElement(ast, node, opt = {}) {
+    const { type: astType } = ast;
+    const astName = unescapeSelector(ast.name);
+    const matched = new Set();
+    switch (astType) {
+      case ATTR_SELECTOR: {
+        if (matchAttributeSelector(ast, node, opt)) {
+          matched.add(node);
+        }
+        break;
+      }
+      case ID_SELECTOR: {
+        if (node.id === astName) {
+          matched.add(node);
+        }
+        break;
+      }
+      case CLASS_SELECTOR: {
+        if (node.classList.contains(astName)) {
+          matched.add(node);
+        }
+        break;
+      }
+      case PS_CLASS_SELECTOR: {
+        return this._matchPseudoClassSelector(ast, node, opt);
+      }
+      case TYPE_SELECTOR: {
+        if (matchTypeSelector(ast, node, opt)) {
+          matched.add(node);
+        }
+        break;
+      }
+      case PS_ELEMENT_SELECTOR:
+      default: {
+        try {
+          if (opt.check) {
+            const css = generateCSS(ast);
+            this.#pseudoElement.push(css);
+            matched.add(node);
+          } else {
+            matchPseudoElementSelector(astName, astType, opt);
+          }
+        } catch (e) {
+          this.onError(e);
+        }
+      }
+    }
+    return matched;
+  }
+
+  /**
+   * match selector for shadow root
+   * @private
+   * @param {object} ast - AST
+   * @param {object} node - DocumentFragment node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchSelectorForShadowRoot(ast, node, opt = {}) {
+    const { name: astName } = ast;
+    const matched = new Set();
+    if (KEY_LOGICAL.has(astName)) {
+      opt.isShadowRoot = true;
+      return this._matchPseudoClassSelector(ast, node, opt);
+    } else if (astName === 'host' || astName === 'host-context') {
+      const res = this._matchShadowHostPseudoClass(ast, node, opt);
+      if (res) {
+        this.#verifyShadowHost = true;
+        matched.add(res);
+      }
+    }
+    return matched;
   }
 
   /**
@@ -1858,72 +1808,14 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchSelector(ast, node, opt = {}) {
-    const { type: astType } = ast;
-    const astName = unescapeSelector(ast.name);
-    const matched = new Set();
     if (node.nodeType === ELEMENT_NODE) {
-      switch (astType) {
-        case ATTR_SELECTOR: {
-          const res = matchAttributeSelector(ast, node, opt);
-          if (res) {
-            matched.add(node);
-          }
-          break;
-        }
-        case ID_SELECTOR: {
-          if (node.id === astName) {
-            matched.add(node);
-          }
-          break;
-        }
-        case CLASS_SELECTOR: {
-          if (node.classList.contains(astName)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          const nodes = this._matchPseudoClassSelector(ast, node, opt);
-          return nodes;
-        }
-        case TYPE_SELECTOR: {
-          const res = matchTypeSelector(ast, node, opt);
-          if (res) {
-            matched.add(node);
-          }
-          break;
-        }
-        case PS_ELEMENT_SELECTOR:
-        default: {
-          try {
-            const { check } = opt;
-            if (check) {
-              const css = generateCSS(ast);
-              this.#pseudoElement.push(css);
-              matched.add(node);
-            } else {
-              matchPseudoElementSelector(astName, astType, opt);
-            }
-          } catch (e) {
-            this.onError(e);
-          }
-        }
-      }
-    } else if (this.#shadow && astType === PS_CLASS_SELECTOR &&
-               node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      if (KEY_LOGICAL.has(astName)) {
-        opt.isShadowRoot = true;
-        const nodes = this._matchPseudoClassSelector(ast, node, opt);
-        return nodes;
-      } else if (astName === 'host' || astName === 'host-context') {
-        const res = this._matchShadowHostPseudoClass(ast, node, opt);
-        if (res) {
-          this.#verifyShadowHost = true;
-          matched.add(res);
-        }
-      }
+      return this._matchSelectorForElement(ast, node, opt);
     }
-    return matched;
+    if (this.#shadow && node.nodeType === DOCUMENT_FRAGMENT_NODE &&
+        ast.type === PS_CLASS_SELECTOR) {
+      return this._matchSelectorForShadowRoot(ast, node, opt);
+    }
+    return new Set();
   }
 
   /**
@@ -1935,18 +1827,14 @@ export class Finder {
    * @returns {boolean} - result
    */
   _matchLeaves(leaves, node, opt = {}) {
-    let result;
-    if (this.#invalidate) {
-      result = this.#invalidateResults.get(leaves);
-    } else {
-      result = this.#results.get(leaves);
-    }
+    const results = this.#invalidate ? this.#invalidateResults : this.#results;
+    let result = results.get(leaves);
     if (result && result.has(node)) {
       const { matched } = result.get(node);
       return matched;
     } else {
       let cacheable = true;
-      if (node.nodeType === ELEMENT_NODE && KEY_NODE_FORM.has(node.localName)) {
+      if (node.nodeType === ELEMENT_NODE && KEY_FORM.has(node.localName)) {
         cacheable = false;
       }
       let bool;
@@ -1977,14 +1865,32 @@ export class Finder {
         result.set(node, {
           matched: bool
         });
-        if (this.#invalidate) {
-          this.#invalidateResults.set(leaves, result);
-        } else {
-          this.#results.set(leaves, result);
-        }
+        results.set(leaves, result);
       }
       return bool;
     }
+  }
+
+  /**
+   * traverse all descendant nodes and collect matches
+   * @private
+   * @param {object} baseNode - base Element node or Element.shadowRoot
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _traverseAllDescendants(baseNode, leaves, opt = {}) {
+    const walker = this._createTreeWalker(baseNode);
+    traverseNode(baseNode, walker);
+    let currentNode = walker.firstChild();
+    const nodes = new Set();
+    while (currentNode) {
+      if (this._matchLeaves(leaves, currentNode, opt)) {
+        nodes.add(currentNode);
+      }
+      currentNode = walker.nextNode();
+    }
+    return nodes;
   }
 
   /**
@@ -1997,55 +1903,149 @@ export class Finder {
    */
   _findDescendantNodes(leaves, baseNode, opt = {}) {
     const [leaf, ...filterLeaves] = leaves;
-    const compound = filterLeaves.length > 0;
     const { type: leafType } = leaf;
-    const leafName = unescapeSelector(leaf.name);
-    const nodes = new Set();
-    let pending = false;
-    if (this.#shadow || baseNode.nodeType !== ELEMENT_NODE) {
-      pending = true;
-    } else {
-      switch (leafType) {
-        case PS_ELEMENT_SELECTOR: {
-          matchPseudoElementSelector(leafName, leafType, opt);
-          break;
-        }
-        case ID_SELECTOR: {
-          if (this.#root.nodeType === ELEMENT_NODE) {
-            pending = true;
-          } else {
-            const node = this.#root.getElementById(leafName);
-            if (node && node !== baseNode && baseNode.contains(node)) {
-              if (compound) {
-                const bool = this._matchLeaves(filterLeaves, node, opt);
-                if (bool) {
-                  nodes.add(node);
-                }
-              } else {
-                nodes.add(node);
-              }
+    switch (leafType) {
+      case ID_SELECTOR: {
+        const canUseGetElementById = !this.#shadow &&
+                                     baseNode.nodeType === ELEMENT_NODE &&
+                                     this.#root.nodeType !== ELEMENT_NODE;
+        if (canUseGetElementById) {
+          const leafName = unescapeSelector(leaf.name);
+          const nodes = new Set();
+          const foundNode = this.#root.getElementById(leafName);
+          if (
+            foundNode && foundNode !== baseNode &&
+            baseNode.contains(foundNode)
+          ) {
+            const isCompoundSelector = filterLeaves.length > 0;
+            if (
+              !isCompoundSelector ||
+              this._matchLeaves(filterLeaves, foundNode, opt)
+            ) {
+              nodes.add(foundNode);
             }
           }
-          break;
+          return nodes;
         }
-        default: {
-          pending = true;
-        }
+        // Fall through to default traversal if fast path isn't applicable.
+        return this._traverseAllDescendants(baseNode, leaves, opt);
       }
+      case PS_ELEMENT_SELECTOR: {
+        const leafName = unescapeSelector(leaf.name);
+        matchPseudoElementSelector(leafName, leafType, opt);
+        return new Set();
+      }
+      default:
+        return this._traverseAllDescendants(baseNode, leaves, opt);
     }
-    if (pending) {
-      const walker = this._createTreeWalker(baseNode);
-      let refNode = traverseNode(baseNode, walker);
-      refNode = walker.firstChild();
+  }
+
+  /**
+   * match descendant combinator ' '
+   * @private
+   * @param {object} twig - twig
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchDescendantCombinator(twig, node, opt = {}) {
+    const { leaves } = twig;
+    const { parentNode } = node;
+    const { dir } = opt;
+    if (dir === DIR_NEXT) {
+      return this._findDescendantNodes(leaves, node, opt);
+    }
+    // DIR_PREV
+    const ancestors = [];
+    let refNode = parentNode;
+    while (refNode) {
+      if (this._matchLeaves(leaves, refNode, opt)) {
+        ancestors.push(refNode);
+      }
+      refNode = refNode.parentNode;
+    }
+    if (ancestors.length) {
+      // reverse to maintain document order
+      return new Set(ancestors.reverse());
+    }
+    return new Set();
+  }
+
+  /**
+   * match child combinator '>'
+   * @private
+   * @param {object} twig - twig
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchChildCombinator(twig, node, opt = {}) {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const { parentNode } = node;
+    const matched = new Set();
+    if (dir === DIR_NEXT) {
+      let refNode = node.firstElementChild;
       while (refNode) {
-        const bool = this._matchLeaves(leaves, refNode, opt);
-        if (bool) {
-          nodes.add(refNode);
+        if (this._matchLeaves(leaves, refNode, opt)) {
+          matched.add(refNode);
         }
-        refNode = walker.nextNode();
+        refNode = refNode.nextElementSibling;
+      }
+    } else {
+      // DIR_PREV
+      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+        matched.add(parentNode);
       }
     }
-    return nodes;
+    return matched;
+  }
+
+  /**
+   * match adjacent sibling combinator '+'
+   * @private
+   * @param {object} twig - twig
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchAdjacentSiblingCombinator(twig, node, opt = {}) {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const matched = new Set();
+    const refNode = (dir === DIR_NEXT)
+      ? node.nextElementSibling
+      : node.previousElementSibling;
+    if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+      matched.add(refNode);
+    }
+    return matched;
+  }
+
+  /**
+   * match general sibling combinator '~'
+   * @private
+   * @param {object} twig - twig
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchGeneralSiblingCombinator(twig, node, opt = {}) {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const matched = new Set();
+    let refNode = (dir === DIR_NEXT)
+      ? node.nextElementSibling
+      : node.previousElementSibling;
+    while (refNode) {
+      if (this._matchLeaves(leaves, refNode, opt)) {
+        matched.add(refNode);
+      }
+      refNode = (dir === DIR_NEXT)
+        ? refNode.nextElementSibling
+        : refNode.previousElementSibling;
+    }
+    return matched;
   }
 
   /**
@@ -2053,115 +2053,64 @@ export class Finder {
    * @private
    * @param {object} twig - twig
    * @param {object} node - Element node
-   * @param {object} [opt] - option
+   * @param {object} [opt] - options
    * @returns {Set.<object>} - collection of matched nodes
    */
   _matchCombinator(twig, node, opt = {}) {
-    const { combo, leaves } = twig;
-    const { name: comboName } = combo;
-    const { parentNode } = node;
-    const { dir } = opt;
-    const matched = new Set();
-    if (dir === DIR_NEXT) {
-      switch (comboName) {
-        case '+': {
-          const refNode = node.nextElementSibling;
-          if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-          }
-          break;
-        }
-        case '~': {
-          if (parentNode) {
-            let refNode = node.nextElementSibling;
-            while (refNode) {
-              const bool = this._matchLeaves(leaves, refNode, opt);
-              if (bool) {
-                matched.add(refNode);
-              }
-              refNode = refNode.nextElementSibling;
-            }
-          }
-          break;
-        }
-        case '>': {
-          let refNode = node.firstElementChild;
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-            refNode = refNode.nextElementSibling;
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          const nodes = this._findDescendantNodes(leaves, node, opt);
-          if (nodes.size) {
-            return nodes;
-          }
-        }
-      }
-    } else {
-      switch (comboName) {
-        case '+': {
-          const refNode = node.previousElementSibling;
-          if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-          }
-          break;
-        }
-        case '~': {
-          if (parentNode) {
-            let refNode = parentNode.firstElementChild;
-            while (refNode) {
-              if (refNode === node) {
-                break;
-              } else {
-                const bool = this._matchLeaves(leaves, refNode, opt);
-                if (bool) {
-                  matched.add(refNode);
-                }
-              }
-              refNode = refNode.nextElementSibling;
-            }
-          }
-          break;
-        }
-        case '>': {
-          if (parentNode) {
-            const bool = this._matchLeaves(leaves, parentNode, opt);
-            if (bool) {
-              matched.add(parentNode);
-            }
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          const arr = [];
-          let refNode = parentNode;
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              arr.push(refNode);
-            }
-            refNode = refNode.parentNode;
-          }
-          if (arr.length) {
-            return new Set(arr.toReversed());
-          }
-        }
-      }
+    const { combo: { name: comboName } } = twig;
+    switch (comboName) {
+      case '+':
+        return this._matchAdjacentSiblingCombinator(twig, node, opt);
+      case '~':
+        return this._matchGeneralSiblingCombinator(twig, node, opt);
+      case '>':
+        return this._matchChildCombinator(twig, node, opt);
+      case ' ':
+      default:
+        return this._matchDescendantCombinator(twig, node, opt);
     }
-    return matched;
+  }
+
+  /**
+   * Traverse using a TreeWalker and collect nodes that match the leaves.
+   * @private
+   * @param {TreeWalker} walker - The TreeWalker instance to use.
+   * @param {Array} leaves - AST leaves to match against.
+   * @param {object} options - Traversal options.
+   * @param {Node} options.startNode - The node to start traversal from.
+   * @param {string} options.targetType - Type of target ('all' or 'first').
+   * @param {Node} [options.boundaryNode] - Node at which to stop traversal.
+   * @param {boolean} [options.force] - Force traversal to the next node.
+   * @returns {Array.<Node>} - Array of matched nodes.
+   */
+  _traverseAndCollectNodes(walker, leaves, options) {
+    const { boundaryNode, force, startNode, targetType } = options;
+    const collectedNodes = [];
+    let currentNode = traverseNode(startNode, walker, !!force);
+    if (!currentNode) {
+      return [];
+    }
+    // Adjust starting node.
+    if (currentNode.nodeType !== ELEMENT_NODE) {
+      currentNode = walker.nextNode();
+    } else if (currentNode === startNode && currentNode !== this.#root) {
+      currentNode = walker.nextNode();
+    }
+    while (currentNode) {
+      // Stop when we reach the boundary node.
+      if (boundaryNode && currentNode === boundaryNode) {
+        break;
+      }
+      if (this._matchLeaves(leaves, currentNode, { warn: this.#warn })) {
+        collectedNodes.push(currentNode);
+        // Stop after the first match if not collecting all.
+        if (targetType !== TARGET_ALL) {
+          break;
+        }
+      }
+      currentNode = walker.nextNode();
+    }
+    return collectedNodes;
   }
 
   /**
@@ -2179,34 +2128,12 @@ export class Finder {
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
-    const walker = this.#rootWalker;
-    const nodes = [];
-    let refNode = traverseNode(node, walker, !!force);
-    if (refNode && refNode !== this.#node) {
-      if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = walker.nextNode();
-      } else if (refNode === node) {
-        if (refNode !== this.#root) {
-          refNode = walker.nextNode();
-        }
-      }
-      while (refNode) {
-        if (refNode === this.#node) {
-          break;
-        }
-        const matched = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
-        if (matched) {
-          nodes.push(refNode);
-          if (targetType !== TARGET_ALL) {
-            break;
-          }
-        }
-        refNode = walker.nextNode();
-      }
-    }
-    return nodes;
+    return this._traverseAndCollectNodes(this.#rootWalker, leaves, {
+      force,
+      targetType,
+      boundaryNode: this.#node,
+      startNode: node,
+    });
   }
 
   /**
@@ -2216,43 +2143,20 @@ export class Finder {
    * @param {object} node - node to start from
    * @param {object} opt - options
    * @param {boolean} [opt.precede] - find precede
-   * @param {boolean} [opt.force] - traverse only to next node
-   * @param {string} [opt.targetType] - target type
    * @returns {Array.<object>} - collection of matched nodes
    */
   _findNodeWalker(leaves, node, opt = {}) {
-    const { force, precede, targetType } = opt;
-    const walker = this.#nodeWalker;
+    const { precede, ...traversalOpts } = opt;
     if (precede) {
       const precedeNodes = this._findPrecede(leaves, this.#root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
     }
-    const nodes = [];
-    let refNode = traverseNode(node, walker, !!force);
-    if (refNode) {
-      if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = walker.nextNode();
-      } else if (refNode === node) {
-        if (refNode !== this.#root) {
-          refNode = walker.nextNode();
-        }
-      }
-      while (refNode) {
-        const matched = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
-        if (matched) {
-          nodes.push(refNode);
-          if (targetType !== TARGET_ALL) {
-            break;
-          }
-        }
-        refNode = walker.nextNode();
-      }
-    }
-    return nodes;
+    return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
+      startNode: node,
+      ...traversalOpts
+    });
   }
 
   /**
@@ -2263,17 +2167,10 @@ export class Finder {
    * @returns {Array} - [nodes, filtered]
    */
   _matchSelf(leaves, check = false) {
-    const nodes = [];
-    let filtered = false;
-    const bool = this._matchLeaves(leaves, this.#node, {
-      check,
-      warn: this.#warn
-    });
-    if (bool) {
-      nodes.push(this.#node);
-      filtered = true;
-    }
-    return [nodes, filtered, this.#pseudoElement];
+    const options = { check, warn: this.#warn };
+    const matched = this._matchLeaves(leaves, this.#node, options);
+    const nodes = matched ? [this.#node] : [];
+    return [nodes, matched, this.#pseudoElement];
   }
 
   /**
@@ -2286,32 +2183,208 @@ export class Finder {
   _findLineal(leaves, opt) {
     const { complex } = opt;
     const nodes = [];
-    let filtered = false;
-    let bool = this._matchLeaves(leaves, this.#node, {
-      warn: this.#warn
-    });
-    if (bool) {
+    const options = { warn: this.#warn };
+    const selfMatched = this._matchLeaves(leaves, this.#node, options);
+    if (selfMatched) {
       nodes.push(this.#node);
-      filtered = true;
     }
-    if (!bool || complex) {
-      let refNode = this.#node.parentNode;
-      while (refNode) {
-        bool = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
-        if (bool) {
-          nodes.push(refNode);
-          filtered = true;
+    if (!selfMatched || complex) {
+      let currentNode = this.#node.parentNode;
+      while (currentNode) {
+        if (this._matchLeaves(leaves, currentNode, options)) {
+          nodes.push(currentNode);
         }
-        if (refNode.parentNode) {
-          refNode = refNode.parentNode;
-        } else {
-          break;
-        }
+        currentNode = currentNode.parentNode;
       }
     }
+    const filtered = nodes.length > 0;
     return [nodes, filtered];
+  }
+
+  /**
+   * find entry nodes for pseudo-element selectors
+   * @private
+   * @param {object} leaf - The pseudo-element leaf from the AST.
+   * @param {Array.<object>} filterLeaves - Leaves for compound selectors.
+   * @param {string} targetType - The type of target to find.
+   * @returns {object} - The result object { nodes, filtered }.
+   */
+  _findEntryNodesForPseudoElement(leaf, filterLeaves, targetType) {
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF && this.#check) {
+      const css = generateCSS(leaf);
+      this.#pseudoElement.push(css);
+      if (filterLeaves.length) {
+        [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
+      } else {
+        nodes.push(this.#node);
+        filtered = true;
+      }
+    } else {
+      matchPseudoElementSelector(leaf.name, leaf.type, { warn: this.#warn });
+    }
+    return { nodes, filtered, pending: false };
+  }
+
+  /**
+   * find entry nodes for ID selectors
+   * @private
+   * @param {object} twig - The current twig from the AST branch.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} - The result object { nodes, filtered }.
+   */
+  _findEntryNodesForId(twig, targetType, opt) {
+    const { leaves } = twig;
+    const [leaf, ...filterLeaves] = leaves;
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else if (
+      targetType === TARGET_FIRST &&
+      this.#root.nodeType !== ELEMENT_NODE
+    ) {
+      const node = this.#root.getElementById(leaf.name);
+      if (node) {
+        if (filterLeaves.length > 0) {
+          if (this._matchLeaves(filterLeaves, node, { warn: this.#warn })) {
+            nodes.push(node);
+            filtered = true;
+          }
+        } else {
+          nodes.push(node);
+          filtered = true;
+        }
+      }
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      if (nodes.length) {
+        filtered = true;
+      }
+    }
+    return { nodes, filtered, pending: false };
+  }
+
+  /**
+   * find entry nodes for class selectors
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves for the selector.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} - The result object { nodes, filtered }.
+   */
+  _findEntryNodesForClass(leaves, targetType, opt) {
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      if (nodes.length) {
+        filtered = true;
+      }
+    }
+    return { nodes, filtered, pending: false };
+  }
+
+  /**
+   * find entry nodes for type selectors
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves for the selector.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} - The result object { nodes, filtered }.
+   */
+  _findEntryNodesForType(leaves, targetType, opt) {
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      if (nodes.length) {
+        filtered = true;
+      }
+    }
+    return { nodes, filtered, pending: false };
+  }
+
+  /**
+   * find entry nodes for other selector types (default case)
+   * @private
+   * @param {object} twig - The current twig from the AST branch.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} - The result object { nodes, filtered, pending }.
+   */
+  _findEntryNodesForOther(twig, targetType, opt) {
+    const { leaves } = twig;
+    const [leaf, ...filterLeaves] = leaves;
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    let pending = false;
+    if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
+      let shadowRoot = null;
+      if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
+      } else if (filterLeaves.length && this.#node.nodeType === ELEMENT_NODE) {
+        shadowRoot =
+          this._matchShadowHostPseudoClass(leaf, this.#node.shadowRoot);
+      }
+      if (shadowRoot) {
+        let bool = true;
+        for (const leaf of filterLeaves) {
+          switch (leaf.name) {
+            case 'host':
+            case 'host-context': {
+              const matchedNode =
+                this._matchShadowHostPseudoClass(leaf, shadowRoot);
+              bool = matchedNode === shadowRoot;
+              break;
+            }
+            case 'has': {
+              bool = this._matchPseudoClassSelector(leaf, shadowRoot, {})
+                .has(shadowRoot);
+              break;
+            }
+            default: {
+              bool = false;
+            }
+          }
+          if (!bool) {
+            break;
+          }
+        }
+        if (bool) {
+          nodes.push(shadowRoot);
+          filtered = true;
+        }
+      }
+    } else if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else if (targetType === TARGET_FIRST) {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      if (nodes.length) {
+        filtered = true;
+      }
+    } else {
+      pending = true;
+    }
+    return { nodes, filtered, pending };
   }
 
   /**
@@ -2327,165 +2400,140 @@ export class Finder {
   _findEntryNodes(twig, targetType, opt = {}) {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
-    const compound = filterLeaves.length > 0;
-    const { name: leafName, type: leafType } = leaf;
     const { complex = false, dir = DIR_PREV } = opt;
     const precede = dir === DIR_NEXT && this.#node.nodeType === ELEMENT_NODE &&
       this.#node !== this.#root;
-    let nodes = [];
-    let filtered = false;
-    let pending = false;
-    switch (leafType) {
+    let result;
+    switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
-        if (targetType === TARGET_SELF && this.#check) {
-          const css = generateCSS(leaf);
-          this.#pseudoElement.push(css);
-          if (filterLeaves.length) {
-            [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
-          } else {
-            nodes.push(this.#node);
-            filtered = true;
-          }
-        } else {
-          matchPseudoElementSelector(leafName, leafType, {
-            warn: this.#warn
-          });
-        }
+        result =
+          this._findEntryNodesForPseudoElement(leaf, filterLeaves, targetType);
         break;
       }
       case ID_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else if (targetType === TARGET_FIRST &&
-                   this.#root.nodeType !== ELEMENT_NODE) {
-          const node = this.#root.getElementById(leafName);
-          if (node) {
-            if (compound) {
-              const bool = this._matchLeaves(filterLeaves, node, {
-                warn: this.#warn
-              });
-              if (bool) {
-                nodes.push(node);
-                filtered = true;
-              }
-            } else {
-              nodes.push(node);
-              filtered = true;
-            }
-          }
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType,
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForId(twig, targetType, {
+          complex, precede
+        });
         break;
       }
       case CLASS_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForClass(leaves, targetType, {
+          complex,
+          precede
+        });
         break;
       }
       case TYPE_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType,
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForType(leaves, targetType, {
+          complex,
+          precede
+        });
         break;
       }
       default: {
-        if (targetType !== TARGET_LINEAL &&
-            (leafName === 'host' || leafName === 'host-context')) {
-          let shadowRoot;
-          if (this.#shadow &&
-              this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
-          } else if (compound && this.#node.nodeType === ELEMENT_NODE) {
-            shadowRoot =
-              this._matchShadowHostPseudoClass(leaf, this.#node.shadowRoot);
-          }
-          if (shadowRoot) {
-            let bool;
-            if (compound) {
-              for (const item of filterLeaves) {
-                if (/^host(?:-context)?$/.test(item.name)) {
-                  const node =
-                    this._matchShadowHostPseudoClass(item, shadowRoot);
-                  bool = node === shadowRoot;
-                } else if (item.name === 'has') {
-                  bool = this._matchPseudoClassSelector(item, shadowRoot, {})
-                    .has(shadowRoot);
-                } else {
-                  bool = false;
-                }
-                if (!bool) {
-                  break;
-                }
-              }
-            } else {
-              bool = true;
-            }
-            if (bool) {
-              nodes.push(shadowRoot);
-              filtered = true;
-            }
-          }
-        } else if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else if (targetType === TARGET_FIRST) {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType,
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        } else {
-          pending = true;
-        }
+        result = this._findEntryNodesForOther(twig, targetType, {
+          complex,
+          precede
+        });
       }
     }
     return {
-      compound,
-      filtered,
-      nodes,
-      pending
+      compound: filterLeaves.length > 0,
+      filtered: result.filtered,
+      nodes: result.nodes,
+      pending: result.pending
     };
+  }
+
+  /**
+   * determine the direction and starting twig for a selector branch
+   * @private
+   * @param {Array.<object>} branch - The AST branch.
+   * @param {string} targetType - The type of target to find.
+   * @returns {object} - An object containing the direction and the starting twig.
+   */
+  _determineTraversalStrategy(branch, targetType) {
+    const branchLen = branch.length;
+    const firstTwig = branch[0];
+    const lastTwig = branch[branchLen - 1];
+    if (branchLen === 1) {
+      return { dir: DIR_PREV, twig: firstTwig };
+    }
+    // Complex selector (branchLen > 1)
+    const { leaves: [{ name: firstName, type: firstType }] } = firstTwig;
+    const { leaves: [{ name: lastName, type: lastType }] } = lastTwig;
+    const { combo: firstCombo } = firstTwig;
+    if (
+      this.#selector.includes(':scope') ||
+      lastType === PS_ELEMENT_SELECTOR ||
+      lastType === ID_SELECTOR
+    ) {
+      return { dir: DIR_PREV, twig: lastTwig };
+    }
+    if (firstType === ID_SELECTOR) {
+      return { dir: DIR_NEXT, twig: firstTwig };
+    }
+    if (firstName === '*' && firstType === TYPE_SELECTOR) {
+      return { dir: DIR_PREV, twig: lastTwig };
+    }
+    if (lastName === '*' && lastType === TYPE_SELECTOR) {
+      return { dir: DIR_NEXT, twig: firstTwig };
+    }
+    if (branchLen === 2) {
+      if (targetType === TARGET_FIRST) {
+        return { dir: DIR_PREV, twig: lastTwig };
+      }
+      const { name: comboName } = firstCombo;
+      if (comboName === '+' || comboName === '~') {
+        return { dir: DIR_PREV, twig: lastTwig };
+      }
+    }
+    // Default strategy for complex selectors
+    return { dir: DIR_NEXT, twig: firstTwig };
+  }
+
+  /**
+   * process pending items that could not be resolved with a direct strategy
+   * @private
+   * @param {Set.<Map>} pendingItems - The set of pending items.
+   */
+  _processPendingItems(pendingItems) {
+    if (!pendingItems.size) {
+      return;
+    }
+    let node;
+    let walker;
+    if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+      node = this.#node;
+      walker = this.#nodeWalker;
+    } else {
+      if (!this.#rootWalker) {
+        this.#rootWalker = this._createTreeWalker(this.#root);
+      }
+      node = this.#root;
+      walker = this.#rootWalker;
+    }
+    let nextNode = traverseNode(node, walker);
+    while (nextNode) {
+      const isWithinScope = this.#node.nodeType !== ELEMENT_NODE ||
+                            nextNode === this.#node ||
+                            this.#node.contains(nextNode);
+      if (isWithinScope) {
+        for (const pendingItem of pendingItems) {
+          const { leaves } = pendingItem.get('twig');
+          if (this._matchLeaves(leaves, nextNode, { warn: this.#warn })) {
+            const index = pendingItem.get('index');
+            this.#ast[index].filtered = true;
+            this.#ast[index].find = true;
+            this.#nodes[index].push(nextNode);
+          }
+        }
+      }
+      if (nextNode !== walker.currentNode) {
+        nextNode = traverseNode(nextNode, walker);
+      }
+      nextNode = walker.nextNode();
+    }
   }
 
   /**
@@ -2500,57 +2548,9 @@ export class Finder {
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
-        const branchLen = branch.length;
-        const complex = branchLen > 1;
-        const firstTwig = branch[0];
-        let dir;
-        let twig;
-        if (complex) {
-          const {
-            combo: firstCombo,
-            leaves: [{
-              name: firstName,
-              type: firstType
-            }]
-          } = firstTwig;
-          const lastTwig = branch[branchLen - 1];
-          const {
-            leaves: [{
-              name: lastName,
-              type: lastType
-            }]
-          } = lastTwig;
-          dir = DIR_NEXT;
-          twig = firstTwig;
-          if (this.#selector.includes(':scope') ||
-              lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
-            dir = DIR_PREV;
-            twig = lastTwig;
-          } else if (firstType === ID_SELECTOR) {
-            dir = DIR_NEXT;
-            twig = firstTwig;
-          } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
-            dir = DIR_PREV;
-            twig = lastTwig;
-          } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
-            dir = DIR_NEXT;
-            twig = firstTwig;
-          } else if (branchLen === 2) {
-            if (targetType === TARGET_FIRST) {
-              dir = DIR_PREV;
-              twig = lastTwig;
-            } else {
-              const { name: comboName } = firstCombo;
-              if (comboName === '+' || comboName === '~') {
-                dir = DIR_PREV;
-                twig = lastTwig;
-              }
-            }
-          }
-        } else {
-          dir = DIR_PREV;
-          twig = firstTwig;
-        }
+        const complex = branch.length > 1;
+        const { dir, twig } =
+          this._determineTraversalStrategy(branch, targetType);
         const {
           compound, filtered, nodes, pending
         } = this._findEntryNodes(twig, targetType, { complex, dir });
@@ -2567,51 +2567,7 @@ export class Finder {
         this.#ast[i].filtered = filtered || !compound;
         i++;
       }
-      if (pendingItems.size) {
-        let node;
-        let walker;
-        if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
-          node = this.#node;
-          walker = this.#nodeWalker;
-        } else {
-          if (!this.#rootWalker) {
-            this.#rootWalker = this._createTreeWalker(this.#root);
-          }
-          node = this.#root;
-          walker = this.#rootWalker;
-        }
-        let nextNode = traverseNode(node, walker);
-        while (nextNode) {
-          let bool = false;
-          if (this.#node.nodeType === ELEMENT_NODE) {
-            if (nextNode === this.#node) {
-              bool = true;
-            } else {
-              bool = this.#node.contains(nextNode);
-            }
-          } else {
-            bool = true;
-          }
-          if (bool) {
-            for (const pendingItem of pendingItems) {
-              const { leaves } = pendingItem.get('twig');
-              const matched = this._matchLeaves(leaves, nextNode, {
-                warn: this.#warn
-              });
-              if (matched) {
-                const index = pendingItem.get('index');
-                this.#ast[index].filtered = true;
-                this.#ast[index].find = true;
-                this.#nodes[index].push(nextNode);
-              }
-            }
-          }
-          if (nextNode !== walker.currentNode) {
-            nextNode = traverseNode(nextNode, walker);
-          }
-          nextNode = walker.nextNode();
-        }
-      }
+      this._processPendingItems(pendingItems);
     } else {
       let i = 0;
       for (const { branch } of ast) {
@@ -2646,11 +2602,12 @@ export class Finder {
    */
   _getCombinedNodes(twig, nodes, dir) {
     const arr = [];
+    const options = {
+      dir,
+      warn: this.#warn
+    };
     for (const node of nodes) {
-      const matched = this._matchCombinator(twig, node, {
-        dir,
-        warn: this.#warn
-      });
+      const matched = this._matchCombinator(twig, node, options);
       if (matched.size) {
         arr.push(...matched);
       }

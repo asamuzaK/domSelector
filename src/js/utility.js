@@ -13,8 +13,9 @@ import {
   ATRULE, COMBO, COMPOUND_I, DESCEND, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
   HAS_COMPOUND, INPUT_BUTTON, INPUT_EDIT, INPUT_LTR, INPUT_TEXT, LOGIC_COMPLEX,
-  LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, RULE, SCOPE, SELECTOR_LIST, SIBLING,
-  SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE, TYPE_FROM, TYPE_TO
+  LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, PS_CLASS_SELECTOR, RULE, SCOPE,
+  SELECTOR_LIST, SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE,
+  TYPE_FROM, TYPE_TO
 } from './constant.js';
 const KEY_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
 const KEY_DIR_LTR = new Set(INPUT_LTR);
@@ -142,6 +143,43 @@ export const verifyArray = (arr, type) => {
     }
   }
   return arr;
+};
+
+/**
+ * filter a list of nodes based on An+B logic
+ * @param {Array.<object>} nodes - array of nodes to filter
+ * @param {object} anb - An+B options
+ * @param {number} anb.a - a
+ * @param {number} anb.b - b
+ * @param {boolean} [anb.reverse] - reverse order
+ * @returns {Array.<object>} - array of matched nodes
+ */
+export const filterNodesByAnB = (nodes, anb) => {
+  const { a, b, reverse } = anb;
+  const processedNodes = reverse ? [...nodes].reverse() : nodes;
+  const l = nodes.length;
+  const matched = [];
+  if (a === 0) {
+    if (b > 0 && b <= l) {
+      matched.push(processedNodes[b - 1]);
+    }
+    return matched;
+  }
+  let startIndex = b - 1;
+  if (a > 0) {
+    while (startIndex < 0) {
+      startIndex += a;
+    }
+    for (let i = startIndex; i < l; i += a) {
+      matched.push(processedNodes[i]);
+    }
+  } else if (startIndex >= 0) {
+    for (let i = startIndex; i >= 0; i += a) {
+      matched.push(processedNodes[i]);
+    }
+    return matched.reverse();
+  }
+  return matched;
 };
 
 /**
@@ -938,6 +976,31 @@ export const findAttributeValues = (node, opt = {}) => {
     }
   }
   return [...attrValues];
+};
+
+/**
+ * Check for valid shadow host selector for :is(), :not(), :where().
+ * @param {string} astName - pseudo-class name.
+ * @param {Array.<Array.<object>>} branches - AST branches.
+ * @returns {boolean} - True if valid
+ */
+export const isValidShadowHostSelector = (astName = '', branches = []) => {
+  if (!/^(?:is|not|where)$/.test(astName)) {
+    return false;
+  }
+  const [branch] = branches;
+  if (Array.isArray(branch) && branch.length === 1) {
+    const [ast] = branch;
+    if (!ast || !Object.hasOwn(ast, 'type')) {
+      return false;
+    }
+    if (astName === 'not') {
+      const { type } = ast;
+      return type === PS_CLASS_SELECTOR;
+    }
+    return true;
+  }
+  return false;
 };
 
 /**

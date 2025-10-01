@@ -10,7 +10,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as util from '../src/js/utility.js';
 import {
-  SHOW_CONTAINER, TARGET_ALL, TARGET_FIRST, TARGET_SELF, TARGET_LINEAL
+  PS_CLASS_SELECTOR, SHOW_CONTAINER, TARGET_ALL, TARGET_FIRST, TARGET_SELF,
+  TARGET_LINEAL
 } from '../src/js/constant.js';
 
 describe('utility functions', () => {
@@ -100,6 +101,675 @@ describe('utility functions', () => {
       assert.deepEqual(res, [
         'foo',
         'bar'
+      ], 'result');
+    });
+  });
+
+  describe('filter nodes by anb', () => {
+    const func = util.filterNodesByAnB;
+
+    it('should get empty array', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 0,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 2,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 3,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 0,
+        b: 3,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 0,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 0,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li2'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li2'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 2,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 3,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 1,
+        b: 3,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 0,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 0,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2'),
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: 2,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 3,
+        b: 0,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 3,
+        b: 0,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -1,
+        b: 1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -1,
+        b: 1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -1,
+        b: 2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -1,
+        b: 3,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li2'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -1,
+        b: 3,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li2'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -2,
+        b: 1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -2,
+        b: 1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -2,
+        b: 2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: -2,
+        b: 2,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -1,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -1,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li1')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -2,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -2,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li2')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -3,
+        reverse: false
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li1'),
+        document.getElementById('li3')
+      ], 'result');
+    });
+
+    it('should get node(s)', () => {
+      const ul = document.getElementById('ul1');
+      const nodes = [];
+      for (const child of ul.children) {
+        nodes.push(child);
+      }
+      const anb = {
+        a: 2,
+        b: -3,
+        reverse: true
+      };
+      const res = func(nodes, anb);
+      assert.deepEqual(res, [
+        document.getElementById('li3'),
+        document.getElementById('li1')
       ], 'result');
     });
   });
@@ -2400,6 +3070,70 @@ describe('utility functions', () => {
           '& .content'
         ]
       ], 'result');
+    });
+  });
+
+  describe('is valid shadow host selector', () => {
+    const func = util.isValidShadowHostSelector;
+
+    it('should get false', () => {
+      const res = func();
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('is');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('not');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('where');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('is', []);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('is', [[]]);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('is', [[{}]]);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('is', [[{ type: PS_CLASS_SELECTOR }]]);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('not', [[{ type: PS_CLASS_SELECTOR }]]);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('not', [[{ type: 'foo' }]]);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('where', [[{ type: PS_CLASS_SELECTOR }]]);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('foo', [[{ type: PS_CLASS_SELECTOR }]]);
+      assert.strictEqual(res, false, 'result');
     });
   });
 

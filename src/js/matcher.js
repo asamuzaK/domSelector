@@ -6,14 +6,17 @@
 import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 import {
   findAttributeValues, findLangAttribute, getCaseSensitivity,
-  getDirectionality, getType
+  getDirectionality, getType, isContentEditable, isCustomElement
 } from './utility.js';
 
 /* constants */
 import {
-  ALPHA_NUM, IDENT, KEY_PS_ELEMENT, KEY_PS_ELEMENT_FUNC, LANG_PART,
-  NOT_SUPPORTED_ERR, PS_ELEMENT_SELECTOR, STRING, SYNTAX_ERR,
+  ALPHA_NUM, ELEMENT_NODE, FORM_PARTS, IDENT, KEY_INPUT_EDIT, KEY_PS_ELEMENT,
+  KEY_PS_ELEMENT_FUNC, LANG_PART, NOT_SUPPORTED_ERR, PS_ELEMENT_SELECTOR,
+  STRING, SYNTAX_ERR,
 } from './constant.js';
+const KEY_FORM_PS_DISABLED =
+  new Set([...FORM_PARTS, 'fieldset', 'optgroup', 'option']);
 const REG_VALID_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**
@@ -115,6 +118,101 @@ export const matchLanguagePseudoClass = (ast, node) => {
     regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
   }
   return regExtendedLang.test(effectiveLang);
+};
+
+/**
+ * Matches the :disabled and :enabled pseudo-classes.
+ * @param {string} astName - pseudo-class name
+ * @param {object} node - Element node
+ * @returns {boolean} - True if matched
+ */
+export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
+  if (!/^(?:dis|en)abled$/.test(astName) || node?.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  const { localName, parentNode } = node;
+  if (!KEY_FORM_PS_DISABLED.has(localName) &&
+      !isCustomElement(node, { formAssociated: true })) {
+    return false;
+  }
+  let isDisabled = false;
+  if (node.disabled || node.hasAttribute('disabled')) {
+    isDisabled = true;
+  } else if (localName === 'option') {
+    if (
+      parentNode && parentNode.localName === 'optgroup' &&
+      (parentNode.disabled || parentNode.hasAttribute('disabled'))
+    ) {
+      isDisabled = true;
+    }
+  } else if (localName !== 'optgroup') {
+    let current = parentNode;
+    while (current) {
+      if (
+        current.localName === 'fieldset' &&
+        (current.disabled || current.hasAttribute('disabled'))
+      ) {
+        // The first <legend> in a disabled <fieldset> is not disabled.
+        let legend;
+        let element = current.firstElementChild;
+        while (element) {
+          if (element.localName === 'legend') {
+            legend = element;
+            break;
+          }
+          element = element.nextElementSibling;
+        }
+        if (!legend || !legend.contains(node)) {
+          isDisabled = true;
+        }
+        // Found the containing fieldset, stop searching up.
+        break;
+      }
+      current = current.parentNode;
+    }
+  }
+  if (astName === 'disabled') {
+    return isDisabled;
+  }
+  return !isDisabled;
+};
+
+/**
+ * Match the :read-only and :read-write pseudo-classes
+ * @param {string} astName - pseudo-class name
+ * @param {object} node - Element node
+ * @returns {boolean} - True if matched
+ */
+export const matchReadOnlyWritePseudo = (astName, node) => {
+  if (
+    !/^read-(?:only|write)$/.test(astName) ||
+    node?.nodeType !== ELEMENT_NODE
+  ) {
+    return false;
+  }
+  const { localName } = node;
+  let isReadOnly = false;
+  switch (localName) {
+    case 'textarea':
+    case 'input': {
+      const isEditableInput = !node.type || KEY_INPUT_EDIT.has(node.type);
+      if (localName === 'textarea' || isEditableInput) {
+        isReadOnly = node.readOnly || node.hasAttribute('readonly') ||
+                     node.disabled || node.hasAttribute('disabled');
+      } else {
+        // Non-editable input types are always read-only
+        isReadOnly = true;
+      }
+      break;
+    }
+    default: {
+      isReadOnly = !isContentEditable(node);
+    }
+  }
+  if (astName === 'read-only') {
+    return isReadOnly;
+  }
+  return !isReadOnly;
 };
 
 /**

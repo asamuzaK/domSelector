@@ -98,7 +98,9 @@ export const LOGIC_COMPOUND =
   `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
 
-/* input types */
+/* forms and input types */
+export const FORM_PARTS =
+  Object.freeze(['button', 'input', 'select', 'textarea']);
 export const INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
 export const INPUT_CHECK = Object.freeze(['checkbox', 'radio']);
 export const INPUT_DATE =
@@ -112,6 +114,7 @@ export const INPUT_LTR = Object.freeze([
 ]);
 
 /* keywords */
+export const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
 export const KEY_LOGICAL = new Set(['has', 'is', 'not', 'where']);
 export const KEY_MODIFIER = new Set([
   'Alt', 'AltGraph', 'CapsLock', 'Control', 'Fn', 'FnLock', 'Hyper', 'Meta',

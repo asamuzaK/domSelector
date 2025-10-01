@@ -562,6 +562,7 @@ suite.on('start', () => {
   console.log(`benchmark ${pkgName} v${version}`);
   prepareDomstr();
   prepareDom();
+/*
 }).add(`jsdom matches('${selectors[0]}')`, () => {
   elementMatchesRandom('jsdom', selectors[0], 'p');
 }).add(`happydom matches('${selectors[0]}')`, () => {
@@ -674,6 +675,7 @@ suite.on('start', () => {
   elementClosestRandom('linkedom', selectors[18], 'container');
 }).add(`patched-jsdom closest('${selectors[18]}')`, () => {
   elementClosestRandom('patched-jsdom', selectors[18], 'container');
+*/
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
