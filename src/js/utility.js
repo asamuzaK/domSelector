@@ -342,8 +342,10 @@ export const getSlottedTextContent = node => {
   }
   const nodes = node.assignedNodes();
   if (nodes.length) {
-    let text;
-    for (const item of nodes) {
+    let text = '';
+    const l = nodes.length;
+    for (let i = 0; i < l; i++) {
+      const item = nodes[i];
       text = item.textContent.trim();
       if (text) {
         break;
