@@ -663,6 +663,48 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('https://github.com/jsdom/jsdom/issues/3941', () => {
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(`<!DOCTYPE html>
+        <html lang="en">
+          <head>
+          </head>
+          <body>
+            <div id="shadow-root" style="visibility:hidden;"></div>
+          </body>
+        </html>
+      `);
+      window = dom.window;
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      window = null;
+      document = null;
+    });
+
+    it('should get matched node', () => {
+      const shadowRoot =
+        document.querySelector('#shadow-root').attachShadow({ mode: 'open' });
+      shadowRoot.innerHTML =
+        `<div class="container">
+            <span class="shadow-element-with-inline-style" style="visibility:inherit;"></span>
+        </div>`;
+      const innerEl = document.querySelector('#shadow-root').shadowRoot
+        .querySelector('.shadow-element-with-inline-style');
+      assert.strictEqual(window.getComputedStyle(innerEl).visibility,
+        'visible', 'initial result');
+      shadowRoot.innerHTML =
+        `<div class="container" style="visibility:hidden;">
+            <span class="shadow-element-with-inline-style" style="visibility:inherit;"></span>
+        </div>`;
+      const innerEl2 = document.querySelector('#shadow-root').shadowRoot
+        .querySelector('.shadow-element-with-inline-style');
+      assert.strictEqual(window.getComputedStyle(innerEl2).visibility,
+        'hidden', 'result');
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;
