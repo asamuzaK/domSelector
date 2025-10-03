@@ -262,7 +262,7 @@ export class Finder {
    * @param {string} name - error name
    * @returns {DOMException} - The generated DOMException object.
    */
-  _generateDOMException(msg, name) {
+  _generateException(msg, name) {
     return new this.#window.DOMException(msg, name);
   }
 
@@ -287,7 +287,7 @@ export class Finder {
             const [nextItem] = items;
             if (!nextItem || nextItem.type === COMBINATOR) {
               const msg = `Invalid selector ${selector}`;
-              this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+              this.onError(this._generateException(msg, SYNTAX_ERR));
               // Stop processing
               return { ast: [], descendant: false, invalidate: false };
             }
@@ -619,6 +619,7 @@ export class Finder {
    */
   _matchHasPseudoFunc(astLeaves, node, opt = {}) {
     if (Array.isArray(astLeaves) && astLeaves.length) {
+      // prepare copy of astLeaves
       const leaves = [...astLeaves];
       const [leaf] = leaves;
       const { type: leafType } = leaf;
@@ -935,9 +936,11 @@ export class Finder {
     }
     opt.forgive = astName === 'is' || astName === 'where';
     let branchMatched = false;
-    for (const branch of twigBranches) {
-      const lastTwig = branch[branch.length - 1];
-      const initialMatch = this._matchLeaves(lastTwig.leaves, node, opt);
+    const l = twigBranches.length;
+    for (let i = 0; i < l; i++) {
+      const branch = twigBranches[i];
+      const { leaves: lastTwigLeaves } = branch[branch.length - 1];
+      const initialMatch = this._matchLeaves(lastTwigLeaves, node, opt);
       if (!initialMatch) {
         branchMatched = false;
       } else if (branch.length === 1) {
@@ -993,7 +996,7 @@ export class Finder {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
         const msg = `Invalid selector ${css}`;
-        return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+        return this.onError(this._generateException(msg, SYNTAX_ERR));
       }
       let astData;
       if (this.#astCache.has(ast)) {
@@ -1002,8 +1005,10 @@ export class Finder {
         const { branches } = walkAST(ast);
         if (astName === 'has') {
           // check for nested :has()
-          let forgiven;
-          for (const child of astChildren) {
+          let forgiven = false;
+          const l = astChildren.length;
+          for (let i = 0; i < l; i++) {
+            const child = astChildren[i];
             const item = findAST(child, leaf => {
               if (KEY_LOGICAL.has(leaf.name) &&
                   findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')) {
@@ -1019,7 +1024,7 @@ export class Finder {
               } else {
                 const css = generateCSS(ast);
                 const msg = `Invalid selector ${css}`;
-                return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+                return this.onError(this._generateException(msg, SYNTAX_ERR));
               }
             }
           }
@@ -1032,7 +1037,9 @@ export class Finder {
           };
         } else {
           const twigBranches = [];
-          for (const [...leaves] of branches) {
+          const l = branches.length;
+          for (let i = 0; i < l; i++) {
+            const [...leaves] = branches[i];
             const branch = [];
             const leavesSet = new Set();
             let item = leaves.shift();
@@ -1077,7 +1084,7 @@ export class Finder {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
           const msg = `Invalid selector ${css}`;
-          return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+          return this.onError(this._generateException(msg, SYNTAX_ERR));
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
@@ -1089,7 +1096,7 @@ export class Finder {
             if (astChildren.length !== 1) {
               const css = generateCSS(ast);
               const msg = `Invalid selector ${css}`;
-              return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+              return this.onError(this._generateException(msg, SYNTAX_ERR));
             }
             const [astChild] = astChildren;
             const res = matchDirectionPseudoClass(astChild, node);
@@ -1103,10 +1110,12 @@ export class Finder {
             if (!astChildren.length) {
               const css = generateCSS(ast);
               const msg = `Invalid selector ${css}`;
-              return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+              return this.onError(this._generateException(msg, SYNTAX_ERR));
             }
             let bool;
-            for (const astChild of astChildren) {
+            const l = astChildren.length;
+            for (let i = 0; i < l; i++) {
+              const astChild = astChildren[i];
               bool = matchLanguagePseudoClass(astChild, node);
               if (bool) {
                 break;
@@ -1144,7 +1153,7 @@ export class Finder {
           case 'nth-last-col': {
             if (warn) {
               const msg = `Unsupported pseudo-class :${astName}()`;
-              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
+              this.onError(this._generateException(msg, NOT_SUPPORTED_ERR));
             }
             break;
           }
@@ -1157,14 +1166,14 @@ export class Finder {
           case 'contains': {
             if (warn) {
               const msg = `Unknown pseudo-class :${astName}()`;
-              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
+              this.onError(this._generateException(msg, NOT_SUPPORTED_ERR));
             }
             break;
           }
           default: {
             if (!forgive) {
               const msg = `Unknown pseudo-class :${astName}()`;
-              this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+              this.onError(this._generateException(msg, SYNTAX_ERR));
             }
           }
         }
@@ -1574,7 +1583,7 @@ export class Finder {
         case 'first-line': {
           if (warn) {
             const msg = `Unsupported pseudo-element ::${astName}`;
-            this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
+            this.onError(this._generateException(msg, NOT_SUPPORTED_ERR));
           }
           break;
         }
@@ -1600,7 +1609,7 @@ export class Finder {
         case '-webkit-autofill': {
           if (warn) {
             const msg = `Unsupported pseudo-class :${astName}`;
-            this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
+            this.onError(this._generateException(msg, NOT_SUPPORTED_ERR));
           }
           break;
         }
@@ -1608,11 +1617,11 @@ export class Finder {
           if (astName.startsWith('-webkit-')) {
             if (warn) {
               const msg = `Unsupported pseudo-class :${astName}`;
-              this.onError(this._generateDOMException(msg, NOT_SUPPORTED_ERR));
+              this.onError(this._generateException(msg, NOT_SUPPORTED_ERR));
             }
           } else if (!forgive) {
             const msg = `Unknown pseudo-class :${astName}`;
-            this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+            this.onError(this._generateException(msg, SYNTAX_ERR));
           }
         }
       }
@@ -1633,7 +1642,7 @@ export class Finder {
       if (leaf.type === COMBINATOR) {
         const css = generateCSS(ast);
         const msg = `Invalid selector ${css}`;
-        this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+        this.onError(this._generateException(msg, SYNTAX_ERR));
         return false;
       }
       if (!this._matchSelector(leaf, host).has(host)) {
@@ -1655,11 +1664,13 @@ export class Finder {
     let parent = host;
     while (parent) {
       let bool;
-      for (const leaf of leaves) {
+      const l = leaves.length;
+      for (let i = 0; i < l; i++) {
+        const leaf = leaves[i];
         if (leaf.type === COMBINATOR) {
           const css = generateCSS(ast);
           const msg = `Invalid selector ${css}`;
-          this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+          this.onError(this._generateException(msg, SYNTAX_ERR));
           return false;
         }
         bool = this._matchSelector(leaf, parent).has(parent);
@@ -1690,19 +1701,19 @@ export class Finder {
         return node;
       }
       const msg = `Invalid selector :${astName}`;
-      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+      return this.onError(this._generateException(msg, SYNTAX_ERR));
     }
     // From here, we are dealing with a functional pseudo-class like :host(...)
     // Guard clause for unsupported functional pseudo-classes
     if (astName !== 'host' && astName !== 'host-context') {
       const msg = `Invalid selector :${astName}()`;
-      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+      return this.onError(this._generateException(msg, SYNTAX_ERR));
     }
     // Guard clause for invalid number of arguments
     if (astChildren.length !== 1) {
       const css = generateCSS(ast);
       const msg = `Invalid selector ${css}`;
-      return this.onError(this._generateDOMException(msg, SYNTAX_ERR));
+      return this.onError(this._generateException(msg, SYNTAX_ERR));
     }
     const { host } = node;
     const { branches } = walkAST(astChildren[0]);
@@ -2251,7 +2262,7 @@ export class Finder {
     ) {
       const node = this.#root.getElementById(leaf.name);
       if (node) {
-        if (filterLeaves.length > 0) {
+        if (filterLeaves.length) {
           if (this._matchLeaves(filterLeaves, node, { warn: this.#warn })) {
             nodes.push(node);
             filtered = true;
@@ -2263,9 +2274,7 @@ export class Finder {
       }
     } else {
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      if (nodes.length) {
-        filtered = true;
-      }
+      filtered = nodes.length > 0;
     }
     return { nodes, filtered, pending: false };
   }
@@ -2288,9 +2297,7 @@ export class Finder {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      if (nodes.length) {
-        filtered = true;
-      }
+      filtered = nodes.length > 0;
     }
     return { nodes, filtered, pending: false };
   }
@@ -2313,9 +2320,7 @@ export class Finder {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      if (nodes.length) {
-        filtered = true;
-      }
+      filtered = nodes.length > 0;
     }
     return { nodes, filtered, pending: false };
   }
@@ -2378,9 +2383,7 @@ export class Finder {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (targetType === TARGET_FIRST) {
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      if (nodes.length) {
-        filtered = true;
-      }
+      filtered = nodes.length > 0;
     } else {
       pending = true;
     }
