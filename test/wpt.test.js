@@ -1605,7 +1605,13 @@ describe('local wpt test cases', () => {
     });
 
     const dirValue = [
-      'password', 'text', 'search', 'url', 'email', 'submit', 'reset',
+      'password',
+      'text',
+      'search',
+      'url',
+      'email',
+      'submit',
+      'reset',
       'button'
     ];
 
@@ -1670,7 +1676,14 @@ describe('local wpt test cases', () => {
     });
 
     const dirDefault = [
-      'date', 'time', 'number', 'range', 'color', 'checkbox', 'radio', 'image'
+      'date',
+      'time',
+      'number',
+      'range',
+      'color',
+      'checkbox',
+      'radio',
+      'image'
     ];
 
     it('should get matched node', () => {
@@ -2102,14 +2115,22 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const node = document.getElementById('el');
-      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: 'Tab'
-      }));
+      document.body.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'Tab'
+        })
+      );
       node.focus();
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        'node matches :focus-visible');
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), false,
-        'node does not match :focus:not(:focus-visible)');
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        'node matches :focus-visible'
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        false,
+        'node does not match :focus:not(:focus-visible)'
+      );
       const focusVisiblePseudoAll = document.querySelectorAll(':focus-visible');
       assert.strictEqual(focusVisiblePseudoAll.length, 1);
       const focusVisiblePseudo = document.querySelector(':focus-visible');
@@ -2180,22 +2201,32 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const elements = document.querySelectorAll('.check');
       for (const target of elements) {
         await userMouseClick(target);
-        assert.strictEqual(target.matches(':focus-visible'), true,
-          `${target.id} matches :focus-visible`);
-        assert.strictEqual(target.matches(':focus:not(:focus-visible)'), false,
-          `${target.id} does not match :focus:not(:focus-visible)`);
+        assert.strictEqual(
+          target.matches(':focus-visible'),
+          true,
+          `${target.id} matches :focus-visible`
+        );
+        assert.strictEqual(
+          target.matches(':focus:not(:focus-visible)'),
+          false,
+          `${target.id} does not match :focus:not(:focus-visible)`
+        );
       }
     });
   });
@@ -2272,22 +2303,32 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const elements = document.querySelectorAll('.check');
       for (const target of elements) {
         await userMouseClick(target);
-        assert.strictEqual(target.matches(':focus-visible'), false,
-          `${target.id} does not match :focus-visible`);
-        assert.strictEqual(target.matches(':focus:not(:focus-visible)'), true,
-          `${target.id} matches :focus:not(:focus-visible)`);
+        assert.strictEqual(
+          target.matches(':focus-visible'),
+          false,
+          `${target.id} does not match :focus-visible`
+        );
+        assert.strictEqual(
+          target.matches(':focus:not(:focus-visible)'),
+          true,
+          `${target.id} matches :focus:not(:focus-visible)`
+        );
       }
     });
   });
@@ -2320,10 +2361,16 @@ describe('local wpt test cases', () => {
         target.focus();
       });
       button.click();
-      assert.strictEqual(target.matches(':focus-visible'), false,
-        `${target.id} does not match :focus-visible`);
-      assert.strictEqual(target.matches(':focus:not(:focus-visible)'), true,
-        `${target.id} matches :focus:not(:focus-visible)`);
+      assert.strictEqual(
+        target.matches(':focus-visible'),
+        false,
+        `${target.id} does not match :focus-visible`
+      );
+      assert.strictEqual(
+        target.matches(':focus:not(:focus-visible)'),
+        true,
+        `${target.id} matches :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2351,21 +2398,31 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const node = document.getElementById('el');
       await userMouseClick(node);
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), false,
-        `${node.id} does not match :focus:not(:focus-visible)`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2402,30 +2459,46 @@ describe('local wpt test cases', () => {
       document.body.addEventListener('keydown', setHadkeydown, true);
       document.body.addEventListener('mousedown', setHadmousedown, true);
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const one = document.getElementById('one');
       await userMouseClick(one);
-      assert.strictEqual(one.matches('[data-hadmousedown] :focus'), true,
-        'one matches [data-hadmousedown] :focus');
       assert.strictEqual(
-        one.matches('[data-hadmousedown] :focus:not(:focus-visible)'), true,
-        'one matches [data-hadmousedown] :focus:not(:focus-visible)');
-      one.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: '\uE007'
-      }));
-      one.dispatchEvent(new window.KeyboardEvent('keyup', {
-        key: '\uE007'
-      }));
-      assert.strictEqual(one.matches('[data-hadkeydown] :focus-visible'), true,
-        'one matches [data-hadkeydown] :focus-visible');
+        one.matches('[data-hadmousedown] :focus'),
+        true,
+        'one matches [data-hadmousedown] :focus'
+      );
+      assert.strictEqual(
+        one.matches('[data-hadmousedown] :focus:not(:focus-visible)'),
+        true,
+        'one matches [data-hadmousedown] :focus:not(:focus-visible)'
+      );
+      one.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: '\uE007'
+        })
+      );
+      one.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: '\uE007'
+        })
+      );
+      assert.strictEqual(
+        one.matches('[data-hadkeydown] :focus-visible'),
+        true,
+        'one matches [data-hadkeydown] :focus-visible'
+      );
       document.body.removeEventListener('keydown', setHadkeydown, true);
       document.body.removeEventListener('mousedown', setHadmousedown, true);
       delete document.body.dataset.hadmousedown;
@@ -2456,13 +2529,17 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const button = document.getElementById('button');
@@ -2470,18 +2547,28 @@ describe('local wpt test cases', () => {
       button.addEventListener('click', () => {
         node.focus();
       });
-      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: 'Tab'
-      }));
+      document.body.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'Tab'
+        })
+      );
       button.focus();
-      button.dispatchEvent(new window.KeyboardEvent('keyup', {
-        key: 'Tab'
-      }));
+      button.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'Tab'
+        })
+      );
       await userMouseClick(button);
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(node.matches('#el:focus:not(:focus-visible)'), false,
-        `${node.id} does not match #el:focus:not(:focus-visible)`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches('#el:focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match #el:focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2514,10 +2601,16 @@ describe('local wpt test cases', () => {
         window.requestAnimationFrame(resolve);
       });
       assert.deepEqual(document.activeElement, button);
-      assert.strictEqual(button.matches(':focus-visible'), true,
-        `${button.id} matches :focus-visible`);
-      assert.strictEqual(button.matches('#button:focus:not(:focus-visible)'),
-        false, `${button.id} does not match #button:focus:not(:focus-visible)`);
+      assert.strictEqual(
+        button.matches(':focus-visible'),
+        true,
+        `${button.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        button.matches('#button:focus:not(:focus-visible)'),
+        false,
+        `${button.id} does not match #button:focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2544,10 +2637,16 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const node = document.getElementById('el');
       node.focus();
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), false,
-        `${node.id} does not match :focus:not(:focus-visible)`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2573,36 +2672,50 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const node = document.getElementById('target');
-      node.addEventListener('keydown', (e) => {
+      node.addEventListener('keydown', e => {
         e.preventDefault();
       });
-      node.addEventListener('keyup', (e) => {
+      node.addEventListener('keyup', e => {
         e.preventDefault();
       });
-      node.addEventListener('keypress', (e) => {
+      node.addEventListener('keypress', e => {
         e.preventDefault();
       });
       await userMouseClick(node);
-      node.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: 'ArrowRight'
-      }));
-      node.dispatchEvent(new window.KeyboardEvent('keyup', {
-        key: 'ArrowRight'
-      }));
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), false,
-        `${node.id} does not match :focus:not(:focus-visible)`);
+      node.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'ArrowRight'
+        })
+      );
+      node.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'ArrowRight'
+        })
+      );
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2629,33 +2742,53 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const node = document.getElementById('el');
       await userMouseClick(node);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), true,
-        `${node.id} matches :focus:not(:focus-visible)`);
-      assert.strictEqual(node.matches(':focus-visible'), false,
-        `${node.id} does not match :focus-visible`);
-      node.dispatchEvent(new window.KeyboardEvent('keydown', {
-        ctrlKey: true,
-        key: 'y'
-      }));
-      node.dispatchEvent(new window.KeyboardEvent('keyup', {
-        ctrlKey: true,
-        key: 'y'
-      }));
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), true,
-        `${node.id} matches :focus:not(:focus-visible)`);
-      assert.strictEqual(node.matches(':focus-visible'), false,
-        `${node.id} does not match :focus-visible`);
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        true,
+        `${node.id} matches :focus:not(:focus-visible)`
+      );
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        false,
+        `${node.id} does not match :focus-visible`
+      );
+      node.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          ctrlKey: true,
+          key: 'y'
+        })
+      );
+      node.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          ctrlKey: true,
+          key: 'y'
+        })
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        true,
+        `${node.id} matches :focus:not(:focus-visible)`
+      );
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        false,
+        `${node.id} does not match :focus-visible`
+      );
     });
   });
 
@@ -2686,33 +2819,53 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const initial = document.getElementById('initial');
       const node = document.getElementById('target');
-      document.body.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: 'Tab'
-      }));
+      document.body.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'Tab'
+        })
+      );
       initial.focus();
-      initial.dispatchEvent(new window.KeyboardEvent('keyup', {
-        key: 'Tab'
-      }));
-      assert.strictEqual(initial.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(initial.matches(':focus:not(:focus-visible)'), false,
-        `${node.id} does not match :focus:not(:focus-visible)`);
+      initial.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'Tab'
+        })
+      );
+      assert.strictEqual(
+        initial.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        initial.matches(':focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match :focus:not(:focus-visible)`
+      );
       await userMouseClick(node);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), true,
-        `${node.id} matches :focus:not(:focus-visible)`);
-      assert.strictEqual(node.matches(':focus-visible'), false,
-        `${node.id} does not match :focus-visible`);
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        true,
+        `${node.id} matches :focus:not(:focus-visible)`
+      );
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        false,
+        `${node.id} does not match :focus-visible`
+      );
     });
   });
 
@@ -2768,13 +2921,17 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const initial = document.getElementById('initial');
@@ -2782,18 +2939,30 @@ describe('local wpt test cases', () => {
       let initialFocus = false;
       initial.addEventListener('focus', () => {
         initialFocus = true;
-        assert.strictEqual(initial.matches(':focus-visible'), false,
-          `${initial.id} does not match :focus-visible`);
-        assert.strictEqual(initial.matches(':focus:not(:focus-visible)'), true,
-          `${initial.id} matches :focus:not(:focus-visible)`);
+        assert.strictEqual(
+          initial.matches(':focus-visible'),
+          false,
+          `${initial.id} does not match :focus-visible`
+        );
+        assert.strictEqual(
+          initial.matches(':focus:not(:focus-visible)'),
+          true,
+          `${initial.id} matches :focus:not(:focus-visible)`
+        );
         node.focus();
       });
       await userMouseClick(initial);
       assert.strictEqual(initialFocus, true, `${initial.id} on focus called`);
-      assert.strictEqual(node.matches(':focus-visible'), false,
-        `${node.id} does not match :focus-visible`);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), true,
-        `${node.id} matches :focus:not(:focus-visible)`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        false,
+        `${node.id} does not match :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        true,
+        `${node.id} matches :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2825,13 +2994,17 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const initial = document.getElementById('initial');
@@ -2839,18 +3012,30 @@ describe('local wpt test cases', () => {
       let initialFocus = false;
       initial.addEventListener('focus', () => {
         initialFocus = true;
-        assert.strictEqual(initial.matches(':focus-visible'), false,
-          `${initial.id} does not match :focus-visible`);
-        assert.strictEqual(initial.matches(':focus:not(:focus-visible)'), true,
-          `${initial.id} matches :focus:not(:focus-visible)`);
+        assert.strictEqual(
+          initial.matches(':focus-visible'),
+          false,
+          `${initial.id} does not match :focus-visible`
+        );
+        assert.strictEqual(
+          initial.matches(':focus:not(:focus-visible)'),
+          true,
+          `${initial.id} matches :focus:not(:focus-visible)`
+        );
         node.focus();
       });
       await userMouseClick(initial);
       assert.strictEqual(initialFocus, true, `${initial.id} on focus called`);
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
-      assert.strictEqual(node.matches(':focus:not(:focus-visible)'), false,
-        `${node.id} does not match :focus:not(:focus-visible)`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
+      assert.strictEqual(
+        node.matches(':focus:not(:focus-visible)'),
+        false,
+        `${node.id} does not match :focus:not(:focus-visible)`
+      );
     });
   });
 
@@ -2861,13 +3046,17 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const node = document.getElementById('input');
@@ -2880,8 +3069,11 @@ describe('local wpt test cases', () => {
       });
       await userMouseClick(node);
       assert.strictEqual(node.type, 'text', `${node.id} type is text`);
-      assert.strictEqual(node.matches(':focus-visible'), true,
-        `${node.id} matches :focus-visible`);
+      assert.strictEqual(
+        node.matches(':focus-visible'),
+        true,
+        `${node.id} matches :focus-visible`
+      );
     });
   });
 
@@ -2912,29 +3104,39 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const userMouseClick = async target => {
-        target.dispatchEvent(new window.MouseEvent('mousedown', {
-          buttons: 1
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mousedown', {
+            buttons: 1
+          })
+        );
         target.focus();
-        target.dispatchEvent(new window.MouseEvent('mouseup', {
-          buttons: 0
-        }));
+        target.dispatchEvent(
+          new window.MouseEvent('mouseup', {
+            buttons: 0
+          })
+        );
         target.click();
       };
       const focusTrap = target => {
-        target.addEventListener('keydown', (e) => {
-          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-          e.preventDefault();
-          const btns = target.querySelectorAll('button');
-          const currentIndex = Array.from(btns).indexOf(document.activeElement);
-          let nextIndex;
-          if (e.key === 'ArrowRight') {
-            nextIndex = (currentIndex + 1) % btns.length;
-          } else if (e.key === 'ArrowLeft') {
-            nextIndex = (currentIndex - 1 + btns.length) % btns.length;
-          }
-          btns[nextIndex].focus();
-        }, true);
+        target.addEventListener(
+          'keydown',
+          e => {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            e.preventDefault();
+            const btns = target.querySelectorAll('button');
+            const currentIndex = Array.from(btns).indexOf(
+              document.activeElement
+            );
+            let nextIndex;
+            if (e.key === 'ArrowRight') {
+              nextIndex = (currentIndex + 1) % btns.length;
+            } else if (e.key === 'ArrowLeft') {
+              nextIndex = (currentIndex - 1 + btns.length) % btns.length;
+            }
+            btns[nextIndex].focus();
+          },
+          true
+        );
       };
       const button = document.getElementById('button');
       const container = document.getElementById('container');
@@ -2947,20 +3149,33 @@ describe('local wpt test cases', () => {
       focusTrap(container);
       btn2.addEventListener('focus', () => {
         btn2Focused = true;
-        assert.strictEqual(btn2.matches(':focus-visible'), true,
-          `${btn2.id} matches :focus-visible`);
-        assert.strictEqual(btn2.matches(':focus:not(:focus-visible)'), false,
-          `${btn2.id} does not match :focus:not(:focus-visible)`);
+        assert.strictEqual(
+          btn2.matches(':focus-visible'),
+          true,
+          `${btn2.id} matches :focus-visible`
+        );
+        assert.strictEqual(
+          btn2.matches(':focus:not(:focus-visible)'),
+          false,
+          `${btn2.id} does not match :focus:not(:focus-visible)`
+        );
       });
       await userMouseClick(button);
-      assert.deepEqual(document.activeElement, btn1,
-        `active element is ${btn1.id}`);
-      btn1.dispatchEvent(new window.KeyboardEvent('keydown', {
-        key: 'ArrowRight'
-      }));
-      btn1.dispatchEvent(new window.KeyboardEvent('keyup', {
-        key: 'ArrowRight'
-      }));
+      assert.deepEqual(
+        document.activeElement,
+        btn1,
+        `active element is ${btn1.id}`
+      );
+      btn1.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'ArrowRight'
+        })
+      );
+      btn1.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'ArrowRight'
+        })
+      );
       assert.strictEqual(btn2Focused, true, `${btn2.id} gained focus`);
     });
   });
@@ -3017,20 +3232,28 @@ describe('local wpt test cases', () => {
         document.getElementById('a'),
         document.getElementById('b')
       ]);
-      assert.deepEqual(main.querySelectorAll('.parent:has(.sibling ~ .target)'), [
-        document.getElementById('b')
-      ]);
-      assert.deepEqual(main.querySelectorAll(':has(:is(.target ~ .sibling .descendant))'), [
-        document.getElementById('a'),
-        document.getElementById('h'),
-        document.getElementById('j')
-      ]);
-      assert.deepEqual(main.querySelectorAll('.parent:has(:is(.target ~ .sibling .descendant))'), [
-        document.getElementById('h')
-      ]);
-      assert.deepEqual(main.querySelectorAll('.sibling:has(.descendant) ~ .target'), [
-        document.getElementById('e')
-      ]);
+      assert.deepEqual(
+        main.querySelectorAll('.parent:has(.sibling ~ .target)'),
+        [document.getElementById('b')]
+      );
+      assert.deepEqual(
+        main.querySelectorAll(':has(:is(.target ~ .sibling .descendant))'),
+        [
+          document.getElementById('a'),
+          document.getElementById('h'),
+          document.getElementById('j')
+        ]
+      );
+      assert.deepEqual(
+        main.querySelectorAll(
+          '.parent:has(:is(.target ~ .sibling .descendant))'
+        ),
+        [document.getElementById('h')]
+      );
+      assert.deepEqual(
+        main.querySelectorAll('.sibling:has(.descendant) ~ .target'),
+        [document.getElementById('e')]
+      );
       assert.deepEqual(main.querySelectorAll(':has(> .parent)'), [
         document.getElementById('a')
       ]);
@@ -3052,11 +3275,20 @@ describe('local wpt test cases', () => {
         document.getElementById('b'),
         document.getElementById('f')
       ]);
-      assert.deepEqual(main.querySelector('.sibling:has(.descendant)'),
-        document.getElementById('c'));
-      assert.deepEqual(document.getElementById('k').closest('.ancestor:has(.descendant)'),
-        document.getElementById('h'));
-      assert.strictEqual(document.getElementById('h').matches(':has(.target ~ .sibling .descendant)'), true);
+      assert.deepEqual(
+        main.querySelector('.sibling:has(.descendant)'),
+        document.getElementById('c')
+      );
+      assert.deepEqual(
+        document.getElementById('k').closest('.ancestor:has(.descendant)'),
+        document.getElementById('h')
+      );
+      assert.strictEqual(
+        document
+          .getElementById('h')
+          .matches(':has(.target ~ .sibling .descendant)'),
+        true
+      );
     });
   });
 
@@ -3112,10 +3344,14 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const scope = document.getElementById('scope1');
       const res = scope.querySelectorAll('.a:has(:scope) .c');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d02'),
-        document.getElementById('d03')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d02'),
+          document.getElementById('d03')
+        ]),
+        'result'
+      );
     });
 
     it('should not match', () => {
@@ -3129,10 +3365,14 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const scope = document.getElementById('scope1');
       const res = scope.querySelectorAll('.c:has(:is(:scope .d))');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d02'),
-        document.getElementById('d03')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d02'),
+          document.getElementById('d03')
+        ]),
+        'result'
+      );
     });
 
     it('should not match', () => {
@@ -3146,7 +3386,8 @@ describe('local wpt test cases', () => {
   describe('css/selectors/has-matches-to-uninserted-elements.html', () => {
     it('should not match', () => {
       const subject = document.createElement('subject');
-      subject.innerHTML = '<child></child><direct_sibling></direct_sibling><indirect_sibling></indirect_sibling>';
+      subject.innerHTML =
+        '<child></child><direct_sibling></direct_sibling><indirect_sibling></indirect_sibling>';
       const res = subject.matches(':has(~ *)');
       assert.strictEqual(res, false, 'result');
     });
@@ -3279,65 +3520,85 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('.x:has(~ .a > .b)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d18'),
-        document.getElementById('d19'),
-        document.getElementById('d21')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d18'),
+          document.getElementById('d19'),
+          document.getElementById('d21')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('.x:has(~ .a .b)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d18'),
-        document.getElementById('d19'),
-        document.getElementById('d21'),
-        document.getElementById('d24')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d18'),
+          document.getElementById('d19'),
+          document.getElementById('d21'),
+          document.getElementById('d24')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('.x:has(~ .a + .b)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d18'),
-        document.getElementById('d19'),
-        document.getElementById('d21'),
-        document.getElementById('d24'),
-        document.getElementById('d28'),
-        document.getElementById('d32'),
-        document.getElementById('d37')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d18'),
+          document.getElementById('d19'),
+          document.getElementById('d21'),
+          document.getElementById('d24'),
+          document.getElementById('d28'),
+          document.getElementById('d32'),
+          document.getElementById('d37')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('.x:has(~ .a + .b > .c)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d18'),
-        document.getElementById('d19'),
-        document.getElementById('d21'),
-        document.getElementById('d24'),
-        document.getElementById('d28')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d18'),
+          document.getElementById('d19'),
+          document.getElementById('d21'),
+          document.getElementById('d24'),
+          document.getElementById('d28')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('.x:has(~ .a + .b .c)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d18'),
-        document.getElementById('d19'),
-        document.getElementById('d21'),
-        document.getElementById('d24'),
-        document.getElementById('d28'),
-        document.getElementById('d32')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d18'),
+          document.getElementById('d19'),
+          document.getElementById('d21'),
+          document.getElementById('d24'),
+          document.getElementById('d28'),
+          document.getElementById('d32')
+        ]),
+        'result'
+      );
     });
   });
 
@@ -3564,8 +3825,10 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const subject = document.getElementById('subject');
       assert.strictEqual(subject.matches('#subject:has(:defined)'), false);
-      window.customElements.define('my-element',
-        class MyElement extends window.HTMLElement {});
+      window.customElements.define(
+        'my-element',
+        class MyElement extends window.HTMLElement {}
+      );
       assert.strictEqual(subject.matches('#subject:has(:defined)'), true);
     });
   });
@@ -3622,11 +3885,15 @@ describe('local wpt test cases', () => {
       rtl1.dir = 'rtl';
       rtl2.dir = 'rtl';
       assert.strictEqual(ltr1.matches('.ltr:has(*:dir(ltr))'), true);
-      assert.strictEqual(ltr2.firstElementChild.matches('.ltr:has(*:dir(ltr))'),
-        true);
+      assert.strictEqual(
+        ltr2.firstElementChild.matches('.ltr:has(*:dir(ltr))'),
+        true
+      );
       assert.strictEqual(rtl1.matches('.rtl:has(*:dir(rtl))'), true);
-      assert.strictEqual(rtl2.firstElementChild.matches('.rtl:has(*:dir(rtl))'),
-        true);
+      assert.strictEqual(
+        rtl2.firstElementChild.matches('.rtl:has(*:dir(rtl))'),
+        true
+      );
     });
   });
 
@@ -3678,7 +3945,10 @@ describe('local wpt test cases', () => {
         const span = document.createElement('span');
         container.appendChild(span);
       }
-      assert.strictEqual(subject.matches('main:has(span + span) .subject'), true);
+      assert.strictEqual(
+        subject.matches('main:has(span + span) .subject'),
+        true
+      );
       /* After appending another ${count} elements */
       for (let i = 0; i < count - 1; ++i) {
         const span = document.createElement('span');
@@ -3686,8 +3956,10 @@ describe('local wpt test cases', () => {
       }
       const final = document.createElement('final');
       container.appendChild(final);
-      assert.strictEqual(subject.matches('main:has(span + final) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(span + final) .subject'),
+        true
+      );
       /* After appending div with ${count} elements */
       const div = document.createElement('div');
       for (let i = 0; i < count; ++i) {
@@ -3695,23 +3967,33 @@ describe('local wpt test cases', () => {
         div.appendChild(span);
       }
       container.appendChild(div);
-      assert.strictEqual(subject.matches('main:has(div div span) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(div div span) .subject'),
+        true
+      );
       /* After removing div with ${count} elements */
       div.remove();
-      assert.strictEqual(subject.matches('main:has(div div span) .subject'),
-        false);
-      assert.strictEqual(subject.matches('main:has(span + final) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(div div span) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('main:has(span + final) .subject'),
+        true
+      );
       /* After removing ${count} elements one-by-one */
       for (let i = 0; i < count; ++i) {
         container.lastChild.remove();
       }
       container.lastChild.remove();
-      assert.strictEqual(subject.matches('main:has(span + final) .subject'),
-        false);
-      assert.strictEqual(subject.matches('main:has(span + span) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(span + final) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('main:has(span + span) .subject'),
+        true
+      );
       /* After removing the remaining elements */
       container.replaceChildren();
       assert.strictEqual(subject.matches('main:has(span) .subject'), false);
@@ -3746,23 +4028,39 @@ describe('local wpt test cases', () => {
       subject_descendant.classList.remove('test');
       assert.strictEqual(subject.matches('#subject:has(.test)'), false);
       sibling_descendant.classList.add('test');
-      assert.strictEqual(subject.matches('#subject:has(~ #sibling .test)'),
-        true);
+      assert.strictEqual(
+        subject.matches('#subject:has(~ #sibling .test)'),
+        true
+      );
       sibling_descendant.classList.remove('test');
-      assert.strictEqual(subject.matches('#subject:has(~ #sibling .test)'),
-        false);
+      assert.strictEqual(
+        subject.matches('#subject:has(~ #sibling .test)'),
+        false
+      );
       subject_child.classList.add('test_inner');
-      assert.strictEqual(subject.matches('#subject:has(:is(.test_inner #subject_descendant))'),
-        true);
+      assert.strictEqual(
+        subject.matches('#subject:has(:is(.test_inner #subject_descendant))'),
+        true
+      );
       subject_child.classList.remove('test_inner');
-      assert.strictEqual(subject.matches('#subject:has(:is(.test_inner #subject_descendant))'),
-        false);
+      assert.strictEqual(
+        subject.matches('#subject:has(:is(.test_inner #subject_descendant))'),
+        false
+      );
       sibling_child.classList.add('test_inner');
-      assert.strictEqual(subject.matches('#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'),
-        true);
+      assert.strictEqual(
+        subject.matches(
+          '#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'
+        ),
+        true
+      );
       sibling_child.classList.remove('test_inner');
-      assert.strictEqual(subject.matches('#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'),
-        false);
+      assert.strictEqual(
+        subject.matches(
+          '#subject:has(~ #sibling :is(.test_inner #sibling_descendant))'
+        ),
+        false
+      );
     });
   });
 
@@ -3798,74 +4096,134 @@ describe('local wpt test cases', () => {
       const subject4 = document.getElementById('subject4');
       assert.strictEqual(subject.matches('main:has(input) div'), true);
       checkbox.checked = true;
-      assert.strictEqual(subject.matches('main:has(#checkbox:checked) > #subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(#checkbox:checked) > #subject'),
+        true
+      );
       checkbox.checked = false;
-      assert.strictEqual(subject.matches('main:has(#checkbox:checked) > #subject'),
-        false);
+      assert.strictEqual(
+        subject.matches('main:has(#checkbox:checked) > #subject'),
+        false
+      );
       assert.strictEqual(subject.matches('main:has(input) div'), true);
       const oldOption = select.selectedOptions[0];
       option.selected = true;
-      assert.strictEqual(subject.matches('main:has(#option:checked) > #subject'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(#option:checked) > #subject'),
+        true
+      );
       oldOption.selected = true;
-      assert.strictEqual(subject.matches('main:has(#option:checked) > #subject'),
-        false);
+      assert.strictEqual(
+        subject.matches('main:has(#option:checked) > #subject'),
+        false
+      );
       assert.strictEqual(subject.matches('main:has(input) div'), true);
       checkbox.disabled = true;
-      assert.strictEqual(subject.matches('main:has(#checkbox:disabled) > #subject'),
-        true);
-      assert.strictEqual(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(#checkbox:disabled) > #subject'),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'),
+        true
+      );
       checkbox.disabled = false;
-      assert.strictEqual(subject.matches('main:has(#checkbox:disabled) > #subject'),
-        false);
+      assert.strictEqual(
+        subject.matches('main:has(#checkbox:disabled) > #subject'),
+        false
+      );
       assert.strictEqual(subject.matches('main:has(input) div'), true);
-      assert.strictEqual(subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'),
-        false);
+      assert.strictEqual(
+        subject3.matches('main:not(:has(#checkbox:enabled)) > #subject3'),
+        false
+      );
       assert.strictEqual(subject3.matches('main:has(input) div'), true);
       option.disabled = true;
-      assert.strictEqual(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'),
-        true);
-      assert.strictEqual(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'),
-        true);
+      assert.strictEqual(
+        subject.matches(
+          'main:has(#option:disabled) > :is(#subject, #subject2)'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches(
+          'main:not(:has(#option:enabled)) :is(#subject3, #subject4)'
+        ),
+        true
+      );
       option.disabled = false;
-      assert.strictEqual(subject.matches('main:has(#option:disabled) > :is(#subject, #subject2)'),
-        false);
+      assert.strictEqual(
+        subject.matches(
+          'main:has(#option:disabled) > :is(#subject, #subject2)'
+        ),
+        false
+      );
       assert.strictEqual(subject.matches('main:has(input) div'), true);
-      assert.strictEqual(subject3.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'),
-        false);
+      assert.strictEqual(
+        subject3.matches(
+          'main:not(:has(#option:enabled)) :is(#subject3, #subject4)'
+        ),
+        false
+      );
       assert.strictEqual(subject3.matches('main:has(input) div'), true);
       optgroup.disabled = true;
-      assert.strictEqual(subject.matches('main:has(#optgroup:disabled) > #subject'),
-        true);
-      assert.strictEqual(subject2.matches('main:has(#option:disabled) > :is(#subject, #subject2)'),
-        true);
-      assert.strictEqual(subject3.matches('main:not(:has(#optgroup:enabled)) > #subject3'),
-        true);
-      assert.strictEqual(subject4.matches('main:not(:has(#option:enabled)) :is(#subject3, #subject4)'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(#optgroup:disabled) > #subject'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches(
+          'main:has(#option:disabled) > :is(#subject, #subject2)'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches('main:not(:has(#optgroup:enabled)) > #subject3'),
+        true
+      );
+      assert.strictEqual(
+        subject4.matches(
+          'main:not(:has(#option:enabled)) :is(#subject3, #subject4)'
+        ),
+        true
+      );
       text_input.value = 'value';
-      assert.strictEqual(subject.matches('main:has(#text_input:valid) > #subject'),
-        true);
-      assert.strictEqual(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'),
-        true);
-      assert.strictEqual(subject3.matches('main:has(#form:valid) > #subject3'),
-        true);
-      assert.strictEqual(subject4.matches('main:not(:has(#form:invalid)) > #subject4'),
-        true);
+      assert.strictEqual(
+        subject.matches('main:has(#text_input:valid) > #subject'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches('main:has(#form:valid) > #subject3'),
+        true
+      );
+      assert.strictEqual(
+        subject4.matches('main:not(:has(#form:invalid)) > #subject4'),
+        true
+      );
       text_input.value = '';
-      assert.strictEqual(subject.matches('main:has(#text_input:valid) > #subject'),
-        false);
+      assert.strictEqual(
+        subject.matches('main:has(#text_input:valid) > #subject'),
+        false
+      );
       assert.strictEqual(subject.matches('main:has(input) div'), true);
-      assert.strictEqual(subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'),
-        false);
+      assert.strictEqual(
+        subject2.matches('main:not(:has(#text_input:invalid)) > #subject2'),
+        false
+      );
       assert.strictEqual(subject2.matches('main:has(input) div'), true);
-      assert.strictEqual(subject3.matches('main:has(#form:valid) > #subject3'),
-        false);
+      assert.strictEqual(
+        subject3.matches('main:has(#form:valid) > #subject3'),
+        false
+      );
       assert.strictEqual(subject3.matches('main:has(input) div'), true);
-      assert.strictEqual(subject4.matches('main:not(:has(#form:invalid)) > #subject4'),
-        false);
+      assert.strictEqual(
+        subject4.matches('main:not(:has(#form:invalid)) > #subject4'),
+        false
+      );
       assert.strictEqual(subject4.matches('main:has(input) div'), true);
     });
   });
@@ -3907,16 +4265,24 @@ describe('local wpt test cases', () => {
       /* After adding 'a' to #host_parent */
       const host_parent = document.getElementById('host_parent');
       host_parent.classList.add('a');
-      assert.strictEqual(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'),
-        true);
-      assert.strictEqual(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'),
-        true);
+      assert.strictEqual(
+        subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches('.subject:has(:is(:host-context(.a) .bar))'),
+        true
+      );
       /* After removing 'a' from #host_parent */
       host_parent.classList.remove('a');
-      assert.strictEqual(subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'),
-        false);
-      assert.strictEqual(subject2.matches('.subject:has(:is(:host-context(.a) .bar))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('.subject:has(:is(:host-context(.a) > .foo .bar))'),
+        false
+      );
+      assert.strictEqual(
+        subject2.matches('.subject:has(:is(:host-context(.a) .bar))'),
+        false
+      );
     });
   });
 
@@ -3956,106 +4322,169 @@ describe('local wpt test cases', () => {
       const shadowChild = shadow.getElementById('shadow_child');
       const shadowDesc = shadow.getElementById('shadow_descendant');
       // Initial
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(> .child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(~ .sibling) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(.descendant):has(> .child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'),
-        false);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(> .child) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(~ .sibling) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant):has(> .child) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(
+          ':host-context(.host_context):has(> .child > .grand_child) .subject'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'
+        ),
+        false
+      );
       // Add .descendant to #shadow_child
       shadowChild.classList.add('descendant');
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       shadowChild.classList.remove('descendant');
       // Add .descendant to #shadow_descendant
       shadowDesc.classList.add('descendant');
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       // Add .ancestor to #shadow_child:has(.descendant)
       shadowChild.classList.add('ancestor');
-      assert.strictEqual(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
+        true
+      );
       shadowChild.classList.remove('ancestor');
       // Add .child to #shadow_child:has(.descendant)
       shadowChild.classList.add('child');
-      assert.strictEqual(subject.matches(':host:has(.descendant):has(> .child) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant):has(> .child) .subject'),
+        true
+      );
       shadowChild.classList.remove('child');
       shadowDesc.classList.remove('descendant');
       // Add .child to #shadow_child
       shadowChild.classList.add('child');
-      assert.strictEqual(subject.matches(':host:has(> .child) .subject'),
-        true);
+      assert.strictEqual(subject.matches(':host:has(> .child) .subject'), true);
       // Add .grand_child to #shadow_descendant
       shadowDesc.classList.add('grand_child');
-      assert.strictEqual(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(
+          ':host-context(.host_context):has(> .child > .grand_child) .subject'
+        ),
+        true
+      );
       // Add .host_context to #host
       host.classList.add('host_context');
-      assert.strictEqual(subject.matches(':host(.host_context):has(> .child > .grand_child) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(
+          ':host(.host_context):has(> .child > .grand_child) .subject'
+        ),
+        true
+      );
       // Add .descendant to #shadow_descendant.grand_child
       shadowDesc.classList.add('descendant');
-      assert.strictEqual(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'
+        ),
+        true
+      );
       shadowDesc.classList.remove('descendant');
       shadowDesc.classList.remove('grand_child');
       shadowChild.classList.remove('child');
       // Add .child to #shadow_descendant
       shadowDesc.classList.add('child');
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(> .child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(~ .sibling) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(.descendant):has(> .child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host-context(.host_context):has(> .child > .grand_child) .subject'),
-        false);
-      assert.strictEqual(subject.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'),
-        false);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(> .child) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(~ .sibling) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(:is(.ancestor .descendant)) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant):has(> .child) .subject'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(
+          ':host-context(.host_context):has(> .child > .grand_child) .subject'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant) .subject'
+        ),
+        false
+      );
       // Insert #first_child.descendant to shadow root
       const div1 = document.createElement('div');
       div1.id = 'first_child';
       div1.classList.add('descendant');
       shadow.insertBefore(div1, shadow.firstChild);
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       div1.remove();
       // Insert #last_child.descendant to shadow root
       const div2 = document.createElement('div');
       div2.id = 'last_child';
       div2.classList.add('descendant');
       shadow.insertBefore(div2, null);
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       div2.remove();
       // Insert #child_in_middle.descendant before #shadow_child
       const div3 = document.createElement('div');
       div3.id = 'child_in_middle.descendant';
       div3.classList.add('descendant');
       shadow.insertBefore(div3, shadowChild);
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       div3.remove();
       // Insert #grand_child.descendant before #shadow_descendant
       const div4 = document.createElement('div');
       div4.id = 'grand_child';
       div4.classList.add('descendant');
       shadowChild.insertBefore(div4, shadowDesc);
-      assert.strictEqual(subject.matches(':host:has(.descendant) .subject'),
-        true);
+      assert.strictEqual(
+        subject.matches(':host:has(.descendant) .subject'),
+        true
+      );
       div4.remove();
     });
   });
@@ -4096,16 +4525,30 @@ describe('local wpt test cases', () => {
       assert.strictEqual(host.matches(':host:has(.descendant)'), false);
       assert.strictEqual(host.matches(':host:has(> .child)'), false);
       assert.strictEqual(host.matches(':host:has(~ .sibling)'), false);
-      assert.strictEqual(host.matches(':host:has(:is(.ancestor .descendant))'),
-        false);
-      assert.strictEqual(host.matches(':host:has(.descendant):has(> .child)'),
-        false);
-      assert.strictEqual(host.matches(':host-context(.host_context):has(> .child > .grand_child)'),
-        false);
-      assert.strictEqual(host.matches(':host(.host_context):has(> .child > .grand_child)'),
-        false);
-      assert.strictEqual(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'),
-        false);
+      assert.strictEqual(
+        host.matches(':host:has(:is(.ancestor .descendant))'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(':host:has(.descendant):has(> .child)'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(
+          ':host-context(.host_context):has(> .child > .grand_child)'
+        ),
+        false
+      );
+      assert.strictEqual(
+        host.matches(':host(.host_context):has(> .child > .grand_child)'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'
+        ),
+        false
+      );
       // Add .descendant to #shadow_child
       shadowChild.classList.add('descendant');
       assert.strictEqual(host.matches(':host:has(.descendant)'), true);
@@ -4115,13 +4558,17 @@ describe('local wpt test cases', () => {
       assert.strictEqual(host.matches(':host:has(.descendant)'), true);
       // Add .ancestor to #shadow_child:has(.descendant)
       shadowChild.classList.add('ancestor');
-      assert.strictEqual(host.matches(':host:has(:is(.ancestor .descendant))'),
-        true);
+      assert.strictEqual(
+        host.matches(':host:has(:is(.ancestor .descendant))'),
+        true
+      );
       shadowChild.classList.remove('ancestor');
       // Add .child to #shadow_child:has(.descendant)
       shadowChild.classList.add('child');
-      assert.strictEqual(host.matches(':host:has(.descendant):has(> .child)'),
-        true);
+      assert.strictEqual(
+        host.matches(':host:has(.descendant):has(> .child)'),
+        true
+      );
       shadowChild.classList.remove('child');
       shadowDesc.classList.remove('descendant');
       // Add .child to #shadow_child
@@ -4129,16 +4576,26 @@ describe('local wpt test cases', () => {
       assert.strictEqual(host.matches(':host:has(> .child)'), true);
       // Add .grand_child to #shadow_descendant
       shadowDesc.classList.add('grand_child');
-      assert.strictEqual(host.matches(':host-context(.host_context):has(> .child > .grand_child)'),
-        true);
+      assert.strictEqual(
+        host.matches(
+          ':host-context(.host_context):has(> .child > .grand_child)'
+        ),
+        true
+      );
       // Add .host_context to #host
       host.classList.add('host_context');
-      assert.strictEqual(host.matches(':host(.host_context):has(> .child > .grand_child)'),
-        true);
+      assert.strictEqual(
+        host.matches(':host(.host_context):has(> .child > .grand_child)'),
+        true
+      );
       // Add .descendant to #shadow_descendant.grand_child
       shadowDesc.classList.add('descendant');
-      assert.strictEqual(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'),
-        true);
+      assert.strictEqual(
+        host.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'
+        ),
+        true
+      );
       shadowDesc.classList.remove('descendant');
       shadowDesc.classList.remove('grand_child');
       shadowChild.classList.remove('child');
@@ -4147,16 +4604,30 @@ describe('local wpt test cases', () => {
       assert.strictEqual(host.matches(':host:has(.descendant)'), false);
       assert.strictEqual(host.matches(':host:has(> .child)'), false);
       assert.strictEqual(host.matches(':host:has(~ .sibling)'), false);
-      assert.strictEqual(host.matches(':host:has(:is(.ancestor .descendant))'),
-        false);
-      assert.strictEqual(host.matches(':host:has(.descendant):has(> .child)'),
-        false);
-      assert.strictEqual(host.matches(':host-context(.host_context):has(> .child > .grand_child)'),
-        false);
-      assert.strictEqual(host.matches(':host(.host_context):has(> .child > .grand_child)'),
-        false);
-      assert.strictEqual(host.matches(':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'),
-        false);
+      assert.strictEqual(
+        host.matches(':host:has(:is(.ancestor .descendant))'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(':host:has(.descendant):has(> .child)'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(
+          ':host-context(.host_context):has(> .child > .grand_child)'
+        ),
+        false
+      );
+      assert.strictEqual(
+        host.matches(':host(.host_context):has(> .child > .grand_child)'),
+        false
+      );
+      assert.strictEqual(
+        host.matches(
+          ':host:has(> .child > .grand_child):host(.host_context):has(> .child > .descendant)'
+        ),
+        false
+      );
       shadowDesc.classList.remove('child');
       // Insert #first_child.descendant to shadow root
       const div1 = document.createElement('div');
@@ -4225,16 +4696,24 @@ describe('local wpt test cases', () => {
       assert.strictEqual(subject2.matches('.subject'), true);
       /* After adding 'a' to #host */
       host.classList.add('a');
-      assert.strictEqual(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
-        true);
-      assert.strictEqual(subject2.matches('.subject:has(:is(:host(.a) .bar))'),
-        true);
+      assert.strictEqual(
+        subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches('.subject:has(:is(:host(.a) .bar))'),
+        true
+      );
       /* After removing 'a' from #host */
       host.classList.remove('a');
-      assert.strictEqual(subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
-        false);
-      assert.strictEqual(subject2.matches('.subject:has(:is(:host(.a) .bar))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('.subject:has(:is(:host(.a) > .foo .bar))'),
+        false
+      );
+      assert.strictEqual(
+        subject2.matches('.subject:has(:is(:host(.a) .bar))'),
+        false
+      );
     });
   });
 
@@ -4254,100 +4733,158 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const subject = document.getElementById('subject');
       const checkme = document.getElementById('checkme');
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:checked)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:indeterminate)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:disabled)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:checked)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:indeterminate)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:disabled)'),
+        false
+      );
       checkme.checked = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:checked)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:checked)'),
+        true
+      );
       checkme.checked = false;
       checkme.indeterminate = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:indeterminate)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:indeterminate)'),
+        true
+      );
       checkme.indeterminate = false;
       checkme.disabled = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:disabled)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:disabled)'),
+        true
+      );
       checkme.disabled = false;
       let input = null;
       input = checkme;
       checkme.remove();
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:checked)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:indeterminate)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:disabled)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:checked)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:indeterminate)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:disabled)'),
+        false
+      );
       subject.prepend(input);
       input = null;
       checkme.checked = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkme:checked)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkme:checked)'),
+        true
+      );
       checkme.checked = false;
       const progress = document.getElementById('progress');
-      assert.strictEqual(subject.matches('.ancestor:has(#progress:indeterminate)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#progress:indeterminate)'),
+        false
+      );
       progress.removeAttribute('value');
-      assert.strictEqual(subject.matches('.ancestor:has(#progress:indeterminate)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#progress:indeterminate)'),
+        true
+      );
       progress.setAttribute('value', '50');
       const textinput = document.getElementById('textinput');
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:read-only)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:valid)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:placeholder-shown)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:read-only)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:valid)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:placeholder-shown)'),
+        false
+      );
       textinput.readOnly = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:read-only)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:read-only)'),
+        true
+      );
       textinput.readOnly = false;
       textinput.value = 'text input';
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:valid)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:valid)'),
+        true
+      );
       textinput.value = '';
       textinput.placeholder = 'placeholder text';
-      assert.strictEqual(subject.matches('.ancestor:has(#textinput:placeholder-shown)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#textinput:placeholder-shown)'),
+        true
+      );
       textinput.removeAttribute('placeholder');
       const radioinput = document.getElementById('radioinput');
-      assert.strictEqual(subject.matches('.ancestor:has(#radioinput:default)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#radioinput:default)'),
+        false
+      );
       radioinput.type = 'radio';
-      assert.strictEqual(subject.matches('.ancestor:has(#radioinput:default)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#radioinput:default)'),
+        true
+      );
       radioinput.removeAttribute('type');
       const numberinput = document.getElementById('numberinput');
-      assert.strictEqual(subject.matches('.ancestor:has(#numberinput:required)'),
-        false);
-      assert.strictEqual(subject.matches('.ancestor:has(#numberinput:out-of-range)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#numberinput:required)'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#numberinput:out-of-range)'),
+        false
+      );
       numberinput.required = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#numberinput:required)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#numberinput:required)'),
+        true
+      );
       numberinput.required = false;
       numberinput.value = 12;
-      assert.strictEqual(subject.matches('.ancestor:has(#numberinput:out-of-range)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#numberinput:out-of-range)'),
+        true
+      );
       numberinput.value = 5;
       const checkboxinput = document.getElementById('checkboxinput');
-      assert.strictEqual(subject.matches('.ancestor:has(#checkboxinput:default)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkboxinput:default)'),
+        false
+      );
       checkboxinput.checked = true;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkboxinput:default)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkboxinput:default)'),
+        false
+      );
       checkboxinput.setAttribute('checked', '');
-      assert.strictEqual(subject.matches('.ancestor:has(#checkboxinput:default)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkboxinput:default)'),
+        true
+      );
       checkboxinput.checked = false;
-      assert.strictEqual(subject.matches('.ancestor:has(#checkboxinput:default)'),
-        true);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkboxinput:default)'),
+        true
+      );
       checkboxinput.removeAttribute('checked');
-      assert.strictEqual(subject.matches('.ancestor:has(#checkboxinput:default)'),
-        false);
+      assert.strictEqual(
+        subject.matches('.ancestor:has(#checkboxinput:default)'),
+        false
+      );
     });
   });
 
@@ -4406,21 +4943,39 @@ describe('local wpt test cases', () => {
       assert.strictEqual(b1.matches('.a :is(.b, .c)'), true, 'result simple');
       assert.strictEqual(b3.matches('.a :is(.b, .c)'), true, 'result simple');
       assert.strictEqual(c1.matches('.a :is(.b, .c)'), true, 'result simple');
-      assert.strictEqual(d.matches('.a :is(.c#d, .e)'), true, 'result compound');
-      assert.strictEqual(b2.matches('.a :is(.e+.f, .g>.b, .h)'), true,
-        'result complex');
-      assert.strictEqual(b3.matches('.a :is(.e+.f, .g>.b, .h)'), false,
-        'result complex');
-      assert.strictEqual(b3.matches('.a :is(.b, .c)'), true,
-        'result complex');
-      assert.strictEqual(f1.matches('.a :is(.e+.f, .g>.b, .h)'), true,
-        'result complex');
+      assert.strictEqual(
+        d.matches('.a :is(.c#d, .e)'),
+        true,
+        'result compound'
+      );
+      assert.strictEqual(
+        b2.matches('.a :is(.e+.f, .g>.b, .h)'),
+        true,
+        'result complex'
+      );
+      assert.strictEqual(
+        b3.matches('.a :is(.e+.f, .g>.b, .h)'),
+        false,
+        'result complex'
+      );
+      assert.strictEqual(b3.matches('.a :is(.b, .c)'), true, 'result complex');
+      assert.strictEqual(
+        f1.matches('.a :is(.e+.f, .g>.b, .h)'),
+        true,
+        'result complex'
+      );
       assert.strictEqual(e2.matches('.a+.c>.e'), true, 'result nested');
       a2.className = 'a';
-      assert.strictEqual(e2.matches('.a+:is(.b+.f, :is(.c>.e, .g))'), true,
-        'result nested');
-      assert.strictEqual(h1.matches('.a :is(.e+.f, .g>.b, .h)'), true,
-        'result complex');
+      assert.strictEqual(
+        e2.matches('.a+:is(.b+.f, :is(.c>.e, .g))'),
+        true,
+        'result nested'
+      );
+      assert.strictEqual(
+        h1.matches('.a :is(.e+.f, .g>.b, .h)'),
+        true,
+        'result complex'
+      );
     });
   });
 
@@ -4625,108 +5180,244 @@ describe('local wpt test cases', () => {
       const item19 = document.getElementById('item19');
       const item20 = document.getElementById('item20');
 
-      assert.strictEqual(target1.matches('#target1:has(:is(.item + .item + .item))'),
-        true);
+      assert.strictEqual(
+        target1.matches('#target1:has(:is(.item + .item + .item))'),
+        true
+      );
       item1.remove();
-      assert.strictEqual(target1.matches('#target1:has(:is(.item + .item + .item))'),
-        false);
-      assert.strictEqual(target2.matches('#target2:has(:is(.invalid .item, .item + .item + .item))'),
-        true);
+      assert.strictEqual(
+        target1.matches('#target1:has(:is(.item + .item + .item))'),
+        false
+      );
+      assert.strictEqual(
+        target2.matches(
+          '#target2:has(:is(.invalid .item, .item + .item + .item))'
+        ),
+        true
+      );
       item2.remove();
-      assert.strictEqual(target2.matches('#target2:has(:is(.invalid .item, .item + .item + .item))'),
-        false);
-      assert.strictEqual(target3.matches('#target3:has(:is(.item + .item + .item > .child + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target2.matches(
+          '#target2:has(:is(.invalid .item, .item + .item + .item))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target3.matches(
+          '#target3:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        true
+      );
       item3.remove();
-      assert.strictEqual(target3.matches('#target3:has(:is(.item + .item + .item > .child + .child + .child))'),
-        false);
-      assert.strictEqual(target4.matches('#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target3.matches(
+          '#target3:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target4.matches(
+          '#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'
+        ),
+        true
+      );
       item4.remove();
-      assert.strictEqual(target4.matches('#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'),
-        false);
-      assert.strictEqual(target5.matches('#target5:has(:is(.item + .item + .item > .child))'),
-        true);
+      assert.strictEqual(
+        target4.matches(
+          '#target4:has(:is(.item + .item + .item > .child):is(.child + .child + .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target5.matches('#target5:has(:is(.item + .item + .item > .child))'),
+        true
+      );
       item5.remove();
-      assert.strictEqual(target5.matches('#target5:has(:is(.item + .item + .item > .child))'),
-        false);
-      assert.strictEqual(target6.matches('#target6:has(:is(.invalid .item, .item + .item + .item > .child))'),
-        true);
+      assert.strictEqual(
+        target5.matches('#target5:has(:is(.item + .item + .item > .child))'),
+        false
+      );
+      assert.strictEqual(
+        target6.matches(
+          '#target6:has(:is(.invalid .item, .item + .item + .item > .child))'
+        ),
+        true
+      );
       item6.remove();
-      assert.strictEqual(target6.matches('#target6:has(:is(.invalid .item, .item + .item + .item > .child))'),
-        false);
-      assert.strictEqual(target7.matches('#target7:has(:is(.item + .item + .item > .child + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target6.matches(
+          '#target6:has(:is(.invalid .item, .item + .item + .item > .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target7.matches(
+          '#target7:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        true
+      );
       item7.remove();
-      assert.strictEqual(target7.matches('#target7:has(:is(.item + .item + .item > .child + .child + .child))'),
-        false);
-      assert.strictEqual(target8.matches('#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'),
-        true);
+      assert.strictEqual(
+        target7.matches(
+          '#target7:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target8.matches(
+          '#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'
+        ),
+        true
+      );
       item8.remove();
-      assert.strictEqual(target8.matches('#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'),
-        false);
-      assert.strictEqual(target9.matches('#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target8.matches(
+          '#target8:has(:is(.child + .child + .child):is(.item + .item + .item > .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target9.matches(
+          '#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'
+        ),
+        true
+      );
       item9.remove();
-      assert.strictEqual(target9.matches('#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'),
-        false);
-      assert.strictEqual(target10.matches('#target10:has(:is(.item:nth-child(3)))'),
-        true);
+      assert.strictEqual(
+        target9.matches(
+          '#target9:has(:is(:where(:is(.item + .item + .item) > .child) + .child + .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target10.matches('#target10:has(:is(.item:nth-child(3)))'),
+        true
+      );
       item10.remove();
-      assert.strictEqual(target10.matches('#target10:has(:is(.item:nth-child(3)))'),
-        false);
-      assert.strictEqual(target11.matches('#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'),
-        true);
+      assert.strictEqual(
+        target10.matches('#target10:has(:is(.item:nth-child(3)))'),
+        false
+      );
+      assert.strictEqual(
+        target11.matches(
+          '#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'
+        ),
+        true
+      );
       item11.remove();
-      assert.strictEqual(target11.matches('#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'),
-        false);
-      assert.strictEqual(target12.matches('#target12:has(:is(.item:nth-last-child(3)))'),
-        true);
+      assert.strictEqual(
+        target11.matches(
+          '#target11:has(:is(.item:nth-child(3) > .child:nth-child(3)))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target12.matches('#target12:has(:is(.item:nth-last-child(3)))'),
+        true
+      );
       item12.remove();
-      assert.strictEqual(target12.matches('#target12:has(:is(.item:nth-last-child(3)))'),
-        false);
-      assert.strictEqual(target13.matches('#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'),
-        true);
+      assert.strictEqual(
+        target12.matches('#target12:has(:is(.item:nth-last-child(3)))'),
+        false
+      );
+      assert.strictEqual(
+        target13.matches(
+          '#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'
+        ),
+        true
+      );
       item13.remove();
-      assert.strictEqual(target13.matches('#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'),
-        false);
-      assert.strictEqual(target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'),
-        true);
+      assert.strictEqual(
+        target13.matches(
+          '#target13:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'),
+        true
+      );
       item14.remove();
-      assert.strictEqual(target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'),
-        false);
-      assert.strictEqual(target15.matches('#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'),
-        true);
+      assert.strictEqual(
+        target14.matches('#target14:has(:is(.item:nth-child(3) > .child))'),
+        false
+      );
+      assert.strictEqual(
+        target15.matches(
+          '#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'
+        ),
+        true
+      );
       item15.remove();
-      assert.strictEqual(target15.matches('#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'),
-        false);
-      assert.strictEqual(target16.matches('#target16:has(:is(.item:nth-last-child(3) > .child))'),
-        true);
+      assert.strictEqual(
+        target15.matches(
+          '#target15:has(:is(.item:nth-child(3) > .child:nth-child(3)))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target16.matches(
+          '#target16:has(:is(.item:nth-last-child(3) > .child))'
+        ),
+        true
+      );
       item16.remove();
-      assert.strictEqual(target16.matches('#target16:has(:is(.item:nth-last-child(3) > .child))'),
-        false);
-      assert.strictEqual(target17.matches('#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'),
-        true);
+      assert.strictEqual(
+        target16.matches(
+          '#target16:has(:is(.item:nth-last-child(3) > .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target17.matches(
+          '#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'
+        ),
+        true
+      );
       item17.remove();
-      assert.strictEqual(target17.matches('#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'),
-        false);
+      assert.strictEqual(
+        target17.matches(
+          '#target17:has(:is(.item:nth-last-child(3) > .child:nth-last-child(3)))'
+        ),
+        false
+      );
 
       /* parsed CSS nesting */
-      assert.strictEqual(target18.matches('#target18:has(.item + .item + .item)'),
-        true);
+      assert.strictEqual(
+        target18.matches('#target18:has(.item + .item + .item)'),
+        true
+      );
       item18.remove();
-      assert.strictEqual(target18.matches('#target18:has(.item + .item + .item)'),
-        false);
-      assert.strictEqual(target19.matches('#target19:has(:is(.item + .item + .item > .child + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target18.matches('#target18:has(.item + .item + .item)'),
+        false
+      );
+      assert.strictEqual(
+        target19.matches(
+          '#target19:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        true
+      );
       item19.remove();
-      assert.strictEqual(target19.matches('#target19:has(:is(.item + .item + .item > .child + .child + .child))'),
-        false);
-      assert.strictEqual(target20.matches('#target20:has(:is(.item + .item + .item > .child + .child + .child))'),
-        true);
+      assert.strictEqual(
+        target19.matches(
+          '#target19:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        target20.matches(
+          '#target20:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        true
+      );
       item20.remove();
-      assert.strictEqual(target20.matches('#target20:has(:is(.item + .item + .item > .child + .child + .child))'),
-        false);
+      assert.strictEqual(
+        target20.matches(
+          '#target20:has(:is(.item + .item + .item > .child + .child + .child))'
+        ),
+        false
+      );
     });
   });
 
@@ -4781,159 +5472,299 @@ describe('local wpt test cases', () => {
 
       // grey
       assert.strictEqual(subject1.matches('.container'), true);
-      assert.strictEqual(subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
-        false);
-      assert.strictEqual(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
+        false
+      );
+      assert.strictEqual(
+        subject1.matches(
+          '#subject1:is(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // red
       subject1.classList.add(cls);
       assert.strictEqual(subject1.matches('.container'), true);
-      assert.strictEqual(subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject1.matches(
+          '#subject1:is(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // orangered
       par.classList.add(parentCls);
       assert.strictEqual(subject1.matches('.container'), true);
-      assert.strictEqual(subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'),
-        true);
+      assert.strictEqual(
+        subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject1.matches(
+          '#subject1:is(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        true
+      );
 
       // red
       par.classList.remove(parentCls);
       assert.strictEqual(subject1.matches('.container'), true);
-      assert.strictEqual(subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject1.matches(
+          '#subject1:is(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // grey
       subject1.classList.remove(cls);
       assert.strictEqual(subject1.matches('.container'), true);
-      assert.strictEqual(subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
-        false);
-      assert.strictEqual(subject1.matches('#subject1:is(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject1.matches('#subject1:is(.other-match, :has(.descendant))'),
+        false
+      );
+      assert.strictEqual(
+        subject1.matches(
+          '#subject1:is(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // grey
       assert.strictEqual(subject2.matches('.container'), true);
-      assert.strictEqual(subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
-        false);
-      assert.strictEqual(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
+        false
+      );
+      assert.strictEqual(
+        subject2.matches(
+          '#subject2:where(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // darkred
       subject2.classList.add(cls);
       assert.strictEqual(subject2.matches('.container'), true);
-      assert.strictEqual(subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches(
+          '#subject2:where(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // pink
       par.classList.add(parentCls);
       assert.strictEqual(subject2.matches('.container'), true);
-      assert.strictEqual(subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'),
-        true);
+      assert.strictEqual(
+        subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches(
+          '#subject2:where(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        true
+      );
 
       // darkred
       par.classList.remove(parentCls);
       assert.strictEqual(subject2.matches('.container'), true);
-      assert.strictEqual(subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
-        true);
-      assert.strictEqual(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
+        true
+      );
+      assert.strictEqual(
+        subject2.matches(
+          '#subject2:where(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // grey
       subject2.classList.remove(cls);
       assert.strictEqual(subject2.matches('.container'), true);
-      assert.strictEqual(subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
-        false);
-      assert.strictEqual(subject2.matches('#subject2:where(.parent > .other-match, .parent > :has(.descendant))'),
-        false);
+      assert.strictEqual(
+        subject2.matches('#subject2:where(.other-match, :has(.descendant))'),
+        false
+      );
+      assert.strictEqual(
+        subject2.matches(
+          '#subject2:where(.parent > .other-match, .parent > :has(.descendant))'
+        ),
+        false
+      );
 
       // grey
       assert.strictEqual(subject3.matches('.container'), true);
-      assert.strictEqual(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'),
-        false);
-      assert.strictEqual(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // green
       subject3.classList.add(cls);
       assert.strictEqual(subject3.matches('.container'), true);
-      assert.strictEqual(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // lightgreen
       par.classList.add(parentCls);
       assert.strictEqual(subject3.matches('.container'), true);
-      assert.strictEqual(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        true);
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
 
       // green
       par.classList.remove(parentCls);
       assert.strictEqual(subject3.matches('.container'), true);
-      assert.strictEqual(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // grey
       subject3.classList.remove(cls);
       assert.strictEqual(subject3.matches('.container'), true);
-      assert.strictEqual(subject3.matches('#subject3:is(.other-match, :nth-child(1000 of .another-match))'),
-        false);
-      assert.strictEqual(subject3.matches('#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject3.matches(
+          '#subject3:is(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // grey
       assert.strictEqual(subject4.matches('.container'), true);
-      assert.strictEqual(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'),
-        false);
-      assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // darkgreen
       subject4.classList.add(cls);
       assert.strictEqual(subject4.matches('.container'), true);
-      assert.strictEqual(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // yellowgreen
       par.classList.add(parentCls);
       assert.strictEqual(subject4.matches('.container'), true);
-      assert.strictEqual(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        true);
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
 
       // darkgreen
       par.classList.remove(parentCls);
       assert.strictEqual(subject4.matches('.container'), true);
-      assert.strictEqual(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'),
-        true);
-      assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
 
       // grey
       subject4.classList.remove(cls);
       assert.strictEqual(subject4.matches('.container'), true);
-      assert.strictEqual(subject4.matches('#subject4:where(.other-match, :nth-child(1000 of .another-match))'),
-        false);
-      assert.strictEqual(subject4.matches('#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'),
-        false);
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.other-match, :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        subject4.matches(
+          '#subject4:where(.parent > .other-match, .parent > :nth-child(1000 of .another-match))'
+        ),
+        false
+      );
     }).timeout(60 * 1000);
   });
 
@@ -4965,10 +5796,18 @@ describe('local wpt test cases', () => {
       const div2 = document.getElementById('div2');
       ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
-      assert.strictEqual(div1.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'),
-        true);
-      assert.strictEqual(div2.matches('.some-hidden > :not(.always-matches:not(:first-of-type))'),
-        false);
+      assert.strictEqual(
+        div1.matches(
+          '.some-hidden > :not(.always-matches:not(:first-of-type))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        div2.matches(
+          '.some-hidden > :not(.always-matches:not(:first-of-type))'
+        ),
+        false
+      );
     });
   });
 
@@ -4997,10 +5836,18 @@ describe('local wpt test cases', () => {
       const div2 = document.getElementById('div2');
       ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
-      assert.strictEqual(div1.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'),
-        false);
-      assert.strictEqual(div2.matches('.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'),
-        false);
+      assert.strictEqual(
+        div1.matches(
+          '.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'
+        ),
+        false
+      );
+      assert.strictEqual(
+        div2.matches(
+          '.some-hidden > :not(:is(.always-matches, :not(:first-of-type)))'
+        ),
+        false
+      );
     });
   });
 
@@ -5032,10 +5879,18 @@ describe('local wpt test cases', () => {
       const div2 = document.getElementById('div2');
       ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
-      assert.strictEqual(div1.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'),
-        true);
-      assert.strictEqual(div2.matches('.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'),
-        false);
+      assert.strictEqual(
+        div1.matches(
+          '.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'
+        ),
+        true
+      );
+      assert.strictEqual(
+        div2.matches(
+          '.some-hidden > :not(:is(.never-matches, :not(:first-of-type)))'
+        ),
+        false
+      );
     });
   });
 
@@ -5067,10 +5922,14 @@ describe('local wpt test cases', () => {
       const div2 = document.getElementById('div2');
       ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
-      assert.strictEqual(div1.matches('.some-hidden > :not(:not(:first-of-type))'),
-        true);
-      assert.strictEqual(div2.matches('.some-hidden > :not(:not(:first-of-type))'),
-        false);
+      assert.strictEqual(
+        div1.matches('.some-hidden > :not(:not(:first-of-type))'),
+        true
+      );
+      assert.strictEqual(
+        div2.matches('.some-hidden > :not(:not(:first-of-type))'),
+        false
+      );
     });
   });
 
@@ -5102,10 +5961,14 @@ describe('local wpt test cases', () => {
       const div2 = document.getElementById('div2');
       ancestor.classList.add('some-hidden');
       root.classList.remove('reftest-wait');
-      assert.strictEqual(div1.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'),
-        true);
-      assert.strictEqual(div2.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'),
-        true);
+      assert.strictEqual(
+        div1.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'),
+        true
+      );
+      assert.strictEqual(
+        div2.matches('.some-hidden > :not(.never-matches:not(:first-of-type))'),
+        true
+      );
     });
   });
 
@@ -5162,26 +6025,53 @@ describe('local wpt test cases', () => {
       assert.strictEqual(b2.matches('.g>.b'), true, 'result initial');
       assert.strictEqual(b3.matches('.b'), true, 'result initial');
       a1.className = 'a';
-      assert.strictEqual(b1.matches('.a :not(:not(.b, .c))'), true,
-        'result simple');
-      assert.strictEqual(b3.matches('.a :not(:not(.b, .c))'), true,
-        'result simple');
-      assert.strictEqual(c1.matches('.a :not(:not(.b, .c))'), true,
-        'result simple');
-      assert.strictEqual(d.matches('.a :not(:not(.c#d, .e))'), true,
-        'result compound');
-      assert.strictEqual(b2.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
-        true, 'result complex');
-      assert.strictEqual(b3.matches('.a :not(:not(.b, .c))'),
-        true, 'result complex');
-      assert.strictEqual(f1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
-        true, 'result complex');
+      assert.strictEqual(
+        b1.matches('.a :not(:not(.b, .c))'),
+        true,
+        'result simple'
+      );
+      assert.strictEqual(
+        b3.matches('.a :not(:not(.b, .c))'),
+        true,
+        'result simple'
+      );
+      assert.strictEqual(
+        c1.matches('.a :not(:not(.b, .c))'),
+        true,
+        'result simple'
+      );
+      assert.strictEqual(
+        d.matches('.a :not(:not(.c#d, .e))'),
+        true,
+        'result compound'
+      );
+      assert.strictEqual(
+        b2.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        true,
+        'result complex'
+      );
+      assert.strictEqual(
+        b3.matches('.a :not(:not(.b, .c))'),
+        true,
+        'result complex'
+      );
+      assert.strictEqual(
+        f1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        true,
+        'result complex'
+      );
       assert.strictEqual(e2.matches('.a+.c>.e'), true, 'result nested');
       a2.className = 'a';
-      assert.strictEqual(e2.matches('.a+:not(:not(.b+.f, :is(.c>.e, .g)))'),
-        true, 'result nested');
-      assert.strictEqual(h1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
-        true, 'result complex');
+      assert.strictEqual(
+        e2.matches('.a+:not(:not(.b+.f, :is(.c>.e, .g)))'),
+        true,
+        'result nested'
+      );
+      assert.strictEqual(
+        h1.matches('.a :not(:not(.e+.f, .g>.b, .h))'),
+        true,
+        'result complex'
+      );
     });
   });
 
@@ -5201,15 +6091,18 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const selector = 'div:nth-child(odd of :not(.c))';
       const resBefore = document.querySelectorAll(selector);
-      assert.deepEqual(resBefore, [
-        document.getElementById('d1')
-      ], 'result before');
+      assert.deepEqual(
+        resBefore,
+        [document.getElementById('d1')],
+        'result before'
+      );
       document.getElementById('d2').classList.value = '';
       const resAfter = document.querySelectorAll(selector);
-      assert.deepEqual(resAfter, [
-        document.getElementById('d1'),
-        document.getElementById('d3')
-      ], 'result after');
+      assert.deepEqual(
+        resAfter,
+        [document.getElementById('d1'), document.getElementById('d3')],
+        'result after'
+      );
     }).timeout(60 * 1000);
   });
 
@@ -5225,14 +6118,23 @@ describe('local wpt test cases', () => {
       const selector = 'input:placeholder-shown + #target';
       assert.strictEqual(target.matches(selector), false, 'result initial');
       input.setAttribute('placeholder', 'PLACEHOLDER');
-      assert.strictEqual(target.matches(selector), true,
-        'result placeholder text');
+      assert.strictEqual(
+        target.matches(selector),
+        true,
+        'result placeholder text'
+      );
       input.setAttribute('placeholder', '');
-      assert.strictEqual(target.matches(selector), true,
-        'result empty placeholder text');
+      assert.strictEqual(
+        target.matches(selector),
+        true,
+        'result empty placeholder text'
+      );
       input.removeAttribute('placeholder');
-      assert.strictEqual(target.matches(selector), false,
-        'result remove placeholder');
+      assert.strictEqual(
+        target.matches(selector),
+        false,
+        'result remove placeholder'
+      );
     });
   });
 
@@ -5355,41 +6257,56 @@ describe('local wpt test cases', () => {
         </div>
       `;
       document.body.innerHTML = html;
-      window.customElements.define('my-element', class MyElement extends window.HTMLElement {
-        connectedCallback() {
-          this.elementInternals = this.attachInternals();
-          // patch CustomStateSet
-          if (!this.elementInternals.states) {
-            this.elementInternals.states = new Set();
+      window.customElements.define(
+        'my-element',
+        class MyElement extends window.HTMLElement {
+          connectedCallback() {
+            this.elementInternals = this.attachInternals();
+            // patch CustomStateSet
+            if (!this.elementInternals.states) {
+              this.elementInternals.states = new Set();
+            }
           }
         }
-      });
+      );
       const subject = document.getElementById('subject');
       const child = document.getElementById('child');
       child.elementInternals.states.add('--green');
-      assert.strictEqual(subject.matches('#subject:has(:state(--green))'),
-        true);
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--green))'),
+        true
+      );
       child.elementInternals.states.clear();
-      assert.strictEqual(subject.matches('#subject:has(:state(--green))'),
-        false);
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--green))'),
+        false
+      );
 
       child.elementInternals.states.add('--blue');
       assert.strictEqual(subject.matches('#subject:has(:state(--blue))'), true);
       child.elementInternals.states.clear();
-      assert.strictEqual(subject.matches('#subject:has(:state(--blue))'),
-        false);
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--blue))'),
+        false
+      );
 
       child.elementInternals.states.add('--green');
       child.elementInternals.states.add('--blue');
       assert.strictEqual(subject.matches('#subject:has(:state(--blue))'), true);
       child.elementInternals.states.delete('--blue');
-      assert.strictEqual(subject.matches('#subject:has(:state(--blue))'),
-        false);
-      assert.strictEqual(subject.matches('#subject:has(:state(--green))'),
-        true);
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--blue))'),
+        false
+      );
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--green))'),
+        true
+      );
       child.elementInternals.states.delete('--green');
-      assert.strictEqual(subject.matches('#subject:has(:state(--green))'),
-        false);
+      assert.strictEqual(
+        subject.matches('#subject:has(:state(--green))'),
+        false
+      );
     });
   });
 
@@ -5456,15 +6373,27 @@ describe('local wpt test cases', () => {
       assert.strictEqual(d.matches(':where(.b, .c)'), true, 'result initial');
       assert.strictEqual(h1.matches('.h'), true, 'result initial');
       a1.className = 'a';
-      assert.strictEqual(d.matches('.a~:where(.c#d, .e)'), true,
-        'result compound');
+      assert.strictEqual(
+        d.matches('.a~:where(.c#d, .e)'),
+        true,
+        'result compound'
+      );
       assert.strictEqual(h1.matches('.h'), true, 'result complex');
-      assert.strictEqual(h1.matches(':where(.a~.h, .a~.h+.f)'), true,
-        'result complex');
-      assert.strictEqual(f1.matches(':where(.a~.h, .a~.h+.f)'), true,
-        'result complex');
-      assert.strictEqual(i1.matches(':where(.a>:where(.g+.h, .b)~.i)'), true,
-        'result nested');
+      assert.strictEqual(
+        h1.matches(':where(.a~.h, .a~.h+.f)'),
+        true,
+        'result complex'
+      );
+      assert.strictEqual(
+        f1.matches(':where(.a~.h, .a~.h+.f)'),
+        true,
+        'result complex'
+      );
+      assert.strictEqual(
+        i1.matches(':where(.a>:where(.g+.h, .b)~.i)'),
+        true,
+        'result nested'
+      );
     });
   });
 
@@ -5489,38 +6418,44 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(#a)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('a')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(#a, #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('a'), document.getElementById('f')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(#a, #c) :where(#a #d, #c #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('d'), document.getElementById('f')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('#c > :is(#c > #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('f')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
@@ -5534,88 +6469,110 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('#a div:is(#d)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('d')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(div) > div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(*) > div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('c'),
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('div > :where(#e, #f)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('e'), document.getElementById('f')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll('div > :where(*)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(*) > :where(*)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('c'),
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(#a + #b) + :is(#c)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('c')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('c')]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':is(#a, #b) + div');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('b'),
-        document.getElementById('c')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([document.getElementById('b'), document.getElementById('c')]),
+        'result'
+      );
     });
   });
 
@@ -5633,14 +6590,18 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':not(:is(svg|div))');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('c'),
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
   });
 
@@ -5663,20 +6624,41 @@ describe('local wpt test cases', () => {
       /* Selects #b, #d, #f */
       const selectorB =
         'button:is(:nth-child(even), span #e):is(:enabled, :where(:disabled))';
-      assert.strictEqual(document.getElementById('a').matches(selectorA),
-        true, 'a');
-      assert.strictEqual(document.getElementById('b').matches(selectorB),
-        true, 'b');
-      assert.strictEqual(document.getElementById('c').matches(selectorA),
-        true, 'c');
-      assert.strictEqual(document.getElementById('d').matches(selectorB),
-        true, 'd');
-      assert.strictEqual(document.getElementById('e').matches(selectorA),
-        false, 'e-1');
-      assert.strictEqual(document.getElementById('e').matches(selectorB),
-        false, 'e-2');
-      assert.strictEqual(document.getElementById('f').matches(selectorB),
-        true, 'f');
+      assert.strictEqual(
+        document.getElementById('a').matches(selectorA),
+        true,
+        'a'
+      );
+      assert.strictEqual(
+        document.getElementById('b').matches(selectorB),
+        true,
+        'b'
+      );
+      assert.strictEqual(
+        document.getElementById('c').matches(selectorA),
+        true,
+        'c'
+      );
+      assert.strictEqual(
+        document.getElementById('d').matches(selectorB),
+        true,
+        'd'
+      );
+      assert.strictEqual(
+        document.getElementById('e').matches(selectorA),
+        false,
+        'e-1'
+      );
+      assert.strictEqual(
+        document.getElementById('e').matches(selectorB),
+        false,
+        'e-2'
+      );
+      assert.strictEqual(
+        document.getElementById('f').matches(selectorB),
+        true,
+        'f'
+      );
     });
   });
 
@@ -5757,41 +6739,54 @@ describe('local wpt test cases', () => {
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
-      const res =
-        main.querySelectorAll(':not(div + div + div, div + div > div)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('d')
-      ]), 'result');
+      const res = main.querySelectorAll(
+        ':not(div + div + div, div + div > div)'
+      );
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('d')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':not(:not(div))');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('c'),
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       document.body.innerHTML = html;
       const main = document.getElementById('main');
       const res = main.querySelectorAll(':not(:hover div)');
-      assert.deepEqual(sortNodes(res), sortNodes([
-        document.getElementById('a'),
-        document.getElementById('b'),
-        document.getElementById('c'),
-        document.getElementById('d'),
-        document.getElementById('e'),
-        document.getElementById('f')
-      ]), 'result');
+      assert.deepEqual(
+        sortNodes(res),
+        sortNodes([
+          document.getElementById('a'),
+          document.getElementById('b'),
+          document.getElementById('c'),
+          document.getElementById('d'),
+          document.getElementById('e'),
+          document.getElementById('f')
+        ]),
+        'result'
+      );
     });
   });
 
@@ -5807,26 +6802,29 @@ describe('local wpt test cases', () => {
       test_span.setAttribute('test-span', '');
       container.appendChild(test_span);
       for (let i = 0; i < 99; i++) {
-        container.appendChild(document.createElementNS('http://dummy1/', 'span'));
+        container.appendChild(
+          document.createElementNS('http://dummy1/', 'span')
+        );
       }
       const test_span_ns1 = document.createElementNS('http://dummy1/', 'span');
       test_span_ns1.setAttribute('test-span', '');
       container.appendChild(test_span_ns1);
       for (let i = 0; i < 99; i++) {
-        container.appendChild(document.createElementNS('http://dummy2/', 'span'));
+        container.appendChild(
+          document.createElementNS('http://dummy2/', 'span')
+        );
       }
       const test_span_ns2 = document.createElementNS('http://dummy2/', 'span');
       test_span_ns2.setAttribute('test-span', '');
       container.appendChild(test_span_ns2);
       const qsa = container.querySelectorAll('[test-span]');
-      assert.deepEqual(qsa, [
-        test_span,
-        test_span_ns1,
-        test_span_ns2
-      ]);
+      assert.deepEqual(qsa, [test_span, test_span_ns1, test_span_ns2]);
       for (const node of qsa) {
-        assert.strictEqual(node.matches('[test-span]:nth-of-type(100)'), true,
-          `${node.localName} with ${node.namespaceURI} matches`);
+        assert.strictEqual(
+          node.matches('[test-span]:nth-of-type(100)'),
+          true,
+          `${node.localName} with ${node.namespaceURI} matches`
+        );
       }
     });
   });
@@ -5858,20 +6856,26 @@ describe('local wpt test cases', () => {
       }
       const matchNotDisabled = container.querySelectorAll(':not(:disabled)');
       for (const element of matchNotDisabled) {
-        assert.strictEqual(element.id.endsWith('_enabled') ||
-                           element.id === 'incapable', true, element.id);
+        assert.strictEqual(
+          element.id.endsWith('_enabled') || element.id === 'incapable',
+          true,
+          element.id
+        );
       }
       const matchNotEnabled = container.querySelectorAll(':not(:enabled)');
       for (const element of matchNotEnabled) {
-        assert.strictEqual(element.id.endsWith('_disabled') ||
-                           element.id === 'incapable', true, element.id);
+        assert.strictEqual(
+          element.id.endsWith('_disabled') || element.id === 'incapable',
+          true,
+          element.id
+        );
       }
     });
   });
 
   describe('css/selectors/scope-selector.html', () => {
     it('querySelector() with ":scope" should return the document element, if present in the subtree', () => {
-      const html = '<div id=\'shadowHost\'></div>';
+      const html = "<div id='shadowHost'></div>";
       document.body.innerHTML = html;
       const shadowHost = document.getElementById('shadowHost');
       const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
@@ -5901,12 +6905,17 @@ describe('local wpt test cases', () => {
       assert.deepEqual(res8, [], 'should not match');
 
       const res9 = document.querySelector(':scope');
-      assert.deepEqual(res9, document.documentElement,
-        'should match the document element');
+      assert.deepEqual(
+        res9,
+        document.documentElement,
+        'should match the document element'
+      );
       const res10 = document.querySelectorAll(':scope');
-      assert.deepEqual(res10, [
-        document.documentElement
-      ], 'should match the document element');
+      assert.deepEqual(
+        res10,
+        [document.documentElement],
+        'should match the document element'
+      );
     });
   });
 
@@ -5917,8 +6926,10 @@ describe('local wpt test cases', () => {
       const container = document.getElementById('container');
       const test_element = document.createElement('\u212A');
       container.appendChild(test_element);
-      const test_element_with_ns =
-        document.createElementNS('https://dummy.ns', '\u212A');
+      const test_element_with_ns = document.createElementNS(
+        'https://dummy.ns',
+        '\u212A'
+      );
       container.appendChild(test_element_with_ns);
       assert.strictEqual(test_element.matches('\u212A'), true);
       assert.strictEqual(test_element_with_ns.matches('\u212A'), true);
@@ -6001,11 +7012,17 @@ describe('local wpt test cases', () => {
       assert.throws(
         () => node.querySelector('[class= space unquoted ]'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message,
-            'Invalid selector [class=space unquoted]', 'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [class=space unquoted]',
+            'message'
+          );
           return true;
         }
       );
@@ -6016,11 +7033,17 @@ describe('local wpt test cases', () => {
       assert.throws(
         () => node.querySelector('div:example'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Unknown pseudo-class :example',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-class :example',
+            'message'
+          );
           return true;
         }
       );
@@ -6031,11 +7054,17 @@ describe('local wpt test cases', () => {
       assert.throws(
         () => node.querySelectorAll('div:example'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Unknown pseudo-class :example',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-class :example',
+            'message'
+          );
           return true;
         }
       );
@@ -6046,8 +7075,11 @@ describe('local wpt test cases', () => {
       assert.throws(
         () => node.querySelector('ns|div'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector ns|div', 'message');
           return true;
@@ -6060,11 +7092,13 @@ describe('local wpt test cases', () => {
       assert.throws(
         () => node.querySelector(':not(ns|div)'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector ns|div',
-            'message');
+          assert.strictEqual(e.message, 'Invalid selector ns|div', 'message');
           return true;
         }
       );
@@ -6090,9 +7124,7 @@ describe('local wpt test cases', () => {
       const clone = root.cloneNode(true);
       document.body.appendChild(clone);
       const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      assert.deepEqual(res, [node], 'result');
     });
 
     it('should not match', () => {
@@ -6209,9 +7241,11 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const res = document.querySelectorAll('#pseudo-nth-p1 em:nth-of-type(3)');
-      assert.deepEqual(res, [
-        document.getElementById('pseudo-nth-em3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('pseudo-nth-em3')],
+        'result'
+      );
     });
 
     it('should match', () => {
@@ -6237,9 +7271,7 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('adjacent-div4');
       const detached = document.body.removeChild(root);
       const res = detached.querySelectorAll('#adjacent-div2+div');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      assert.deepEqual(res, [node], 'result');
     });
 
     it('should match', () => {
@@ -6292,10 +7324,7 @@ describe('local wpt test cases', () => {
       const div6 = document.getElementById('sibling-div6');
       const detached = document.body.removeChild(root);
       const res = detached.querySelectorAll('#sibling-div2~div');
-      assert.deepEqual(res, [
-        div4,
-        div6
-      ], 'result');
+      assert.deepEqual(res, [div4, div6], 'result');
     });
 
     it('should match', () => {
@@ -6348,12 +7377,16 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const node = document.getElementById('id-ul1');
       const res = document.querySelectorAll('#id-li-duplicate');
-      assert.deepEqual(res, [
-        node.firstElementChild,
-        node.firstElementChild.nextElementSibling,
-        node.firstElementChild.nextElementSibling.nextElementSibling,
-        node.lastElementChild
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          node.firstElementChild,
+          node.firstElementChild.nextElementSibling,
+          node.firstElementChild.nextElementSibling.nextElementSibling,
+          node.lastElementChild
+        ],
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
@@ -6372,9 +7405,7 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('descendant-div3');
       const root = document.documentElement;
       const res = root.querySelectorAll('.descendant-div1 .descendant-div3');
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      assert.deepEqual(res, [node], 'result');
     });
   });
 
@@ -6445,11 +7476,15 @@ describe('local wpt test cases', () => {
       document.getElementById('radio2').click();
       await sleep();
       const res = document.querySelectorAll(':checked');
-      assert.deepEqual(res, [
-        document.getElementById('option2'),
-        document.getElementById('checkbox2'),
-        document.getElementById('radio2')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('option2'),
+          document.getElementById('checkbox2'),
+          document.getElementById('radio2')
+        ],
+        'result'
+      );
     });
   });
 
@@ -6488,18 +7523,22 @@ describe('local wpt test cases', () => {
       `;
       document.getElementById('fieldset').appendChild(fieldset);
       const res = document.querySelectorAll(':disabled');
-      assert.deepEqual(res, [
-        document.getElementById('fieldset'),
-        document.getElementById('clubname'),
-        document.getElementById('clubnum'),
-        document.getElementById('fieldset_nested'),
-        document.getElementById('input_nested'),
-        document.getElementById('button_nested'),
-        document.getElementById('select_nested'),
-        document.getElementById('textarea_nested'),
-        document.getElementById('fieldset_nested2'),
-        document.getElementById('input_nested2')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('fieldset'),
+          document.getElementById('clubname'),
+          document.getElementById('clubnum'),
+          document.getElementById('fieldset_nested'),
+          document.getElementById('input_nested'),
+          document.getElementById('button_nested'),
+          document.getElementById('select_nested'),
+          document.getElementById('textarea_nested'),
+          document.getElementById('fieldset_nested2'),
+          document.getElementById('input_nested2')
+        ],
+        'result'
+      );
     });
   });
 
@@ -6561,8 +7600,11 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       document.getElementsByTagName('input')[0].indeterminate = true;
       const node = document.getElementById('test');
-      assert.strictEqual(node.matches('input:indeterminate + #test'), false,
-        'result');
+      assert.strictEqual(
+        node.matches('input:indeterminate + #test'),
+        false,
+        'result'
+      );
     });
   });
 
@@ -6575,8 +7617,11 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const input = document.getElementById('input');
       const node = document.getElementById('sibling');
-      assert.strictEqual(node.matches(':indeterminate + span'), false,
-        'result');
+      assert.strictEqual(
+        node.matches(':indeterminate + span'),
+        false,
+        'result'
+      );
       input.type = 'radio';
       assert.strictEqual(node.matches(':indeterminate + span'), true, 'result');
     });
@@ -6658,35 +7703,86 @@ describe('local wpt test cases', () => {
         assert.deepEqual([...elements], getElementsByIds(ids));
       };
       testSelectorIdsMatch(':in-range', [
-        'number1', 'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin',
-        'range0', 'range1', 'range2', 'range3'
+        'number1',
+        'datein',
+        'timein',
+        'weekin',
+        'monthin',
+        'datetimelocalin',
+        'range0',
+        'range1',
+        'range2',
+        'range3'
       ]);
       testSelectorIdsMatch(':out-of-range', [
-        'number3', 'number4', 'dateunder', 'dateover', 'timeunder', 'timeover',
-        'weekunder', 'weekover', 'monthunder', 'monthover',
-        'datetimelocalunder', 'datetimelocalover'
+        'number3',
+        'number4',
+        'dateunder',
+        'dateover',
+        'timeunder',
+        'timeover',
+        'weekunder',
+        'weekover',
+        'monthunder',
+        'monthover',
+        'datetimelocalunder',
+        'datetimelocalover'
       ]);
 
       document.getElementById('number1').value = -10;
       testSelectorIdsMatch(':in-range', [
-        'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin', 'range0',
-        'range1', 'range2', 'range3'
+        'datein',
+        'timein',
+        'weekin',
+        'monthin',
+        'datetimelocalin',
+        'range0',
+        'range1',
+        'range2',
+        'range3'
       ]);
       testSelectorIdsMatch(':out-of-range', [
-        'number1', 'number3', 'number4', 'dateunder', 'dateover', 'timeunder',
-        'timeover', 'weekunder', 'weekover', 'monthunder', 'monthover',
-        'datetimelocalunder', 'datetimelocalover'
+        'number1',
+        'number3',
+        'number4',
+        'dateunder',
+        'dateover',
+        'timeunder',
+        'timeover',
+        'weekunder',
+        'weekover',
+        'monthunder',
+        'monthover',
+        'datetimelocalunder',
+        'datetimelocalover'
       ]);
 
       document.getElementById('number3').min = 0;
       testSelectorIdsMatch(':in-range', [
-        'number3', 'datein', 'timein', 'weekin', 'monthin', 'datetimelocalin',
-        'range0', 'range1', 'range2', 'range3'
+        'number3',
+        'datein',
+        'timein',
+        'weekin',
+        'monthin',
+        'datetimelocalin',
+        'range0',
+        'range1',
+        'range2',
+        'range3'
       ]);
       testSelectorIdsMatch(':out-of-range', [
-        'number1', 'number4', 'dateunder', 'dateover', 'timeunder', 'timeover',
-        'weekunder', 'weekover', 'monthunder', 'monthover',
-        'datetimelocalunder', 'datetimelocalover'
+        'number1',
+        'number4',
+        'dateunder',
+        'dateover',
+        'timeunder',
+        'timeover',
+        'weekunder',
+        'weekover',
+        'monthunder',
+        'monthover',
+        'datetimelocalunder',
+        'datetimelocalover'
       ]);
     });
   });
@@ -6764,11 +7860,17 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const input = document.getElementById('input');
       const node = document.getElementById('sibling');
-      assert.strictEqual(node.matches(':placeholder-shown + span'), false,
-        'result');
+      assert.strictEqual(
+        node.matches(':placeholder-shown + span'),
+        false,
+        'result'
+      );
       input.type = 'text';
-      assert.strictEqual(node.matches(':placeholder-shown + span'), true,
-        'result');
+      assert.strictEqual(
+        node.matches(':placeholder-shown + span'),
+        true,
+        'result'
+      );
     });
   });
 
@@ -6796,8 +7898,11 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('sibling');
       assert.strictEqual(node.matches(':optional + span'), true, 'result');
       input.type = 'text';
-      assert.strictEqual(node.matches(':not(:optional) + span'), true,
-        'result');
+      assert.strictEqual(
+        node.matches(':not(:optional) + span'),
+        true,
+        'result'
+      );
     });
   });
 
@@ -6823,8 +7928,11 @@ describe('local wpt test cases', () => {
       `;
       document.body.innerHTML = html;
       const node = document.getElementById('empty');
-      assert.strictEqual(node.matches('#styleTests > :invalid'), false,
-        'result');
+      assert.strictEqual(
+        node.matches('#styleTests > :invalid'),
+        false,
+        'result'
+      );
     });
   });
 
@@ -6837,20 +7945,32 @@ describe('local wpt test cases', () => {
       const node = document.querySelector('.my-link');
       assert.strictEqual(node.matches('.my-link'), true, 'result');
       node.href = '#x';
-      assert.strictEqual(node.matches('.my-link[href]'), true,
-        'result append attr');
+      assert.strictEqual(
+        node.matches('.my-link[href]'),
+        true,
+        'result append attr'
+      );
       node.setAttribute('href', '#a');
-      assert.strictEqual(node.matches('.my-link[href="#a"]'), true,
-        'result change attr');
+      assert.strictEqual(
+        node.matches('.my-link[href="#a"]'),
+        true,
+        'result change attr'
+      );
       const attr = document.createAttribute('href');
       attr.value = '#b';
       node.attributes.setNamedItem(attr);
-      assert.strictEqual(node.matches('.my-link[href="#b"]'), true,
-        'result replace attr');
+      assert.strictEqual(
+        node.matches('.my-link[href="#b"]'),
+        true,
+        'result replace attr'
+      );
       node.removeAttribute('href');
       assert.strictEqual(node.matches('.my-link'), true, 'result remove attr');
-      assert.strictEqual(node.matches('.my-link[href]'), false,
-        'result remove attr');
+      assert.strictEqual(
+        node.matches('.my-link[href]'),
+        false,
+        'result remove attr'
+      );
       node.textContent = '';
       assert.strictEqual(node.matches('.my-link'), true, 'result :empty');
       assert.strictEqual(node.matches('.my-link:empty'), true, 'result :empty');

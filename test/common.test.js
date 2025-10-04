@@ -5,7 +5,13 @@ import sinon from 'sinon';
 
 /* test */
 import {
-  getType, isString, logErr, logMsg, logWarn, sleep, throwErr
+  getType,
+  isString,
+  logErr,
+  logMsg,
+  logWarn,
+  sleep,
+  throwErr
 } from '../scripts/common.js';
 
 describe('getType', () => {

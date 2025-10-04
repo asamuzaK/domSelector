@@ -95,8 +95,11 @@ describe('DOMSelector', () => {
       assert.strictEqual(typeof res.matches, 'function', 'matches');
       assert.strictEqual(typeof res.closest, 'function', 'closest');
       assert.strictEqual(typeof res.querySelector, 'function', 'querySelector');
-      assert.strictEqual(typeof res.querySelectorAll, 'function',
-        'querySelectorAll');
+      assert.strictEqual(
+        typeof res.querySelectorAll,
+        'function',
+        'querySelectorAll'
+      );
     });
 
     it('should create instance', () => {
@@ -111,66 +114,97 @@ describe('DOMSelector', () => {
       assert.strictEqual(typeof res.matches, 'function', 'matches');
       assert.strictEqual(typeof res.closest, 'function', 'closest');
       assert.strictEqual(typeof res.querySelector, 'function', 'querySelector');
-      assert.strictEqual(typeof res.querySelectorAll, 'function',
-        'querySelectorAll');
+      assert.strictEqual(
+        typeof res.querySelectorAll,
+        'function',
+        'querySelectorAll'
+      );
     });
   });
 
   describe('check', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).check(), window.TypeError,
-        'Unexpected type Undefined');
+      assert.throws(
+        () => new DOMSelector(window).check(),
+        window.TypeError,
+        'Unexpected type Undefined'
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).check(null, document),
-        window.TypeError, 'Unexpected node #document');
+      assert.throws(
+        () => new DOMSelector(window).check(null, document),
+        window.TypeError,
+        'Unexpected node #document'
+      );
     });
 
     it('should get result', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('li', node);
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
 
       const res2 = domSelector.check('li', node);
-      assert.deepEqual(res2, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      assert.deepEqual(
+        res2,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
     });
 
     it('should get result', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('li::before', node);
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: '::before'
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: '::before'
+        },
+        'result'
+      );
     });
 
     it('should get result', () => {
       const node = document.createElement(null);
       const res = new DOMSelector(window).check(null, node);
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
     });
 
     it('should throw', () => {
       assert.throws(
         () => new DOMSelector(window).check('[foo=bar baz]', document.body),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
         }
       );
@@ -192,20 +226,31 @@ describe('DOMSelector', () => {
       parent.appendChild(div);
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('#main p:not(.foo)', p2);
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
     });
 
     it('should get result', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
-      const res = domSelector.check(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      const res = domSelector.check(
+        ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
+        node
+      );
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
     });
 
     it('should get result', () => {
@@ -223,10 +268,14 @@ describe('DOMSelector', () => {
       const res = domSelector.check('li', node);
       delete node._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: null
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null
+        },
+        'result'
+      );
     });
 
     it('should get result', () => {
@@ -244,22 +293,32 @@ describe('DOMSelector', () => {
       const res = domSelector.check('li::before', node);
       delete node._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
-      assert.deepEqual(res, {
-        match: true,
-        pseudoElement: '::before'
-      }, 'result');
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: '::before'
+        },
+        'result'
+      );
     });
   });
 
   describe('matches', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).matches(), window.TypeError,
-        'Unexpected type Undefined');
+      assert.throws(
+        () => new DOMSelector(window).matches(),
+        window.TypeError,
+        'Unexpected type Undefined'
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).matches(null, document),
-        window.TypeError, 'Unexpected node #document');
+      assert.throws(
+        () => new DOMSelector(window).matches(null, document),
+        window.TypeError,
+        'Unexpected node #document'
+      );
     });
 
     it('should get true', () => {
@@ -287,16 +346,22 @@ describe('DOMSelector', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).matches('body', document),
-        window.TypeError, 'Unexpected node #document');
+      assert.throws(
+        () => new DOMSelector(window).matches('body', document),
+        window.TypeError,
+        'Unexpected node #document'
+      );
     });
 
     it('should throw', () => {
       assert.throws(
         () => new DOMSelector(window).matches('', document.body),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector ', 'message');
           return true;
@@ -308,11 +373,17 @@ describe('DOMSelector', () => {
       assert.throws(
         () => new DOMSelector(window).matches('[foo=bar baz]', document.body),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
         }
       );
@@ -410,7 +481,10 @@ describe('DOMSelector', () => {
     it('should get true', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
-      const res = domSelector.matches(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
+      const res = domSelector.matches(
+        ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
+        node
+      );
       assert.strictEqual(res, true, 'result');
     });
 
@@ -453,25 +527,40 @@ describe('DOMSelector', () => {
 
   describe('closest', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).closest(null),
-        window.TypeError, 'Unexpected type Undefined');
-    });
-
-    it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).closest('body', document),
-        window.TypeError, 'Unexpected node #document');
+      assert.throws(
+        () => new DOMSelector(window).closest(null),
+        window.TypeError,
+        'Unexpected type Undefined'
+      );
     });
 
     it('should throw', () => {
       assert.throws(
-        () => new DOMSelector(window)
-          .closest('[foo=bar baz]', document.getElementById('div0')),
+        () => new DOMSelector(window).closest('body', document),
+        window.TypeError,
+        'Unexpected node #document'
+      );
+    });
+
+    it('should throw', () => {
+      assert.throws(
+        () =>
+          new DOMSelector(window).closest(
+            '[foo=bar baz]',
+            document.getElementById('div0')
+          ),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
         }
       );
@@ -581,14 +670,20 @@ describe('DOMSelector', () => {
       ul.appendChild(l10);
       const parent = document.getElementById('div0');
       parent.appendChild(ul);
-      const res = new DOMSelector(window).closest(':nth-child(2n+1 of .noted)', p7);
+      const res = new DOMSelector(window).closest(
+        ':nth-child(2n+1 of .noted)',
+        p7
+      );
       assert.deepEqual(res, l7, 'result');
     });
 
     it('should get matched node', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
-      const res = domSelector.closest(':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))', node);
+      const res = domSelector.closest(
+        ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
+        node
+      );
       assert.deepEqual(res, node, 'result');
     });
 
@@ -631,19 +726,28 @@ describe('DOMSelector', () => {
 
   describe('querySelector', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).querySelector(),
-        window.TypeError, 'Unexpected type Undefined');
+      assert.throws(
+        () => new DOMSelector(window).querySelector(),
+        window.TypeError,
+        'Unexpected type Undefined'
+      );
     });
 
     it('should throw', () => {
       assert.throws(
         () => new DOMSelector(window).querySelector('[foo=bar baz]', document),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
         }
       );
@@ -759,8 +863,10 @@ describe('DOMSelector', () => {
       parent.appendChild(node4);
       parent.appendChild(node5);
       const domSelector = new DOMSelector(window);
-      const res =
-        domSelector.querySelector('.foo + .foo + .foo:last-child', parent);
+      const res = domSelector.querySelector(
+        '.foo + .foo + .foo:last-child',
+        parent
+      );
       assert.deepEqual(res, node5, 'result');
     });
 
@@ -793,7 +899,10 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const parent = document.getElementById('div1');
       const node = document.getElementById('ul1');
-      const res = domSelector.querySelector(':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))', parent);
+      const res = domSelector.querySelector(
+        ':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))',
+        parent
+      );
       assert.deepEqual(res, node, 'result');
     });
 
@@ -857,22 +966,32 @@ describe('DOMSelector', () => {
 
   describe('querySelectorAll', () => {
     it('should throw', () => {
-      assert.throws(() => new DOMSelector(window).querySelectorAll(),
-        window.TypeError, 'Unexpected type Undefined');
+      assert.throws(
+        () => new DOMSelector(window).querySelectorAll(),
+        window.TypeError,
+        'Unexpected type Undefined'
+      );
     });
 
     it('should throw', () => {
       assert.throws(
-        () => new DOMSelector(window)
-          .querySelectorAll('[foo=bar baz]', document),
+        () =>
+          new DOMSelector(window).querySelectorAll('[foo=bar baz]', document),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
-        });
+        }
+      );
     });
 
     it('should warn', () => {
@@ -892,28 +1011,40 @@ describe('DOMSelector', () => {
       const node = document.getElementById('div1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('dt', node);
-      assert.deepEqual(res, [
-        document.getElementById('dt1'),
-        document.getElementById('dt2'),
-        document.getElementById('dt3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ],
+        'result'
+      );
 
       const res2 = domSelector.querySelectorAll('dt', node);
-      assert.deepEqual(res2, [
-        document.getElementById('dt1'),
-        document.getElementById('dt2'),
-        document.getElementById('dt3')
-      ], 'result');
+      assert.deepEqual(
+        res2,
+        [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ],
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('dt', document);
-      assert.deepEqual(res, [
-        document.getElementById('dt1'),
-        document.getElementById('dt2'),
-        document.getElementById('dt3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('dt1'),
+          document.getElementById('dt2'),
+          document.getElementById('dt3')
+        ],
+        'result'
+      );
     });
 
     it('should not match', () => {
@@ -926,17 +1057,21 @@ describe('DOMSelector', () => {
       const refPoint = document.getElementById('dl1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('*', refPoint);
-      assert.deepEqual(res, [
-        document.getElementById('dt1'),
-        document.getElementById('dd1'),
-        document.getElementById('span1'),
-        document.getElementById('dt2'),
-        document.getElementById('dd2'),
-        document.getElementById('span2'),
-        document.getElementById('dt3'),
-        document.getElementById('dd3'),
-        document.getElementById('span3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('dt1'),
+          document.getElementById('dd1'),
+          document.getElementById('span1'),
+          document.getElementById('dt2'),
+          document.getElementById('dd2'),
+          document.getElementById('span2'),
+          document.getElementById('dt3'),
+          document.getElementById('dd3'),
+          document.getElementById('span3')
+        ],
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
@@ -950,11 +1085,15 @@ describe('DOMSelector', () => {
     it('should get matched node(s)', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('.li', document);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ],
+        'result'
+      );
     });
 
     it('should not match', () => {
@@ -985,9 +1124,7 @@ describe('DOMSelector', () => {
       root.append(node);
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll(':nth-child(n of .div)', root);
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      assert.deepEqual(res, [node], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -998,20 +1135,22 @@ describe('DOMSelector', () => {
       root.innerHTML = '<div></div><div></div>';
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll(':host div', root);
-      assert.deepEqual(res, [
-        root.firstElementChild,
-        root.lastElementChild
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [root.firstElementChild, root.lastElementChild],
+        'result'
+      );
     });
 
     it('should get matched node(s)', () => {
       const domSelector = new DOMSelector(window);
       const parent = document.getElementById('div1');
       const node = document.getElementById('ul1');
-      const res = domSelector.querySelectorAll(':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))', parent);
-      assert.deepEqual(res, [
-        node
-      ], 'result');
+      const res = domSelector.querySelectorAll(
+        ':is(ol:is(:only-child, :last-child), ul:is(:only-child, :last-child))',
+        parent
+      );
+      assert.deepEqual(res, [node], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -1095,10 +1234,11 @@ describe('DOMSelector', () => {
       const res = domSelector.querySelectorAll(selector, parent);
       delete parent._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
-      assert.deepEqual(res, [
-        document.getElementById('dt1'),
-        document.getElementById('dt3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('dt1'), document.getElementById('dt3')],
+        'result'
+      );
     });
 
     it('should not match', () => {
@@ -1229,8 +1369,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.matches('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1378,14 +1521,26 @@ describe('patched JSDOM', () => {
       const span = document.createElement('span');
       p.appendChild(span);
       div.appendChild(p);
-      assert.strictEqual(div.matches(':read-only'), false,
-        'not match :read-only');
-      assert.strictEqual(div.matches(':read-write'), true,
-        'matches :read-write');
-      assert.strictEqual(span.matches(':read-only'), false,
-        'not match :read-only');
-      assert.strictEqual(span.matches(':read-write'), true,
-        'matches :read-write');
+      assert.strictEqual(
+        div.matches(':read-only'),
+        false,
+        'not match :read-only'
+      );
+      assert.strictEqual(
+        div.matches(':read-write'),
+        true,
+        'matches :read-write'
+      );
+      assert.strictEqual(
+        span.matches(':read-only'),
+        false,
+        'not match :read-only'
+      );
+      assert.strictEqual(
+        span.matches(':read-write'),
+        true,
+        'matches :read-write'
+      );
     });
   });
 
@@ -1394,8 +1549,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.closest('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1466,8 +1624,11 @@ describe('patched JSDOM', () => {
       const res = node.closest('.foo');
       assert.deepEqual(res, null, 'result');
       assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
-      assert.strictEqual(typeof document.createTreeWalker, 'function',
-        'TreeWalker');
+      assert.strictEqual(
+        typeof document.createTreeWalker,
+        'function',
+        'TreeWalker'
+      );
       assert.deepEqual(document.defaultView, window, 'window');
     });
 
@@ -1496,8 +1657,11 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, null, 'result');
       assert.deepEqual(node.ownerDocument, document, 'ownerDocument');
       assert.deepEqual(html.ownerDocument, document, 'ownerDocument');
-      assert.strictEqual(typeof document.createTreeWalker, 'function',
-        'TreeWalker');
+      assert.strictEqual(
+        typeof document.createTreeWalker,
+        'function',
+        'TreeWalker'
+      );
       assert.deepEqual(document.defaultView, window, 'window');
     });
   });
@@ -1507,8 +1671,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.querySelector('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1520,8 +1687,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.querySelector('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1534,8 +1704,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => frag.querySelector('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1547,11 +1720,17 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.querySelector('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
         }
       );
@@ -1562,11 +1741,17 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => frag.querySelector('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
         }
       );
@@ -1576,11 +1761,17 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.querySelector('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
         }
       );
@@ -1762,8 +1953,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.querySelectorAll('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1775,8 +1969,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.querySelectorAll('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1789,8 +1986,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => frag.querySelectorAll('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -1802,11 +2002,17 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.querySelectorAll('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
         }
       );
@@ -1817,11 +2023,17 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => frag.querySelectorAll('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
         }
       );
@@ -1831,13 +2043,20 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => document.body.querySelectorAll('.foo + .123'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo + .123',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector .foo + .123',
+            'message'
+          );
           return true;
-        });
+        }
+      );
     });
 
     it('should get matched node', () => {
@@ -1865,11 +2084,7 @@ describe('patched JSDOM', () => {
       ul1.classList.add('bar');
       li3.classList.add('baz');
       const res = document.querySelectorAll('li:nth-child(odd)');
-      assert.deepEqual(res, [
-        li1,
-        li3,
-        li5
-      ], 'result');
+      assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
     it('should get matched node', () => {
@@ -1896,14 +2111,10 @@ describe('patched JSDOM', () => {
       div1.classList.add('foo');
       ul1.classList.add('bar');
       li3.classList.add('baz');
-      const res =
-        document.querySelectorAll('li:is(:nth-child(2n+1), :nth-child(3n+2))');
-      assert.deepEqual(res, [
-        li1,
-        li2,
-        li3,
-        li5
-      ], 'result');
+      const res = document.querySelectorAll(
+        'li:is(:nth-child(2n+1), :nth-child(3n+2))'
+      );
+      assert.deepEqual(res, [li1, li2, li3, li5], 'result');
     });
 
     it('should get matched node', () => {
@@ -1930,12 +2141,10 @@ describe('patched JSDOM', () => {
       div1.classList.add('foo');
       ul1.classList.add('bar');
       li3.classList.add('baz');
-      const res =
-        document.querySelectorAll('li:not(:is(:nth-child(2n), :nth-child(3n+1)))');
-      assert.deepEqual(res, [
-        li3,
-        li5
-      ], 'result');
+      const res = document.querySelectorAll(
+        'li:not(:is(:nth-child(2n), :nth-child(3n+1)))'
+      );
+      assert.deepEqual(res, [li3, li5], 'result');
     });
 
     it('should get matched node', () => {
@@ -1962,12 +2171,10 @@ describe('patched JSDOM', () => {
       div1.classList.add('foo');
       ul1.classList.add('bar');
       li3.classList.add('baz');
-      const res =
-        document.querySelectorAll('li:last-child, li:first-child + li');
-      assert.deepEqual(res, [
-        li2,
-        li5
-      ], 'result');
+      const res = document.querySelectorAll(
+        'li:last-child, li:first-child + li'
+      );
+      assert.deepEqual(res, [li2, li5], 'result');
     });
 
     it('should not match', () => {
@@ -2023,11 +2230,7 @@ describe('patched JSDOM', () => {
       ul1.classList.add('bar');
       li3.classList.add('baz');
       const res = div1.querySelectorAll('li:nth-child(odd)');
-      assert.deepEqual(res, [
-        li1,
-        li3,
-        li5
-      ], 'result');
+      assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
     it('should not match', () => {
@@ -2063,8 +2266,11 @@ describe('patched JSDOM', () => {
       assert.throws(
         () => frag.querySelectorAll('*|'),
         e => {
-          assert.strictEqual(e instanceof window.DOMException, true,
-            'instance');
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(e.message, 'Invalid selector *|', 'message');
           return true;
@@ -2098,11 +2304,7 @@ describe('patched JSDOM', () => {
       ul1.classList.add('bar');
       li3.classList.add('baz');
       const res = frag.querySelectorAll('li:nth-child(odd)');
-      assert.deepEqual(res, [
-        li1,
-        li3,
-        li5
-      ], 'result');
+      assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
     it('should not match', () => {
@@ -2156,9 +2358,7 @@ describe('patched JSDOM', () => {
           arr.push(i);
         }
       }
-      assert.deepEqual(arr, [
-        span, span2
-      ], 'result');
+      assert.deepEqual(arr, [span, span2], 'result');
     });
   });
 });

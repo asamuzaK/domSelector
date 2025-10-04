@@ -189,7 +189,8 @@ const selectors = [
   ':is(.box > .content, .block > .content)',
   ':is(.container > .content, .container > .box)',
   'p:not(:is(:not(.content))):not(.foo)',
-  'div:not(:is(:not(.container))):not(.box)'
+  'div:not(:is(:not(.container))):not(.box)',
+  'p'
 ];
 
 /* matcher tests */
@@ -562,6 +563,14 @@ suite.on('start', () => {
   console.log(`benchmark ${pkgName} v${version}`);
   prepareDomstr();
   prepareDom();
+}).add(`jsdom matches('${selectors[19]}')`, () => {
+  elementMatchesRandom('jsdom', selectors[19], 'p');
+}).add(`happydom matches('${selectors[19]}')`, () => {
+  elementMatchesRandom('happydom', selectors[19], 'p');
+}).add(`linkedom matches('${selectors[19]}')`, () => {
+  elementMatchesRandom('linkedom', selectors[19], 'p');
+}).add(`patched-jsdom matches('${selectors[19]}')`, () => {
+  elementMatchesRandom('patched-jsdom', selectors[19], 'p');
 }).add(`jsdom matches('${selectors[0]}')`, () => {
   elementMatchesRandom('jsdom', selectors[0], 'p');
 }).add(`happydom matches('${selectors[0]}')`, () => {
@@ -626,6 +635,14 @@ suite.on('start', () => {
   elementMatchesRandom2('linkedom', selectors[17], 'p');
 }).add(`patched-jsdom matches('${selectors[17]}')`, () => {
   elementMatchesRandom2('patched-jsdom', selectors[17], 'p');
+}).add(`jsdom closest('${selectors[19]}')`, () => {
+  elementClosestRandom('jsdom', selectors[19], 'p');
+}).add(`happydom closest('${selectors[19]}')`, () => {
+  elementClosestRandom('happydom', selectors[19], 'p');
+}).add(`linkedom closest('${selectors[19]}')`, () => {
+  elementClosestRandom('linkedom', selectors[19], 'p');
+}).add(`patched-jsdom closest('${selectors[19]}')`, () => {
+  elementClosestRandom('patched-jsdom', selectors[19], 'p');
 }).add(`jsdom closest('${selectors[1]}')`, () => {
   elementClosestRandom('jsdom', selectors[1], 'box');
 }).add(`happydom closest('${selectors[1]}')`, () => {
@@ -674,6 +691,14 @@ suite.on('start', () => {
   elementClosestRandom('linkedom', selectors[18], 'container');
 }).add(`patched-jsdom closest('${selectors[18]}')`, () => {
   elementClosestRandom('patched-jsdom', selectors[18], 'container');
+}).add(`jsdom querySelector('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorRandom('jsdom', selectors[19], 'p');
+}).add(`happydom querySelector('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorRandom('happydom', selectors[19], 'p');
+}).add(`linkedom querySelector('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorRandom('linkedom', selectors[19], 'p');
+}).add(`patched-jsdom querySelector('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorRandom('patched-jsdom', selectors[19], 'p');
 }).add(`jsdom querySelector('${selectors[0]}')`, () => {
   parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
 }).add(`happydom querySelector('${selectors[0]}')`, () => {
@@ -722,6 +747,14 @@ suite.on('start', () => {
   parentNodeQuerySelectorRandom('linkedom', selectors[17], 'p');
 }).add(`patched-jsdom querySelector('${selectors[17]}')`, () => {
   parentNodeQuerySelectorRandom('patched-jsdom', selectors[17], 'p');
+}).add(`jsdom querySelectorAll('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[19], 1000);
+}).add(`happydom querySelectorAll('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorAll('happydom', selectors[19], 1000);
+}).add(`linkedom querySelectorAll('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorAll('linkedom', selectors[19], 1000);
+}).add(`patched-jsdom querySelectorAll('${selectors[19]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[19], 1000);
 }).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
 }).add(`happydom querySelectorAll('${selectors[0]}')`, () => {

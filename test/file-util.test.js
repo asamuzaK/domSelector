@@ -7,12 +7,19 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import {
-  copyFile, createFile, getStat, isDir, isFile, readFile, removeDir, removeFile
+  copyFile,
+  createFile,
+  getStat,
+  isDir,
+  isFile,
+  readFile,
+  removeDir,
+  removeFile
 } from '../scripts/file-util.js';
 
 /* constants */
-const TMPDIR = process.env.TMP || process.env.TMPDIR || process.env.TEMP ||
-               os.tmpdir();
+const TMPDIR =
+  process.env.TMP || process.env.TMPDIR || process.env.TEMP || os.tmpdir();
 
 describe('getStat', () => {
   it('should be an object', () => {
@@ -69,7 +76,9 @@ describe('removeDir', () => {
     const filePath = path.join(subDirPath, 'test.txt');
     const value = 'test file.\n';
     await fsPromise.writeFile(filePath, value, {
-      encoding: 'utf8', flag: 'w', mode: 0o666
+      encoding: 'utf8',
+      flag: 'w',
+      mode: 0o666
     });
     const res1 = await Promise.all([
       fs.existsSync(dirPath),
@@ -102,7 +111,9 @@ describe('removeFile', () => {
     const filePath = path.join(subDirPath, 'test.txt');
     const value = 'test file.\n';
     await fsPromise.writeFile(filePath, value, {
-      encoding: 'utf8', flag: 'w', mode: 0o666
+      encoding: 'utf8',
+      flag: 'w',
+      mode: 0o666
     });
     const res1 = await Promise.all([
       fs.existsSync(dirPath),
@@ -131,7 +142,9 @@ describe('copyFile', () => {
     const copyPath = path.join(subDirPath, 'test2.txt');
     const value = 'test file.\n';
     await fsPromise.writeFile(filePath, value, {
-      encoding: 'utf8', flag: 'w', mode: 0o666
+      encoding: 'utf8',
+      flag: 'w',
+      mode: 0o666
     });
     const res1 = await Promise.all([
       fs.existsSync(dirPath),
@@ -144,7 +157,7 @@ describe('copyFile', () => {
       fs.existsSync(dirPath),
       fs.existsSync(subDirPath),
       fs.existsSync(filePath),
-      fs.existsSync(copyPath),
+      fs.existsSync(copyPath)
     ]);
     removeDir(dirPath);
     assert.deepEqual(res1, [true, true, true, false]);

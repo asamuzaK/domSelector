@@ -35,8 +35,10 @@ export const createDenoJson = async info => {
     imports: Object.fromEntries(importMap)
   };
   const content = `${JSON.stringify(obj, null, INDENT)}\n`;
-  const filePath =
-    await createFile(path.resolve(DIR_CWD, 'deno.json'), content);
+  const filePath = await createFile(
+    path.resolve(DIR_CWD, 'deno.json'),
+    content
+  );
   if (filePath && info) {
     console.info(`Created: ${filePath}`);
   }
@@ -77,13 +79,15 @@ export const parseCommand = args => {
   const reg = /^(?:(?:--)?help|-h|clean|denoconf)$/;
   if (Array.isArray(args) && args.some(arg => reg.test(arg))) {
     if (args.includes('clean')) {
-      commander.command('clean')
+      commander
+        .command('clean')
         .description('clean directory')
         .option('-d, --dir <name>', 'specify directory')
         .option('-i, --info', 'console info')
         .action(cleanDirectory);
     } else if (args.includes('denoconf')) {
-      commander.command('denoconf')
+      commander
+        .command('denoconf')
         .description('create deno config file')
         .option('-i, --info', 'console info')
         .action(createDenoConfigFile);
@@ -93,6 +97,4 @@ export const parseCommand = args => {
 };
 
 /* For test */
-export {
-  commander
-};
+export { commander };
