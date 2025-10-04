@@ -6004,6 +6004,23 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
+    // Not supported
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'open',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('select');
+      node.setAttribute('open', 'open');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':open', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -8715,6 +8732,42 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup(':optional', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    // Not supported
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'user-valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':user-valid', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    // Not supported
+    it('should get matched node(s)', () => {
+      const leaf = {
+        children: null,
+        name: 'user-invalid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.value = '';
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const finder = new Finder(window);
+      finder.setup(':user-invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
       assert.deepEqual([...res], [], 'result');
     });

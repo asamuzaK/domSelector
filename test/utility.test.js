@@ -10,8 +10,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as util from '../src/js/utility.js';
 import {
-  PS_CLASS_SELECTOR, SHOW_CONTAINER, TARGET_ALL, TARGET_FIRST, TARGET_SELF,
-  TARGET_LINEAL
+  COMBINATOR, PS_CLASS_SELECTOR, SHOW_CONTAINER, SELECTOR, SELECTOR_LIST,
+  TARGET_ALL, TARGET_FIRST, TARGET_SELF, TARGET_LINEAL, TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 describe('utility functions', () => {
@@ -102,6 +102,199 @@ describe('utility functions', () => {
         'foo',
         'bar'
       ], 'result');
+    });
+  });
+
+  describe('generate DOMException', () => {
+    const func = util.generateException;
+
+    it('should generate DOMException', () => {
+      const res = func('foo', 'SyntaxError', globalThis);
+      assert.strictEqual(res instanceof globalThis.DOMException, true,
+        'instance');
+      assert.strictEqual(res.message, 'foo', 'message');
+      assert.strictEqual(res.name, 'SyntaxError', 'name');
+    });
+  });
+
+  describe('find nested :has()', () => {
+    const func = util.findNestedHas;
+
+    it('should get true', () => {
+      const res = func({
+        name: 'has'
+      });
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func({
+        name: 'is'
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('Find logical pseudo-class that contains nested :has()', () => {
+    const func = util.findLogicalWithNestedHas;
+
+    it('should match', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '>',
+                    type: COMBINATOR
+                  },
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'has',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const res = func(leaf);
+      assert.deepEqual(res, leaf, 'result');
+    });
+
+    it('should match', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '>',
+                    type: COMBINATOR
+                  },
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'has',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'is',
+        type: PS_CLASS_SELECTOR
+      };
+      const res = func(leaf);
+      assert.deepEqual(res, leaf, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '>',
+                    type: COMBINATOR
+                  },
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'is',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'is',
+        type: PS_CLASS_SELECTOR
+      };
+      const res = func(leaf);
+      assert.deepEqual(res, null, 'result');
     });
   });
 

@@ -5,16 +5,16 @@
 /* import */
 import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
-import { generate, parse, walk } from 'css-tree';
+import * as cssTree from 'css-tree';
 import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
   ATRULE, COMBO, COMPOUND_I, DESCEND, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  HAS_COMPOUND, INPUT_BUTTON, INPUT_EDIT, INPUT_LTR, INPUT_TEXT, LOGIC_COMPLEX,
-  LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, PS_CLASS_SELECTOR, RULE, SCOPE,
-  SELECTOR_LIST, SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE,
+  HAS_COMPOUND, INPUT_BUTTON, INPUT_EDIT, INPUT_LTR, INPUT_TEXT, KEY_LOGICAL,
+  LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, PS_CLASS_SELECTOR, RULE,
+  SCOPE, SELECTOR_LIST, SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE,
   TYPE_FROM, TYPE_TO
 } from './constant.js';
 const KEY_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
@@ -66,7 +66,7 @@ class SelectorExtractor {
         const arr = [];
         if (type === SELECTOR_LIST) {
           for (const child of children) {
-            const selector = generate(child);
+            const selector = cssTree.generate(child);
             arr.push(selector);
           }
           this.selectors.push(arr);
@@ -79,7 +79,7 @@ class SelectorExtractor {
         if (type === SELECTOR_LIST) {
           let hasAmp = false;
           for (const child of children) {
-            const selector = generate(child);
+            const selector = cssTree.generate(child);
             if (this.isScoped && !hasAmp) {
               hasAmp = /\x26/.test(selector);
             }
@@ -146,7 +146,39 @@ export const verifyArray = (arr, type) => {
 };
 
 /**
- * filter a list of nodes based on An+B logic
+ * Generate a DOMException.
+ * @param {string} msg - The error message.
+ * @param {string} name - The error name.
+ * @param {object} globalObject - The global object (e.g., window).
+ * @returns {DOMException} The generated DOMException object.
+ */
+export const generateException = (msg, name, globalObject = globalThis) => {
+  return new globalObject.DOMException(msg, name);
+};
+
+/**
+ * Find a nested :has() pseudo-class.
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it's :has, otherwise null.
+ */
+export const findNestedHas = leaf => {
+  return leaf.name === 'has';
+};
+
+/**
+ * Find a logical pseudo-class that contains a nested :has().
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it matches, otherwise null.
+ */
+export const findLogicalWithNestedHas = leaf => {
+  if (KEY_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+    return leaf;
+  }
+  return null;
+};
+
+/**
+ * Filter a list of nodes based on An+B logic
  * @param {Array.<object>} nodes - array of nodes to filter
  * @param {object} anb - An+B options
  * @param {number} anb.a - a
@@ -916,11 +948,11 @@ export const concatNestedSelectors = selectors => {
  * @returns {Array.<Array.<string>>} - Array of nested selectors.
  */
 export const extractNestedSelectors = css => {
-  const ast = parse(css, {
+  const ast = cssTree.parse(css, {
     context: 'rule'
   });
   const extractor = new SelectorExtractor();
-  walk(ast, {
+  cssTree.walk(ast, {
     enter: extractor.enter.bind(extractor),
     leave: extractor.leave.bind(extractor)
   });
