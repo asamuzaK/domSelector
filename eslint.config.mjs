@@ -7,8 +7,7 @@ import neostandard from 'neostandard';
 
 export default [
   ...neostandard({
-    noStyle: true,
-    semi: true
+    noStyle: true
   }),
   jsdoc.configs['flat/recommended'],
   regexp.configs['flat/recommended'],
