@@ -10,7 +10,11 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as matcher from '../src/js/matcher.js';
 import {
-  ATTR_SELECTOR, IDENT, NOT_SUPPORTED_ERR, PS_ELEMENT_SELECTOR, SYNTAX_ERR,
+  ATTR_SELECTOR,
+  IDENT,
+  NOT_SUPPORTED_ERR,
+  PS_ELEMENT_SELECTOR,
+  SYNTAX_ERR,
   TYPE_SELECTOR
 } from '../src/js/constant.js';
 const STRING = 'String';
@@ -89,8 +93,11 @@ describe('matcher', () => {
     it('should throw', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
-      assert.throws(() => func('foo'), TypeError,
-        'Unexpected ast type Undefined');
+      assert.throws(
+        () => func('foo'),
+        TypeError,
+        'Unexpected ast type Undefined'
+      );
     });
 
     it('should not match', () => {
@@ -108,8 +115,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
-          assert.strictEqual(e.message, 'Unsupported pseudo-element ::after',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unsupported pseudo-element ::after',
+            'message'
+          );
           return true;
         }
       );
@@ -130,8 +140,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
-          assert.strictEqual(e.message, 'Unsupported pseudo-element ::part()',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unsupported pseudo-element ::part()',
+            'message'
+          );
           return true;
         }
       );
@@ -152,8 +165,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
-          assert.strictEqual(e.message,
-            'Unsupported pseudo-element ::slotted()', 'message');
+          assert.strictEqual(
+            e.message,
+            'Unsupported pseudo-element ::slotted()',
+            'message'
+          );
           return true;
         }
       );
@@ -167,8 +183,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Unknown pseudo-element ::foo',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-element ::foo',
+            'message'
+          );
           return true;
         }
       );
@@ -198,8 +217,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, NOT_SUPPORTED_ERR, 'name');
-          assert.strictEqual(e.message,
-            'Unsupported pseudo-element ::-webkit-foo', 'message');
+          assert.strictEqual(
+            e.message,
+            'Unsupported pseudo-element ::-webkit-foo',
+            'message'
+          );
           return true;
         }
       );
@@ -213,8 +235,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Unknown pseudo-element ::webkit-foo',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-element ::webkit-foo',
+            'message'
+          );
           return true;
         }
       );
@@ -237,8 +262,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Unknown pseudo-element ::-webkitfoo',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-element ::-webkitfoo',
+            'message'
+          );
           return true;
         }
       );
@@ -260,8 +288,11 @@ describe('matcher', () => {
     it('should throw', () => {
       const ast = {};
       const node = document.createElement('bdo');
-      assert.throws(() => func(ast, node), TypeError,
-        'Unexpected ast type Undefined');
+      assert.throws(
+        () => func(ast, node),
+        TypeError,
+        'Unexpected ast type Undefined'
+      );
     });
 
     it('should throw', () => {
@@ -270,8 +301,11 @@ describe('matcher', () => {
         type: IDENT
       };
       const node = document.createElement('bdo');
-      assert.throws(() => func(ast, node), TypeError,
-        'Unexpected ast type (empty String)');
+      assert.throws(
+        () => func(ast, node),
+        TypeError,
+        'Unexpected ast type (empty String)'
+      );
     });
 
     it('should match', () => {
@@ -1134,9 +1168,12 @@ describe('matcher', () => {
     });
 
     it('should get false', () => {
-      window.customElements.define('x-foo', class extends window.HTMLElement {
-        static formAssociated = false;
-      });
+      window.customElements.define(
+        'x-foo',
+        class extends window.HTMLElement {
+          static formAssociated = false;
+        }
+      );
       const node = document.createElement('x-foo');
       node.setAttribute('disabled', 'disabled');
       const res = func('disabled', node);
@@ -1144,9 +1181,12 @@ describe('matcher', () => {
     });
 
     it('should get true', () => {
-      window.customElements.define('x-input', class extends window.HTMLElement {
-        static formAssociated = true;
-      });
+      window.customElements.define(
+        'x-input',
+        class extends window.HTMLElement {
+          static formAssociated = true;
+        }
+      );
       const node = document.createElement('x-input');
       node.setAttribute('disabled', 'disabled');
       const res = func('disabled', node);
@@ -1154,9 +1194,12 @@ describe('matcher', () => {
     });
 
     it('should get false', () => {
-      window.customElements.define('x-input', class extends window.HTMLElement {
-        static formAssociated = true;
-      });
+      window.customElements.define(
+        'x-input',
+        class extends window.HTMLElement {
+          static formAssociated = true;
+        }
+      );
       const node = document.createElement('x-input');
       node.setAttribute('disabled', 'disabled');
       const res = func('enabled', node);
@@ -1457,8 +1500,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [foo=bar baz]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [foo=bar baz]',
+            'message'
+          );
           return true;
         }
       );
@@ -1627,8 +1673,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
       const parent = document.getElementById('div0');
@@ -1638,8 +1686,11 @@ describe('matcher', () => {
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector [baz|foo]',
-            'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [baz|foo]',
+            'message'
+          );
           return true;
         }
       );
@@ -1656,8 +1707,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
       const parent = document.getElementById('div0');
@@ -1679,8 +1732,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
       const parent = document.getElementById('div0');
@@ -1723,8 +1778,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:Baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:Baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
@@ -1767,8 +1824,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
       const parent = document.getElementById('div0');
@@ -1790,8 +1849,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'Qux');
       const parent = document.getElementById('div0');
@@ -1813,8 +1874,10 @@ describe('matcher', () => {
         type: ATTR_SELECTOR,
         value: null
       };
-      document.documentElement.setAttribute('xmlns:Baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:Baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'Baz:Foo', 'Qux');
       const parent = document.getElementById('div0');
@@ -2150,8 +2213,10 @@ describe('matcher', () => {
           value: 'qux'
         }
       };
-      document.documentElement.setAttribute('xmlns:baz',
-        'https://example.com/baz');
+      document.documentElement.setAttribute(
+        'xmlns:baz',
+        'https://example.com/baz'
+      );
       const node = document.createElement('div');
       node.setAttribute('foo', 'bar');
       node.setAttributeNS('https://example.com/baz', 'baz:foo', 'qux');
@@ -2178,8 +2243,11 @@ describe('matcher', () => {
         }
       };
       const node = document.createElement('div');
-      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
-        'en');
+      node.setAttributeNS(
+        'http://www.w3.org/XML/1998/namespace',
+        'xml:lang',
+        'en'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node, {
@@ -2203,8 +2271,11 @@ describe('matcher', () => {
         }
       };
       const node = document.createElement('div');
-      node.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang',
-        'en');
+      node.setAttributeNS(
+        'http://www.w3.org/XML/1998/namespace',
+        'xml:lang',
+        'en'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node, {
@@ -3105,8 +3176,10 @@ describe('matcher', () => {
         name: '*|*',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -3119,8 +3192,10 @@ describe('matcher', () => {
         name: 'foo|*',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -3140,8 +3215,10 @@ describe('matcher', () => {
         name: 'foo|*',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -3156,8 +3233,10 @@ describe('matcher', () => {
         name: 'foo|*',
         type: TYPE_SELECTOR
       };
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:bar');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node, {
@@ -3187,10 +3266,15 @@ describe('matcher', () => {
       };
       const nsroot = document.createElement('div');
       nsroot.setAttribute('xmlns', 'http://www.w3.org/2000/xmlns/');
-      nsroot.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+      nsroot.setAttributeNS(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns:foo',
+        'https://example.com/foo'
+      );
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       nsroot.appendChild(node);
       const parent = document.getElementById('div0');
       parent.appendChild(nsroot);
@@ -3205,8 +3289,10 @@ describe('matcher', () => {
         name: 'foo|bar',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:baz');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:baz'
+      );
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -3316,8 +3402,10 @@ describe('matcher', () => {
         name: '*',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:bar');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:bar'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
@@ -3339,8 +3427,10 @@ describe('matcher', () => {
         name: 'div',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
@@ -3352,8 +3442,10 @@ describe('matcher', () => {
         name: '*|div',
         type: TYPE_SELECTOR
       };
-      const node =
-          document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func(ast, node);
@@ -3411,14 +3503,17 @@ describe('matcher', () => {
         name: 'foo|div',
         type: TYPE_SELECTOR
       };
-      const node =
-        document.createElementNS('https://example.com/bar', 'bar:div');
+      const node = document.createElementNS(
+        'https://example.com/bar',
+        'bar:div'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       assert.throws(
-        () => func(ast, node, {
-          check: true
-        }),
+        () =>
+          func(ast, node, {
+            check: true
+          }),
         e => {
           assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');

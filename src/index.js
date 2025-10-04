@@ -12,7 +12,11 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
 import {
-  DOCUMENT_NODE, ELEMENT_NODE, TARGET_ALL, TARGET_FIRST, TARGET_LINEAL,
+  DOCUMENT_NODE,
+  ELEMENT_NODE,
+  TARGET_ALL,
+  TARGET_FIRST,
+  TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
 const MAX_CACHE = 4096;
@@ -72,8 +76,12 @@ export class DOMSelector {
     const document = this.#domSymbolTree
       ? node._ownerDocument
       : node.ownerDocument;
-    if (document === this.#document && document.contentType === 'text/html' &&
-        document.documentElement && node.parentNode) {
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement &&
+      node.parentNode
+    ) {
       const cacheKey = `check_${selector}`;
       let filterMatches = false;
       if (this.#cache.has(cacheKey)) {
@@ -131,8 +139,12 @@ export class DOMSelector {
     const document = this.#domSymbolTree
       ? node._ownerDocument
       : node.ownerDocument;
-    if (document === this.#document && document.contentType === 'text/html' &&
-        document.documentElement && node.parentNode) {
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement &&
+      node.parentNode
+    ) {
       const cacheKey = `matches_${selector}`;
       let filterMatches = false;
       if (this.#cache.has(cacheKey)) {
@@ -185,8 +197,12 @@ export class DOMSelector {
     const document = this.#domSymbolTree
       ? node._ownerDocument
       : node.ownerDocument;
-    if (document === this.#document && document.contentType === 'text/html' &&
-        document.documentElement && node.parentNode) {
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement &&
+      node.parentNode
+    ) {
       const cacheKey = `closest_${selector}`;
       let filterMatches = false;
       if (this.#cache.has(cacheKey)) {
@@ -281,8 +297,11 @@ export class DOMSelector {
     } else {
       document = node.ownerDocument;
     }
-    if (document === this.#document && document.contentType === 'text/html' &&
-        document.documentElement) {
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement
+    ) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = false;
       if (this.#cache.has(cacheKey)) {

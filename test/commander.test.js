@@ -8,7 +8,11 @@ import sinon from 'sinon';
 
 /* test */
 import {
-  cleanDirectory, commander, createDenoConfigFile, createDenoJson, parseCommand
+  cleanDirectory,
+  commander,
+  createDenoConfigFile,
+  createDenoJson,
+  parseCommand
 } from '../scripts/commander.js';
 
 /* constants */
@@ -19,8 +23,9 @@ const PERM_FILE = 0o644;
 
 describe('create deno json', () => {
   it('should throw', async () => {
-    const stubWrite =
-      sinon.stub(fsPromise, 'writeFile').rejects(new Error('error'));
+    const stubWrite = sinon
+      .stub(fsPromise, 'writeFile')
+      .rejects(new Error('error'));
     await createDenoJson().catch(e => {
       assert.deepStrictEqual(e, new Error('error'));
     });
@@ -34,18 +39,25 @@ describe('create deno json', () => {
         'is-potential-custom-element-name': '^1.0.1'
       }
     };
-    const stubRead =
-      sinon.stub(fsPromise, 'readFile').resolves(JSON.stringify(pkg));
+    const stubRead = sinon
+      .stub(fsPromise, 'readFile')
+      .resolves(JSON.stringify(pkg));
     const filePath = path.resolve(DIR_CWD, 'deno.json');
-    const content = `${JSON.stringify({
-      imports: {
-        'css-tree': 'https://esm.sh/css-tree@1.2.3',
-        'is-potential-custom-element-name':
-          'https://esm.sh/is-potential-custom-element-name@1.0.1'
-      }
-    }, null, INDENT)}\n`;
+    const content = `${JSON.stringify(
+      {
+        imports: {
+          'css-tree': 'https://esm.sh/css-tree@1.2.3',
+          'is-potential-custom-element-name':
+            'https://esm.sh/is-potential-custom-element-name@1.0.1'
+        }
+      },
+      null,
+      INDENT
+    )}\n`;
     const opt = {
-      encoding: CHAR, flag: 'w', mode: PERM_FILE
+      encoding: CHAR,
+      flag: 'w',
+      mode: PERM_FILE
     };
     const stubWrite = sinon.stub(fsPromise, 'writeFile');
     const stubWriteCond = stubWrite.withArgs(filePath, content, opt);
@@ -68,18 +80,25 @@ describe('create deno json', () => {
         'is-potential-custom-element-name': '^1.0.1'
       }
     };
-    const stubRead =
-      sinon.stub(fsPromise, 'readFile').resolves(JSON.stringify(pkg));
+    const stubRead = sinon
+      .stub(fsPromise, 'readFile')
+      .resolves(JSON.stringify(pkg));
     const filePath = path.resolve(DIR_CWD, 'deno.json');
-    const content = `${JSON.stringify({
-      imports: {
-        'css-tree': 'https://esm.sh/css-tree@1.2.3',
-        'is-potential-custom-element-name':
-          'https://esm.sh/is-potential-custom-element-name@1.0.1'
-      }
-    }, null, INDENT)}\n`;
+    const content = `${JSON.stringify(
+      {
+        imports: {
+          'css-tree': 'https://esm.sh/css-tree@1.2.3',
+          'is-potential-custom-element-name':
+            'https://esm.sh/is-potential-custom-element-name@1.0.1'
+        }
+      },
+      null,
+      INDENT
+    )}\n`;
     const opt = {
-      encoding: CHAR, flag: 'w', mode: PERM_FILE
+      encoding: CHAR,
+      flag: 'w',
+      mode: PERM_FILE
     };
     const stubWrite = sinon.stub(fsPromise, 'writeFile');
     const stubWriteCond = stubWrite.withArgs(filePath, content, opt);
@@ -98,8 +117,9 @@ describe('create deno json', () => {
 
 describe('create deno config file', () => {
   it('should throw', async () => {
-    const stubWrite =
-      sinon.stub(fsPromise, 'writeFile').rejects(new Error('error'));
+    const stubWrite = sinon
+      .stub(fsPromise, 'writeFile')
+      .rejects(new Error('error'));
     await createDenoConfigFile().catch(e => {
       assert.deepStrictEqual(e, new Error('error'));
     });

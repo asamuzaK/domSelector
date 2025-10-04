@@ -10,8 +10,16 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 /* test */
 import * as util from '../src/js/utility.js';
 import {
-  COMBINATOR, PS_CLASS_SELECTOR, SHOW_CONTAINER, SELECTOR, SELECTOR_LIST,
-  TARGET_ALL, TARGET_FIRST, TARGET_SELF, TARGET_LINEAL, TYPE_SELECTOR
+  COMBINATOR,
+  PS_CLASS_SELECTOR,
+  SHOW_CONTAINER,
+  SELECTOR,
+  SELECTOR_LIST,
+  TARGET_ALL,
+  TARGET_FIRST,
+  TARGET_SELF,
+  TARGET_LINEAL,
+  TYPE_SELECTOR
 } from '../src/js/constant.js';
 
 describe('utility functions', () => {
@@ -92,16 +100,16 @@ describe('utility functions', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func([1], 'String'), TypeError,
-        'Unexpected type Number');
+      assert.throws(
+        () => func([1], 'String'),
+        TypeError,
+        'Unexpected type Number'
+      );
     });
 
     it('should get value', () => {
       const res = func(['foo', 'bar'], 'String');
-      assert.deepEqual(res, [
-        'foo',
-        'bar'
-      ], 'result');
+      assert.deepEqual(res, ['foo', 'bar'], 'result');
     });
   });
 
@@ -110,8 +118,11 @@ describe('utility functions', () => {
 
     it('should generate DOMException', () => {
       const res = func('foo', 'SyntaxError', globalThis);
-      assert.strictEqual(res instanceof globalThis.DOMException, true,
-        'instance');
+      assert.strictEqual(
+        res instanceof globalThis.DOMException,
+        true,
+        'instance'
+      );
       assert.strictEqual(res.message, 'foo', 'message');
       assert.strictEqual(res.name, 'SyntaxError', 'name');
     });
@@ -328,9 +339,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li1')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -345,9 +354,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -362,9 +369,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -379,9 +384,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -396,9 +399,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -413,9 +414,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -430,11 +429,15 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -449,11 +452,15 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li2'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li3'),
+          document.getElementById('li2'),
+          document.getElementById('li1')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -468,11 +475,15 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -487,11 +498,15 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li2'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li3'),
+          document.getElementById('li2'),
+          document.getElementById('li1')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -506,10 +521,11 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li2'), document.getElementById('li3')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -524,10 +540,11 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li3'), document.getElementById('li2')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -542,9 +559,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -559,9 +574,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li1')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -576,9 +589,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -593,9 +604,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -610,10 +619,11 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li1'), document.getElementById('li3')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -628,10 +638,11 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li3'), document.getElementById('li1')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -646,9 +657,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2'),
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -663,9 +672,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -680,9 +687,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -697,9 +702,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li1')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -714,9 +717,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li1')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -731,9 +732,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -748,10 +747,11 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li2'), document.getElementById('li1')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -766,11 +766,15 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li2'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li3'),
+          document.getElementById('li2'),
+          document.getElementById('li1')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -785,11 +789,15 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li2'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('li1'),
+          document.getElementById('li2'),
+          document.getElementById('li3')
+        ],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -804,9 +812,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li1')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -821,9 +827,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li3')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -838,9 +842,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -855,9 +857,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -872,10 +872,11 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li1'), document.getElementById('li3')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -890,10 +891,11 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li3'), document.getElementById('li1')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -908,9 +910,7 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -925,9 +925,7 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li2')
-      ], 'result');
+      assert.deepEqual(res, [document.getElementById('li2')], 'result');
     });
 
     it('should get node(s)', () => {
@@ -942,10 +940,11 @@ describe('utility functions', () => {
         reverse: false
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li1'),
-        document.getElementById('li3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li1'), document.getElementById('li3')],
+        'result'
+      );
     });
 
     it('should get node(s)', () => {
@@ -960,10 +959,11 @@ describe('utility functions', () => {
         reverse: true
       };
       const res = func(nodes, anb);
-      assert.deepEqual(res, [
-        document.getElementById('li3'),
-        document.getElementById('li1')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [document.getElementById('li3'), document.getElementById('li1')],
+        'result'
+      );
     });
   });
 
@@ -994,31 +994,19 @@ describe('utility functions', () => {
 
     it('should get result', () => {
       const res = func(document);
-      assert.deepEqual(res, [
-        document,
-        document,
-        false
-      ]);
+      assert.deepEqual(res, [document, document, false]);
     });
 
     it('should get result', () => {
       const node = document.createDocumentFragment();
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        node,
-        false
-      ]);
+      assert.deepEqual(res, [document, node, false]);
     });
 
     it('should get result', () => {
       const node = document.getElementById('div0');
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        document,
-        false
-      ]);
+      assert.deepEqual(res, [document, document, false]);
     });
 
     it('should get result', () => {
@@ -1026,11 +1014,7 @@ describe('utility functions', () => {
       const node = document.createElement('div');
       frag.appendChild(node);
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        frag,
-        false
-      ]);
+      assert.deepEqual(res, [document, frag, false]);
     });
 
     it('should get result', () => {
@@ -1038,11 +1022,7 @@ describe('utility functions', () => {
       const node = document.createElement('div');
       parent.appendChild(node);
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        parent,
-        false
-      ]);
+      assert.deepEqual(res, [document, parent, false]);
     });
 
     it('should get result', () => {
@@ -1050,11 +1030,7 @@ describe('utility functions', () => {
       const doc = new window.DOMParser().parseFromString(domstr, 'text/xml');
       const node = doc.getElementById('bar');
       const res = func(node);
-      assert.deepEqual(res, [
-        doc,
-        doc,
-        false
-      ]);
+      assert.deepEqual(res, [doc, doc, false]);
     });
 
     it('should get result', () => {
@@ -1082,11 +1058,7 @@ describe('utility functions', () => {
       const host = document.getElementById('baz');
       const node = host.shadowRoot;
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        node,
-        true
-      ], 'result');
+      assert.deepEqual(res, [document, node, true], 'result');
     });
 
     it('should get result', () => {
@@ -1114,11 +1086,7 @@ describe('utility functions', () => {
       const host = document.getElementById('baz');
       const node = host.shadowRoot.getElementById('foo');
       const res = func(node);
-      assert.deepEqual(res, [
-        document,
-        host.shadowRoot,
-        true
-      ], 'result');
+      assert.deepEqual(res, [document, host.shadowRoot, true], 'result');
     });
   });
 
@@ -1269,8 +1237,10 @@ describe('utility functions', () => {
     });
 
     it('should match', () => {
-      window.customElements.define('sw-rey',
-        class extends window.HTMLElement {});
+      window.customElements.define(
+        'sw-rey',
+        class extends window.HTMLElement {}
+      );
       const node = document.createElement('sw-rey');
       document.getElementById('div0').appendChild(node);
       const res = func(node);
@@ -1278,8 +1248,10 @@ describe('utility functions', () => {
     });
 
     it('should not match', () => {
-      window.customElements.define('sw-rey',
-        class extends window.HTMLElement {});
+      window.customElements.define(
+        'sw-rey',
+        class extends window.HTMLElement {}
+      );
       const node = document.createElement('p');
       node.setAttribute('is', 'sw-finn');
       document.getElementById('div0').appendChild(node);
@@ -1288,8 +1260,10 @@ describe('utility functions', () => {
     });
 
     it('should match', () => {
-      window.customElements.define('sw-rey',
-        class extends window.HTMLElement {});
+      window.customElements.define(
+        'sw-rey',
+        class extends window.HTMLElement {}
+      );
       const node = document.createElement('p');
       node.setAttribute('is', 'sw-rey');
       document.getElementById('div0').appendChild(node);
@@ -1298,8 +1272,10 @@ describe('utility functions', () => {
     });
 
     it('should not match', () => {
-      window.customElements.define('sw-rey',
-        class extends window.HTMLElement {});
+      window.customElements.define(
+        'sw-rey',
+        class extends window.HTMLElement {}
+      );
       const node = document.createElement('sw-rey');
       document.getElementById('div0').appendChild(node);
       const res = func(node, {
@@ -1309,9 +1285,12 @@ describe('utility functions', () => {
     });
 
     it('should match', () => {
-      window.customElements.define('sw-poe', class extends window.HTMLElement {
-        static formAssociated = true;
-      });
+      window.customElements.define(
+        'sw-poe',
+        class extends window.HTMLElement {
+          static formAssociated = true;
+        }
+      );
       const node = document.createElement('sw-poe');
       document.getElementById('div0').appendChild(node);
       const res = func(node, {
@@ -1668,7 +1647,7 @@ describe('utility functions', () => {
           </div>
         </template>
         <my-element id="baz">
-          <span id="qux" slot="bar">${String.fromCodePoint(0x05EA)}</span>
+          <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
         </my-element>
       `;
       const container = document.getElementById('div0');
@@ -1825,7 +1804,7 @@ describe('utility functions', () => {
           </div>
         </template>
         <my-element id="baz">
-          <span id="qux" slot="bar">${String.fromCodePoint(0x05EA)}</span>
+          <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
         </my-element>
       `;
       const container = document.getElementById('div0');
@@ -2000,7 +1979,7 @@ describe('utility functions', () => {
       const node = document.createElement('div');
       node.setAttribute('foo', 'bar');
       const res = func(node, {
-        astAttrName: 'class',
+        astAttrName: 'class'
       });
       assert.deepEqual(res, [], 'result');
     });
@@ -2010,11 +1989,9 @@ describe('utility functions', () => {
       node.setAttribute('xml:lang', 'en');
       node.setAttribute('lang', 'en');
       const res = func(node, {
-        astAttrName: 'lang',
+        astAttrName: 'lang'
       });
-      assert.deepEqual(res, [
-        'en'
-      ], 'result');
+      assert.deepEqual(res, ['en'], 'result');
     });
 
     it('should get result', () => {
@@ -2024,11 +2001,9 @@ describe('utility functions', () => {
         astAttrName: 'foo',
         astLocalName: 'foo',
         astPrefix: '',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'bar'
-      ], 'result');
+      assert.deepEqual(res, ['bar'], 'result');
     });
 
     it('should get result', () => {
@@ -2038,11 +2013,9 @@ describe('utility functions', () => {
         astAttrName: 'foo',
         astLocalName: 'foo',
         astPrefix: '',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'bar'
-      ], 'result');
+      assert.deepEqual(res, ['bar'], 'result');
     });
 
     it('should get empty array', () => {
@@ -2052,7 +2025,7 @@ describe('utility functions', () => {
         astAttrName: 'Foo',
         astLocalName: 'Foo',
         astPrefix: '',
-        caseSensitive: true,
+        caseSensitive: true
       });
       assert.deepEqual(res, [], 'result');
     });
@@ -2065,11 +2038,9 @@ describe('utility functions', () => {
         astAttrName: 'foo',
         astLocalName: 'foo',
         astPrefix: '',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'qux'
-      ], 'result');
+      assert.deepEqual(res, ['qux'], 'result');
     });
 
     it('should get empty array', () => {
@@ -2080,7 +2051,7 @@ describe('utility functions', () => {
         astAttrName: 'Baz|Foo',
         astLocalName: 'Foo',
         astPrefix: 'Baz',
-        caseSensitive: true,
+        caseSensitive: true
       });
       assert.deepEqual(res, [], 'result');
     });
@@ -2093,11 +2064,9 @@ describe('utility functions', () => {
         astAttrName: 'baz|foo',
         astLocalName: 'foo',
         astPrefix: 'baz',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'qux'
-      ], 'result');
+      assert.deepEqual(res, ['qux'], 'result');
     });
 
     it('should get result', () => {
@@ -2107,11 +2076,9 @@ describe('utility functions', () => {
         astAttrName: '*|foo',
         astLocalName: 'foo',
         astPrefix: '*',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'qux'
-      ], 'result');
+      assert.deepEqual(res, ['qux'], 'result');
     });
 
     it('should get result', () => {
@@ -2121,11 +2088,9 @@ describe('utility functions', () => {
         astAttrName: '|foo',
         astLocalName: 'foo',
         astPrefix: '',
-        caseSensitive: false,
+        caseSensitive: false
       });
-      assert.deepEqual(res, [
-        'qux'
-      ], 'result');
+      assert.deepEqual(res, ['qux'], 'result');
     });
   });
 
@@ -2543,16 +2508,20 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
-      const node =
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
     it('should get true', () => {
-      const node =
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
       node.tabIndex = -1;
       document.body.appendChild(node);
       const res = func(node);
@@ -2560,10 +2529,14 @@ describe('utility functions', () => {
     });
 
     it('should get true', () => {
-      const parent =
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const node =
-        document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const parent = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'text'
+      );
       node.tabIndex = -1;
       parent.appendChild(node);
       document.body.appendChild(parent);
@@ -2572,10 +2545,14 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
-      const parent =
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const node =
-        document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+      const parent = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'mask'
+      );
       node.tabIndex = -1;
       parent.appendChild(node);
       document.body.appendChild(parent);
@@ -2584,10 +2561,11 @@ describe('utility functions', () => {
     });
 
     it('should get true', () => {
-      const parent =
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const node =
-        document.createElementNS('http://www.w3.org/2000/svg', 'a');
+      const parent = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const node = document.createElementNS('http://www.w3.org/2000/svg', 'a');
       node.setAttribute('href', 'about:blank');
       parent.appendChild(node);
       document.body.appendChild(parent);
@@ -2596,8 +2574,10 @@ describe('utility functions', () => {
     });
 
     it('should get false', () => {
-      const node =
-        document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
+      const node = document.createElementNS(
+        'http://www.w3.org/1998/Math/MathML',
+        'math'
+      );
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, false, 'result');
@@ -2738,8 +2718,11 @@ describe('utility functions', () => {
     });
 
     it('should throw', () => {
-      assert.throws(() => func('foo', 'bar'), TypeError,
-        'Unexpected type String');
+      assert.throws(
+        () => func('foo', 'bar'),
+        TypeError,
+        'Unexpected type String'
+      );
     });
 
     it('should get null', () => {
@@ -2748,8 +2731,10 @@ describe('utility functions', () => {
     });
 
     it('should get null', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
@@ -2757,8 +2742,10 @@ describe('utility functions', () => {
     });
 
     it('should get result', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       node.setAttribute('xmlns:foo', 'https://example.com/foo');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -2767,21 +2754,31 @@ describe('utility functions', () => {
     });
 
     it('should get null', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       const parent = document.getElementById('div0');
-      parent.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
+      parent.setAttributeNS(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns:foo',
+        'https://example.com/foo'
+      );
       parent.appendChild(node);
       const res = func('foo', node);
       assert.deepEqual(res, null, 'result');
     });
 
     it('should get result', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
+      node.setAttributeNS(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns:foo',
+        'https://example.com/foo'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
@@ -2806,8 +2803,10 @@ describe('utility functions', () => {
     });
 
     it('should get true', () => {
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       const parent = document.getElementById('div0');
       parent.appendChild(node);
       const res = func('foo', node);
@@ -2816,8 +2815,10 @@ describe('utility functions', () => {
 
     it('should get true', () => {
       const frag = document.createDocumentFragment();
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
       frag.appendChild(node);
       const res = func('foo', node);
       assert.strictEqual(res, true, 'result');
@@ -2825,10 +2826,15 @@ describe('utility functions', () => {
 
     it('should get true', () => {
       const frag = document.createDocumentFragment();
-      const node =
-        document.createElementNS('https://example.com/foo', 'foo:div');
-      node.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:foo',
-        'https://example.com/foo');
+      const node = document.createElementNS(
+        'https://example.com/foo',
+        'foo:div'
+      );
+      node.setAttributeNS(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns:foo',
+        'https://example.com/foo'
+      );
       frag.appendChild(node);
       const res = func('foo', node);
       assert.strictEqual(res, true, 'result');
@@ -2853,8 +2859,11 @@ describe('utility functions', () => {
 
     it('should throw', () => {
       const node = document.documentElement;
-      assert.throws(() => func(node, 'foo'), TypeError,
-        'Unexpected type String');
+      assert.throws(
+        () => func(node, 'foo'),
+        TypeError,
+        'Unexpected type String'
+      );
     });
 
     it('should get true', () => {
@@ -2966,9 +2975,7 @@ describe('utility functions', () => {
       parent.appendChild(ul);
       const nodes = new Set([node3, node2, node1]);
       const res = func(nodes);
-      assert.deepEqual([...res], [
-        node1, node2, node3
-      ], 'result');
+      assert.deepEqual([...res], [node1, node2, node3], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -2981,9 +2988,7 @@ describe('utility functions', () => {
       parent.appendChild(ul);
       const nodes = new Set([node3, node2, ul, node1]);
       const res = func(nodes);
-      assert.deepEqual([...res], [
-        ul, node1, node2, node3
-      ], 'result');
+      assert.deepEqual([...res], [ul, node1, node2, node3], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -2994,9 +2999,7 @@ describe('utility functions', () => {
       frag.append(node1, node2, node3);
       const nodes = new Set([node2, node3, node1]);
       const res = func(nodes);
-      assert.deepEqual([...res], [
-        node1, node2, node3
-      ], 'result');
+      assert.deepEqual([...res], [node1, node2, node3], 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -3007,9 +3010,7 @@ describe('utility functions', () => {
       frag.append(node1, node2, node3);
       const nodes = new Set([node2, node1, node3, node1]);
       const res = func(nodes);
-      assert.deepEqual([...res], [
-        node1, node2, node3
-      ], 'result');
+      assert.deepEqual([...res], [node1, node2, node3], 'result');
     });
   });
 
@@ -3050,10 +3051,16 @@ describe('utility functions', () => {
     });
 
     it('should get value', () => {
-      const sel = [['.foo', '.bar'], ['+ .baz', '&.qux']];
+      const sel = [
+        ['.foo', '.bar'],
+        ['+ .baz', '&.qux']
+      ];
       const res = func(sel);
-      assert.strictEqual(res, ':is(.foo, .bar) + .baz, :is(.foo, .bar).qux',
-        'result');
+      assert.strictEqual(
+        res,
+        ':is(.foo, .bar) + .baz, :is(.foo, .bar).qux',
+        'result'
+      );
     });
 
     it('should get value', () => {
@@ -3071,15 +3078,17 @@ describe('utility functions', () => {
     it('should get value', () => {
       const sel = [['.foo'], ['> .bar &'], ['.baz &'], ['.qux']];
       const res = func(sel);
-      assert.strictEqual(res, '.foo > .bar .foo :is(.baz .foo) .qux',
-        'result');
+      assert.strictEqual(res, '.foo > .bar .foo :is(.baz .foo) .qux', 'result');
     });
 
     it('should get value', () => {
       const sel = [['.foo'], ['> .bar &', '.baz &'], ['.qux']];
       const res = func(sel);
-      assert.strictEqual(res, '.foo > .bar .foo .qux, .baz .foo .qux',
-        'result');
+      assert.strictEqual(
+        res,
+        '.foo > .bar .foo .qux, .baz .foo .qux',
+        'result'
+      );
     });
 
     it('should get value', () => {
@@ -3153,20 +3162,11 @@ describe('utility functions', () => {
         }
       `.trim();
       const res = func(css);
-      assert.deepEqual(res, [
-        [
-          '.foo'
-        ],
-        [
-          '& .bar',
-          '.baz &'
-        ],
-        [
-          '& .qux &',
-          '&>.quux>&',
-          '&.corge&'
-        ]
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [['.foo'], ['& .bar', '.baz &'], ['& .qux &', '&>.quux>&', '&.corge&']],
+        'result'
+      );
     });
 
     it('should get value', () => {
@@ -3182,14 +3182,7 @@ describe('utility functions', () => {
         }
       `.trim();
       const res = func(css);
-      assert.deepEqual(res, [
-        [
-          'html'
-        ],
-        [
-          '& body'
-        ]
-      ], 'result');
+      assert.deepEqual(res, [['html'], ['& body']], 'result');
     });
 
     it('should get value', () => {
@@ -3207,14 +3200,7 @@ describe('utility functions', () => {
         }
       `.trim();
       const res = func(css);
-      assert.deepEqual(res, [
-        [
-          'html'
-        ],
-        [
-          '& body'
-        ]
-      ], 'result');
+      assert.deepEqual(res, [['html'], ['& body']], 'result');
     });
 
     // upstream issue: https://github.com/csstree/csstree/issues/268
@@ -3232,11 +3218,7 @@ describe('utility functions', () => {
         }
       `.trim();
       const res = func(css);
-      assert.deepEqual(res, [
-        [
-          ':scope'
-        ]
-      ], 'result');
+      assert.deepEqual(res, [[':scope']], 'result');
     });
 
     it('should get value', () => {
@@ -3252,17 +3234,11 @@ describe('utility functions', () => {
         }
       `.trim();
       const res = func(css);
-      assert.deepEqual(res, [
-        [
-          '.parent'
-        ],
-        [
-          '&>.scope'
-        ],
-        [
-          '& .content'
-        ]
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [['.parent'], ['&>.scope'], ['& .content']],
+        'result'
+      );
     });
   });
 
@@ -3334,13 +3310,19 @@ describe('utility functions', () => {
     const func = util.initNwsapi;
 
     it('should throw', () => {
-      assert.throws(() => func(), TypeError,
-        'Unexpected global object Undefined');
+      assert.throws(
+        () => func(),
+        TypeError,
+        'Unexpected global object Undefined'
+      );
     });
 
     it('should throw', () => {
-      assert.throws(() => func(document), TypeError,
-        'Unexpected global object Document');
+      assert.throws(
+        () => func(document),
+        TypeError,
+        'Unexpected global object Document'
+      );
     });
 
     it('should get nwsapi', () => {

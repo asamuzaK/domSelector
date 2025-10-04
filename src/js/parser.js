@@ -8,10 +8,27 @@ import { getType } from './utility.js';
 
 /* constants */
 import {
-  ATTR_SELECTOR, BIT_01, BIT_02, BIT_04, BIT_08, BIT_16, BIT_32, BIT_FFFF,
-  CLASS_SELECTOR, DUO, HEX, ID_SELECTOR, KEY_LOGICAL, KEY_PS_CLASS_STATE,
-  KEY_SHADOW_HOST, NTH, PS_CLASS_SELECTOR, PS_ELEMENT_SELECTOR, SELECTOR,
-  SYNTAX_ERR, TYPE_SELECTOR
+  ATTR_SELECTOR,
+  BIT_01,
+  BIT_02,
+  BIT_04,
+  BIT_08,
+  BIT_16,
+  BIT_32,
+  BIT_FFFF,
+  CLASS_SELECTOR,
+  DUO,
+  HEX,
+  ID_SELECTOR,
+  KEY_LOGICAL,
+  KEY_PS_CLASS_STATE,
+  KEY_SHADOW_HOST,
+  NTH,
+  PS_CLASS_SELECTOR,
+  PS_ELEMENT_SELECTOR,
+  SELECTOR,
+  SYNTAX_ERR,
+  TYPE_SELECTOR
 } from './constant.js';
 const AST_SORT_ORDER = new Map([
   [PS_ELEMENT_SELECTOR, BIT_01],
@@ -21,7 +38,8 @@ const AST_SORT_ORDER = new Map([
   [ATTR_SELECTOR, BIT_16],
   [PS_CLASS_SELECTOR, BIT_32]
 ]);
-const REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
+const REG_EMPTY_PS_FUNC =
+  /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 const U_FFFD = '\uFFFD';
 
@@ -115,8 +133,10 @@ export const preprocess = value => {
     selector = `${preHash}${postHash}`;
     index++;
   }
-  return selector.replace(/\f|\r\n?/g, '\n')
-    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD).replace(/\x26/g, ':scope');
+  return selector
+    .replace(/\f|\r\n?/g, '\n')
+    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD)
+    .replace(/\x26/g, ':scope');
 };
 
 /**
@@ -139,7 +159,9 @@ export const parseSelector = sel => {
   } catch (e) {
     const { message } = e;
     if (
-      /^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(message) &&
+      /^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(
+        message
+      ) &&
       !selector.endsWith(']')
     ) {
       const index = selector.lastIndexOf('[');
@@ -262,14 +284,19 @@ export const walkAST = (ast = {}) => {
               }
             }
           }
-        } else if (node.type === PS_CLASS_SELECTOR &&
+        } else if (
+          node.type === PS_CLASS_SELECTOR &&
           KEY_SHADOW_HOST.has(node.name) &&
-          Array.isArray(node.children) && node.children.length) {
+          Array.isArray(node.children) &&
+          node.children.length
+        ) {
           const itemList = list.filter(i => {
             const { children, name, type } = i;
             const res =
-              type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.has(name) &&
-              Array.isArray(children) && children.length;
+              type === PS_CLASS_SELECTOR &&
+              KEY_SHADOW_HOST.has(name) &&
+              Array.isArray(children) &&
+              children.length;
             return res;
           });
           for (const { children } of itemList) {
@@ -280,8 +307,10 @@ export const walkAST = (ast = {}) => {
               }
             }
           }
-        } else if (node.type === PS_ELEMENT_SELECTOR &&
-          REG_SHADOW_PS_ELEMENT.test(node.name)) {
+        } else if (
+          node.type === PS_ELEMENT_SELECTOR &&
+          REG_SHADOW_PS_ELEMENT.test(node.name)
+        ) {
           const itemList = list.filter(i => {
             const { name, type } = i;
             const res =
@@ -378,7 +407,4 @@ export const parseAstName = selector => {
 };
 
 /* Re-exported from css-tree. */
-export {
-  find as findAST,
-  generate as generateCSS
-} from 'css-tree';
+export { find as findAST, generate as generateCSS } from 'css-tree';

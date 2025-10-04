@@ -5,18 +5,36 @@
 /* import */
 import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 import {
-  findAttributeValues, findLangAttribute, getCaseSensitivity,
-  getDirectionality, getType, isContentEditable, isCustomElement
+  findAttributeValues,
+  findLangAttribute,
+  getCaseSensitivity,
+  getDirectionality,
+  getType,
+  isContentEditable,
+  isCustomElement
 } from './utility.js';
 
 /* constants */
 import {
-  ALPHA_NUM, ELEMENT_NODE, FORM_PARTS, IDENT, KEY_INPUT_EDIT, KEY_PS_ELEMENT,
-  KEY_PS_ELEMENT_FUNC, LANG_PART, NOT_SUPPORTED_ERR, PS_ELEMENT_SELECTOR,
-  STRING, SYNTAX_ERR,
+  ALPHA_NUM,
+  ELEMENT_NODE,
+  FORM_PARTS,
+  IDENT,
+  KEY_INPUT_EDIT,
+  KEY_PS_ELEMENT,
+  KEY_PS_ELEMENT_FUNC,
+  LANG_PART,
+  NOT_SUPPORTED_ERR,
+  PS_ELEMENT_SELECTOR,
+  STRING,
+  SYNTAX_ERR
 } from './constant.js';
-const KEY_FORM_PS_DISABLED =
-  new Set([...FORM_PARTS, 'fieldset', 'optgroup', 'option']);
+const KEY_FORM_PS_DISABLED = new Set([
+  ...FORM_PARTS,
+  'fieldset',
+  'optgroup',
+  'option'
+]);
 const REG_VALID_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**
@@ -112,8 +130,10 @@ export const matchLanguagePseudoClass = (ast, node) => {
     }
     const extendedSub = `-${langSub}${LANG_PART}`;
     const extendedRest = langRest.map(part => `-${part}${LANG_PART}`).join('');
-    regExtendedLang =
-      new RegExp(`^${extendedMain}${extendedSub}${extendedRest}$`, 'i');
+    regExtendedLang = new RegExp(
+      `^${extendedMain}${extendedSub}${extendedRest}$`,
+      'i'
+    );
   } else {
     regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
   }
@@ -131,8 +151,10 @@ export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
     return false;
   }
   const { localName, parentNode } = node;
-  if (!KEY_FORM_PS_DISABLED.has(localName) &&
-      !isCustomElement(node, { formAssociated: true })) {
+  if (
+    !KEY_FORM_PS_DISABLED.has(localName) &&
+    !isCustomElement(node, { formAssociated: true })
+  ) {
     return false;
   }
   let isDisabled = false;
@@ -140,7 +162,8 @@ export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
     isDisabled = true;
   } else if (localName === 'option') {
     if (
-      parentNode && parentNode.localName === 'optgroup' &&
+      parentNode &&
+      parentNode.localName === 'optgroup' &&
       (parentNode.disabled || parentNode.hasAttribute('disabled'))
     ) {
       isDisabled = true;
@@ -197,8 +220,11 @@ export const matchReadOnlyWritePseudo = (astName, node) => {
     case 'input': {
       const isEditableInput = !node.type || KEY_INPUT_EDIT.has(node.type);
       if (localName === 'textarea' || isEditableInput) {
-        isReadOnly = node.readOnly || node.hasAttribute('readonly') ||
-                     node.disabled || node.hasAttribute('disabled');
+        isReadOnly =
+          node.readOnly ||
+          node.hasAttribute('readonly') ||
+          node.disabled ||
+          node.hasAttribute('disabled');
       } else {
         // Non-editable input types are always read-only
         isReadOnly = true;
@@ -226,7 +252,10 @@ export const matchReadOnlyWritePseudo = (astName, node) => {
  */
 export const matchAttributeSelector = (ast, node, opt = {}) => {
   const {
-    flags: astFlags, matcher: astMatcher, name: astName, value: astValue
+    flags: astFlags,
+    matcher: astMatcher,
+    name: astName,
+    value: astValue
   } = ast;
   const { check, forgive } = opt;
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
@@ -236,15 +265,16 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
   if (!node.attributes?.length) {
     return false;
   }
-  const { ownerDocument: { contentType } } = node;
+  const {
+    ownerDocument: { contentType }
+  } = node;
   const caseSensitive = getCaseSensitivity(astFlags, contentType);
   let astAttrName = unescapeSelector(astName.name);
   if (!caseSensitive) {
     astAttrName = astAttrName.toLowerCase();
   }
-  const {
-    prefix: astPrefix, localName: astLocalName
-  } = parseAstName(astAttrName);
+  const { prefix: astPrefix, localName: astLocalName } =
+    parseAstName(astAttrName);
   if (astAttrName.includes('|')) {
     const { prefix: astPrefix } = parseAstName(astAttrName);
     if (astPrefix !== '' && astPrefix !== '*' && !check) {
@@ -278,12 +308,17 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
   }
   switch (astMatcher) {
     case '~=': {
-      return !!selectorValue &&
-        values.some(v => v.split(/\s+/).includes(selectorValue));
+      return (
+        !!selectorValue &&
+        values.some(v => v.split(/\s+/).includes(selectorValue))
+      );
     }
     case '|=': {
-      return !!selectorValue && values.some(
-        v => v === selectorValue || v.startsWith(`${selectorValue}-`)
+      return (
+        !!selectorValue &&
+        values.some(
+          v => v === selectorValue || v.startsWith(`${selectorValue}-`)
+        )
       );
     }
     case '^=': {
@@ -315,9 +350,10 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
   const { check, forgive } = opt;
-  let {
-    prefix: astPrefix, localName: astLocalName
-  } = parseAstName(astName, node);
+  let { prefix: astPrefix, localName: astLocalName } = parseAstName(
+    astName,
+    node
+  );
   if (
     node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml') &&
@@ -337,8 +373,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   }
   switch (astPrefix) {
     case '': {
-      if (!nodePrefix && !namespaceURI &&
-          (astLocalName === '*' || astLocalName === nodeLocalName)) {
+      if (
+        !nodePrefix &&
+        !namespaceURI &&
+        (astLocalName === '*' || astLocalName === nodeLocalName)
+      ) {
         return true;
       }
       return false;

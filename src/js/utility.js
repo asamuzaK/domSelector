@@ -10,12 +10,36 @@ import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
-  ATRULE, COMBO, COMPOUND_I, DESCEND, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-  DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_PRECEDING, ELEMENT_NODE,
-  HAS_COMPOUND, INPUT_BUTTON, INPUT_EDIT, INPUT_LTR, INPUT_TEXT, KEY_LOGICAL,
-  LOGIC_COMPLEX, LOGIC_COMPOUND, N_TH, PSEUDO_CLASS, PS_CLASS_SELECTOR, RULE,
-  SCOPE, SELECTOR_LIST, SIBLING, SUB_CLASS, TARGET_ALL, TARGET_FIRST, TEXT_NODE,
-  TYPE_FROM, TYPE_TO
+  ATRULE,
+  COMBO,
+  COMPOUND_I,
+  DESCEND,
+  DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_NODE,
+  DOCUMENT_POSITION_CONTAINS,
+  DOCUMENT_POSITION_PRECEDING,
+  ELEMENT_NODE,
+  HAS_COMPOUND,
+  INPUT_BUTTON,
+  INPUT_EDIT,
+  INPUT_LTR,
+  INPUT_TEXT,
+  KEY_LOGICAL,
+  LOGIC_COMPLEX,
+  LOGIC_COMPOUND,
+  N_TH,
+  PSEUDO_CLASS,
+  PS_CLASS_SELECTOR,
+  RULE,
+  SCOPE,
+  SELECTOR_LIST,
+  SIBLING,
+  SUB_CLASS,
+  TARGET_ALL,
+  TARGET_FIRST,
+  TEXT_NODE,
+  TYPE_FROM,
+  TYPE_TO
 } from './constant.js';
 const KEY_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
 const KEY_DIR_LTR = new Set(INPUT_LTR);
@@ -23,20 +47,35 @@ const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
 const KEY_NODE_DIR_EXCLUDE = new Set(['bdi', 'script', 'style', 'textarea']);
 const KEY_NODE_FOCUSABLE = new Set(['button', 'select', 'textarea']);
 const KEY_NODE_FOCUSABLE_SVG = new Set([
-  'clipPath', 'defs', 'desc', 'linearGradient', 'marker', 'mask', 'metadata',
-  'pattern', 'radialGradient', 'script', 'style', 'symbol', 'title'
+  'clipPath',
+  'defs',
+  'desc',
+  'linearGradient',
+  'marker',
+  'mask',
+  'metadata',
+  'pattern',
+  'radialGradient',
+  'script',
+  'style',
+  'symbol',
+  'title'
 ]);
-const REG_EXCLUDE_BASIC = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const REG_EXCLUDE_BASIC =
+  /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
-const REG_LOGIC_COMPLEX =
-  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`);
-const REG_LOGIC_COMPOUND =
-  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`);
-const REG_LOGIC_HAS_COMPOUND =
-  new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`);
+const REG_LOGIC_COMPLEX = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
+);
+const REG_LOGIC_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`
+);
+const REG_LOGIC_HAS_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`
+);
 const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 
@@ -260,11 +299,7 @@ export const resolveContent = node => {
       throw new TypeError(`Unexpected node ${node.nodeName}`);
     }
   }
-  return [
-    document,
-    root,
-    !!shadow
-  ];
+  return [document, root, !!shadow];
 };
 
 /**
@@ -428,7 +463,9 @@ export const getDirectionality = node => {
         const items = [].slice.call(node.childNodes);
         for (const item of items) {
           const {
-            dir: itemDir, localName: itemLocalName, nodeType: itemNodeType,
+            dir: itemDir,
+            localName: itemLocalName,
+            nodeType: itemNodeType,
             textContent: itemTextContent
           } = item;
           if (itemNodeType === TEXT_NODE) {
@@ -451,7 +488,9 @@ export const getDirectionality = node => {
       }
     }
     if (text) {
-      const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
+      const {
+        paragraphs: [{ level }]
+      } = getEmbeddingLevels(text);
       if (level % 2 === 1) {
         return 'rtl';
       }
@@ -466,7 +505,9 @@ export const getDirectionality = node => {
   } else if (localName === 'bdi') {
     const text = node.textContent.trim();
     if (text) {
-      const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
+      const {
+        paragraphs: [{ level }]
+      } = getEmbeddingLevels(text);
       if (level % 2 === 1) {
         return 'rtl';
       }
@@ -475,7 +516,9 @@ export const getDirectionality = node => {
     if (localName === 'slot') {
       const text = getSlottedTextContent(node);
       if (text) {
-        const { paragraphs: [{ level }] } = getEmbeddingLevels(text);
+        const {
+          paragraphs: [{ level }]
+        } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
           return 'rtl';
         }
@@ -504,7 +547,10 @@ export const findLangAttribute = node => {
   }
   const { contentType } = node.ownerDocument;
   const isHtml = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
-  const isXml = /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(contentType);
+  const isXml =
+    /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(
+      contentType
+    );
   let current = node;
   while (current) {
     let lang = null;
@@ -664,8 +710,12 @@ export const isFocusableArea = node => {
         return true;
       }
       case 'input': {
-        if (node.disabled || node.hasAttribute('disabled') ||
-          node.hidden || node.hasAttribute('hidden')) {
+        if (
+          node.disabled ||
+          node.hasAttribute('disabled') ||
+          node.hidden ||
+          node.hasAttribute('hidden')
+        ) {
           return false;
         }
         return true;
@@ -686,8 +736,10 @@ export const isFocusableArea = node => {
         return false;
       }
       default: {
-        if (KEY_NODE_FOCUSABLE.has(localName) &&
-          !(node.disabled || node.hasAttribute('disabled'))) {
+        if (
+          KEY_NODE_FOCUSABLE.has(localName) &&
+          !(node.disabled || node.hasAttribute('disabled'))
+        ) {
           return true;
         }
       }
@@ -713,8 +765,10 @@ export const isFocusableArea = node => {
       }
       return true;
     }
-    if (node.localName === 'a' &&
-      (node.href || node.hasAttributeNS(null, 'href'))) {
+    if (
+      node.localName === 'a' &&
+      (node.href || node.hasAttributeNS(null, 'href'))
+    ) {
       return true;
     }
   }
@@ -746,11 +800,13 @@ export const isFocusable = node => {
     if (refNode.hidden || refNode.hasAttribute('hidden')) {
       res = false;
     }
-    const {
-      contentVisibility, display, visibility
-    } = window.getComputedStyle(refNode);
-    if (display === 'none' || visibility !== 'visible' ||
-      (contentVisibility === 'hidden' && refNode !== node)) {
+    const { contentVisibility, display, visibility } =
+      window.getComputedStyle(refNode);
+    if (
+      display === 'none' ||
+      visibility !== 'visible' ||
+      (contentVisibility === 'hidden' && refNode !== node)
+    ) {
       res = false;
     } else {
       res = true;
@@ -837,8 +893,8 @@ export const isPreceding = (nodeA, nodeB) => {
     return false;
   }
   const posBit = nodeB.compareDocumentPosition(nodeA);
-  const res = posBit & DOCUMENT_POSITION_PRECEDING ||
-    posBit & DOCUMENT_POSITION_CONTAINS;
+  const res =
+    posBit & DOCUMENT_POSITION_PRECEDING || posBit & DOCUMENT_POSITION_CONTAINS;
   return !!res;
 };
 
@@ -921,8 +977,7 @@ export const concatNestedSelectors = selectors => {
       } else {
         if (child.includes('\x26')) {
           if (/^[>~+]/.test(child)) {
-            selector =
-              `${parent} ${child.replace(/\x26/g, parent)} ${selector}`;
+            selector = `${parent} ${child.replace(/\x26/g, parent)} ${selector}`;
           } else {
             selector = `${child.replace(/\x26/g, parent)} ${selector}`;
           }
@@ -1067,7 +1122,12 @@ export const initNwsapi = (window, document) => {
  * @returns {boolean} - True if the selector is valid for nwsapi.
  */
 export const filterSelector = (selector, target) => {
-  if (!selector || typeof selector !== 'string' || /null|undefined/.test(selector) || target === TARGET_FIRST) {
+  if (
+    !selector ||
+    typeof selector !== 'string' ||
+    /null|undefined/.test(selector) ||
+    target === TARGET_FIRST
+  ) {
     return false;
   }
   // Exclude simple class selector.
@@ -1101,8 +1161,11 @@ export const filterSelector = (selector, target) => {
     if (target !== TARGET_ALL) {
       complex = REG_COMPLEX.test(selector);
     }
-    if (target === TARGET_ALL && REG_DESCEND.test(selector) &&
-      !REG_SIBLING.test(selector)) {
+    if (
+      target === TARGET_ALL &&
+      REG_DESCEND.test(selector) &&
+      !REG_SIBLING.test(selector)
+    ) {
       return false;
     } else if (target !== TARGET_ALL && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {

@@ -4,26 +4,64 @@
 
 /* import */
 import {
-  matchAttributeSelector, matchDirectionPseudoClass, matchDisabledEnabledPseudo,
-  matchLanguagePseudoClass, matchPseudoElementSelector,
-  matchReadOnlyWritePseudo, matchTypeSelector
+  matchAttributeSelector,
+  matchDirectionPseudoClass,
+  matchDisabledEnabledPseudo,
+  matchLanguagePseudoClass,
+  matchPseudoElementSelector,
+  matchReadOnlyWritePseudo,
+  matchTypeSelector
 } from './matcher.js';
 import {
-  findAST, generateCSS, parseSelector, sortAST, unescapeSelector, walkAST
+  findAST,
+  generateCSS,
+  parseSelector,
+  sortAST,
+  unescapeSelector,
+  walkAST
 } from './parser.js';
 import {
-  filterNodesByAnB, findLogicalWithNestedHas, generateException,
-  isCustomElement, isFocusVisible, isFocusableArea, isValidShadowHostSelector,
-  isVisible, resolveContent, sortNodes, traverseNode
+  filterNodesByAnB,
+  findLogicalWithNestedHas,
+  generateException,
+  isCustomElement,
+  isFocusVisible,
+  isFocusableArea,
+  isValidShadowHostSelector,
+  isVisible,
+  resolveContent,
+  sortNodes,
+  traverseNode
 } from './utility.js';
 
 /* constants */
 import {
-  ATTR_SELECTOR, BIT_01, CLASS_SELECTOR, COMBINATOR, DOCUMENT_FRAGMENT_NODE,
-  ELEMENT_NODE, FORM_PARTS, ID_SELECTOR, INPUT_CHECK, INPUT_DATE, INPUT_EDIT,
-  INPUT_TEXT, KEY_LOGICAL, KEY_MODIFIER, NOT_SUPPORTED_ERR, PS_CLASS_SELECTOR,
-  PS_ELEMENT_SELECTOR, SHOW_ALL, SHOW_CONTAINER, SYNTAX_ERR, TARGET_ALL,
-  TARGET_FIRST, TARGET_LINEAL, TARGET_SELF, TEXT_NODE, TYPE_SELECTOR
+  ATTR_SELECTOR,
+  BIT_01,
+  CLASS_SELECTOR,
+  COMBINATOR,
+  DOCUMENT_FRAGMENT_NODE,
+  ELEMENT_NODE,
+  FORM_PARTS,
+  ID_SELECTOR,
+  INPUT_CHECK,
+  INPUT_DATE,
+  INPUT_EDIT,
+  INPUT_TEXT,
+  KEY_LOGICAL,
+  KEY_MODIFIER,
+  NOT_SUPPORTED_ERR,
+  PS_CLASS_SELECTOR,
+  PS_ELEMENT_SELECTOR,
+  SHOW_ALL,
+  SHOW_CONTAINER,
+  SYNTAX_ERR,
+  TARGET_ALL,
+  TARGET_FIRST,
+  TARGET_LINEAL,
+  TARGET_SELF,
+  TEXT_NODE,
+  TYPE_SELECTOR
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
@@ -37,9 +75,22 @@ const KEY_INPUT_RESET = new Set(['button', 'reset']);
 const KEY_INPUT_SUBMIT = new Set(['image', 'submit']);
 const KEY_PS_UNCACHE = new Set(['any-link', 'defined', 'dir', 'link', 'scope']);
 const KEY_PS_FORM = new Set([
-  'checked', 'default', 'disabled', 'enabled', 'in-range', 'indeterminate',
-  'invalid', 'optional', 'out-of-range', 'placeholder-shown', 'read-only',
-  'read-write', 'required', 'user-invalid', 'user-valid', 'valid'
+  'checked',
+  'default',
+  'disabled',
+  'enabled',
+  'in-range',
+  'indeterminate',
+  'invalid',
+  'optional',
+  'out-of-range',
+  'placeholder-shown',
+  'read-only',
+  'read-write',
+  'required',
+  'user-invalid',
+  'user-valid',
+  'valid'
 ]);
 const KEY_PS_UI = new Set(['closed', 'open', 'popover-open']);
 
@@ -178,18 +229,11 @@ export class Finder {
     this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
-    [
-      this.#document,
-      this.#root,
-      this.#shadow
-    ] = resolveContent(node);
+    [this.#document, this.#root, this.#shadow] = resolveContent(node);
     this.#documentURL = new URL(this.#document.URL);
     this.#node = node;
     this.#selector = selector;
-    [
-      this.#ast,
-      this.#nodes
-    ] = this._correspond(selector);
+    [this.#ast, this.#nodes] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
@@ -362,11 +406,15 @@ export class Finder {
       }
       const { branches, info } = walkAST(cssAst);
       const {
-        hasHasPseudoFunc, hasLogicalPseudoFunc, hasNthChildOfSelector,
+        hasHasPseudoFunc,
+        hasLogicalPseudoFunc,
+        hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate = hasHasPseudoFunc || hasStatePseudoClass ||
-                           !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      const baseInvalidate =
+        hasHasPseudoFunc ||
+        hasStatePseudoClass ||
+        !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
       this.#descendant = processed.descendant;
@@ -388,10 +436,7 @@ export class Finder {
         nodes[i] = [];
       }
     }
-    return [
-      ast,
-      nodes
-    ];
+    return [ast, nodes];
   };
 
   /**
@@ -495,7 +540,7 @@ export class Finder {
     const { parentNode } = node;
     if (!parentNode) {
       const matchedNode = new Set();
-      if (node === this.#root && (a * 1 + b * 1) === 1) {
+      if (node === this.#root && a * 1 + b * 1 === 1) {
         if (selector) {
           const selectorBranches = this._getSelectorBranches(selector);
           const l = selectorBranches.length;
@@ -515,8 +560,11 @@ export class Finder {
     const selectorBranches = selector
       ? this._getSelectorBranches(selector)
       : null;
-    const children =
-      this._getFilteredChildren(parentNode, selectorBranches, opt);
+    const children = this._getFilteredChildren(
+      parentNode,
+      selectorBranches,
+      opt
+    );
     const matchedNodes = filterNodesByAnB(children, anb);
     return new Set(matchedNodes);
   };
@@ -534,7 +582,7 @@ export class Finder {
   _collectNthOfType = (anb, node) => {
     const { parentNode } = node;
     if (!parentNode) {
-      if (node === this.#root && (anb.a * 1 + anb.b * 1) === 1) {
+      if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
         return new Set([node]);
       }
       return new Set();
@@ -543,9 +591,11 @@ export class Finder {
     const walker = this._createTreeWalker(parentNode, { force: true });
     let sibling = walker.firstChild();
     while (sibling) {
-      if (sibling.localName === node.localName &&
-          sibling.namespaceURI === node.namespaceURI &&
-          sibling.prefix === node.prefix) {
+      if (
+        sibling.localName === node.localName &&
+        sibling.namespaceURI === node.namespaceURI &&
+        sibling.prefix === node.prefix
+      ) {
         typedSiblings.push(sibling);
       }
       sibling = walker.nextSibling();
@@ -565,11 +615,7 @@ export class Finder {
    */
   _matchAnPlusB = (ast, node, nthName, opt = {}) => {
     const {
-      nth: {
-        a,
-        b,
-        name: nthIdentName
-      },
+      nth: { a, b, name: nthIdentName },
       selector
     } = ast;
     const anbMap = new Map();
@@ -684,16 +730,20 @@ export class Finder {
         return first;
       }
       case 'last-of-type': {
-        const [last] =
-          this._collectNthOfType({ a: 0, b: 1, reverse: true }, node);
+        const [last] = this._collectNthOfType(
+          { a: 0, b: 1, reverse: true },
+          node
+        );
         return last;
       }
       // 'only-of-type' is handled by default.
       default: {
         const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
         if (first === node) {
-          const [last] =
-            this._collectNthOfType({ a: 0, b: 1, reverse: true }, node);
+          const [last] = this._collectNthOfType(
+            { a: 0, b: 1, reverse: true },
+            node
+          );
           if (last === node) {
             return node;
           }
@@ -725,8 +775,10 @@ export class Finder {
       }
       // 'only-child' is handled by default.
       default: {
-        return node === parentNode.firstElementChild &&
-               node === parentNode.lastElementChild;
+        return (
+          node === parentNode.firstElementChild &&
+          node === parentNode.lastElementChild
+        );
       }
     }
   };
@@ -783,7 +835,9 @@ export class Finder {
                 bool = true;
               } else if (this.#event) {
                 const {
-                  key: eventKey, target: eventTarget, type: eventType
+                  key: eventKey,
+                  target: eventTarget,
+                  type: eventType
                 } = this.#event;
                 // Event is irrelevant if its target is the relatedTarget.
                 if (eventTarget === relatedTarget) {
@@ -793,13 +847,17 @@ export class Finder {
                     bool = true;
                   }
                 } else if (eventKey === 'Tab') {
-                  if ((eventType === 'keydown' && eventTarget !== node) ||
-                      (eventType === 'keyup' && eventTarget === node)) {
+                  if (
+                    (eventType === 'keydown' && eventTarget !== node) ||
+                    (eventType === 'keyup' && eventTarget === node)
+                  ) {
                     if (eventTarget === focusTarget) {
                       if (this.#lastFocusVisible === null) {
                         bool = true;
-                      } else if (eventTarget === this.#lastFocusVisible &&
-                                 relatedTarget === null) {
+                      } else if (
+                        eventTarget === this.#lastFocusVisible &&
+                        relatedTarget === null
+                      ) {
                         bool = true;
                       }
                     } else {
@@ -807,13 +865,17 @@ export class Finder {
                     }
                   }
                 } else if (eventKey) {
-                  if ((eventType === 'keydown' || eventType === 'keyup') &&
-                      eventTarget === node) {
+                  if (
+                    (eventType === 'keydown' || eventType === 'keyup') &&
+                    eventTarget === node
+                  ) {
                     bool = true;
                   }
                 }
-              } else if (relatedTarget === null ||
-                         relatedTarget === this.#lastFocusVisible) {
+              } else if (
+                relatedTarget === null ||
+                relatedTarget === this.#lastFocusVisible
+              ) {
                 bool = true;
               }
             }
@@ -859,8 +921,9 @@ export class Finder {
       return false;
     }
     if (astName === 'hover') {
-      return /^(?:click|mouse(?:down|over|up))$/.test(type) &&
-        node.contains(target);
+      return (
+        /^(?:click|mouse(?:down|over|up))$/.test(type) && node.contains(target)
+      );
     }
     return type === 'mousedown' && buttons & BIT_01 && node.contains(target);
   };
@@ -937,7 +1000,8 @@ export class Finder {
    */
   _evaluateIsWhereNotPseudo = (astData, node, opt) => {
     const { astName, branches, twigBranches } = astData;
-    const isShadowRoot = (opt.isShadowRoot || this.#shadow) &&
+    const isShadowRoot =
+      (opt.isShadowRoot || this.#shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
     if (isShadowRoot && !isValidShadowHostSelector(astName, branches)) {
       return null;
@@ -998,8 +1062,11 @@ export class Finder {
     switch (astName) {
       case 'checked': {
         const attrType = node.getAttribute('type');
-        if (node.checked && localName === 'input' &&
-            (attrType === 'checkbox' || attrType === 'radio')) {
+        if (
+          node.checked &&
+          localName === 'input' &&
+          (attrType === 'checkbox' || attrType === 'radio')
+        ) {
           return true;
         } else if (node.selected && localName === 'option') {
           return true;
@@ -1009,10 +1076,13 @@ export class Finder {
       case 'default': {
         // Default submit buttons.
         const attrType = node.getAttribute('type');
-        if ((localName === 'button' &&
-             !(node.hasAttribute('type') && KEY_INPUT_RESET.has(attrType))) ||
-            (localName === 'input' && node.hasAttribute('type') &&
-             KEY_INPUT_SUBMIT.has(attrType))) {
+        if (
+          (localName === 'button' &&
+            !(node.hasAttribute('type') && KEY_INPUT_RESET.has(attrType))) ||
+          (localName === 'input' &&
+            node.hasAttribute('type') &&
+            KEY_INPUT_SUBMIT.has(attrType))
+        ) {
           let form = node.parentNode;
           while (form) {
             if (form.localName === 'form') {
@@ -1029,11 +1099,14 @@ export class Finder {
               const nodeAttrType = refNode.getAttribute('type');
               let m;
               if (nodeName === 'button') {
-                m = !(refNode.hasAttribute('type') &&
-                    KEY_INPUT_RESET.has(nodeAttrType));
+                m = !(
+                  refNode.hasAttribute('type') &&
+                  KEY_INPUT_RESET.has(nodeAttrType)
+                );
               } else if (nodeName === 'input') {
-                m = refNode.hasAttribute('type') &&
-                    KEY_INPUT_SUBMIT.has(nodeAttrType);
+                m =
+                  refNode.hasAttribute('type') &&
+                  KEY_INPUT_SUBMIT.has(nodeAttrType);
               }
               if (m) {
                 return refNode === node;
@@ -1041,12 +1114,15 @@ export class Finder {
               refNode = walker.nextNode();
             }
           }
-        // Default checked elements.
-        } else if (localName === 'input' && node.hasAttribute('type') &&
-                   KEY_INPUT_CHECK.has(attrType) &&
-                   node.hasAttribute('checked')) {
+          // Default checked elements.
+        } else if (
+          localName === 'input' &&
+          node.hasAttribute('type') &&
+          KEY_INPUT_CHECK.has(attrType) &&
+          node.hasAttribute('checked')
+        ) {
           return true;
-        // Default selected option.
+          // Default selected option.
         } else if (localName === 'option' && node.hasAttribute('selected')) {
           return true;
         }
@@ -1059,29 +1135,41 @@ export class Finder {
       case 'in-range':
       case 'out-of-range': {
         const attrType = node.getAttribute('type');
-        if (localName === 'input' &&
-            !(node.readonly || node.hasAttribute('readonly')) &&
-            !(node.disabled || node.hasAttribute('disabled')) &&
-            KEY_INPUT_RANGE.has(attrType)) {
+        if (
+          localName === 'input' &&
+          !(node.readonly || node.hasAttribute('readonly')) &&
+          !(node.disabled || node.hasAttribute('disabled')) &&
+          KEY_INPUT_RANGE.has(attrType)
+        ) {
           const flowed =
             node.validity.rangeUnderflow || node.validity.rangeOverflow;
           if (astName === 'out-of-range' && flowed) {
             return true;
-          } else if (astName === 'in-range' && !flowed &&
-                     (node.hasAttribute('min') || node.hasAttribute('max') ||
-                     attrType === 'range')) {
+          } else if (
+            astName === 'in-range' &&
+            !flowed &&
+            (node.hasAttribute('min') ||
+              node.hasAttribute('max') ||
+              attrType === 'range')
+          ) {
             return true;
           }
         }
         return false;
       }
       case 'indeterminate': {
-        if ((node.indeterminate && localName === 'input' &&
-             node.type === 'checkbox') ||
-            (localName === 'progress' && !node.hasAttribute('value'))) {
+        if (
+          (node.indeterminate &&
+            localName === 'input' &&
+            node.type === 'checkbox') ||
+          (localName === 'progress' && !node.hasAttribute('value'))
+        ) {
           return true;
-        } else if (localName === 'input' && node.type === 'radio' &&
-                   !node.hasAttribute('checked')) {
+        } else if (
+          localName === 'input' &&
+          node.type === 'radio' &&
+          !node.hasAttribute('checked')
+        ) {
           const nodeName = node.name;
           let parent = node.parentNode;
           while (parent) {
@@ -1098,8 +1186,10 @@ export class Finder {
           refNode = walker.firstChild();
           let checked;
           while (refNode) {
-            if (refNode.localName === 'input' &&
-                refNode.getAttribute('type') === 'radio') {
+            if (
+              refNode.localName === 'input' &&
+              refNode.getAttribute('type') === 'radio'
+            ) {
               if (refNode.hasAttribute('name')) {
                 if (refNode.getAttribute('name') === nodeName) {
                   checked = !!refNode.checked;
@@ -1368,9 +1458,7 @@ export class Finder {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
           const msg = `Invalid selector ${css}`;
-          return this.onError(
-            generateException(msg, SYNTAX_ERR, this.#window)
-          );
+          return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
@@ -1464,9 +1552,7 @@ export class Finder {
           default: {
             if (!forgive) {
               const msg = `Unknown pseudo-class :${astName}()`;
-              this.onError(
-                generateException(msg, SYNTAX_ERR, this.#window)
-              );
+              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
             }
           }
         }
@@ -1497,8 +1583,11 @@ export class Finder {
           }
           case 'target': {
             const { hash } = this.#documentURL;
-            if (node.id && hash === `#${node.id}` &&
-                this.#document.contains(node)) {
+            if (
+              node.id &&
+              hash === `#${node.id}` &&
+              this.#document.contains(node)
+            ) {
               isMatch = true;
             }
             break;
@@ -1551,7 +1640,8 @@ export class Finder {
               let refNode = walker.firstChild();
               let bool;
               while (refNode) {
-                bool = refNode.nodeType !== ELEMENT_NODE &&
+                bool =
+                  refNode.nodeType !== ELEMENT_NODE &&
                   refNode.nodeType !== TEXT_NODE;
                 if (!bool) {
                   break;
@@ -1592,9 +1682,11 @@ export class Finder {
               if (isCustomElement(node)) {
                 isMatch = true;
               }
-            // NOTE: MathMLElement is not implemented in jsdom.
-            } else if (node instanceof this.#window.HTMLElement ||
-                       node instanceof this.#window.SVGElement) {
+              // NOTE: MathMLElement is not implemented in jsdom.
+            } else if (
+              node instanceof this.#window.HTMLElement ||
+              node instanceof this.#window.SVGElement
+            ) {
               isMatch = true;
             }
             break;
@@ -1860,8 +1952,11 @@ export class Finder {
     if (node.nodeType === ELEMENT_NODE) {
       return this._matchSelectorForElement(ast, node, opt);
     }
-    if (this.#shadow && node.nodeType === DOCUMENT_FRAGMENT_NODE &&
-        ast.type === PS_CLASS_SELECTOR) {
+    if (
+      this.#shadow &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE &&
+      ast.type === PS_CLASS_SELECTOR
+    ) {
       return this._matchSelectorForShadowRoot(ast, node, opt);
     }
     return new Set();
@@ -1958,15 +2053,17 @@ export class Finder {
     const { type: leafType } = leaf;
     switch (leafType) {
       case ID_SELECTOR: {
-        const canUseGetElementById = !this.#shadow &&
-                                     baseNode.nodeType === ELEMENT_NODE &&
-                                     this.#root.nodeType !== ELEMENT_NODE;
+        const canUseGetElementById =
+          !this.#shadow &&
+          baseNode.nodeType === ELEMENT_NODE &&
+          this.#root.nodeType !== ELEMENT_NODE;
         if (canUseGetElementById) {
           const leafName = unescapeSelector(leaf.name);
           const nodes = new Set();
           const foundNode = this.#root.getElementById(leafName);
           if (
-            foundNode && foundNode !== baseNode &&
+            foundNode &&
+            foundNode !== baseNode &&
             baseNode.contains(foundNode)
           ) {
             const isCompoundSelector = filterLeaves.length > 0;
@@ -2066,9 +2163,8 @@ export class Finder {
     const { leaves } = twig;
     const { dir } = opt;
     const matched = new Set();
-    const refNode = (dir === DIR_NEXT)
-      ? node.nextElementSibling
-      : node.previousElementSibling;
+    const refNode =
+      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
     if (refNode && this._matchLeaves(leaves, refNode, opt)) {
       matched.add(refNode);
     }
@@ -2087,16 +2183,16 @@ export class Finder {
     const { leaves } = twig;
     const { dir } = opt;
     const matched = new Set();
-    let refNode = (dir === DIR_NEXT)
-      ? node.nextElementSibling
-      : node.previousElementSibling;
+    let refNode =
+      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
     while (refNode) {
       if (this._matchLeaves(leaves, refNode, opt)) {
         matched.add(refNode);
       }
-      refNode = (dir === DIR_NEXT)
-        ? refNode.nextElementSibling
-        : refNode.previousElementSibling;
+      refNode =
+        dir === DIR_NEXT
+          ? refNode.nextElementSibling
+          : refNode.previousElementSibling;
     }
     return matched;
   };
@@ -2110,7 +2206,9 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchCombinator = (twig, node, opt = {}) => {
-    const { combo: { name: comboName } } = twig;
+    const {
+      combo: { name: comboName }
+    } = twig;
     switch (comboName) {
       case '+': {
         return this._matchAdjacentSiblingCombinator(twig, node, opt);
@@ -2189,7 +2287,7 @@ export class Finder {
       force,
       targetType,
       boundaryNode: this.#node,
-      startNode: node,
+      startNode: node
     });
   };
 
@@ -2391,8 +2489,10 @@ export class Finder {
       if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
         shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
       } else if (filterLeaves.length && this.#node.nodeType === ELEMENT_NODE) {
-        shadowRoot =
-          this._matchShadowHostPseudoClass(leaf, this.#node.shadowRoot);
+        shadowRoot = this._matchShadowHostPseudoClass(
+          leaf,
+          this.#node.shadowRoot
+        );
       }
       if (shadowRoot) {
         let bool = true;
@@ -2402,14 +2502,19 @@ export class Finder {
           switch (filterLeaf.name) {
             case 'host':
             case 'host-context': {
-              const matchedNode =
-                this._matchShadowHostPseudoClass(filterLeaf, shadowRoot);
+              const matchedNode = this._matchShadowHostPseudoClass(
+                filterLeaf,
+                shadowRoot
+              );
               bool = matchedNode === shadowRoot;
               break;
             }
             case 'has': {
-              bool = this._matchPseudoClassSelector(filterLeaf, shadowRoot, {})
-                .has(shadowRoot);
+              bool = this._matchPseudoClassSelector(
+                filterLeaf,
+                shadowRoot,
+                {}
+              ).has(shadowRoot);
               break;
             }
             default: {
@@ -2452,18 +2557,24 @@ export class Finder {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
     const { complex = false, dir = DIR_PREV } = opt;
-    const precede = dir === DIR_NEXT && this.#node.nodeType === ELEMENT_NODE &&
+    const precede =
+      dir === DIR_NEXT &&
+      this.#node.nodeType === ELEMENT_NODE &&
       this.#node !== this.#root;
     let result;
     switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
-        result =
-          this._findEntryNodesForPseudoElement(leaf, filterLeaves, targetType);
+        result = this._findEntryNodesForPseudoElement(
+          leaf,
+          filterLeaves,
+          targetType
+        );
         break;
       }
       case ID_SELECTOR: {
         result = this._findEntryNodesForId(twig, targetType, {
-          complex, precede
+          complex,
+          precede
         });
         break;
       }
@@ -2511,8 +2622,12 @@ export class Finder {
       return { dir: DIR_PREV, twig: firstTwig };
     }
     // Complex selector (branchLen > 1).
-    const { leaves: [{ name: firstName, type: firstType }] } = firstTwig;
-    const { leaves: [{ name: lastName, type: lastType }] } = lastTwig;
+    const {
+      leaves: [{ name: firstName, type: firstType }]
+    } = firstTwig;
+    const {
+      leaves: [{ name: lastName, type: lastType }]
+    } = lastTwig;
     const { combo: firstCombo } = firstTwig;
     if (
       this.#selector.includes(':scope') ||
@@ -2566,9 +2681,10 @@ export class Finder {
     }
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
-      const isWithinScope = this.#node.nodeType !== ELEMENT_NODE ||
-                            nextNode === this.#node ||
-                            this.#node.contains(nextNode);
+      const isWithinScope =
+        this.#node.nodeType !== ELEMENT_NODE ||
+        nextNode === this.#node ||
+        this.#node.contains(nextNode);
       if (isWithinScope) {
         for (const pendingItem of pendingItems) {
           const { leaves } = pendingItem.get('twig');
@@ -2600,19 +2716,25 @@ export class Finder {
       let i = 0;
       for (const { branch } of ast) {
         const complex = branch.length > 1;
-        const { dir, twig } =
-          this._determineTraversalStrategy(branch, targetType);
-        const {
-          compound, filtered, nodes, pending
-        } = this._findEntryNodes(twig, targetType, { complex, dir });
+        const { dir, twig } = this._determineTraversalStrategy(
+          branch,
+          targetType
+        );
+        const { compound, filtered, nodes, pending } = this._findEntryNodes(
+          twig,
+          targetType,
+          { complex, dir }
+        );
         if (nodes.length) {
           this.#ast[i].find = true;
           this.#nodes[i] = nodes;
         } else if (pending) {
-          pendingItems.add(new Map([
-            ['index', i],
-            ['twig', twig]
-          ]));
+          pendingItems.add(
+            new Map([
+              ['index', i],
+              ['twig', twig]
+            ])
+          );
         }
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
@@ -2625,9 +2747,11 @@ export class Finder {
         const twig = branch[branch.length - 1];
         const complex = branch.length > 1;
         const dir = DIR_PREV;
-        const {
-          compound, filtered, nodes
-        } = this._findEntryNodes(twig, targetType, { complex, dir });
+        const { compound, filtered, nodes } = this._findEntryNodes(
+          twig,
+          targetType,
+          { complex, dir }
+        );
         if (nodes.length) {
           this.#ast[i].find = true;
           this.#nodes[i] = nodes;
@@ -2637,10 +2761,7 @@ export class Finder {
         i++;
       }
     }
-    return [
-      this.#ast,
-      this.#nodes
-    ];
+    return [this.#ast, this.#nodes];
   };
 
   /**
@@ -2762,7 +2883,7 @@ export class Finder {
             combo = nextCombo;
             nextNodes = new Set(nodesArr);
           } else {
-             // No further matches down this path.
+            // No further matches down this path.
             nextNodes.clear();
             break;
           }
@@ -2835,8 +2956,10 @@ export class Finder {
         });
         if (matchedNode) {
           if (this.#node.nodeType === ELEMENT_NODE) {
-            if (matchedNode !== this.#node &&
-                this.#node.contains(matchedNode)) {
+            if (
+              matchedNode !== this.#node &&
+              this.#node.contains(matchedNode)
+            ) {
               return matchedNode;
             }
           } else {
@@ -2858,8 +2981,10 @@ export class Finder {
           });
           if (matchedNode) {
             if (this.#node.nodeType === ELEMENT_NODE) {
-              if (matchedNode !== this.#node &&
-                  this.#node.contains(matchedNode)) {
+              if (
+                matchedNode !== this.#node &&
+                this.#node.contains(matchedNode)
+              ) {
                 return matchedNode;
               }
             } else {
@@ -2946,17 +3071,23 @@ export class Finder {
       const lastIndex = branch.length - 1;
       // Handle simple selectors (no combinators).
       if (lastIndex === 0) {
-        if ((targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
-            this.#node.nodeType === ELEMENT_NODE) {
+        if (
+          (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
+          this.#node.nodeType === ELEMENT_NODE
+        ) {
           for (const node of entryNodes) {
             if (node !== this.#node && this.#node.contains(node)) {
               nodes.add(node);
-              if (targetType === TARGET_FIRST) { break; }
+              if (targetType === TARGET_FIRST) {
+                break;
+              }
             }
           }
         } else if (targetType === TARGET_ALL) {
           if (nodes.size) {
-            for (const node of entryNodes) { nodes.add(node); }
+            for (const node of entryNodes) {
+              nodes.add(node);
+            }
             sort = true;
           } else {
             nodes = new Set(entryNodes);
@@ -2969,17 +3100,25 @@ export class Finder {
         // Handle complex selectors.
       } else {
         if (targetType === TARGET_ALL) {
-          const newNodes =
-            this._processComplexBranchAll(branch, entryNodes, dir);
+          const newNodes = this._processComplexBranchAll(
+            branch,
+            entryNodes,
+            dir
+          );
           if (nodes.size) {
-            for (const newNode of newNodes) { nodes.add(newNode); }
+            for (const newNode of newNodes) {
+              nodes.add(newNode);
+            }
             sort = true;
           } else {
             nodes = newNodes;
           }
         } else {
           const matchedNode = this._processComplexBranchFirst(
-            branch, entryNodes, dir, targetType
+            branch,
+            entryNodes,
+            dir,
+            targetType
           );
           if (matchedNode) {
             nodes.add(matchedNode);
