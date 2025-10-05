@@ -1130,7 +1130,7 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // Exclude simple class selector.
+  // Exclude simple class selector for TARGET_ALL.
   if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
     return false;
   }

@@ -494,23 +494,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('prepare querySelector walker', () => {
-    it('should get tree walker', () => {
-      const finder = new Finder(window);
-      finder.setup('*', document);
-      const res = finder._prepareQuerySelectorWalker(document);
-      assert.deepEqual(res.root, document, 'walker');
-    });
-
-    it('should get tree walker', () => {
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('*', node);
-      const res = finder._prepareQuerySelectorWalker(document);
-      assert.deepEqual(res.root, node, 'walker');
-    });
-  });
-
   describe('collect nth child', () => {
     it('should not match', () => {
       const anb = {
@@ -11726,7 +11709,6 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const node = document.getElementById('p5');
       finder.setup('div.foo p', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11742,7 +11724,6 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const node = document.getElementById('p5');
       finder.setup('div.foo p', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11765,7 +11746,6 @@ describe('Finder', () => {
       const node = document.getElementById('p5');
       const current = document.getElementById('div5');
       finder.setup('div.foo p', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11784,7 +11764,6 @@ describe('Finder', () => {
       const node = document.getElementById('p5');
       const current = document.getElementById('div6');
       finder.setup('div.foo p', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11803,7 +11782,6 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);
       finder.setup('ul', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -11818,7 +11796,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('ol', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -11836,7 +11813,6 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder(window);
       finder.setup('ul', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11854,7 +11830,6 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder(window);
       finder.setup('li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11873,7 +11848,6 @@ describe('Finder', () => {
       node.append(child, child2);
       const finder = new Finder(window);
       finder.setup('li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11892,7 +11866,6 @@ describe('Finder', () => {
       node.append(child, child2);
       const finder = new Finder(window);
       finder.setup('li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11912,7 +11885,6 @@ describe('Finder', () => {
       node.appendChild(child);
       const finder = new Finder(window);
       finder.setup('ul', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -11927,7 +11899,6 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);
       finder.setup('li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -11945,7 +11916,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -11963,7 +11933,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -11986,7 +11955,6 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const node = document.getElementById('li1');
       finder.setup('ul li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12002,7 +11970,6 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const node = document.getElementById('li1');
       finder.setup('ul li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12251,7 +12218,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('#ul1', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12323,7 +12289,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('#li1.li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12346,7 +12311,6 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup('#li1.li', parent);
-      finder._prepareQuerySelectorWalker(parent);
       const [
         [
           {
@@ -12364,7 +12328,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('#li1.foobar', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12382,7 +12345,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('ul#ul1', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12400,7 +12362,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('#foobar', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12422,7 +12383,6 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder(window);
       finder.setup('#foobar', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const [
         [
           {
@@ -12444,7 +12404,6 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup('#foobar', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12462,7 +12421,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('#li1:first-child', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12481,7 +12439,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('.li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12500,7 +12457,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('.li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12526,7 +12482,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('.li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12559,7 +12514,6 @@ describe('Finder', () => {
       frag.appendChild(parent);
       const finder = new Finder(window);
       finder.setup('.foo', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const [
         [
           {
@@ -12577,7 +12531,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('li.li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12676,7 +12629,6 @@ describe('Finder', () => {
       const node = document.getElementById('dd1');
       const finder = new Finder(window);
       finder.setup('.dd', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12788,7 +12740,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12807,7 +12758,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:last-child', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12826,7 +12776,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:first-child', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12845,7 +12794,6 @@ describe('Finder', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li:first-child', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -12881,7 +12829,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('li.li:last-child', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12899,7 +12846,6 @@ describe('Finder', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
       finder.setup('li.li:first-child + li.li', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12927,7 +12873,6 @@ describe('Finder', () => {
       frag.appendChild(parent);
       const finder = new Finder(window);
       finder.setup('.foo.bar', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const [
         [
           {
@@ -12945,7 +12890,6 @@ describe('Finder', () => {
     it('should not match', () => {
       const finder = new Finder(window);
       finder.setup('.foobar', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -12966,7 +12910,6 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder(window);
       finder.setup('div', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const [
         [
           {
@@ -12987,7 +12930,6 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup('div', parent);
-      finder._prepareQuerySelectorWalker(parent);
       const [
         [
           {
@@ -13010,7 +12952,6 @@ describe('Finder', () => {
       parent.appendChild(node);
       const finder = new Finder(window);
       finder.setup('.foo', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -13031,7 +12972,6 @@ describe('Finder', () => {
       frag.appendChild(node);
       const finder = new Finder(window);
       finder.setup('p', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const [
         [
           {
@@ -13085,7 +13025,6 @@ describe('Finder', () => {
     it('should be pended', () => {
       const finder = new Finder(window);
       finder.setup(':first-child', document);
-      finder._prepareQuerySelectorWalker(document);
       const [
         [
           {
@@ -13126,7 +13065,6 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host div', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -13170,7 +13108,6 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#baz) div', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -13213,7 +13150,6 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#baz)', node);
-      finder._prepareQuerySelectorWalker(node);
       const [
         [
           {
@@ -13505,7 +13441,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('li:last-child, li:first-child + li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('first');
       assert.deepEqual(
         res,
@@ -13581,7 +13516,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('li:last-child, li:first-child + li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -13673,7 +13607,6 @@ describe('Finder', () => {
       root.appendChild(div4);
       const finder = new Finder(window);
       finder.setup(':nth-child(2n), :nth-of-type(2n+3)', root);
-      finder._prepareQuerySelectorWalker(root);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -13760,7 +13693,6 @@ describe('Finder', () => {
       frag.appendChild(root);
       const finder = new Finder(window);
       finder.setup(':nth-child(2n), :nth-of-type(2n+3)', frag);
-      finder._prepareQuerySelectorWalker(frag);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -13928,7 +13860,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('* > li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -13981,7 +13912,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('* > li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('first');
       assert.deepEqual(
         res,
@@ -14028,7 +13958,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('ul > *', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14075,7 +14004,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('ul > *', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('first');
       assert.deepEqual(
         res,
@@ -14129,7 +14057,6 @@ describe('Finder', () => {
       container.appendChild(ancestor);
       const finder = new Finder(window);
       finder.setup('* > ul > *', container);
-      finder._prepareQuerySelectorWalker(container);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14197,7 +14124,6 @@ describe('Finder', () => {
       container.appendChild(ancestor);
       const finder = new Finder(window);
       finder.setup('* > ul > *', container);
-      finder._prepareQuerySelectorWalker(container);
       const res = finder._collectNodes('first');
       assert.deepEqual(
         res,
@@ -14258,7 +14184,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('#ul1 > #li1', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14305,7 +14230,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('ul > #li1', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14352,7 +14276,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('#ul1 > li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14399,7 +14322,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('ul > li::after', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14452,7 +14374,6 @@ describe('Finder', () => {
     it('should get list and matrix', () => {
       const finder = new Finder(window);
       finder.setup('ul::before > li', document);
-      finder._prepareQuerySelectorWalker(document);
       const res = finder._collectNodes('all');
       assert.deepEqual(
         res,
@@ -14730,7 +14651,6 @@ describe('Finder', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:active', node);
-      finder._prepareQuerySelectorWalker(node);
       finder._collectNodes('all');
       const res = finder.find('all');
       assert.deepEqual([...res], [], 'result');
