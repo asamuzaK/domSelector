@@ -17,7 +17,6 @@ export class Finder {
     private _processSelectorBranches;
     private _correspond;
     private _createTreeWalker;
-    private _prepareQuerySelectorWalker;
     private _getSelectorBranches;
     private _getFilteredChildren;
     private _collectNthChild;

@@ -1601,6 +1601,8 @@ var Finder = class {
     this.#invalidateResults = /* @__PURE__ */ new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = /* @__PURE__ */ new WeakMap();
+    this.#nodeWalker = null;
+    this.#rootWalker = null;
     this.#verifyShadowHost = null;
     return this;
   };
@@ -1810,16 +1812,6 @@ var Finder = class {
     const walker = this.#document.createTreeWalker(node, whatToShow);
     this.#walkers.set(node, walker);
     return walker;
-  };
-  /**
-   * Prepares the querySelector walker.
-   * @private
-   * @returns {object} The TreeWalker object.
-   */
-  _prepareQuerySelectorWalker = () => {
-    this.#nodeWalker = this._createTreeWalker(this.#node);
-    this.#rootWalker = null;
-    return this.#nodeWalker;
   };
   /**
    * Gets selector branches from cache or parses them.
@@ -3495,6 +3487,9 @@ var Finder = class {
         return precedeNodes;
       }
     }
+    if (!this.#nodeWalker) {
+      this.#nodeWalker = this._createTreeWalker(this.#node);
+    }
     return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
       startNode: node,
       ...traversalOpts
@@ -3832,17 +3827,14 @@ var Finder = class {
     if (!pendingItems.size) {
       return;
     }
-    let node;
-    let walker;
-    if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+    if (!this.#rootWalker) {
+      this.#rootWalker = this._createTreeWalker(this.#root);
+    }
+    const isScopedContext = this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
+    const walker = this.#rootWalker;
+    let node = this.#root;
+    if (isScopedContext) {
       node = this.#node;
-      walker = this.#nodeWalker;
-    } else {
-      if (!this.#rootWalker) {
-        this.#rootWalker = this._createTreeWalker(this.#root);
-      }
-      node = this.#root;
-      walker = this.#rootWalker;
     }
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
@@ -3857,9 +3849,8 @@ var Finder = class {
             this.#nodes[index].push(nextNode);
           }
         }
-      }
-      if (nextNode !== walker.currentNode) {
-        nextNode = traverseNode(nextNode, walker);
+      } else if (isScopedContext) {
+        break;
       }
       nextNode = walker.nextNode();
     }
@@ -4194,9 +4185,6 @@ var Finder = class {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   find = (targetType) => {
-    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
-    }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort = false;
@@ -4281,12 +4269,11 @@ var Finder = class {
 };
 
 // src/index.js
-var MAX_CACHE = 4096;
+var MAX_CACHE = 1024;
 var DOMSelector = class {
   /* private fields */
   #window;
   #document;
-  #domSymbolTree;
   #finder;
   #idlUtils;
   #nwsapi;
@@ -4298,10 +4285,9 @@ var DOMSelector = class {
    * @param {object} [opt] - options
    */
   constructor(window, document, opt = {}) {
-    const { domSymbolTree, idlUtils } = opt;
+    const { idlUtils } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
-    this.#domSymbolTree = domSymbolTree;
     this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
@@ -4325,12 +4311,15 @@ var DOMSelector = class {
   check(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
+    }
+    const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `check_${selector}`;
       let filterMatches = false;
@@ -4342,8 +4331,7 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const match = this.#nwsapi.match(selector, n);
+          const match = this.#nwsapi.match(selector, node);
           return {
             match,
             pseudoElement: null
@@ -4354,10 +4342,6 @@ var DOMSelector = class {
     }
     let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.domSymbolTree = this.#domSymbolTree;
       opt.check = true;
       opt.noexept = true;
       opt.warn = false;
@@ -4378,12 +4362,15 @@ var DOMSelector = class {
   matches(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
+    }
+    const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `matches_${selector}`;
       let filterMatches = false;
@@ -4395,8 +4382,7 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res2 = this.#nwsapi.match(selector, n);
+          const res2 = this.#nwsapi.match(selector, node);
           return res2;
         } catch (e) {
         }
@@ -4404,10 +4390,6 @@ var DOMSelector = class {
     }
     let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
@@ -4426,12 +4408,15 @@ var DOMSelector = class {
   closest(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree ? node._ownerDocument : node.ownerDocument;
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
+    }
+    const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `closest_${selector}`;
       let filterMatches = false;
@@ -4443,8 +4428,7 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res2 = this.#nwsapi.closest(selector, n);
+          const res2 = this.#nwsapi.closest(selector, node);
           return res2;
         } catch (e) {
         }
@@ -4452,10 +4436,6 @@ var DOMSelector = class {
     }
     let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
@@ -4483,14 +4463,13 @@ var DOMSelector = class {
   querySelector(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
+    }
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
     }
     let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
@@ -4512,12 +4491,13 @@ var DOMSelector = class {
   querySelectorAll(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
+    }
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
     }
     let document;
-    if (this.#domSymbolTree) {
-      document = node._ownerDocument;
-    } else if (node.nodeType === DOCUMENT_NODE) {
+    if (node.nodeType === DOCUMENT_NODE) {
       document = node;
     } else {
       document = node.ownerDocument;
@@ -4533,8 +4513,7 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res2 = this.#nwsapi.select(selector, n);
+          const res2 = this.#nwsapi.select(selector, node);
           return res2;
         } catch (e) {
         }
@@ -4542,10 +4521,6 @@ var DOMSelector = class {
     }
     let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {
