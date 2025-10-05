@@ -220,7 +220,6 @@ export class Finder {
     this.#walkers = new WeakMap();
     this.#nodeWalker = null;
     this.#rootWalker = null;
-
     this.#verifyShadowHost = null;
     return this;
   };
@@ -2224,12 +2223,15 @@ export class Finder {
     } else if (currentNode === startNode && currentNode !== this.#root) {
       currentNode = walker.nextNode();
     }
+    const matchOpt = {
+      warn: this.#warn
+    };
     while (currentNode) {
       // Stop when we reach the boundary node.
       if (boundaryNode && currentNode === boundaryNode) {
         break;
       }
-      if (this._matchLeaves(leaves, currentNode, { warn: this.#warn })) {
+      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
         collectedNodes.push(currentNode);
         // Stop after the first match if not collecting all.
         if (targetType !== TARGET_ALL) {
