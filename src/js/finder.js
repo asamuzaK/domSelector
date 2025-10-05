@@ -97,25 +97,6 @@ const KEY_PS_UI = new Set(['closed', 'open', 'popover-open']);
 /**
  * Finder
  * NOTE: #ast[i] corresponds to #nodes[i]
- * #ast: Array.<Ast>
- * #nodes: Array.<Nodes>
- * Ast: {
- *   branch: Array.<Branch | undefined>,
- *   dir: string | null,
- *   filtered: boolean,
- *   find: boolean
- * }
- * Branch: Array.<Twig>
- * Twig: {
- *   combo: Leaf | null,
- *   leaves: Array<Leaf>
- * }
- * Leaf: {
- *   children: Array.<Leaf> | null,
- *   loc: null,
- *   type: string
- * }
- * Nodes: Array.<HTMLElement>
  */
 export class Finder {
   /* private fields */
