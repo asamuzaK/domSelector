@@ -218,6 +218,9 @@ export class Finder {
     this.#invalidateResults = new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
+    this.#nodeWalker = null;
+    this.#rootWalker = null;
+
     this.#verifyShadowHost = null;
     return this;
   };
@@ -440,17 +443,6 @@ export class Finder {
     const walker = this.#document.createTreeWalker(node, whatToShow);
     this.#walkers.set(node, walker);
     return walker;
-  };
-
-  /**
-   * Prepares the querySelector walker.
-   * @private
-   * @returns {object} The TreeWalker object.
-   */
-  _prepareQuerySelectorWalker = () => {
-    this.#nodeWalker = this._createTreeWalker(this.#node);
-    this.#rootWalker = null;
-    return this.#nodeWalker;
   };
 
   /**
@@ -2289,6 +2281,9 @@ export class Finder {
         return precedeNodes;
       }
     }
+    if (!this.#nodeWalker) {
+      this.#nodeWalker = this._createTreeWalker(this.#node);
+    }
     return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
       startNode: node,
       ...traversalOpts
@@ -2648,17 +2643,15 @@ export class Finder {
     if (!pendingItems.size) {
       return;
     }
-    let node;
-    let walker;
-    if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+    if (!this.#rootWalker) {
+      this.#rootWalker = this._createTreeWalker(this.#root);
+    }
+    const isScopedContext =
+      this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
+    const walker = this.#rootWalker;
+    let node = this.#root;
+    if (isScopedContext) {
       node = this.#node;
-      walker = this.#nodeWalker;
-    } else {
-      if (!this.#rootWalker) {
-        this.#rootWalker = this._createTreeWalker(this.#root);
-      }
-      node = this.#root;
-      walker = this.#rootWalker;
     }
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
@@ -2676,9 +2669,8 @@ export class Finder {
             this.#nodes[index].push(nextNode);
           }
         }
-      }
-      if (nextNode !== walker.currentNode) {
-        nextNode = traverseNode(nextNode, walker);
+      } else if (isScopedContext) {
+        break;
       }
       nextNode = walker.nextNode();
     }
@@ -3036,9 +3028,6 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   find = targetType => {
-    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
-    }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort = false;
