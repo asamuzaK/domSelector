@@ -20,16 +20,16 @@ import {
   ELEMENT_NODE,
   FORM_PARTS,
   IDENT,
-  KEY_INPUT_EDIT,
-  KEY_PS_ELEMENT,
-  KEY_PS_ELEMENT_FUNC,
+  KEYS_INPUT_EDIT,
+  KEYS_PS_ELEMENT,
+  KEYS_PS_ELEMENT_FUNC,
   LANG_PART,
   NOT_SUPPORTED_ERR,
   PS_ELEMENT_SELECTOR,
   STRING,
   SYNTAX_ERR
 } from './constant.js';
-const KEY_FORM_PS_DISABLED = new Set([
+const KEYS_FORM_PS_DISABLED = new Set([
   ...FORM_PARTS,
   'fieldset',
   'optgroup',
@@ -53,14 +53,14 @@ export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
   }
   const { forgive, warn } = opt;
   const isKnown =
-    KEY_PS_ELEMENT.has(astName) ||
-    KEY_PS_ELEMENT_FUNC.has(astName) ||
+    KEYS_PS_ELEMENT.has(astName) ||
+    KEYS_PS_ELEMENT_FUNC.has(astName) ||
     astName.startsWith('-webkit-');
   if (!isKnown && !forgive && !warn) {
     throw new DOMException(`Unknown pseudo-element ::${astName}`, SYNTAX_ERR);
   } else if (warn) {
     let msg = '';
-    if (KEY_PS_ELEMENT_FUNC.has(astName)) {
+    if (KEYS_PS_ELEMENT_FUNC.has(astName)) {
       msg = `Unsupported pseudo-element ::${astName}()`;
     } else if (astName.startsWith('-webkit-')) {
       msg = `Unsupported pseudo-element ::${astName}`;
@@ -152,7 +152,7 @@ export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
   }
   const { localName, parentNode } = node;
   if (
-    !KEY_FORM_PS_DISABLED.has(localName) &&
+    !KEYS_FORM_PS_DISABLED.has(localName) &&
     !isCustomElement(node, { formAssociated: true })
   ) {
     return false;
@@ -218,7 +218,7 @@ export const matchReadOnlyWritePseudo = (astName, node) => {
   switch (localName) {
     case 'textarea':
     case 'input': {
-      const isEditableInput = !node.type || KEY_INPUT_EDIT.has(node.type);
+      const isEditableInput = !node.type || KEYS_INPUT_EDIT.has(node.type);
       if (localName === 'textarea' || isEditableInput) {
         isReadOnly =
           node.readOnly ||

@@ -24,7 +24,7 @@ import {
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
-  KEY_LOGICAL,
+  KEYS_LOGICAL,
   LOGIC_COMPLEX,
   LOGIC_COMPOUND,
   N_TH,
@@ -41,12 +41,12 @@ import {
   TYPE_FROM,
   TYPE_TO
 } from './constant.js';
-const KEY_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
-const KEY_DIR_LTR = new Set(INPUT_LTR);
-const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
-const KEY_NODE_DIR_EXCLUDE = new Set(['bdi', 'script', 'style', 'textarea']);
-const KEY_NODE_FOCUSABLE = new Set(['button', 'select', 'textarea']);
-const KEY_NODE_FOCUSABLE_SVG = new Set([
+const KEYS_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
+const KEYS_DIR_LTR = new Set(INPUT_LTR);
+const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+const KEYS_NODE_DIR_EXCLUDE = new Set(['bdi', 'script', 'style', 'textarea']);
+const KEYS_NODE_FOCUSABLE = new Set(['button', 'select', 'textarea']);
+const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'clipPath',
   'defs',
   'desc',
@@ -210,7 +210,7 @@ export const findNestedHas = leaf => {
  * @returns {?object} The leaf if it matches, otherwise null.
  */
 export const findLogicalWithNestedHas = leaf => {
-  if (KEY_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
     return leaf;
   }
   return null;
@@ -444,9 +444,9 @@ export const getDirectionality = node => {
     let text = '';
     switch (localName) {
       case 'input': {
-        if (!node.type || KEY_DIR_AUTO.has(node.type)) {
+        if (!node.type || KEYS_DIR_AUTO.has(node.type)) {
           text = node.value;
-        } else if (KEY_DIR_LTR.has(node.type)) {
+        } else if (KEYS_DIR_LTR.has(node.type)) {
           return 'ltr';
         }
         break;
@@ -472,7 +472,7 @@ export const getDirectionality = node => {
             text = itemTextContent.trim();
           } else if (
             itemNodeType === ELEMENT_NODE &&
-            !KEY_NODE_DIR_EXCLUDE.has(itemLocalName) &&
+            !KEYS_NODE_DIR_EXCLUDE.has(itemLocalName) &&
             (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))
           ) {
             if (itemLocalName === 'slot') {
@@ -664,7 +664,7 @@ export const isFocusVisible = node => {
   const { localName, type } = node;
   switch (localName) {
     case 'input': {
-      if (!type || KEY_INPUT_EDIT.has(type)) {
+      if (!type || KEYS_INPUT_EDIT.has(type)) {
         return true;
       }
       return false;
@@ -737,7 +737,7 @@ export const isFocusableArea = node => {
       }
       default: {
         if (
-          KEY_NODE_FOCUSABLE.has(localName) &&
+          KEYS_NODE_FOCUSABLE.has(localName) &&
           !(node.disabled || node.hasAttribute('disabled'))
         ) {
           return true;
@@ -750,7 +750,7 @@ export const isFocusableArea = node => {
       let bool;
       let refNode = node;
       while (refNode.namespaceURI === ns) {
-        bool = KEY_NODE_FOCUSABLE_SVG.has(refNode.localName);
+        bool = KEYS_NODE_FOCUSABLE_SVG.has(refNode.localName);
         if (bool) {
           break;
         }

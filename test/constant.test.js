@@ -12,9 +12,9 @@ import * as constant from '../src/js/constant.js';
 describe('constants', () => {
   const items = Object.entries(constant);
   for (const [key, value] of items) {
-    it('should get string, number or array', () => {
+    it('should get string, number, array or set', () => {
       assert.strictEqual(/^[A-Z][A-Z_\d]+$/.test(key), true, 'key');
-      if (key.startsWith('KEY_')) {
+      if (key.startsWith('KEYS_')) {
         assert.strictEqual(value instanceof Set, true, 'Set value');
       } else {
         assert.strictEqual(

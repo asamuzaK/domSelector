@@ -127,9 +127,9 @@ export const INPUT_LTR = Object.freeze([
 ]);
 
 /* keywords */
-export const KEY_INPUT_EDIT = new Set(INPUT_EDIT);
-export const KEY_LOGICAL = new Set(['has', 'is', 'not', 'where']);
-export const KEY_MODIFIER = new Set([
+export const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
+export const KEYS_MODIFIER = new Set([
   'Alt',
   'AltGraph',
   'CapsLock',
@@ -145,7 +145,7 @@ export const KEY_MODIFIER = new Set([
   'Symbol',
   'SymbolLock'
 ]);
-export const KEY_PS_ELEMENT = new Set([
+export const KEYS_PS_ELEMENT = new Set([
   'after',
   'backdrop',
   'before',
@@ -159,8 +159,8 @@ export const KEY_PS_ELEMENT = new Set([
   'selection',
   'target-text'
 ]);
-export const KEY_PS_ELEMENT_FUNC = new Set(['part', 'slotted']);
-export const KEY_PS_CLASS_STATE = new Set([
+export const KEYS_PS_ELEMENT_FUNC = new Set(['part', 'slotted']);
+export const KEYS_PS_CLASS_STATE = new Set([
   'enabled',
   'disabled',
   'valid',
@@ -175,4 +175,4 @@ export const KEY_PS_CLASS_STATE = new Set([
   'closed',
   'placeholder-shown'
 ]);
-export const KEY_SHADOW_HOST = new Set(['host', 'host-context']);
+export const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);

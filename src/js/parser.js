@@ -20,9 +20,9 @@ import {
   DUO,
   HEX,
   ID_SELECTOR,
-  KEY_LOGICAL,
-  KEY_PS_CLASS_STATE,
-  KEY_SHADOW_HOST,
+  KEYS_LOGICAL,
+  KEYS_PS_CLASS_STATE,
+  KEYS_SHADOW_HOST,
   NTH,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -226,16 +226,16 @@ export const walkAST = (ast = {}) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEY_LOGICAL.has(node.name)) {
+          if (KEYS_LOGICAL.has(node.name)) {
             info.hasNestedSelector = true;
             info.hasLogicalPseudoFunc = true;
             if (node.name === 'has') {
               info.hasHasPseudoFunc = true;
             }
-          } else if (KEY_PS_CLASS_STATE.has(node.name)) {
+          } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
             info.hasStatePseudoClass = true;
           } else if (
-            KEY_SHADOW_HOST.has(node.name) &&
+            KEYS_SHADOW_HOST.has(node.name) &&
             Array.isArray(node.children) &&
             node.children.length
           ) {
@@ -268,10 +268,10 @@ export const walkAST = (ast = {}) => {
   if (info.hasNestedSelector === true) {
     cssTree.findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(node.name)) {
+        if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(name);
+            return type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(name);
           });
           for (const { children } of itemList) {
             // SelectorList
@@ -286,7 +286,7 @@ export const walkAST = (ast = {}) => {
           }
         } else if (
           node.type === PS_CLASS_SELECTOR &&
-          KEY_SHADOW_HOST.has(node.name) &&
+          KEYS_SHADOW_HOST.has(node.name) &&
           Array.isArray(node.children) &&
           node.children.length
         ) {
@@ -294,7 +294,7 @@ export const walkAST = (ast = {}) => {
             const { children, name, type } = i;
             const res =
               type === PS_CLASS_SELECTOR &&
-              KEY_SHADOW_HOST.has(name) &&
+              KEYS_SHADOW_HOST.has(name) &&
               Array.isArray(children) &&
               children.length;
             return res;
