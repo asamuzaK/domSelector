@@ -19,14 +19,13 @@ import {
   TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
-const MAX_CACHE = 4096;
+const MAX_CACHE = 1024;
 
 /* DOMSelector */
 export class DOMSelector {
   /* private fields */
   #window;
   #document;
-  #domSymbolTree;
   #finder;
   #idlUtils;
   #nwsapi;
@@ -39,10 +38,9 @@ export class DOMSelector {
    * @param {object} [opt] - options
    */
   constructor(window, document, opt = {}) {
-    const { domSymbolTree, idlUtils } = opt;
+    const { idlUtils } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
-    this.#domSymbolTree = domSymbolTree;
     this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
@@ -68,14 +66,12 @@ export class DOMSelector {
   check(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree
-      ? node._ownerDocument
-      : node.ownerDocument;
+    const document = node.ownerDocument;
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
@@ -109,7 +105,6 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      opt.domSymbolTree = this.#domSymbolTree;
       opt.check = true;
       opt.noexept = true;
       opt.warn = false;
@@ -131,14 +126,12 @@ export class DOMSelector {
   matches(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree
-      ? node._ownerDocument
-      : node.ownerDocument;
+    const document = node.ownerDocument;
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
@@ -169,7 +162,6 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
@@ -189,14 +181,12 @@ export class DOMSelector {
   closest(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     } else if (node.nodeType !== ELEMENT_NODE) {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    const document = this.#domSymbolTree
-      ? node._ownerDocument
-      : node.ownerDocument;
+    const document = node.ownerDocument;
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
@@ -227,7 +217,6 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
@@ -256,7 +245,7 @@ export class DOMSelector {
   querySelector(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
     let res;
     try {
@@ -264,7 +253,6 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
@@ -287,16 +275,10 @@ export class DOMSelector {
   querySelectorAll(selector, node, opt = {}) {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      this.#finder.onError(e, opt);
+      return this.#finder.onError(e, opt);
     }
-    let document;
-    if (this.#domSymbolTree) {
-      document = node._ownerDocument;
-    } else if (node.nodeType === DOCUMENT_NODE) {
-      document = node;
-    } else {
-      document = node.ownerDocument;
-    }
+    const document =
+      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
@@ -326,7 +308,6 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      opt.domSymbolTree = this.#domSymbolTree;
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {
