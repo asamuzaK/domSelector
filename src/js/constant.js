@@ -161,6 +161,79 @@ export const KEYS_PS_ELEMENT = new Set([
 ]);
 export const KEYS_PS_ELEMENT_FUNC = new Set(['part', 'slotted']);
 export const KEYS_PS_CLASS_STATE = new Set([
+  'checked',
+  'closed',
+  'disabled',
+  'empty',
+  'enabled',
+  'in-range',
+  'indeterminate',
+  'invalid',
+  'open',
+  'out-of-range',
+  'placeholder-shown',
+  'read-only',
+  'read-write',
+  'valid'
+]);
+export const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
+
+/* array */
+export const KEY_FORM_FOCUS = Object.freeze([
+  'button',
+  'input',
+  'select',
+  'textarea'
+]);
+export const KEY_INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
+export const KEY_INPUT_DATE = Object.freeze([
+  'date',
+  'datetime-local',
+  'month',
+  'time',
+  'week'
+]);
+export const KEY_INPUT_TEXT = Object.freeze([
+  'email',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'url'
+]);
+export const KEY_INPUT_EDIT = Object.freeze([
+  ...KEY_INPUT_DATE,
+  ...KEY_INPUT_TEXT,
+  'number'
+]);
+export const KEY_INPUT_LTR = Object.freeze([
+  'checkbox',
+  'color',
+  'date',
+  'image',
+  'number',
+  'range',
+  'radio',
+  'time'
+]);
+export const KEY_LOGICAL = Object.freeze(['has', 'is', 'not', 'where']);
+export const KEY_MODIFIER = Object.freeze([
+  'Alt',
+  'AltGraph',
+  'CapsLock',
+  'Control',
+  'Fn',
+  'FnLock',
+  'Hyper',
+  'Meta',
+  'NumLock',
+  'ScrollLock',
+  'Shift',
+  'Super',
+  'Symbol',
+  'SymbolLock'
+]);
+export const KEY_PS_STATE = Object.freeze([
   'enabled',
   'disabled',
   'valid',
@@ -175,4 +248,4 @@ export const KEYS_PS_CLASS_STATE = new Set([
   'closed',
   'placeholder-shown'
 ]);
-export const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
+export const KEY_SHADOW_HOST = Object.freeze(['host', 'host-context']);

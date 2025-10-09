@@ -761,6 +761,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       const node = doc.getElementById('target');
       const res = doc.querySelector('*|coreProperties');
       assert.deepEqual(res, node, 'result');
+      assert.strictEqual(node.matches('*|coreProperties'), true, 'match');
     });
   });
 
