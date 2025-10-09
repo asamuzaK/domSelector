@@ -3,7 +3,7 @@
  */
 
 /* import */
-import { findAll, parse, toPlainObject, walk } from 'css-tree';
+import * as cssTree from 'css-tree';
 import { getType } from './utility.js';
 
 /* constants */
@@ -20,9 +20,9 @@ import {
   DUO,
   HEX,
   ID_SELECTOR,
-  KEY_LOGICAL,
-  KEY_PS_STATE,
-  KEY_SHADOW_HOST,
+  KEYS_LOGICAL,
+  KEYS_PS_CLASS_STATE,
+  KEYS_SHADOW_HOST,
   NTH,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -30,24 +30,33 @@ import {
   SYNTAX_ERR,
   TYPE_SELECTOR
 } from './constant.js';
+const AST_SORT_ORDER = new Map([
+  [PS_ELEMENT_SELECTOR, BIT_01],
+  [ID_SELECTOR, BIT_02],
+  [CLASS_SELECTOR, BIT_04],
+  [TYPE_SELECTOR, BIT_08],
+  [ATTR_SELECTOR, BIT_16],
+  [PS_CLASS_SELECTOR, BIT_32]
+]);
 const REG_EMPTY_PS_FUNC =
   /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 const U_FFFD = '\uFFFD';
 
 /**
- * unescape selector
- * @param {string} selector - CSS selector
- * @returns {?string} - unescaped selector
+ * Unescapes a CSS selector string.
+ * @param {string} selector - The CSS selector to unescape.
+ * @returns {string} The unescaped selector string.
  */
 export const unescapeSelector = (selector = '') => {
   if (typeof selector === 'string' && selector.indexOf('\\', 0) >= 0) {
     const arr = selector.split('\\');
+    const selectorItems = [arr[0]];
     const l = arr.length;
     for (let i = 1; i < l; i++) {
-      let item = arr[i];
+      const item = arr[i];
       if (item === '' && i === l - 1) {
-        item = U_FFFD;
+        selectorItems.push(U_FFFD);
       } else {
         const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
         if (hexExists) {
@@ -69,81 +78,84 @@ export const unescapeSelector = (selector = '') => {
           if (item.length > hex.length) {
             postStr = item.substring(hex.length);
           }
-          item = `${str}${postStr}`;
+          selectorItems.push(`${str}${postStr}`);
           // whitespace
         } else if (/^[\n\r\f]/.test(item)) {
-          item = '\\' + item;
+          selectorItems.push(`\\${item}`);
+        } else {
+          selectorItems.push(item);
         }
       }
-      arr[i] = item;
     }
-    selector = arr.join('');
+    return selectorItems.join('');
   }
   return selector;
 };
 
 /**
- * preprocess
+ * Preprocesses a selector string according to the specification.
  * @see https://drafts.csswg.org/css-syntax-3/#input-preprocessing
- * @param {string} selector - string
- * @returns {string} - filtered selector string
+ * @param {string} value - The value to preprocess.
+ * @returns {string} The preprocessed selector string.
  */
-export const preprocess = selector => {
-  if (typeof selector === 'string') {
-    let index = 0;
-    while (index >= 0) {
-      // @see https://drafts.csswg.org/selectors/#id-selectors
-      index = selector.indexOf('#', index);
-      if (index < 0) {
-        break;
-      }
-      const preHash = selector.substring(0, index + 1);
-      let postHash = selector.substring(index + 1);
-      const codePoint = postHash.codePointAt(0);
-      if (codePoint > BIT_FFFF) {
-        const str = `\\${codePoint.toString(HEX)} `;
-        if (postHash.length === DUO) {
-          postHash = str;
-        } else {
-          postHash = `${str}${postHash.substring(DUO)}`;
-        }
-      }
-      selector = `${preHash}${postHash}`;
-      index++;
+export const preprocess = value => {
+  // Non-string values will be converted to string.
+  if (typeof value !== 'string') {
+    if (value === undefined || value === null) {
+      return getType(value).toLowerCase();
+    } else if (Array.isArray(value)) {
+      return value.join(',');
+    } else if (Object.hasOwn(value, 'toString')) {
+      return value.toString();
+    } else {
+      throw new DOMException(`Invalid selector ${value}`, SYNTAX_ERR);
     }
-    selector = selector
-      .replace(/\f|\r\n?/g, '\n')
-      .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD);
-  } else if (selector === undefined || selector === null) {
-    selector = getType(selector).toLowerCase();
-  } else if (Array.isArray(selector)) {
-    selector = selector.join(',');
-  } else if (Object.hasOwn(selector, 'toString')) {
-    selector = selector.toString();
-  } else {
-    throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
-  return selector.replace(/\x26/g, ':scope');
+  let selector = value;
+  let index = 0;
+  while (index >= 0) {
+    // @see https://drafts.csswg.org/selectors/#id-selectors
+    index = selector.indexOf('#', index);
+    if (index < 0) {
+      break;
+    }
+    const preHash = selector.substring(0, index + 1);
+    let postHash = selector.substring(index + 1);
+    const codePoint = postHash.codePointAt(0);
+    if (codePoint > BIT_FFFF) {
+      const str = `\\${codePoint.toString(HEX)} `;
+      if (postHash.length === DUO) {
+        postHash = str;
+      } else {
+        postHash = `${str}${postHash.substring(DUO)}`;
+      }
+    }
+    selector = `${preHash}${postHash}`;
+    index++;
+  }
+  return selector
+    .replace(/\f|\r\n?/g, '\n')
+    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD)
+    .replace(/\x26/g, ':scope');
 };
 
 /**
- * create AST from CSS selector
- * @param {string} selector - CSS selector
- * @returns {object} - AST
+ * Creates an Abstract Syntax Tree (AST) from a CSS selector string.
+ * @param {string} sel - The CSS selector string.
+ * @returns {object} The parsed AST object.
  */
-export const parseSelector = selector => {
-  selector = preprocess(selector);
+export const parseSelector = sel => {
+  const selector = preprocess(sel);
   // invalid selectors
   if (/^$|^\s*>|,\s*$/.test(selector)) {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
-  let res;
   try {
-    const ast = parse(selector, {
+    const ast = cssTree.parse(selector, {
       context: 'selectorList',
       parseCustomProperty: true
     });
-    res = toPlainObject(ast);
+    return cssTree.toPlainObject(ast);
   } catch (e) {
     const { message } = e;
     if (
@@ -153,23 +165,21 @@ export const parseSelector = selector => {
       !selector.endsWith(']')
     ) {
       const index = selector.lastIndexOf('[');
-      const sel = selector.substring(index);
-      if (sel.includes('"')) {
-        const quotes = sel.match(/"/g).length;
+      const selPart = selector.substring(index);
+      if (selPart.includes('"')) {
+        const quotes = selPart.match(/"/g).length;
         if (quotes % 2) {
-          res = parseSelector(`${selector}"]`);
-        } else {
-          res = parseSelector(`${selector}]`);
+          return parseSelector(`${selector}"]`);
         }
-      } else {
-        res = parseSelector(`${selector}]`);
+        return parseSelector(`${selector}]`);
       }
+      return parseSelector(`${selector}]`);
     } else if (message === '")" is expected') {
       // workaround for https://github.com/csstree/csstree/issues/283
       if (REG_EMPTY_PS_FUNC.test(selector)) {
-        res = parseSelector(`${selector.replaceAll(REG_EMPTY_PS_FUNC, '()')}`);
+        return parseSelector(`${selector.replaceAll(REG_EMPTY_PS_FUNC, '()')}`);
       } else if (!selector.endsWith(')')) {
-        res = parseSelector(`${selector})`);
+        return parseSelector(`${selector})`);
       } else {
         throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
       }
@@ -177,19 +187,25 @@ export const parseSelector = selector => {
       throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
     }
   }
-  return res;
 };
 
 /**
- * walk AST
- * @param {object} ast - AST
- * @returns {object} - AST branches and info
+ * Walks the provided AST to collect selector branches and gather information
+ * about its contents.
+ * @param {object} ast - The AST to traverse.
+ * @returns {{branches: Array<object>, info: object}} An object containing the selector branches and info.
  */
 export const walkAST = (ast = {}) => {
   const branches = new Set();
-  const info = new Map();
+  const info = {
+    hasHasPseudoFunc: false,
+    hasLogicalPseudoFunc: false,
+    hasNthChildOfSelector: false,
+    hasNestedSelector: false,
+    hasStatePseudoClass: false
+  };
   const opt = {
-    enter: node => {
+    enter(node) {
       switch (node.type) {
         case CLASS_SELECTOR: {
           if (/^-?\d/.test(node.name)) {
@@ -210,33 +226,33 @@ export const walkAST = (ast = {}) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEY_LOGICAL.includes(node.name)) {
-            info.set('hasNestedSelector', true);
-            info.set('hasLogicalPseudoFunc', true);
+          if (KEYS_LOGICAL.has(node.name)) {
+            info.hasNestedSelector = true;
+            info.hasLogicalPseudoFunc = true;
             if (node.name === 'has') {
-              info.set('hasHasPseudoFunc', true);
+              info.hasHasPseudoFunc = true;
             }
-          } else if (KEY_PS_STATE.includes(node.name)) {
-            info.set('hasStatePseudoClass', true);
+          } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
+            info.hasStatePseudoClass = true;
           } else if (
-            KEY_SHADOW_HOST.includes(node.name) &&
+            KEYS_SHADOW_HOST.has(node.name) &&
             Array.isArray(node.children) &&
             node.children.length
           ) {
-            info.set('hasNestedSelector', true);
+            info.hasNestedSelector = true;
           }
           break;
         }
         case PS_ELEMENT_SELECTOR: {
           if (REG_SHADOW_PS_ELEMENT.test(node.name)) {
-            info.set('hasNestedSelector', true);
+            info.hasNestedSelector = true;
           }
           break;
         }
         case NTH: {
           if (node.selector) {
-            info.set('hasNestedSelector', true);
-            info.set('hasNthChildOfSelector', true);
+            info.hasNestedSelector = true;
+            info.hasNthChildOfSelector = true;
           }
           break;
         }
@@ -248,17 +264,14 @@ export const walkAST = (ast = {}) => {
       }
     }
   };
-  walk(ast, opt);
-  if (info.get('hasNestedSelector')) {
-    findAll(ast, (node, item, list) => {
+  cssTree.walk(ast, opt);
+  if (info.hasNestedSelector === true) {
+    cssTree.findAll(ast, (node, item, list) => {
       if (list) {
-        if (
-          node.type === PS_CLASS_SELECTOR &&
-          KEY_LOGICAL.includes(node.name)
-        ) {
+        if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.includes(name);
+            return type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(name);
           });
           for (const { children } of itemList) {
             // SelectorList
@@ -273,7 +286,7 @@ export const walkAST = (ast = {}) => {
           }
         } else if (
           node.type === PS_CLASS_SELECTOR &&
-          KEY_SHADOW_HOST.includes(node.name) &&
+          KEYS_SHADOW_HOST.has(node.name) &&
           Array.isArray(node.children) &&
           node.children.length
         ) {
@@ -281,7 +294,7 @@ export const walkAST = (ast = {}) => {
             const { children, name, type } = i;
             const res =
               type === PS_CLASS_SELECTOR &&
-              KEY_SHADOW_HOST.includes(name) &&
+              KEYS_SHADOW_HOST.has(name) &&
               Array.isArray(children) &&
               children.length;
             return res;
@@ -332,50 +345,47 @@ export const walkAST = (ast = {}) => {
     });
   }
   return {
-    branches: [...branches],
-    info: Object.fromEntries(info)
+    info,
+    branches: [...branches]
   };
 };
 
 /**
- * sort AST
- * @param {Array.<object>} asts - collection of AST
- * @returns {Array.<object>} - collection of sorted AST
+ * Comparison function for sorting AST nodes based on specificity.
+ * @param {object} a - The first AST node.
+ * @param {object} b - The second AST node.
+ * @returns {number} -1, 0 or 1, depending on the sort order.
+ */
+export const compareASTNodes = (a, b) => {
+  const bitA = AST_SORT_ORDER.get(a.type);
+  const bitB = AST_SORT_ORDER.get(b.type);
+  if (bitA === bitB) {
+    return 0;
+  } else if (bitA > bitB) {
+    return 1;
+  } else {
+    return -1;
+  }
+};
+
+/**
+ * Sorts a collection of AST nodes based on CSS specificity rules.
+ * @param {Array<object>} asts - A collection of AST nodes to sort.
+ * @returns {Array<object>} A new array containing the sorted AST nodes.
  */
 export const sortAST = asts => {
   const arr = [...asts];
   if (arr.length > 1) {
-    const order = new Map([
-      [PS_ELEMENT_SELECTOR, BIT_01],
-      [ID_SELECTOR, BIT_02],
-      [CLASS_SELECTOR, BIT_04],
-      [TYPE_SELECTOR, BIT_08],
-      [ATTR_SELECTOR, BIT_16],
-      [PS_CLASS_SELECTOR, BIT_32]
-    ]);
-    arr.sort((a, b) => {
-      const { type: typeA } = a;
-      const { type: typeB } = b;
-      const bitA = order.get(typeA);
-      const bitB = order.get(typeB);
-      let res;
-      if (bitA === bitB) {
-        res = 0;
-      } else if (bitA > bitB) {
-        res = 1;
-      } else {
-        res = -1;
-      }
-      return res;
-    });
+    arr.sort(compareASTNodes);
   }
   return arr;
 };
 
 /**
- * parse AST name - e.g. ns|E -> { prefix: ns, localName: E }
- * @param {string} selector - type selector
- * @returns {object} - node properties
+ * Parses a type selector's name, which may include a namespace prefix.
+ * @param {string} selector - The type selector name (e.g., 'ns|E' or 'E').
+ * @returns {{prefix: string, localName: string}} An object with `prefix` and
+ * `localName` properties.
  */
 export const parseAstName = selector => {
   let prefix;
@@ -396,5 +406,5 @@ export const parseAstName = selector => {
   };
 };
 
-/* export */
+/* Re-exported from css-tree. */
 export { find as findAST, generate as generateCSS } from 'css-tree';
