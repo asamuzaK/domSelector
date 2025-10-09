@@ -6,10 +6,8 @@
 import {
   matchAttributeSelector,
   matchDirectionPseudoClass,
-  matchDisabledEnabledPseudo,
   matchLanguagePseudoClass,
   matchPseudoElementSelector,
-  matchReadOnlyWritePseudo,
   matchTypeSelector
 } from './matcher.js';
 import {
@@ -21,13 +19,10 @@ import {
   walkAST
 } from './parser.js';
 import {
-  filterNodesByAnB,
-  findLogicalWithNestedHas,
-  generateException,
+  isContentEditable,
   isCustomElement,
   isFocusVisible,
   isFocusableArea,
-  isValidShadowHostSelector,
   isVisible,
   resolveContent,
   sortNodes,
@@ -42,14 +37,13 @@ import {
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
-  FORM_PARTS,
   ID_SELECTOR,
-  INPUT_CHECK,
-  INPUT_DATE,
-  INPUT_EDIT,
-  INPUT_TEXT,
-  KEYS_LOGICAL,
-  KEYS_MODIFIER,
+  KEY_FORM_FOCUS,
+  KEY_INPUT_DATE,
+  KEY_INPUT_EDIT,
+  KEY_INPUT_TEXT,
+  KEY_LOGICAL,
+  KEY_MODIFIER,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -65,44 +59,29 @@ import {
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
-const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
-const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
-const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
-const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
-const KEYS_INPUT_RESET = new Set(['button', 'reset']);
-const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
-const KEYS_PS_UNCACHE = new Set([
-  'any-link',
-  'defined',
-  'dir',
-  'link',
-  'scope'
-]);
-const KEYS_PS_FORM = new Set([
-  'checked',
-  'default',
-  'disabled',
-  'enabled',
-  'in-range',
-  'indeterminate',
-  'invalid',
-  'optional',
-  'out-of-range',
-  'placeholder-shown',
-  'read-only',
-  'read-write',
-  'required',
-  'user-invalid',
-  'user-valid',
-  'valid'
-]);
-const KEYS_PS_UI = new Set(['closed', 'open', 'popover-open']);
 
 /**
  * Finder
  * NOTE: #ast[i] corresponds to #nodes[i]
+ * #ast: Array.<Ast>
+ * #nodes: Array.<Nodes>
+ * Ast: {
+ *   branch: Array.<Branch | undefined>,
+ *   dir: string | null,
+ *   filtered: boolean,
+ *   find: boolean
+ * }
+ * Branch: Array.<Twig>
+ * Twig: {
+ *   combo: Leaf | null,
+ *   leaves: Array<Leaf>
+ * }
+ * Leaf: {
+ *   children: Array.<Leaf> | null,
+ *   loc: null,
+ *   type: string
+ * }
+ * Nodes: Array.<HTMLElement>
  */
 export class Finder {
   /* private fields */
@@ -112,10 +91,8 @@ export class Finder {
   #descendant;
   #document;
   #documentCache;
-  #documentURL;
   #domSymbolTree;
   #event;
-  #eventHandlers;
   #focus;
   #invalidate;
   #invalidateResults;
@@ -136,8 +113,8 @@ export class Finder {
   #window;
 
   /**
-   * constructor
-   * @param {object} window - The window object.
+   * construct
+   * @param {object} window - window
    */
   constructor(window) {
     this.#window = window;
@@ -148,223 +125,135 @@ export class Finder {
     this.#event = null;
     this.#focus = null;
     this.#lastFocusVisible = null;
-    this.#eventHandlers = new Set([
-      {
-        keys: ['focus', 'focusin'],
-        handler: this._handleFocusEvent
-      },
-      {
-        keys: ['keydown', 'keyup'],
-        handler: this._handleKeyboardEvent
-      },
-      {
-        keys: ['mouseover', 'mousedown', 'mouseup', 'mouseout'],
-        handler: this._handleMouseEvent
-      },
-      {
-        keys: ['click'],
-        handler: this._handleClickEvent
-      }
-    ]);
     this._registerEventListeners();
   }
 
   /**
-   * Handles errors.
-   * @param {Error} e - The error object.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
-   * @throws {Error} Throws an error.
+   * handle error
+   * @param {Error} e - Error
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.noexcept] - no exception
+   * @throws {Error} - Error
    * @returns {void}
    */
-  onError = (e, opt = {}) => {
+  onError(e, opt = {}) {
     const noexcept = opt.noexcept ?? this.#noexcept;
-    if (noexcept) {
-      return;
-    }
-    const isDOMException =
-      e instanceof DOMException || e instanceof this.#window.DOMException;
-    if (isDOMException) {
-      if (e.name === NOT_SUPPORTED_ERR) {
-        if (this.#warn) {
-          console.warn(e.message);
+    if (!noexcept) {
+      if (e instanceof DOMException || e instanceof this.#window.DOMException) {
+        if (e.name === NOT_SUPPORTED_ERR) {
+          if (this.#warn) {
+            console.warn(e.message);
+          }
+        } else {
+          throw new this.#window.DOMException(e.message, e.name);
         }
-        return;
+      } else if (e.name in this.#window) {
+        throw new this.#window[e.name](e.message, { cause: e });
+      } else {
+        throw e;
       }
-      throw new this.#window.DOMException(e.message, e.name);
     }
-    if (e.name in this.#window) {
-      throw new this.#window[e.name](e.message, { cause: e });
-    }
-    throw e;
-  };
+  }
 
   /**
-   * Sets up the finder.
-   * @param {string} selector - The CSS selector.
-   * @param {object} node - Document, DocumentFragment, or Element.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.check] - Indicates if running in internal check().
-   * @param {object} [opt.domSymbolTree] - The domSymbolTree object.
-   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
-   * @returns {object} The finder instance.
+   * setup finder
+   * @param {string} selector - CSS selector
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.check] - running in internal check()
+   * @param {object} [opt.domSymbolTree] - domSymbolTree
+   * @param {boolean} [opt.noexcept] - no exception
+   * @param {boolean} [opt.warn] - console warn
+   * @returns {object} - finder
    */
-  setup = (selector, node, opt = {}) => {
+  setup(selector, node, opt = {}) {
     const { check, domSymbolTree, noexcept, warn } = opt;
     this.#check = !!check;
     this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
-    this.#documentURL = new URL(this.#document.URL);
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
-    this.#nodeWalker = null;
-    this.#rootWalker = null;
     this.#verifyShadowHost = null;
     return this;
-  };
+  }
 
   /**
-   * Handles focus events.
+   * register event listeners
    * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
+   * @returns {Array.<void>} - results
    */
-  _handleFocusEvent = evt => {
-    this.#focus = evt;
-  };
-
-  /**
-   * Handles keyboard events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleKeyboardEvent = evt => {
-    const { key } = evt;
-    if (!KEYS_MODIFIER.has(key)) {
-      this.#event = evt;
-    }
-  };
-
-  /**
-   * Handles mouse events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleMouseEvent = evt => {
-    this.#event = evt;
-  };
-
-  /**
-   * Handles click events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleClickEvent = evt => {
-    this.#event = evt;
-    this.#invalidateResults = new WeakMap();
-    this.#results = new WeakMap();
-  };
-
-  /**
-   * Registers event listeners.
-   * @private
-   * @returns {Array.<void>} An array of return values from addEventListener.
-   */
-  _registerEventListeners = () => {
+  _registerEventListeners() {
     const opt = {
       capture: true,
       passive: true
     };
     const func = [];
-    for (const eventHandler of this.#eventHandlers) {
-      const { keys, handler } = eventHandler;
-      const l = keys.length;
-      for (let i = 0; i < l; i++) {
-        const key = keys[i];
-        func.push(this.#window.addEventListener(key, handler, opt));
-      }
+    const focusKeys = ['focus', 'focusin'];
+    for (const key of focusKeys) {
+      func.push(
+        this.#window.addEventListener(
+          key,
+          evt => {
+            this.#focus = evt;
+          },
+          opt
+        )
+      );
     }
+    const keyboardKeys = ['keydown', 'keyup'];
+    for (const key of keyboardKeys) {
+      func.push(
+        this.#window.addEventListener(
+          key,
+          evt => {
+            const { key } = evt;
+            if (!KEY_MODIFIER.includes(key)) {
+              this.#event = evt;
+            }
+          },
+          opt
+        )
+      );
+    }
+    const mouseKeys = ['mouseover', 'mousedown', 'mouseup', 'mouseout'];
+    for (const key of mouseKeys) {
+      func.push(
+        this.#window.addEventListener(
+          key,
+          evt => {
+            this.#event = evt;
+          },
+          opt
+        )
+      );
+    }
+    func.push(
+      this.#window.addEventListener(
+        'click',
+        evt => {
+          this.#event = evt;
+          this.#invalidateResults = new WeakMap();
+          this.#results = new WeakMap();
+        },
+        opt
+      )
+    );
     return func;
-  };
+  }
 
   /**
-   * Processes selector branches into the internal AST structure.
+   * correspond ast and nodes
    * @private
-   * @param {Array.<Array.<object>>} branches - The branches from walkAST.
-   * @param {string} selector - The original selector for error reporting.
-   * @returns {{ast: Array, descendant: boolean, invalidate: boolean}}
-   * An object with the AST, descendant flag, and invalidate flag.
+   * @param {string} selector - CSS selector
+   * @returns {Array.<Array.<object>>} - array of ast and nodes
    */
-  _processSelectorBranches = (branches, selector) => {
-    let invalidate = false;
-    let descendant = false;
-    const ast = [];
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const items = [...branches[i]];
-      const branch = [];
-      let item = items.shift();
-      if (item && item.type !== COMBINATOR) {
-        const leaves = new Set();
-        while (item) {
-          if (item.type === COMBINATOR) {
-            const [nextItem] = items;
-            if (!nextItem || nextItem.type === COMBINATOR) {
-              const msg = `Invalid selector ${selector}`;
-              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-              // Stop processing on invalid selector.
-              return { ast: [], descendant: false, invalidate: false };
-            }
-            if (item.name === '+' || item.name === '~') {
-              invalidate = true;
-            } else {
-              descendant = true;
-            }
-            branch.push({ combo: item, leaves: sortAST(leaves) });
-            leaves.clear();
-          } else {
-            if (item.name && typeof item.name === 'string') {
-              const unescapedName = unescapeSelector(item.name);
-              if (unescapedName !== item.name) {
-                item.name = unescapedName;
-              }
-              if (/[|:]/.test(unescapedName)) {
-                item.namespace = true;
-              }
-            }
-            leaves.add(item);
-          }
-          if (items.length) {
-            item = items.shift();
-          } else {
-            branch.push({ combo: null, leaves: sortAST(leaves) });
-            leaves.clear();
-            break;
-          }
-        }
-      }
-      ast.push({ branch, dir: null, filtered: false, find: false });
-    }
-    return { ast, descendant, invalidate };
-  };
-
-  /**
-   * Corresponds AST and nodes.
-   * @private
-   * @param {string} selector - The CSS selector.
-   * @returns {Array.<Array.<object>>} An array with the AST and nodes.
-   */
-  _correspond = selector => {
+  _correspond(selector) {
     const nodes = [];
     this.#descendant = false;
     this.#invalidate = false;
@@ -400,14 +289,73 @@ export class Finder {
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate =
+      let invalidate =
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
-      const processed = this._processSelectorBranches(branches, selector);
-      ast = processed.ast;
-      this.#descendant = processed.descendant;
-      this.#invalidate = baseInvalidate || processed.invalidate;
+      let descendant = false;
+      let i = 0;
+      ast = [];
+      for (const [...items] of branches) {
+        const branch = [];
+        let item = items.shift();
+        if (item && item.type !== COMBINATOR) {
+          const leaves = new Set();
+          while (item) {
+            let itemName = item.name;
+            if (item.type === COMBINATOR) {
+              const [nextItem] = items;
+              if (nextItem.type === COMBINATOR) {
+                return this.onError(
+                  new this.#window.DOMException(
+                    `Invalid selector ${selector}`,
+                    SYNTAX_ERR
+                  )
+                );
+              }
+              if (itemName === '+' || itemName === '~') {
+                invalidate = true;
+              } else {
+                descendant = true;
+              }
+              branch.push({
+                combo: item,
+                leaves: sortAST(leaves)
+              });
+              leaves.clear();
+            } else if (item) {
+              if (itemName && typeof itemName === 'string') {
+                itemName = unescapeSelector(itemName);
+                if (typeof itemName === 'string' && itemName !== item.name) {
+                  item.name = itemName;
+                }
+                if (/[|:]/.test(itemName)) {
+                  item.namespace = true;
+                }
+              }
+              leaves.add(item);
+            }
+            if (items.length) {
+              item = items.shift();
+            } else {
+              branch.push({
+                combo: null,
+                leaves: sortAST(leaves)
+              });
+              leaves.clear();
+              break;
+            }
+          }
+        }
+        ast.push({
+          branch,
+          dir: null,
+          filtered: false,
+          find: false
+        });
+        nodes[i] = [];
+        i++;
+      }
       let cachedItem;
       if (this.#documentCache.has(this.#document)) {
         cachedItem = this.#documentCache.get(this.#document);
@@ -416,182 +364,351 @@ export class Finder {
       }
       cachedItem.set(`${selector}`, {
         ast,
-        descendant: this.#descendant,
-        invalidate: this.#invalidate
+        descendant,
+        invalidate
       });
       this.#documentCache.set(this.#document, cachedItem);
-      // Initialize nodes array for each branch.
-      for (let i = 0; i < ast.length; i++) {
-        nodes[i] = [];
-      }
+      this.#descendant = descendant;
+      this.#invalidate = invalidate;
     }
     return [ast, nodes];
-  };
+  }
 
   /**
-   * Creates a TreeWalker.
+   * create tree walker
    * @private
-   * @param {object} node - The Document, DocumentFragment, or Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
-   * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
-   * @returns {object} The TreeWalker object.
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.force] - force new tree walker
+   * @param {number} [opt.whatToShow] - NodeFilter whatToShow
+   * @returns {object} - tree walker
    */
-  _createTreeWalker = (node, opt = {}) => {
+  _createTreeWalker(node, opt = {}) {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
+    let walker;
     if (force) {
-      return this.#document.createTreeWalker(node, whatToShow);
+      walker = this.#document.createTreeWalker(node, whatToShow);
+    } else if (this.#walkers.has(node)) {
+      walker = this.#walkers.get(node);
+    } else {
+      walker = this.#document.createTreeWalker(node, whatToShow);
+      this.#walkers.set(node, walker);
     }
-    if (this.#walkers.has(node)) {
-      return this.#walkers.get(node);
-    }
-    const walker = this.#document.createTreeWalker(node, whatToShow);
-    this.#walkers.set(node, walker);
     return walker;
-  };
+  }
 
   /**
-   * Gets selector branches from cache or parses them.
+   * prepare querySelector walker
    * @private
-   * @param {object} selector - The AST.
-   * @returns {Array.<Array.<object>>} The selector branches.
+   * @returns {object} - tree walker
    */
-  _getSelectorBranches = selector => {
-    if (this.#astCache.has(selector)) {
-      return this.#astCache.get(selector);
+  _prepareQuerySelectorWalker() {
+    this.#nodeWalker = this._createTreeWalker(this.#node);
+    this.#rootWalker = null;
+    return this.#nodeWalker;
+  }
+
+  /**
+   * collect nth child
+   * @private
+   * @param {object} anb - An+B options
+   * @param {number} anb.a - a
+   * @param {number} anb.b - b
+   * @param {boolean} [anb.reverse] - reverse order
+   * @param {object} [anb.selector] - AST
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _collectNthChild(anb, node, opt = {}) {
+    const { a, b, reverse, selector } = anb;
+    const { parentNode } = node;
+    const matched = new Set();
+    let selectorBranches;
+    if (selector) {
+      if (this.#astCache.has(selector)) {
+        selectorBranches = this.#astCache.get(selector);
+      } else {
+        const { branches } = walkAST(selector);
+        selectorBranches = branches;
+        this.#astCache.set(selector, selectorBranches);
+      }
+      const { branches } = walkAST(selector);
+      selectorBranches = branches;
     }
-    const { branches } = walkAST(selector);
-    this.#astCache.set(selector, branches);
-    return branches;
-  };
-
-  /**
-   * Gets the children of a node, optionally filtered by a selector.
-   * @private
-   * @param {object} parentNode - The parent element.
-   * @param {Array.<Array.<object>>} selectorBranches - The selector branches.
-   * @param {object} [opt] - Options.
-   * @returns {Array.<object>} An array of child nodes.
-   */
-  _getFilteredChildren = (parentNode, selectorBranches, opt = {}) => {
-    const children = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let childNode = walker.firstChild();
-    while (childNode) {
+    if (parentNode) {
+      const walker = this._createTreeWalker(parentNode, {
+        force: true
+      });
+      let refNode = walker.firstChild();
+      const selectorNodes = new Set();
+      let l = 0;
       if (selectorBranches) {
-        if (isVisible(childNode)) {
-          let isMatch = false;
-          const l = selectorBranches.length;
-          for (let i = 0; i < l; i++) {
-            const leaves = selectorBranches[i];
-            if (this._matchLeaves(leaves, childNode, opt)) {
-              isMatch = true;
-              break;
+        while (refNode) {
+          if (isVisible(refNode)) {
+            let bool;
+            for (const leaves of selectorBranches) {
+              bool = this._matchLeaves(leaves, refNode, opt);
+              if (!bool) {
+                break;
+              }
+            }
+            if (bool) {
+              selectorNodes.add(refNode);
             }
           }
-          if (isMatch) {
-            children.push(childNode);
-          }
+          l++;
+          refNode = walker.nextSibling();
         }
       } else {
-        children.push(childNode);
+        while (refNode) {
+          l++;
+          refNode = walker.nextSibling();
+        }
       }
-      childNode = walker.nextSibling();
-    }
-    return children;
-  };
-
-  /**
-   * Collects nth-child nodes.
-   * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} [anb.selector] - The AST.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _collectNthChild = (anb, node, opt = {}) => {
-    const { a, b, selector } = anb;
-    const { parentNode } = node;
-    if (!parentNode) {
-      const matchedNode = new Set();
-      if (node === this.#root && a * 1 + b * 1 === 1) {
-        if (selector) {
-          const selectorBranches = this._getSelectorBranches(selector);
-          const l = selectorBranches.length;
-          for (let i = 0; i < l; i++) {
-            const leaves = selectorBranches[i];
-            if (this._matchLeaves(leaves, node, opt)) {
-              matchedNode.add(node);
+      // :first-child, :last-child, :nth-child(b of S), :nth-last-child(b of S)
+      if (a === 0) {
+        if (b > 0 && b <= l) {
+          if (selectorNodes.size) {
+            refNode = traverseNode(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
+            let i = 0;
+            while (refNode) {
+              if (selectorNodes.has(refNode)) {
+                if (i === b - 1) {
+                  matched.add(refNode);
+                  break;
+                }
+                i++;
+              }
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
+              }
+            }
+          } else if (!selector) {
+            refNode = traverseNode(parentNode, walker);
+            if (reverse) {
+              refNode = walker.lastChild();
+            } else {
+              refNode = walker.firstChild();
+            }
+            let i = 0;
+            while (refNode) {
+              if (i === b - 1) {
+                matched.add(refNode);
+                break;
+              }
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
+              }
+              i++;
+            }
+          }
+        }
+        // :nth-child()
+      } else {
+        let nth = b - 1;
+        if (a > 0) {
+          while (nth < 0) {
+            nth += a;
+          }
+        }
+        if (nth >= 0 && nth < l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
+          let i = 0;
+          let j = a > 0 ? 0 : b - 1;
+          while (refNode) {
+            if (refNode && nth >= 0 && nth < l) {
+              if (selectorNodes.size) {
+                if (selectorNodes.has(refNode)) {
+                  if (j === nth) {
+                    matched.add(refNode);
+                    nth += a;
+                  }
+                  if (a > 0) {
+                    j++;
+                  } else {
+                    j--;
+                  }
+                }
+              } else if (i === nth) {
+                if (!selector) {
+                  matched.add(refNode);
+                }
+                nth += a;
+              }
+              if (reverse) {
+                refNode = walker.previousSibling();
+              } else {
+                refNode = walker.nextSibling();
+              }
+              i++;
+            } else {
               break;
             }
           }
-        } else {
-          matchedNode.add(node);
         }
       }
-      return matchedNode;
+      if (reverse && matched.size > 1) {
+        return new Set([...matched].toReversed());
+      }
+    } else if (node === this.#root && a + b === 1) {
+      if (selectorBranches) {
+        let bool;
+        for (const leaves of selectorBranches) {
+          bool = this._matchLeaves(leaves, node, opt);
+          if (bool) {
+            break;
+          }
+        }
+        if (bool) {
+          matched.add(node);
+        }
+      } else {
+        matched.add(node);
+      }
     }
-    const selectorBranches = selector
-      ? this._getSelectorBranches(selector)
-      : null;
-    const children = this._getFilteredChildren(
-      parentNode,
-      selectorBranches,
-      opt
-    );
-    const matchedNodes = filterNodesByAnB(children, anb);
-    return new Set(matchedNodes);
-  };
+    return matched;
+  }
 
   /**
-   * Collects nth-of-type nodes.
+   * collect nth of type
    * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} node - The Element node.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} anb - An+B options
+   * @param {number} anb.a - a
+   * @param {number} anb.b - b
+   * @param {boolean} [anb.reverse] - reverse order
+   * @param {object} node - Element node
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _collectNthOfType = (anb, node) => {
-    const { parentNode } = node;
-    if (!parentNode) {
-      if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
-        return new Set([node]);
+  _collectNthOfType(anb, node) {
+    const { a, b, reverse } = anb;
+    const { localName, namespaceURI, parentNode, prefix } = node;
+    const matched = new Set();
+    if (parentNode) {
+      const walker = this._createTreeWalker(parentNode, {
+        force: true
+      });
+      let refNode = traverseNode(parentNode, walker);
+      refNode = walker.firstChild();
+      let l = 0;
+      while (refNode) {
+        l++;
+        refNode = walker.nextSibling();
       }
-      return new Set();
-    }
-    const typedSiblings = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let sibling = walker.firstChild();
-    while (sibling) {
-      if (
-        sibling.localName === node.localName &&
-        sibling.namespaceURI === node.namespaceURI &&
-        sibling.prefix === node.prefix
-      ) {
-        typedSiblings.push(sibling);
+      // :first-of-type, :last-of-type
+      if (a === 0) {
+        if (b > 0 && b <= l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
+          let j = 0;
+          while (refNode) {
+            const {
+              localName: itemLocalName,
+              namespaceURI: itemNamespaceURI,
+              prefix: itemPrefix
+            } = refNode;
+            if (
+              itemLocalName === localName &&
+              itemPrefix === prefix &&
+              itemNamespaceURI === namespaceURI
+            ) {
+              if (j === b - 1) {
+                matched.add(refNode);
+                break;
+              }
+              j++;
+            }
+            if (reverse) {
+              refNode = walker.previousSibling();
+            } else {
+              refNode = walker.nextSibling();
+            }
+          }
+        }
+        // :nth-of-type()
+      } else {
+        let nth = b - 1;
+        if (a > 0) {
+          while (nth < 0) {
+            nth += a;
+          }
+        }
+        if (nth >= 0 && nth < l) {
+          refNode = traverseNode(parentNode, walker);
+          if (reverse) {
+            refNode = walker.lastChild();
+          } else {
+            refNode = walker.firstChild();
+          }
+          let j = a > 0 ? 0 : b - 1;
+          while (refNode) {
+            const {
+              localName: itemLocalName,
+              namespaceURI: itemNamespaceURI,
+              prefix: itemPrefix
+            } = refNode;
+            if (
+              itemLocalName === localName &&
+              itemPrefix === prefix &&
+              itemNamespaceURI === namespaceURI
+            ) {
+              if (j === nth) {
+                matched.add(refNode);
+                nth += a;
+              }
+              if (nth < 0 || nth >= l) {
+                break;
+              } else if (a > 0) {
+                j++;
+              } else {
+                j--;
+              }
+            }
+            if (reverse) {
+              refNode = walker.previousSibling();
+            } else {
+              refNode = walker.nextSibling();
+            }
+          }
+        }
       }
-      sibling = walker.nextSibling();
+      if (reverse && matched.size > 1) {
+        return new Set([...matched].toReversed());
+      }
+    } else if (node === this.#root && a + b === 1) {
+      matched.add(node);
     }
-    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
-    return new Set(matchedNodes);
-  };
+    return matched;
+  }
 
   /**
-   * Matches An+B.
+   * match An+B
    * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
-   * @param {string} nthName - The name of the nth pseudo-class.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} ast - AST
+   * @param {object} node - Element node
+   * @param {string} nthName - nth pseudo-class name
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchAnPlusB = (ast, node, nthName, opt = {}) => {
+  _matchAnPlusB(ast, node, nthName, opt = {}) {
     const {
       nth: { a, b, name: nthIdentName },
       selector
@@ -636,19 +753,18 @@ export class Finder {
       return nodes;
     }
     return new Set();
-  };
+  }
 
   /**
-   * Matches the :has() pseudo-class function.
+   * match :has() pseudo-class function
    * @private
-   * @param {Array.<object>} astLeaves - The AST leaves.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {boolean} The result.
+   * @param {Array.<object>} astLeaves - AST leaves
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {boolean} - result
    */
-  _matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
+  _matchHasPseudoFunc(astLeaves, node, opt = {}) {
     if (Array.isArray(astLeaves) && astLeaves.length) {
-      // Prepare a copy to avoid astLeaves being consumed.
       const leaves = [...astLeaves];
       const [leaf] = leaves;
       const { type: leafType } = leaf;
@@ -692,667 +808,127 @@ export class Finder {
       }
     }
     return false;
-  };
+  }
 
   /**
-   * Gets nth-of-type related pseudo-classes (:first-of-type, etc.).
+   * match logical pseudo-class functions - :has(), :is(), :not(), :where()
    * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {?object} The matched node or null.
+   * @param {object} astData - AST data
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {?object} - matched node
    */
-  _getNthOfTypePseudo = (astName, node) => {
-    switch (astName) {
-      case 'first-of-type': {
-        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
-        return first;
-      }
-      case 'last-of-type': {
-        const [last] = this._collectNthOfType(
-          { a: 0, b: 1, reverse: true },
-          node
-        );
-        return last;
-      }
-      // 'only-of-type' is handled by default.
-      default: {
-        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
-        if (first === node) {
-          const [last] = this._collectNthOfType(
-            { a: 0, b: 1, reverse: true },
-            node
-          );
-          if (last === node) {
-            return node;
-          }
-        }
-        return null;
-      }
-    }
-  };
-
-  /**
-   * Matches child-position pseudo-classes (:first-child, :last-child,
-   * :only-child).
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchChildPositionPseudo = (astName, node) => {
-    if (node === this.#root) {
-      return true;
-    }
-    const { parentNode } = node;
-    switch (astName) {
-      case 'first-child': {
-        return node === parentNode.firstElementChild;
-      }
-      case 'last-child': {
-        return node === parentNode.lastElementChild;
-      }
-      // 'only-child' is handled by default.
-      default: {
-        return (
-          node === parentNode.firstElementChild &&
-          node === parentNode.lastElementChild
-        );
-      }
-    }
-  };
-
-  /**
-   * Matches link-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchLinkPseudo = (astName, node) => {
-    const { localName } = node;
-    const isLinkElement =
-      (localName === 'a' || localName === 'area') && node.hasAttribute('href');
-    if (!isLinkElement) {
-      return false;
-    }
-    switch (astName) {
-      case 'local-link': {
-        const { href, origin, pathname } = this.#documentURL;
-        const attrURL = new URL(node.getAttribute('href'), href);
-        return attrURL.origin === origin && attrURL.pathname === pathname;
-      }
-      case 'visited': {
-        // Prevent fingerprinting; never match.
-        return false;
-      }
-      // 'any-link' and 'link' are handled by default.
-      default: {
-        return true;
-      }
-    }
-  };
-
-  /**
-   * Matches focus-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchFocusPseudo = (astName, node) => {
-    switch (astName) {
-      case 'focus-visible': {
-        if (node === this.#document.activeElement && isFocusableArea(node)) {
-          let bool = false;
-          if (isFocusVisible(node)) {
-            bool = true;
-          } else if (this.#focus) {
-            const { relatedTarget, target: focusTarget } = this.#focus;
-            if (focusTarget === node) {
-              if (isFocusVisible(relatedTarget)) {
-                bool = true;
-              } else if (this.#event) {
-                const {
-                  key: eventKey,
-                  target: eventTarget,
-                  type: eventType
-                } = this.#event;
-                // Event is irrelevant if its target is the relatedTarget.
-                if (eventTarget === relatedTarget) {
-                  if (this.#lastFocusVisible === null) {
-                    bool = true;
-                  } else if (focusTarget === this.#lastFocusVisible) {
-                    bool = true;
-                  }
-                } else if (eventKey === 'Tab') {
-                  if (
-                    (eventType === 'keydown' && eventTarget !== node) ||
-                    (eventType === 'keyup' && eventTarget === node)
-                  ) {
-                    if (eventTarget === focusTarget) {
-                      if (this.#lastFocusVisible === null) {
-                        bool = true;
-                      } else if (
-                        eventTarget === this.#lastFocusVisible &&
-                        relatedTarget === null
-                      ) {
-                        bool = true;
-                      }
-                    } else {
-                      bool = true;
-                    }
-                  }
-                } else if (eventKey) {
-                  if (
-                    (eventType === 'keydown' || eventType === 'keyup') &&
-                    eventTarget === node
-                  ) {
-                    bool = true;
-                  }
-                }
-              } else if (
-                relatedTarget === null ||
-                relatedTarget === this.#lastFocusVisible
-              ) {
-                bool = true;
-              }
-            }
-          }
-          if (bool) {
-            this.#lastFocusVisible = node;
-            return true;
-          } else if (this.#lastFocusVisible === node) {
-            this.#lastFocusVisible = null;
-          }
-        }
-        return false;
-      }
-      case 'focus-within': {
-        let current = this.#document.activeElement;
-        if (isFocusableArea(current)) {
-          while (current) {
-            if (current === node) {
-              return true;
-            }
-            current = current.parentNode;
-          }
-        }
-        return false;
-      }
-      // 'focus' is handled by default.
-      default: {
-        return node === this.#document.activeElement && isFocusableArea(node);
-      }
-    }
-  };
-
-  /**
-   * Matches :hover and :active pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchHoverActivePseudo = (astName, node) => {
-    const { target, type, buttons } = this.#event ?? {};
-    if (!target) {
-      return false;
-    }
-    if (astName === 'hover') {
-      return (
-        /^(?:click|mouse(?:down|over|up))$/.test(type) && node.contains(target)
-      );
-    }
-    return type === 'mousedown' && buttons & BIT_01 && node.contains(target);
-  };
-
-  /**
-   * Matches a selector branch backwards from a given node.
-   * @private
-   * @param {Array.<object>} branch - The AST branch.
-   * @param {object} node - The node to start matching from.
-   * @param {object} opt - Options.
-   * @returns {boolean} True if the entire branch matches.
-   */
-  _matchBranchBackwards = (branch, node, opt) => {
-    let currentNodes = new Set([node]);
-    // Iterate from the second to last twig to the first.
-    for (let i = branch.length - 2; i >= 0; i--) {
-      const twig = branch[i];
-      const matchedNodes = new Set();
-      opt.dir = DIR_PREV;
-      for (const currentNode of currentNodes) {
-        const result = this._matchCombinator(twig, currentNode, opt);
-        if (result.size) {
-          const resultArr = [...result];
-          matchedNodes.add(...resultArr);
-        }
-      }
-      if (matchedNodes.size === 0) {
-        return false;
-      }
-      currentNodes = matchedNodes;
-    }
-    // The entire selector chain matched.
-    return true;
-  };
-
-  /**
-   * Evaluates the :has() pseudo-class.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _evaluateHasPseudo = (astData, node, opt) => {
-    const { branches } = astData;
-    let bool = false;
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const leaves = branches[i];
-      bool = this._matchHasPseudoFunc(leaves, node, opt);
-      if (bool) {
-        break;
-      }
-    }
-    if (!bool) {
-      return null;
-    }
-    if (
-      (opt.isShadowRoot || this.#shadow) &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE
-    ) {
-      return this.#verifyShadowHost ? node : null;
-    }
-    return node;
-  };
-
-  /**
-   * Evaluates :is(), :not(), and :where() pseudo-classes.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _evaluateIsWhereNotPseudo = (astData, node, opt) => {
+  _matchLogicalPseudoFunc(astData, node, opt = {}) {
     const { astName, branches, twigBranches } = astData;
     const isShadowRoot =
       (opt.isShadowRoot || this.#shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
-    if (isShadowRoot && !isValidShadowHostSelector(astName, branches)) {
-      return null;
-    }
-    opt.forgive = astName === 'is' || astName === 'where';
-    let branchMatched = false;
-    const l = twigBranches.length;
-    for (let i = 0; i < l; i++) {
-      const branch = twigBranches[i];
-      const { leaves: lastTwigLeaves } = branch[branch.length - 1];
-      const initialMatch = this._matchLeaves(lastTwigLeaves, node, opt);
-      if (!initialMatch) {
-        branchMatched = false;
-      } else if (branch.length === 1) {
-        branchMatched = true;
-        break;
-      } else {
-        // If there are combinators, match backwards.
-        branchMatched = this._matchBranchBackwards(branch, node, opt);
-        if (branchMatched) {
+    if (astName === 'has') {
+      let bool;
+      for (const leaves of branches) {
+        bool = this._matchHasPseudoFunc(leaves, node, opt);
+        if (bool) {
           break;
         }
       }
-    }
-    if (astName === 'not') {
-      return branchMatched ? null : node;
-    }
-    return branchMatched ? node : null;
-  };
-
-  /**
-   * Matches logical pseudo-class functions.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
-    const { astName } = astData;
-    // Handle :has().
-    if (astName === 'has') {
-      return this._evaluateHasPseudo(astData, node, opt);
-    }
-    // Handle :is(), :not(), :where().
-    return this._evaluateIsWhereNotPseudo(astData, node, opt);
-  };
-
-  /**
-   * Matches form-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchFormPseudo = (astName, node) => {
-    const { localName } = node;
-    switch (astName) {
-      case 'checked': {
-        const attrType = node.getAttribute('type');
-        if (
-          node.checked &&
-          localName === 'input' &&
-          (attrType === 'checkbox' || attrType === 'radio')
-        ) {
-          return true;
-        } else if (node.selected && localName === 'option') {
-          return true;
+      if (bool) {
+        if (isShadowRoot) {
+          if (this.#verifyShadowHost) {
+            return node;
+          }
+        } else {
+          return node;
         }
-        return false;
       }
-      case 'default': {
-        // Default submit buttons.
-        const attrType = node.getAttribute('type');
-        if (
-          (localName === 'button' &&
-            !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
-          (localName === 'input' &&
-            node.hasAttribute('type') &&
-            KEYS_INPUT_SUBMIT.has(attrType))
-        ) {
-          let form = node.parentNode;
-          while (form) {
-            if (form.localName === 'form') {
+    } else {
+      // check for invalid shadow root
+      if (isShadowRoot) {
+        let invalid;
+        for (const branch of branches) {
+          if (branch.length > 1) {
+            invalid = true;
+            break;
+          } else if (astName === 'not') {
+            const [{ type: childAstType }] = branch;
+            if (childAstType !== PS_CLASS_SELECTOR) {
+              invalid = true;
               break;
             }
-            form = form.parentNode;
           }
-          if (form) {
-            const walker = this._createTreeWalker(form);
-            let refNode = traverseNode(form, walker);
-            refNode = walker.firstChild();
-            while (refNode) {
-              const nodeName = refNode.localName;
-              const nodeAttrType = refNode.getAttribute('type');
-              let m;
-              if (nodeName === 'button') {
-                m = !(
-                  refNode.hasAttribute('type') &&
-                  KEYS_INPUT_RESET.has(nodeAttrType)
-                );
-              } else if (nodeName === 'input') {
-                m =
-                  refNode.hasAttribute('type') &&
-                  KEYS_INPUT_SUBMIT.has(nodeAttrType);
+        }
+        if (invalid) {
+          return null;
+        }
+      }
+      opt.forgive = astName === 'is' || astName === 'where';
+      const l = twigBranches.length;
+      let bool;
+      for (let i = 0; i < l; i++) {
+        const branch = twigBranches[i];
+        const lastIndex = branch.length - 1;
+        const { leaves } = branch[lastIndex];
+        bool = this._matchLeaves(leaves, node, opt);
+        if (bool && lastIndex > 0) {
+          let nextNodes = new Set([node]);
+          for (let j = lastIndex - 1; j >= 0; j--) {
+            const twig = branch[j];
+            const arr = [];
+            opt.dir = DIR_PREV;
+            for (const nextNode of nextNodes) {
+              const m = this._matchCombinator(twig, nextNode, opt);
+              if (m.size) {
+                arr.push(...m);
               }
-              if (m) {
-                return refNode === node;
-              }
-              refNode = walker.nextNode();
             }
-          }
-          // Default checked elements.
-        } else if (
-          localName === 'input' &&
-          node.hasAttribute('type') &&
-          KEYS_INPUT_CHECK.has(attrType) &&
-          node.hasAttribute('checked')
-        ) {
-          return true;
-          // Default selected option.
-        } else if (localName === 'option' && node.hasAttribute('selected')) {
-          return true;
-        }
-        return false;
-      }
-      case 'disabled':
-      case 'enabled': {
-        return matchDisabledEnabledPseudo(astName, node);
-      }
-      case 'in-range':
-      case 'out-of-range': {
-        const attrType = node.getAttribute('type');
-        if (
-          localName === 'input' &&
-          !(node.readonly || node.hasAttribute('readonly')) &&
-          !(node.disabled || node.hasAttribute('disabled')) &&
-          KEYS_INPUT_RANGE.has(attrType)
-        ) {
-          const flowed =
-            node.validity.rangeUnderflow || node.validity.rangeOverflow;
-          if (astName === 'out-of-range' && flowed) {
-            return true;
-          } else if (
-            astName === 'in-range' &&
-            !flowed &&
-            (node.hasAttribute('min') ||
-              node.hasAttribute('max') ||
-              attrType === 'range')
-          ) {
-            return true;
-          }
-        }
-        return false;
-      }
-      case 'indeterminate': {
-        if (
-          (node.indeterminate &&
-            localName === 'input' &&
-            node.type === 'checkbox') ||
-          (localName === 'progress' && !node.hasAttribute('value'))
-        ) {
-          return true;
-        } else if (
-          localName === 'input' &&
-          node.type === 'radio' &&
-          !node.hasAttribute('checked')
-        ) {
-          const nodeName = node.name;
-          let parent = node.parentNode;
-          while (parent) {
-            if (parent.localName === 'form') {
+            if (arr.length) {
+              if (j === 0) {
+                bool = true;
+              } else {
+                nextNodes = new Set(arr);
+              }
+            } else {
+              bool = false;
               break;
             }
-            parent = parent.parentNode;
           }
-          if (!parent) {
-            parent = this.#document.documentElement;
-          }
-          const walker = this._createTreeWalker(parent);
-          let refNode = traverseNode(parent, walker);
-          refNode = walker.firstChild();
-          let checked;
-          while (refNode) {
-            if (
-              refNode.localName === 'input' &&
-              refNode.getAttribute('type') === 'radio'
-            ) {
-              if (refNode.hasAttribute('name')) {
-                if (refNode.getAttribute('name') === nodeName) {
-                  checked = !!refNode.checked;
-                }
-              } else {
-                checked = !!refNode.checked;
-              }
-              if (checked) {
-                break;
-              }
-            }
-            refNode = walker.nextNode();
-          }
-          return !checked;
         }
-        return false;
+        if (bool) {
+          break;
+        }
       }
-      case 'invalid':
-      case 'valid': {
-        if (KEYS_FORM_PS_VALID.has(localName)) {
-          let valid;
-          if (node.checkValidity()) {
-            if (node.maxLength >= 0) {
-              if (node.maxLength >= node.value.length) {
-                valid = true;
-              }
-            } else {
-              valid = true;
-            }
-          }
-          if (valid) {
-            return astName === 'valid';
-          }
-          return astName === 'invalid';
-        } else if (localName === 'fieldset') {
-          const walker = this._createTreeWalker(node);
-          let refNode = traverseNode(node, walker);
-          refNode = walker.firstChild();
-          let valid;
-          if (!refNode) {
-            valid = true;
-          } else {
-            while (refNode) {
-              if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-                if (refNode.checkValidity()) {
-                  if (refNode.maxLength >= 0) {
-                    valid = refNode.maxLength >= refNode.value.length;
-                  } else {
-                    valid = true;
-                  }
-                } else {
-                  valid = false;
-                }
-                if (!valid) {
-                  break;
-                }
-              }
-              refNode = walker.nextNode();
-            }
-          }
-          if (valid) {
-            return astName === 'valid';
-          }
-          return astName === 'invalid';
+      if (astName === 'not') {
+        if (bool) {
+          return null;
         }
-        return false;
-      }
-      case 'optional':
-      case 'required': {
-        let required;
-        let optional;
-        if (localName === 'select' || localName === 'textarea') {
-          if (node.required || node.hasAttribute('required')) {
-            required = true;
-          } else {
-            optional = true;
-          }
-        } else if (localName === 'input') {
-          if (node.hasAttribute('type')) {
-            const attrType = node.getAttribute('type');
-            if (KEYS_INPUT_REQUIRED.has(attrType)) {
-              if (node.required || node.hasAttribute('required')) {
-                required = true;
-              } else {
-                optional = true;
-              }
-            } else {
-              optional = true;
-            }
-          } else if (node.required || node.hasAttribute('required')) {
-            required = true;
-          } else {
-            optional = true;
-          }
-        }
-        if (astName === 'required' && required) {
-          return true;
-        } else if (astName === 'optional' && optional) {
-          return true;
-        }
-        return false;
-      }
-      case 'placeholder-shown': {
-        let placeholder;
-        if (node.placeholder) {
-          placeholder = node.placeholder;
-        } else if (node.hasAttribute('placeholder')) {
-          placeholder = node.getAttribute('placeholder');
-        }
-        if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
-          let targetNode;
-          if (localName === 'textarea') {
-            targetNode = node;
-          } else if (localName === 'input') {
-            if (node.hasAttribute('type')) {
-              if (KEYS_INPUT_PLACEHOLDER.has(node.getAttribute('type'))) {
-                targetNode = node;
-              }
-            } else {
-              targetNode = node;
-            }
-          }
-          if (targetNode && node.value === '') {
-            return true;
-          }
-        }
-        return false;
-      }
-      case 'read-only':
-      case 'read-write': {
-        return matchReadOnlyWritePseudo(astName, node);
-      }
-      default: {
-        return false;
+        return node;
+      } else if (bool) {
+        return node;
       }
     }
-  };
+    return null;
+  }
 
   /**
-   * Matches UI state pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchUIStatePseudo = (astName, node) => {
-    const { localName } = node;
-    switch (astName) {
-      case 'popover-open': {
-        return node.popover && isVisible(node);
-      }
-      case 'closed':
-      case 'open':
-      default: {
-        if (localName === 'details' || localName === 'dialog') {
-          if (node.hasAttribute('open')) {
-            return astName === 'open';
-          }
-          return astName === 'closed';
-        }
-        return false;
-      }
-    }
-  };
-
-  /**
-   * Matches a pseudo-class selector.
+   * match pseudo-class selector
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} ast - AST
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchPseudoClassSelector = (ast, node, opt = {}) => {
+  _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
-    const { localName } = node;
+    const { localName, parentNode } = node;
     const { forgive, warn = this.#warn } = opt;
     const matched = new Set();
-    /* :has(), :is(), :not(), :where() */
-    if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
+    // :has(), :is(), :not(), :where()
+    if (Array.isArray(astChildren) && KEY_LOGICAL.includes(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
-        const msg = `Invalid selector ${css}`;
-        return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+        return this.onError(
+          new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+        );
       }
       let astData;
       if (this.#astCache.has(ast)) {
@@ -1360,12 +936,18 @@ export class Finder {
       } else {
         const { branches } = walkAST(ast);
         if (astName === 'has') {
-          // Check for nested :has().
-          let forgiven = false;
-          const l = astChildren.length;
-          for (let i = 0; i < l; i++) {
-            const child = astChildren[i];
-            const item = findAST(child, findLogicalWithNestedHas);
+          // check for nested :has()
+          let forgiven;
+          for (const child of astChildren) {
+            const item = findAST(child, leaf => {
+              if (
+                KEY_LOGICAL.includes(leaf.name) &&
+                findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')
+              ) {
+                return leaf;
+              }
+              return null;
+            });
             if (item) {
               const itemName = item.name;
               if (itemName === 'is' || itemName === 'where') {
@@ -1373,9 +955,11 @@ export class Finder {
                 break;
               } else {
                 const css = generateCSS(ast);
-                const msg = `Invalid selector ${css}`;
                 return this.onError(
-                  generateException(msg, SYNTAX_ERR, this.#window)
+                  new this.#window.DOMException(
+                    `Invalid selector ${css}`,
+                    SYNTAX_ERR
+                  )
                 );
               }
             }
@@ -1389,9 +973,7 @@ export class Finder {
           };
         } else {
           const twigBranches = [];
-          const l = branches.length;
-          for (let i = 0; i < l; i++) {
-            const [...leaves] = branches[i];
+          for (const [...leaves] of branches) {
             const branch = [];
             const leavesSet = new Set();
             let item = leaves.shift();
@@ -1431,24 +1013,28 @@ export class Finder {
         matched.add(res);
       }
     } else if (Array.isArray(astChildren)) {
-      // Functional pseudo-classes like :nth-child().
+      // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
-          const msg = `Invalid selector ${css}`;
-          return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+          return this.onError(
+            new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+          );
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
       } else {
         switch (astName) {
+          // :dir()
           case 'dir': {
             if (astChildren.length !== 1) {
               const css = generateCSS(ast);
-              const msg = `Invalid selector ${css}`;
               return this.onError(
-                generateException(msg, SYNTAX_ERR, this.#window)
+                new this.#window.DOMException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR
+                )
               );
             }
             const [astChild] = astChildren;
@@ -1458,18 +1044,19 @@ export class Finder {
             }
             break;
           }
+          // :lang()
           case 'lang': {
             if (!astChildren.length) {
               const css = generateCSS(ast);
-              const msg = `Invalid selector ${css}`;
               return this.onError(
-                generateException(msg, SYNTAX_ERR, this.#window)
+                new this.#window.DOMException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR
+                )
               );
             }
             let bool;
-            const l = astChildren.length;
-            for (let i = 0; i < l; i++) {
-              const astChild = astChildren[i];
+            for (const astChild of astChildren) {
               bool = matchLanguagePseudoClass(astChild, node);
               if (bool) {
                 break;
@@ -1480,6 +1067,7 @@ export class Finder {
             }
             break;
           }
+          // :state()
           case 'state': {
             if (isCustomElement(node)) {
               const [{ value: stateValue }] = astChildren;
@@ -1505,1202 +1093,1630 @@ export class Finder {
           case 'nth-col':
           case 'nth-last-col': {
             if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}()`;
               this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
+                new this.#window.DOMException(
+                  `Unsupported pseudo-class :${astName}()`,
+                  NOT_SUPPORTED_ERR
+                )
               );
             }
             break;
           }
-          // Ignore :host and :host-context in this context.
           case 'host':
           case 'host-context': {
+            // ignore
             break;
           }
-          // Deprecated in CSS Selectors 3.
+          // dropped from CSS Selectors 3
           case 'contains': {
             if (warn) {
-              const msg = `Unknown pseudo-class :${astName}()`;
               this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
+                new this.#window.DOMException(
+                  `Unknown pseudo-class :${astName}()`,
+                  NOT_SUPPORTED_ERR
+                )
               );
             }
             break;
           }
           default: {
             if (!forgive) {
-              const msg = `Unknown pseudo-class :${astName}()`;
-              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+              this.onError(
+                new this.#window.DOMException(
+                  `Unknown pseudo-class :${astName}()`,
+                  SYNTAX_ERR
+                )
+              );
             }
           }
         }
       }
     } else {
-      let isMatch = false;
-      if (KEYS_PS_FORM.has(astName)) {
-        isMatch = this._matchFormPseudo(astName, node);
-      } else if (KEYS_PS_UI.has(astName)) {
-        isMatch = this._matchUIStatePseudo(astName, node);
-      } else {
-        switch (astName) {
-          case 'any-link':
-          case 'link':
-          case 'local-link':
-          case 'visited': {
-            if (this._matchLinkPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'hover':
-          case 'active': {
-            if (this._matchHoverActivePseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'target': {
-            const { hash } = this.#documentURL;
-            if (
-              node.id &&
-              hash === `#${node.id}` &&
-              this.#document.contains(node)
-            ) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'target-within': {
-            const { hash } = this.#documentURL;
-            if (hash) {
-              const id = hash.replace(/^#/, '');
-              let current = this.#document.getElementById(id);
-              while (current) {
-                if (current === node) {
-                  isMatch = true;
-                  break;
-                }
-                current = current.parentNode;
-              }
-            }
-            break;
-          }
-          case 'scope': {
-            if (this.#node.nodeType === ELEMENT_NODE) {
-              if (!this.#shadow && node === this.#node) {
-                isMatch = true;
-              }
-            } else if (node === this.#document.documentElement) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'focus':
-          case 'focus-visible':
-          case 'focus-within': {
-            if (this._matchFocusPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'root': {
-            if (node === this.#document.documentElement) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'empty': {
-            if (node.hasChildNodes()) {
-              const walker = this._createTreeWalker(node, {
-                force: true,
-                whatToShow: SHOW_ALL
-              });
-              let refNode = walker.firstChild();
-              let bool;
-              while (refNode) {
-                bool =
-                  refNode.nodeType !== ELEMENT_NODE &&
-                  refNode.nodeType !== TEXT_NODE;
-                if (!bool) {
-                  break;
-                }
-                refNode = walker.nextSibling();
-              }
-              if (bool) {
-                isMatch = true;
-              }
-            } else {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'first-child':
-          case 'last-child':
-          case 'only-child': {
-            if (this._matchChildPositionPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'first-of-type':
-          case 'last-of-type':
-          case 'only-of-type': {
-            if (node === this.#root) {
-              matched.add(node);
-            } else {
-              const matchedNode = this._getNthOfTypePseudo(astName, node);
-              if (matchedNode) {
-                matched.add(matchedNode);
-              }
-            }
-            break;
-          }
-          case 'defined': {
-            if (node.hasAttribute('is') || localName.includes('-')) {
-              if (isCustomElement(node)) {
-                isMatch = true;
-              }
-              // NOTE: MathMLElement is not implemented in jsdom.
-            } else if (
-              node instanceof this.#window.HTMLElement ||
-              node instanceof this.#window.SVGElement
-            ) {
-              isMatch = true;
-            }
-            break;
-          }
-          case 'host':
-          case 'host-context': {
-            // This is handled in _matchSelectorForShadowRoot.
-            break;
-          }
-          // Legacy pseudo-elements.
-          case 'after':
-          case 'before':
-          case 'first-letter':
-          case 'first-line': {
-            if (warn) {
-              const msg = `Unsupported pseudo-element ::${astName}`;
-              this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
-              );
-            }
-            break;
-          }
-          // Unsupported pseudo-classes.
-          case 'autofill':
-          case 'blank':
-          case 'buffering':
-          case 'current':
-          case 'fullscreen':
-          case 'future':
-          case 'has-slotted':
-          case 'modal':
-          case 'muted':
-          case 'past':
-          case 'paused':
-          case 'picture-in-picture':
-          case 'playing':
-          case 'seeking':
-          case 'stalled':
-          case 'user-invalid':
-          case 'user-valid':
-          case 'volume-locked':
-          case '-webkit-autofill': {
-            if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}`;
-              this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
-              );
-            }
-            break;
-          }
-          default: {
-            if (astName.startsWith('-webkit-')) {
-              if (warn) {
-                const msg = `Unsupported pseudo-class :${astName}`;
-                this.onError(
-                  generateException(msg, NOT_SUPPORTED_ERR, this.#window)
-                );
-              }
-            } else if (!forgive) {
-              const msg = `Unknown pseudo-class :${astName}`;
-              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-            }
-          }
-        }
-      }
-      if (isMatch) {
-        matched.add(node);
-      }
-    }
-    return matched;
-  };
-
-  /**
-   * Evaluates the :host() pseudo-class.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
-   * @returns {boolean} True if matched.
-   */
-  _evaluateHostPseudo = (leaves, host, ast) => {
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      if (leaf.type === COMBINATOR) {
-        const css = generateCSS(ast);
-        const msg = `Invalid selector ${css}`;
-        this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-        return false;
-      }
-      if (!this._matchSelector(leaf, host).has(host)) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  /**
-   * Evaluates the :host-context() pseudo-class.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
-   * @returns {boolean} True if matched.
-   */
-  _evaluateHostContextPseudo = (leaves, host, ast) => {
-    let parent = host;
-    while (parent) {
-      let bool;
-      const l = leaves.length;
-      for (let i = 0; i < l; i++) {
-        const leaf = leaves[i];
-        if (leaf.type === COMBINATOR) {
-          const css = generateCSS(ast);
-          const msg = `Invalid selector ${css}`;
-          this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-          return false;
-        }
-        bool = this._matchSelector(leaf, parent).has(parent);
-        if (!bool) {
-          break;
-        }
-      }
-      if (bool) {
-        return true;
-      }
-      parent = parent.parentNode;
-    }
-    return false;
-  };
-
-  /**
-   * Matches shadow host pseudo-classes.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
-   * @returns {?object} The matched node.
-   */
-  _matchShadowHostPseudoClass = (ast, node) => {
-    const { children: astChildren, name: astName } = ast;
-    // Handle simple pseudo-class (no arguments).
-    if (!Array.isArray(astChildren)) {
-      if (astName === 'host') {
-        return node;
-      }
-      const msg = `Invalid selector :${astName}`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-    }
-    // Handle functional pseudo-class like :host(...).
-    if (astName !== 'host' && astName !== 'host-context') {
-      const msg = `Invalid selector :${astName}()`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-    }
-    if (astChildren.length !== 1) {
-      const css = generateCSS(ast);
-      const msg = `Invalid selector ${css}`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-    }
-    const { host } = node;
-    const { branches } = walkAST(astChildren[0]);
-    const [branch] = branches;
-    const [...leaves] = branch;
-    if (astName === 'host') {
-      const isMatch = this._evaluateHostPseudo(leaves, host, ast);
-      return isMatch ? node : null;
-    }
-    // astName === 'host-context'.
-    const isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
-    return isMatch ? node : null;
-  };
-
-  /**
-   * Matches a selector for element nodes.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchSelectorForElement = (ast, node, opt = {}) => {
-    const { type: astType } = ast;
-    const astName = unescapeSelector(ast.name);
-    const matched = new Set();
-    switch (astType) {
-      case ATTR_SELECTOR: {
-        if (matchAttributeSelector(ast, node, opt)) {
-          matched.add(node);
-        }
-        break;
-      }
-      case ID_SELECTOR: {
-        if (node.id === astName) {
-          matched.add(node);
-        }
-        break;
-      }
-      case CLASS_SELECTOR: {
-        if (node.classList.contains(astName)) {
-          matched.add(node);
-        }
-        break;
-      }
-      case PS_CLASS_SELECTOR: {
-        return this._matchPseudoClassSelector(ast, node, opt);
-      }
-      case TYPE_SELECTOR: {
-        if (matchTypeSelector(ast, node, opt)) {
-          matched.add(node);
-        }
-        break;
-      }
-      case PS_ELEMENT_SELECTOR:
-      default: {
-        try {
-          if (opt.check) {
-            const css = generateCSS(ast);
-            this.#pseudoElement.push(css);
+      switch (astName) {
+        case 'any-link':
+        case 'link': {
+          if (
+            (localName === 'a' || localName === 'area') &&
+            node.hasAttribute('href')
+          ) {
             matched.add(node);
-          } else {
-            matchPseudoElementSelector(astName, astType, opt);
           }
-        } catch (e) {
-          this.onError(e);
-        }
-      }
-    }
-    return matched;
-  };
-
-  /**
-   * Matches a selector for a shadow root.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchSelectorForShadowRoot = (ast, node, opt = {}) => {
-    const { name: astName } = ast;
-    const matched = new Set();
-    if (KEYS_LOGICAL.has(astName)) {
-      opt.isShadowRoot = true;
-      return this._matchPseudoClassSelector(ast, node, opt);
-    } else if (astName === 'host' || astName === 'host-context') {
-      const res = this._matchShadowHostPseudoClass(ast, node, opt);
-      if (res) {
-        this.#verifyShadowHost = true;
-        matched.add(res);
-      }
-    }
-    return matched;
-  };
-
-  /**
-   * Matches a selector.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Document, DocumentFragment, or Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchSelector = (ast, node, opt = {}) => {
-    if (node.nodeType === ELEMENT_NODE) {
-      return this._matchSelectorForElement(ast, node, opt);
-    }
-    if (
-      this.#shadow &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE &&
-      ast.type === PS_CLASS_SELECTOR
-    ) {
-      return this._matchSelectorForShadowRoot(ast, node, opt);
-    }
-    return new Set();
-  };
-
-  /**
-   * Matches leaves.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} node - The node.
-   * @param {object} [opt] - Options.
-   * @returns {boolean} The result.
-   */
-  _matchLeaves = (leaves, node, opt = {}) => {
-    const results = this.#invalidate ? this.#invalidateResults : this.#results;
-    let result = results.get(leaves);
-    if (result && result.has(node)) {
-      const { matched } = result.get(node);
-      return matched;
-    }
-    let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-      cacheable = false;
-    }
-    let bool;
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      switch (leaf.type) {
-        case ATTR_SELECTOR:
-        case ID_SELECTOR: {
-          cacheable = false;
           break;
         }
-        case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
-            cacheable = false;
+        case 'local-link': {
+          if (
+            (localName === 'a' || localName === 'area') &&
+            node.hasAttribute('href')
+          ) {
+            const { href, origin, pathname } = new URL(this.#document.URL);
+            const attrURL = new URL(node.getAttribute('href'), href);
+            if (attrURL.origin === origin && attrURL.pathname === pathname) {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'visited': {
+          // prevent fingerprinting
+          break;
+        }
+        case 'hover': {
+          const { target, type } = this.#event ?? {};
+          if (
+            /^(?:click|mouse(?:down|over|up))$/.test(type) &&
+            node.contains(target)
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'active': {
+          const { buttons, target, type } = this.#event ?? {};
+          if (
+            type === 'mousedown' &&
+            buttons & BIT_01 &&
+            node.contains(target)
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'target': {
+          const { hash } = new URL(this.#document.URL);
+          if (
+            node.id &&
+            hash === `#${node.id}` &&
+            this.#document.contains(node)
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'target-within': {
+          const { hash } = new URL(this.#document.URL);
+          if (hash) {
+            const id = hash.replace(/^#/, '');
+            let current = this.#document.getElementById(id);
+            while (current) {
+              if (current === node) {
+                matched.add(node);
+                break;
+              }
+              current = current.parentNode;
+            }
+          }
+          break;
+        }
+        case 'scope': {
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            if (!this.#shadow && node === this.#node) {
+              matched.add(node);
+            }
+          } else if (node === this.#document.documentElement) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'focus': {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'focus-visible': {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
+            let bool;
+            if (isFocusVisible(node)) {
+              bool = true;
+            } else if (this.#focus) {
+              const { relatedTarget, target: focusTarget } = this.#focus;
+              if (focusTarget === node) {
+                if (isFocusVisible(relatedTarget)) {
+                  bool = true;
+                } else if (this.#event) {
+                  const {
+                    key: eventKey,
+                    target: eventTarget,
+                    type: eventType
+                  } = this.#event;
+                  // this.#event is irrelevant if eventTarget === relatedTarget
+                  if (eventTarget === relatedTarget) {
+                    if (this.#lastFocusVisible === null) {
+                      bool = true;
+                    } else if (focusTarget === this.#lastFocusVisible) {
+                      bool = true;
+                    }
+                  } else if (eventKey === 'Tab') {
+                    if (
+                      (eventType === 'keydown' && eventTarget !== node) ||
+                      (eventType === 'keyup' && eventTarget === node)
+                    ) {
+                      if (eventTarget === focusTarget) {
+                        if (this.#lastFocusVisible === null) {
+                          bool = true;
+                        } else if (
+                          eventTarget === this.#lastFocusVisible &&
+                          relatedTarget === null
+                        ) {
+                          bool = true;
+                        }
+                      } else {
+                        bool = true;
+                      }
+                    }
+                  } else if (eventKey) {
+                    if (
+                      (eventType === 'keydown' || eventType === 'keyup') &&
+                      eventTarget === node
+                    ) {
+                      bool = true;
+                    }
+                  }
+                } else if (
+                  relatedTarget === null ||
+                  relatedTarget === this.#lastFocusVisible
+                ) {
+                  bool = true;
+                }
+              }
+            }
+            if (bool) {
+              this.#lastFocusVisible = node;
+              matched.add(node);
+            } else if (this.#lastFocusVisible === node) {
+              this.#lastFocusVisible = null;
+            }
+          }
+          break;
+        }
+        case 'focus-within': {
+          let bool;
+          let current = this.#document.activeElement;
+          if (isFocusableArea(current)) {
+            while (current) {
+              if (current === node) {
+                bool = true;
+                break;
+              }
+              current = current.parentNode;
+            }
+          }
+          if (bool) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'open':
+        case 'closed': {
+          if (localName === 'details' || localName === 'dialog') {
+            if (node.hasAttribute('open')) {
+              if (astName === 'open') {
+                matched.add(node);
+              }
+            } else if (astName === 'closed') {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'disabled':
+        case 'enabled': {
+          const keys = [...KEY_FORM_FOCUS, 'fieldset', 'optgroup', 'option'];
+          if (
+            keys.includes(localName) ||
+            isCustomElement(node, { formAssociated: true })
+          ) {
+            let disabled;
+            if (node.disabled || node.hasAttribute('disabled')) {
+              disabled = true;
+            } else if (node.localName === 'option') {
+              if (
+                parentNode.localName === 'optgroup' &&
+                (parentNode.disabled || parentNode.hasAttribute('disabled'))
+              ) {
+                disabled = true;
+              }
+            } else if (node.localName !== 'optgroup') {
+              let parent = parentNode;
+              while (parent) {
+                if (
+                  parent.localName === 'fieldset' &&
+                  (parent.disabled || parent.hasAttribute('disabled'))
+                ) {
+                  let refNode = parent.firstElementChild;
+                  while (refNode) {
+                    if (refNode.localName === 'legend') {
+                      break;
+                    }
+                    refNode = refNode.nextElementSibling;
+                  }
+                  if (refNode) {
+                    if (!refNode.contains(node)) {
+                      disabled = true;
+                    }
+                  } else {
+                    disabled = true;
+                  }
+                  break;
+                } else if (parent.localName === 'form') {
+                  break;
+                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
+                  if (parent.parentNode.localName === 'form') {
+                    break;
+                  } else {
+                    parent = parent.parentNode;
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+            if (disabled) {
+              if (astName === 'disabled') {
+                matched.add(node);
+              }
+            } else if (astName === 'enabled') {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'read-only':
+        case 'read-write': {
+          let readonly;
+          let writable;
+          switch (localName) {
+            case 'textarea': {
+              if (
+                node.readOnly ||
+                node.hasAttribute('readonly') ||
+                node.disabled ||
+                node.hasAttribute('disabled')
+              ) {
+                readonly = true;
+              } else {
+                writable = true;
+              }
+              break;
+            }
+            case 'input': {
+              if (!node.type || KEY_INPUT_EDIT.includes(node.type)) {
+                if (
+                  node.readOnly ||
+                  node.hasAttribute('readonly') ||
+                  node.disabled ||
+                  node.hasAttribute('disabled')
+                ) {
+                  readonly = true;
+                } else {
+                  writable = true;
+                }
+              } else {
+                readonly = true;
+              }
+              break;
+            }
+            default: {
+              if (isContentEditable(node)) {
+                writable = true;
+              } else {
+                readonly = true;
+              }
+            }
+          }
+          if (readonly) {
+            if (astName === 'read-only') {
+              matched.add(node);
+            }
+          } else if (astName === 'read-write' && writable) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'placeholder-shown': {
+          let placeholder;
+          if (node.placeholder) {
+            placeholder = node.placeholder;
+          } else if (node.hasAttribute('placeholder')) {
+            placeholder = node.getAttribute('placeholder');
+          }
+          if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
+            let targetNode;
+            if (localName === 'textarea') {
+              targetNode = node;
+            } else if (localName === 'input') {
+              if (node.hasAttribute('type')) {
+                const keys = [...KEY_INPUT_TEXT, 'number'];
+                if (keys.includes(node.getAttribute('type'))) {
+                  targetNode = node;
+                }
+              } else {
+                targetNode = node;
+              }
+            }
+            if (targetNode && node.value === '') {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'checked': {
+          const attrType = node.getAttribute('type');
+          if (
+            (node.checked &&
+              localName === 'input' &&
+              (attrType === 'checkbox' || attrType === 'radio')) ||
+            (node.selected && localName === 'option')
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'indeterminate': {
+          if (
+            (node.indeterminate &&
+              localName === 'input' &&
+              node.type === 'checkbox') ||
+            (localName === 'progress' && !node.hasAttribute('value'))
+          ) {
+            matched.add(node);
+          } else if (
+            localName === 'input' &&
+            node.type === 'radio' &&
+            !node.hasAttribute('checked')
+          ) {
+            const nodeName = node.name;
+            let parent = node.parentNode;
+            while (parent) {
+              if (parent.localName === 'form') {
+                break;
+              }
+              parent = parent.parentNode;
+            }
+            if (!parent) {
+              parent = this.#document.documentElement;
+            }
+            const walker = this._createTreeWalker(parent);
+            let refNode = traverseNode(parent, walker);
+            refNode = walker.firstChild();
+            let checked;
+            while (refNode) {
+              if (
+                refNode.localName === 'input' &&
+                refNode.getAttribute('type') === 'radio'
+              ) {
+                if (refNode.hasAttribute('name')) {
+                  if (refNode.getAttribute('name') === nodeName) {
+                    checked = !!refNode.checked;
+                  }
+                } else {
+                  checked = !!refNode.checked;
+                }
+                if (checked) {
+                  break;
+                }
+              }
+              refNode = walker.nextNode();
+            }
+            if (!checked) {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'default': {
+          // button[type="submit"], input[type="submit"], input[type="image"]
+          const chekcKeys = ['checkbox', 'radio'];
+          const resetKeys = ['button', 'reset'];
+          const submitKeys = ['image', 'submit'];
+          const attrType = node.getAttribute('type');
+          if (
+            (localName === 'button' &&
+              !(node.hasAttribute('type') && resetKeys.includes(attrType))) ||
+            (localName === 'input' &&
+              node.hasAttribute('type') &&
+              submitKeys.includes(attrType))
+          ) {
+            let form = node.parentNode;
+            while (form) {
+              if (form.localName === 'form') {
+                break;
+              }
+              form = form.parentNode;
+            }
+            if (form) {
+              const walker = this._createTreeWalker(form);
+              let refNode = traverseNode(form, walker);
+              refNode = walker.firstChild();
+              while (refNode) {
+                const nodeName = refNode.localName;
+                const nodeAttrType = refNode.getAttribute('type');
+                let m;
+                if (nodeName === 'button') {
+                  m = !(
+                    refNode.hasAttribute('type') &&
+                    resetKeys.includes(nodeAttrType)
+                  );
+                } else if (nodeName === 'input') {
+                  m =
+                    refNode.hasAttribute('type') &&
+                    submitKeys.includes(nodeAttrType);
+                }
+                if (m) {
+                  if (refNode === node) {
+                    matched.add(node);
+                  }
+                  break;
+                }
+                refNode = walker.nextNode();
+              }
+            }
+            // input[type="checkbox"], input[type="radio"]
+          } else if (
+            localName === 'input' &&
+            node.hasAttribute('type') &&
+            chekcKeys.includes(attrType) &&
+            node.hasAttribute('checked')
+          ) {
+            matched.add(node);
+            // option
+          } else if (localName === 'option' && node.hasAttribute('selected')) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'valid':
+        case 'invalid': {
+          const keys = [...KEY_FORM_FOCUS, 'form'];
+          if (keys.includes(localName)) {
+            let valid;
+            if (node.checkValidity()) {
+              if (node.maxLength >= 0) {
+                if (node.maxLength >= node.value.length) {
+                  valid = true;
+                }
+              } else {
+                valid = true;
+              }
+            }
+            if (valid) {
+              if (astName === 'valid') {
+                matched.add(node);
+              }
+            } else if (astName === 'invalid') {
+              matched.add(node);
+            }
+          } else if (localName === 'fieldset') {
+            const walker = this._createTreeWalker(node);
+            let refNode = traverseNode(node, walker);
+            refNode = walker.firstChild();
+            let valid;
+            if (!refNode) {
+              valid = true;
+            } else {
+              while (refNode) {
+                if (keys.includes(refNode.localName)) {
+                  if (refNode.checkValidity()) {
+                    if (refNode.maxLength >= 0) {
+                      valid = refNode.maxLength >= refNode.value.length;
+                    } else {
+                      valid = true;
+                    }
+                  } else {
+                    valid = false;
+                  }
+                  if (!valid) {
+                    break;
+                  }
+                }
+                refNode = walker.nextNode();
+              }
+            }
+            if (valid) {
+              if (astName === 'valid') {
+                matched.add(node);
+              }
+            } else if (astName === 'invalid') {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'in-range':
+        case 'out-of-range': {
+          const keys = [...KEY_INPUT_DATE, 'number', 'range'];
+          const attrType = node.getAttribute('type');
+          if (
+            localName === 'input' &&
+            !(node.readonly || node.hasAttribute('readonly')) &&
+            !(node.disabled || node.hasAttribute('disabled')) &&
+            keys.includes(attrType)
+          ) {
+            const flowed =
+              node.validity.rangeUnderflow || node.validity.rangeOverflow;
+            if (astName === 'out-of-range' && flowed) {
+              matched.add(node);
+            } else if (
+              astName === 'in-range' &&
+              !flowed &&
+              (node.hasAttribute('min') ||
+                node.hasAttribute('max') ||
+                attrType === 'range')
+            ) {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case 'required':
+        case 'optional': {
+          let required;
+          let optional;
+          if (localName === 'select' || localName === 'textarea') {
+            if (node.required || node.hasAttribute('required')) {
+              required = true;
+            } else {
+              optional = true;
+            }
+          } else if (localName === 'input') {
+            if (node.hasAttribute('type')) {
+              const keys = [...KEY_INPUT_EDIT, 'checkbox', 'file', 'radio'];
+              const attrType = node.getAttribute('type');
+              if (keys.includes(attrType)) {
+                if (node.required || node.hasAttribute('required')) {
+                  required = true;
+                } else {
+                  optional = true;
+                }
+              } else {
+                optional = true;
+              }
+            } else if (node.required || node.hasAttribute('required')) {
+              required = true;
+            } else {
+              optional = true;
+            }
+          }
+          if (astName === 'required' && required) {
+            matched.add(node);
+          } else if (astName === 'optional' && optional) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'root': {
+          if (node === this.#document.documentElement) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'empty': {
+          if (node.hasChildNodes()) {
+            const walker = this._createTreeWalker(node, {
+              force: true,
+              whatToShow: SHOW_ALL
+            });
+            let refNode = walker.firstChild();
+            let bool;
+            while (refNode) {
+              bool =
+                refNode.nodeType !== ELEMENT_NODE &&
+                refNode.nodeType !== TEXT_NODE;
+              if (!bool) {
+                break;
+              }
+              refNode = walker.nextSibling();
+            }
+            if (bool) {
+              matched.add(node);
+            }
+          } else {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'first-child': {
+          if (
+            (parentNode && node === parentNode.firstElementChild) ||
+            node === this.#root
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'last-child': {
+          if (
+            (parentNode && node === parentNode.lastElementChild) ||
+            node === this.#root
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'only-child': {
+          if (
+            (parentNode &&
+              node === parentNode.firstElementChild &&
+              node === parentNode.lastElementChild) ||
+            node === this.#root
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'first-of-type': {
+          if (parentNode) {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+          } else if (node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'last-of-type': {
+          if (parentNode) {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1,
+                reverse: true
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+          } else if (node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'only-of-type': {
+          if (parentNode) {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1 === node) {
+              const [node2] = this._collectNthOfType(
+                {
+                  a: 0,
+                  b: 1,
+                  reverse: true
+                },
+                node
+              );
+              if (node2 === node) {
+                matched.add(node);
+              }
+            }
+          } else if (node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'defined': {
+          if (node.hasAttribute('is') || localName.includes('-')) {
+            if (isCustomElement(node)) {
+              matched.add(node);
+            }
+            // NOTE: MathMLElement not implemented in jsdom
+          } else if (
+            node instanceof this.#window.HTMLElement ||
+            node instanceof this.#window.SVGElement
+          ) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'popover-open': {
+          if (node.popover && isVisible(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'host':
+        case 'host-context': {
+          // ignore
+          break;
+        }
+        // legacy pseudo-elements
+        case 'after':
+        case 'before':
+        case 'first-letter':
+        case 'first-line': {
+          if (warn) {
+            this.onError(
+              new this.#window.DOMException(
+                `Unsupported pseudo-element ::${astName}`,
+                NOT_SUPPORTED_ERR
+              )
+            );
+          }
+          break;
+        }
+        // not supported
+        case 'autofill':
+        case 'blank':
+        case 'buffering':
+        case 'current':
+        case 'fullscreen':
+        case 'future':
+        case 'has-slotted':
+        case 'modal':
+        case 'muted':
+        case 'past':
+        case 'paused':
+        case 'picture-in-picture':
+        case 'playing':
+        case 'seeking':
+        case 'stalled':
+        case 'user-invalid':
+        case 'user-valid':
+        case 'volume-locked':
+        case '-webkit-autofill': {
+          if (warn) {
+            this.onError(
+              new this.#window.DOMException(
+                `Unsupported pseudo-class :${astName}`,
+                NOT_SUPPORTED_ERR
+              )
+            );
           }
           break;
         }
         default: {
-          // No action needed for other types.
+          if (astName.startsWith('-webkit-')) {
+            if (warn) {
+              this.onError(
+                new this.#window.DOMException(
+                  `Unsupported pseudo-class :${astName}`,
+                  NOT_SUPPORTED_ERR
+                )
+              );
+            }
+          } else if (!forgive) {
+            this.onError(
+              new this.#window.DOMException(
+                `Unknown pseudo-class :${astName}`,
+                SYNTAX_ERR
+              )
+            );
+          }
         }
       }
-      bool = this._matchSelector(leaf, node, opt).has(node);
-      if (!bool) {
-        break;
-      }
     }
-    if (cacheable) {
-      if (!result) {
-        result = new WeakMap();
-      }
-      result.set(node, {
-        matched: bool
-      });
-      results.set(leaves, result);
-    }
-    return bool;
-  };
+    return matched;
+  }
 
   /**
-   * Traverses all descendant nodes and collects matches.
+   * match shadow host pseudo class
    * @private
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} ast - AST
+   * @param {object} node - DocumentFragment node
+   * @returns {?object} - matched node
    */
-  _traverseAllDescendants = (baseNode, leaves, opt = {}) => {
-    const walker = this._createTreeWalker(baseNode);
-    traverseNode(baseNode, walker);
-    let currentNode = walker.firstChild();
-    const nodes = new Set();
-    while (currentNode) {
-      if (this._matchLeaves(leaves, currentNode, opt)) {
-        nodes.add(currentNode);
+  _matchShadowHostPseudoClass(ast, node) {
+    const { children: astChildren, name: astName } = ast;
+    if (Array.isArray(astChildren)) {
+      if (astChildren.length !== 1) {
+        const css = generateCSS(ast);
+        return this.onError(
+          new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+        );
       }
-      currentNode = walker.nextNode();
-    }
-    return nodes;
-  };
-
-  /**
-   * Finds descendant nodes.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _findDescendantNodes = (leaves, baseNode, opt = {}) => {
-    const [leaf, ...filterLeaves] = leaves;
-    const { type: leafType } = leaf;
-    switch (leafType) {
-      case ID_SELECTOR: {
-        const canUseGetElementById =
-          !this.#shadow &&
-          baseNode.nodeType === ELEMENT_NODE &&
-          this.#root.nodeType !== ELEMENT_NODE;
-        if (canUseGetElementById) {
-          const leafName = unescapeSelector(leaf.name);
-          const nodes = new Set();
-          const foundNode = this.#root.getElementById(leafName);
-          if (
-            foundNode &&
-            foundNode !== baseNode &&
-            baseNode.contains(foundNode)
-          ) {
-            const isCompoundSelector = filterLeaves.length > 0;
-            if (
-              !isCompoundSelector ||
-              this._matchLeaves(filterLeaves, foundNode, opt)
-            ) {
-              nodes.add(foundNode);
+      const { branches } = walkAST(astChildren[0]);
+      const [branch] = branches;
+      const [...leaves] = branch;
+      const { host } = node;
+      if (astName === 'host') {
+        let bool;
+        for (const leaf of leaves) {
+          const { type: leafType } = leaf;
+          if (leafType === COMBINATOR) {
+            const css = generateCSS(ast);
+            return this.onError(
+              new this.#window.DOMException(
+                `Invalid selector ${css}`,
+                SYNTAX_ERR
+              )
+            );
+          }
+          bool = this._matchSelector(leaf, host).has(host);
+          if (!bool) {
+            break;
+          }
+        }
+        if (bool) {
+          return node;
+        }
+        return null;
+      } else if (astName === 'host-context') {
+        let parent = host;
+        let bool;
+        while (parent) {
+          for (const leaf of leaves) {
+            const { type: leafType } = leaf;
+            if (leafType === COMBINATOR) {
+              const css = generateCSS(ast);
+              return this.onError(
+                new this.#window.DOMException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR
+                )
+              );
+            }
+            bool = this._matchSelector(leaf, parent).has(parent);
+            if (!bool) {
+              break;
             }
           }
+          if (bool) {
+            break;
+          } else {
+            parent = parent.parentNode;
+          }
+        }
+        if (bool) {
+          return node;
+        }
+        return null;
+      }
+    } else if (astName === 'host') {
+      return node;
+    }
+    return this.onError(
+      new this.#window.DOMException(`Invalid selector :${astName}`, SYNTAX_ERR)
+    );
+  }
+
+  /**
+   * match selector
+   * @private
+   * @param {object} ast - AST
+   * @param {object} node - Document, DocumentFragment, Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchSelector(ast, node, opt = {}) {
+    const { type: astType } = ast;
+    const astName = unescapeSelector(ast.name);
+    const matched = new Set();
+    if (node.nodeType === ELEMENT_NODE) {
+      switch (astType) {
+        case ATTR_SELECTOR: {
+          const res = matchAttributeSelector(ast, node, opt);
+          if (res) {
+            matched.add(node);
+          }
+          break;
+        }
+        case ID_SELECTOR: {
+          if (node.id === astName) {
+            matched.add(node);
+          }
+          break;
+        }
+        case CLASS_SELECTOR: {
+          if (node.classList.contains(astName)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case PS_CLASS_SELECTOR: {
+          const nodes = this._matchPseudoClassSelector(ast, node, opt);
           return nodes;
         }
-        // Fallback to default traversal if fast path is not applicable.
-        return this._traverseAllDescendants(baseNode, leaves, opt);
-      }
-      case PS_ELEMENT_SELECTOR: {
-        const leafName = unescapeSelector(leaf.name);
-        matchPseudoElementSelector(leafName, leafType, opt);
-        return new Set();
-      }
-      default: {
-        return this._traverseAllDescendants(baseNode, leaves, opt);
-      }
-    }
-  };
-
-  /**
-   * Matches the descendant combinator ' '.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchDescendantCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { parentNode } = node;
-    const { dir } = opt;
-    if (dir === DIR_NEXT) {
-      return this._findDescendantNodes(leaves, node, opt);
-    }
-    // DIR_PREV
-    const ancestors = [];
-    let refNode = parentNode;
-    while (refNode) {
-      if (this._matchLeaves(leaves, refNode, opt)) {
-        ancestors.push(refNode);
-      }
-      refNode = refNode.parentNode;
-    }
-    if (ancestors.length) {
-      // Reverse to maintain document order.
-      return new Set(ancestors.reverse());
-    }
-    return new Set();
-  };
-
-  /**
-   * Matches the child combinator '>'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchChildCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const { parentNode } = node;
-    const matched = new Set();
-    if (dir === DIR_NEXT) {
-      let refNode = node.firstElementChild;
-      while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
-          matched.add(refNode);
+        case TYPE_SELECTOR: {
+          const res = matchTypeSelector(ast, node, opt);
+          if (res) {
+            matched.add(node);
+          }
+          break;
         }
-        refNode = refNode.nextElementSibling;
+        case PS_ELEMENT_SELECTOR:
+        default: {
+          try {
+            const { check } = opt;
+            if (check) {
+              const css = generateCSS(ast);
+              this.#pseudoElement.push(css);
+              matched.add(node);
+            } else {
+              matchPseudoElementSelector(astName, astType, opt);
+            }
+          } catch (e) {
+            this.onError(e);
+          }
+        }
       }
+    } else if (
+      this.#shadow &&
+      astType === PS_CLASS_SELECTOR &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE
+    ) {
+      if (KEY_LOGICAL.includes(astName)) {
+        opt.isShadowRoot = true;
+        const nodes = this._matchPseudoClassSelector(ast, node, opt);
+        return nodes;
+      } else if (astName === 'host' || astName === 'host-context') {
+        const res = this._matchShadowHostPseudoClass(ast, node, opt);
+        if (res) {
+          this.#verifyShadowHost = true;
+          matched.add(res);
+        }
+      }
+    }
+    return matched;
+  }
+
+  /**
+   * match leaves
+   * @private
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} node - node
+   * @param {object} [opt] - options
+   * @returns {boolean} - result
+   */
+  _matchLeaves(leaves, node, opt = {}) {
+    let result;
+    if (this.#invalidate) {
+      result = this.#invalidateResults.get(leaves);
     } else {
-      // DIR_PREV
-      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
-        matched.add(parentNode);
-      }
+      result = this.#results.get(leaves);
     }
-    return matched;
-  };
-
-  /**
-   * Matches the adjacent sibling combinator '+'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchAdjacentSiblingCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const matched = new Set();
-    const refNode =
-      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
-    if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-      matched.add(refNode);
-    }
-    return matched;
-  };
-
-  /**
-   * Matches the general sibling combinator '~'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchGeneralSiblingCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const matched = new Set();
-    let refNode =
-      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
-    while (refNode) {
-      if (this._matchLeaves(leaves, refNode, opt)) {
-        matched.add(refNode);
+    if (result && result.has(node)) {
+      const { matched } = result.get(node);
+      return matched;
+    } else {
+      let cacheable = true;
+      const formKeys = [...KEY_FORM_FOCUS, 'fieldset', 'form'];
+      const pseudoKeys = ['any-link', 'defined', 'dir', 'link', 'scope'];
+      if (node.nodeType === ELEMENT_NODE && formKeys.includes(node.localName)) {
+        cacheable = false;
       }
-      refNode =
-        dir === DIR_NEXT
-          ? refNode.nextElementSibling
-          : refNode.previousElementSibling;
-    }
-    return matched;
-  };
-
-  /**
-   * Matches a combinator.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchCombinator = (twig, node, opt = {}) => {
-    const {
-      combo: { name: comboName }
-    } = twig;
-    switch (comboName) {
-      case '+': {
-        return this._matchAdjacentSiblingCombinator(twig, node, opt);
-      }
-      case '~': {
-        return this._matchGeneralSiblingCombinator(twig, node, opt);
-      }
-      case '>': {
-        return this._matchChildCombinator(twig, node, opt);
-      }
-      case ' ':
-      default: {
-        return this._matchDescendantCombinator(twig, node, opt);
-      }
-    }
-  };
-
-  /**
-   * Traverses with a TreeWalker and collects nodes matching the leaves.
-   * @private
-   * @param {TreeWalker} walker - The TreeWalker instance to use.
-   * @param {Array} leaves - The AST leaves to match against.
-   * @param {object} options - Traversal options.
-   * @param {Node} options.startNode - The node to start traversal from.
-   * @param {string} options.targetType - The type of target ('all' or 'first').
-   * @param {Node} [options.boundaryNode] - The node to stop traversal at.
-   * @param {boolean} [options.force] - Force traversal to the next node.
-   * @returns {Array.<Node>} An array of matched nodes.
-   */
-  _traverseAndCollectNodes = (walker, leaves, options) => {
-    const { boundaryNode, force, startNode, targetType } = options;
-    const collectedNodes = [];
-    let currentNode = traverseNode(startNode, walker, !!force);
-    if (!currentNode) {
-      return [];
-    }
-    // Adjust starting node.
-    if (currentNode.nodeType !== ELEMENT_NODE) {
-      currentNode = walker.nextNode();
-    } else if (currentNode === startNode && currentNode !== this.#root) {
-      currentNode = walker.nextNode();
-    }
-    const matchOpt = {
-      warn: this.#warn
-    };
-    while (currentNode) {
-      // Stop when we reach the boundary node.
-      if (boundaryNode && currentNode === boundaryNode) {
-        break;
-      }
-      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
-        collectedNodes.push(currentNode);
-        // Stop after the first match if not collecting all.
-        if (targetType !== TARGET_ALL) {
+      let bool;
+      for (const leaf of leaves) {
+        switch (leaf.type) {
+          case ATTR_SELECTOR:
+          case ID_SELECTOR: {
+            cacheable = false;
+            break;
+          }
+          case PS_CLASS_SELECTOR: {
+            if (pseudoKeys.includes(leaf.name)) {
+              cacheable = false;
+            }
+            break;
+          }
+          default:
+        }
+        bool = this._matchSelector(leaf, node, opt).has(node);
+        if (!bool) {
           break;
         }
       }
-      currentNode = walker.nextNode();
+      if (cacheable) {
+        if (!result) {
+          result = new WeakMap();
+        }
+        result.set(node, {
+          matched: bool
+        });
+        if (this.#invalidate) {
+          this.#invalidateResults.set(leaves, result);
+        } else {
+          this.#results.set(leaves, result);
+        }
+      }
+      return bool;
     }
-    return collectedNodes;
-  };
+  }
 
   /**
-   * Finds matched node(s) preceding this.#node.
+   * find descendant nodes
    * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} node - The node to start from.
-   * @param {object} opt - Options.
-   * @param {boolean} [opt.force] - If true, traverses only to the next node.
-   * @param {string} [opt.targetType] - The target type.
-   * @returns {Array.<object>} A collection of matched nodes.
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} baseNode - base Element node or Element.shadowRoot
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _findPrecede = (leaves, node, opt = {}) => {
+  _findDescendantNodes(leaves, baseNode, opt = {}) {
+    const [leaf, ...filterLeaves] = leaves;
+    const compound = filterLeaves.length > 0;
+    const { type: leafType } = leaf;
+    const leafName = unescapeSelector(leaf.name);
+    const nodes = new Set();
+    let pending = false;
+    if (this.#shadow || baseNode.nodeType !== ELEMENT_NODE) {
+      pending = true;
+    } else {
+      switch (leafType) {
+        case PS_ELEMENT_SELECTOR: {
+          matchPseudoElementSelector(leafName, leafType, opt);
+          break;
+        }
+        case ID_SELECTOR: {
+          if (this.#root.nodeType === ELEMENT_NODE) {
+            pending = true;
+          } else {
+            const node = this.#root.getElementById(leafName);
+            if (node && node !== baseNode && baseNode.contains(node)) {
+              if (compound) {
+                const bool = this._matchLeaves(filterLeaves, node, opt);
+                if (bool) {
+                  nodes.add(node);
+                }
+              } else {
+                nodes.add(node);
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          pending = true;
+        }
+      }
+    }
+    if (pending) {
+      const walker = this._createTreeWalker(baseNode);
+      let refNode = traverseNode(baseNode, walker);
+      refNode = walker.firstChild();
+      while (refNode) {
+        const bool = this._matchLeaves(leaves, refNode, opt);
+        if (bool) {
+          nodes.add(refNode);
+        }
+        refNode = walker.nextNode();
+      }
+    }
+    return nodes;
+  }
+
+  /**
+   * match combinator
+   * @private
+   * @param {object} twig - twig
+   * @param {object} node - Element node
+   * @param {object} [opt] - option
+   * @returns {Set.<object>} - collection of matched nodes
+   */
+  _matchCombinator(twig, node, opt = {}) {
+    const { combo, leaves } = twig;
+    const { name: comboName } = combo;
+    const { parentNode } = node;
+    const { dir } = opt;
+    const matched = new Set();
+    if (dir === DIR_NEXT) {
+      switch (comboName) {
+        case '+': {
+          const refNode = node.nextElementSibling;
+          if (refNode) {
+            const bool = this._matchLeaves(leaves, refNode, opt);
+            if (bool) {
+              matched.add(refNode);
+            }
+          }
+          break;
+        }
+        case '~': {
+          if (parentNode) {
+            let refNode = node.nextElementSibling;
+            while (refNode) {
+              const bool = this._matchLeaves(leaves, refNode, opt);
+              if (bool) {
+                matched.add(refNode);
+              }
+              refNode = refNode.nextElementSibling;
+            }
+          }
+          break;
+        }
+        case '>': {
+          let refNode = node.firstElementChild;
+          while (refNode) {
+            const bool = this._matchLeaves(leaves, refNode, opt);
+            if (bool) {
+              matched.add(refNode);
+            }
+            refNode = refNode.nextElementSibling;
+          }
+          break;
+        }
+        case ' ':
+        default: {
+          const nodes = this._findDescendantNodes(leaves, node, opt);
+          if (nodes.size) {
+            return nodes;
+          }
+        }
+      }
+    } else {
+      switch (comboName) {
+        case '+': {
+          const refNode = node.previousElementSibling;
+          if (refNode) {
+            const bool = this._matchLeaves(leaves, refNode, opt);
+            if (bool) {
+              matched.add(refNode);
+            }
+          }
+          break;
+        }
+        case '~': {
+          if (parentNode) {
+            let refNode = parentNode.firstElementChild;
+            while (refNode) {
+              if (refNode === node) {
+                break;
+              } else {
+                const bool = this._matchLeaves(leaves, refNode, opt);
+                if (bool) {
+                  matched.add(refNode);
+                }
+              }
+              refNode = refNode.nextElementSibling;
+            }
+          }
+          break;
+        }
+        case '>': {
+          if (parentNode) {
+            const bool = this._matchLeaves(leaves, parentNode, opt);
+            if (bool) {
+              matched.add(parentNode);
+            }
+          }
+          break;
+        }
+        case ' ':
+        default: {
+          const arr = [];
+          let refNode = parentNode;
+          while (refNode) {
+            const bool = this._matchLeaves(leaves, refNode, opt);
+            if (bool) {
+              arr.push(refNode);
+            }
+            refNode = refNode.parentNode;
+          }
+          if (arr.length) {
+            return new Set(arr.toReversed());
+          }
+        }
+      }
+    }
+    return matched;
+  }
+
+  /**
+   * find matched node(s) preceding this.#node
+   * @private
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} node - node to start from
+   * @param {object} opt - options
+   * @param {boolean} [opt.force] - traverse only to next node
+   * @param {string} [opt.targetType] - target type
+   * @returns {Array.<object>} - collection of matched nodes
+   */
+  _findPrecede(leaves, node, opt = {}) {
     const { force, targetType } = opt;
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
-    return this._traverseAndCollectNodes(this.#rootWalker, leaves, {
-      force,
-      targetType,
-      boundaryNode: this.#node,
-      startNode: node
-    });
-  };
+    const walker = this.#rootWalker;
+    const nodes = [];
+    let refNode = traverseNode(node, walker, !!force);
+    if (refNode && refNode !== this.#node) {
+      if (refNode.nodeType !== ELEMENT_NODE) {
+        refNode = walker.nextNode();
+      } else if (refNode === node) {
+        if (refNode !== this.#root) {
+          refNode = walker.nextNode();
+        }
+      }
+      while (refNode) {
+        if (refNode === this.#node) {
+          break;
+        }
+        const matched = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (matched) {
+          nodes.push(refNode);
+          if (targetType !== TARGET_ALL) {
+            break;
+          }
+        }
+        refNode = walker.nextNode();
+      }
+    }
+    return nodes;
+  }
 
   /**
-   * Finds matched node(s) in #nodeWalker.
+   * find matched node(s) in #nodeWalker
    * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} node - The node to start from.
-   * @param {object} opt - Options.
-   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
-   * @returns {Array.<object>} A collection of matched nodes.
+   * @param {Array.<object>} leaves - AST leaves
+   * @param {object} node - node to start from
+   * @param {object} opt - options
+   * @param {boolean} [opt.precede] - find precede
+   * @param {boolean} [opt.force] - traverse only to next node
+   * @param {string} [opt.targetType] - target type
+   * @returns {Array.<object>} - collection of matched nodes
    */
-  _findNodeWalker = (leaves, node, opt = {}) => {
-    const { precede, ...traversalOpts } = opt;
+  _findNodeWalker(leaves, node, opt = {}) {
+    const { force, precede, targetType } = opt;
+    const walker = this.#nodeWalker;
     if (precede) {
       const precedeNodes = this._findPrecede(leaves, this.#root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
     }
-    if (!this.#nodeWalker) {
-      this.#nodeWalker = this._createTreeWalker(this.#node);
-    }
-    return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
-      startNode: node,
-      ...traversalOpts
-    });
-  };
-
-  /**
-   * Matches the node itself.
-   * @private
-   * @param {Array} leaves - The AST leaves.
-   * @param {boolean} check - Indicates if running in internal check().
-   * @returns {Array} An array containing [nodes, filtered, pseudoElement].
-   */
-  _matchSelf = (leaves, check = false) => {
-    const options = { check, warn: this.#warn };
-    const matched = this._matchLeaves(leaves, this.#node, options);
-    const nodes = matched ? [this.#node] : [];
-    return [nodes, matched, this.#pseudoElement];
-  };
-
-  /**
-   * Finds lineal nodes (self and ancestors).
-   * @private
-   * @param {Array} leaves - The AST leaves.
-   * @param {object} opt - Options.
-   * @returns {Array} An array containing [nodes, filtered].
-   */
-  _findLineal = (leaves, opt) => {
-    const { complex } = opt;
     const nodes = [];
-    const options = { warn: this.#warn };
-    const selfMatched = this._matchLeaves(leaves, this.#node, options);
-    if (selfMatched) {
-      nodes.push(this.#node);
-    }
-    if (!selfMatched || complex) {
-      let currentNode = this.#node.parentNode;
-      while (currentNode) {
-        if (this._matchLeaves(leaves, currentNode, options)) {
-          nodes.push(currentNode);
-        }
-        currentNode = currentNode.parentNode;
-      }
-    }
-    const filtered = nodes.length > 0;
-    return [nodes, filtered];
-  };
-
-  /**
-   * Finds entry nodes for pseudo-element selectors.
-   * @private
-   * @param {object} leaf - The pseudo-element leaf from the AST.
-   * @param {Array.<object>} filterLeaves - Leaves for compound selectors.
-   * @param {string} targetType - The type of target to find.
-   * @returns {object} The result { nodes, filtered, pending }.
-   */
-  _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
-    let nodes = [];
-    let filtered = false;
-    if (targetType === TARGET_SELF && this.#check) {
-      const css = generateCSS(leaf);
-      this.#pseudoElement.push(css);
-      if (filterLeaves.length) {
-        [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
-      } else {
-        nodes.push(this.#node);
-        filtered = true;
-      }
-    } else {
-      matchPseudoElementSelector(leaf.name, leaf.type, { warn: this.#warn });
-    }
-    return { nodes, filtered, pending: false };
-  };
-
-  /**
-   * Finds entry nodes for ID selectors.
-   * @private
-   * @param {object} twig - The current twig from the AST branch.
-   * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
-   * @returns {object} The result { nodes, filtered, pending }.
-   */
-  _findEntryNodesForId = (twig, targetType, opt) => {
-    const { leaves } = twig;
-    const [leaf, ...filterLeaves] = leaves;
-    const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
-    if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
-    } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else if (
-      targetType === TARGET_FIRST &&
-      this.#root.nodeType !== ELEMENT_NODE
-    ) {
-      const node = this.#root.getElementById(leaf.name);
-      if (node) {
-        if (filterLeaves.length) {
-          if (this._matchLeaves(filterLeaves, node, { warn: this.#warn })) {
-            nodes.push(node);
-            filtered = true;
-          }
-        } else {
-          nodes.push(node);
-          filtered = true;
+    let refNode = traverseNode(node, walker, !!force);
+    if (refNode) {
+      if (refNode.nodeType !== ELEMENT_NODE) {
+        refNode = walker.nextNode();
+      } else if (refNode === node) {
+        if (refNode !== this.#root) {
+          refNode = walker.nextNode();
         }
       }
-    } else {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
-    }
-    return { nodes, filtered, pending: false };
-  };
-
-  /**
-   * Finds entry nodes for class selectors.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves for the selector.
-   * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
-   * @returns {object} The result { nodes, filtered, pending }.
-   */
-  _findEntryNodesForClass = (leaves, targetType, opt) => {
-    const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
-    if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
-    } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
-    }
-    return { nodes, filtered, pending: false };
-  };
-
-  /**
-   * Finds entry nodes for type selectors.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves for the selector.
-   * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
-   * @returns {object} The result { nodes, filtered, pending }.
-   */
-  _findEntryNodesForType = (leaves, targetType, opt) => {
-    const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
-    if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
-    } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
-    }
-    return { nodes, filtered, pending: false };
-  };
-
-  /**
-   * Finds entry nodes for other selector types (default case).
-   * @private
-   * @param {object} twig - The current twig from the AST branch.
-   * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
-   * @returns {object} The result { nodes, filtered, pending }.
-   */
-  _findEntryNodesForOther = (twig, targetType, opt) => {
-    const { leaves } = twig;
-    const [leaf, ...filterLeaves] = leaves;
-    const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
-    let pending = false;
-    if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
-      let shadowRoot = null;
-      if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-        shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
-      } else if (filterLeaves.length && this.#node.nodeType === ELEMENT_NODE) {
-        shadowRoot = this._matchShadowHostPseudoClass(
-          leaf,
-          this.#node.shadowRoot
-        );
-      }
-      if (shadowRoot) {
-        let bool = true;
-        const l = filterLeaves.length;
-        for (let i = 0; i < l; i++) {
-          const filterLeaf = filterLeaves[i];
-          switch (filterLeaf.name) {
-            case 'host':
-            case 'host-context': {
-              const matchedNode = this._matchShadowHostPseudoClass(
-                filterLeaf,
-                shadowRoot
-              );
-              bool = matchedNode === shadowRoot;
-              break;
-            }
-            case 'has': {
-              bool = this._matchPseudoClassSelector(
-                filterLeaf,
-                shadowRoot,
-                {}
-              ).has(shadowRoot);
-              break;
-            }
-            default: {
-              bool = false;
-            }
-          }
-          if (!bool) {
+      while (refNode) {
+        const matched = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (matched) {
+          nodes.push(refNode);
+          if (targetType !== TARGET_ALL) {
             break;
           }
         }
-        if (bool) {
-          nodes.push(shadowRoot);
-          filtered = true;
-        }
+        refNode = walker.nextNode();
       }
-    } else if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
-    } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else if (targetType === TARGET_FIRST) {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
-    } else {
-      pending = true;
     }
-    return { nodes, filtered, pending };
-  };
+    return nodes;
+  }
 
   /**
-   * Finds entry nodes.
+   * match self
    * @private
-   * @param {object} twig - The twig object.
-   * @param {string} targetType - The target type.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.complex] - If true, the selector is complex.
-   * @param {string} [opt.dir] - The find direction.
-   * @returns {object} An object with nodes and their state.
+   * @param {Array} leaves - AST leaves
+   * @param {boolean} check - running in internal check()
+   * @returns {Array} - [nodes, filtered]
    */
-  _findEntryNodes = (twig, targetType, opt = {}) => {
+  _matchSelf(leaves, check = false) {
+    const nodes = [];
+    let filtered = false;
+    const bool = this._matchLeaves(leaves, this.#node, {
+      check,
+      warn: this.#warn
+    });
+    if (bool) {
+      nodes.push(this.#node);
+      filtered = true;
+    }
+    return [nodes, filtered, this.#pseudoElement];
+  }
+
+  /**
+   * find lineal
+   * @private
+   * @param {Array} leaves - AST leaves
+   * @param {object} opt - options
+   * @returns {Array} - [nodes, filtered]
+   */
+  _findLineal(leaves, opt) {
+    const { complex } = opt;
+    const nodes = [];
+    let filtered = false;
+    let bool = this._matchLeaves(leaves, this.#node, {
+      warn: this.#warn
+    });
+    if (bool) {
+      nodes.push(this.#node);
+      filtered = true;
+    }
+    if (!bool || complex) {
+      let refNode = this.#node.parentNode;
+      while (refNode) {
+        bool = this._matchLeaves(leaves, refNode, {
+          warn: this.#warn
+        });
+        if (bool) {
+          nodes.push(refNode);
+          filtered = true;
+        }
+        if (refNode.parentNode) {
+          refNode = refNode.parentNode;
+        } else {
+          break;
+        }
+      }
+    }
+    return [nodes, filtered];
+  }
+
+  /**
+   * find entry nodes
+   * @private
+   * @param {object} twig - twig
+   * @param {string} targetType - target type
+   * @param {object} [opt] - options
+   * @param {boolean} [opt.complex] - complex selector
+   * @param {string} [opt.dir] - find direction
+   * @returns {object} - nodes and info about it's state.
+   */
+  _findEntryNodes(twig, targetType, opt = {}) {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
+    const compound = filterLeaves.length > 0;
+    const { name: leafName, type: leafType } = leaf;
     const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&
       this.#node.nodeType === ELEMENT_NODE &&
       this.#node !== this.#root;
-    let result;
-    switch (leaf.type) {
+    let nodes = [];
+    let filtered = false;
+    let pending = false;
+    switch (leafType) {
       case PS_ELEMENT_SELECTOR: {
-        result = this._findEntryNodesForPseudoElement(
-          leaf,
-          filterLeaves,
-          targetType
-        );
+        if (targetType === TARGET_SELF && this.#check) {
+          const css = generateCSS(leaf);
+          this.#pseudoElement.push(css);
+          if (filterLeaves.length) {
+            [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
+          } else {
+            nodes.push(this.#node);
+            filtered = true;
+          }
+        } else {
+          matchPseudoElementSelector(leafName, leafType, {
+            warn: this.#warn
+          });
+        }
         break;
       }
       case ID_SELECTOR: {
-        result = this._findEntryNodesForId(twig, targetType, {
-          complex,
-          precede
-        });
+        if (targetType === TARGET_SELF) {
+          [nodes, filtered] = this._matchSelf(leaves);
+        } else if (targetType === TARGET_LINEAL) {
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
+          });
+        } else if (
+          targetType === TARGET_FIRST &&
+          this.#root.nodeType !== ELEMENT_NODE
+        ) {
+          const node = this.#root.getElementById(leafName);
+          if (node) {
+            if (compound) {
+              const bool = this._matchLeaves(filterLeaves, node, {
+                warn: this.#warn
+              });
+              if (bool) {
+                nodes.push(node);
+                filtered = true;
+              }
+            } else {
+              nodes.push(node);
+              filtered = true;
+            }
+          }
+        } else {
+          nodes = this._findNodeWalker(leaves, this.#node, {
+            precede,
+            targetType
+          });
+          if (nodes.length) {
+            filtered = true;
+          }
+        }
         break;
       }
       case CLASS_SELECTOR: {
-        result = this._findEntryNodesForClass(leaves, targetType, {
-          complex,
-          precede
-        });
+        if (targetType === TARGET_SELF) {
+          [nodes, filtered] = this._matchSelf(leaves);
+        } else if (targetType === TARGET_LINEAL) {
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
+          });
+        } else {
+          nodes = this._findNodeWalker(leaves, this.#node, {
+            precede,
+            targetType
+          });
+          if (nodes.length) {
+            filtered = true;
+          }
+        }
         break;
       }
       case TYPE_SELECTOR: {
-        result = this._findEntryNodesForType(leaves, targetType, {
-          complex,
-          precede
-        });
+        if (targetType === TARGET_SELF) {
+          [nodes, filtered] = this._matchSelf(leaves);
+        } else if (targetType === TARGET_LINEAL) {
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
+          });
+        } else {
+          nodes = this._findNodeWalker(leaves, this.#node, {
+            precede,
+            targetType
+          });
+          if (nodes.length) {
+            filtered = true;
+          }
+        }
         break;
       }
       default: {
-        result = this._findEntryNodesForOther(twig, targetType, {
-          complex,
-          precede
-        });
+        if (
+          targetType !== TARGET_LINEAL &&
+          (leafName === 'host' || leafName === 'host-context')
+        ) {
+          let shadowRoot;
+          if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+            shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
+          } else if (compound && this.#node.nodeType === ELEMENT_NODE) {
+            shadowRoot = this._matchShadowHostPseudoClass(
+              leaf,
+              this.#node.shadowRoot
+            );
+          }
+          if (shadowRoot) {
+            let bool;
+            if (compound) {
+              for (const item of filterLeaves) {
+                if (/^host(?:-context)?$/.test(item.name)) {
+                  const node = this._matchShadowHostPseudoClass(
+                    item,
+                    shadowRoot
+                  );
+                  bool = node === shadowRoot;
+                } else if (item.name === 'has') {
+                  bool = this._matchPseudoClassSelector(
+                    item,
+                    shadowRoot,
+                    {}
+                  ).has(shadowRoot);
+                } else {
+                  bool = false;
+                }
+                if (!bool) {
+                  break;
+                }
+              }
+            } else {
+              bool = true;
+            }
+            if (bool) {
+              nodes.push(shadowRoot);
+              filtered = true;
+            }
+          }
+        } else if (targetType === TARGET_SELF) {
+          [nodes, filtered] = this._matchSelf(leaves);
+        } else if (targetType === TARGET_LINEAL) {
+          [nodes, filtered] = this._findLineal(leaves, {
+            complex
+          });
+        } else if (targetType === TARGET_FIRST) {
+          nodes = this._findNodeWalker(leaves, this.#node, {
+            precede,
+            targetType
+          });
+          if (nodes.length) {
+            filtered = true;
+          }
+        } else {
+          pending = true;
+        }
       }
     }
     return {
-      compound: filterLeaves.length > 0,
-      filtered: result.filtered,
-      nodes: result.nodes,
-      pending: result.pending
+      compound,
+      filtered,
+      nodes,
+      pending
     };
-  };
+  }
 
   /**
-   * Determines the direction and starting twig for a selector branch.
+   * collect nodes
    * @private
-   * @param {Array.<object>} branch - The AST branch.
-   * @param {string} targetType - The type of target to find.
-   * @returns {object} An object with the direction and starting twig.
+   * @param {string} targetType - target type
+   * @returns {Array.<Array.<object>>} - #ast and #nodes
    */
-  _determineTraversalStrategy = (branch, targetType) => {
-    const branchLen = branch.length;
-    const firstTwig = branch[0];
-    const lastTwig = branch[branchLen - 1];
-    if (branchLen === 1) {
-      return { dir: DIR_PREV, twig: firstTwig };
-    }
-    // Complex selector (branchLen > 1).
-    const {
-      leaves: [{ name: firstName, type: firstType }]
-    } = firstTwig;
-    const {
-      leaves: [{ name: lastName, type: lastType }]
-    } = lastTwig;
-    const { combo: firstCombo } = firstTwig;
-    if (
-      this.#selector.includes(':scope') ||
-      lastType === PS_ELEMENT_SELECTOR ||
-      lastType === ID_SELECTOR
-    ) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    }
-    if (firstType === ID_SELECTOR) {
-      return { dir: DIR_NEXT, twig: firstTwig };
-    }
-    if (firstName === '*' && firstType === TYPE_SELECTOR) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    }
-    if (lastName === '*' && lastType === TYPE_SELECTOR) {
-      return { dir: DIR_NEXT, twig: firstTwig };
-    }
-    if (branchLen === 2) {
-      if (targetType === TARGET_FIRST) {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
-      const { name: comboName } = firstCombo;
-      if (comboName === '+' || comboName === '~') {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
-    }
-    // Default strategy for complex selectors.
-    return { dir: DIR_NEXT, twig: firstTwig };
-  };
-
-  /**
-   * Processes pending items not resolved with a direct strategy.
-   * @private
-   * @param {Set.<Map>} pendingItems - The set of pending items.
-   */
-  _processPendingItems = pendingItems => {
-    if (!pendingItems.size) {
-      return;
-    }
-    if (!this.#rootWalker) {
-      this.#rootWalker = this._createTreeWalker(this.#root);
-    }
-    const isScopedContext =
-      this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
-    const walker = this.#rootWalker;
-    let node = this.#root;
-    if (isScopedContext) {
-      node = this.#node;
-    }
-    let nextNode = traverseNode(node, walker);
-    while (nextNode) {
-      const isWithinScope =
-        this.#node.nodeType !== ELEMENT_NODE ||
-        nextNode === this.#node ||
-        this.#node.contains(nextNode);
-      if (isWithinScope) {
-        for (const pendingItem of pendingItems) {
-          const { leaves } = pendingItem.get('twig');
-          if (this._matchLeaves(leaves, nextNode, { warn: this.#warn })) {
-            const index = pendingItem.get('index');
-            this.#ast[index].filtered = true;
-            this.#ast[index].find = true;
-            this.#nodes[index].push(nextNode);
-          }
-        }
-      } else if (isScopedContext) {
-        break;
-      }
-      nextNode = walker.nextNode();
-    }
-  };
-
-  /**
-   * Collects nodes.
-   * @private
-   * @param {string} targetType - The target type.
-   * @returns {Array.<Array.<object>>} An array containing the AST and nodes.
-   */
-  _collectNodes = targetType => {
+  _collectNodes(targetType) {
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
       let i = 0;
       for (const { branch } of ast) {
-        const complex = branch.length > 1;
-        const { dir, twig } = this._determineTraversalStrategy(
-          branch,
-          targetType
-        );
+        const branchLen = branch.length;
+        const complex = branchLen > 1;
+        const firstTwig = branch[0];
+        let dir;
+        let twig;
+        if (complex) {
+          const {
+            combo: firstCombo,
+            leaves: [{ name: firstName, type: firstType }]
+          } = firstTwig;
+          const lastTwig = branch[branchLen - 1];
+          const {
+            leaves: [{ name: lastName, type: lastType }]
+          } = lastTwig;
+          dir = DIR_NEXT;
+          twig = firstTwig;
+          if (
+            this.#selector.includes(':scope') ||
+            lastType === PS_ELEMENT_SELECTOR ||
+            lastType === ID_SELECTOR
+          ) {
+            dir = DIR_PREV;
+            twig = lastTwig;
+          } else if (firstType === ID_SELECTOR) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
+          } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
+            dir = DIR_PREV;
+            twig = lastTwig;
+          } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
+            dir = DIR_NEXT;
+            twig = firstTwig;
+          } else if (branchLen === 2) {
+            if (targetType === TARGET_FIRST) {
+              dir = DIR_PREV;
+              twig = lastTwig;
+            } else {
+              const { name: comboName } = firstCombo;
+              if (comboName === '+' || comboName === '~') {
+                dir = DIR_PREV;
+                twig = lastTwig;
+              }
+            }
+          }
+        } else {
+          dir = DIR_PREV;
+          twig = firstTwig;
+        }
         const { compound, filtered, nodes, pending } = this._findEntryNodes(
           twig,
           targetType,
@@ -2721,7 +2737,51 @@ export class Finder {
         this.#ast[i].filtered = filtered || !compound;
         i++;
       }
-      this._processPendingItems(pendingItems);
+      if (pendingItems.size) {
+        let node;
+        let walker;
+        if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+          node = this.#node;
+          walker = this.#nodeWalker;
+        } else {
+          if (!this.#rootWalker) {
+            this.#rootWalker = this._createTreeWalker(this.#root);
+          }
+          node = this.#root;
+          walker = this.#rootWalker;
+        }
+        let nextNode = traverseNode(node, walker);
+        while (nextNode) {
+          let bool = false;
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            if (nextNode === this.#node) {
+              bool = true;
+            } else {
+              bool = this.#node.contains(nextNode);
+            }
+          } else {
+            bool = true;
+          }
+          if (bool) {
+            for (const pendingItem of pendingItems) {
+              const { leaves } = pendingItem.get('twig');
+              const matched = this._matchLeaves(leaves, nextNode, {
+                warn: this.#warn
+              });
+              if (matched) {
+                const index = pendingItem.get('index');
+                this.#ast[index].filtered = true;
+                this.#ast[index].find = true;
+                this.#nodes[index].push(nextNode);
+              }
+            }
+          }
+          if (nextNode !== walker.currentNode) {
+            nextNode = traverseNode(nextNode, walker);
+          }
+          nextNode = walker.nextNode();
+        }
+      }
     } else {
       let i = 0;
       for (const { branch } of ast) {
@@ -2743,363 +2803,316 @@ export class Finder {
       }
     }
     return [this.#ast, this.#nodes];
-  };
+  }
 
   /**
-   * Gets combined nodes.
+   * get combined nodes
    * @private
-   * @param {object} twig - The twig object.
-   * @param {object} nodes - A collection of nodes.
-   * @param {string} dir - The direction.
-   * @returns {Array.<object>} A collection of matched nodes.
+   * @param {object} twig - twig
+   * @param {object} nodes - collection of nodes
+   * @param {string} dir - direction
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _getCombinedNodes = (twig, nodes, dir) => {
+  _getCombinedNodes(twig, nodes, dir) {
     const arr = [];
-    const options = {
-      dir,
-      warn: this.#warn
-    };
     for (const node of nodes) {
-      const matched = this._matchCombinator(twig, node, options);
+      const matched = this._matchCombinator(twig, node, {
+        dir,
+        warn: this.#warn
+      });
       if (matched.size) {
         arr.push(...matched);
       }
     }
-    return arr;
-  };
+    if (arr.length) {
+      return new Set(arr);
+    }
+    return new Set();
+  }
 
   /**
-   * Matches a node in the 'next' direction.
+   * match node to next direction
    * @private
-   * @param {Array} branch - The branch.
-   * @param {Set.<object>} nodes - A collection of Element nodes.
-   * @param {object} opt - Options.
-   * @param {object} opt.combo - The combo object.
-   * @param {number} opt.index - The index.
-   * @returns {?object} The matched node.
+   * @param {Array} branch - branch
+   * @param {Set.<object>} nodes - collection of Element node
+   * @param {object} opt - option
+   * @param {object} opt.combo - combo
+   * @param {number} opt.index - index
+   * @returns {?object} - matched node
    */
-  _matchNodeNext = (branch, nodes, opt) => {
+  _matchNodeNext(branch, nodes, opt) {
     const { combo, index } = opt;
     const { combo: nextCombo, leaves } = branch[index];
     const twig = {
       combo,
       leaves
     };
-    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_NEXT));
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
     if (nextNodes.size) {
       if (index === branch.length - 1) {
         const [nextNode] = sortNodes(nextNodes);
         return nextNode;
+      } else {
+        return this._matchNodeNext(branch, nextNodes, {
+          combo: nextCombo,
+          index: index + 1
+        });
       }
-      return this._matchNodeNext(branch, nextNodes, {
-        combo: nextCombo,
-        index: index + 1
-      });
     }
     return null;
-  };
+  }
 
   /**
-   * Matches a node in the 'previous' direction.
+   * match node to previous direction
    * @private
-   * @param {Array} branch - The branch.
-   * @param {object} node - The Element node.
-   * @param {object} opt - Options.
-   * @param {number} opt.index - The index.
-   * @returns {?object} The node.
+   * @param {Array} branch - branch
+   * @param {object} node - Element node
+   * @param {object} opt - option
+   * @param {number} opt.index - index
+   * @returns {?object} - node
    */
-  _matchNodePrev = (branch, node, opt) => {
+  _matchNodePrev(branch, node, opt) {
     const { index } = opt;
     const twig = branch[index];
     const nodes = new Set([node]);
-    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_PREV));
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_PREV);
     if (nextNodes.size) {
       if (index === 0) {
         return node;
-      }
-      let matched;
-      for (const nextNode of nextNodes) {
-        matched = this._matchNodePrev(branch, nextNode, {
-          index: index - 1
-        });
-        if (matched) {
-          break;
-        }
-      }
-      if (matched) {
-        return node;
-      }
-    }
-    return null;
-  };
-
-  /**
-   * Processes a complex selector branch to find all matching nodes.
-   * @private
-   * @param {Array} branch - The selector branch from the AST.
-   * @param {Array} entryNodes - The initial set of nodes to start from.
-   * @param {string} dir - The direction of traversal ('next' or 'prev').
-   * @returns {Set.<object>} A set of all matched nodes.
-   */
-  _processComplexBranchAll = (branch, entryNodes, dir) => {
-    const matchedNodes = new Set();
-    const branchLen = branch.length;
-    const lastIndex = branchLen - 1;
-
-    if (dir === DIR_NEXT) {
-      const { combo: firstCombo } = branch[0];
-      for (const node of entryNodes) {
-        let combo = firstCombo;
-        let nextNodes = new Set([node]);
-        for (let j = 1; j < branchLen; j++) {
-          const { combo: nextCombo, leaves } = branch[j];
-          const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (j === lastIndex) {
-              for (const nextNode of nodesArr) {
-                matchedNodes.add(nextNode);
-              }
-            }
-            combo = nextCombo;
-            nextNodes = new Set(nodesArr);
-          } else {
-            // No further matches down this path.
-            nextNodes.clear();
-            break;
-          }
-        }
-      }
-      // DIR_PREV
-    } else {
-      for (const node of entryNodes) {
-        let nextNodes = new Set([node]);
-        for (let j = lastIndex - 1; j >= 0; j--) {
-          const twig = branch[j];
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            // The entry node is the final match
-            if (j === 0) {
-              matchedNodes.add(node);
-            }
-            nextNodes = new Set(nodesArr);
-          } else {
-            // No further matches down this path.
-            nextNodes.clear();
-            break;
-          }
-        }
-      }
-    }
-    return matchedNodes;
-  };
-
-  /**
-   * Find a node contained by this.#node.
-   * @private
-   * @param {Array} nodesArr - The set of nodes to find from.
-   * @returns {?object} The matched node, or null.
-   */
-  _findChildNodeContainedByNode = nodesArr => {
-    let matchedNode = null;
-    if (Array.isArray(nodesArr)) {
-      const l = nodesArr.length;
-      for (let i = 0; i < l; i++) {
-        const node = nodesArr[i];
-        if (this.#node.contains(node)) {
-          matchedNode = node;
-          break;
-        }
-      }
-    }
-    return matchedNode;
-  };
-
-  /**
-   * Processes a complex selector branch to find the first matching node.
-   * @private
-   * @param {Array} branch - The selector branch from the AST.
-   * @param {Array} entryNodes - The initial set of nodes to start from.
-   * @param {string} dir - The direction of traversal ('next' or 'prev').
-   * @param {string} targetType - The type of search (e.g., 'first').
-   * @returns {?object} The first matched node, or null.
-   */
-  _processComplexBranchFirst = (branch, entryNodes, dir, targetType) => {
-    const branchLen = branch.length;
-    const lastIndex = branchLen - 1;
-    // DIR_NEXT logic for finding the first match.
-    if (dir === DIR_NEXT) {
-      const { combo: entryCombo } = branch[0];
-      for (const node of entryNodes) {
-        const matchedNode = this._matchNodeNext(branch, new Set([node]), {
-          combo: entryCombo,
-          index: 1
-        });
-        if (matchedNode) {
-          if (this.#node.nodeType === ELEMENT_NODE) {
-            if (
-              matchedNode !== this.#node &&
-              this.#node.contains(matchedNode)
-            ) {
-              return matchedNode;
-            }
-          } else {
-            return matchedNode;
-          }
-        }
-      }
-      // Fallback logic if no direct match found.
-      const { leaves: entryLeaves } = branch[0];
-      const [entryNode] = entryNodes;
-      if (this.#node.contains(entryNode)) {
-        let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
-          targetType
-        });
-        while (refNode) {
-          const matchedNode = this._matchNodeNext(branch, new Set([refNode]), {
-            combo: entryCombo,
-            index: 1
-          });
-          if (matchedNode) {
-            if (this.#node.nodeType === ELEMENT_NODE) {
-              if (
-                matchedNode !== this.#node &&
-                this.#node.contains(matchedNode)
-              ) {
-                return matchedNode;
-              }
-            } else {
-              return matchedNode;
-            }
-          }
-          [refNode] = this._findNodeWalker(entryLeaves, refNode, {
-            targetType,
-            force: true
-          });
-        }
       } else {
-        const { combo: firstCombo } = branch[0];
-        let combo = firstCombo;
-        let nextNodes = new Set([entryNode]);
-        for (let j = 1; j < branchLen; j++) {
-          const { combo: nextCombo, leaves } = branch[j];
-          const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (j === lastIndex) {
-              return this._findChildNodeContainedByNode(nodesArr);
-            }
-            combo = nextCombo;
-            nextNodes = new Set(nodesArr);
-          } else {
+        let matched;
+        for (const nextNode of nextNodes) {
+          matched = this._matchNodePrev(branch, nextNode, {
+            index: index - 1
+          });
+          if (matched) {
             break;
           }
         }
-      }
-      // DIR_PREV logic for finding the first match.
-    } else {
-      for (const node of entryNodes) {
-        const matchedNode = this._matchNodePrev(branch, node, {
-          index: lastIndex - 1
-        });
-        if (matchedNode) {
-          return matchedNode;
-        }
-      }
-      // Fallback for TARGET_FIRST.
-      if (targetType === TARGET_FIRST) {
-        const { leaves: entryLeaves } = branch[lastIndex];
-        const [entryNode] = entryNodes;
-        let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
-          targetType
-        });
-        while (refNode) {
-          const matchedNode = this._matchNodePrev(branch, refNode, {
-            index: lastIndex - 1
-          });
-          if (matchedNode) {
-            return refNode;
-          }
-          [refNode] = this._findNodeWalker(entryLeaves, refNode, {
-            targetType,
-            force: true
-          });
+        if (matched) {
+          return node;
         }
       }
     }
     return null;
-  };
+  }
 
   /**
-   * Finds matched nodes.
-   * @param {string} targetType - The target type.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * find matched nodes
+   * @param {string} targetType - target type
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  find = targetType => {
+  find(targetType) {
+    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
+      this._prepareQuerySelectorWalker();
+    }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
-    let sort = false;
+    let sort;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find } = branches[i];
-      if (!branch.length || !find) {
-        continue;
-      }
-      const entryNodes = collectedNodes[i];
-      const lastIndex = branch.length - 1;
-      // Handle simple selectors (no combinators).
-      if (lastIndex === 0) {
-        if (
-          (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
-          this.#node.nodeType === ELEMENT_NODE
-        ) {
+      const branchLen = branch.length;
+      if (branchLen && find) {
+        const entryNodes = collectedNodes[i];
+        const entryNodesLen = entryNodes.length;
+        const lastIndex = branchLen - 1;
+        if (lastIndex === 0) {
+          if (
+            (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
+            this.#node.nodeType === ELEMENT_NODE
+          ) {
+            for (let j = 0; j < entryNodesLen; j++) {
+              const node = entryNodes[j];
+              if (node !== this.#node && this.#node.contains(node)) {
+                nodes.add(node);
+                if (targetType === TARGET_FIRST) {
+                  break;
+                }
+              }
+            }
+          } else if (targetType === TARGET_ALL) {
+            if (nodes.size) {
+              nodes.add(...entryNodes);
+              sort = true;
+            } else {
+              nodes = new Set(entryNodes);
+            }
+          } else {
+            const [node] = entryNodes;
+            nodes.add(node);
+          }
+        } else if (targetType === TARGET_ALL) {
+          if (dir === DIR_NEXT) {
+            const { combo: firstCombo } = branch[0];
+            let combo = firstCombo;
+            for (const node of entryNodes) {
+              let nextNodes = new Set([node]);
+              for (let j = 1; j < branchLen; j++) {
+                const { combo: nextCombo, leaves } = branch[j];
+                const twig = {
+                  combo,
+                  leaves
+                };
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
+                  if (j === lastIndex) {
+                    if (nodes.size) {
+                      for (const nextNode of nextNodes) {
+                        nodes.add(nextNode);
+                      }
+                      sort = true;
+                      combo = firstCombo;
+                    } else {
+                      nodes = nextNodes;
+                      combo = firstCombo;
+                    }
+                  } else {
+                    combo = nextCombo;
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          } else {
+            for (const node of entryNodes) {
+              let nextNodes = new Set([node]);
+              for (let j = lastIndex - 1; j >= 0; j--) {
+                const twig = branch[j];
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
+                  if (j === 0) {
+                    nodes.add(node);
+                    if (branchLen > 1 && nodes.size > 1) {
+                      sort = true;
+                    }
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        } else if (targetType === TARGET_FIRST && dir === DIR_NEXT) {
+          const { combo: entryCombo } = branch[0];
+          let matched;
           for (const node of entryNodes) {
-            if (node !== this.#node && this.#node.contains(node)) {
-              nodes.add(node);
-              if (targetType === TARGET_FIRST) {
+            const matchedNode = this._matchNodeNext(branch, new Set([node]), {
+              combo: entryCombo,
+              index: 1
+            });
+            if (matchedNode) {
+              if (this.#node.nodeType === ELEMENT_NODE) {
+                if (
+                  matchedNode !== this.#node &&
+                  this.#node.contains(matchedNode)
+                ) {
+                  nodes.add(matchedNode);
+                  matched = true;
+                  break;
+                }
+              } else {
+                nodes.add(matchedNode);
+                matched = true;
                 break;
               }
             }
           }
-        } else if (targetType === TARGET_ALL) {
-          if (nodes.size) {
-            for (const node of entryNodes) {
+          if (!matched) {
+            const { leaves: entryLeaves } = branch[0];
+            const [entryNode] = entryNodes;
+            if (this.#node.contains(entryNode)) {
+              let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+                targetType
+              });
+              while (refNode) {
+                const matchedNode = this._matchNodeNext(
+                  branch,
+                  new Set([refNode]),
+                  {
+                    combo: entryCombo,
+                    index: 1
+                  }
+                );
+                if (matchedNode) {
+                  if (this.#node.nodeType === ELEMENT_NODE) {
+                    if (
+                      matchedNode !== this.#node &&
+                      this.#node.contains(matchedNode)
+                    ) {
+                      nodes.add(matchedNode);
+                      break;
+                    }
+                  } else {
+                    nodes.add(matchedNode);
+                    break;
+                  }
+                }
+                [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+                  targetType,
+                  force: true
+                });
+              }
+            } else {
+              const { combo: firstCombo } = branch[0];
+              let combo = firstCombo;
+              let nextNodes = new Set([entryNode]);
+              for (let j = 1; j < branchLen; j++) {
+                const { combo: nextCombo, leaves } = branch[j];
+                const twig = {
+                  combo,
+                  leaves
+                };
+                nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+                if (nextNodes.size) {
+                  if (j === lastIndex) {
+                    for (const nextNode of nextNodes) {
+                      if (this.#node.contains(nextNode)) {
+                        nodes.add(nextNode);
+                        break;
+                      }
+                    }
+                  } else {
+                    combo = nextCombo;
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        } else {
+          let matched;
+          for (const node of entryNodes) {
+            const matchedNode = this._matchNodePrev(branch, node, {
+              index: lastIndex - 1
+            });
+            if (matchedNode) {
               nodes.add(node);
+              matched = true;
+              break;
             }
-            sort = true;
-          } else {
-            nodes = new Set(entryNodes);
           }
-        } else {
-          if (entryNodes.length) {
-            nodes.add(entryNodes[0]);
-          }
-        }
-        // Handle complex selectors.
-      } else {
-        if (targetType === TARGET_ALL) {
-          const newNodes = this._processComplexBranchAll(
-            branch,
-            entryNodes,
-            dir
-          );
-          if (nodes.size) {
-            for (const newNode of newNodes) {
-              nodes.add(newNode);
+          if (!matched && targetType === TARGET_FIRST) {
+            const { leaves: entryLeaves } = branch[lastIndex];
+            const [entryNode] = entryNodes;
+            let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+              targetType
+            });
+            while (refNode) {
+              const matchedNode = this._matchNodePrev(branch, refNode, {
+                index: lastIndex - 1
+              });
+              if (matchedNode) {
+                nodes.add(refNode);
+                break;
+              }
+              [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+                targetType,
+                force: true
+              });
             }
-            sort = true;
-          } else {
-            nodes = newNodes;
-          }
-        } else {
-          const matchedNode = this._processComplexBranchFirst(
-            branch,
-            entryNodes,
-            dir,
-            targetType
-          );
-          if (matchedNode) {
-            nodes.add(matchedNode);
           }
         }
       }
@@ -3112,14 +3125,22 @@ export class Finder {
       } else {
         pseudoElement = null;
       }
-      return { match, pseudoElement };
+      return {
+        match,
+        pseudoElement
+      };
     }
-    if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
+    if (targetType === TARGET_FIRST) {
       nodes.delete(this.#node);
-    }
-    if ((sort || targetType === TARGET_FIRST) && nodes.size > 1) {
-      return new Set(sortNodes(nodes));
+      if (nodes.size > 1) {
+        nodes = new Set(sortNodes(nodes));
+      }
+    } else if (targetType === TARGET_ALL) {
+      nodes.delete(this.#node);
+      if (sort && nodes.size > 1) {
+        nodes = new Set(sortNodes(nodes));
+      }
     }
     return nodes;
-  };
+  }
 }
