@@ -5,7 +5,7 @@
 /* import */
 import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
-import { generate, parse, walk } from 'css-tree';
+import * as cssTree from 'css-tree';
 import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
@@ -20,13 +20,16 @@ import {
   DOCUMENT_POSITION_PRECEDING,
   ELEMENT_NODE,
   HAS_COMPOUND,
-  KEY_INPUT_BUTTON,
-  KEY_INPUT_EDIT,
-  KEY_INPUT_TEXT,
+  INPUT_BUTTON,
+  INPUT_EDIT,
+  INPUT_LTR,
+  INPUT_TEXT,
+  KEYS_LOGICAL,
   LOGIC_COMPLEX,
   LOGIC_COMPOUND,
   N_TH,
   PSEUDO_CLASS,
+  PS_CLASS_SELECTOR,
   RULE,
   SCOPE,
   SELECTOR_LIST,
@@ -38,7 +41,27 @@ import {
   TYPE_FROM,
   TYPE_TO
 } from './constant.js';
-const REG_EXCLUDE_FILTER =
+const KEYS_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
+const KEYS_DIR_LTR = new Set(INPUT_LTR);
+const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+const KEYS_NODE_DIR_EXCLUDE = new Set(['bdi', 'script', 'style', 'textarea']);
+const KEYS_NODE_FOCUSABLE = new Set(['button', 'select', 'textarea']);
+const KEYS_NODE_FOCUSABLE_SVG = new Set([
+  'clipPath',
+  'defs',
+  'desc',
+  'linearGradient',
+  'marker',
+  'mask',
+  'metadata',
+  'pattern',
+  'radialGradient',
+  'script',
+  'style',
+  'symbol',
+  'title'
+]);
+const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
@@ -57,19 +80,94 @@ const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 
 /**
- * get type
- * @param {object} o - object to check
- * @returns {string} - type of object
+ * Manages state for extracting nested selectors from a CSS AST.
+ */
+class SelectorExtractor {
+  constructor() {
+    this.selectors = [];
+    this.isScoped = false;
+  }
+
+  /**
+   * Walker enter function.
+   * @param {object} node - The AST node.
+   */
+  enter(node) {
+    switch (node.type) {
+      case ATRULE: {
+        if (node.name === 'scope') {
+          this.isScoped = true;
+        }
+        break;
+      }
+      case SCOPE: {
+        const { children, type } = node.root;
+        const arr = [];
+        if (type === SELECTOR_LIST) {
+          for (const child of children) {
+            const selector = cssTree.generate(child);
+            arr.push(selector);
+          }
+          this.selectors.push(arr);
+        }
+        break;
+      }
+      case RULE: {
+        const { children, type } = node.prelude;
+        const arr = [];
+        if (type === SELECTOR_LIST) {
+          let hasAmp = false;
+          for (const child of children) {
+            const selector = cssTree.generate(child);
+            if (this.isScoped && !hasAmp) {
+              hasAmp = /\x26/.test(selector);
+            }
+            arr.push(selector);
+          }
+          if (this.isScoped) {
+            if (hasAmp) {
+              this.selectors.push(arr);
+              /* FIXME:
+              } else {
+                this.selectors = arr;
+                this.isScoped = false;
+              */
+            }
+          } else {
+            this.selectors.push(arr);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Walker leave function.
+   * @param {object} node - The AST node.
+   */
+  leave(node) {
+    if (node.type === ATRULE) {
+      if (node.name === 'scope') {
+        this.isScoped = false;
+      }
+    }
+  }
+}
+
+/**
+ * Get type of an object.
+ * @param {object} o - Object to check.
+ * @returns {string} - Type of the object.
  */
 export const getType = o =>
   Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
 
 /**
- * verify array contents
- * @param {Array} arr - array
- * @param {string} type - expected type, e.g. 'String'
- * @throws {TypeError} - TypeError
- * @returns {Array} - verified array
+ * Verify array contents.
+ * @param {Array} arr - The array.
+ * @param {string} type - Expected type, e.g. 'String'.
+ * @throws {TypeError} - Throws if array or its items are of unexpected type.
+ * @returns {Array} - The verified array.
  */
 export const verifyArray = (arr, type) => {
   if (!Array.isArray(arr)) {
@@ -87,10 +185,78 @@ export const verifyArray = (arr, type) => {
 };
 
 /**
- * resolve content document, root node and tree walker, is in shadow
- * @param {object} node - Document, DocumentFragment, Element node
- * @returns {Array.<object|boolean>}
- *   - array of document, root node , tree walker, node is in shadow
+ * Generate a DOMException.
+ * @param {string} msg - The error message.
+ * @param {string} name - The error name.
+ * @param {object} globalObject - The global object (e.g., window).
+ * @returns {DOMException} The generated DOMException object.
+ */
+export const generateException = (msg, name, globalObject = globalThis) => {
+  return new globalObject.DOMException(msg, name);
+};
+
+/**
+ * Find a nested :has() pseudo-class.
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it's :has, otherwise null.
+ */
+export const findNestedHas = leaf => {
+  return leaf.name === 'has';
+};
+
+/**
+ * Find a logical pseudo-class that contains a nested :has().
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it matches, otherwise null.
+ */
+export const findLogicalWithNestedHas = leaf => {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+    return leaf;
+  }
+  return null;
+};
+
+/**
+ * Filter a list of nodes based on An+B logic
+ * @param {Array.<object>} nodes - array of nodes to filter
+ * @param {object} anb - An+B options
+ * @param {number} anb.a - a
+ * @param {number} anb.b - b
+ * @param {boolean} [anb.reverse] - reverse order
+ * @returns {Array.<object>} - array of matched nodes
+ */
+export const filterNodesByAnB = (nodes, anb) => {
+  const { a, b, reverse } = anb;
+  const processedNodes = reverse ? [...nodes].reverse() : nodes;
+  const l = nodes.length;
+  const matched = [];
+  if (a === 0) {
+    if (b > 0 && b <= l) {
+      matched.push(processedNodes[b - 1]);
+    }
+    return matched;
+  }
+  let startIndex = b - 1;
+  if (a > 0) {
+    while (startIndex < 0) {
+      startIndex += a;
+    }
+    for (let i = startIndex; i < l; i += a) {
+      matched.push(processedNodes[i]);
+    }
+  } else if (startIndex >= 0) {
+    for (let i = startIndex; i >= 0; i += a) {
+      matched.push(processedNodes[i]);
+    }
+    return matched.reverse();
+  }
+  return matched;
+};
+
+/**
+ * Resolve content document, root node, and check if it's in a shadow DOM.
+ * @param {object} node - Document, DocumentFragment, or Element node.
+ * @returns {Array.<object|boolean>} - [document, root, isInShadow].
  */
 export const resolveContent = node => {
   if (!node?.nodeType) {
@@ -137,11 +303,11 @@ export const resolveContent = node => {
 };
 
 /**
- * traverse node tree
- * @param {object} node - node
- * @param {object} walker - tree walker
- * @param {boolean} [force] - traverse only to next node
- * @returns {?object} - current node
+ * Traverse node tree with a TreeWalker.
+ * @param {object} node - The target node.
+ * @param {object} walker - The TreeWalker instance.
+ * @param {boolean} [force] - Traverse only to the next node.
+ * @returns {?object} - The current node if found, otherwise null.
  */
 export const traverseNode = (node, walker, force = false) => {
   if (!node?.nodeType) {
@@ -196,10 +362,10 @@ export const traverseNode = (node, walker, force = false) => {
 };
 
 /**
- * is custom element
- * @param {object} node - Element node
- * @param {object} [opt] - options
- * @returns {boolean} - result
+ * Check if a node is a custom element.
+ * @param {object} node - The Element node.
+ * @param {object} [opt] - Options.
+ * @returns {boolean} - True if it's a custom element.
  */
 export const isCustomElement = (node, opt = {}) => {
   if (!node?.nodeType) {
@@ -230,9 +396,9 @@ export const isCustomElement = (node, opt = {}) => {
 };
 
 /**
- * get slotted text content
- * @param {object} node - Element node
- * @returns {?string} - text content
+ * Get slotted text content.
+ * @param {object} node - The Element node (likely a <slot>).
+ * @returns {?string} - The text content.
  */
 export const getSlottedTextContent = node => {
   if (!node?.nodeType) {
@@ -243,8 +409,10 @@ export const getSlottedTextContent = node => {
   }
   const nodes = node.assignedNodes();
   if (nodes.length) {
-    let text;
-    for (const item of nodes) {
+    let text = '';
+    const l = nodes.length;
+    for (let i = 0; i < l; i++) {
+      const item = nodes[i];
       text = item.textContent.trim();
       if (text) {
         break;
@@ -256,10 +424,10 @@ export const getSlottedTextContent = node => {
 };
 
 /**
- * get directionality of node
+ * Get directionality of a node.
  * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
- * @param {object} node - Element node
- * @returns {?string} - 'ltr' / 'rtl'
+ * @param {object} node - The Element node.
+ * @returns {?string} - 'ltr' or 'rtl'.
  */
 export const getDirectionality = node => {
   if (!node?.nodeType) {
@@ -273,26 +441,13 @@ export const getDirectionality = node => {
   if (dirAttr === 'ltr' || dirAttr === 'rtl') {
     return dirAttr;
   } else if (dirAttr === 'auto') {
-    let text;
+    let text = '';
     switch (localName) {
       case 'input': {
-        const valueKeys = [...KEY_INPUT_BUTTON, ...KEY_INPUT_TEXT, 'hidden'];
-        if (!node.type || valueKeys.includes(node.type)) {
+        if (!node.type || KEYS_DIR_AUTO.has(node.type)) {
           text = node.value;
-        } else {
-          const ltrKeys = [
-            'checkbox',
-            'color',
-            'date',
-            'image',
-            'number',
-            'range',
-            'radio',
-            'time'
-          ];
-          if (ltrKeys.includes(node.type)) {
-            return 'ltr';
-          }
+        } else if (KEYS_DIR_LTR.has(node.type)) {
+          return 'ltr';
         }
         break;
       }
@@ -315,17 +470,15 @@ export const getDirectionality = node => {
           } = item;
           if (itemNodeType === TEXT_NODE) {
             text = itemTextContent.trim();
-          } else if (itemNodeType === ELEMENT_NODE) {
-            const keys = ['bdi', 'script', 'style', 'textarea'];
-            if (
-              !keys.includes(itemLocalName) &&
-              (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))
-            ) {
-              if (itemLocalName === 'slot') {
-                text = getSlottedTextContent(item);
-              } else {
-                text = itemTextContent.trim();
-              }
+          } else if (
+            itemNodeType === ELEMENT_NODE &&
+            !KEYS_NODE_DIR_EXCLUDE.has(itemLocalName) &&
+            (!itemDir || (itemDir !== 'ltr' && itemDir !== 'rtl'))
+          ) {
+            if (itemLocalName === 'slot') {
+              text = getSlottedTextContent(item);
+            } else {
+              text = itemTextContent.trim();
             }
           }
           if (text) {
@@ -381,10 +534,64 @@ export const getDirectionality = node => {
 };
 
 /**
- * is content editable
- * NOTE: not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Finds the effective language attribute by traversing up the DOM tree.
+ * @param {object} node - The element node to start from.
+ * @returns {?string} The language attribute string, or null if not found.
+ */
+export const findLangAttribute = node => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  if (node.nodeType !== ELEMENT_NODE) {
+    return null;
+  }
+  const { contentType } = node.ownerDocument;
+  const isHtml = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
+  const isXml =
+    /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(
+      contentType
+    );
+  let current = node;
+  while (current) {
+    let lang = null;
+    // Check for lang attributes based on document type.
+    if (isHtml && current.hasAttribute('lang')) {
+      lang = current.getAttribute('lang');
+    } else if (isXml && current.hasAttribute('xml:lang')) {
+      lang = current.getAttribute('xml:lang');
+    }
+    // If a language attribute is found, its value determines the language.
+    // Inheritance stops here, even if the value is an empty string.
+    if (lang !== null) {
+      return lang;
+    }
+    if (current.parentElement) {
+      current = current.parentElement;
+    } else {
+      break;
+    }
+  }
+  return null;
+};
+
+/**
+ * Determines case sensitivity for an attribute match.
+ * @param {?string} astFlags - The flags from the AST ('i' or 's').
+ * @param {string} contentType - The document's content type.
+ * @returns {boolean} True if the match should be case-sensitive.
+ */
+export const getCaseSensitivity = (astFlags, contentType) => {
+  if (contentType === 'text/html') {
+    return typeof astFlags === 'string' && /^s$/i.test(astFlags);
+  }
+  return !(typeof astFlags === 'string' && /^i$/i.test(astFlags));
+};
+
+/**
+ * Check if content is editable.
+ * NOTE: Not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if content is editable.
  */
 export const isContentEditable = node => {
   if (!node?.nodeType) {
@@ -429,9 +636,9 @@ export const isContentEditable = node => {
 };
 
 /**
- * is node visible
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Check if a node is visible.
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if the node is visible.
  */
 export const isVisible = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
@@ -446,9 +653,9 @@ export const isVisible = node => {
 };
 
 /**
- * is focus visible
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Check if focus is visible on the node.
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if focus is visible.
  */
 export const isFocusVisible = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
@@ -457,7 +664,7 @@ export const isFocusVisible = node => {
   const { localName, type } = node;
   switch (localName) {
     case 'input': {
-      if (!type || KEY_INPUT_EDIT.includes(type)) {
+      if (!type || KEYS_INPUT_EDIT.has(type)) {
         return true;
       }
       return false;
@@ -472,9 +679,9 @@ export const isFocusVisible = node => {
 };
 
 /**
- * is focusable area
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Check if an area is focusable.
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if the area is focusable.
  */
 export const isFocusableArea = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
@@ -529,9 +736,8 @@ export const isFocusableArea = node => {
         return false;
       }
       default: {
-        const keys = ['button', 'select', 'textarea'];
         if (
-          keys.includes(localName) &&
+          KEYS_NODE_FOCUSABLE.has(localName) &&
           !(node.disabled || node.hasAttribute('disabled'))
         ) {
           return true;
@@ -540,26 +746,11 @@ export const isFocusableArea = node => {
     }
   } else if (node instanceof window.SVGElement) {
     if (Number.isInteger(parseInt(node.getAttributeNS(null, 'tabindex')))) {
-      const keys = [
-        'clipPath',
-        'defs',
-        'desc',
-        'linearGradient',
-        'marker',
-        'mask',
-        'metadata',
-        'pattern',
-        'radialGradient',
-        'script',
-        'style',
-        'symbol',
-        'title'
-      ];
       const ns = 'http://www.w3.org/2000/svg';
       let bool;
       let refNode = node;
       while (refNode.namespaceURI === ns) {
-        bool = keys.includes(refNode.localName);
+        bool = KEYS_NODE_FOCUSABLE_SVG.has(refNode.localName);
         if (bool) {
           break;
         }
@@ -585,14 +776,14 @@ export const isFocusableArea = node => {
 };
 
 /**
- * is focusable
- * NOTE: not applied, need fix in jsdom itself
+ * Check if a node is focusable.
+ * NOTE: Not applied, needs fix in jsdom itself.
  * @see https://github.com/whatwg/html/pull/8392
  * @see https://phabricator.services.mozilla.com/D156219
  * @see https://github.com/jsdom/jsdom/issues/3029
  * @see https://github.com/jsdom/jsdom/issues/3464
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if the node is focusable.
  */
 export const isFocusable = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
@@ -630,10 +821,10 @@ export const isFocusable = node => {
 };
 
 /**
- * get namespace URI
- * @param {string} ns - namespace prefix
- * @param {Array} node - Element node
- * @returns {?string} - namespace URI
+ * Get namespace URI.
+ * @param {string} ns - The namespace prefix.
+ * @param {object} node - The Element node.
+ * @returns {?string} - The namespace URI.
  */
 export const getNamespaceURI = (ns, node) => {
   if (typeof ns !== 'string') {
@@ -661,10 +852,10 @@ export const getNamespaceURI = (ns, node) => {
 };
 
 /**
- * is namespace declared
- * @param {string} ns - namespace
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Check if a namespace is declared.
+ * @param {string} ns - The namespace.
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if the namespace is declared.
  */
 export const isNamespaceDeclared = (ns = '', node = {}) => {
   if (!ns || typeof ns !== 'string' || node?.nodeType !== ELEMENT_NODE) {
@@ -687,10 +878,10 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
 };
 
 /**
- * is preceding - nodeA precedes and/or contains nodeB
- * @param {object} nodeA - Element node
- * @param {object} nodeB - Element node
- * @returns {boolean} - result
+ * Check if nodeA precedes and/or contains nodeB.
+ * @param {object} nodeA - The first Element node.
+ * @param {object} nodeB - The second Element node.
+ * @returns {boolean} - True if nodeA precedes nodeB.
  */
 export const isPreceding = (nodeA, nodeB) => {
   if (!nodeA?.nodeType) {
@@ -708,30 +899,35 @@ export const isPreceding = (nodeA, nodeB) => {
 };
 
 /**
- * sort nodes
- * @param {Array.<object>|Set.<object>} nodes - collection of nodes
- * @returns {Array.<object>} - collection of sorted nodes
+ * Comparison function for sorting nodes based on document position.
+ * @param {object} a - The first node.
+ * @param {object} b - The second node.
+ * @returns {number} - Sort order.
+ */
+export const compareNodes = (a, b) => {
+  if (isPreceding(b, a)) {
+    return 1;
+  }
+  return -1;
+};
+
+/**
+ * Sort a collection of nodes.
+ * @param {Array.<object>|Set.<object>} nodes - Collection of nodes.
+ * @returns {Array.<object>} - Collection of sorted nodes.
  */
 export const sortNodes = (nodes = []) => {
   const arr = [...nodes];
   if (arr.length > 1) {
-    arr.sort((a, b) => {
-      let res;
-      if (isPreceding(b, a)) {
-        res = 1;
-      } else {
-        res = -1;
-      }
-      return res;
-    });
+    arr.sort(compareNodes);
   }
   return arr;
 };
 
 /**
- * concat array of nested selectors into equivalent selector
- * @param {Array.<Array.<string>>} selectors - [parents, children, ...]
- * @returns {string} - selector
+ * Concat an array of nested selectors into an equivalent single selector.
+ * @param {Array.<Array.<string>>} selectors - [parents, children, ...].
+ * @returns {string} - The concatenated selector.
  */
 export const concatNestedSelectors = selectors => {
   if (!Array.isArray(selectors)) {
@@ -802,81 +998,105 @@ export const concatNestedSelectors = selectors => {
 };
 
 /**
- * extract nested selectors from CSSRule.cssText
- * @param {string} css - CSSRule.cssText
- * @returns {Array.<Array.<string>>} - array of nested selectors
+ * Extract nested selectors from CSSRule.cssText.
+ * @param {string} css - CSSRule.cssText.
+ * @returns {Array.<Array.<string>>} - Array of nested selectors.
  */
 export const extractNestedSelectors = css => {
-  const ast = parse(css, {
+  const ast = cssTree.parse(css, {
     context: 'rule'
   });
-  const selectors = [];
-  let isScoped = false;
-  walk(ast, {
-    enter: node => {
-      switch (node.type) {
-        case ATRULE: {
-          if (node.name === 'scope') {
-            isScoped = true;
-          }
-          break;
-        }
-        case SCOPE: {
-          const { children, type } = node.root;
-          const arr = [];
-          if (type === SELECTOR_LIST) {
-            for (const child of children) {
-              const selector = generate(child);
-              arr.push(selector);
-            }
-            selectors.push(arr);
-          }
-          break;
-        }
-        case RULE: {
-          const { children, type } = node.prelude;
-          const arr = [];
-          if (type === SELECTOR_LIST) {
-            let hasAmp = false;
-            for (const child of children) {
-              const selector = generate(child);
-              if (isScoped && !hasAmp) {
-                hasAmp = /\x26/.test(selector);
-              }
-              arr.push(selector);
-            }
-            if (isScoped) {
-              if (hasAmp) {
-                selectors.push(arr);
-                /* FIXME:
-              } else {
-                selectors = arr;
-                isScoped = false;
-              */
-              }
-            } else {
-              selectors.push(arr);
-            }
-          }
-        }
-      }
-    },
-    leave: node => {
-      if (node.type === ATRULE) {
-        if (node.name === 'scope') {
-          isScoped = false;
-        }
-      }
-    }
+  const extractor = new SelectorExtractor();
+  cssTree.walk(ast, {
+    enter: extractor.enter.bind(extractor),
+    leave: extractor.leave.bind(extractor)
   });
-  return selectors;
+  return extractor.selectors;
 };
 
 /**
- * init nwsapi
- * @param {object} window - Window
- * @param {object} document - Document
- * @returns {object} - nwsapi
+ * Collects relevant attribute values from a node that match the selector's
+ * attribute name.
+ * @param {object} node - The element node.
+ * @param {object} [opt] - Options.
+ * @returns {Array.<string>} An array of matching attribute values.
+ */
+export const findAttributeValues = (node, opt = {}) => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  const { attributes } = node;
+  const {
+    astAttrName = '',
+    astLocalName = '',
+    astPrefix = '',
+    caseSensitive = false
+  } = opt;
+  if (!attributes.length || !astAttrName) {
+    return [];
+  }
+  const attrValues = new Set();
+  const hasNamespace = astAttrName.includes('|');
+  for (const attr of attributes) {
+    let { name: itemName, value: itemValue } = attr;
+    if (!caseSensitive) {
+      itemName = itemName.toLowerCase();
+      itemValue = itemValue.toLowerCase();
+    }
+    if (itemName === 'xml:lang') {
+      continue;
+    }
+    const [itemPrefix, itemLocalName] = itemName.includes(':')
+      ? itemName.split(':')
+      : ['', itemName];
+    if (hasNamespace) {
+      if (astLocalName === itemLocalName) {
+        if (astPrefix === '*' || (astPrefix === '' && itemPrefix === '')) {
+          attrValues.add(itemValue);
+        } else if (
+          astPrefix === itemPrefix &&
+          isNamespaceDeclared(astPrefix, node)
+        ) {
+          attrValues.add(itemValue);
+        }
+      }
+    } else if (astAttrName === itemLocalName) {
+      attrValues.add(itemValue);
+    }
+  }
+  return [...attrValues];
+};
+
+/**
+ * Check for valid shadow host selector for :is(), :not(), :where().
+ * @param {string} astName - pseudo-class name.
+ * @param {Array.<Array.<object>>} branches - AST branches.
+ * @returns {boolean} - True if valid
+ */
+export const isValidShadowHostSelector = (astName = '', branches = []) => {
+  if (!/^(?:is|not|where)$/.test(astName)) {
+    return false;
+  }
+  const [branch] = branches;
+  if (Array.isArray(branch) && branch.length === 1) {
+    const [ast] = branch;
+    if (!ast || !Object.hasOwn(ast, 'type')) {
+      return false;
+    }
+    if (astName === 'not') {
+      const { type } = ast;
+      return type === PS_CLASS_SELECTOR;
+    }
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Initialize nwsapi.
+ * @param {object} window - The Window object.
+ * @param {object} document - The Document object.
+ * @returns {object} - The nwsapi instance.
  */
 export const initNwsapi = (window, document) => {
   if (!window?.DOMException) {
@@ -896,10 +1116,10 @@ export const initNwsapi = (window, document) => {
 };
 
 /**
- * filter selector (for nwsapi)
- * @param {string} selector - selector
- * @param {string} target - target type
- * @returns {boolean} - result
+ * Filter a selector for use with nwsapi.
+ * @param {string} selector - The selector string.
+ * @param {string} target - The target type.
+ * @returns {boolean} - True if the selector is valid for nwsapi.
  */
 export const filterSelector = (selector, target) => {
   if (
@@ -910,11 +1130,11 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // exclude simple class selector
+  // Exclude simple class selector for TARGET_ALL.
   if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
     return false;
   }
-  // exclude missing close square bracket
+  // Exclude missing close square bracket.
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
     const sel = selector.substring(index);
@@ -922,15 +1142,20 @@ export const filterSelector = (selector, target) => {
       return false;
     }
   }
-  // exclude '/',
-  // exclude namespaced selectors, escaped selectors, pseudo-element selectors,
-  // selectors containing non-ASCII or control character other than whitespace,
-  // attribute selectors with case flag, e.g. [attr i], or with unclosed quotes,
-  // and empty :is() or :where()
-  if (selector.includes('/') || REG_EXCLUDE_FILTER.test(selector)) {
+  // Exclude various complex or unsupported selectors.
+  // - selectors containing '/'
+  // - namespaced selectors
+  // - escaped selectors
+  // - pseudo-element selectors
+  // - selectors containing non-ASCII
+  // - selectors containing control character other than whitespace
+  // - attribute selectors with case flag, e.g. [attr i]
+  // - attribute selectors with unclosed quotes
+  // - empty :is() or :where()
+  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
     return false;
   }
-  // include pseudo-classes that are known to work correctly
+  // Include pseudo-classes that are known to work correctly.
   if (selector.includes(':')) {
     let complex = false;
     if (target !== TARGET_ALL) {
