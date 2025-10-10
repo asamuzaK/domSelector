@@ -4,11 +4,18 @@
 
 /* import */
 import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
-import { getDirectionality, getType, isNamespaceDeclared } from './utility.js';
+import {
+  generateException,
+  getDirectionality,
+  getType,
+  isNamespaceDeclared
+} from './utility.js';
 
 /* constants */
 import {
   ALPHA_NUM,
+  DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_NODE,
   ELEMENT_NODE,
   IDENT,
   LANG_PART,
@@ -17,221 +24,226 @@ import {
   STRING,
   SYNTAX_ERR
 } from './constant.js';
+const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
+const REG_IS_XML =
+  /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 
 /**
- * match pseudo-element selector
- * @param {string} astName - AST name
- * @param {string} astType - AST type
- * @param {object} [opt] - options
- * @param {boolean} [opt.forgive] - forgive unknown pseudo-element
- * @param {boolean} [opt.warn] - warn unsupported pseudo-element
- * @throws {DOMException}
+ * Validates a pseudo-element selector.
+ * @param {string} astName - The name of the pseudo-element from the AST.
+ * @param {string} astType - The type of the selector from the AST.
+ * @param {object} [opt] - Optional parameters.
+ * @param {boolean} [opt.forgive] - If true, ignores unknown pseudo-elements.
+ * @param {boolean} [opt.warn] - If true, throws an error for unsupported ones.
+ * @throws {DOMException} If the selector is invalid or unsupported.
  * @returns {void}
  */
 export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
-  const { forgive, warn } = opt;
-  if (astType === PS_ELEMENT_SELECTOR) {
-    switch (astName) {
-      case 'after':
-      case 'backdrop':
-      case 'before':
-      case 'cue':
-      case 'cue-region':
-      case 'first-letter':
-      case 'first-line':
-      case 'file-selector-button':
-      case 'marker':
-      case 'placeholder':
-      case 'selection':
-      case 'target-text': {
+  const { forgive, globalObject, warn } = opt;
+  if (astType !== PS_ELEMENT_SELECTOR) {
+    // Ensure the AST node is a pseudo-element selector.
+    throw new TypeError(`Unexpected ast type ${getType(astType)}`);
+  }
+  switch (astName) {
+    case 'after':
+    case 'backdrop':
+    case 'before':
+    case 'cue':
+    case 'cue-region':
+    case 'first-letter':
+    case 'first-line':
+    case 'file-selector-button':
+    case 'marker':
+    case 'placeholder':
+    case 'selection':
+    case 'target-text': {
+      // Warn if the pseudo-element is known but unsupported.
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
+    }
+    case 'part':
+    case 'slotted': {
+      // Warn if the functional pseudo-element is known but unsupported.
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}()`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
+    }
+    default: {
+      // Handle vendor-prefixed or unknown pseudo-elements.
+      if (astName.startsWith('-webkit-')) {
         if (warn) {
-          throw new DOMException(
+          throw generateException(
             `Unsupported pseudo-element ::${astName}`,
-            NOT_SUPPORTED_ERR
+            NOT_SUPPORTED_ERR,
+            globalObject
           );
         }
-        break;
-      }
-      case 'part':
-      case 'slotted': {
-        if (warn) {
-          throw new DOMException(
-            `Unsupported pseudo-element ::${astName}()`,
-            NOT_SUPPORTED_ERR
-          );
-        }
-        break;
-      }
-      default: {
-        if (astName.startsWith('-webkit-')) {
-          if (warn) {
-            throw new DOMException(
-              `Unsupported pseudo-element ::${astName}`,
-              NOT_SUPPORTED_ERR
-            );
-          }
-        } else if (!forgive) {
-          throw new DOMException(
-            `Unknown pseudo-element ::${astName}`,
-            SYNTAX_ERR
-          );
-        }
+        // Throw an error for unknown pseudo-elements if not forgiven.
+      } else if (!forgive) {
+        throw generateException(
+          `Unknown pseudo-element ::${astName}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
     }
-  } else {
-    throw new TypeError(`Unexpected ast type ${getType(astType)}`);
   }
 };
 
 /**
- * match directionality pseudo-class - :dir()
- * @param {object} ast - AST
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Matches the :dir() pseudo-class against an element's directionality.
+ * @param {object} ast - The AST object for the pseudo-class.
+ * @param {object} node - The element node to match against.
+ * @throws {TypeError} If the AST does not contain a valid direction value.
+ * @returns {boolean} - True if the directionality matches, otherwise false.
  */
 export const matchDirectionPseudoClass = (ast, node) => {
   const { name } = ast;
+  // The :dir() pseudo-class requires a direction argument (e.g., "ltr").
   if (!name) {
-    let type;
-    if (name === '') {
-      type = '(empty String)';
-    } else {
-      type = getType(name);
-    }
+    const type = name === '' ? '(empty String)' : getType(name);
     throw new TypeError(`Unexpected ast type ${type}`);
   }
+  // Get the computed directionality of the element.
   const dir = getDirectionality(node);
+  // Compare the expected direction with the element's actual direction.
   return name === dir;
 };
 
 /**
- * match language pseudo-class - :lang()
- * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
- * @param {object} ast - AST
- * @param {object} node - Element node
- * @returns {boolean} - result
+ * Traverses up the DOM tree to find the language attribute for a node.
+ * It checks for 'lang' in HTML and 'xml:lang' in XML contexts.
+ * @param {object} node - The starting element node.
+ * @param {string} contentType - The content type of the document.
+ * @returns {string|null} The language attribute value, or null if not found.
  */
-export const matchLanguagePseudoClass = (ast, node) => {
-  const { name, type, value } = ast;
-  let astName;
-  if (type === STRING && value) {
-    astName = value;
-  } else if (type === IDENT && name) {
-    astName = unescapeSelector(name);
-  }
-  const { contentType } = node.ownerDocument;
-  const html = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
-  const xml =
-    /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(
-      contentType
-    );
-  if (astName === '*') {
-    if (
-      (html && node.hasAttribute('lang')) ||
-      (xml && node.hasAttribute('xml:lang'))
-    ) {
-      if (
-        (html && node.getAttribute('lang')) ||
-        (xml && node.getAttribute('xml:lang'))
-      ) {
-        return true;
+export const getLanguageAttr = (node, contentType = '') => {
+  const isHtml = REG_IS_HTML.test(contentType);
+  const isXml = REG_IS_XML.test(contentType);
+  let isShadow = false;
+  // Traverse up from the current node to the root.
+  let current = node;
+  while (current) {
+    // Check if the current node is an element.
+    switch (current.nodeType) {
+      case ELEMENT_NODE: {
+        // Check for and return the language attribute if present.
+        if (isHtml && current.hasAttribute('lang')) {
+          return current.getAttribute('lang');
+        } else if (isXml && current.hasAttribute('xml:lang')) {
+          return current.getAttribute('xml:lang');
+        }
+        break;
       }
+      case DOCUMENT_FRAGMENT_NODE: {
+        if (current.host) {
+          isShadow = true;
+        }
+        break;
+      }
+      case DOCUMENT_NODE: {
+        // Stop if we reach the root node.
+        return null;
+      }
+      default:
+    }
+    if (isShadow) {
+      current = current.host;
+      isShadow = false;
+    } else if (current.parentNode) {
+      current = current.parentNode;
     } else {
-      let parent = node.parentNode;
-      let res;
-      while (parent) {
-        if (parent.nodeType === ELEMENT_NODE) {
-          if (
-            (html && parent.hasAttribute('lang')) ||
-            (xml && parent.hasAttribute('xml:lang'))
-          ) {
-            if (
-              (html && parent.hasAttribute('lang')) ||
-              (xml && parent.hasAttribute('xml:lang'))
-            ) {
-              res = true;
-            }
-            break;
-          }
-          parent = parent.parentNode;
-        } else {
-          break;
-        }
-      }
-      return !!res;
-    }
-  } else if (astName) {
-    const reg = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
-    if (reg.test(astName)) {
-      let regExtendedLang;
-      if (astName.indexOf('-') > -1) {
-        const [langMain, langSub, ...langRest] = astName.split('-');
-        let extendedMain;
-        if (langMain === '*') {
-          extendedMain = `${ALPHA_NUM}${LANG_PART}`;
-        } else {
-          extendedMain = `${langMain}${LANG_PART}`;
-        }
-        const extendedSub = `-${langSub}${LANG_PART}`;
-        const len = langRest.length;
-        let extendedRest = '';
-        if (len) {
-          for (let i = 0; i < len; i++) {
-            extendedRest += `-${langRest[i]}${LANG_PART}`;
-          }
-        }
-        regExtendedLang = new RegExp(
-          `^${extendedMain}${extendedSub}${extendedRest}$`,
-          'i'
-        );
-      } else {
-        regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
-      }
-      if (
-        (html && node.hasAttribute('lang')) ||
-        (xml && node.hasAttribute('xml:lang'))
-      ) {
-        const attr =
-          (html && node.getAttribute('lang')) ||
-          (xml && node.getAttribute('xml:lang')) ||
-          '';
-        return regExtendedLang.test(attr);
-      } else {
-        let parent = node.parentNode;
-        let res;
-        while (parent) {
-          if (parent.nodeType === ELEMENT_NODE) {
-            if (
-              (html && parent.hasAttribute('lang')) ||
-              (xml && parent.hasAttribute('xml:lang'))
-            ) {
-              const attr =
-                (html && parent.getAttribute('lang')) ||
-                (xml && parent.getAttribute('xml:lang')) ||
-                '';
-              res = regExtendedLang.test(attr);
-              break;
-            }
-            parent = parent.parentNode;
-          } else {
-            break;
-          }
-        }
-        return !!res;
-      }
+      break;
     }
   }
-  return false;
+  // No language attribute was found in the hierarchy.
+  return null;
 };
 
 /**
- * match attribute selector
- * @param {object} ast - AST
- * @param {object} node - Element node
- * @param {object} [opt] - options
- * @param {boolean} [opt.check] - running in internal check()
- * @param {boolean} [opt.forgive] - forgive unknown pseudo-element
- * @returns {boolean} - result
+ * Matches the :lang() pseudo-class against an element's language.
+ * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
+ * @param {object} ast - The AST object for the pseudo-class.
+ * @param {object} node - The element node to match against.
+ * @returns {boolean} - True if the language matches, otherwise false.
+ */
+export const matchLanguagePseudoClass = (ast, node) => {
+  const { name, type, value } = ast;
+  let langPattern;
+  // Determine the language pattern from the AST.
+  if (type === STRING && value) {
+    langPattern = value;
+  } else if (type === IDENT && name) {
+    langPattern = unescapeSelector(name);
+  }
+  // If no valid language pattern is provided, it cannot match.
+  if (typeof langPattern !== 'string') {
+    return false;
+  }
+  const { contentType } = node.ownerDocument;
+  // Get the effective language attribute for the current node.
+  const elementLang = getLanguageAttr(node, contentType);
+  // Handle the universal selector '*' for :lang.
+  if (langPattern === '*') {
+    // It matches if any language tag is present and not empty.
+    return elementLang !== null && elementLang !== '';
+  }
+  // If the element has no language, it cannot match a specific pattern.
+  if (elementLang === null) {
+    return false;
+  }
+  // Validate the provided language pattern structure.
+  if (!REG_LANG_VALID.test(langPattern)) {
+    return false;
+  }
+  // Build a regex for extended language range matching.
+  let matcherRegex;
+  if (langPattern.indexOf('-') > -1) {
+    // Handle complex patterns with wildcards and sub-tags (e.g., '*-en').
+    const [langMain, langSub, ...langRest] = langPattern.split('-');
+    const extendedMain =
+      langMain === '*' ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
+    const extendedSub = `-${langSub}${LANG_PART}`;
+    let extendedRest = '';
+    // Use a standard for loop for performance as per the rules.
+    for (let i = 0; i < langRest.length; i++) {
+      extendedRest += `-${langRest[i]}${LANG_PART}`;
+    }
+    matcherRegex = new RegExp(
+      `^${extendedMain}${extendedSub}${extendedRest}$`,
+      'i'
+    );
+  } else {
+    // Handle simple language patterns (e.g., 'en').
+    matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, 'i');
+  }
+  // Test the element's language against the constructed regex.
+  return matcherRegex.test(elementLang);
+};
+
+/**
+ * Matches an attribute selector against an element.
+ * This function handles various attribute matchers like '=', '~=', '^=', etc.,
+ * and considers namespaces and case sensitivity based on document type.
+ * @param {object} ast - The AST for the attribute selector.
+ * @param {object} node - The element node to match against.
+ * @param {object} [opt] - Optional parameters.
+ * @param {boolean} [opt.check] - True if running in an internal check.
+ * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
+ * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
 export const matchAttributeSelector = (ast, node, opt = {}) => {
   const {
@@ -240,211 +252,202 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
     name: astName,
     value: astValue
   } = ast;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
+  // Validate selector flags ('i' or 's').
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = generateCSS(ast);
-    throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+    throw generateException(
+      `Invalid selector ${css}`,
+      SYNTAX_ERR,
+      globalObject
+    );
   }
   const { attributes } = node;
-  if (attributes?.length) {
-    const contentType = node.ownerDocument.contentType;
-    let caseInsensitive;
-    if (contentType === 'text/html') {
-      if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
-        caseInsensitive = false;
-      } else {
-        caseInsensitive = true;
-      }
-    } else if (typeof astFlags === 'string' && /^i$/i.test(astFlags)) {
-      caseInsensitive = true;
-    } else {
+  // An element with no attributes cannot match.
+  if (!attributes || !attributes.length) {
+    return false;
+  }
+  // Determine case sensitivity based on document type and flags.
+  const contentType = node.ownerDocument.contentType;
+  let caseInsensitive;
+  if (contentType === 'text/html') {
+    if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
       caseInsensitive = false;
-    }
-    let astAttrName = unescapeSelector(astName.name);
-    if (caseInsensitive) {
-      astAttrName = astAttrName.toLowerCase();
-    }
-    const attrValues = new Set();
-    // namespaced
-    if (astAttrName.indexOf('|') > -1) {
-      const { prefix: astPrefix, localName: astLocalName } =
-        parseAstName(astAttrName);
-      for (const item of attributes) {
-        let { name: itemName, value: itemValue } = item;
-        if (caseInsensitive) {
-          itemName = itemName.toLowerCase();
-          itemValue = itemValue.toLowerCase();
-        }
-        switch (astPrefix) {
-          case '': {
-            if (astLocalName === itemName) {
-              attrValues.add(itemValue);
-            }
-            break;
-          }
-          case '*': {
-            if (itemName.indexOf(':') > -1) {
-              if (itemName.endsWith(`:${astLocalName}`)) {
-                attrValues.add(itemValue);
-              }
-            } else if (astLocalName === itemName) {
-              attrValues.add(itemValue);
-            }
-            break;
-          }
-          default: {
-            if (!check) {
-              if (forgive) {
-                return false;
-              }
-              const css = generateCSS(ast);
-              throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
-            }
-            if (itemName.indexOf(':') > -1) {
-              const [itemPrefix, itemLocalName] = itemName.split(':');
-              // ignore xml:lang
-              if (itemPrefix === 'xml' && itemLocalName === 'lang') {
-                continue;
-              } else if (
-                astPrefix === itemPrefix &&
-                astLocalName === itemLocalName
-              ) {
-                const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
-                if (namespaceDeclared) {
-                  attrValues.add(itemValue);
-                }
-              }
-            }
-          }
-        }
-      }
     } else {
-      for (let { name: itemName, value: itemValue } of attributes) {
-        if (caseInsensitive) {
-          itemName = itemName.toLowerCase();
-          itemValue = itemValue.toLowerCase();
-        }
-        if (itemName.indexOf(':') > -1) {
-          const [itemPrefix, itemLocalName] = itemName.split(':');
-          // ignore xml:lang
-          if (itemPrefix === 'xml' && itemLocalName === 'lang') {
-            continue;
-          } else if (astAttrName === itemLocalName) {
+      caseInsensitive = true;
+    }
+  } else if (typeof astFlags === 'string' && /^i$/i.test(astFlags)) {
+    caseInsensitive = true;
+  } else {
+    caseInsensitive = false;
+  }
+  // Prepare the attribute name from the selector for matching.
+  let astAttrName = unescapeSelector(astName.name);
+  if (caseInsensitive) {
+    astAttrName = astAttrName.toLowerCase();
+  }
+  // A set to store the values of attributes whose names match.
+  const attrValues = new Set();
+  // Handle namespaced attribute names (e.g., [*|attr], [ns|attr]).
+  if (astAttrName.indexOf('|') > -1) {
+    const { prefix: astPrefix, localName: astLocalName } =
+      parseAstName(astAttrName);
+    for (const item of attributes) {
+      let { name: itemName, value: itemValue } = item;
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
+      }
+      switch (astPrefix) {
+        case '': {
+          if (astLocalName === itemName) {
             attrValues.add(itemValue);
           }
-        } else if (astAttrName === itemName) {
-          attrValues.add(itemValue);
+          break;
+        }
+        case '*': {
+          if (itemName.indexOf(':') > -1) {
+            if (itemName.endsWith(`:${astLocalName}`)) {
+              attrValues.add(itemValue);
+            }
+          } else if (astLocalName === itemName) {
+            attrValues.add(itemValue);
+          }
+          break;
+        }
+        default: {
+          if (!check) {
+            if (forgive) {
+              return false;
+            }
+            const css = generateCSS(ast);
+            throw generateException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR,
+              globalObject
+            );
+          }
+          if (itemName.indexOf(':') > -1) {
+            const [itemPrefix, itemLocalName] = itemName.split(':');
+            // Ignore the special 'xml:lang' attribute.
+            if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+              continue;
+            } else if (
+              astPrefix === itemPrefix &&
+              astLocalName === itemLocalName
+            ) {
+              const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+              if (namespaceDeclared) {
+                attrValues.add(itemValue);
+              }
+            }
+          }
         }
       }
     }
-    if (attrValues.size) {
-      const { name: astIdentValue, value: astStringValue } = astValue ?? {};
-      let attrValue;
-      if (astIdentValue) {
-        if (caseInsensitive) {
-          attrValue = astIdentValue.toLowerCase();
-        } else {
-          attrValue = astIdentValue;
-        }
-      } else if (astStringValue) {
-        if (caseInsensitive) {
-          attrValue = astStringValue.toLowerCase();
-        } else {
-          attrValue = astStringValue;
-        }
-      } else if (astStringValue === '') {
-        attrValue = astStringValue;
+    // Handle non-namespaced attribute names.
+  } else {
+    for (let { name: itemName, value: itemValue } of attributes) {
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
       }
-      switch (astMatcher) {
-        case '=': {
-          return typeof attrValue === 'string' && attrValues.has(attrValue);
+      if (itemName.indexOf(':') > -1) {
+        const [itemPrefix, itemLocalName] = itemName.split(':');
+        // Ignore the special 'xml:lang' attribute.
+        if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+          continue;
+        } else if (astAttrName === itemLocalName) {
+          attrValues.add(itemValue);
         }
-        case '~=': {
-          if (attrValue && typeof attrValue === 'string') {
-            let res;
-            for (const value of attrValues) {
-              const item = new Set(value.split(/\s+/));
-              if (item.has(attrValue)) {
-                res = true;
-                break;
-              }
-            }
-            return !!res;
-          }
-          return false;
-        }
-        case '|=': {
-          if (attrValue && typeof attrValue === 'string') {
-            let item;
-            for (const value of attrValues) {
-              if (value === attrValue || value.startsWith(`${attrValue}-`)) {
-                item = value;
-                break;
-              }
-            }
-            if (item) {
-              return true;
-            }
-            return false;
-          }
-          return false;
-        }
-        case '^=': {
-          if (attrValue && typeof attrValue === 'string') {
-            let item;
-            for (const value of attrValues) {
-              if (value.startsWith(`${attrValue}`)) {
-                item = value;
-                break;
-              }
-            }
-            if (item) {
-              return true;
-            }
-            return false;
-          }
-          return false;
-        }
-        case '$=': {
-          if (attrValue && typeof attrValue === 'string') {
-            let item;
-            for (const value of attrValues) {
-              if (value.endsWith(`${attrValue}`)) {
-                item = value;
-                break;
-              }
-            }
-            if (item) {
-              return true;
-            }
-            return false;
-          }
-          return false;
-        }
-        case '*=': {
-          if (attrValue && typeof attrValue === 'string') {
-            let item;
-            for (const value of attrValues) {
-              if (value.includes(`${attrValue}`)) {
-                item = value;
-                break;
-              }
-            }
-            if (item) {
-              return true;
-            }
-            return false;
-          }
-          return false;
-        }
-        case null:
-        default: {
-          return true;
-        }
+      } else if (astAttrName === itemName) {
+        attrValues.add(itemValue);
       }
     }
   }
-  return false;
+  if (!attrValues.size) {
+    return false;
+  }
+  // Prepare the value from the selector's RHS for comparison.
+  const { name: astIdentValue, value: astStringValue } = astValue ?? {};
+  let attrValue;
+  if (astIdentValue) {
+    if (caseInsensitive) {
+      attrValue = astIdentValue.toLowerCase();
+    } else {
+      attrValue = astIdentValue;
+    }
+  } else if (astStringValue) {
+    if (caseInsensitive) {
+      attrValue = astStringValue.toLowerCase();
+    } else {
+      attrValue = astStringValue;
+    }
+  } else if (astStringValue === '') {
+    attrValue = astStringValue;
+  }
+  // Perform the final match based on the specified matcher.
+  switch (astMatcher) {
+    case '=': {
+      return typeof attrValue === 'string' && attrValues.has(attrValue);
+    }
+    case '~=': {
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          const item = new Set(value.split(/\s+/));
+          if (item.has(attrValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    case '|=': {
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value === attrValue || value.startsWith(`${attrValue}-`)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    case '^=': {
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.startsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    case '$=': {
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.endsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    case '*=': {
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.includes(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    case null:
+    default: {
+      // This case handles attribute existence checks (e.g., '[disabled]').
+      return true;
+    }
+  }
 };
 
 /**
@@ -459,7 +462,7 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
 export const matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
   let { prefix: astPrefix, localName: astLocalName } = parseAstName(
     astName,
     node
@@ -467,7 +470,7 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   if (
     node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml') &&
-    /[A-Z][\\w-]*/i.test(localName)
+    REG_TAG_NAME.test(localName)
   ) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
@@ -504,7 +507,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
           return false;
         }
         const css = generateCSS(ast);
-        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        throw generateException(
+          `Invalid selector ${css}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
@@ -514,7 +521,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
         }
         return false;
       } else if (!forgive && !astNS) {
-        throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
+        throw generateException(
+          `Undeclared namespace ${astPrefix}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       return false;
     }

@@ -546,6 +546,118 @@ describe('matcher', () => {
     });
   });
 
+  describe('get language attribute', () => {
+    const func = matcher.getLanguageAttr;
+
+    it('should not match', () => {
+      const res = func();
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should not match', () => {
+      const res = func('foo');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should not match', () => {
+      const res = func('foo', 'text/plain');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should not match', () => {
+      const node = document.createElement('div');
+      const res = func(node, 'text/html');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should not match', () => {
+      const parent = document.createElement('div');
+      const node = document.createElement('div');
+      parent.appendChild(node);
+      const res = func(node, 'text/html');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should match', () => {
+      const parent = document.createElement('div');
+      const node = document.createElement('div');
+      parent.lang = 'en';
+      parent.appendChild(node);
+      const res = func(node, 'text/html');
+      assert.strictEqual(res, 'en', 'result');
+    });
+
+    it('should not match', () => {
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(node, 'text/html');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should match', () => {
+      const html = `
+          <div lang='en-US'>
+            <template id="template">
+              <div>
+                <slot id="foo" name="bar">Foo</slot>
+              </div>
+            </template>
+            <my-element id="baz">
+              <span id="qux" slot="foo">Qux</span>
+            </my-element>
+          </div>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node, 'text/html');
+      assert.strictEqual(res, 'en-US', 'result');
+    });
+
+    it('should not match', () => {
+      const xmlDom = `
+        <foo id="foo">
+          <bar id="bar">
+            <baz id="baz"/>
+          </bar>
+        </foo>
+      `;
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(node, 'text/xml');
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should match', () => {
+      const xmlDom = `
+        <foo id="foo" xml:lang="en">
+          <bar id="bar">
+            <baz id="baz"/>
+          </bar>
+        </foo>
+      `;
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(node, 'text/xml');
+      assert.strictEqual(res, 'en', 'result');
+    });
+  });
+
   describe('match language pseudo-class', () => {
     const func = matcher.matchLanguagePseudoClass;
 
