@@ -6,8 +6,10 @@
 import {
   matchAttributeSelector,
   matchDirectionPseudoClass,
+  matchDisabledEnabledPseudo,
   matchLanguagePseudoClass,
   matchPseudoElementSelector,
+  matchReadOnlyWritePseudo,
   matchTypeSelector
 } from './matcher.js';
 import {
@@ -19,10 +21,14 @@ import {
   walkAST
 } from './parser.js';
 import {
+  filterNodesByAnB,
+  findLogicalWithNestedHas,
+  generateException,
   isContentEditable,
   isCustomElement,
   isFocusVisible,
   isFocusableArea,
+  isValidShadowHostSelector,
   isVisible,
   resolveContent,
   sortNodes,
@@ -37,13 +43,20 @@ import {
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
+  FORM_PARTS,
   ID_SELECTOR,
+  INPUT_CHECK,
+  INPUT_DATE,
+  INPUT_EDIT,
+  INPUT_TEXT,
   KEY_FORM_FOCUS,
   KEY_INPUT_DATE,
   KEY_INPUT_EDIT,
   KEY_INPUT_TEXT,
   KEY_LOGICAL,
   KEY_MODIFIER,
+  KEYS_LOGICAL,
+  KEYS_MODIFIER,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -59,6 +72,40 @@ import {
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
+const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
+const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
+const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
+const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
+const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
+const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
+const KEYS_INPUT_RESET = new Set(['button', 'reset']);
+const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
+const KEYS_PS_UNCACHE = new Set([
+  'any-link',
+  'defined',
+  'dir',
+  'link',
+  'scope'
+]);
+const KEYS_PS_FORM = new Set([
+  'checked',
+  'default',
+  'disabled',
+  'enabled',
+  'in-range',
+  'indeterminate',
+  'invalid',
+  'optional',
+  'out-of-range',
+  'placeholder-shown',
+  'read-only',
+  'read-write',
+  'required',
+  'user-invalid',
+  'user-valid',
+  'valid'
+]);
+const KEYS_PS_UI = new Set(['closed', 'open', 'popover-open']);
 
 /**
  * Finder
@@ -91,7 +138,7 @@ export class Finder {
   #descendant;
   #document;
   #documentCache;
-  #domSymbolTree;
+  #documentURL;
   #event;
   #focus;
   #invalidate;
@@ -167,18 +214,20 @@ export class Finder {
    * @returns {object} - finder
    */
   setup(selector, node, opt = {}) {
-    const { check, domSymbolTree, noexcept, warn } = opt;
+    const { check, noexcept, warn } = opt;
     this.#check = !!check;
-    this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
+    this.#documentURL = new URL(this.#document.URL);
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#invalidateResults = new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
+    this.#nodeWalker = null;
+    this.#rootWalker = null;
     this.#verifyShadowHost = null;
     return this;
   }
@@ -307,9 +356,10 @@ export class Finder {
               const [nextItem] = items;
               if (nextItem.type === COMBINATOR) {
                 return this.onError(
-                  new this.#window.DOMException(
+                  generateException(
                     `Invalid selector ${selector}`,
-                    SYNTAX_ERR
+                    SYNTAX_ERR,
+                    this.#window
                   )
                 );
               }
@@ -395,17 +445,6 @@ export class Finder {
       this.#walkers.set(node, walker);
     }
     return walker;
-  }
-
-  /**
-   * prepare querySelector walker
-   * @private
-   * @returns {object} - tree walker
-   */
-  _prepareQuerySelectorWalker() {
-    this.#nodeWalker = this._createTreeWalker(this.#node);
-    this.#rootWalker = null;
-    return this.#nodeWalker;
   }
 
   /**
@@ -927,7 +966,7 @@ export class Finder {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
         return this.onError(
-          new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this.#window)
         );
       }
       let astData;
@@ -956,9 +995,10 @@ export class Finder {
               } else {
                 const css = generateCSS(ast);
                 return this.onError(
-                  new this.#window.DOMException(
+                  generateException(
                     `Invalid selector ${css}`,
-                    SYNTAX_ERR
+                    SYNTAX_ERR,
+                    this.#window
                   )
                 );
               }
@@ -1018,7 +1058,11 @@ export class Finder {
         if (astChildren.length !== 1) {
           const css = generateCSS(ast);
           return this.onError(
-            new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+            generateException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR,
+              this.#window
+            )
           );
         }
         const [branch] = astChildren;
@@ -1031,9 +1075,10 @@ export class Finder {
             if (astChildren.length !== 1) {
               const css = generateCSS(ast);
               return this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Invalid selector ${css}`,
-                  SYNTAX_ERR
+                  SYNTAX_ERR,
+                  this.#window
                 )
               );
             }
@@ -1049,9 +1094,10 @@ export class Finder {
             if (!astChildren.length) {
               const css = generateCSS(ast);
               return this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Invalid selector ${css}`,
-                  SYNTAX_ERR
+                  SYNTAX_ERR,
+                  this.#window
                 )
               );
             }
@@ -1094,9 +1140,10 @@ export class Finder {
           case 'nth-last-col': {
             if (warn) {
               this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Unsupported pseudo-class :${astName}()`,
-                  NOT_SUPPORTED_ERR
+                  NOT_SUPPORTED_ERR,
+                  this.#window
                 )
               );
             }
@@ -1111,9 +1158,10 @@ export class Finder {
           case 'contains': {
             if (warn) {
               this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Unknown pseudo-class :${astName}()`,
-                  NOT_SUPPORTED_ERR
+                  NOT_SUPPORTED_ERR,
+                  this.#window
                 )
               );
             }
@@ -1122,9 +1170,10 @@ export class Finder {
           default: {
             if (!forgive) {
               this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Unknown pseudo-class :${astName}()`,
-                  SYNTAX_ERR
+                  SYNTAX_ERR,
+                  this.#window
                 )
               );
             }
@@ -1148,7 +1197,7 @@ export class Finder {
             (localName === 'a' || localName === 'area') &&
             node.hasAttribute('href')
           ) {
-            const { href, origin, pathname } = new URL(this.#document.URL);
+            const { href, origin, pathname } = this.#documentURL;
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
@@ -1182,7 +1231,7 @@ export class Finder {
           break;
         }
         case 'target': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = this.#documentURL;
           if (
             node.id &&
             hash === `#${node.id}` &&
@@ -1193,7 +1242,7 @@ export class Finder {
           break;
         }
         case 'target-within': {
-          const { hash } = new URL(this.#document.URL);
+          const { hash } = this.#documentURL;
           if (hash) {
             const id = hash.replace(/^#/, '');
             let current = this.#document.getElementById(id);
@@ -1858,9 +1907,10 @@ export class Finder {
         case 'first-line': {
           if (warn) {
             this.onError(
-              new this.#window.DOMException(
+              generateException(
                 `Unsupported pseudo-element ::${astName}`,
-                NOT_SUPPORTED_ERR
+                NOT_SUPPORTED_ERR,
+                this.#window
               )
             );
           }
@@ -1888,9 +1938,10 @@ export class Finder {
         case '-webkit-autofill': {
           if (warn) {
             this.onError(
-              new this.#window.DOMException(
+              generateException(
                 `Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR
+                NOT_SUPPORTED_ERR,
+                this.#window
               )
             );
           }
@@ -1900,17 +1951,19 @@ export class Finder {
           if (astName.startsWith('-webkit-')) {
             if (warn) {
               this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Unsupported pseudo-class :${astName}`,
-                  NOT_SUPPORTED_ERR
+                  NOT_SUPPORTED_ERR,
+                  this.#window
                 )
               );
             }
           } else if (!forgive) {
             this.onError(
-              new this.#window.DOMException(
+              generateException(
                 `Unknown pseudo-class :${astName}`,
-                SYNTAX_ERR
+                SYNTAX_ERR,
+                this.#window
               )
             );
           }
@@ -1933,7 +1986,7 @@ export class Finder {
       if (astChildren.length !== 1) {
         const css = generateCSS(ast);
         return this.onError(
-          new this.#window.DOMException(`Invalid selector ${css}`, SYNTAX_ERR)
+          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this.#window)
         );
       }
       const { branches } = walkAST(astChildren[0]);
@@ -1947,9 +2000,10 @@ export class Finder {
           if (leafType === COMBINATOR) {
             const css = generateCSS(ast);
             return this.onError(
-              new this.#window.DOMException(
+              generateException(
                 `Invalid selector ${css}`,
-                SYNTAX_ERR
+                SYNTAX_ERR,
+                this.#window
               )
             );
           }
@@ -1971,9 +2025,10 @@ export class Finder {
             if (leafType === COMBINATOR) {
               const css = generateCSS(ast);
               return this.onError(
-                new this.#window.DOMException(
+                generateException(
                   `Invalid selector ${css}`,
-                  SYNTAX_ERR
+                  SYNTAX_ERR,
+                  this.#window
                 )
               );
             }
@@ -1997,7 +2052,11 @@ export class Finder {
       return node;
     }
     return this.onError(
-      new this.#window.DOMException(`Invalid selector :${astName}`, SYNTAX_ERR)
+      generateException(
+        `Invalid selector :${astName}`,
+        SYNTAX_ERR,
+        this.#window
+      )
     );
   }
 
@@ -2379,13 +2438,16 @@ export class Finder {
    */
   _findNodeWalker(leaves, node, opt = {}) {
     const { force, precede, targetType } = opt;
-    const walker = this.#nodeWalker;
     if (precede) {
       const precedeNodes = this._findPrecede(leaves, this.#root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
     }
+    if (!this.#nodeWalker) {
+      this.#nodeWalker = this._createTreeWalker(this.#node);
+    }
+    const walker = this.#nodeWalker;
     const nodes = [];
     let refNode = traverseNode(node, walker, !!force);
     if (refNode) {
@@ -2741,6 +2803,9 @@ export class Finder {
         let node;
         let walker;
         if (this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE) {
+          if (!this.#nodeWalker) {
+            this.#nodeWalker = this._createTreeWalker(this.#node);
+          }
           node = this.#node;
           walker = this.#nodeWalker;
         } else {
@@ -2903,9 +2968,6 @@ export class Finder {
    * @returns {Set.<object>} - collection of matched nodes
    */
   find(targetType) {
-    if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
-      this._prepareQuerySelectorWalker();
-    }
     const [[...branches], collectedNodes] = this._collectNodes(targetType);
     const l = branches.length;
     let sort;
