@@ -29,7 +29,6 @@ import {
   LOGIC_COMPOUND,
   N_TH,
   PSEUDO_CLASS,
-  PS_CLASS_SELECTOR,
   RULE,
   SCOPE,
   SELECTOR_LIST,
@@ -594,19 +593,6 @@ export const getLanguageAttribute = node => {
 };
 
 /**
- * Determines case sensitivity for an attribute match.
- * @param {?string} astFlags - The flags from the AST ('i' or 's').
- * @param {string} contentType - The document's content type.
- * @returns {boolean} True if the match should be case-sensitive.
- */
-export const getCaseSensitivity = (astFlags, contentType) => {
-  if (contentType === 'text/html') {
-    return typeof astFlags === 'string' && /^s$/i.test(astFlags);
-  }
-  return !(typeof astFlags === 'string' && /^i$/i.test(astFlags));
-};
-
-/**
  * Check if content is editable.
  * NOTE: Not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
  * @param {object} node - The Element node.
@@ -1031,84 +1017,6 @@ export const extractNestedSelectors = css => {
     leave: extractor.leave.bind(extractor)
   });
   return extractor.selectors;
-};
-
-/**
- * Collects relevant attribute values from a node that match the selector's
- * attribute name.
- * @param {object} node - The element node.
- * @param {object} [opt] - Options.
- * @returns {Array.<string>} An array of matching attribute values.
- */
-export const findAttributeValues = (node, opt = {}) => {
-  if (!node?.nodeType) {
-    throw new TypeError(`Unexpected type ${getType(node)}`);
-  }
-  const { attributes } = node;
-  const {
-    astAttrName = '',
-    astLocalName = '',
-    astPrefix = '',
-    caseSensitive = false
-  } = opt;
-  if (!attributes.length || !astAttrName) {
-    return [];
-  }
-  const attrValues = new Set();
-  const hasNamespace = astAttrName.includes('|');
-  for (const attr of attributes) {
-    let { name: itemName, value: itemValue } = attr;
-    if (!caseSensitive) {
-      itemName = itemName.toLowerCase();
-      itemValue = itemValue.toLowerCase();
-    }
-    if (itemName === 'xml:lang') {
-      continue;
-    }
-    const [itemPrefix, itemLocalName] = itemName.includes(':')
-      ? itemName.split(':')
-      : ['', itemName];
-    if (hasNamespace) {
-      if (astLocalName === itemLocalName) {
-        if (astPrefix === '*' || (astPrefix === '' && itemPrefix === '')) {
-          attrValues.add(itemValue);
-        } else if (
-          astPrefix === itemPrefix &&
-          isNamespaceDeclared(astPrefix, node)
-        ) {
-          attrValues.add(itemValue);
-        }
-      }
-    } else if (astAttrName === itemLocalName) {
-      attrValues.add(itemValue);
-    }
-  }
-  return [...attrValues];
-};
-
-/**
- * Check for valid shadow host selector for :is(), :not(), :where().
- * @param {string} astName - pseudo-class name.
- * @param {Array.<Array.<object>>} branches - AST branches.
- * @returns {boolean} - True if valid
- */
-export const isValidShadowHostSelector = (astName = '', branches = []) => {
-  if (!/^(?:is|not|where)$/.test(astName)) {
-    return false;
-  }
-  const [branch] = branches;
-  if (Array.isArray(branch) && branch.length === 1) {
-    const [ast] = branch;
-    if (!ast || !Object.hasOwn(ast, 'type')) {
-      return false;
-    }
-    if (astName === 'not') {
-      const { type } = ast;
-      return type === PS_CLASS_SELECTOR;
-    }
-    return true;
-  }
-  return false;
 };
 
 /**
