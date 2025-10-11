@@ -21,7 +21,7 @@ import {
   walkAST
 } from './parser.js';
 import {
-  //filterNodesByAnB,
+  filterNodesByAnB,
   //findLogicalWithNestedHas,
   generateException,
   //isContentEditable,
@@ -38,7 +38,7 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR,
-  ATTR_STATE_CHANGE,
+  //ATTR_STATE_CHANGE,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
@@ -132,6 +132,7 @@ export class Finder {
   #documentCache;
   #documentURL;
   #event;
+  #eventHandlers;
   #focus;
   #invalidate;
   #invalidateResults;
@@ -153,7 +154,7 @@ export class Finder {
 
   /**
    * constructor
-   * @param {object} window - window
+   * @param {object} window - The window object.
    */
   constructor(window) {
     this.#window = window;
@@ -164,48 +165,68 @@ export class Finder {
     this.#event = null;
     this.#focus = null;
     this.#lastFocusVisible = null;
+    this.#eventHandlers = new Set([
+      {
+        keys: ['focus', 'focusin'],
+        handler: this._handleFocusEvent
+      },
+      {
+        keys: ['keydown', 'keyup'],
+        handler: this._handleKeyboardEvent
+      },
+      {
+        keys: ['mouseover', 'mousedown', 'mouseup', 'mouseout'],
+        handler: this._handleMouseEvent
+      },
+      {
+        keys: ['click'],
+        handler: this._handleClickEvent
+      }
+    ]);
     this._registerEventListeners();
   }
 
   /**
-   * handle error
-   * @param {Error} e - Error
-   * @param {object} [opt] - options
-   * @param {boolean} [opt.noexcept] - no exception
-   * @throws {Error} - Error
+   * Handles errors.
+   * @param {Error} e - The error object.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
+   * @throws {Error} Throws an error.
    * @returns {void}
    */
-  onError(e, opt = {}) {
+  onError = (e, opt = {}) => {
     const noexcept = opt.noexcept ?? this.#noexcept;
-    if (!noexcept) {
-      if (e instanceof DOMException || e instanceof this.#window.DOMException) {
-        if (e.name === NOT_SUPPORTED_ERR) {
-          if (this.#warn) {
-            console.warn(e.message);
-          }
-        } else {
-          throw new this.#window.DOMException(e.message, e.name);
-        }
-      } else if (e.name in this.#window) {
-        throw new this.#window[e.name](e.message, { cause: e });
-      } else {
-        throw e;
-      }
+    if (noexcept) {
+      return;
     }
-  }
+    const isDOMException =
+      e instanceof DOMException || e instanceof this.#window.DOMException;
+    if (isDOMException) {
+      if (e.name === NOT_SUPPORTED_ERR) {
+        if (this.#warn) {
+          console.warn(e.message);
+        }
+        return;
+      }
+      throw new this.#window.DOMException(e.message, e.name);
+    }
+    if (e.name in this.#window) {
+      throw new this.#window[e.name](e.message, { cause: e });
+    }
+    throw e;
+  };
 
   /**
-   * setup finder
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @param {boolean} [opt.check] - running in internal check()
-   * @param {object} [opt.domSymbolTree] - domSymbolTree
-   * @param {boolean} [opt.noexcept] - no exception
-   * @param {boolean} [opt.warn] - console warn
-   * @returns {object} - finder
+   * Sets up the finder.
+   * @param {string} selector - The CSS selector.
+   * @param {object} node - Document, DocumentFragment, or Element.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.check] - Indicates if running in internal check().
+   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
+   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @returns {object} The finder instance.
    */
-  setup(selector, node, opt = {}) {
+  setup = (selector, node, opt = {}) => {
     const { check, noexcept, warn } = opt;
     this.#check = !!check;
     this.#noexcept = !!noexcept;
@@ -222,79 +243,143 @@ export class Finder {
     this.#rootWalker = null;
     this.#verifyShadowHost = null;
     return this;
-  }
+  };
 
   /**
-   * register event listeners
+   * Handles focus events.
    * @private
-   * @returns {Array.<void>} - results
+   * @param {Event} evt - The event object.
+   * @returns {void}
    */
-  _registerEventListeners() {
+  _handleFocusEvent = evt => {
+    this.#focus = evt;
+  };
+
+  /**
+   * Handles keyboard events.
+   * @private
+   * @param {Event} evt - The event object.
+   * @returns {void}
+   */
+  _handleKeyboardEvent = evt => {
+    const { key } = evt;
+    if (!KEYS_MODIFIER.has(key)) {
+      this.#event = evt;
+    }
+  };
+
+  /**
+   * Handles mouse events.
+   * @private
+   * @param {Event} evt - The event object.
+   * @returns {void}
+   */
+  _handleMouseEvent = evt => {
+    this.#event = evt;
+  };
+
+  /**
+   * Handles click events.
+   * @private
+   * @param {Event} evt - The event object.
+   * @returns {void}
+   */
+  _handleClickEvent = evt => {
+    this.#event = evt;
+    this.#invalidateResults = new WeakMap();
+    this.#results = new WeakMap();
+  };
+
+  /**
+   * Registers event listeners.
+   * @private
+   * @returns {Array.<void>} An array of return values from addEventListener.
+   */
+  _registerEventListeners = () => {
     const opt = {
       capture: true,
       passive: true
     };
     const func = [];
-    const focusKeys = ['focus', 'focusin'];
-    for (const key of focusKeys) {
-      func.push(
-        this.#window.addEventListener(
-          key,
-          evt => {
-            this.#focus = evt;
-          },
-          opt
-        )
-      );
+    for (const eventHandler of this.#eventHandlers) {
+      const { keys, handler } = eventHandler;
+      const l = keys.length;
+      for (let i = 0; i < l; i++) {
+        const key = keys[i];
+        func.push(this.#window.addEventListener(key, handler, opt));
+      }
     }
-    const keyboardKeys = ['keydown', 'keyup'];
-    for (const key of keyboardKeys) {
-      func.push(
-        this.#window.addEventListener(
-          key,
-          evt => {
-            const { key } = evt;
-            if (!KEYS_MODIFIER.has(key)) {
-              this.#event = evt;
-            }
-          },
-          opt
-        )
-      );
-    }
-    const mouseKeys = ['mouseover', 'mousedown', 'mouseup', 'mouseout'];
-    for (const key of mouseKeys) {
-      func.push(
-        this.#window.addEventListener(
-          key,
-          evt => {
-            this.#event = evt;
-          },
-          opt
-        )
-      );
-    }
-    func.push(
-      this.#window.addEventListener(
-        'click',
-        evt => {
-          this.#event = evt;
-          this.#invalidateResults = new WeakMap();
-          this.#results = new WeakMap();
-        },
-        opt
-      )
-    );
     return func;
-  }
+  };
 
   /**
-   * correspond ast and nodes
+   * Processes selector branches into the internal AST structure.
    * @private
-   * @param {string} selector - CSS selector
-   * @returns {Array.<Array.<object>>} - array of ast and nodes
+   * @param {Array.<Array.<object>>} branches - The branches from walkAST.
+   * @param {string} selector - The original selector for error reporting.
+   * @returns {{ast: Array, descendant: boolean, invalidate: boolean}}
+   * An object with the AST, descendant flag, and invalidate flag.
    */
-  _correspond(selector) {
+  _processSelectorBranches = (branches, selector) => {
+    let invalidate = false;
+    let descendant = false;
+    const ast = [];
+    const l = branches.length;
+    for (let i = 0; i < l; i++) {
+      const items = [...branches[i]];
+      const branch = [];
+      let item = items.shift();
+      if (item && item.type !== COMBINATOR) {
+        const leaves = new Set();
+        while (item) {
+          if (item.type === COMBINATOR) {
+            const [nextItem] = items;
+            if (!nextItem || nextItem.type === COMBINATOR) {
+              const msg = `Invalid selector ${selector}`;
+              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+              // Stop processing on invalid selector.
+              return { ast: [], descendant: false, invalidate: false };
+            }
+            if (item.name === '+' || item.name === '~') {
+              invalidate = true;
+            } else {
+              descendant = true;
+            }
+            branch.push({ combo: item, leaves: sortAST(leaves) });
+            leaves.clear();
+          } else {
+            if (item.name && typeof item.name === 'string') {
+              const unescapedName = unescapeSelector(item.name);
+              if (unescapedName !== item.name) {
+                item.name = unescapedName;
+              }
+              if (/[|:]/.test(unescapedName)) {
+                item.namespace = true;
+              }
+            }
+            leaves.add(item);
+          }
+          if (items.length) {
+            item = items.shift();
+          } else {
+            branch.push({ combo: null, leaves: sortAST(leaves) });
+            leaves.clear();
+            break;
+          }
+        }
+      }
+      ast.push({ branch, dir: null, filtered: false, find: false });
+    }
+    return { ast, descendant, invalidate };
+  };
+
+  /**
+   * Corresponds AST and nodes.
+   * @private
+   * @param {string} selector - The CSS selector.
+   * @returns {Array.<Array.<object>>} An array with the AST and nodes.
+   */
+  _correspond = selector => {
     const nodes = [];
     this.#descendant = false;
     this.#invalidate = false;
@@ -330,74 +415,14 @@ export class Finder {
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      let invalidate =
+      const baseInvalidate =
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
-      let descendant = false;
-      let i = 0;
-      ast = [];
-      for (const [...items] of branches) {
-        const branch = [];
-        let item = items.shift();
-        if (item && item.type !== COMBINATOR) {
-          const leaves = new Set();
-          while (item) {
-            let itemName = item.name;
-            if (item.type === COMBINATOR) {
-              const [nextItem] = items;
-              if (nextItem.type === COMBINATOR) {
-                return this.onError(
-                  generateException(
-                    `Invalid selector ${selector}`,
-                    SYNTAX_ERR,
-                    this.#window
-                  )
-                );
-              }
-              if (itemName === '+' || itemName === '~') {
-                invalidate = true;
-              } else {
-                descendant = true;
-              }
-              branch.push({
-                combo: item,
-                leaves: sortAST(leaves)
-              });
-              leaves.clear();
-            } else if (item) {
-              if (itemName && typeof itemName === 'string') {
-                itemName = unescapeSelector(itemName);
-                if (typeof itemName === 'string' && itemName !== item.name) {
-                  item.name = itemName;
-                }
-                if (/[|:]/.test(itemName)) {
-                  item.namespace = true;
-                }
-              }
-              leaves.add(item);
-            }
-            if (items.length) {
-              item = items.shift();
-            } else {
-              branch.push({
-                combo: null,
-                leaves: sortAST(leaves)
-              });
-              leaves.clear();
-              break;
-            }
-          }
-        }
-        ast.push({
-          branch,
-          dir: null,
-          filtered: false,
-          find: false
-        });
-        nodes[i] = [];
-        i++;
-      }
+      const processed = this._processSelectorBranches(branches, selector);
+      ast = processed.ast;
+      this.#descendant = processed.descendant;
+      this.#invalidate = baseInvalidate || processed.invalidate;
       let cachedItem;
       if (this.#documentCache.has(this.#document)) {
         cachedItem = this.#documentCache.get(this.#document);
@@ -406,340 +431,181 @@ export class Finder {
       }
       cachedItem.set(`${selector}`, {
         ast,
-        descendant,
-        invalidate
+        descendant: this.#descendant,
+        invalidate: this.#invalidate
       });
       this.#documentCache.set(this.#document, cachedItem);
-      this.#descendant = descendant;
-      this.#invalidate = invalidate;
+      // Initialize nodes array for each branch.
+      for (let i = 0; i < ast.length; i++) {
+        nodes[i] = [];
+      }
     }
     return [ast, nodes];
-  }
+  };
 
   /**
-   * create tree walker
+   * Creates a TreeWalker.
    * @private
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @param {boolean} [opt.force] - force new tree walker
-   * @param {number} [opt.whatToShow] - NodeFilter whatToShow
-   * @returns {object} - tree walker
+   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
+   * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
+   * @returns {object} The TreeWalker object.
    */
-  _createTreeWalker(node, opt = {}) {
+  _createTreeWalker = (node, opt = {}) => {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
-    let walker;
     if (force) {
-      walker = this.#document.createTreeWalker(node, whatToShow);
+      return this.#document.createTreeWalker(node, whatToShow);
     } else if (this.#walkers.has(node)) {
-      walker = this.#walkers.get(node);
-    } else {
-      walker = this.#document.createTreeWalker(node, whatToShow);
-      this.#walkers.set(node, walker);
+      return this.#walkers.get(node);
     }
+    const walker = this.#document.createTreeWalker(node, whatToShow);
+    this.#walkers.set(node, walker);
     return walker;
-  }
+  };
 
   /**
-   * collect nth child
+   * Gets selector branches from cache or parses them.
    * @private
-   * @param {object} anb - An+B options
-   * @param {number} anb.a - a
-   * @param {number} anb.b - b
-   * @param {boolean} [anb.reverse] - reverse order
-   * @param {object} [anb.selector] - AST
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} selector - The AST.
+   * @returns {Array.<Array.<object>>} The selector branches.
    */
-  _collectNthChild(anb, node, opt = {}) {
-    const { a, b, reverse, selector } = anb;
-    const { parentNode } = node;
-    const matched = new Set();
-    let selectorBranches;
-    if (selector) {
-      if (this.#astCache.has(selector)) {
-        selectorBranches = this.#astCache.get(selector);
-      } else {
-        const { branches } = walkAST(selector);
-        selectorBranches = branches;
-        this.#astCache.set(selector, selectorBranches);
-      }
-      const { branches } = walkAST(selector);
-      selectorBranches = branches;
+  _getSelectorBranches = selector => {
+    if (this.#astCache.has(selector)) {
+      return this.#astCache.get(selector);
     }
-    if (parentNode) {
-      const walker = this._createTreeWalker(parentNode, {
-        force: true
-      });
-      let refNode = walker.firstChild();
-      const selectorNodes = new Set();
-      let l = 0;
+    const { branches } = walkAST(selector);
+    this.#astCache.set(selector, branches);
+    return branches;
+  };
+
+  /**
+   * Gets the children of a node, optionally filtered by a selector.
+   * @private
+   * @param {object} parentNode - The parent element.
+   * @param {Array.<Array.<object>>} selectorBranches - The selector branches.
+   * @param {object} [opt] - Options.
+   * @returns {Array.<object>} An array of child nodes.
+   */
+  _getFilteredChildren = (parentNode, selectorBranches, opt = {}) => {
+    const children = [];
+    const walker = this._createTreeWalker(parentNode, { force: true });
+    let childNode = walker.firstChild();
+    while (childNode) {
       if (selectorBranches) {
-        while (refNode) {
-          if (isVisible(refNode)) {
-            let bool;
-            for (const leaves of selectorBranches) {
-              bool = this._matchLeaves(leaves, refNode, opt);
-              if (!bool) {
-                break;
-              }
-            }
-            if (bool) {
-              selectorNodes.add(refNode);
-            }
-          }
-          l++;
-          refNode = walker.nextSibling();
-        }
-      } else {
-        while (refNode) {
-          l++;
-          refNode = walker.nextSibling();
-        }
-      }
-      // :first-child, :last-child, :nth-child(b of S), :nth-last-child(b of S)
-      if (a === 0) {
-        if (b > 0 && b <= l) {
-          if (selectorNodes.size) {
-            refNode = traverseNode(parentNode, walker);
-            if (reverse) {
-              refNode = walker.lastChild();
-            } else {
-              refNode = walker.firstChild();
-            }
-            let i = 0;
-            while (refNode) {
-              if (selectorNodes.has(refNode)) {
-                if (i === b - 1) {
-                  matched.add(refNode);
-                  break;
-                }
-                i++;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-            }
-          } else if (!selector) {
-            refNode = traverseNode(parentNode, walker);
-            if (reverse) {
-              refNode = walker.lastChild();
-            } else {
-              refNode = walker.firstChild();
-            }
-            let i = 0;
-            while (refNode) {
-              if (i === b - 1) {
-                matched.add(refNode);
-                break;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-              i++;
-            }
-          }
-        }
-        // :nth-child()
-      } else {
-        let nth = b - 1;
-        if (a > 0) {
-          while (nth < 0) {
-            nth += a;
-          }
-        }
-        if (nth >= 0 && nth < l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let i = 0;
-          let j = a > 0 ? 0 : b - 1;
-          while (refNode) {
-            if (refNode && nth >= 0 && nth < l) {
-              if (selectorNodes.size) {
-                if (selectorNodes.has(refNode)) {
-                  if (j === nth) {
-                    matched.add(refNode);
-                    nth += a;
-                  }
-                  if (a > 0) {
-                    j++;
-                  } else {
-                    j--;
-                  }
-                }
-              } else if (i === nth) {
-                if (!selector) {
-                  matched.add(refNode);
-                }
-                nth += a;
-              }
-              if (reverse) {
-                refNode = walker.previousSibling();
-              } else {
-                refNode = walker.nextSibling();
-              }
-              i++;
-            } else {
+        if (isVisible(childNode)) {
+          let isMatch = false;
+          const l = selectorBranches.length;
+          for (let i = 0; i < l; i++) {
+            const leaves = selectorBranches[i];
+            if (this._matchLeaves(leaves, childNode, opt)) {
+              isMatch = true;
               break;
             }
           }
-        }
-      }
-      if (reverse && matched.size > 1) {
-        return new Set([...matched].toReversed());
-      }
-    } else if (node === this.#root && a + b === 1) {
-      if (selectorBranches) {
-        let bool;
-        for (const leaves of selectorBranches) {
-          bool = this._matchLeaves(leaves, node, opt);
-          if (bool) {
-            break;
+          if (isMatch) {
+            children.push(childNode);
           }
-        }
-        if (bool) {
-          matched.add(node);
         }
       } else {
-        matched.add(node);
+        children.push(childNode);
       }
+      childNode = walker.nextSibling();
     }
-    return matched;
-  }
+    return children;
+  };
 
   /**
-   * collect nth of type
+   * Collects nth-child nodes.
    * @private
-   * @param {object} anb - An+B options
-   * @param {number} anb.a - a
-   * @param {number} anb.b - b
-   * @param {boolean} [anb.reverse] - reverse order
-   * @param {object} node - Element node
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} anb - An+B options.
+   * @param {number} anb.a - The 'a' value.
+   * @param {number} anb.b - The 'b' value.
+   * @param {boolean} [anb.reverse] - If true, reverses the order.
+   * @param {object} [anb.selector] - The AST.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _collectNthOfType(anb, node) {
-    const { a, b, reverse } = anb;
-    const { localName, namespaceURI, parentNode, prefix } = node;
-    const matched = new Set();
-    if (parentNode) {
-      const walker = this._createTreeWalker(parentNode, {
-        force: true
-      });
-      let refNode = traverseNode(parentNode, walker);
-      refNode = walker.firstChild();
-      let l = 0;
-      while (refNode) {
-        l++;
-        refNode = walker.nextSibling();
-      }
-      // :first-of-type, :last-of-type
-      if (a === 0) {
-        if (b > 0 && b <= l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let j = 0;
-          while (refNode) {
-            const {
-              localName: itemLocalName,
-              namespaceURI: itemNamespaceURI,
-              prefix: itemPrefix
-            } = refNode;
-            if (
-              itemLocalName === localName &&
-              itemPrefix === prefix &&
-              itemNamespaceURI === namespaceURI
-            ) {
-              if (j === b - 1) {
-                matched.add(refNode);
-                break;
-              }
-              j++;
-            }
-            if (reverse) {
-              refNode = walker.previousSibling();
-            } else {
-              refNode = walker.nextSibling();
+  _collectNthChild = (anb, node, opt = {}) => {
+    const { a, b, selector } = anb;
+    const { parentNode } = node;
+    if (!parentNode) {
+      const matchedNode = new Set();
+      if (node === this.#root && a * 1 + b * 1 === 1) {
+        if (selector) {
+          const selectorBranches = this._getSelectorBranches(selector);
+          const l = selectorBranches.length;
+          for (let i = 0; i < l; i++) {
+            const leaves = selectorBranches[i];
+            if (this._matchLeaves(leaves, node, opt)) {
+              matchedNode.add(node);
+              break;
             }
           }
-        }
-        // :nth-of-type()
-      } else {
-        let nth = b - 1;
-        if (a > 0) {
-          while (nth < 0) {
-            nth += a;
-          }
-        }
-        if (nth >= 0 && nth < l) {
-          refNode = traverseNode(parentNode, walker);
-          if (reverse) {
-            refNode = walker.lastChild();
-          } else {
-            refNode = walker.firstChild();
-          }
-          let j = a > 0 ? 0 : b - 1;
-          while (refNode) {
-            const {
-              localName: itemLocalName,
-              namespaceURI: itemNamespaceURI,
-              prefix: itemPrefix
-            } = refNode;
-            if (
-              itemLocalName === localName &&
-              itemPrefix === prefix &&
-              itemNamespaceURI === namespaceURI
-            ) {
-              if (j === nth) {
-                matched.add(refNode);
-                nth += a;
-              }
-              if (nth < 0 || nth >= l) {
-                break;
-              } else if (a > 0) {
-                j++;
-              } else {
-                j--;
-              }
-            }
-            if (reverse) {
-              refNode = walker.previousSibling();
-            } else {
-              refNode = walker.nextSibling();
-            }
-          }
+        } else {
+          matchedNode.add(node);
         }
       }
-      if (reverse && matched.size > 1) {
-        return new Set([...matched].toReversed());
-      }
-    } else if (node === this.#root && a + b === 1) {
-      matched.add(node);
+      return matchedNode;
     }
-    return matched;
-  }
+    const selectorBranches = selector
+      ? this._getSelectorBranches(selector)
+      : null;
+    const children = this._getFilteredChildren(
+      parentNode,
+      selectorBranches,
+      opt
+    );
+    const matchedNodes = filterNodesByAnB(children, anb);
+    return new Set(matchedNodes);
+  };
 
   /**
-   * match An+B
+   * Collects nth-of-type nodes.
    * @private
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @param {string} nthName - nth pseudo-class name
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} anb - An+B options.
+   * @param {number} anb.a - The 'a' value.
+   * @param {number} anb.b - The 'b' value.
+   * @param {boolean} [anb.reverse] - If true, reverses the order.
+   * @param {object} node - The Element node.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchAnPlusB(ast, node, nthName, opt = {}) {
+  _collectNthOfType = (anb, node) => {
+    const { parentNode } = node;
+    if (!parentNode) {
+      if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
+        return new Set([node]);
+      }
+      return new Set();
+    }
+    const typedSiblings = [];
+    const walker = this._createTreeWalker(parentNode, { force: true });
+    let sibling = walker.firstChild();
+    while (sibling) {
+      if (
+        sibling.localName === node.localName &&
+        sibling.namespaceURI === node.namespaceURI &&
+        sibling.prefix === node.prefix
+      ) {
+        typedSiblings.push(sibling);
+      }
+      sibling = walker.nextSibling();
+    }
+    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
+    return new Set(matchedNodes);
+  };
+
+  /**
+   * Matches An+B.
+   * @private
+   * @param {object} ast - The AST.
+   * @param {object} node - The Element node.
+   * @param {string} nthName - The name of the nth pseudo-class.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchAnPlusB = (ast, node, nthName, opt = {}) => {
     const {
       nth: { a, b, name: nthIdentName },
       selector
@@ -784,7 +650,7 @@ export class Finder {
       return nodes;
     }
     return new Set();
-  }
+  };
 
   /**
    * match :has() pseudo-class function
