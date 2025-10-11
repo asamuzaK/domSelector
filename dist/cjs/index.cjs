@@ -941,6 +941,7 @@ var parseSelector = (sel) => {
 var walkAST = (ast = {}) => {
   const branches = /* @__PURE__ */ new Set();
   const info = {
+    hasClassSelector: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
     hasNthChildOfSelector: false,
@@ -956,6 +957,8 @@ var walkAST = (ast = {}) => {
               `Invalid selector .${node.name}`,
               SYNTAX_ERR
             );
+          } else {
+            info.hasClassSelector = true;
           }
           break;
         }
@@ -1626,13 +1629,15 @@ var Finder = class {
         handler: this._handleKeyboardEvent
       },
       {
-        keys: ["mouseover", "mousedown", "mouseup", "mouseout"],
+        keys: ["mouseover", "mousedown", "mouseup", "click", "mouseout"],
         handler: this._handleMouseEvent
-      },
+      }
+      /*
       {
-        keys: ["click"],
+        keys: ['click'],
         handler: this._handleClickEvent
       }
+      */
     ]);
     this._registerEventListeners();
   }
@@ -1850,12 +1855,13 @@ var Finder = class {
       }
       const { branches, info } = walkAST(cssAst);
       const {
+        hasClassSelector,
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate = hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      const baseInvalidate = hasClassSelector || hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
       this.#descendant = processed.descendant;

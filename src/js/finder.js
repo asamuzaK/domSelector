@@ -178,12 +178,8 @@ export class Finder {
         handler: this._handleKeyboardEvent
       },
       {
-        keys: ['mouseover', 'mousedown', 'mouseup', 'mouseout'],
+        keys: ['mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'],
         handler: this._handleMouseEvent
-      },
-      {
-        keys: ['click'],
-        handler: this._handleClickEvent
       }
     ]);
     this._registerEventListeners();
@@ -279,18 +275,6 @@ export class Finder {
    */
   _handleMouseEvent = evt => {
     this.#event = evt;
-  };
-
-  /**
-   * Handles click events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleClickEvent = evt => {
-    this.#event = evt;
-    this.#invalidateResults = new WeakMap();
-    this.#results = new WeakMap();
   };
 
   /**
@@ -413,12 +397,14 @@ export class Finder {
       }
       const { branches, info } = walkAST(cssAst);
       const {
+        hasClassSelector,
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
       const baseInvalidate =
+        hasClassSelector ||
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);

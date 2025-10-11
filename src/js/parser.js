@@ -213,6 +213,7 @@ export const parseSelector = sel => {
 export const walkAST = (ast = {}) => {
   const branches = new Set();
   const info = {
+    hasClassSelector: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
     hasNthChildOfSelector: false,
@@ -228,6 +229,8 @@ export const walkAST = (ast = {}) => {
               `Invalid selector .${node.name}`,
               SYNTAX_ERR
             );
+          } else {
+            info.hasClassSelector = true;
           }
           break;
         }
