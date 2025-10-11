@@ -4317,7 +4317,7 @@ var DOMSelector = class {
   #nwsapi;
   #cache;
   /**
-   * construct
+   * constructor
    * @param {object} window - window
    * @param {object} document - document
    * @param {object} [opt] - options
