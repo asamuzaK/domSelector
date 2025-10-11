@@ -9210,20 +9210,6 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'host-context',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      document.getElementById('div0').appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':host-context', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
     // legacy pseudo-element
     it('should not match', () => {
       const leaf = {
@@ -9600,7 +9586,11 @@ describe('Finder', () => {
             'instance'
           );
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector :foobar', 'message');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector :foobar()',
+            'message'
+          );
           return true;
         }
       );

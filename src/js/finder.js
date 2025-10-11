@@ -1654,9 +1654,8 @@ export class Finder {
           }
           break;
         }
-        // Ignore :host and :host-context.
-        case 'host':
-        case 'host-context': {
+        // Ignore :host.
+        case 'host': {
           break;
         }
         // Legacy pseudo-elements.
@@ -1733,91 +1732,104 @@ export class Finder {
   }
 
   /**
-   * match shadow host pseudo class
+   * Evaluates the :host() pseudo-class.
    * @private
-   * @param {object} ast - AST
-   * @param {object} node - DocumentFragment node
-   * @returns {?object} - matched node
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} host - The host element.
+   * @param {object} ast - The original AST for error reporting.
+   * @returns {boolean} True if matched.
    */
-  _matchShadowHostPseudoClass(ast, node) {
-    const { children: astChildren, name: astName } = ast;
-    if (Array.isArray(astChildren)) {
-      if (astChildren.length !== 1) {
+  _evaluateHostPseudo = (leaves, host, ast) => {
+    const l = leaves.length;
+    for (let i = 0; i < l; i++) {
+      const leaf = leaves[i];
+      if (leaf.type === COMBINATOR) {
         const css = generateCSS(ast);
-        return this.onError(
-          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this.#window)
-        );
+        const msg = `Invalid selector ${css}`;
+        this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+        return false;
       }
-      const { branches } = walkAST(astChildren[0]);
-      const [branch] = branches;
-      const [...leaves] = branch;
-      const { host } = node;
-      if (astName === 'host') {
-        let bool;
-        for (const leaf of leaves) {
-          const { type: leafType } = leaf;
-          if (leafType === COMBINATOR) {
-            const css = generateCSS(ast);
-            return this.onError(
-              generateException(
-                `Invalid selector ${css}`,
-                SYNTAX_ERR,
-                this.#window
-              )
-            );
-          }
-          bool = this._matchSelector(leaf, host).has(host);
-          if (!bool) {
-            break;
-          }
-        }
-        if (bool) {
-          return node;
-        }
-        return null;
-      } else if (astName === 'host-context') {
-        let parent = host;
-        let bool;
-        while (parent) {
-          for (const leaf of leaves) {
-            const { type: leafType } = leaf;
-            if (leafType === COMBINATOR) {
-              const css = generateCSS(ast);
-              return this.onError(
-                generateException(
-                  `Invalid selector ${css}`,
-                  SYNTAX_ERR,
-                  this.#window
-                )
-              );
-            }
-            bool = this._matchSelector(leaf, parent).has(parent);
-            if (!bool) {
-              break;
-            }
-          }
-          if (bool) {
-            break;
-          } else {
-            parent = parent.parentNode;
-          }
-        }
-        if (bool) {
-          return node;
-        }
-        return null;
+      if (!this._matchSelector(leaf, host).has(host)) {
+        return false;
       }
-    } else if (astName === 'host') {
-      return node;
     }
-    return this.onError(
-      generateException(
-        `Invalid selector :${astName}`,
-        SYNTAX_ERR,
-        this.#window
-      )
-    );
-  }
+    return true;
+  };
+
+  /**
+   * Evaluates the :host-context() pseudo-class.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} host - The host element.
+   * @param {object} ast - The original AST for error reporting.
+   * @returns {boolean} True if matched.
+   */
+  _evaluateHostContextPseudo = (leaves, host, ast) => {
+    let parent = host;
+    while (parent) {
+      let bool;
+      const l = leaves.length;
+      for (let i = 0; i < l; i++) {
+        const leaf = leaves[i];
+        if (leaf.type === COMBINATOR) {
+          const css = generateCSS(ast);
+          const msg = `Invalid selector ${css}`;
+          this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+          return false;
+        }
+        bool = this._matchSelector(leaf, parent).has(parent);
+        if (!bool) {
+          break;
+        }
+      }
+      if (bool) {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+    return false;
+  };
+
+  /**
+   * Matches shadow host pseudo-classes.
+   * @private
+   * @param {object} ast - The AST.
+   * @param {object} node - The DocumentFragment node.
+   * @returns {?object} The matched node.
+   */
+  _matchShadowHostPseudoClass = (ast, node) => {
+    const { children: astChildren, name: astName } = ast;
+    // Handle simple pseudo-class (no arguments).
+    if (!Array.isArray(astChildren)) {
+      if (astName === 'host') {
+        return node;
+      }
+      const msg = `Invalid selector :${astName}`;
+      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+    }
+    // Handle functional pseudo-class like :host(...).
+    if (astName !== 'host' && astName !== 'host-context') {
+      const msg = `Invalid selector :${astName}()`;
+      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+    }
+    if (astChildren.length !== 1) {
+      const css = generateCSS(ast);
+      const msg = `Invalid selector ${css}`;
+      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+    }
+    const { host } = node;
+    const { branches } = walkAST(astChildren[0]);
+    const [branch] = branches;
+    const [...leaves] = branch;
+    let isMatch = false;
+    if (astName === 'host') {
+      isMatch = this._evaluateHostPseudo(leaves, host, ast);
+      // astName === 'host-context'.
+    } else {
+      isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
+    }
+    return isMatch ? node : null;
+  };
 
   /**
    * match selector
