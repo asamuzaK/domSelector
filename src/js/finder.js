@@ -36,7 +36,6 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR,
-  //ATTR_STATE_CHANGE,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
@@ -99,27 +98,6 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
   'last-of-type',
   'only-of-type'
 ]);
-/*
-const KEYS_PS_FORM = new Set([
-  'checked',
-  'default',
-  'disabled',
-  'enabled',
-  'in-range',
-  'indeterminate',
-  'invalid',
-  'optional',
-  'out-of-range',
-  'placeholder-shown',
-  'read-only',
-  'read-write',
-  'required',
-  'user-invalid',
-  'user-valid',
-  'valid'
-]);
-const KEYS_PS_UI = new Set(['closed', 'open', 'popover-open']);
-*/
 
 /**
  * Finder
@@ -397,14 +375,12 @@ export class Finder {
       }
       const { branches, info } = walkAST(cssAst);
       const {
-        hasClassSelector,
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
       const baseInvalidate =
-        hasClassSelector ||
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
@@ -2543,6 +2519,10 @@ export class Finder {
         break;
       }
       case CLASS_SELECTOR: {
+        // Invalidate cache for simple class selector.
+        if (!complex && !filterLeaves.length) {
+          this.#invalidate = true;
+        }
         result = this._findEntryNodesForClass(leaves, targetType, {
           complex,
           precede

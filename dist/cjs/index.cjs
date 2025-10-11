@@ -89,7 +89,6 @@ var ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 var N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 var SUB_TYPE = "\\[[^|\\]]+\\]|[#.:][\\w-]+";
 var SUB_TYPE_WO_PSEUDO = "\\[[^|\\]]+\\]|[#.][\\w-]+";
-var SUB_CLASS = "(?:\\.[\\w-]+)";
 var TAG_TYPE = "\\*|[A-Za-z][\\w-]*";
 var TAG_TYPE_I = "\\*|[A-Z][\\w-]*";
 var COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
@@ -107,13 +106,6 @@ var COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
 var LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 var LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 var HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
-var ATTR_STATE_CHANGE = Object.freeze([
-  "checked",
-  "class",
-  "disabled",
-  "hidden",
-  "style"
-]);
 var FORM_PARTS = Object.freeze([
   "button",
   "input",
@@ -175,7 +167,6 @@ var KEYS_NODE_FOCUSABLE_SVG = /* @__PURE__ */ new Set([
   "title"
 ]);
 var REG_EXCLUDE_BASIC = /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
-var REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
 var REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, "i");
 var REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, "i");
 var REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, "i");
@@ -754,9 +745,6 @@ var filterSelector = (selector, target) => {
   if (!selector || typeof selector !== "string" || /null|undefined/.test(selector) || target === TARGET_FIRST) {
     return false;
   }
-  if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
-    return false;
-  }
   if (selector.includes("[")) {
     const index = selector.lastIndexOf("[");
     const sel = selector.substring(index);
@@ -941,7 +929,6 @@ var parseSelector = (sel) => {
 var walkAST = (ast = {}) => {
   const branches = /* @__PURE__ */ new Set();
   const info = {
-    hasClassSelector: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
     hasNthChildOfSelector: false,
@@ -957,8 +944,6 @@ var walkAST = (ast = {}) => {
               `Invalid selector .${node.name}`,
               SYNTAX_ERR
             );
-          } else {
-            info.hasClassSelector = true;
           }
           break;
         }
@@ -1632,12 +1617,6 @@ var Finder = class {
         keys: ["mouseover", "mousedown", "mouseup", "click", "mouseout"],
         handler: this._handleMouseEvent
       }
-      /*
-      {
-        keys: ['click'],
-        handler: this._handleClickEvent
-      }
-      */
     ]);
     this._registerEventListeners();
   }
@@ -1726,17 +1705,6 @@ var Finder = class {
    */
   _handleMouseEvent = (evt) => {
     this.#event = evt;
-  };
-  /**
-   * Handles click events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleClickEvent = (evt) => {
-    this.#event = evt;
-    this.#invalidateResults = /* @__PURE__ */ new WeakMap();
-    this.#results = /* @__PURE__ */ new WeakMap();
   };
   /**
    * Registers event listeners.
@@ -1855,13 +1823,12 @@ var Finder = class {
       }
       const { branches, info } = walkAST(cssAst);
       const {
-        hasClassSelector,
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate = hasClassSelector || hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      const baseInvalidate = hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
       this.#descendant = processed.descendant;
@@ -3815,6 +3782,9 @@ var Finder = class {
         break;
       }
       case CLASS_SELECTOR: {
+        if (!complex && !filterLeaves.length) {
+          this.#invalidate = true;
+        }
         result = this._findEntryNodesForClass(leaves, targetType, {
           complex,
           precede

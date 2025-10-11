@@ -11,7 +11,6 @@ export class Finder {
     private _handleFocusEvent;
     private _handleKeyboardEvent;
     private _handleMouseEvent;
-    private _handleClickEvent;
     private _registerEventListeners;
     private _processSelectorBranches;
     private _correspond;
