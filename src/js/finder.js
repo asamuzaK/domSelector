@@ -38,20 +38,17 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR,
+  ATTR_STATE_CHANGE,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   FORM_PARTS,
   ID_SELECTOR,
-  //INPUT_CHECK,
-  //INPUT_DATE,
-  //INPUT_EDIT,
-  //INPUT_TEXT,
-  KEY_FORM_FOCUS,
-  KEY_INPUT_DATE,
-  KEY_INPUT_EDIT,
-  KEY_INPUT_TEXT,
+  INPUT_CHECK,
+  INPUT_DATE,
+  INPUT_EDIT,
+  INPUT_TEXT,
   KEYS_LOGICAL,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
@@ -69,13 +66,13 @@ import {
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-//const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
-//const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
-//const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
-//const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
-//const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
-//const KEYS_INPUT_RESET = new Set(['button', 'reset']);
-//const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
+const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
+const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
+const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
+const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
+const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
+const KEYS_INPUT_RESET = new Set(['button', 'reset']);
+const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
 const KEYS_MODIFIER = new Set([
   'Alt',
   'AltGraph',
@@ -124,25 +121,6 @@ const KEYS_PS_UI = new Set(['closed', 'open', 'popover-open']);
 /**
  * Finder
  * NOTE: #ast[i] corresponds to #nodes[i]
- * #ast: Array.<Ast>
- * #nodes: Array.<Nodes>
- * Ast: {
- *   branch: Array.<Branch | undefined>,
- *   dir: string | null,
- *   filtered: boolean,
- *   find: boolean
- * }
- * Branch: Array.<Twig>
- * Twig: {
- *   combo: Leaf | null,
- *   leaves: Array<Leaf>
- * }
- * Leaf: {
- *   children: Array.<Leaf> | null,
- *   loc: null,
- *   type: string
- * }
- * Nodes: Array.<HTMLElement>
  */
 export class Finder {
   /* private fields */
@@ -174,7 +152,7 @@ export class Finder {
   #window;
 
   /**
-   * construct
+   * constructor
    * @param {object} window - window
    */
   constructor(window) {
@@ -1407,8 +1385,7 @@ export class Finder {
               targetNode = node;
             } else if (localName === 'input') {
               if (node.hasAttribute('type')) {
-                const keys = [...KEY_INPUT_TEXT, 'number'];
-                if (keys.includes(node.getAttribute('type'))) {
+                if (KEYS_INPUT_PLACEHOLDER.has(node.getAttribute('type'))) {
                   targetNode = node;
                 }
               } else {
@@ -1487,16 +1464,13 @@ export class Finder {
         }
         case 'default': {
           // button[type="submit"], input[type="submit"], input[type="image"]
-          const chekcKeys = ['checkbox', 'radio'];
-          const resetKeys = ['button', 'reset'];
-          const submitKeys = ['image', 'submit'];
           const attrType = node.getAttribute('type');
           if (
             (localName === 'button' &&
-              !(node.hasAttribute('type') && resetKeys.includes(attrType))) ||
+              !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
             (localName === 'input' &&
               node.hasAttribute('type') &&
-              submitKeys.includes(attrType))
+              KEYS_INPUT_SUBMIT.has(attrType))
           ) {
             let form = node.parentNode;
             while (form) {
@@ -1516,12 +1490,12 @@ export class Finder {
                 if (nodeName === 'button') {
                   m = !(
                     refNode.hasAttribute('type') &&
-                    resetKeys.includes(nodeAttrType)
+                    KEYS_INPUT_RESET.has(nodeAttrType)
                   );
                 } else if (nodeName === 'input') {
                   m =
                     refNode.hasAttribute('type') &&
-                    submitKeys.includes(nodeAttrType);
+                    KEYS_INPUT_SUBMIT.has(nodeAttrType);
                 }
                 if (m) {
                   if (refNode === node) {
@@ -1536,8 +1510,8 @@ export class Finder {
           } else if (
             localName === 'input' &&
             node.hasAttribute('type') &&
-            chekcKeys.includes(attrType) &&
-            node.hasAttribute('checked')
+            node.hasAttribute('checked') &&
+            KEYS_INPUT_CHECK.has(attrType)
           ) {
             matched.add(node);
             // option
@@ -1548,8 +1522,7 @@ export class Finder {
         }
         case 'valid':
         case 'invalid': {
-          const keys = [...KEY_FORM_FOCUS, 'form'];
-          if (keys.includes(localName)) {
+          if (KEYS_FORM_PS_VALID.has(localName)) {
             let valid;
             if (node.checkValidity()) {
               if (node.maxLength >= 0) {
@@ -1576,7 +1549,7 @@ export class Finder {
               valid = true;
             } else {
               while (refNode) {
-                if (keys.includes(refNode.localName)) {
+                if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
                   if (refNode.checkValidity()) {
                     if (refNode.maxLength >= 0) {
                       valid = refNode.maxLength >= refNode.value.length;
@@ -1605,13 +1578,12 @@ export class Finder {
         }
         case 'in-range':
         case 'out-of-range': {
-          const keys = [...KEY_INPUT_DATE, 'number', 'range'];
           const attrType = node.getAttribute('type');
           if (
             localName === 'input' &&
             !(node.readonly || node.hasAttribute('readonly')) &&
             !(node.disabled || node.hasAttribute('disabled')) &&
-            keys.includes(attrType)
+            KEYS_INPUT_RANGE.has(attrType)
           ) {
             const flowed =
               node.validity.rangeUnderflow || node.validity.rangeOverflow;
@@ -1641,9 +1613,8 @@ export class Finder {
             }
           } else if (localName === 'input') {
             if (node.hasAttribute('type')) {
-              const keys = [...KEY_INPUT_EDIT, 'checkbox', 'file', 'radio'];
               const attrType = node.getAttribute('type');
-              if (keys.includes(attrType)) {
+              if (KEYS_INPUT_REQUIRED.has(attrType)) {
                 if (node.required || node.hasAttribute('required')) {
                   required = true;
                 } else {
@@ -1792,7 +1763,7 @@ export class Finder {
             if (isCustomElement(node)) {
               matched.add(node);
             }
-            // NOTE: MathMLElement not implemented in jsdom
+            // NOTE: MathMLElement is not implemented in jsdom.
           } else if (
             node instanceof this.#window.HTMLElement ||
             node instanceof this.#window.SVGElement

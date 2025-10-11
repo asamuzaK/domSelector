@@ -21,8 +21,6 @@ import {
   HEX,
   ID_SELECTOR,
   KEYS_LOGICAL,
-  KEYS_PS_CLASS_STATE,
-  KEYS_SHADOW_HOST,
   NTH,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -38,6 +36,23 @@ const AST_SORT_ORDER = new Map([
   [ATTR_SELECTOR, BIT_16],
   [PS_CLASS_SELECTOR, BIT_32]
 ]);
+const KEYS_PS_CLASS_STATE = new Set([
+  'checked',
+  'closed',
+  'disabled',
+  'empty',
+  'enabled',
+  'in-range',
+  'indeterminate',
+  'invalid',
+  'open',
+  'out-of-range',
+  'placeholder-shown',
+  'read-only',
+  'read-write',
+  'valid'
+]);
+const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
 const REG_EMPTY_PS_FUNC =
   /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
