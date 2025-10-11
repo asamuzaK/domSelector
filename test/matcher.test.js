@@ -546,118 +546,6 @@ describe('matcher', () => {
     });
   });
 
-  describe('get language attribute', () => {
-    const func = matcher.getLanguageAttr;
-
-    it('should not match', () => {
-      const res = func();
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should not match', () => {
-      const res = func('foo');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should not match', () => {
-      const res = func('foo', 'text/plain');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.createElement('div');
-      const res = func(node, 'text/html');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should not match', () => {
-      const parent = document.createElement('div');
-      const node = document.createElement('div');
-      parent.appendChild(node);
-      const res = func(node, 'text/html');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should match', () => {
-      const parent = document.createElement('div');
-      const node = document.createElement('div');
-      parent.lang = 'en';
-      parent.appendChild(node);
-      const res = func(node, 'text/html');
-      assert.strictEqual(res, 'en', 'result');
-    });
-
-    it('should not match', () => {
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      frag.appendChild(node);
-      const res = func(node, 'text/html');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should match', () => {
-      const html = `
-          <div lang='en-US'>
-            <template id="template">
-              <div>
-                <slot id="foo" name="bar">Foo</slot>
-              </div>
-            </template>
-            <my-element id="baz">
-              <span id="qux" slot="foo">Qux</span>
-            </my-element>
-          </div>
-        `;
-      const container = document.getElementById('div0');
-      container.innerHTML = html;
-      class MyElement extends window.HTMLElement {
-        constructor() {
-          super();
-          const shadowRoot = this.attachShadow({ mode: 'open' });
-          const template = document.getElementById('template');
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      }
-      window.customElements.define('my-element', MyElement);
-      const shadow = document.getElementById('baz');
-      const node = shadow.shadowRoot.getElementById('foo');
-      const res = func(node, 'text/html');
-      assert.strictEqual(res, 'en-US', 'result');
-    });
-
-    it('should not match', () => {
-      const xmlDom = `
-        <foo id="foo">
-          <bar id="bar">
-            <baz id="baz"/>
-          </bar>
-        </foo>
-      `;
-      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
-      const node = doc.createElement('div');
-      const parent = doc.getElementById('baz');
-      parent.appendChild(node);
-      const res = func(node, 'text/xml');
-      assert.strictEqual(res, null, 'result');
-    });
-
-    it('should match', () => {
-      const xmlDom = `
-        <foo id="foo" xml:lang="en">
-          <bar id="bar">
-            <baz id="baz"/>
-          </bar>
-        </foo>
-      `;
-      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
-      const node = doc.createElement('div');
-      const parent = doc.getElementById('baz');
-      parent.appendChild(node);
-      const res = func(node, 'text/xml');
-      assert.strictEqual(res, 'en', 'result');
-    });
-  });
-
   describe('match language pseudo-class', () => {
     const func = matcher.matchLanguagePseudoClass;
 
@@ -1200,6 +1088,338 @@ describe('matcher', () => {
       const parent = doc.getElementById('baz');
       parent.appendChild(node);
       const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('match disabled / enabled pseudo-class', () => {
+    const func = matcher.matchDisabledPseudoClass;
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('foo', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      node.disabled = true;
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.disabled = true;
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      window.customElements.define(
+        'x-foo',
+        class extends window.HTMLElement {
+          static formAssociated = false;
+        }
+      );
+      const node = document.createElement('x-foo');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      window.customElements.define(
+        'x-input',
+        class extends window.HTMLElement {
+          static formAssociated = true;
+        }
+      );
+      const node = document.createElement('x-input');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      window.customElements.define(
+        'x-input',
+        class extends window.HTMLElement {
+          static formAssociated = true;
+        }
+      );
+      const node = document.createElement('x-input');
+      node.setAttribute('disabled', 'disabled');
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('option');
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.setAttribute('disabled', 'disabled');
+      parent.appendChild(node);
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.setAttribute('disabled', 'disabled');
+      parent.appendChild(node);
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.appendChild(node);
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.appendChild(node);
+      const res = func('enabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.disabled = true;
+      parent.appendChild(node);
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const parent = document.createElement('optgroup');
+      const node = document.createElement('option');
+      parent.disabled = true;
+      parent.appendChild(node);
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      const res = func('enabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.setAttribute('disabled', 'disabled');
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.setAttribute('disabled', 'disabled');
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.disabled = true;
+      const res = func('disabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const field = document.createElement('fieldset');
+      const node = document.createElement('input');
+      field.appendChild(node);
+      field.disabled = true;
+      const res = func('enabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const field = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      const node = document.createElement('input');
+      legend.appendChild(node);
+      field.appendChild(legend);
+      field.setAttribute('disabled', 'disabled');
+      const res = func('disabled', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const field = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      const node = document.createElement('input');
+      legend.appendChild(node);
+      field.appendChild(legend);
+      field.setAttribute('disabled', 'disabled');
+      const res = func('enabled', node);
+      assert.strictEqual(res, true, 'result');
+    });
+  });
+
+  describe('match read-only / read-write pseudo-class', () => {
+    const func = matcher.matchReadOnlyPseudoClass;
+
+    it('should get true', () => {
+      const node = document.createElement('div');
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('div');
+      const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('textarea');
+      const res = func('read-only', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('textarea');
+      const res = func('read-write', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('textarea');
+      node.readOnly = true;
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('textarea');
+      node.readOnly = true;
+      const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('readonly', 'readonly');
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('readonly', 'readonly');
+      const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      const res = func('read-only', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      const res = func('read-write', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      node.readOnly = true;
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.readOnly = true;
+      const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      node.setAttribute('readonly', 'readonly');
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.setAttribute('readonly', 'readonly');
+      const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const node = document.createElement('input');
+      node.type = 'button';
+      const res = func('read-only', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const node = document.createElement('input');
+      node.type = 'button';
+      const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
   });

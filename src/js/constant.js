@@ -127,24 +127,7 @@ export const INPUT_LTR = Object.freeze([
 ]);
 
 /* keywords */
-export const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
-export const KEYS_MODIFIER = new Set([
-  'Alt',
-  'AltGraph',
-  'CapsLock',
-  'Control',
-  'Fn',
-  'FnLock',
-  'Hyper',
-  'Meta',
-  'NumLock',
-  'ScrollLock',
-  'Shift',
-  'Super',
-  'Symbol',
-  'SymbolLock'
-]);
 export const KEYS_PS_ELEMENT = new Set([
   'after',
   'backdrop',

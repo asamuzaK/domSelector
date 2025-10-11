@@ -6,10 +6,10 @@
 import {
   matchAttributeSelector,
   matchDirectionPseudoClass,
-  matchDisabledEnabledPseudo,
+  matchDisabledPseudoClass,
   matchLanguagePseudoClass,
   matchPseudoElementSelector,
-  matchReadOnlyWritePseudo,
+  matchReadOnlyPseudoClass,
   matchTypeSelector
 } from './matcher.js';
 import {
@@ -21,14 +21,14 @@ import {
   walkAST
 } from './parser.js';
 import {
-  filterNodesByAnB,
-  findLogicalWithNestedHas,
+  //filterNodesByAnB,
+  //findLogicalWithNestedHas,
   generateException,
-  isContentEditable,
+  //isContentEditable,
   isCustomElement,
   isFocusVisible,
   isFocusableArea,
-  isValidShadowHostSelector,
+  //isValidShadowHostSelector,
   isVisible,
   resolveContent,
   sortNodes,
@@ -38,25 +38,21 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR,
-  BIT_01,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   FORM_PARTS,
   ID_SELECTOR,
-  INPUT_CHECK,
-  INPUT_DATE,
-  INPUT_EDIT,
-  INPUT_TEXT,
+  //INPUT_CHECK,
+  //INPUT_DATE,
+  //INPUT_EDIT,
+  //INPUT_TEXT,
   KEY_FORM_FOCUS,
   KEY_INPUT_DATE,
   KEY_INPUT_EDIT,
   KEY_INPUT_TEXT,
-  KEY_LOGICAL,
-  KEY_MODIFIER,
   KEYS_LOGICAL,
-  KEYS_MODIFIER,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -73,13 +69,29 @@ import {
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
-const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
-const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
-const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
-const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
-const KEYS_INPUT_RESET = new Set(['button', 'reset']);
-const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
+//const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
+//const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
+//const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
+//const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
+//const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
+//const KEYS_INPUT_RESET = new Set(['button', 'reset']);
+//const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
+const KEYS_MODIFIER = new Set([
+  'Alt',
+  'AltGraph',
+  'CapsLock',
+  'Control',
+  'Fn',
+  'FnLock',
+  'Hyper',
+  'Meta',
+  'NumLock',
+  'ScrollLock',
+  'Shift',
+  'Super',
+  'Symbol',
+  'SymbolLock'
+]);
 const KEYS_PS_UNCACHE = new Set([
   'any-link',
   'defined',
@@ -87,6 +99,7 @@ const KEYS_PS_UNCACHE = new Set([
   'link',
   'scope'
 ]);
+/*
 const KEYS_PS_FORM = new Set([
   'checked',
   'default',
@@ -106,6 +119,7 @@ const KEYS_PS_FORM = new Set([
   'valid'
 ]);
 const KEYS_PS_UI = new Set(['closed', 'open', 'popover-open']);
+*/
 
 /**
  * Finder
@@ -262,7 +276,7 @@ export class Finder {
           key,
           evt => {
             const { key } = evt;
-            if (!KEY_MODIFIER.includes(key)) {
+            if (!KEYS_MODIFIER.has(key)) {
               this.#event = evt;
             }
           },
@@ -962,7 +976,7 @@ export class Finder {
     const { forgive, warn = this.#warn } = opt;
     const matched = new Set();
     // :has(), :is(), :not(), :where()
-    if (Array.isArray(astChildren) && KEY_LOGICAL.includes(astName)) {
+    if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
         return this.onError(
@@ -980,7 +994,7 @@ export class Finder {
           for (const child of astChildren) {
             const item = findAST(child, leaf => {
               if (
-                KEY_LOGICAL.includes(leaf.name) &&
+                KEYS_LOGICAL.has(leaf.name) &&
                 findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')
               ) {
                 return leaf;
@@ -1182,6 +1196,22 @@ export class Finder {
       }
     } else {
       switch (astName) {
+        case 'disabled':
+        case 'enabled': {
+          const isMatch = matchDisabledPseudoClass(astName, node);
+          if (isMatch) {
+            matched.add(node);
+          }
+          break;
+        }
+        case 'read-only':
+        case 'read-write': {
+          const isMatch = matchReadOnlyPseudoClass(astName, node);
+          if (isMatch) {
+            matched.add(node);
+          }
+          break;
+        }
         case 'any-link':
         case 'link': {
           if (
@@ -1221,11 +1251,7 @@ export class Finder {
         }
         case 'active': {
           const { buttons, target, type } = this.#event ?? {};
-          if (
-            type === 'mousedown' &&
-            buttons & BIT_01 &&
-            node.contains(target)
-          ) {
+          if (type === 'mousedown' && buttons & 1 && node.contains(target)) {
             matched.add(node);
           }
           break;
@@ -1365,120 +1391,6 @@ export class Finder {
             } else if (astName === 'closed') {
               matched.add(node);
             }
-          }
-          break;
-        }
-        case 'disabled':
-        case 'enabled': {
-          const keys = [...KEY_FORM_FOCUS, 'fieldset', 'optgroup', 'option'];
-          if (
-            keys.includes(localName) ||
-            isCustomElement(node, { formAssociated: true })
-          ) {
-            let disabled;
-            if (node.disabled || node.hasAttribute('disabled')) {
-              disabled = true;
-            } else if (node.localName === 'option') {
-              if (
-                parentNode.localName === 'optgroup' &&
-                (parentNode.disabled || parentNode.hasAttribute('disabled'))
-              ) {
-                disabled = true;
-              }
-            } else if (node.localName !== 'optgroup') {
-              let parent = parentNode;
-              while (parent) {
-                if (
-                  parent.localName === 'fieldset' &&
-                  (parent.disabled || parent.hasAttribute('disabled'))
-                ) {
-                  let refNode = parent.firstElementChild;
-                  while (refNode) {
-                    if (refNode.localName === 'legend') {
-                      break;
-                    }
-                    refNode = refNode.nextElementSibling;
-                  }
-                  if (refNode) {
-                    if (!refNode.contains(node)) {
-                      disabled = true;
-                    }
-                  } else {
-                    disabled = true;
-                  }
-                  break;
-                } else if (parent.localName === 'form') {
-                  break;
-                } else if (parent.parentNode?.nodeType === ELEMENT_NODE) {
-                  if (parent.parentNode.localName === 'form') {
-                    break;
-                  } else {
-                    parent = parent.parentNode;
-                  }
-                } else {
-                  break;
-                }
-              }
-            }
-            if (disabled) {
-              if (astName === 'disabled') {
-                matched.add(node);
-              }
-            } else if (astName === 'enabled') {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'read-only':
-        case 'read-write': {
-          let readonly;
-          let writable;
-          switch (localName) {
-            case 'textarea': {
-              if (
-                node.readOnly ||
-                node.hasAttribute('readonly') ||
-                node.disabled ||
-                node.hasAttribute('disabled')
-              ) {
-                readonly = true;
-              } else {
-                writable = true;
-              }
-              break;
-            }
-            case 'input': {
-              if (!node.type || KEY_INPUT_EDIT.includes(node.type)) {
-                if (
-                  node.readOnly ||
-                  node.hasAttribute('readonly') ||
-                  node.disabled ||
-                  node.hasAttribute('disabled')
-                ) {
-                  readonly = true;
-                } else {
-                  writable = true;
-                }
-              } else {
-                readonly = true;
-              }
-              break;
-            }
-            default: {
-              if (isContentEditable(node)) {
-                writable = true;
-              } else {
-                readonly = true;
-              }
-            }
-          }
-          if (readonly) {
-            if (astName === 'read-only') {
-              matched.add(node);
-            }
-          } else if (astName === 'read-write' && writable) {
-            matched.add(node);
           }
           break;
         }
@@ -2125,7 +2037,7 @@ export class Finder {
       astType === PS_CLASS_SELECTOR &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE
     ) {
-      if (KEY_LOGICAL.includes(astName)) {
+      if (KEYS_LOGICAL.has(astName)) {
         opt.isShadowRoot = true;
         const nodes = this._matchPseudoClassSelector(ast, node, opt);
         return nodes;
@@ -2160,9 +2072,7 @@ export class Finder {
       return matched;
     } else {
       let cacheable = true;
-      const formKeys = [...KEY_FORM_FOCUS, 'fieldset', 'form'];
-      const pseudoKeys = ['any-link', 'defined', 'dir', 'link', 'scope'];
-      if (node.nodeType === ELEMENT_NODE && formKeys.includes(node.localName)) {
+      if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
         cacheable = false;
       }
       let bool;
@@ -2174,7 +2084,7 @@ export class Finder {
             break;
           }
           case PS_CLASS_SELECTOR: {
-            if (pseudoKeys.includes(leaf.name)) {
+            if (KEYS_PS_UNCACHE.has(leaf.name)) {
               cacheable = false;
             }
             break;

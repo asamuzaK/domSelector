@@ -7,26 +7,32 @@ import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 import {
   generateException,
   getDirectionality,
+  getLanguageAttribute,
   getType,
+  isContentEditable,
+  isCustomElement,
   isNamespaceDeclared
 } from './utility.js';
 
 /* constants */
 import {
   ALPHA_NUM,
-  DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE,
-  ELEMENT_NODE,
+  FORM_PARTS,
   IDENT,
+  INPUT_EDIT,
   LANG_PART,
   NOT_SUPPORTED_ERR,
   PS_ELEMENT_SELECTOR,
   STRING,
   SYNTAX_ERR
 } from './constant.js';
-const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
-const REG_IS_XML =
-  /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const KEYS_FORM_PS_DISABLED = new Set([
+  ...FORM_PARTS,
+  'fieldset',
+  'optgroup',
+  'option'
+]);
+const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 
@@ -124,56 +130,6 @@ export const matchDirectionPseudoClass = (ast, node) => {
 };
 
 /**
- * Traverses up the DOM tree to find the language attribute for a node.
- * It checks for 'lang' in HTML and 'xml:lang' in XML contexts.
- * @param {object} node - The starting element node.
- * @param {string} contentType - The content type of the document.
- * @returns {string|null} The language attribute value, or null if not found.
- */
-export const getLanguageAttr = (node, contentType = '') => {
-  const isHtml = REG_IS_HTML.test(contentType);
-  const isXml = REG_IS_XML.test(contentType);
-  let isShadow = false;
-  // Traverse up from the current node to the root.
-  let current = node;
-  while (current) {
-    // Check if the current node is an element.
-    switch (current.nodeType) {
-      case ELEMENT_NODE: {
-        // Check for and return the language attribute if present.
-        if (isHtml && current.hasAttribute('lang')) {
-          return current.getAttribute('lang');
-        } else if (isXml && current.hasAttribute('xml:lang')) {
-          return current.getAttribute('xml:lang');
-        }
-        break;
-      }
-      case DOCUMENT_FRAGMENT_NODE: {
-        if (current.host) {
-          isShadow = true;
-        }
-        break;
-      }
-      case DOCUMENT_NODE: {
-        // Stop if we reach the root node.
-        return null;
-      }
-      default:
-    }
-    if (isShadow) {
-      current = current.host;
-      isShadow = false;
-    } else if (current.parentNode) {
-      current = current.parentNode;
-    } else {
-      break;
-    }
-  }
-  // No language attribute was found in the hierarchy.
-  return null;
-};
-
-/**
  * Matches the :lang() pseudo-class against an element's language.
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
  * @param {object} ast - The AST object for the pseudo-class.
@@ -193,17 +149,16 @@ export const matchLanguagePseudoClass = (ast, node) => {
   if (typeof langPattern !== 'string') {
     return false;
   }
-  const { contentType } = node.ownerDocument;
   // Get the effective language attribute for the current node.
-  const elementLang = getLanguageAttr(node, contentType);
-  // Handle the universal selector '*' for :lang.
-  if (langPattern === '*') {
-    // It matches if any language tag is present and not empty.
-    return elementLang !== null && elementLang !== '';
-  }
+  const elementLang = getLanguageAttribute(node);
   // If the element has no language, it cannot match a specific pattern.
   if (elementLang === null) {
     return false;
+  }
+  // Handle the universal selector '*' for :lang.
+  if (langPattern === '*') {
+    // It matches any language unless attribute is not empty.
+    return elementLang !== '';
   }
   // Validate the provided language pattern structure.
   if (!REG_LANG_VALID.test(langPattern)) {
@@ -212,7 +167,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
   // Build a regex for extended language range matching.
   let matcherRegex;
   if (langPattern.indexOf('-') > -1) {
-    // Handle complex patterns with wildcards and sub-tags (e.g., '*-en').
+    // Handle complex patterns with wildcards and sub-tags (e.g., '*-US').
     const [langMain, langSub, ...langRest] = langPattern.split('-');
     const extendedMain =
       langMain === '*' ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
@@ -232,6 +187,98 @@ export const matchLanguagePseudoClass = (ast, node) => {
   }
   // Test the element's language against the constructed regex.
   return matcherRegex.test(elementLang);
+};
+
+/**
+ * Matches the :disabled and :enabled pseudo-classes.
+ * @param {string} astName - pseudo-class name
+ * @param {object} node - Element node
+ * @returns {boolean} - True if matched
+ */
+export const matchDisabledPseudoClass = (astName, node) => {
+  const { localName, parentNode } = node;
+  if (
+    !KEYS_FORM_PS_DISABLED.has(localName) &&
+    !isCustomElement(node, { formAssociated: true })
+  ) {
+    return false;
+  }
+  let isDisabled = false;
+  if (node.disabled || node.hasAttribute('disabled')) {
+    isDisabled = true;
+  } else if (localName === 'option') {
+    if (
+      parentNode &&
+      parentNode.localName === 'optgroup' &&
+      (parentNode.disabled || parentNode.hasAttribute('disabled'))
+    ) {
+      isDisabled = true;
+    }
+  } else if (localName !== 'optgroup') {
+    let current = parentNode;
+    while (current) {
+      if (
+        current.localName === 'fieldset' &&
+        (current.disabled || current.hasAttribute('disabled'))
+      ) {
+        // The first <legend> in a disabled <fieldset> is not disabled.
+        let legend;
+        let element = current.firstElementChild;
+        while (element) {
+          if (element.localName === 'legend') {
+            legend = element;
+            break;
+          }
+          element = element.nextElementSibling;
+        }
+        if (!legend || !legend.contains(node)) {
+          isDisabled = true;
+        }
+        // Found the containing fieldset, stop searching up.
+        break;
+      }
+      current = current.parentNode;
+    }
+  }
+  if (astName === 'disabled') {
+    return isDisabled;
+  }
+  return !isDisabled;
+};
+
+/**
+ * Match the :read-only and :read-write pseudo-classes
+ * @param {string} astName - pseudo-class name
+ * @param {object} node - Element node
+ * @returns {boolean} - True if matched
+ */
+export const matchReadOnlyPseudoClass = (astName, node) => {
+  const { localName } = node;
+  let isReadOnly = false;
+  switch (localName) {
+    case 'textarea':
+    case 'input': {
+      const isEditableInput = !node.type || KEYS_INPUT_EDIT.has(node.type);
+      if (localName === 'textarea' || isEditableInput) {
+        isReadOnly =
+          node.readOnly ||
+          node.hasAttribute('readonly') ||
+          node.disabled ||
+          node.hasAttribute('disabled');
+      } else {
+        // Non-editable input types are always read-only
+        isReadOnly = true;
+      }
+      break;
+    }
+    default: {
+      isReadOnly = !isContentEditable(node);
+    }
+  }
+  if (astName === 'read-only') {
+    return isReadOnly;
+  }
+  return !isReadOnly;
 };
 
 /**

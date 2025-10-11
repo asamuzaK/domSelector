@@ -78,6 +78,9 @@ const REG_LOGIC_HAS_COMPOUND = new RegExp(
 );
 const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
+const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
+const REG_IS_XML =
+  /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
 
 /**
  * Manages state for extracting nested selectors from a CSS AST.
@@ -534,11 +537,12 @@ export const getDirectionality = node => {
 };
 
 /**
- * Finds the effective language attribute by traversing up the DOM tree.
- * @param {object} node - The element node to start from.
- * @returns {?string} The language attribute string, or null if not found.
+ * Traverses up the DOM tree to find the language attribute for a node.
+ * It checks for 'lang' in HTML and 'xml:lang' in XML contexts.
+ * @param {object} node - The starting element node.
+ * @returns {string|null} The language attribute value, or null if not found.
  */
-export const findLangAttribute = node => {
+export const getLanguageAttribute = node => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -546,31 +550,46 @@ export const findLangAttribute = node => {
     return null;
   }
   const { contentType } = node.ownerDocument;
-  const isHtml = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
-  const isXml =
-    /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(
-      contentType
-    );
+  const isHtml = REG_IS_HTML.test(contentType);
+  const isXml = REG_IS_XML.test(contentType);
+  let isShadow = false;
+  // Traverse up from the current node to the root.
   let current = node;
   while (current) {
-    let lang = null;
-    // Check for lang attributes based on document type.
-    if (isHtml && current.hasAttribute('lang')) {
-      lang = current.getAttribute('lang');
-    } else if (isXml && current.hasAttribute('xml:lang')) {
-      lang = current.getAttribute('xml:lang');
+    // Check if the current node is an element.
+    switch (current.nodeType) {
+      case ELEMENT_NODE: {
+        // Check for and return the language attribute if present.
+        if (isHtml && current.hasAttribute('lang')) {
+          return current.getAttribute('lang');
+        } else if (isXml && current.hasAttribute('xml:lang')) {
+          return current.getAttribute('xml:lang');
+        }
+        break;
+      }
+      case DOCUMENT_FRAGMENT_NODE: {
+        // Continue traversal if the current node is a shadow root.
+        if (current.host) {
+          isShadow = true;
+        }
+        break;
+      }
+      case DOCUMENT_NODE:
+      default: {
+        // Stop if we reach the root document node.
+        return null;
+      }
     }
-    // If a language attribute is found, its value determines the language.
-    // Inheritance stops here, even if the value is an empty string.
-    if (lang !== null) {
-      return lang;
-    }
-    if (current.parentElement) {
-      current = current.parentElement;
+    if (isShadow) {
+      current = current.host;
+      isShadow = false;
+    } else if (current.parentNode) {
+      current = current.parentNode;
     } else {
       break;
     }
   }
+  // No language attribute was found in the hierarchy.
   return null;
 };
 
