@@ -107,6 +107,13 @@ var COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
 var LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 var LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 var HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
+var ATTR_STATE_CHANGE = Object.freeze([
+  "checked",
+  "class",
+  "disabled",
+  "hidden",
+  "style"
+]);
 var FORM_PARTS = Object.freeze([
   "button",
   "input",
@@ -144,63 +151,15 @@ var INPUT_LTR = Object.freeze([
   "range",
   "time"
 ]);
-var KEY_INPUT_EDIT = new Set(INPUT_EDIT);
-var KEY_LOGICAL = /* @__PURE__ */ new Set(["has", "is", "not", "where"]);
-var KEY_MODIFIER = /* @__PURE__ */ new Set([
-  "Alt",
-  "AltGraph",
-  "CapsLock",
-  "Control",
-  "Fn",
-  "FnLock",
-  "Hyper",
-  "Meta",
-  "NumLock",
-  "ScrollLock",
-  "Shift",
-  "Super",
-  "Symbol",
-  "SymbolLock"
-]);
-var KEY_PS_ELEMENT = /* @__PURE__ */ new Set([
-  "after",
-  "backdrop",
-  "before",
-  "cue",
-  "cue-region",
-  "first-letter",
-  "first-line",
-  "file-selector-button",
-  "marker",
-  "placeholder",
-  "selection",
-  "target-text"
-]);
-var KEY_PS_ELEMENT_FUNC = /* @__PURE__ */ new Set(["part", "slotted"]);
-var KEY_PS_CLASS_STATE = /* @__PURE__ */ new Set([
-  "enabled",
-  "disabled",
-  "valid",
-  "invalid",
-  "in-range",
-  "out-of-range",
-  "checked",
-  "indeterminate",
-  "read-only",
-  "read-write",
-  "open",
-  "closed",
-  "placeholder-shown"
-]);
-var KEY_SHADOW_HOST = /* @__PURE__ */ new Set(["host", "host-context"]);
+var KEYS_LOGICAL = /* @__PURE__ */ new Set(["has", "is", "not", "where"]);
 
 // src/js/utility.js
-var KEY_DIR_AUTO = /* @__PURE__ */ new Set([...INPUT_BUTTON, ...INPUT_TEXT, "hidden"]);
-var KEY_DIR_LTR = new Set(INPUT_LTR);
-var KEY_INPUT_EDIT2 = new Set(INPUT_EDIT);
-var KEY_NODE_DIR_EXCLUDE = /* @__PURE__ */ new Set(["bdi", "script", "style", "textarea"]);
-var KEY_NODE_FOCUSABLE = /* @__PURE__ */ new Set(["button", "select", "textarea"]);
-var KEY_NODE_FOCUSABLE_SVG = /* @__PURE__ */ new Set([
+var KEYS_DIR_AUTO = /* @__PURE__ */ new Set([...INPUT_BUTTON, ...INPUT_TEXT, "hidden"]);
+var KEYS_DIR_LTR = new Set(INPUT_LTR);
+var KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+var KEYS_NODE_DIR_EXCLUDE = /* @__PURE__ */ new Set(["bdi", "script", "style", "textarea"]);
+var KEYS_NODE_FOCUSABLE = /* @__PURE__ */ new Set(["button", "select", "textarea"]);
+var KEYS_NODE_FOCUSABLE_SVG = /* @__PURE__ */ new Set([
   "clipPath",
   "defs",
   "desc",
@@ -231,6 +190,8 @@ var REG_LOGIC_HAS_COMPOUND = new RegExp(
 );
 var REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 var REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
+var REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
+var REG_IS_XML = /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
 var getType = (o) => Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
 var generateException = (msg, name, globalObject = globalThis) => {
   return new globalObject.DOMException(msg, name);
@@ -239,7 +200,7 @@ var findNestedHas = (leaf) => {
   return leaf.name === "has";
 };
 var findLogicalWithNestedHas = (leaf) => {
-  if (KEY_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
     return leaf;
   }
   return null;
@@ -427,9 +388,9 @@ var getDirectionality = (node) => {
     let text = "";
     switch (localName) {
       case "input": {
-        if (!node.type || KEY_DIR_AUTO.has(node.type)) {
+        if (!node.type || KEYS_DIR_AUTO.has(node.type)) {
           text = node.value;
-        } else if (KEY_DIR_LTR.has(node.type)) {
+        } else if (KEYS_DIR_LTR.has(node.type)) {
           return "ltr";
         }
         break;
@@ -453,7 +414,7 @@ var getDirectionality = (node) => {
           } = item;
           if (itemNodeType === TEXT_NODE) {
             text = itemTextContent.trim();
-          } else if (itemNodeType === ELEMENT_NODE && !KEY_NODE_DIR_EXCLUDE.has(itemLocalName) && (!itemDir || itemDir !== "ltr" && itemDir !== "rtl")) {
+          } else if (itemNodeType === ELEMENT_NODE && !KEYS_NODE_DIR_EXCLUDE.has(itemLocalName) && (!itemDir || itemDir !== "ltr" && itemDir !== "rtl")) {
             if (itemLocalName === "slot") {
               text = getSlottedTextContent(item);
             } else {
@@ -511,7 +472,7 @@ var getDirectionality = (node) => {
   }
   return "ltr";
 };
-var findLangAttribute = (node) => {
+var getLanguageAttribute = (node) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -519,34 +480,41 @@ var findLangAttribute = (node) => {
     return null;
   }
   const { contentType } = node.ownerDocument;
-  const isHtml = /^(?:application\/xhtml\+x|text\/ht)ml$/.test(contentType);
-  const isXml = /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/.test(
-    contentType
-  );
+  const isHtml = REG_IS_HTML.test(contentType);
+  const isXml = REG_IS_XML.test(contentType);
+  let isShadow = false;
   let current = node;
   while (current) {
-    let lang = null;
-    if (isHtml && current.hasAttribute("lang")) {
-      lang = current.getAttribute("lang");
-    } else if (isXml && current.hasAttribute("xml:lang")) {
-      lang = current.getAttribute("xml:lang");
+    switch (current.nodeType) {
+      case ELEMENT_NODE: {
+        if (isHtml && current.hasAttribute("lang")) {
+          return current.getAttribute("lang");
+        } else if (isXml && current.hasAttribute("xml:lang")) {
+          return current.getAttribute("xml:lang");
+        }
+        break;
+      }
+      case DOCUMENT_FRAGMENT_NODE: {
+        if (current.host) {
+          isShadow = true;
+        }
+        break;
+      }
+      case DOCUMENT_NODE:
+      default: {
+        return null;
+      }
     }
-    if (lang !== null) {
-      return lang;
-    }
-    if (current.parentElement) {
-      current = current.parentElement;
+    if (isShadow) {
+      current = current.host;
+      isShadow = false;
+    } else if (current.parentNode) {
+      current = current.parentNode;
     } else {
       break;
     }
   }
   return null;
-};
-var getCaseSensitivity = (astFlags, contentType) => {
-  if (contentType === "text/html") {
-    return typeof astFlags === "string" && /^s$/i.test(astFlags);
-  }
-  return !(typeof astFlags === "string" && /^i$/i.test(astFlags));
 };
 var isContentEditable = (node) => {
   if (!node?.nodeType) {
@@ -604,7 +572,7 @@ var isFocusVisible = (node) => {
   const { localName, type } = node;
   switch (localName) {
     case "input": {
-      if (!type || KEY_INPUT_EDIT2.has(type)) {
+      if (!type || KEYS_INPUT_EDIT.has(type)) {
         return true;
       }
       return false;
@@ -665,7 +633,7 @@ var isFocusableArea = (node) => {
         return false;
       }
       default: {
-        if (KEY_NODE_FOCUSABLE.has(localName) && !(node.disabled || node.hasAttribute("disabled"))) {
+        if (KEYS_NODE_FOCUSABLE.has(localName) && !(node.disabled || node.hasAttribute("disabled"))) {
           return true;
         }
       }
@@ -676,7 +644,7 @@ var isFocusableArea = (node) => {
       let bool;
       let refNode = node;
       while (refNode.namespaceURI === ns) {
-        bool = KEY_NODE_FOCUSABLE_SVG.has(refNode.localName);
+        bool = KEYS_NODE_FOCUSABLE_SVG.has(refNode.localName);
         if (bool) {
           break;
         }
@@ -766,64 +734,6 @@ var sortNodes = (nodes = []) => {
   }
   return arr;
 };
-var findAttributeValues = (node, opt = {}) => {
-  if (!node?.nodeType) {
-    throw new TypeError(`Unexpected type ${getType(node)}`);
-  }
-  const { attributes } = node;
-  const {
-    astAttrName = "",
-    astLocalName = "",
-    astPrefix = "",
-    caseSensitive = false
-  } = opt;
-  if (!attributes.length || !astAttrName) {
-    return [];
-  }
-  const attrValues = /* @__PURE__ */ new Set();
-  const hasNamespace = astAttrName.includes("|");
-  for (const attr of attributes) {
-    let { name: itemName, value: itemValue } = attr;
-    if (!caseSensitive) {
-      itemName = itemName.toLowerCase();
-      itemValue = itemValue.toLowerCase();
-    }
-    if (itemName === "xml:lang") {
-      continue;
-    }
-    const [itemPrefix, itemLocalName] = itemName.includes(":") ? itemName.split(":") : ["", itemName];
-    if (hasNamespace) {
-      if (astLocalName === itemLocalName) {
-        if (astPrefix === "*" || astPrefix === "" && itemPrefix === "") {
-          attrValues.add(itemValue);
-        } else if (astPrefix === itemPrefix && isNamespaceDeclared(astPrefix, node)) {
-          attrValues.add(itemValue);
-        }
-      }
-    } else if (astAttrName === itemLocalName) {
-      attrValues.add(itemValue);
-    }
-  }
-  return [...attrValues];
-};
-var isValidShadowHostSelector = (astName = "", branches = []) => {
-  if (!/^(?:is|not|where)$/.test(astName)) {
-    return false;
-  }
-  const [branch] = branches;
-  if (Array.isArray(branch) && branch.length === 1) {
-    const [ast] = branch;
-    if (!ast || !Object.hasOwn(ast, "type")) {
-      return false;
-    }
-    if (astName === "not") {
-      const { type } = ast;
-      return type === PS_CLASS_SELECTOR;
-    }
-    return true;
-  }
-  return false;
-};
 var initNwsapi = (window, document) => {
   if (!window?.DOMException) {
     throw new TypeError(`Unexpected global object ${getType(window)}`);
@@ -892,6 +802,23 @@ var AST_SORT_ORDER = /* @__PURE__ */ new Map([
   [ATTR_SELECTOR, BIT_16],
   [PS_CLASS_SELECTOR, BIT_32]
 ]);
+var KEYS_PS_CLASS_STATE = /* @__PURE__ */ new Set([
+  "checked",
+  "closed",
+  "disabled",
+  "empty",
+  "enabled",
+  "in-range",
+  "indeterminate",
+  "invalid",
+  "open",
+  "out-of-range",
+  "placeholder-shown",
+  "read-only",
+  "read-write",
+  "valid"
+]);
+var KEYS_SHADOW_HOST = /* @__PURE__ */ new Set(["host", "host-context"]);
 var REG_EMPTY_PS_FUNC = /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 var REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 var U_FFFD = "\uFFFD";
@@ -1042,15 +969,15 @@ var walkAST = (ast = {}) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEY_LOGICAL.has(node.name)) {
+          if (KEYS_LOGICAL.has(node.name)) {
             info.hasNestedSelector = true;
             info.hasLogicalPseudoFunc = true;
             if (node.name === "has") {
               info.hasHasPseudoFunc = true;
             }
-          } else if (KEY_PS_CLASS_STATE.has(node.name)) {
+          } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
             info.hasStatePseudoClass = true;
-          } else if (KEY_SHADOW_HOST.has(node.name) && Array.isArray(node.children) && node.children.length) {
+          } else if (KEYS_SHADOW_HOST.has(node.name) && Array.isArray(node.children) && node.children.length) {
             info.hasNestedSelector = true;
           }
           break;
@@ -1080,10 +1007,10 @@ var walkAST = (ast = {}) => {
   if (info.hasNestedSelector === true) {
     cssTree2.findAll(ast, (node, item, list) => {
       if (list) {
-        if (node.type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(node.name)) {
+        if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter((i) => {
             const { name, type } = i;
-            return type === PS_CLASS_SELECTOR && KEY_LOGICAL.has(name);
+            return type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(name);
           });
           for (const { children } of itemList) {
             for (const { children: grandChildren } of children) {
@@ -1094,10 +1021,10 @@ var walkAST = (ast = {}) => {
               }
             }
           }
-        } else if (node.type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.has(node.name) && Array.isArray(node.children) && node.children.length) {
+        } else if (node.type === PS_CLASS_SELECTOR && KEYS_SHADOW_HOST.has(node.name) && Array.isArray(node.children) && node.children.length) {
           const itemList = list.filter((i) => {
             const { children, name, type } = i;
-            const res = type === PS_CLASS_SELECTOR && KEY_SHADOW_HOST.has(name) && Array.isArray(children) && children.length;
+            const res = type === PS_CLASS_SELECTOR && KEYS_SHADOW_HOST.has(name) && Array.isArray(children) && children.length;
             return res;
           });
           for (const { children } of itemList) {
@@ -1181,36 +1108,75 @@ var parseAstName = (selector) => {
 };
 
 // src/js/matcher.js
-var KEY_FORM_PS_DISABLED = /* @__PURE__ */ new Set([
+var KEYS_FORM_PS_DISABLED = /* @__PURE__ */ new Set([
   ...FORM_PARTS,
   "fieldset",
   "optgroup",
   "option"
 ]);
-var REG_VALID_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, "i");
+var KEYS_INPUT_EDIT2 = new Set(INPUT_EDIT);
+var REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, "i");
+var REG_TAG_NAME = /[A-Z][\\w-]*/i;
 var matchPseudoElementSelector = (astName, astType, opt = {}) => {
+  const { forgive, globalObject, warn } = opt;
   if (astType !== PS_ELEMENT_SELECTOR) {
     throw new TypeError(`Unexpected ast type ${getType(astType)}`);
   }
-  const { forgive, warn } = opt;
-  const isKnown = KEY_PS_ELEMENT.has(astName) || KEY_PS_ELEMENT_FUNC.has(astName) || astName.startsWith("-webkit-");
-  if (!isKnown && !forgive && !warn) {
-    throw new DOMException(`Unknown pseudo-element ::${astName}`, SYNTAX_ERR);
-  } else if (warn) {
-    let msg = "";
-    if (KEY_PS_ELEMENT_FUNC.has(astName)) {
-      msg = `Unsupported pseudo-element ::${astName}()`;
-    } else if (astName.startsWith("-webkit-")) {
-      msg = `Unsupported pseudo-element ::${astName}`;
-    } else {
-      msg = `Unsupported pseudo-element ::${astName}`;
+  switch (astName) {
+    case "after":
+    case "backdrop":
+    case "before":
+    case "cue":
+    case "cue-region":
+    case "first-letter":
+    case "first-line":
+    case "file-selector-button":
+    case "marker":
+    case "placeholder":
+    case "selection":
+    case "target-text": {
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
     }
-    throw new DOMException(msg, NOT_SUPPORTED_ERR);
+    case "part":
+    case "slotted": {
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}()`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
+    }
+    default: {
+      if (astName.startsWith("-webkit-")) {
+        if (warn) {
+          throw generateException(
+            `Unsupported pseudo-element ::${astName}`,
+            NOT_SUPPORTED_ERR,
+            globalObject
+          );
+        }
+      } else if (!forgive) {
+        throw generateException(
+          `Unknown pseudo-element ::${astName}`,
+          SYNTAX_ERR,
+          globalObject
+        );
+      }
+    }
   }
 };
 var matchDirectionPseudoClass = (ast, node) => {
   const { name } = ast;
-  if (typeof name !== "string" || name === "") {
+  if (!name) {
     const type = name === "" ? "(empty String)" : getType(name);
     throw new TypeError(`Unexpected ast type ${type}`);
   }
@@ -1219,48 +1185,46 @@ var matchDirectionPseudoClass = (ast, node) => {
 };
 var matchLanguagePseudoClass = (ast, node) => {
   const { name, type, value } = ast;
-  let astName;
+  let langPattern;
   if (type === STRING && value) {
-    astName = value;
+    langPattern = value;
   } else if (type === IDENT && name) {
-    astName = unescapeSelector(name);
-  } else {
+    langPattern = unescapeSelector(name);
+  }
+  if (typeof langPattern !== "string") {
     return false;
   }
-  const effectiveLang = findLangAttribute(node);
-  if (typeof effectiveLang !== "string") {
+  const elementLang = getLanguageAttribute(node);
+  if (elementLang === null) {
     return false;
   }
-  if (astName === "*") {
-    return effectiveLang !== "";
+  if (langPattern === "*") {
+    return elementLang !== "";
   }
-  if (!REG_VALID_LANG.test(astName)) {
+  if (!REG_LANG_VALID.test(langPattern)) {
     return false;
   }
-  let regExtendedLang;
-  if (astName.includes("-")) {
-    const [langMain, langSub, ...langRest] = astName.split("-");
-    let extendedMain = `${ALPHA_NUM}${LANG_PART}`;
-    if (langMain !== "*") {
-      extendedMain = `${langMain}${LANG_PART}`;
-    }
+  let matcherRegex;
+  if (langPattern.indexOf("-") > -1) {
+    const [langMain, langSub, ...langRest] = langPattern.split("-");
+    const extendedMain = langMain === "*" ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
     const extendedSub = `-${langSub}${LANG_PART}`;
-    const extendedRest = langRest.map((part) => `-${part}${LANG_PART}`).join("");
-    regExtendedLang = new RegExp(
+    let extendedRest = "";
+    for (let i = 0; i < langRest.length; i++) {
+      extendedRest += `-${langRest[i]}${LANG_PART}`;
+    }
+    matcherRegex = new RegExp(
       `^${extendedMain}${extendedSub}${extendedRest}$`,
       "i"
     );
   } else {
-    regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, "i");
+    matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, "i");
   }
-  return regExtendedLang.test(effectiveLang);
+  return matcherRegex.test(elementLang);
 };
-var matchDisabledEnabledPseudo = (astName = "", node = {}) => {
-  if (!/^(?:dis|en)abled$/.test(astName) || node?.nodeType !== ELEMENT_NODE) {
-    return false;
-  }
+var matchDisabledPseudoClass = (astName, node) => {
   const { localName, parentNode } = node;
-  if (!KEY_FORM_PS_DISABLED.has(localName) && !isCustomElement(node, { formAssociated: true })) {
+  if (!KEYS_FORM_PS_DISABLED.has(localName) && !isCustomElement(node, { formAssociated: true })) {
     return false;
   }
   let isDisabled = false;
@@ -1296,16 +1260,13 @@ var matchDisabledEnabledPseudo = (astName = "", node = {}) => {
   }
   return !isDisabled;
 };
-var matchReadOnlyWritePseudo = (astName, node) => {
-  if (!/^read-(?:only|write)$/.test(astName) || node?.nodeType !== ELEMENT_NODE) {
-    return false;
-  }
+var matchReadOnlyPseudoClass = (astName, node) => {
   const { localName } = node;
   let isReadOnly = false;
   switch (localName) {
     case "textarea":
     case "input": {
-      const isEditableInput = !node.type || KEY_INPUT_EDIT.has(node.type);
+      const isEditableInput = !node.type || KEYS_INPUT_EDIT2.has(node.type);
       if (localName === "textarea" || isEditableInput) {
         isReadOnly = node.readOnly || node.hasAttribute("readonly") || node.disabled || node.hasAttribute("disabled");
       } else {
@@ -1329,90 +1290,202 @@ var matchAttributeSelector = (ast, node, opt = {}) => {
     name: astName,
     value: astValue
   } = ast;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
   if (typeof astFlags === "string" && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = (0, import_css_tree.generate)(ast);
-    throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+    throw generateException(
+      `Invalid selector ${css}`,
+      SYNTAX_ERR,
+      globalObject
+    );
   }
-  if (!node.attributes?.length) {
+  const { attributes } = node;
+  if (!attributes || !attributes.length) {
     return false;
   }
-  const {
-    ownerDocument: { contentType }
-  } = node;
-  const caseSensitive = getCaseSensitivity(astFlags, contentType);
+  const contentType = node.ownerDocument.contentType;
+  let caseInsensitive;
+  if (contentType === "text/html") {
+    if (typeof astFlags === "string" && /^s$/i.test(astFlags)) {
+      caseInsensitive = false;
+    } else {
+      caseInsensitive = true;
+    }
+  } else if (typeof astFlags === "string" && /^i$/i.test(astFlags)) {
+    caseInsensitive = true;
+  } else {
+    caseInsensitive = false;
+  }
   let astAttrName = unescapeSelector(astName.name);
-  if (!caseSensitive) {
+  if (caseInsensitive) {
     astAttrName = astAttrName.toLowerCase();
   }
-  const { prefix: astPrefix, localName: astLocalName } = parseAstName(astAttrName);
-  if (astAttrName.includes("|")) {
-    const { prefix: astPrefix2 } = parseAstName(astAttrName);
-    if (astPrefix2 !== "" && astPrefix2 !== "*" && !check) {
-      if (forgive) {
-        return false;
+  const attrValues = /* @__PURE__ */ new Set();
+  if (astAttrName.indexOf("|") > -1) {
+    const { prefix: astPrefix, localName: astLocalName } = parseAstName(astAttrName);
+    for (const item of attributes) {
+      let { name: itemName, value: itemValue } = item;
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
       }
-      const css = (0, import_css_tree.generate)(ast);
-      throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      switch (astPrefix) {
+        case "": {
+          if (astLocalName === itemName) {
+            attrValues.add(itemValue);
+          }
+          break;
+        }
+        case "*": {
+          if (itemName.indexOf(":") > -1) {
+            if (itemName.endsWith(`:${astLocalName}`)) {
+              attrValues.add(itemValue);
+            }
+          } else if (astLocalName === itemName) {
+            attrValues.add(itemValue);
+          }
+          break;
+        }
+        default: {
+          if (!check) {
+            if (forgive) {
+              return false;
+            }
+            const css = (0, import_css_tree.generate)(ast);
+            throw generateException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR,
+              globalObject
+            );
+          }
+          if (itemName.indexOf(":") > -1) {
+            const [itemPrefix, itemLocalName] = itemName.split(":");
+            if (itemPrefix === "xml" && itemLocalName === "lang") {
+              continue;
+            } else if (astPrefix === itemPrefix && astLocalName === itemLocalName) {
+              const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+              if (namespaceDeclared) {
+                attrValues.add(itemValue);
+              }
+            }
+          }
+        }
+      }
+    }
+  } else {
+    for (let { name: itemName, value: itemValue } of attributes) {
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
+      }
+      if (itemName.indexOf(":") > -1) {
+        const [itemPrefix, itemLocalName] = itemName.split(":");
+        if (itemPrefix === "xml" && itemLocalName === "lang") {
+          continue;
+        } else if (astAttrName === itemLocalName) {
+          attrValues.add(itemValue);
+        }
+      } else if (astAttrName === itemName) {
+        attrValues.add(itemValue);
+      }
     }
   }
-  const values = findAttributeValues(node, {
-    astAttrName,
-    astLocalName,
-    astPrefix,
-    caseSensitive
-  });
-  if (!values.length) {
+  if (!attrValues.size) {
     return false;
   }
-  if (!astMatcher) {
-    return true;
-  }
-  let selectorValue = "";
-  if (astValue.type === IDENT) {
-    selectorValue = caseSensitive ? astValue.name : astValue.name.toLowerCase();
-  } else if (astValue.type === STRING) {
-    selectorValue = caseSensitive ? astValue.value : astValue.value.toLowerCase();
+  const { name: astIdentValue, value: astStringValue } = astValue ?? {};
+  let attrValue;
+  if (astIdentValue) {
+    if (caseInsensitive) {
+      attrValue = astIdentValue.toLowerCase();
+    } else {
+      attrValue = astIdentValue;
+    }
+  } else if (astStringValue) {
+    if (caseInsensitive) {
+      attrValue = astStringValue.toLowerCase();
+    } else {
+      attrValue = astStringValue;
+    }
+  } else if (astStringValue === "") {
+    attrValue = astStringValue;
   }
   switch (astMatcher) {
+    case "=": {
+      return typeof attrValue === "string" && attrValues.has(attrValue);
+    }
     case "~=": {
-      return !!selectorValue && values.some((v) => v.split(/\s+/).includes(selectorValue));
+      if (attrValue && typeof attrValue === "string") {
+        for (const value of attrValues) {
+          const item = new Set(value.split(/\s+/));
+          if (item.has(attrValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case "|=": {
-      return !!selectorValue && values.some(
-        (v) => v === selectorValue || v.startsWith(`${selectorValue}-`)
-      );
+      if (attrValue && typeof attrValue === "string") {
+        for (const value of attrValues) {
+          if (value === attrValue || value.startsWith(`${attrValue}-`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case "^=": {
-      return !!selectorValue && values.some((v) => v.startsWith(selectorValue));
+      if (attrValue && typeof attrValue === "string") {
+        for (const value of attrValues) {
+          if (value.startsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case "$=": {
-      return !!selectorValue && values.some((v) => v.endsWith(selectorValue));
+      if (attrValue && typeof attrValue === "string") {
+        for (const value of attrValues) {
+          if (value.endsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case "*=": {
-      return !!selectorValue && values.some((v) => v.includes(selectorValue));
+      if (attrValue && typeof attrValue === "string") {
+        for (const value of attrValues) {
+          if (value.includes(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
-    case "=":
+    case null:
     default: {
-      return values.some((v) => v === selectorValue);
+      return true;
     }
   }
 };
 var matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
   let { prefix: astPrefix, localName: astLocalName } = parseAstName(
     astName,
     node
   );
-  if (node.ownerDocument.contentType === "text/html" && (!namespaceURI || namespaceURI === "http://www.w3.org/1999/xhtml") && /[A-Z][\w-]*/i.test(localName)) {
+  if (node.ownerDocument.contentType === "text/html" && (!namespaceURI || namespaceURI === "http://www.w3.org/1999/xhtml") && REG_TAG_NAME.test(localName)) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
   }
-  let nodePrefix = "";
-  let nodeLocalName = "";
-  if (localName.includes(":")) {
+  let nodePrefix;
+  let nodeLocalName;
+  if (localName.indexOf(":") > -1) {
     [nodePrefix, nodeLocalName] = localName.split(":");
   } else {
     nodePrefix = prefix || "";
@@ -1437,7 +1510,11 @@ var matchTypeSelector = (ast, node, opt = {}) => {
           return false;
         }
         const css = (0, import_css_tree.generate)(ast);
-        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        throw generateException(
+          `Invalid selector ${css}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
@@ -1447,7 +1524,11 @@ var matchTypeSelector = (ast, node, opt = {}) => {
         }
         return false;
       } else if (!forgive && !astNS) {
-        throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
+        throw generateException(
+          `Undeclared namespace ${astPrefix}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       return false;
     }
@@ -1457,34 +1538,42 @@ var matchTypeSelector = (ast, node, opt = {}) => {
 // src/js/finder.js
 var DIR_NEXT = "next";
 var DIR_PREV = "prev";
-var KEY_FORM = /* @__PURE__ */ new Set([...FORM_PARTS, "fieldset", "form"]);
-var KEY_FORM_PS_VALID = /* @__PURE__ */ new Set([...FORM_PARTS, "form"]);
-var KEY_INPUT_CHECK = new Set(INPUT_CHECK);
-var KEY_INPUT_PLACEHOLDER = /* @__PURE__ */ new Set([...INPUT_TEXT, "number"]);
-var KEY_INPUT_RANGE = /* @__PURE__ */ new Set([...INPUT_DATE, "number", "range"]);
-var KEY_INPUT_REQUIRED = /* @__PURE__ */ new Set([...INPUT_CHECK, ...INPUT_EDIT, "file"]);
-var KEY_INPUT_RESET = /* @__PURE__ */ new Set(["button", "reset"]);
-var KEY_INPUT_SUBMIT = /* @__PURE__ */ new Set(["image", "submit"]);
-var KEY_PS_UNCACHE = /* @__PURE__ */ new Set(["any-link", "defined", "dir", "link", "scope"]);
-var KEY_PS_FORM = /* @__PURE__ */ new Set([
-  "checked",
-  "default",
-  "disabled",
-  "enabled",
-  "in-range",
-  "indeterminate",
-  "invalid",
-  "optional",
-  "out-of-range",
-  "placeholder-shown",
-  "read-only",
-  "read-write",
-  "required",
-  "user-invalid",
-  "user-valid",
-  "valid"
+var KEYS_FORM = /* @__PURE__ */ new Set([...FORM_PARTS, "fieldset", "form"]);
+var KEYS_FORM_PS_VALID = /* @__PURE__ */ new Set([...FORM_PARTS, "form"]);
+var KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
+var KEYS_INPUT_PLACEHOLDER = /* @__PURE__ */ new Set([...INPUT_TEXT, "number"]);
+var KEYS_INPUT_RANGE = /* @__PURE__ */ new Set([...INPUT_DATE, "number", "range"]);
+var KEYS_INPUT_REQUIRED = /* @__PURE__ */ new Set([...INPUT_CHECK, ...INPUT_EDIT, "file"]);
+var KEYS_INPUT_RESET = /* @__PURE__ */ new Set(["button", "reset"]);
+var KEYS_INPUT_SUBMIT = /* @__PURE__ */ new Set(["image", "submit"]);
+var KEYS_MODIFIER = /* @__PURE__ */ new Set([
+  "Alt",
+  "AltGraph",
+  "CapsLock",
+  "Control",
+  "Fn",
+  "FnLock",
+  "Hyper",
+  "Meta",
+  "NumLock",
+  "ScrollLock",
+  "Shift",
+  "Super",
+  "Symbol",
+  "SymbolLock"
 ]);
-var KEY_PS_UI = /* @__PURE__ */ new Set(["closed", "open", "popover-open"]);
+var KEYS_PS_UNCACHE = /* @__PURE__ */ new Set([
+  "any-link",
+  "defined",
+  "dir",
+  "link",
+  "scope"
+]);
+var KEYS_PS_NTH_OF_TYPE = /* @__PURE__ */ new Set([
+  "first-of-type",
+  "last-of-type",
+  "only-of-type"
+]);
 var Finder = class {
   /* private fields */
   #ast;
@@ -1494,7 +1583,6 @@ var Finder = class {
   #document;
   #documentCache;
   #documentURL;
-  #domSymbolTree;
   #event;
   #eventHandlers;
   #focus;
@@ -1582,15 +1670,13 @@ var Finder = class {
    * @param {object} node - Document, DocumentFragment, or Element.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.check] - Indicates if running in internal check().
-   * @param {object} [opt.domSymbolTree] - The domSymbolTree object.
    * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {object} The finder instance.
    */
   setup = (selector, node, opt = {}) => {
-    const { check, domSymbolTree, noexcept, warn } = opt;
+    const { check, noexcept, warn } = opt;
     this.#check = !!check;
-    this.#domSymbolTree = domSymbolTree;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
@@ -1623,7 +1709,7 @@ var Finder = class {
    */
   _handleKeyboardEvent = (evt) => {
     const { key } = evt;
-    if (!KEY_MODIFIER.has(key)) {
+    if (!KEYS_MODIFIER.has(key)) {
       this.#event = evt;
     }
   };
@@ -1805,8 +1891,7 @@ var Finder = class {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     if (force) {
       return this.#document.createTreeWalker(node, whatToShow);
-    }
-    if (this.#walkers.has(node)) {
+    } else if (this.#walkers.has(node)) {
       return this.#walkers.get(node);
     }
     const walker = this.#document.createTreeWalker(node, whatToShow);
@@ -2045,221 +2130,6 @@ var Finder = class {
     return false;
   };
   /**
-   * Gets nth-of-type related pseudo-classes (:first-of-type, etc.).
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {?object} The matched node or null.
-   */
-  _getNthOfTypePseudo = (astName, node) => {
-    switch (astName) {
-      case "first-of-type": {
-        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
-        return first;
-      }
-      case "last-of-type": {
-        const [last] = this._collectNthOfType(
-          { a: 0, b: 1, reverse: true },
-          node
-        );
-        return last;
-      }
-      // 'only-of-type' is handled by default.
-      default: {
-        const [first] = this._collectNthOfType({ a: 0, b: 1 }, node);
-        if (first === node) {
-          const [last] = this._collectNthOfType(
-            { a: 0, b: 1, reverse: true },
-            node
-          );
-          if (last === node) {
-            return node;
-          }
-        }
-        return null;
-      }
-    }
-  };
-  /**
-   * Matches child-position pseudo-classes (:first-child, :last-child,
-   * :only-child).
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchChildPositionPseudo = (astName, node) => {
-    if (node === this.#root) {
-      return true;
-    }
-    const { parentNode } = node;
-    switch (astName) {
-      case "first-child": {
-        return node === parentNode.firstElementChild;
-      }
-      case "last-child": {
-        return node === parentNode.lastElementChild;
-      }
-      // 'only-child' is handled by default.
-      default: {
-        return node === parentNode.firstElementChild && node === parentNode.lastElementChild;
-      }
-    }
-  };
-  /**
-   * Matches link-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchLinkPseudo = (astName, node) => {
-    const { localName } = node;
-    const isLinkElement = (localName === "a" || localName === "area") && node.hasAttribute("href");
-    if (!isLinkElement) {
-      return false;
-    }
-    switch (astName) {
-      case "local-link": {
-        const { href, origin, pathname } = this.#documentURL;
-        const attrURL = new URL(node.getAttribute("href"), href);
-        return attrURL.origin === origin && attrURL.pathname === pathname;
-      }
-      case "visited": {
-        return false;
-      }
-      // 'any-link' and 'link' are handled by default.
-      default: {
-        return true;
-      }
-    }
-  };
-  /**
-   * Matches focus-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchFocusPseudo = (astName, node) => {
-    switch (astName) {
-      case "focus-visible": {
-        if (node === this.#document.activeElement && isFocusableArea(node)) {
-          let bool = false;
-          if (isFocusVisible(node)) {
-            bool = true;
-          } else if (this.#focus) {
-            const { relatedTarget, target: focusTarget } = this.#focus;
-            if (focusTarget === node) {
-              if (isFocusVisible(relatedTarget)) {
-                bool = true;
-              } else if (this.#event) {
-                const {
-                  key: eventKey,
-                  target: eventTarget,
-                  type: eventType
-                } = this.#event;
-                if (eventTarget === relatedTarget) {
-                  if (this.#lastFocusVisible === null) {
-                    bool = true;
-                  } else if (focusTarget === this.#lastFocusVisible) {
-                    bool = true;
-                  }
-                } else if (eventKey === "Tab") {
-                  if (eventType === "keydown" && eventTarget !== node || eventType === "keyup" && eventTarget === node) {
-                    if (eventTarget === focusTarget) {
-                      if (this.#lastFocusVisible === null) {
-                        bool = true;
-                      } else if (eventTarget === this.#lastFocusVisible && relatedTarget === null) {
-                        bool = true;
-                      }
-                    } else {
-                      bool = true;
-                    }
-                  }
-                } else if (eventKey) {
-                  if ((eventType === "keydown" || eventType === "keyup") && eventTarget === node) {
-                    bool = true;
-                  }
-                }
-              } else if (relatedTarget === null || relatedTarget === this.#lastFocusVisible) {
-                bool = true;
-              }
-            }
-          }
-          if (bool) {
-            this.#lastFocusVisible = node;
-            return true;
-          } else if (this.#lastFocusVisible === node) {
-            this.#lastFocusVisible = null;
-          }
-        }
-        return false;
-      }
-      case "focus-within": {
-        let current = this.#document.activeElement;
-        if (isFocusableArea(current)) {
-          while (current) {
-            if (current === node) {
-              return true;
-            }
-            current = current.parentNode;
-          }
-        }
-        return false;
-      }
-      // 'focus' is handled by default.
-      default: {
-        return node === this.#document.activeElement && isFocusableArea(node);
-      }
-    }
-  };
-  /**
-   * Matches :hover and :active pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchHoverActivePseudo = (astName, node) => {
-    const { target, type, buttons } = this.#event ?? {};
-    if (!target) {
-      return false;
-    }
-    if (astName === "hover") {
-      return /^(?:click|mouse(?:down|over|up))$/.test(type) && node.contains(target);
-    }
-    return type === "mousedown" && buttons & BIT_01 && node.contains(target);
-  };
-  /**
-   * Matches a selector branch backwards from a given node.
-   * @private
-   * @param {Array.<object>} branch - The AST branch.
-   * @param {object} node - The node to start matching from.
-   * @param {object} opt - Options.
-   * @returns {boolean} True if the entire branch matches.
-   */
-  _matchBranchBackwards = (branch, node, opt) => {
-    let currentNodes = /* @__PURE__ */ new Set([node]);
-    for (let i = branch.length - 2; i >= 0; i--) {
-      const twig = branch[i];
-      const matchedNodes = /* @__PURE__ */ new Set();
-      opt.dir = DIR_PREV;
-      for (const currentNode of currentNodes) {
-        const result = this._matchCombinator(twig, currentNode, opt);
-        if (result.size) {
-          const resultArr = [...result];
-          matchedNodes.add(...resultArr);
-        }
-      }
-      if (matchedNodes.size === 0) {
-        return false;
-      }
-      currentNodes = matchedNodes;
-    }
-    return true;
-  };
-  /**
    * Evaluates the :has() pseudo-class.
    * @private
    * @param {object} astData - The AST data.
@@ -2287,44 +2157,6 @@ var Finder = class {
     return node;
   };
   /**
-   * Evaluates :is(), :not(), and :where() pseudo-classes.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _evaluateIsWhereNotPseudo = (astData, node, opt) => {
-    const { astName, branches, twigBranches } = astData;
-    const isShadowRoot = (opt.isShadowRoot || this.#shadow) && node.nodeType === DOCUMENT_FRAGMENT_NODE;
-    if (isShadowRoot && !isValidShadowHostSelector(astName, branches)) {
-      return null;
-    }
-    opt.forgive = astName === "is" || astName === "where";
-    let branchMatched = false;
-    const l = twigBranches.length;
-    for (let i = 0; i < l; i++) {
-      const branch = twigBranches[i];
-      const { leaves: lastTwigLeaves } = branch[branch.length - 1];
-      const initialMatch = this._matchLeaves(lastTwigLeaves, node, opt);
-      if (!initialMatch) {
-        branchMatched = false;
-      } else if (branch.length === 1) {
-        branchMatched = true;
-        break;
-      } else {
-        branchMatched = this._matchBranchBackwards(branch, node, opt);
-        if (branchMatched) {
-          break;
-        }
-      }
-    }
-    if (astName === "not") {
-      return branchMatched ? null : node;
-    }
-    return branchMatched ? node : null;
-  };
-  /**
    * Matches logical pseudo-class functions.
    * @private
    * @param {object} astData - The AST data.
@@ -2333,283 +2165,90 @@ var Finder = class {
    * @returns {?object} The matched node.
    */
   _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
-    const { astName } = astData;
+    const { astName, branches, twigBranches } = astData;
     if (astName === "has") {
       return this._evaluateHasPseudo(astData, node, opt);
     }
-    return this._evaluateIsWhereNotPseudo(astData, node, opt);
-  };
-  /**
-   * Matches form-related pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchFormPseudo = (astName, node) => {
-    const { localName } = node;
-    switch (astName) {
-      case "checked": {
-        const attrType = node.getAttribute("type");
-        if (node.checked && localName === "input" && (attrType === "checkbox" || attrType === "radio")) {
-          return true;
-        } else if (node.selected && localName === "option") {
-          return true;
-        }
-        return false;
-      }
-      case "default": {
-        const attrType = node.getAttribute("type");
-        if (localName === "button" && !(node.hasAttribute("type") && KEY_INPUT_RESET.has(attrType)) || localName === "input" && node.hasAttribute("type") && KEY_INPUT_SUBMIT.has(attrType)) {
-          let form = node.parentNode;
-          while (form) {
-            if (form.localName === "form") {
-              break;
-            }
-            form = form.parentNode;
-          }
-          if (form) {
-            const walker = this._createTreeWalker(form);
-            let refNode = traverseNode(form, walker);
-            refNode = walker.firstChild();
-            while (refNode) {
-              const nodeName = refNode.localName;
-              const nodeAttrType = refNode.getAttribute("type");
-              let m;
-              if (nodeName === "button") {
-                m = !(refNode.hasAttribute("type") && KEY_INPUT_RESET.has(nodeAttrType));
-              } else if (nodeName === "input") {
-                m = refNode.hasAttribute("type") && KEY_INPUT_SUBMIT.has(nodeAttrType);
-              }
-              if (m) {
-                return refNode === node;
-              }
-              refNode = walker.nextNode();
-            }
-          }
-        } else if (localName === "input" && node.hasAttribute("type") && KEY_INPUT_CHECK.has(attrType) && node.hasAttribute("checked")) {
-          return true;
-        } else if (localName === "option" && node.hasAttribute("selected")) {
-          return true;
-        }
-        return false;
-      }
-      case "disabled":
-      case "enabled": {
-        return matchDisabledEnabledPseudo(astName, node);
-      }
-      case "in-range":
-      case "out-of-range": {
-        const attrType = node.getAttribute("type");
-        if (localName === "input" && !(node.readonly || node.hasAttribute("readonly")) && !(node.disabled || node.hasAttribute("disabled")) && KEY_INPUT_RANGE.has(attrType)) {
-          const flowed = node.validity.rangeUnderflow || node.validity.rangeOverflow;
-          if (astName === "out-of-range" && flowed) {
-            return true;
-          } else if (astName === "in-range" && !flowed && (node.hasAttribute("min") || node.hasAttribute("max") || attrType === "range")) {
-            return true;
+    const isShadowRoot = (opt.isShadowRoot || this.#shadow) && node.nodeType === DOCUMENT_FRAGMENT_NODE;
+    if (isShadowRoot) {
+      let invalid = false;
+      for (const branch of branches) {
+        if (branch.length > 1) {
+          invalid = true;
+          break;
+        } else if (astName === "not") {
+          const [{ type: childAstType }] = branch;
+          if (childAstType !== PS_CLASS_SELECTOR) {
+            invalid = true;
+            break;
           }
         }
-        return false;
       }
-      case "indeterminate": {
-        if (node.indeterminate && localName === "input" && node.type === "checkbox" || localName === "progress" && !node.hasAttribute("value")) {
-          return true;
-        } else if (localName === "input" && node.type === "radio" && !node.hasAttribute("checked")) {
-          const nodeName = node.name;
-          let parent = node.parentNode;
-          while (parent) {
-            if (parent.localName === "form") {
-              break;
-            }
-            parent = parent.parentNode;
-          }
-          if (!parent) {
-            parent = this.#document.documentElement;
-          }
-          const walker = this._createTreeWalker(parent);
-          let refNode = traverseNode(parent, walker);
-          refNode = walker.firstChild();
-          let checked;
-          while (refNode) {
-            if (refNode.localName === "input" && refNode.getAttribute("type") === "radio") {
-              if (refNode.hasAttribute("name")) {
-                if (refNode.getAttribute("name") === nodeName) {
-                  checked = !!refNode.checked;
-                }
-              } else {
-                checked = !!refNode.checked;
-              }
-              if (checked) {
-                break;
-              }
-            }
-            refNode = walker.nextNode();
-          }
-          return !checked;
-        }
-        return false;
-      }
-      case "invalid":
-      case "valid": {
-        if (KEY_FORM_PS_VALID.has(localName)) {
-          let valid;
-          if (node.checkValidity()) {
-            if (node.maxLength >= 0) {
-              if (node.maxLength >= node.value.length) {
-                valid = true;
-              }
-            } else {
-              valid = true;
-            }
-          }
-          if (valid) {
-            return astName === "valid";
-          }
-          return astName === "invalid";
-        } else if (localName === "fieldset") {
-          const walker = this._createTreeWalker(node);
-          let refNode = traverseNode(node, walker);
-          refNode = walker.firstChild();
-          let valid;
-          if (!refNode) {
-            valid = true;
-          } else {
-            while (refNode) {
-              if (KEY_FORM_PS_VALID.has(refNode.localName)) {
-                if (refNode.checkValidity()) {
-                  if (refNode.maxLength >= 0) {
-                    valid = refNode.maxLength >= refNode.value.length;
-                  } else {
-                    valid = true;
-                  }
-                } else {
-                  valid = false;
-                }
-                if (!valid) {
-                  break;
-                }
-              }
-              refNode = walker.nextNode();
-            }
-          }
-          if (valid) {
-            return astName === "valid";
-          }
-          return astName === "invalid";
-        }
-        return false;
-      }
-      case "optional":
-      case "required": {
-        let required;
-        let optional;
-        if (localName === "select" || localName === "textarea") {
-          if (node.required || node.hasAttribute("required")) {
-            required = true;
-          } else {
-            optional = true;
-          }
-        } else if (localName === "input") {
-          if (node.hasAttribute("type")) {
-            const attrType = node.getAttribute("type");
-            if (KEY_INPUT_REQUIRED.has(attrType)) {
-              if (node.required || node.hasAttribute("required")) {
-                required = true;
-              } else {
-                optional = true;
-              }
-            } else {
-              optional = true;
-            }
-          } else if (node.required || node.hasAttribute("required")) {
-            required = true;
-          } else {
-            optional = true;
-          }
-        }
-        if (astName === "required" && required) {
-          return true;
-        } else if (astName === "optional" && optional) {
-          return true;
-        }
-        return false;
-      }
-      case "placeholder-shown": {
-        let placeholder;
-        if (node.placeholder) {
-          placeholder = node.placeholder;
-        } else if (node.hasAttribute("placeholder")) {
-          placeholder = node.getAttribute("placeholder");
-        }
-        if (typeof placeholder === "string" && !/[\r\n]/.test(placeholder)) {
-          let targetNode;
-          if (localName === "textarea") {
-            targetNode = node;
-          } else if (localName === "input") {
-            if (node.hasAttribute("type")) {
-              if (KEY_INPUT_PLACEHOLDER.has(node.getAttribute("type"))) {
-                targetNode = node;
-              }
-            } else {
-              targetNode = node;
-            }
-          }
-          if (targetNode && node.value === "") {
-            return true;
-          }
-        }
-        return false;
-      }
-      case "read-only":
-      case "read-write": {
-        return matchReadOnlyWritePseudo(astName, node);
-      }
-      default: {
-        return false;
+      if (invalid) {
+        return null;
       }
     }
-  };
-  /**
-   * Matches UI state pseudo-classes.
-   * @private
-   * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matched.
-   */
-  _matchUIStatePseudo = (astName, node) => {
-    const { localName } = node;
-    switch (astName) {
-      case "popover-open": {
-        return node.popover && isVisible(node);
-      }
-      case "closed":
-      case "open":
-      default: {
-        if (localName === "details" || localName === "dialog") {
-          if (node.hasAttribute("open")) {
-            return astName === "open";
+    opt.forgive = astName === "is" || astName === "where";
+    const l = twigBranches.length;
+    let bool;
+    for (let i = 0; i < l; i++) {
+      const branch = twigBranches[i];
+      const lastIndex = branch.length - 1;
+      const { leaves } = branch[lastIndex];
+      bool = this._matchLeaves(leaves, node, opt);
+      if (bool && lastIndex > 0) {
+        let nextNodes = /* @__PURE__ */ new Set([node]);
+        for (let j = lastIndex - 1; j >= 0; j--) {
+          const twig = branch[j];
+          const arr = [];
+          opt.dir = DIR_PREV;
+          for (const nextNode of nextNodes) {
+            const m = this._matchCombinator(twig, nextNode, opt);
+            if (m.size) {
+              arr.push(...m);
+            }
           }
-          return astName === "closed";
+          if (arr.length) {
+            if (j === 0) {
+              bool = true;
+            } else {
+              nextNodes = new Set(arr);
+            }
+          } else {
+            bool = false;
+            break;
+          }
         }
-        return false;
+      }
+      if (bool) {
+        break;
       }
     }
+    if (astName === "not") {
+      if (bool) {
+        return null;
+      }
+      return node;
+    } else if (bool) {
+      return node;
+    }
+    return null;
   };
   /**
-   * Matches a pseudo-class selector.
+   * match pseudo-class selector
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} ast - AST
+   * @param {object} node - Element node
+   * @param {object} [opt] - options
+   * @returns {Set.<object>} - collection of matched nodes
    */
-  _matchPseudoClassSelector = (ast, node, opt = {}) => {
+  _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
-    const { localName } = node;
+    const { localName, parentNode } = node;
     const { forgive, warn = this.#warn } = opt;
     const matched = /* @__PURE__ */ new Set();
-    if (Array.isArray(astChildren) && KEY_LOGICAL.has(astName)) {
+    if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
       if (!astChildren.length && astName !== "is" && astName !== "where") {
         const css = (0, import_css_tree.generate)(ast);
         const msg = `Invalid selector ${css}`;
@@ -2694,20 +2333,29 @@ var Finder = class {
       if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
         if (astChildren.length !== 1) {
           const css = (0, import_css_tree.generate)(ast);
-          const msg = `Invalid selector ${css}`;
-          return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+          return this.onError(
+            generateException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR,
+              this.#window
+            )
+          );
         }
         const [branch] = astChildren;
         const nodes = this._matchAnPlusB(branch, node, astName, opt);
         return nodes;
       } else {
         switch (astName) {
+          // :dir()
           case "dir": {
             if (astChildren.length !== 1) {
               const css = (0, import_css_tree.generate)(ast);
-              const msg = `Invalid selector ${css}`;
               return this.onError(
-                generateException(msg, SYNTAX_ERR, this.#window)
+                generateException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR,
+                  this.#window
+                )
               );
             }
             const [astChild] = astChildren;
@@ -2717,18 +2365,20 @@ var Finder = class {
             }
             break;
           }
+          // :lang()
           case "lang": {
             if (!astChildren.length) {
               const css = (0, import_css_tree.generate)(ast);
-              const msg = `Invalid selector ${css}`;
               return this.onError(
-                generateException(msg, SYNTAX_ERR, this.#window)
+                generateException(
+                  `Invalid selector ${css}`,
+                  SYNTAX_ERR,
+                  this.#window
+                )
               );
             }
             let bool;
-            const l = astChildren.length;
-            for (let i = 0; i < l; i++) {
-              const astChild = astChildren[i];
+            for (const astChild of astChildren) {
               bool = matchLanguagePseudoClass(astChild, node);
               if (bool) {
                 break;
@@ -2739,6 +2389,7 @@ var Finder = class {
             }
             break;
           }
+          // :state()
           case "state": {
             if (isCustomElement(node)) {
               const [{ value: stateValue }] = astChildren;
@@ -2764,14 +2415,17 @@ var Finder = class {
           case "nth-col":
           case "nth-last-col": {
             if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}()`;
               this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
+                generateException(
+                  `Unsupported pseudo-class :${astName}()`,
+                  NOT_SUPPORTED_ERR,
+                  this.#window
+                )
               );
             }
             break;
           }
-          // Ignore :host and :host-context in this context.
+          // Ignore :host() and :host-context().
           case "host":
           case "host-context": {
             break;
@@ -2779,211 +2433,614 @@ var Finder = class {
           // Deprecated in CSS Selectors 3.
           case "contains": {
             if (warn) {
-              const msg = `Unknown pseudo-class :${astName}()`;
               this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
+                generateException(
+                  `Unknown pseudo-class :${astName}()`,
+                  NOT_SUPPORTED_ERR,
+                  this.#window
+                )
               );
             }
             break;
           }
           default: {
             if (!forgive) {
-              const msg = `Unknown pseudo-class :${astName}()`;
-              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+              this.onError(
+                generateException(
+                  `Unknown pseudo-class :${astName}()`,
+                  SYNTAX_ERR,
+                  this.#window
+                )
+              );
+            }
+          }
+        }
+      }
+    } else if (KEYS_PS_NTH_OF_TYPE.has(astName)) {
+      if (node === this.#root) {
+        matched.add(node);
+      } else if (parentNode) {
+        switch (astName) {
+          case "first-of-type": {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+            break;
+          }
+          case "last-of-type": {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1,
+                reverse: true
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+            break;
+          }
+          // 'only-of-type' is handled by default.
+          default: {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1 === node) {
+              const [node2] = this._collectNthOfType(
+                {
+                  a: 0,
+                  b: 1,
+                  reverse: true
+                },
+                node
+              );
+              if (node2 === node) {
+                matched.add(node);
+              }
             }
           }
         }
       }
     } else {
-      let isMatch = false;
-      if (KEY_PS_FORM.has(astName)) {
-        isMatch = this._matchFormPseudo(astName, node);
-      } else if (KEY_PS_UI.has(astName)) {
-        isMatch = this._matchUIStatePseudo(astName, node);
-      } else {
-        switch (astName) {
-          case "any-link":
-          case "link":
-          case "local-link":
-          case "visited": {
-            if (this._matchLinkPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
+      switch (astName) {
+        case "disabled":
+        case "enabled": {
+          const isMatch = matchDisabledPseudoClass(astName, node);
+          if (isMatch) {
+            matched.add(node);
           }
-          case "hover":
-          case "active": {
-            if (this._matchHoverActivePseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
+          break;
+        }
+        case "read-only":
+        case "read-write": {
+          const isMatch = matchReadOnlyPseudoClass(astName, node);
+          if (isMatch) {
+            matched.add(node);
           }
-          case "target": {
-            const { hash } = this.#documentURL;
-            if (node.id && hash === `#${node.id}` && this.#document.contains(node)) {
-              isMatch = true;
-            }
-            break;
+          break;
+        }
+        case "any-link":
+        case "link": {
+          if ((localName === "a" || localName === "area") && node.hasAttribute("href")) {
+            matched.add(node);
           }
-          case "target-within": {
-            const { hash } = this.#documentURL;
-            if (hash) {
-              const id = hash.replace(/^#/, "");
-              let current = this.#document.getElementById(id);
-              while (current) {
-                if (current === node) {
-                  isMatch = true;
-                  break;
-                }
-                current = current.parentNode;
-              }
-            }
-            break;
-          }
-          case "scope": {
-            if (this.#node.nodeType === ELEMENT_NODE) {
-              if (!this.#shadow && node === this.#node) {
-                isMatch = true;
-              }
-            } else if (node === this.#document.documentElement) {
-              isMatch = true;
-            }
-            break;
-          }
-          case "focus":
-          case "focus-visible":
-          case "focus-within": {
-            if (this._matchFocusPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case "root": {
-            if (node === this.#document.documentElement) {
-              isMatch = true;
-            }
-            break;
-          }
-          case "empty": {
-            if (node.hasChildNodes()) {
-              const walker = this._createTreeWalker(node, {
-                force: true,
-                whatToShow: SHOW_ALL
-              });
-              let refNode = walker.firstChild();
-              let bool;
-              while (refNode) {
-                bool = refNode.nodeType !== ELEMENT_NODE && refNode.nodeType !== TEXT_NODE;
-                if (!bool) {
-                  break;
-                }
-                refNode = walker.nextSibling();
-              }
-              if (bool) {
-                isMatch = true;
-              }
-            } else {
-              isMatch = true;
-            }
-            break;
-          }
-          case "first-child":
-          case "last-child":
-          case "only-child": {
-            if (this._matchChildPositionPseudo(astName, node)) {
-              isMatch = true;
-            }
-            break;
-          }
-          case "first-of-type":
-          case "last-of-type":
-          case "only-of-type": {
-            if (node === this.#root) {
+          break;
+        }
+        case "local-link": {
+          if ((localName === "a" || localName === "area") && node.hasAttribute("href")) {
+            const { href, origin, pathname } = this.#documentURL;
+            const attrURL = new URL(node.getAttribute("href"), href);
+            if (attrURL.origin === origin && attrURL.pathname === pathname) {
               matched.add(node);
+            }
+          }
+          break;
+        }
+        case "visited": {
+          break;
+        }
+        case "hover": {
+          const { target, type } = this.#event ?? {};
+          if (/^(?:click|mouse(?:down|over|up))$/.test(type) && node.contains(target)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "active": {
+          const { buttons, target, type } = this.#event ?? {};
+          if (type === "mousedown" && buttons & 1 && node.contains(target)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "target": {
+          const { hash } = this.#documentURL;
+          if (node.id && hash === `#${node.id}` && this.#document.contains(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "target-within": {
+          const { hash } = this.#documentURL;
+          if (hash) {
+            const id = hash.replace(/^#/, "");
+            let current = this.#document.getElementById(id);
+            while (current) {
+              if (current === node) {
+                matched.add(node);
+                break;
+              }
+              current = current.parentNode;
+            }
+          }
+          break;
+        }
+        case "scope": {
+          if (this.#node.nodeType === ELEMENT_NODE) {
+            if (!this.#shadow && node === this.#node) {
+              matched.add(node);
+            }
+          } else if (node === this.#document.documentElement) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "focus": {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "focus-visible": {
+          if (node === this.#document.activeElement && isFocusableArea(node)) {
+            let bool;
+            if (isFocusVisible(node)) {
+              bool = true;
+            } else if (this.#focus) {
+              const { relatedTarget, target: focusTarget } = this.#focus;
+              if (focusTarget === node) {
+                if (isFocusVisible(relatedTarget)) {
+                  bool = true;
+                } else if (this.#event) {
+                  const {
+                    key: eventKey,
+                    target: eventTarget,
+                    type: eventType
+                  } = this.#event;
+                  if (eventTarget === relatedTarget) {
+                    if (this.#lastFocusVisible === null) {
+                      bool = true;
+                    } else if (focusTarget === this.#lastFocusVisible) {
+                      bool = true;
+                    }
+                  } else if (eventKey === "Tab") {
+                    if (eventType === "keydown" && eventTarget !== node || eventType === "keyup" && eventTarget === node) {
+                      if (eventTarget === focusTarget) {
+                        if (this.#lastFocusVisible === null) {
+                          bool = true;
+                        } else if (eventTarget === this.#lastFocusVisible && relatedTarget === null) {
+                          bool = true;
+                        }
+                      } else {
+                        bool = true;
+                      }
+                    }
+                  } else if (eventKey) {
+                    if ((eventType === "keydown" || eventType === "keyup") && eventTarget === node) {
+                      bool = true;
+                    }
+                  }
+                } else if (relatedTarget === null || relatedTarget === this.#lastFocusVisible) {
+                  bool = true;
+                }
+              }
+            }
+            if (bool) {
+              this.#lastFocusVisible = node;
+              matched.add(node);
+            } else if (this.#lastFocusVisible === node) {
+              this.#lastFocusVisible = null;
+            }
+          }
+          break;
+        }
+        case "focus-within": {
+          let bool;
+          let current = this.#document.activeElement;
+          if (isFocusableArea(current)) {
+            while (current) {
+              if (current === node) {
+                bool = true;
+                break;
+              }
+              current = current.parentNode;
+            }
+          }
+          if (bool) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "open":
+        case "closed": {
+          if (localName === "details" || localName === "dialog") {
+            if (node.hasAttribute("open")) {
+              if (astName === "open") {
+                matched.add(node);
+              }
+            } else if (astName === "closed") {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case "placeholder-shown": {
+          let placeholder;
+          if (node.placeholder) {
+            placeholder = node.placeholder;
+          } else if (node.hasAttribute("placeholder")) {
+            placeholder = node.getAttribute("placeholder");
+          }
+          if (typeof placeholder === "string" && !/[\r\n]/.test(placeholder)) {
+            let targetNode;
+            if (localName === "textarea") {
+              targetNode = node;
+            } else if (localName === "input") {
+              if (node.hasAttribute("type")) {
+                if (KEYS_INPUT_PLACEHOLDER.has(node.getAttribute("type"))) {
+                  targetNode = node;
+                }
+              } else {
+                targetNode = node;
+              }
+            }
+            if (targetNode && node.value === "") {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case "checked": {
+          const attrType = node.getAttribute("type");
+          if (node.checked && localName === "input" && (attrType === "checkbox" || attrType === "radio") || node.selected && localName === "option") {
+            matched.add(node);
+          }
+          break;
+        }
+        case "indeterminate": {
+          if (node.indeterminate && localName === "input" && node.type === "checkbox" || localName === "progress" && !node.hasAttribute("value")) {
+            matched.add(node);
+          } else if (localName === "input" && node.type === "radio" && !node.hasAttribute("checked")) {
+            const nodeName = node.name;
+            let parent = node.parentNode;
+            while (parent) {
+              if (parent.localName === "form") {
+                break;
+              }
+              parent = parent.parentNode;
+            }
+            if (!parent) {
+              parent = this.#document.documentElement;
+            }
+            const walker = this._createTreeWalker(parent);
+            let refNode = traverseNode(parent, walker);
+            refNode = walker.firstChild();
+            let checked;
+            while (refNode) {
+              if (refNode.localName === "input" && refNode.getAttribute("type") === "radio") {
+                if (refNode.hasAttribute("name")) {
+                  if (refNode.getAttribute("name") === nodeName) {
+                    checked = !!refNode.checked;
+                  }
+                } else {
+                  checked = !!refNode.checked;
+                }
+                if (checked) {
+                  break;
+                }
+              }
+              refNode = walker.nextNode();
+            }
+            if (!checked) {
+              matched.add(node);
+            }
+          }
+          break;
+        }
+        case "default": {
+          const attrType = node.getAttribute("type");
+          if (localName === "button" && !(node.hasAttribute("type") && KEYS_INPUT_RESET.has(attrType)) || localName === "input" && node.hasAttribute("type") && KEYS_INPUT_SUBMIT.has(attrType)) {
+            let form = node.parentNode;
+            while (form) {
+              if (form.localName === "form") {
+                break;
+              }
+              form = form.parentNode;
+            }
+            if (form) {
+              const walker = this._createTreeWalker(form);
+              let refNode = traverseNode(form, walker);
+              refNode = walker.firstChild();
+              while (refNode) {
+                const nodeName = refNode.localName;
+                const nodeAttrType = refNode.getAttribute("type");
+                let m;
+                if (nodeName === "button") {
+                  m = !(refNode.hasAttribute("type") && KEYS_INPUT_RESET.has(nodeAttrType));
+                } else if (nodeName === "input") {
+                  m = refNode.hasAttribute("type") && KEYS_INPUT_SUBMIT.has(nodeAttrType);
+                }
+                if (m) {
+                  if (refNode === node) {
+                    matched.add(node);
+                  }
+                  break;
+                }
+                refNode = walker.nextNode();
+              }
+            }
+          } else if (localName === "input" && node.hasAttribute("type") && node.hasAttribute("checked") && KEYS_INPUT_CHECK.has(attrType)) {
+            matched.add(node);
+          } else if (localName === "option" && node.hasAttribute("selected")) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "valid":
+        case "invalid": {
+          if (KEYS_FORM_PS_VALID.has(localName)) {
+            let valid;
+            if (node.checkValidity()) {
+              if (node.maxLength >= 0) {
+                if (node.maxLength >= node.value.length) {
+                  valid = true;
+                }
+              } else {
+                valid = true;
+              }
+            }
+            if (valid) {
+              if (astName === "valid") {
+                matched.add(node);
+              }
+            } else if (astName === "invalid") {
+              matched.add(node);
+            }
+          } else if (localName === "fieldset") {
+            const walker = this._createTreeWalker(node);
+            let refNode = traverseNode(node, walker);
+            refNode = walker.firstChild();
+            let valid;
+            if (!refNode) {
+              valid = true;
             } else {
-              const matchedNode = this._getNthOfTypePseudo(astName, node);
-              if (matchedNode) {
-                matched.add(matchedNode);
+              while (refNode) {
+                if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
+                  if (refNode.checkValidity()) {
+                    if (refNode.maxLength >= 0) {
+                      valid = refNode.maxLength >= refNode.value.length;
+                    } else {
+                      valid = true;
+                    }
+                  } else {
+                    valid = false;
+                  }
+                  if (!valid) {
+                    break;
+                  }
+                }
+                refNode = walker.nextNode();
               }
             }
-            break;
-          }
-          case "defined": {
-            if (node.hasAttribute("is") || localName.includes("-")) {
-              if (isCustomElement(node)) {
-                isMatch = true;
+            if (valid) {
+              if (astName === "valid") {
+                matched.add(node);
               }
-            } else if (node instanceof this.#window.HTMLElement || node instanceof this.#window.SVGElement) {
-              isMatch = true;
+            } else if (astName === "invalid") {
+              matched.add(node);
             }
-            break;
           }
-          case "host":
-          case "host-context": {
-            break;
+          break;
+        }
+        case "in-range":
+        case "out-of-range": {
+          const attrType = node.getAttribute("type");
+          if (localName === "input" && !(node.readonly || node.hasAttribute("readonly")) && !(node.disabled || node.hasAttribute("disabled")) && KEYS_INPUT_RANGE.has(attrType)) {
+            const flowed = node.validity.rangeUnderflow || node.validity.rangeOverflow;
+            if (astName === "out-of-range" && flowed) {
+              matched.add(node);
+            } else if (astName === "in-range" && !flowed && (node.hasAttribute("min") || node.hasAttribute("max") || attrType === "range")) {
+              matched.add(node);
+            }
           }
-          // Legacy pseudo-elements.
-          case "after":
-          case "before":
-          case "first-letter":
-          case "first-line": {
+          break;
+        }
+        case "required":
+        case "optional": {
+          let required;
+          let optional;
+          if (localName === "select" || localName === "textarea") {
+            if (node.required || node.hasAttribute("required")) {
+              required = true;
+            } else {
+              optional = true;
+            }
+          } else if (localName === "input") {
+            if (node.hasAttribute("type")) {
+              const attrType = node.getAttribute("type");
+              if (KEYS_INPUT_REQUIRED.has(attrType)) {
+                if (node.required || node.hasAttribute("required")) {
+                  required = true;
+                } else {
+                  optional = true;
+                }
+              } else {
+                optional = true;
+              }
+            } else if (node.required || node.hasAttribute("required")) {
+              required = true;
+            } else {
+              optional = true;
+            }
+          }
+          if (astName === "required" && required) {
+            matched.add(node);
+          } else if (astName === "optional" && optional) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "root": {
+          if (node === this.#document.documentElement) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "empty": {
+          if (node.hasChildNodes()) {
+            const walker = this._createTreeWalker(node, {
+              force: true,
+              whatToShow: SHOW_ALL
+            });
+            let refNode = walker.firstChild();
+            let bool;
+            while (refNode) {
+              bool = refNode.nodeType !== ELEMENT_NODE && refNode.nodeType !== TEXT_NODE;
+              if (!bool) {
+                break;
+              }
+              refNode = walker.nextSibling();
+            }
+            if (bool) {
+              matched.add(node);
+            }
+          } else {
+            matched.add(node);
+          }
+          break;
+        }
+        case "first-child": {
+          if (parentNode && node === parentNode.firstElementChild || node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "last-child": {
+          if (parentNode && node === parentNode.lastElementChild || node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "only-child": {
+          if (parentNode && node === parentNode.firstElementChild && node === parentNode.lastElementChild || node === this.#root) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "defined": {
+          if (node.hasAttribute("is") || localName.includes("-")) {
+            if (isCustomElement(node)) {
+              matched.add(node);
+            }
+          } else if (node instanceof this.#window.HTMLElement || node instanceof this.#window.SVGElement) {
+            matched.add(node);
+          }
+          break;
+        }
+        case "popover-open": {
+          if (node.popover && isVisible(node)) {
+            matched.add(node);
+          }
+          break;
+        }
+        // Ignore :host.
+        case "host": {
+          break;
+        }
+        // Legacy pseudo-elements.
+        case "after":
+        case "before":
+        case "first-letter":
+        case "first-line": {
+          if (warn) {
+            this.onError(
+              generateException(
+                `Unsupported pseudo-element ::${astName}`,
+                NOT_SUPPORTED_ERR,
+                this.#window
+              )
+            );
+          }
+          break;
+        }
+        // Not supported.
+        case "autofill":
+        case "blank":
+        case "buffering":
+        case "current":
+        case "fullscreen":
+        case "future":
+        case "has-slotted":
+        case "modal":
+        case "muted":
+        case "past":
+        case "paused":
+        case "picture-in-picture":
+        case "playing":
+        case "seeking":
+        case "stalled":
+        case "user-invalid":
+        case "user-valid":
+        case "volume-locked":
+        case "-webkit-autofill": {
+          if (warn) {
+            this.onError(
+              generateException(
+                `Unsupported pseudo-class :${astName}`,
+                NOT_SUPPORTED_ERR,
+                this.#window
+              )
+            );
+          }
+          break;
+        }
+        default: {
+          if (astName.startsWith("-webkit-")) {
             if (warn) {
-              const msg = `Unsupported pseudo-element ::${astName}`;
               this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
+                generateException(
+                  `Unsupported pseudo-class :${astName}`,
+                  NOT_SUPPORTED_ERR,
+                  this.#window
+                )
               );
             }
-            break;
-          }
-          // Unsupported pseudo-classes.
-          case "autofill":
-          case "blank":
-          case "buffering":
-          case "current":
-          case "fullscreen":
-          case "future":
-          case "has-slotted":
-          case "modal":
-          case "muted":
-          case "past":
-          case "paused":
-          case "picture-in-picture":
-          case "playing":
-          case "seeking":
-          case "stalled":
-          case "user-invalid":
-          case "user-valid":
-          case "volume-locked":
-          case "-webkit-autofill": {
-            if (warn) {
-              const msg = `Unsupported pseudo-class :${astName}`;
-              this.onError(
-                generateException(msg, NOT_SUPPORTED_ERR, this.#window)
-              );
-            }
-            break;
-          }
-          default: {
-            if (astName.startsWith("-webkit-")) {
-              if (warn) {
-                const msg = `Unsupported pseudo-class :${astName}`;
-                this.onError(
-                  generateException(msg, NOT_SUPPORTED_ERR, this.#window)
-                );
-              }
-            } else if (!forgive) {
-              const msg = `Unknown pseudo-class :${astName}`;
-              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-            }
+          } else if (!forgive) {
+            this.onError(
+              generateException(
+                `Unknown pseudo-class :${astName}`,
+                SYNTAX_ERR,
+                this.#window
+              )
+            );
           }
         }
       }
-      if (isMatch) {
-        matched.add(node);
-      }
     }
     return matched;
-  };
+  }
   /**
    * Evaluates the :host() pseudo-class.
    * @private
@@ -3070,11 +3127,12 @@ var Finder = class {
     const { branches } = walkAST(astChildren[0]);
     const [branch] = branches;
     const [...leaves] = branch;
+    let isMatch = false;
     if (astName === "host") {
-      const isMatch2 = this._evaluateHostPseudo(leaves, host, ast);
-      return isMatch2 ? node : null;
+      isMatch = this._evaluateHostPseudo(leaves, host, ast);
+    } else {
+      isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
     }
-    const isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
     return isMatch ? node : null;
   };
   /**
@@ -3117,7 +3175,7 @@ var Finder = class {
         }
         break;
       }
-      case PS_ELEMENT_SELECTOR:
+      // PS_ELEMENT_SELECTOR is handled by default.
       default: {
         try {
           if (opt.check) {
@@ -3144,11 +3202,12 @@ var Finder = class {
    */
   _matchSelectorForShadowRoot = (ast, node, opt = {}) => {
     const { name: astName } = ast;
-    const matched = /* @__PURE__ */ new Set();
-    if (KEY_LOGICAL.has(astName)) {
+    if (KEYS_LOGICAL.has(astName)) {
       opt.isShadowRoot = true;
       return this._matchPseudoClassSelector(ast, node, opt);
-    } else if (astName === "host" || astName === "host-context") {
+    }
+    const matched = /* @__PURE__ */ new Set();
+    if (astName === "host" || astName === "host-context") {
       const res = this._matchShadowHostPseudoClass(ast, node, opt);
       if (res) {
         this.#verifyShadowHost = true;
@@ -3190,7 +3249,7 @@ var Finder = class {
       return matched;
     }
     let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEY_FORM.has(node.localName)) {
+    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
       cacheable = false;
     }
     let bool;
@@ -3204,7 +3263,7 @@ var Finder = class {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEY_PS_UNCACHE.has(leaf.name)) {
+          if (KEYS_PS_UNCACHE.has(leaf.name)) {
             cacheable = false;
           }
           break;
@@ -3434,11 +3493,14 @@ var Finder = class {
     } else if (currentNode === startNode && currentNode !== this.#root) {
       currentNode = walker.nextNode();
     }
+    const matchOpt = {
+      warn: this.#warn
+    };
     while (currentNode) {
       if (boundaryNode && currentNode === boundaryNode) {
         break;
       }
-      if (this._matchLeaves(leaves, currentNode, { warn: this.#warn })) {
+      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
         collectedNodes.push(currentNode);
         if (targetType !== TARGET_ALL) {
           break;
@@ -4316,9 +4378,6 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `check_${selector}`;
@@ -4331,7 +4390,8 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const match = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const match = this.#nwsapi.match(selector, n);
           return {
             match,
             pseudoElement: null
@@ -4342,6 +4402,9 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       opt.check = true;
       opt.noexept = true;
       opt.warn = false;
@@ -4367,9 +4430,6 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `matches_${selector}`;
@@ -4382,7 +4442,8 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const res2 = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.match(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4390,6 +4451,9 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
@@ -4413,9 +4477,6 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement && node.parentNode) {
       const cacheKey = `closest_${selector}`;
@@ -4428,7 +4489,8 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const res2 = this.#nwsapi.closest(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.closest(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4436,6 +4498,9 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
@@ -4465,11 +4530,11 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
@@ -4493,15 +4558,7 @@ var DOMSelector = class {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
-    let document;
-    if (node.nodeType === DOCUMENT_NODE) {
-      document = node;
-    } else {
-      document = node.ownerDocument;
-    }
+    const document = node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = false;
@@ -4513,7 +4570,8 @@ var DOMSelector = class {
       }
       if (filterMatches) {
         try {
-          const res2 = this.#nwsapi.select(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res2 = this.#nwsapi.select(selector, n);
           return res2;
         } catch (e) {
         }
@@ -4521,6 +4579,9 @@ var DOMSelector = class {
     }
     let res;
     try {
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {

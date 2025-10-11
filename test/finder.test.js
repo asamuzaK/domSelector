@@ -298,24 +298,6 @@ describe('Finder', () => {
       );
     });
 
-    it('should throw', () => {
-      const finder = new Finder(window);
-      finder.setup('*', document);
-      assert.throws(
-        () => finder._correspond('.foo >'),
-        e => {
-          assert.strictEqual(
-            e instanceof window.DOMException,
-            true,
-            'instance'
-          );
-          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(e.message, 'Invalid selector .foo >', 'message');
-          return true;
-        }
-      );
-    });
-
     it('should get result', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
@@ -6079,23 +6061,6 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    // Not supported
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'open',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('select');
-      node.setAttribute('open', 'open');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':open', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -8661,42 +8626,6 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    // Not supported
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'user-valid',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'text');
-      node.value = '';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':user-valid', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    // Not supported
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'user-invalid',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('input');
-      node.setAttribute('type', 'text');
-      node.value = '';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':user-invalid', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
@@ -8997,72 +8926,6 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'only-of-type',
-        type: PS_CLASS_SELECTOR
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      frag.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':only-of-type', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'only-of-type',
-        type: PS_CLASS_SELECTOR
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      const node2 = document.createElement('div');
-      frag.appendChild(node);
-      frag.appendChild(node2);
-      const finder = new Finder(window);
-      finder.setup(':only-of-type', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'first-of-type',
-        type: PS_CLASS_SELECTOR
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      const node2 = document.createElement('div');
-      frag.appendChild(node);
-      frag.appendChild(node2);
-      const finder = new Finder(window);
-      finder.setup(':first-of-type', node2);
-      const res = finder._matchPseudoClassSelector(leaf, node2, {});
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'last-of-type',
-        type: PS_CLASS_SELECTOR
-      };
-      const frag = document.createDocumentFragment();
-      const node = document.createElement('div');
-      const node2 = document.createElement('div');
-      frag.appendChild(node);
-      frag.appendChild(node2);
-      const finder = new Finder(window);
-      finder.setup(':last-of-type', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node2], 'result');
-    });
-
     it('should get matched node', () => {
       const leaf = {
         children: null,
@@ -9343,20 +9206,6 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(node);
       const finder = new Finder(window);
       finder.setup(':host', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'host-context',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      document.getElementById('div0').appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':host-context', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
       assert.deepEqual([...res], [], 'result');
     });

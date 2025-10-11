@@ -13,7 +13,7 @@ export function traverseNode(node: object, walker: object, force?: boolean): obj
 export function isCustomElement(node: object, opt?: object): boolean;
 export function getSlottedTextContent(node: object): string | null;
 export function getDirectionality(node: object): string | null;
-export function findLangAttribute(node: object): string | null;
+export function getLanguageAttribute(node: object): string | null;
 export function getCaseSensitivity(astFlags: string | null, contentType: string): boolean;
 export function isContentEditable(node: object): boolean;
 export function isVisible(node: object): boolean;

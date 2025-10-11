@@ -5,7 +5,6 @@ export class Finder {
     }) => void;
     setup: (selector: string, node: object, opt?: {
         check?: boolean;
-        domSymbolTree?: object;
         noexcept?: boolean;
         warn?: boolean;
     }) => object;
@@ -23,17 +22,8 @@ export class Finder {
     private _collectNthOfType;
     private _matchAnPlusB;
     private _matchHasPseudoFunc;
-    private _getNthOfTypePseudo;
-    private _matchChildPositionPseudo;
-    private _matchLinkPseudo;
-    private _matchFocusPseudo;
-    private _matchHoverActivePseudo;
-    private _matchBranchBackwards;
     private _evaluateHasPseudo;
-    private _evaluateIsWhereNotPseudo;
     private _matchLogicalPseudoFunc;
-    private _matchFormPseudo;
-    private _matchUIStatePseudo;
     private _matchPseudoClassSelector;
     private _evaluateHostPseudo;
     private _evaluateHostContextPseudo;

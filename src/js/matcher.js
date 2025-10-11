@@ -5,24 +5,21 @@
 /* import */
 import { generateCSS, parseAstName, unescapeSelector } from './parser.js';
 import {
-  findAttributeValues,
-  findLangAttribute,
-  getCaseSensitivity,
+  generateException,
   getDirectionality,
+  getLanguageAttribute,
   getType,
   isContentEditable,
-  isCustomElement
+  isCustomElement,
+  isNamespaceDeclared
 } from './utility.js';
 
 /* constants */
 import {
   ALPHA_NUM,
-  ELEMENT_NODE,
   FORM_PARTS,
   IDENT,
-  KEYS_INPUT_EDIT,
-  KEYS_PS_ELEMENT,
-  KEYS_PS_ELEMENT_FUNC,
+  INPUT_EDIT,
   LANG_PART,
   NOT_SUPPORTED_ERR,
   PS_ELEMENT_SELECTOR,
@@ -35,109 +32,161 @@ const KEYS_FORM_PS_DISABLED = new Set([
   'optgroup',
   'option'
 ]);
-const REG_VALID_LANG = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 
 /**
- * Matches a pseudo-element selector against supported and known types.
+ * Validates a pseudo-element selector.
  * @param {string} astName - The name of the pseudo-element from the AST.
- * @param {string} astType - The type of the node from the AST.
- * @param {object} [opt] - Options.
- * @param {boolean} [opt.forgive] - If true, ignores unknown pseudo-element.
- * @param {boolean} [opt.warn] - If true, throws for unsupported pseudo-element.
- * @throws {DOMException} If the pseudo-element is invalid or unsupported.
+ * @param {string} astType - The type of the selector from the AST.
+ * @param {object} [opt] - Optional parameters.
+ * @param {boolean} [opt.forgive] - If true, ignores unknown pseudo-elements.
+ * @param {boolean} [opt.warn] - If true, throws an error for unsupported ones.
+ * @throws {DOMException} If the selector is invalid or unsupported.
  * @returns {void}
  */
 export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
+  const { forgive, globalObject, warn } = opt;
   if (astType !== PS_ELEMENT_SELECTOR) {
+    // Ensure the AST node is a pseudo-element selector.
     throw new TypeError(`Unexpected ast type ${getType(astType)}`);
   }
-  const { forgive, warn } = opt;
-  const isKnown =
-    KEYS_PS_ELEMENT.has(astName) ||
-    KEYS_PS_ELEMENT_FUNC.has(astName) ||
-    astName.startsWith('-webkit-');
-  if (!isKnown && !forgive && !warn) {
-    throw new DOMException(`Unknown pseudo-element ::${astName}`, SYNTAX_ERR);
-  } else if (warn) {
-    let msg = '';
-    if (KEYS_PS_ELEMENT_FUNC.has(astName)) {
-      msg = `Unsupported pseudo-element ::${astName}()`;
-    } else if (astName.startsWith('-webkit-')) {
-      msg = `Unsupported pseudo-element ::${astName}`;
-    } else {
-      msg = `Unsupported pseudo-element ::${astName}`;
+  switch (astName) {
+    case 'after':
+    case 'backdrop':
+    case 'before':
+    case 'cue':
+    case 'cue-region':
+    case 'first-letter':
+    case 'first-line':
+    case 'file-selector-button':
+    case 'marker':
+    case 'placeholder':
+    case 'selection':
+    case 'target-text': {
+      // Warn if the pseudo-element is known but unsupported.
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
     }
-    throw new DOMException(msg, NOT_SUPPORTED_ERR);
+    case 'part':
+    case 'slotted': {
+      // Warn if the functional pseudo-element is known but unsupported.
+      if (warn) {
+        throw generateException(
+          `Unsupported pseudo-element ::${astName}()`,
+          NOT_SUPPORTED_ERR,
+          globalObject
+        );
+      }
+      break;
+    }
+    default: {
+      // Handle vendor-prefixed or unknown pseudo-elements.
+      if (astName.startsWith('-webkit-')) {
+        if (warn) {
+          throw generateException(
+            `Unsupported pseudo-element ::${astName}`,
+            NOT_SUPPORTED_ERR,
+            globalObject
+          );
+        }
+        // Throw an error for unknown pseudo-elements if not forgiven.
+      } else if (!forgive) {
+        throw generateException(
+          `Unknown pseudo-element ::${astName}`,
+          SYNTAX_ERR,
+          globalObject
+        );
+      }
+    }
   }
 };
 
 /**
  * Matches the :dir() pseudo-class against an element's directionality.
- * @param {object} ast - The :dir() pseudo-class AST node.
- * @param {object} node - The element node to check.
- * @returns {boolean} True if the element's directionality matches the selector.
- * @throws {TypeError} If the AST node does not contain a valid direction name.
+ * @param {object} ast - The AST object for the pseudo-class.
+ * @param {object} node - The element node to match against.
+ * @throws {TypeError} If the AST does not contain a valid direction value.
+ * @returns {boolean} - True if the directionality matches, otherwise false.
  */
 export const matchDirectionPseudoClass = (ast, node) => {
   const { name } = ast;
-  // The AST must provide a non-empty string for the direction.
-  if (typeof name !== 'string' || name === '') {
+  // The :dir() pseudo-class requires a direction argument (e.g., "ltr").
+  if (!name) {
     const type = name === '' ? '(empty String)' : getType(name);
     throw new TypeError(`Unexpected ast type ${type}`);
   }
+  // Get the computed directionality of the element.
   const dir = getDirectionality(node);
+  // Compare the expected direction with the element's actual direction.
   return name === dir;
 };
 
 /**
  * Matches the :lang() pseudo-class against an element's language.
  * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
- * @param {object} ast - The :lang() pseudo-class AST node.
- * @param {object} node - The element node to check.
- * @returns {boolean} True if the element's language matches the selector.
+ * @param {object} ast - The AST object for the pseudo-class.
+ * @param {object} node - The element node to match against.
+ * @returns {boolean} - True if the language matches, otherwise false.
  */
 export const matchLanguagePseudoClass = (ast, node) => {
   const { name, type, value } = ast;
-  let astName;
+  let langPattern;
+  // Determine the language pattern from the AST.
   if (type === STRING && value) {
-    astName = value;
+    langPattern = value;
   } else if (type === IDENT && name) {
-    astName = unescapeSelector(name);
-  } else {
-    // No valid language identifier provided in the selector.
+    langPattern = unescapeSelector(name);
+  }
+  // If no valid language pattern is provided, it cannot match.
+  if (typeof langPattern !== 'string') {
     return false;
   }
-  const effectiveLang = findLangAttribute(node);
-  // If no language is defined on the element or its ancestors, it cannot match.
-  if (typeof effectiveLang !== 'string') {
+  // Get the effective language attribute for the current node.
+  const elementLang = getLanguageAttribute(node);
+  // If the element has no language, it cannot match a specific pattern.
+  if (elementLang === null) {
     return false;
   }
-  // Handle the wildcard selector :lang(*)
-  if (astName === '*') {
-    return effectiveLang !== '';
+  // Handle the universal selector '*' for :lang.
+  if (langPattern === '*') {
+    // It matches any language unless attribute is not empty.
+    return elementLang !== '';
   }
-  // Validate the provided language.
-  if (!REG_VALID_LANG.test(astName)) {
+  // Validate the provided language pattern structure.
+  if (!REG_LANG_VALID.test(langPattern)) {
     return false;
   }
-  // Build the extended language range regex for matching.
-  let regExtendedLang;
-  if (astName.includes('-')) {
-    const [langMain, langSub, ...langRest] = astName.split('-');
-    let extendedMain = `${ALPHA_NUM}${LANG_PART}`;
-    if (langMain !== '*') {
-      extendedMain = `${langMain}${LANG_PART}`;
-    }
+  // Build a regex for extended language range matching.
+  let matcherRegex;
+  if (langPattern.indexOf('-') > -1) {
+    // Handle complex patterns with wildcards and sub-tags (e.g., '*-US').
+    const [langMain, langSub, ...langRest] = langPattern.split('-');
+    const extendedMain =
+      langMain === '*' ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
     const extendedSub = `-${langSub}${LANG_PART}`;
-    const extendedRest = langRest.map(part => `-${part}${LANG_PART}`).join('');
-    regExtendedLang = new RegExp(
+    let extendedRest = '';
+    // Use a standard for loop for performance as per the rules.
+    for (let i = 0; i < langRest.length; i++) {
+      extendedRest += `-${langRest[i]}${LANG_PART}`;
+    }
+    matcherRegex = new RegExp(
       `^${extendedMain}${extendedSub}${extendedRest}$`,
       'i'
     );
   } else {
-    regExtendedLang = new RegExp(`^${astName}${LANG_PART}$`, 'i');
+    // Handle simple language patterns (e.g., 'en').
+    matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, 'i');
   }
-  return regExtendedLang.test(effectiveLang);
+  // Test the element's language against the constructed regex.
+  return matcherRegex.test(elementLang);
 };
 
 /**
@@ -146,10 +195,7 @@ export const matchLanguagePseudoClass = (ast, node) => {
  * @param {object} node - Element node
  * @returns {boolean} - True if matched
  */
-export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
-  if (!/^(?:dis|en)abled$/.test(astName) || node?.nodeType !== ELEMENT_NODE) {
-    return false;
-  }
+export const matchDisabledPseudoClass = (astName, node) => {
   const { localName, parentNode } = node;
   if (
     !KEYS_FORM_PS_DISABLED.has(localName) &&
@@ -206,13 +252,7 @@ export const matchDisabledEnabledPseudo = (astName = '', node = {}) => {
  * @param {object} node - Element node
  * @returns {boolean} - True if matched
  */
-export const matchReadOnlyWritePseudo = (astName, node) => {
-  if (
-    !/^read-(?:only|write)$/.test(astName) ||
-    node?.nodeType !== ELEMENT_NODE
-  ) {
-    return false;
-  }
+export const matchReadOnlyPseudoClass = (astName, node) => {
   const { localName } = node;
   let isReadOnly = false;
   switch (localName) {
@@ -243,12 +283,14 @@ export const matchReadOnlyWritePseudo = (astName, node) => {
 
 /**
  * Matches an attribute selector against an element.
- * @param {object} ast - The attribute selector AST node.
- * @param {object} node - The element node to check.
- * @param {object} [opt] - Options.
- * @param {boolean} [opt.check] - Internal flag for nwsapi compatibility.
- * @param {boolean} [opt.forgive] - If true, forgive invalid syntax.
- * @returns {boolean} True if the element matches the attribute selector.
+ * This function handles various attribute matchers like '=', '~=', '^=', etc.,
+ * and considers namespaces and case sensitivity based on document type.
+ * @param {object} ast - The AST for the attribute selector.
+ * @param {object} node - The element node to match against.
+ * @param {object} [opt] - Optional parameters.
+ * @param {boolean} [opt.check] - True if running in an internal check.
+ * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
+ * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
 export const matchAttributeSelector = (ast, node, opt = {}) => {
   const {
@@ -257,99 +299,217 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
     name: astName,
     value: astValue
   } = ast;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
+  // Validate selector flags ('i' or 's').
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = generateCSS(ast);
-    throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+    throw generateException(
+      `Invalid selector ${css}`,
+      SYNTAX_ERR,
+      globalObject
+    );
   }
-  if (!node.attributes?.length) {
+  const { attributes } = node;
+  // An element with no attributes cannot match.
+  if (!attributes || !attributes.length) {
     return false;
   }
-  const {
-    ownerDocument: { contentType }
-  } = node;
-  const caseSensitive = getCaseSensitivity(astFlags, contentType);
+  // Determine case sensitivity based on document type and flags.
+  const contentType = node.ownerDocument.contentType;
+  let caseInsensitive;
+  if (contentType === 'text/html') {
+    if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
+      caseInsensitive = false;
+    } else {
+      caseInsensitive = true;
+    }
+  } else if (typeof astFlags === 'string' && /^i$/i.test(astFlags)) {
+    caseInsensitive = true;
+  } else {
+    caseInsensitive = false;
+  }
+  // Prepare the attribute name from the selector for matching.
   let astAttrName = unescapeSelector(astName.name);
-  if (!caseSensitive) {
+  if (caseInsensitive) {
     astAttrName = astAttrName.toLowerCase();
   }
-  const { prefix: astPrefix, localName: astLocalName } =
-    parseAstName(astAttrName);
-  if (astAttrName.includes('|')) {
-    const { prefix: astPrefix } = parseAstName(astAttrName);
-    if (astPrefix !== '' && astPrefix !== '*' && !check) {
-      if (forgive) {
-        return false;
+  // A set to store the values of attributes whose names match.
+  const attrValues = new Set();
+  // Handle namespaced attribute names (e.g., [*|attr], [ns|attr]).
+  if (astAttrName.indexOf('|') > -1) {
+    const { prefix: astPrefix, localName: astLocalName } =
+      parseAstName(astAttrName);
+    for (const item of attributes) {
+      let { name: itemName, value: itemValue } = item;
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
       }
-      const css = generateCSS(ast);
-      throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+      switch (astPrefix) {
+        case '': {
+          if (astLocalName === itemName) {
+            attrValues.add(itemValue);
+          }
+          break;
+        }
+        case '*': {
+          if (itemName.indexOf(':') > -1) {
+            if (itemName.endsWith(`:${astLocalName}`)) {
+              attrValues.add(itemValue);
+            }
+          } else if (astLocalName === itemName) {
+            attrValues.add(itemValue);
+          }
+          break;
+        }
+        default: {
+          if (!check) {
+            if (forgive) {
+              return false;
+            }
+            const css = generateCSS(ast);
+            throw generateException(
+              `Invalid selector ${css}`,
+              SYNTAX_ERR,
+              globalObject
+            );
+          }
+          if (itemName.indexOf(':') > -1) {
+            const [itemPrefix, itemLocalName] = itemName.split(':');
+            // Ignore the special 'xml:lang' attribute.
+            if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+              continue;
+            } else if (
+              astPrefix === itemPrefix &&
+              astLocalName === itemLocalName
+            ) {
+              const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
+              if (namespaceDeclared) {
+                attrValues.add(itemValue);
+              }
+            }
+          }
+        }
+      }
+    }
+    // Handle non-namespaced attribute names.
+  } else {
+    for (let { name: itemName, value: itemValue } of attributes) {
+      if (caseInsensitive) {
+        itemName = itemName.toLowerCase();
+        itemValue = itemValue.toLowerCase();
+      }
+      if (itemName.indexOf(':') > -1) {
+        const [itemPrefix, itemLocalName] = itemName.split(':');
+        // Ignore the special 'xml:lang' attribute.
+        if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+          continue;
+        } else if (astAttrName === itemLocalName) {
+          attrValues.add(itemValue);
+        }
+      } else if (astAttrName === itemName) {
+        attrValues.add(itemValue);
+      }
     }
   }
-  const values = findAttributeValues(node, {
-    astAttrName,
-    astLocalName,
-    astPrefix,
-    caseSensitive
-  });
-  if (!values.length) {
+  if (!attrValues.size) {
     return false;
   }
-  // If there's no matcher in the selector (e.g., [disabled]), a match is found.
-  if (!astMatcher) {
-    return true;
+  // Prepare the value from the selector's RHS for comparison.
+  const { name: astIdentValue, value: astStringValue } = astValue ?? {};
+  let attrValue;
+  if (astIdentValue) {
+    if (caseInsensitive) {
+      attrValue = astIdentValue.toLowerCase();
+    } else {
+      attrValue = astIdentValue;
+    }
+  } else if (astStringValue) {
+    if (caseInsensitive) {
+      attrValue = astStringValue.toLowerCase();
+    } else {
+      attrValue = astStringValue;
+    }
+  } else if (astStringValue === '') {
+    attrValue = astStringValue;
   }
-  let selectorValue = '';
-  if (astValue.type === IDENT) {
-    selectorValue = caseSensitive ? astValue.name : astValue.name.toLowerCase();
-  } else if (astValue.type === STRING) {
-    selectorValue = caseSensitive
-      ? astValue.value
-      : astValue.value.toLowerCase();
-  }
+  // Perform the final match based on the specified matcher.
   switch (astMatcher) {
+    case '=': {
+      return typeof attrValue === 'string' && attrValues.has(attrValue);
+    }
     case '~=': {
-      return (
-        !!selectorValue &&
-        values.some(v => v.split(/\s+/).includes(selectorValue))
-      );
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          const item = new Set(value.split(/\s+/));
+          if (item.has(attrValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case '|=': {
-      return (
-        !!selectorValue &&
-        values.some(
-          v => v === selectorValue || v.startsWith(`${selectorValue}-`)
-        )
-      );
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value === attrValue || value.startsWith(`${attrValue}-`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case '^=': {
-      return !!selectorValue && values.some(v => v.startsWith(selectorValue));
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.startsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case '$=': {
-      return !!selectorValue && values.some(v => v.endsWith(selectorValue));
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.endsWith(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
     case '*=': {
-      return !!selectorValue && values.some(v => v.includes(selectorValue));
+      if (attrValue && typeof attrValue === 'string') {
+        for (const value of attrValues) {
+          if (value.includes(`${attrValue}`)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
-    case '=':
+    case null:
     default: {
-      return values.some(v => v === selectorValue);
+      // This case handles attribute existence checks (e.g., '[disabled]').
+      return true;
     }
   }
 };
 
 /**
- * Matches a type selector (e.g., 'div', 'ns|E') against an element.
- * @param {object} ast - The type selector AST node.
- * @param {object} node - The element node to check.
- * @param {object} [opt] - Options.
- * @param {boolean} [opt.check] - Internal flag for nwsapi compatibility.
- * @param {boolean} [opt.forgive] - If true, forgive undeclared namespaces.
- * @returns {boolean} True if the element matches the type selector.
+ * match type selector
+ * @param {object} ast - AST
+ * @param {object} node - Element node
+ * @param {object} [opt] - options
+ * @param {boolean} [opt.check] - running in internal check()
+ * @param {boolean} [opt.forgive] - forgive undeclared namespace
+ * @returns {boolean} - result
  */
 export const matchTypeSelector = (ast, node, opt = {}) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { check, forgive } = opt;
+  const { check, forgive, globalObject } = opt;
   let { prefix: astPrefix, localName: astLocalName } = parseAstName(
     astName,
     node
@@ -357,15 +517,15 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   if (
     node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml') &&
-    /[A-Z][\w-]*/i.test(localName)
+    REG_TAG_NAME.test(localName)
   ) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
   }
-  let nodePrefix = '';
-  let nodeLocalName = '';
+  let nodePrefix;
+  let nodeLocalName;
   // just in case that the namespaced content is parsed as text/html
-  if (localName.includes(':')) {
+  if (localName.indexOf(':') > -1) {
     [nodePrefix, nodeLocalName] = localName.split(':');
   } else {
     nodePrefix = prefix || '';
@@ -394,7 +554,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
           return false;
         }
         const css = generateCSS(ast);
-        throw new DOMException(`Invalid selector ${css}`, SYNTAX_ERR);
+        throw generateException(
+          `Invalid selector ${css}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
@@ -404,7 +568,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
         }
         return false;
       } else if (!forgive && !astNS) {
-        throw new DOMException(`Undeclared namespace ${astPrefix}`, SYNTAX_ERR);
+        throw generateException(
+          `Undeclared namespace ${astPrefix}`,
+          SYNTAX_ERR,
+          globalObject
+        );
       }
       return false;
     }

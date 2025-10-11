@@ -87,6 +87,15 @@ export const LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX
 export const LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
 
+/* attributes that change frequently */
+export const ATTR_STATE_CHANGE = Object.freeze([
+  'checked',
+  'class',
+  'disabled',
+  'hidden',
+  'style'
+]);
+
 /* forms and input types */
 export const FORM_PARTS = Object.freeze([
   'button',
@@ -126,126 +135,5 @@ export const INPUT_LTR = Object.freeze([
   'time'
 ]);
 
-/* keywords */
-export const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+/* logical combination pseudo-classes */
 export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
-export const KEYS_MODIFIER = new Set([
-  'Alt',
-  'AltGraph',
-  'CapsLock',
-  'Control',
-  'Fn',
-  'FnLock',
-  'Hyper',
-  'Meta',
-  'NumLock',
-  'ScrollLock',
-  'Shift',
-  'Super',
-  'Symbol',
-  'SymbolLock'
-]);
-export const KEYS_PS_ELEMENT = new Set([
-  'after',
-  'backdrop',
-  'before',
-  'cue',
-  'cue-region',
-  'first-letter',
-  'first-line',
-  'file-selector-button',
-  'marker',
-  'placeholder',
-  'selection',
-  'target-text'
-]);
-export const KEYS_PS_ELEMENT_FUNC = new Set(['part', 'slotted']);
-export const KEYS_PS_CLASS_STATE = new Set([
-  'checked',
-  'closed',
-  'disabled',
-  'empty',
-  'enabled',
-  'in-range',
-  'indeterminate',
-  'invalid',
-  'open',
-  'out-of-range',
-  'placeholder-shown',
-  'read-only',
-  'read-write',
-  'valid'
-]);
-export const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
-
-/* array */
-export const KEY_FORM_FOCUS = Object.freeze([
-  'button',
-  'input',
-  'select',
-  'textarea'
-]);
-export const KEY_INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
-export const KEY_INPUT_DATE = Object.freeze([
-  'date',
-  'datetime-local',
-  'month',
-  'time',
-  'week'
-]);
-export const KEY_INPUT_TEXT = Object.freeze([
-  'email',
-  'password',
-  'search',
-  'tel',
-  'text',
-  'url'
-]);
-export const KEY_INPUT_EDIT = Object.freeze([
-  ...KEY_INPUT_DATE,
-  ...KEY_INPUT_TEXT,
-  'number'
-]);
-export const KEY_INPUT_LTR = Object.freeze([
-  'checkbox',
-  'color',
-  'date',
-  'image',
-  'number',
-  'range',
-  'radio',
-  'time'
-]);
-export const KEY_LOGICAL = Object.freeze(['has', 'is', 'not', 'where']);
-export const KEY_MODIFIER = Object.freeze([
-  'Alt',
-  'AltGraph',
-  'CapsLock',
-  'Control',
-  'Fn',
-  'FnLock',
-  'Hyper',
-  'Meta',
-  'NumLock',
-  'ScrollLock',
-  'Shift',
-  'Super',
-  'Symbol',
-  'SymbolLock'
-]);
-export const KEY_PS_STATE = Object.freeze([
-  'enabled',
-  'disabled',
-  'valid',
-  'invalid',
-  'in-range',
-  'out-of-range',
-  'checked',
-  'indeterminate',
-  'read-only',
-  'read-write',
-  'open',
-  'closed',
-  'placeholder-shown'
-]);
-export const KEY_SHADOW_HOST = Object.freeze(['host', 'host-context']);

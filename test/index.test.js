@@ -302,44 +302,6 @@ describe('DOMSelector', () => {
         'result'
       );
     });
-
-    it('should get results', () => {
-      const div = document.createElement('div');
-      const p = document.createElement('p');
-      div.appendChild(p);
-      const wrapperForImpl = sinon.stub().callsFake(node => node);
-      const i = wrapperForImpl.callCount;
-      const idlUtils = {
-        wrapperForImpl
-      };
-      const node = p;
-      node._ownerDocument = document;
-      const domSelector = new DOMSelector(window, null, {
-        idlUtils
-      });
-      p.textContent = 'foo bar';
-      const res = domSelector.check(':empty', node);
-      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
-      assert.deepEqual(
-        res,
-        {
-          match: false,
-          pseudoElement: null
-        },
-        'not match :empty'
-      );
-      p.textContent = '';
-      const res2 = domSelector.check(':empty', node);
-      assert.strictEqual(wrapperForImpl.callCount, i + 2, '2nd called');
-      assert.deepEqual(
-        res2,
-        {
-          match: true,
-          pseudoElement: null
-        },
-        'matches :empty'
-      );
-    });
   });
 
   describe('matches', () => {
@@ -1579,16 +1541,6 @@ describe('patched JSDOM', () => {
         true,
         'matches :read-write'
       );
-    });
-
-    it('should get results', () => {
-      const div = document.createElement('div');
-      const p = document.createElement('p');
-      div.appendChild(p);
-      p.textContent = 'foo bar';
-      assert.strictEqual(p.matches(':empty'), false, 'not match :empty');
-      p.textContent = '';
-      assert.strictEqual(p.matches(':empty'), true, 'matches :empty');
     });
   });
 

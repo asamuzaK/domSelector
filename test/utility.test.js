@@ -1878,8 +1878,8 @@ describe('utility functions', () => {
     });
   });
 
-  describe('find language attribute', () => {
-    const func = util.findLangAttribute;
+  describe('get language attribute', () => {
+    const func = util.getLanguageAttribute;
 
     it('should throw', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
@@ -1903,6 +1903,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, '', 'result');
     });
 
+    it('should get null', () => {
+      const parent = document.createElement('div');
+      const node = document.createElement('div');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, null, 'result');
+    });
+
     it('should get value', () => {
       const parent = document.createElement('div');
       parent.setAttribute('lang', 'en');
@@ -1916,6 +1924,76 @@ describe('utility functions', () => {
       const src = '<foo id="foo" xml:lang="en"><bar id="bar"/></foo>';
       const doc = new window.DOMParser().parseFromString(src, 'text/xml');
       const node = doc.getElementById('bar');
+      const res = func(node);
+      assert.strictEqual(res, 'en', 'result');
+    });
+
+    it('should get null', () => {
+      const frag = document.createDocumentFragment();
+      const node = document.createElement('div');
+      frag.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should get value', () => {
+      const html = `
+          <div lang='en-US'>
+            <template id="template">
+              <div>
+                <slot id="foo" name="bar">Foo</slot>
+              </div>
+            </template>
+            <my-element id="baz">
+              <span id="qux" slot="foo">Qux</span>
+            </my-element>
+          </div>
+        `;
+      const container = document.getElementById('div0');
+      container.innerHTML = html;
+      class MyElement extends window.HTMLElement {
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = document.getElementById('template');
+          shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      const shadow = document.getElementById('baz');
+      const node = shadow.shadowRoot.getElementById('foo');
+      const res = func(node);
+      assert.strictEqual(res, 'en-US', 'result');
+    });
+
+    it('should get null', () => {
+      const xmlDom = `
+        <foo id="foo">
+          <bar id="bar">
+            <baz id="baz"/>
+          </bar>
+        </foo>
+      `;
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
+      const res = func(node);
+      assert.strictEqual(res, null, 'result');
+    });
+
+    it('should get value', () => {
+      const xmlDom = `
+        <foo id="foo" xml:lang="en">
+          <bar id="bar">
+            <baz id="baz"/>
+          </bar>
+        </foo>
+      `;
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.createElement('div');
+      const parent = doc.getElementById('baz');
+      parent.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, 'en', 'result');
     });

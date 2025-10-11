@@ -71,9 +71,6 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (
       document === this.#document &&
@@ -91,7 +88,8 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const match = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const match = this.#nwsapi.match(selector, n);
           return {
             match,
             pseudoElement: null
@@ -103,6 +101,10 @@ export class DOMSelector {
     }
     let res;
     try {
+      // FIXME: remove later
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       opt.check = true;
       opt.noexept = true;
       opt.warn = false;
@@ -129,9 +131,6 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (
       document === this.#document &&
@@ -149,7 +148,8 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const res = this.#nwsapi.match(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.match(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -158,6 +158,10 @@ export class DOMSelector {
     }
     let res;
     try {
+      // FIXME: remove later
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_SELF);
       res = nodes.size;
@@ -182,9 +186,6 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const document = node.ownerDocument;
     if (
       document === this.#document &&
@@ -202,7 +203,8 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const res = this.#nwsapi.closest(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.closest(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -211,6 +213,10 @@ export class DOMSelector {
     }
     let res;
     try {
+      // FIXME: remove later
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_LINEAL);
       if (nodes.size) {
@@ -241,11 +247,12 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     let res;
     try {
+      // FIXME: remove later
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_FIRST);
       if (nodes.size) {
@@ -270,15 +277,8 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
-    let document;
-    if (node.nodeType === DOCUMENT_NODE) {
-      document = node;
-    } else {
-      document = node.ownerDocument;
-    }
+    const document =
+      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
@@ -294,7 +294,8 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const res = this.#nwsapi.select(selector, node);
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.select(selector, n);
           return res;
         } catch (e) {
           // fall through
@@ -303,6 +304,10 @@ export class DOMSelector {
     }
     let res;
     try {
+      // FIXME: remove later
+      if (this.#idlUtils) {
+        node = this.#idlUtils.wrapperForImpl(node);
+      }
       this.#finder.setup(selector, node, opt);
       const nodes = this.#finder.find(TARGET_ALL);
       if (nodes.size) {

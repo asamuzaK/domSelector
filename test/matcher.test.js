@@ -1093,32 +1093,7 @@ describe('matcher', () => {
   });
 
   describe('match disabled / enabled pseudo-class', () => {
-    const func = matcher.matchDisabledEnabledPseudo;
-
-    it('should get false', () => {
-      const res = func();
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('disabled');
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('enabled');
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('disabled', {});
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('enabled', {});
-      assert.strictEqual(res, false, 'result');
-    });
+    const func = matcher.matchDisabledPseudoClass;
 
     it('should get false', () => {
       const node = document.createElement('div');
@@ -1340,32 +1315,7 @@ describe('matcher', () => {
   });
 
   describe('match read-only / read-write pseudo-class', () => {
-    const func = matcher.matchReadOnlyWritePseudo;
-
-    it('should get false', () => {
-      const res = func();
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('read-only');
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('read-write');
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('read-only', {});
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const res = func('read-write', {});
-      assert.strictEqual(res, false, 'result');
-    });
+    const func = matcher.matchReadOnlyPseudoClass;
 
     it('should get true', () => {
       const node = document.createElement('div');
