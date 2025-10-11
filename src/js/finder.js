@@ -22,7 +22,7 @@ import {
 } from './parser.js';
 import {
   filterNodesByAnB,
-  //findLogicalWithNestedHas,
+  findLogicalWithNestedHas,
   generateException,
   //isContentEditable,
   isCustomElement,
@@ -653,15 +653,16 @@ export class Finder {
   };
 
   /**
-   * match :has() pseudo-class function
+   * Matches the :has() pseudo-class function.
    * @private
-   * @param {Array.<object>} astLeaves - AST leaves
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {boolean} - result
+   * @param {Array.<object>} astLeaves - The AST leaves.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {boolean} The result.
    */
-  _matchHasPseudoFunc(astLeaves, node, opt = {}) {
+  _matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
     if (Array.isArray(astLeaves) && astLeaves.length) {
+      // Prepare a copy to avoid astLeaves being consumed.
       const leaves = [...astLeaves];
       const [leaf] = leaves;
       const { type: leafType } = leaf;
@@ -705,105 +706,122 @@ export class Finder {
       }
     }
     return false;
-  }
+  };
 
   /**
-   * match logical pseudo-class functions - :has(), :is(), :not(), :where()
+   * Evaluates the :has() pseudo-class.
    * @private
-   * @param {object} astData - AST data
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {?object} - matched node
+   * @param {object} astData - The AST data.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {?object} The matched node.
    */
-  _matchLogicalPseudoFunc(astData, node, opt = {}) {
+  _evaluateHasPseudo = (astData, node, opt) => {
+    const { branches } = astData;
+    let bool = false;
+    const l = branches.length;
+    for (let i = 0; i < l; i++) {
+      const leaves = branches[i];
+      bool = this._matchHasPseudoFunc(leaves, node, opt);
+      if (bool) {
+        break;
+      }
+    }
+    if (!bool) {
+      return null;
+    }
+    if (
+      (opt.isShadowRoot || this.#shadow) &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE
+    ) {
+      return this.#verifyShadowHost ? node : null;
+    }
+    return node;
+  };
+
+  /**
+   * Matches logical pseudo-class functions.
+   * @private
+   * @param {object} astData - The AST data.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {?object} The matched node.
+   */
+  _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
     const { astName, branches, twigBranches } = astData;
+    // Handle :has().
+    if (astName === 'has') {
+      return this._evaluateHasPseudo(astData, node, opt);
+    }
+    // Handle :is(), :not(), :where().
     const isShadowRoot =
       (opt.isShadowRoot || this.#shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
-    if (astName === 'has') {
-      let bool;
-      for (const leaves of branches) {
-        bool = this._matchHasPseudoFunc(leaves, node, opt);
-        if (bool) {
+    // Check for invalid shadow root.
+    if (isShadowRoot) {
+      let invalid = false;
+      for (const branch of branches) {
+        if (branch.length > 1) {
+          invalid = true;
           break;
+        } else if (astName === 'not') {
+          const [{ type: childAstType }] = branch;
+          if (childAstType !== PS_CLASS_SELECTOR) {
+            invalid = true;
+            break;
+          }
+        }
+      }
+      if (invalid) {
+        return null;
+      }
+    }
+    opt.forgive = astName === 'is' || astName === 'where';
+    const l = twigBranches.length;
+    let bool;
+    for (let i = 0; i < l; i++) {
+      const branch = twigBranches[i];
+      const lastIndex = branch.length - 1;
+      const { leaves } = branch[lastIndex];
+      bool = this._matchLeaves(leaves, node, opt);
+      if (bool && lastIndex > 0) {
+        let nextNodes = new Set([node]);
+        for (let j = lastIndex - 1; j >= 0; j--) {
+          const twig = branch[j];
+          const arr = [];
+          opt.dir = DIR_PREV;
+          for (const nextNode of nextNodes) {
+            const m = this._matchCombinator(twig, nextNode, opt);
+            if (m.size) {
+              arr.push(...m);
+            }
+          }
+          if (arr.length) {
+            if (j === 0) {
+              bool = true;
+            } else {
+              nextNodes = new Set(arr);
+            }
+          } else {
+            bool = false;
+            break;
+          }
         }
       }
       if (bool) {
-        if (isShadowRoot) {
-          if (this.#verifyShadowHost) {
-            return node;
-          }
-        } else {
-          return node;
-        }
-      }
-    } else {
-      // check for invalid shadow root
-      if (isShadowRoot) {
-        let invalid;
-        for (const branch of branches) {
-          if (branch.length > 1) {
-            invalid = true;
-            break;
-          } else if (astName === 'not') {
-            const [{ type: childAstType }] = branch;
-            if (childAstType !== PS_CLASS_SELECTOR) {
-              invalid = true;
-              break;
-            }
-          }
-        }
-        if (invalid) {
-          return null;
-        }
-      }
-      opt.forgive = astName === 'is' || astName === 'where';
-      const l = twigBranches.length;
-      let bool;
-      for (let i = 0; i < l; i++) {
-        const branch = twigBranches[i];
-        const lastIndex = branch.length - 1;
-        const { leaves } = branch[lastIndex];
-        bool = this._matchLeaves(leaves, node, opt);
-        if (bool && lastIndex > 0) {
-          let nextNodes = new Set([node]);
-          for (let j = lastIndex - 1; j >= 0; j--) {
-            const twig = branch[j];
-            const arr = [];
-            opt.dir = DIR_PREV;
-            for (const nextNode of nextNodes) {
-              const m = this._matchCombinator(twig, nextNode, opt);
-              if (m.size) {
-                arr.push(...m);
-              }
-            }
-            if (arr.length) {
-              if (j === 0) {
-                bool = true;
-              } else {
-                nextNodes = new Set(arr);
-              }
-            } else {
-              bool = false;
-              break;
-            }
-          }
-        }
-        if (bool) {
-          break;
-        }
-      }
-      if (astName === 'not') {
-        if (bool) {
-          return null;
-        }
-        return node;
-      } else if (bool) {
-        return node;
+        break;
       }
     }
+    if (astName === 'not') {
+      if (bool) {
+        return null;
+      }
+      return node;
+    } else if (bool) {
+      return node;
+    }
     return null;
-  }
+  };
 
   /**
    * match pseudo-class selector
@@ -823,9 +841,8 @@ export class Finder {
     if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         const css = generateCSS(ast);
-        return this.onError(
-          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this.#window)
-        );
+        const msg = `Invalid selector ${css}`;
+        return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
       }
       let astData;
       if (this.#astCache.has(ast)) {
@@ -833,18 +850,12 @@ export class Finder {
       } else {
         const { branches } = walkAST(ast);
         if (astName === 'has') {
-          // check for nested :has()
-          let forgiven;
-          for (const child of astChildren) {
-            const item = findAST(child, leaf => {
-              if (
-                KEYS_LOGICAL.has(leaf.name) &&
-                findAST(leaf, nestedLeaf => nestedLeaf.name === 'has')
-              ) {
-                return leaf;
-              }
-              return null;
-            });
+          // Check for nested :has().
+          let forgiven = false;
+          const l = astChildren.length;
+          for (let i = 0; i < l; i++) {
+            const child = astChildren[i];
+            const item = findAST(child, findLogicalWithNestedHas);
             if (item) {
               const itemName = item.name;
               if (itemName === 'is' || itemName === 'where') {
@@ -852,12 +863,9 @@ export class Finder {
                 break;
               } else {
                 const css = generateCSS(ast);
+                const msg = `Invalid selector ${css}`;
                 return this.onError(
-                  generateException(
-                    `Invalid selector ${css}`,
-                    SYNTAX_ERR,
-                    this.#window
-                  )
+                  generateException(msg, SYNTAX_ERR, this.#window)
                 );
               }
             }
@@ -871,7 +879,9 @@ export class Finder {
           };
         } else {
           const twigBranches = [];
-          for (const [...leaves] of branches) {
+          const l = branches.length;
+          for (let i = 0; i < l; i++) {
+            const [...leaves] = branches[i];
             const branch = [];
             const leavesSet = new Set();
             let item = leaves.shift();
@@ -1007,12 +1017,12 @@ export class Finder {
             }
             break;
           }
+          // Ignore :host() and :host-context().
           case 'host':
           case 'host-context': {
-            // ignore
             break;
           }
-          // dropped from CSS Selectors 3
+          // Deprecated in CSS Selectors 3.
           case 'contains': {
             if (warn) {
               this.onError(
