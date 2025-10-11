@@ -1,33 +1,54 @@
 export class Finder {
     constructor(window: object);
-    onError(e: Error, opt?: {
+    onError: (e: Error, opt?: {
         noexcept?: boolean;
-    }): void;
-    setup(selector: string, node: object, opt?: {
+    }) => void;
+    setup: (selector: string, node: object, opt?: {
         check?: boolean;
-        domSymbolTree?: object;
         noexcept?: boolean;
         warn?: boolean;
-    }): object;
+    }) => object;
+    private _handleFocusEvent;
+    private _handleKeyboardEvent;
+    private _handleMouseEvent;
+    private _handleClickEvent;
     private _registerEventListeners;
+    private _processSelectorBranches;
     private _correspond;
     private _createTreeWalker;
-    private _prepareQuerySelectorWalker;
+    private _getSelectorBranches;
+    private _getFilteredChildren;
     private _collectNthChild;
     private _collectNthOfType;
     private _matchAnPlusB;
     private _matchHasPseudoFunc;
+    private _evaluateHasPseudo;
     private _matchLogicalPseudoFunc;
     private _matchPseudoClassSelector;
+    private _evaluateHostPseudo;
+    private _evaluateHostContextPseudo;
     private _matchShadowHostPseudoClass;
+    private _matchSelectorForElement;
+    private _matchSelectorForShadowRoot;
     private _matchSelector;
     private _matchLeaves;
+    private _traverseAllDescendants;
     private _findDescendantNodes;
+    private _matchDescendantCombinator;
+    private _matchChildCombinator;
+    private _matchAdjacentSiblingCombinator;
+    private _matchGeneralSiblingCombinator;
     private _matchCombinator;
+    private _traverseAndCollectNodes;
     private _findPrecede;
     private _findNodeWalker;
     private _matchSelf;
     private _findLineal;
+    private _findEntryNodesForPseudoElement;
+    private _findEntryNodesForId;
+    private _findEntryNodesForClass;
+    private _findEntryNodesForType;
+    private _findEntryNodesForOther;
     private _findEntryNodes;
     private _collectNodes;
     private _getCombinedNodes;

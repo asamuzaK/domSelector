@@ -1832,381 +1832,453 @@ export class Finder {
   };
 
   /**
-   * match selector
+   * Matches a selector for element nodes.
    * @private
-   * @param {object} ast - AST
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} ast - The AST.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchSelector(ast, node, opt = {}) {
+  _matchSelectorForElement = (ast, node, opt = {}) => {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
     const matched = new Set();
-    if (node.nodeType === ELEMENT_NODE) {
-      switch (astType) {
-        case ATTR_SELECTOR: {
-          const res = matchAttributeSelector(ast, node, opt);
-          if (res) {
-            matched.add(node);
-          }
-          break;
+    switch (astType) {
+      case ATTR_SELECTOR: {
+        if (matchAttributeSelector(ast, node, opt)) {
+          matched.add(node);
         }
-        case ID_SELECTOR: {
-          if (node.id === astName) {
-            matched.add(node);
-          }
-          break;
-        }
-        case CLASS_SELECTOR: {
-          if (node.classList.contains(astName)) {
-            matched.add(node);
-          }
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          const nodes = this._matchPseudoClassSelector(ast, node, opt);
-          return nodes;
-        }
-        case TYPE_SELECTOR: {
-          const res = matchTypeSelector(ast, node, opt);
-          if (res) {
-            matched.add(node);
-          }
-          break;
-        }
-        case PS_ELEMENT_SELECTOR:
-        default: {
-          try {
-            const { check } = opt;
-            if (check) {
-              const css = generateCSS(ast);
-              this.#pseudoElement.push(css);
-              matched.add(node);
-            } else {
-              matchPseudoElementSelector(astName, astType, opt);
-            }
-          } catch (e) {
-            this.onError(e);
-          }
-        }
+        break;
       }
-    } else if (
-      this.#shadow &&
-      astType === PS_CLASS_SELECTOR &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE
-    ) {
-      if (KEYS_LOGICAL.has(astName)) {
-        opt.isShadowRoot = true;
-        const nodes = this._matchPseudoClassSelector(ast, node, opt);
-        return nodes;
-      } else if (astName === 'host' || astName === 'host-context') {
-        const res = this._matchShadowHostPseudoClass(ast, node, opt);
-        if (res) {
-          this.#verifyShadowHost = true;
-          matched.add(res);
+      case ID_SELECTOR: {
+        if (node.id === astName) {
+          matched.add(node);
+        }
+        break;
+      }
+      case CLASS_SELECTOR: {
+        if (node.classList.contains(astName)) {
+          matched.add(node);
+        }
+        break;
+      }
+      case PS_CLASS_SELECTOR: {
+        return this._matchPseudoClassSelector(ast, node, opt);
+      }
+      case TYPE_SELECTOR: {
+        if (matchTypeSelector(ast, node, opt)) {
+          matched.add(node);
+        }
+        break;
+      }
+      // PS_ELEMENT_SELECTOR is handled by default.
+      default: {
+        try {
+          if (opt.check) {
+            const css = generateCSS(ast);
+            this.#pseudoElement.push(css);
+            matched.add(node);
+          } else {
+            matchPseudoElementSelector(astName, astType, opt);
+          }
+        } catch (e) {
+          this.onError(e);
         }
       }
     }
     return matched;
-  }
+  };
 
   /**
-   * match leaves
+   * Matches a selector for a shadow root.
    * @private
-   * @param {Array.<object>} leaves - AST leaves
-   * @param {object} node - node
-   * @param {object} [opt] - options
-   * @returns {boolean} - result
+   * @param {object} ast - The AST.
+   * @param {object} node - The DocumentFragment node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchLeaves(leaves, node, opt = {}) {
-    let result;
-    if (this.#invalidate) {
-      result = this.#invalidateResults.get(leaves);
-    } else {
-      result = this.#results.get(leaves);
+  _matchSelectorForShadowRoot = (ast, node, opt = {}) => {
+    const { name: astName } = ast;
+    if (KEYS_LOGICAL.has(astName)) {
+      opt.isShadowRoot = true;
+      return this._matchPseudoClassSelector(ast, node, opt);
     }
+    const matched = new Set();
+    if (astName === 'host' || astName === 'host-context') {
+      const res = this._matchShadowHostPseudoClass(ast, node, opt);
+      if (res) {
+        this.#verifyShadowHost = true;
+        matched.add(res);
+      }
+    }
+    return matched;
+  };
+
+  /**
+   * Matches a selector.
+   * @private
+   * @param {object} ast - The AST.
+   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchSelector = (ast, node, opt = {}) => {
+    if (node.nodeType === ELEMENT_NODE) {
+      return this._matchSelectorForElement(ast, node, opt);
+    }
+    if (
+      this.#shadow &&
+      node.nodeType === DOCUMENT_FRAGMENT_NODE &&
+      ast.type === PS_CLASS_SELECTOR
+    ) {
+      return this._matchSelectorForShadowRoot(ast, node, opt);
+    }
+    return new Set();
+  };
+
+  /**
+   * Matches leaves.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} node - The node.
+   * @param {object} [opt] - Options.
+   * @returns {boolean} The result.
+   */
+  _matchLeaves = (leaves, node, opt = {}) => {
+    const results = this.#invalidate ? this.#invalidateResults : this.#results;
+    let result = results.get(leaves);
     if (result && result.has(node)) {
       const { matched } = result.get(node);
       return matched;
-    } else {
-      let cacheable = true;
-      if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-        cacheable = false;
-      }
-      let bool;
-      for (const leaf of leaves) {
-        switch (leaf.type) {
-          case ATTR_SELECTOR:
-          case ID_SELECTOR: {
-            cacheable = false;
-            break;
-          }
-          case PS_CLASS_SELECTOR: {
-            if (KEYS_PS_UNCACHE.has(leaf.name)) {
-              cacheable = false;
-            }
-            break;
-          }
-          default:
-        }
-        bool = this._matchSelector(leaf, node, opt).has(node);
-        if (!bool) {
-          break;
-        }
-      }
-      if (cacheable) {
-        if (!result) {
-          result = new WeakMap();
-        }
-        result.set(node, {
-          matched: bool
-        });
-        if (this.#invalidate) {
-          this.#invalidateResults.set(leaves, result);
-        } else {
-          this.#results.set(leaves, result);
-        }
-      }
-      return bool;
     }
-  }
-
-  /**
-   * find descendant nodes
-   * @private
-   * @param {Array.<object>} leaves - AST leaves
-   * @param {object} baseNode - base Element node or Element.shadowRoot
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
-   */
-  _findDescendantNodes(leaves, baseNode, opt = {}) {
-    const [leaf, ...filterLeaves] = leaves;
-    const compound = filterLeaves.length > 0;
-    const { type: leafType } = leaf;
-    const leafName = unescapeSelector(leaf.name);
-    const nodes = new Set();
-    let pending = false;
-    if (this.#shadow || baseNode.nodeType !== ELEMENT_NODE) {
-      pending = true;
-    } else {
-      switch (leafType) {
-        case PS_ELEMENT_SELECTOR: {
-          matchPseudoElementSelector(leafName, leafType, opt);
+    let cacheable = true;
+    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
+      cacheable = false;
+    }
+    let bool;
+    const l = leaves.length;
+    for (let i = 0; i < l; i++) {
+      const leaf = leaves[i];
+      switch (leaf.type) {
+        case ATTR_SELECTOR:
+        case ID_SELECTOR: {
+          cacheable = false;
           break;
         }
-        case ID_SELECTOR: {
-          if (this.#root.nodeType === ELEMENT_NODE) {
-            pending = true;
-          } else {
-            const node = this.#root.getElementById(leafName);
-            if (node && node !== baseNode && baseNode.contains(node)) {
-              if (compound) {
-                const bool = this._matchLeaves(filterLeaves, node, opt);
-                if (bool) {
-                  nodes.add(node);
-                }
-              } else {
-                nodes.add(node);
-              }
-            }
+        case PS_CLASS_SELECTOR: {
+          if (KEYS_PS_UNCACHE.has(leaf.name)) {
+            cacheable = false;
           }
           break;
         }
         default: {
-          pending = true;
+          // No action needed for other types.
         }
+      }
+      bool = this._matchSelector(leaf, node, opt).has(node);
+      if (!bool) {
+        break;
       }
     }
-    if (pending) {
-      const walker = this._createTreeWalker(baseNode);
-      let refNode = traverseNode(baseNode, walker);
-      refNode = walker.firstChild();
-      while (refNode) {
-        const bool = this._matchLeaves(leaves, refNode, opt);
-        if (bool) {
-          nodes.add(refNode);
-        }
-        refNode = walker.nextNode();
+    if (cacheable) {
+      if (!result) {
+        result = new WeakMap();
       }
+      result.set(node, {
+        matched: bool
+      });
+      results.set(leaves, result);
+    }
+    return bool;
+  };
+
+  /**
+   * Traverses all descendant nodes and collects matches.
+   * @private
+   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _traverseAllDescendants = (baseNode, leaves, opt = {}) => {
+    const walker = this._createTreeWalker(baseNode);
+    traverseNode(baseNode, walker);
+    let currentNode = walker.firstChild();
+    const nodes = new Set();
+    while (currentNode) {
+      if (this._matchLeaves(leaves, currentNode, opt)) {
+        nodes.add(currentNode);
+      }
+      currentNode = walker.nextNode();
     }
     return nodes;
-  }
+  };
 
   /**
-   * match combinator
+   * Finds descendant nodes.
    * @private
-   * @param {object} twig - twig
-   * @param {object} node - Element node
-   * @param {object} [opt] - option
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchCombinator(twig, node, opt = {}) {
-    const { combo, leaves } = twig;
-    const { name: comboName } = combo;
+  _findDescendantNodes = (leaves, baseNode, opt = {}) => {
+    const [leaf, ...filterLeaves] = leaves;
+    const { type: leafType } = leaf;
+    switch (leafType) {
+      case ID_SELECTOR: {
+        const canUseGetElementById =
+          !this.#shadow &&
+          baseNode.nodeType === ELEMENT_NODE &&
+          this.#root.nodeType !== ELEMENT_NODE;
+        if (canUseGetElementById) {
+          const leafName = unescapeSelector(leaf.name);
+          const nodes = new Set();
+          const foundNode = this.#root.getElementById(leafName);
+          if (
+            foundNode &&
+            foundNode !== baseNode &&
+            baseNode.contains(foundNode)
+          ) {
+            const isCompoundSelector = filterLeaves.length > 0;
+            if (
+              !isCompoundSelector ||
+              this._matchLeaves(filterLeaves, foundNode, opt)
+            ) {
+              nodes.add(foundNode);
+            }
+          }
+          return nodes;
+        }
+        // Fallback to default traversal if fast path is not applicable.
+        return this._traverseAllDescendants(baseNode, leaves, opt);
+      }
+      case PS_ELEMENT_SELECTOR: {
+        const leafName = unescapeSelector(leaf.name);
+        matchPseudoElementSelector(leafName, leafType, opt);
+        return new Set();
+      }
+      default: {
+        return this._traverseAllDescendants(baseNode, leaves, opt);
+      }
+    }
+  };
+
+  /**
+   * Matches the descendant combinator ' '.
+   * @private
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchDescendantCombinator = (twig, node, opt = {}) => {
+    const { leaves } = twig;
     const { parentNode } = node;
     const { dir } = opt;
+    if (dir === DIR_NEXT) {
+      return this._findDescendantNodes(leaves, node, opt);
+    }
+    // DIR_PREV
+    const ancestors = [];
+    let refNode = parentNode;
+    while (refNode) {
+      if (this._matchLeaves(leaves, refNode, opt)) {
+        ancestors.push(refNode);
+      }
+      refNode = refNode.parentNode;
+    }
+    if (ancestors.length) {
+      // Reverse to maintain document order.
+      return new Set(ancestors.reverse());
+    }
+    return new Set();
+  };
+
+  /**
+   * Matches the child combinator '>'.
+   * @private
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchChildCombinator = (twig, node, opt = {}) => {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const { parentNode } = node;
     const matched = new Set();
     if (dir === DIR_NEXT) {
-      switch (comboName) {
-        case '+': {
-          const refNode = node.nextElementSibling;
-          if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-          }
-          break;
+      let refNode = node.firstElementChild;
+      while (refNode) {
+        if (this._matchLeaves(leaves, refNode, opt)) {
+          matched.add(refNode);
         }
-        case '~': {
-          if (parentNode) {
-            let refNode = node.nextElementSibling;
-            while (refNode) {
-              const bool = this._matchLeaves(leaves, refNode, opt);
-              if (bool) {
-                matched.add(refNode);
-              }
-              refNode = refNode.nextElementSibling;
-            }
-          }
-          break;
-        }
-        case '>': {
-          let refNode = node.firstElementChild;
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-            refNode = refNode.nextElementSibling;
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          const nodes = this._findDescendantNodes(leaves, node, opt);
-          if (nodes.size) {
-            return nodes;
-          }
-        }
+        refNode = refNode.nextElementSibling;
       }
     } else {
-      switch (comboName) {
-        case '+': {
-          const refNode = node.previousElementSibling;
-          if (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              matched.add(refNode);
-            }
-          }
-          break;
-        }
-        case '~': {
-          if (parentNode) {
-            let refNode = parentNode.firstElementChild;
-            while (refNode) {
-              if (refNode === node) {
-                break;
-              } else {
-                const bool = this._matchLeaves(leaves, refNode, opt);
-                if (bool) {
-                  matched.add(refNode);
-                }
-              }
-              refNode = refNode.nextElementSibling;
-            }
-          }
-          break;
-        }
-        case '>': {
-          if (parentNode) {
-            const bool = this._matchLeaves(leaves, parentNode, opt);
-            if (bool) {
-              matched.add(parentNode);
-            }
-          }
-          break;
-        }
-        case ' ':
-        default: {
-          const arr = [];
-          let refNode = parentNode;
-          while (refNode) {
-            const bool = this._matchLeaves(leaves, refNode, opt);
-            if (bool) {
-              arr.push(refNode);
-            }
-            refNode = refNode.parentNode;
-          }
-          if (arr.length) {
-            return new Set(arr.toReversed());
-          }
-        }
+      // DIR_PREV
+      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+        matched.add(parentNode);
       }
     }
     return matched;
-  }
+  };
 
   /**
-   * find matched node(s) preceding this.#node
+   * Matches the adjacent sibling combinator '+'.
    * @private
-   * @param {Array.<object>} leaves - AST leaves
-   * @param {object} node - node to start from
-   * @param {object} opt - options
-   * @param {boolean} [opt.force] - traverse only to next node
-   * @param {string} [opt.targetType] - target type
-   * @returns {Array.<object>} - collection of matched nodes
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
-  _findPrecede(leaves, node, opt = {}) {
+  _matchAdjacentSiblingCombinator = (twig, node, opt = {}) => {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const matched = new Set();
+    const refNode =
+      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+    if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+      matched.add(refNode);
+    }
+    return matched;
+  };
+
+  /**
+   * Matches the general sibling combinator '~'.
+   * @private
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchGeneralSiblingCombinator = (twig, node, opt = {}) => {
+    const { leaves } = twig;
+    const { dir } = opt;
+    const matched = new Set();
+    let refNode =
+      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+    while (refNode) {
+      if (this._matchLeaves(leaves, refNode, opt)) {
+        matched.add(refNode);
+      }
+      refNode =
+        dir === DIR_NEXT
+          ? refNode.nextElementSibling
+          : refNode.previousElementSibling;
+    }
+    return matched;
+  };
+
+  /**
+   * Matches a combinator.
+   * @private
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
+   */
+  _matchCombinator = (twig, node, opt = {}) => {
+    const {
+      combo: { name: comboName }
+    } = twig;
+    switch (comboName) {
+      case '+': {
+        return this._matchAdjacentSiblingCombinator(twig, node, opt);
+      }
+      case '~': {
+        return this._matchGeneralSiblingCombinator(twig, node, opt);
+      }
+      case '>': {
+        return this._matchChildCombinator(twig, node, opt);
+      }
+      case ' ':
+      default: {
+        return this._matchDescendantCombinator(twig, node, opt);
+      }
+    }
+  };
+
+  /**
+   * Traverses with a TreeWalker and collects nodes matching the leaves.
+   * @private
+   * @param {TreeWalker} walker - The TreeWalker instance to use.
+   * @param {Array} leaves - The AST leaves to match against.
+   * @param {object} options - Traversal options.
+   * @param {Node} options.startNode - The node to start traversal from.
+   * @param {string} options.targetType - The type of target ('all' or 'first').
+   * @param {Node} [options.boundaryNode] - The node to stop traversal at.
+   * @param {boolean} [options.force] - Force traversal to the next node.
+   * @returns {Array.<Node>} An array of matched nodes.
+   */
+  _traverseAndCollectNodes = (walker, leaves, options) => {
+    const { boundaryNode, force, startNode, targetType } = options;
+    const collectedNodes = [];
+    let currentNode = traverseNode(startNode, walker, !!force);
+    if (!currentNode) {
+      return [];
+    }
+    // Adjust starting node.
+    if (currentNode.nodeType !== ELEMENT_NODE) {
+      currentNode = walker.nextNode();
+    } else if (currentNode === startNode && currentNode !== this.#root) {
+      currentNode = walker.nextNode();
+    }
+    const matchOpt = {
+      warn: this.#warn
+    };
+    while (currentNode) {
+      // Stop when we reach the boundary node.
+      if (boundaryNode && currentNode === boundaryNode) {
+        break;
+      }
+      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
+        collectedNodes.push(currentNode);
+        // Stop after the first match if not collecting all.
+        if (targetType !== TARGET_ALL) {
+          break;
+        }
+      }
+      currentNode = walker.nextNode();
+    }
+    return collectedNodes;
+  };
+
+  /**
+   * Finds matched node(s) preceding this.#node.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} node - The node to start from.
+   * @param {object} opt - Options.
+   * @param {boolean} [opt.force] - If true, traverses only to the next node.
+   * @param {string} [opt.targetType] - The target type.
+   * @returns {Array.<object>} A collection of matched nodes.
+   */
+  _findPrecede = (leaves, node, opt = {}) => {
     const { force, targetType } = opt;
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
-    const walker = this.#rootWalker;
-    const nodes = [];
-    let refNode = traverseNode(node, walker, !!force);
-    if (refNode && refNode !== this.#node) {
-      if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = walker.nextNode();
-      } else if (refNode === node) {
-        if (refNode !== this.#root) {
-          refNode = walker.nextNode();
-        }
-      }
-      while (refNode) {
-        if (refNode === this.#node) {
-          break;
-        }
-        const matched = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
-        if (matched) {
-          nodes.push(refNode);
-          if (targetType !== TARGET_ALL) {
-            break;
-          }
-        }
-        refNode = walker.nextNode();
-      }
-    }
-    return nodes;
-  }
+    return this._traverseAndCollectNodes(this.#rootWalker, leaves, {
+      force,
+      targetType,
+      boundaryNode: this.#node,
+      startNode: node
+    });
+  };
 
   /**
-   * find matched node(s) in #nodeWalker
+   * Finds matched node(s) in #nodeWalker.
    * @private
-   * @param {Array.<object>} leaves - AST leaves
-   * @param {object} node - node to start from
-   * @param {object} opt - options
-   * @param {boolean} [opt.precede] - find precede
-   * @param {boolean} [opt.force] - traverse only to next node
-   * @param {string} [opt.targetType] - target type
-   * @returns {Array.<object>} - collection of matched nodes
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} node - The node to start from.
+   * @param {object} opt - Options.
+   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
+   * @returns {Array.<object>} A collection of matched nodes.
    */
-  _findNodeWalker(leaves, node, opt = {}) {
-    const { force, precede, targetType } = opt;
+  _findNodeWalker = (leaves, node, opt = {}) => {
+    const { precede, ...traversalOpts } = opt;
     if (precede) {
       const precedeNodes = this._findPrecede(leaves, this.#root, opt);
       if (precedeNodes.length) {
@@ -2216,277 +2288,304 @@ export class Finder {
     if (!this.#nodeWalker) {
       this.#nodeWalker = this._createTreeWalker(this.#node);
     }
-    const walker = this.#nodeWalker;
+    return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
+      startNode: node,
+      ...traversalOpts
+    });
+  };
+
+  /**
+   * Matches the node itself.
+   * @private
+   * @param {Array} leaves - The AST leaves.
+   * @param {boolean} check - Indicates if running in internal check().
+   * @returns {Array} An array containing [nodes, filtered, pseudoElement].
+   */
+  _matchSelf = (leaves, check = false) => {
+    const options = { check, warn: this.#warn };
+    const matched = this._matchLeaves(leaves, this.#node, options);
+    const nodes = matched ? [this.#node] : [];
+    return [nodes, matched, this.#pseudoElement];
+  };
+
+  /**
+   * Finds lineal nodes (self and ancestors).
+   * @private
+   * @param {Array} leaves - The AST leaves.
+   * @param {object} opt - Options.
+   * @returns {Array} An array containing [nodes, filtered].
+   */
+  _findLineal = (leaves, opt) => {
+    const { complex } = opt;
     const nodes = [];
-    let refNode = traverseNode(node, walker, !!force);
-    if (refNode) {
-      if (refNode.nodeType !== ELEMENT_NODE) {
-        refNode = walker.nextNode();
-      } else if (refNode === node) {
-        if (refNode !== this.#root) {
-          refNode = walker.nextNode();
+    const options = { warn: this.#warn };
+    const selfMatched = this._matchLeaves(leaves, this.#node, options);
+    if (selfMatched) {
+      nodes.push(this.#node);
+    }
+    if (!selfMatched || complex) {
+      let currentNode = this.#node.parentNode;
+      while (currentNode) {
+        if (this._matchLeaves(leaves, currentNode, options)) {
+          nodes.push(currentNode);
+        }
+        currentNode = currentNode.parentNode;
+      }
+    }
+    const filtered = nodes.length > 0;
+    return [nodes, filtered];
+  };
+
+  /**
+   * Finds entry nodes for pseudo-element selectors.
+   * @private
+   * @param {object} leaf - The pseudo-element leaf from the AST.
+   * @param {Array.<object>} filterLeaves - Leaves for compound selectors.
+   * @param {string} targetType - The type of target to find.
+   * @returns {object} The result { nodes, filtered, pending }.
+   */
+  _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF && this.#check) {
+      const css = generateCSS(leaf);
+      this.#pseudoElement.push(css);
+      if (filterLeaves.length) {
+        [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
+      } else {
+        nodes.push(this.#node);
+        filtered = true;
+      }
+    } else {
+      matchPseudoElementSelector(leaf.name, leaf.type, { warn: this.#warn });
+    }
+    return { nodes, filtered, pending: false };
+  };
+
+  /**
+   * Finds entry nodes for ID selectors.
+   * @private
+   * @param {object} twig - The current twig from the AST branch.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} The result { nodes, filtered, pending }.
+   */
+  _findEntryNodesForId = (twig, targetType, opt) => {
+    const { leaves } = twig;
+    const [leaf, ...filterLeaves] = leaves;
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else if (
+      targetType === TARGET_FIRST &&
+      this.#root.nodeType !== ELEMENT_NODE
+    ) {
+      const node = this.#root.getElementById(leaf.name);
+      if (node) {
+        if (filterLeaves.length) {
+          if (this._matchLeaves(filterLeaves, node, { warn: this.#warn })) {
+            nodes.push(node);
+            filtered = true;
+          }
+        } else {
+          nodes.push(node);
+          filtered = true;
         }
       }
-      while (refNode) {
-        const matched = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
-        if (matched) {
-          nodes.push(refNode);
-          if (targetType !== TARGET_ALL) {
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      filtered = nodes.length > 0;
+    }
+    return { nodes, filtered, pending: false };
+  };
+
+  /**
+   * Finds entry nodes for class selectors.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves for the selector.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} The result { nodes, filtered, pending }.
+   */
+  _findEntryNodesForClass = (leaves, targetType, opt) => {
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      filtered = nodes.length > 0;
+    }
+    return { nodes, filtered, pending: false };
+  };
+
+  /**
+   * Finds entry nodes for type selectors.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves for the selector.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} The result { nodes, filtered, pending }.
+   */
+  _findEntryNodesForType = (leaves, targetType, opt) => {
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      filtered = nodes.length > 0;
+    }
+    return { nodes, filtered, pending: false };
+  };
+
+  /**
+   * Finds entry nodes for other selector types (default case).
+   * @private
+   * @param {object} twig - The current twig from the AST branch.
+   * @param {string} targetType - The type of target to find.
+   * @param {object} opt - Additional options for finding nodes.
+   * @returns {object} The result { nodes, filtered, pending }.
+   */
+  _findEntryNodesForOther = (twig, targetType, opt) => {
+    const { leaves } = twig;
+    const [leaf, ...filterLeaves] = leaves;
+    const { complex, precede } = opt;
+    let nodes = [];
+    let filtered = false;
+    let pending = false;
+    if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
+      let shadowRoot = null;
+      if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
+      } else if (filterLeaves.length && this.#node.nodeType === ELEMENT_NODE) {
+        shadowRoot = this._matchShadowHostPseudoClass(
+          leaf,
+          this.#node.shadowRoot
+        );
+      }
+      if (shadowRoot) {
+        let bool = true;
+        const l = filterLeaves.length;
+        for (let i = 0; i < l; i++) {
+          const filterLeaf = filterLeaves[i];
+          switch (filterLeaf.name) {
+            case 'host':
+            case 'host-context': {
+              const matchedNode = this._matchShadowHostPseudoClass(
+                filterLeaf,
+                shadowRoot
+              );
+              bool = matchedNode === shadowRoot;
+              break;
+            }
+            case 'has': {
+              bool = this._matchPseudoClassSelector(
+                filterLeaf,
+                shadowRoot,
+                {}
+              ).has(shadowRoot);
+              break;
+            }
+            default: {
+              bool = false;
+            }
+          }
+          if (!bool) {
             break;
           }
         }
-        refNode = walker.nextNode();
-      }
-    }
-    return nodes;
-  }
-
-  /**
-   * match self
-   * @private
-   * @param {Array} leaves - AST leaves
-   * @param {boolean} check - running in internal check()
-   * @returns {Array} - [nodes, filtered]
-   */
-  _matchSelf(leaves, check = false) {
-    const nodes = [];
-    let filtered = false;
-    const bool = this._matchLeaves(leaves, this.#node, {
-      check,
-      warn: this.#warn
-    });
-    if (bool) {
-      nodes.push(this.#node);
-      filtered = true;
-    }
-    return [nodes, filtered, this.#pseudoElement];
-  }
-
-  /**
-   * find lineal
-   * @private
-   * @param {Array} leaves - AST leaves
-   * @param {object} opt - options
-   * @returns {Array} - [nodes, filtered]
-   */
-  _findLineal(leaves, opt) {
-    const { complex } = opt;
-    const nodes = [];
-    let filtered = false;
-    let bool = this._matchLeaves(leaves, this.#node, {
-      warn: this.#warn
-    });
-    if (bool) {
-      nodes.push(this.#node);
-      filtered = true;
-    }
-    if (!bool || complex) {
-      let refNode = this.#node.parentNode;
-      while (refNode) {
-        bool = this._matchLeaves(leaves, refNode, {
-          warn: this.#warn
-        });
         if (bool) {
-          nodes.push(refNode);
+          nodes.push(shadowRoot);
           filtered = true;
         }
-        if (refNode.parentNode) {
-          refNode = refNode.parentNode;
-        } else {
-          break;
-        }
       }
+    } else if (targetType === TARGET_SELF) {
+      [nodes, filtered] = this._matchSelf(leaves);
+    } else if (targetType === TARGET_LINEAL) {
+      [nodes, filtered] = this._findLineal(leaves, { complex });
+    } else if (targetType === TARGET_FIRST) {
+      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      filtered = nodes.length > 0;
+    } else {
+      pending = true;
     }
-    return [nodes, filtered];
-  }
+    return { nodes, filtered, pending };
+  };
 
   /**
-   * find entry nodes
+   * Finds entry nodes.
    * @private
-   * @param {object} twig - twig
-   * @param {string} targetType - target type
-   * @param {object} [opt] - options
-   * @param {boolean} [opt.complex] - complex selector
-   * @param {string} [opt.dir] - find direction
-   * @returns {object} - nodes and info about it's state.
+   * @param {object} twig - The twig object.
+   * @param {string} targetType - The target type.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
+   * @param {string} [opt.dir] - The find direction.
+   * @returns {object} An object with nodes and their state.
    */
-  _findEntryNodes(twig, targetType, opt = {}) {
+  _findEntryNodes = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
-    const compound = filterLeaves.length > 0;
-    const { name: leafName, type: leafType } = leaf;
     const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&
       this.#node.nodeType === ELEMENT_NODE &&
       this.#node !== this.#root;
-    let nodes = [];
-    let filtered = false;
-    let pending = false;
-    switch (leafType) {
+    let result;
+    switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
-        if (targetType === TARGET_SELF && this.#check) {
-          const css = generateCSS(leaf);
-          this.#pseudoElement.push(css);
-          if (filterLeaves.length) {
-            [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
-          } else {
-            nodes.push(this.#node);
-            filtered = true;
-          }
-        } else {
-          matchPseudoElementSelector(leafName, leafType, {
-            warn: this.#warn
-          });
-        }
+        result = this._findEntryNodesForPseudoElement(
+          leaf,
+          filterLeaves,
+          targetType
+        );
         break;
       }
       case ID_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else if (
-          targetType === TARGET_FIRST &&
-          this.#root.nodeType !== ELEMENT_NODE
-        ) {
-          const node = this.#root.getElementById(leafName);
-          if (node) {
-            if (compound) {
-              const bool = this._matchLeaves(filterLeaves, node, {
-                warn: this.#warn
-              });
-              if (bool) {
-                nodes.push(node);
-                filtered = true;
-              }
-            } else {
-              nodes.push(node);
-              filtered = true;
-            }
-          }
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForId(twig, targetType, {
+          complex,
+          precede
+        });
         break;
       }
       case CLASS_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForClass(leaves, targetType, {
+          complex,
+          precede
+        });
         break;
       }
       case TYPE_SELECTOR: {
-        if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        }
+        result = this._findEntryNodesForType(leaves, targetType, {
+          complex,
+          precede
+        });
         break;
       }
       default: {
-        if (
-          targetType !== TARGET_LINEAL &&
-          (leafName === 'host' || leafName === 'host-context')
-        ) {
-          let shadowRoot;
-          if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-            shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
-          } else if (compound && this.#node.nodeType === ELEMENT_NODE) {
-            shadowRoot = this._matchShadowHostPseudoClass(
-              leaf,
-              this.#node.shadowRoot
-            );
-          }
-          if (shadowRoot) {
-            let bool;
-            if (compound) {
-              for (const item of filterLeaves) {
-                if (/^host(?:-context)?$/.test(item.name)) {
-                  const node = this._matchShadowHostPseudoClass(
-                    item,
-                    shadowRoot
-                  );
-                  bool = node === shadowRoot;
-                } else if (item.name === 'has') {
-                  bool = this._matchPseudoClassSelector(
-                    item,
-                    shadowRoot,
-                    {}
-                  ).has(shadowRoot);
-                } else {
-                  bool = false;
-                }
-                if (!bool) {
-                  break;
-                }
-              }
-            } else {
-              bool = true;
-            }
-            if (bool) {
-              nodes.push(shadowRoot);
-              filtered = true;
-            }
-          }
-        } else if (targetType === TARGET_SELF) {
-          [nodes, filtered] = this._matchSelf(leaves);
-        } else if (targetType === TARGET_LINEAL) {
-          [nodes, filtered] = this._findLineal(leaves, {
-            complex
-          });
-        } else if (targetType === TARGET_FIRST) {
-          nodes = this._findNodeWalker(leaves, this.#node, {
-            precede,
-            targetType
-          });
-          if (nodes.length) {
-            filtered = true;
-          }
-        } else {
-          pending = true;
-        }
+        result = this._findEntryNodesForOther(twig, targetType, {
+          complex,
+          precede
+        });
       }
     }
     return {
-      compound,
-      filtered,
-      nodes,
-      pending
+      compound: filterLeaves.length > 0,
+      filtered: result.filtered,
+      nodes: result.nodes,
+      pending: result.pending
     };
-  }
+  };
 
   /**
    * collect nodes
