@@ -33,7 +33,6 @@ import {
   SCOPE,
   SELECTOR_LIST,
   SIBLING,
-  SUB_CLASS,
   TARGET_ALL,
   TARGET_FIRST,
   TEXT_NODE,
@@ -62,7 +61,6 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
 ]);
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
-const REG_SIMPLE_CLASS = new RegExp(`^${SUB_CLASS}$`);
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
@@ -1055,10 +1053,6 @@ export const filterSelector = (selector, target) => {
     /null|undefined/.test(selector) ||
     target === TARGET_FIRST
   ) {
-    return false;
-  }
-  // Exclude simple class selector for TARGET_ALL.
-  if (target === TARGET_ALL && REG_SIMPLE_CLASS.test(selector)) {
     return false;
   }
   // Exclude missing close square bracket.

@@ -32,7 +32,7 @@ export class DOMSelector {
   #cache;
 
   /**
-   * construct
+   * constructor
    * @param {object} window - window
    * @param {object} document - document
    * @param {object} [opt] - options
@@ -101,7 +101,6 @@ export class DOMSelector {
     }
     let res;
     try {
-      // FIXME: remove later
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
@@ -158,7 +157,6 @@ export class DOMSelector {
     }
     let res;
     try {
-      // FIXME: remove later
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
@@ -213,7 +211,6 @@ export class DOMSelector {
     }
     let res;
     try {
-      // FIXME: remove later
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
@@ -249,7 +246,6 @@ export class DOMSelector {
     }
     let res;
     try {
-      // FIXME: remove later
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
@@ -304,7 +300,6 @@ export class DOMSelector {
     }
     let res;
     try {
-      // FIXME: remove later
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }

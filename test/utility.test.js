@@ -3249,9 +3249,9 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('.foo', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {

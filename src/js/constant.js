@@ -67,7 +67,6 @@ export const N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\
 // SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
 export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
-export const SUB_CLASS = '(?:\\.[\\w-]+)';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
@@ -86,15 +85,6 @@ export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
 export const LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 export const LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
-
-/* attributes that change frequently */
-export const ATTR_STATE_CHANGE = Object.freeze([
-  'checked',
-  'class',
-  'disabled',
-  'hidden',
-  'style'
-]);
 
 /* forms and input types */
 export const FORM_PARTS = Object.freeze([
