@@ -96,6 +96,11 @@ const KEYS_PS_UNCACHE = new Set([
   'link',
   'scope'
 ]);
+const KEYS_PS_NTH_OF_TYPE = new Set([
+  'first-of-type',
+  'last-of-type',
+  'only-of-type'
+]);
 /*
 const KEYS_PS_FORM = new Set([
   'checked',
@@ -1048,6 +1053,63 @@ export class Finder {
           }
         }
       }
+    } else if (KEYS_PS_NTH_OF_TYPE.has(astName)) {
+      if (node === this.#root) {
+        matched.add(node);
+      } else if (parentNode) {
+        switch (astName) {
+          case 'first-of-type': {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+            break;
+          }
+          case 'last-of-type': {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1,
+                reverse: true
+              },
+              node
+            );
+            if (node1) {
+              matched.add(node1);
+            }
+            break;
+          }
+          // 'only-of-type' is handled by default.
+          default: {
+            const [node1] = this._collectNthOfType(
+              {
+                a: 0,
+                b: 1
+              },
+              node
+            );
+            if (node1 === node) {
+              const [node2] = this._collectNthOfType(
+                {
+                  a: 0,
+                  b: 1,
+                  reverse: true
+                },
+                node
+              );
+              if (node2 === node) {
+                matched.add(node);
+              }
+            }
+          }
+        }
+      }
     } else {
       switch (astName) {
         case 'disabled':
@@ -1572,68 +1634,6 @@ export class Finder {
           }
           break;
         }
-        case 'first-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
-            if (node1) {
-              matched.add(node1);
-            }
-          } else if (node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'last-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1,
-                reverse: true
-              },
-              node
-            );
-            if (node1) {
-              matched.add(node1);
-            }
-          } else if (node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'only-of-type': {
-          if (parentNode) {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
-            if (node1 === node) {
-              const [node2] = this._collectNthOfType(
-                {
-                  a: 0,
-                  b: 1,
-                  reverse: true
-                },
-                node
-              );
-              if (node2 === node) {
-                matched.add(node);
-              }
-            }
-          } else if (node === this.#root) {
-            matched.add(node);
-          }
-          break;
-        }
         case 'defined': {
           if (node.hasAttribute('is') || localName.includes('-')) {
             if (isCustomElement(node)) {
@@ -1654,12 +1654,12 @@ export class Finder {
           }
           break;
         }
+        // Ignore :host and :host-context.
         case 'host':
         case 'host-context': {
-          // ignore
           break;
         }
-        // legacy pseudo-elements
+        // Legacy pseudo-elements.
         case 'after':
         case 'before':
         case 'first-letter':
@@ -1675,7 +1675,7 @@ export class Finder {
           }
           break;
         }
-        // not supported
+        // Not supported.
         case 'autofill':
         case 'blank':
         case 'buffering':
