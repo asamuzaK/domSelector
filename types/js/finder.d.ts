@@ -50,10 +50,15 @@ export class Finder {
     private _findEntryNodesForType;
     private _findEntryNodesForOther;
     private _findEntryNodes;
+    private _determineTraversalStrategy;
+    private _processPendingItems;
     private _collectNodes;
     private _getCombinedNodes;
     private _matchNodeNext;
     private _matchNodePrev;
-    find(targetType: string): Set<object>;
+    private _processComplexBranchAll;
+    private _findChildNodeContainedByNode;
+    private _processComplexBranchFirst;
+    find: (targetType: string) => Set<object>;
     #private;
 }
