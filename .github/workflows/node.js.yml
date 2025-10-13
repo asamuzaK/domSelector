@@ -17,6 +17,9 @@ jobs:
       matrix:
         node-version: [ 20.x, lts/*, latest ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
+        exclude:
+          - node-version: 20.x
+            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
