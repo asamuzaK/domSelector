@@ -2382,6 +2382,10 @@ export class Finder {
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
+      // Invalidate cache for class selector.
+      if (targetType === TARGET_FIRST) {
+        this.#invalidate = true;
+      }
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
       filtered = nodes.length > 0;
     }
@@ -2521,10 +2525,6 @@ export class Finder {
         break;
       }
       case CLASS_SELECTOR: {
-        // Invalidate cache for simple class selector.
-        if (!complex && !filterLeaves.length) {
-          this.#invalidate = true;
-        }
         result = this._findEntryNodesForClass(leaves, targetType, {
           complex,
           precede
