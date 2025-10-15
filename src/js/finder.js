@@ -969,6 +969,7 @@ export class Finder {
             break;
           }
           case 'current':
+          case 'heading':
           case 'nth-col':
           case 'nth-last-col': {
             if (warn) {
@@ -1642,6 +1643,7 @@ export class Finder {
         case 'fullscreen':
         case 'future':
         case 'has-slotted':
+        case 'heading':
         case 'modal':
         case 'muted':
         case 'past':
