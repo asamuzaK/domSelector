@@ -8,6 +8,7 @@ export class Finder {
         noexcept?: boolean;
         warn?: boolean;
     }) => object;
+    clearResults: (all?: boolean) => void;
     private _handleFocusEvent;
     private _handleKeyboardEvent;
     private _handleMouseEvent;

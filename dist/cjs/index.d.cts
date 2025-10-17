@@ -1,5 +1,6 @@
 declare class DOMSelector {
     constructor(window: object, document: object, opt?: object);
+    clear(): void;
     check(selector: string, node: object, opt?: object): {
         match: boolean;
         pseudoElement: string | null;

@@ -1599,8 +1599,6 @@ var Finder = class {
     this.#window = window;
     this.#astCache = /* @__PURE__ */ new WeakMap();
     this.#documentCache = /* @__PURE__ */ new WeakMap();
-    this.#invalidateResults = /* @__PURE__ */ new WeakMap();
-    this.#results = /* @__PURE__ */ new WeakMap();
     this.#event = null;
     this.#focus = null;
     this.#lastFocusVisible = null;
@@ -1619,6 +1617,7 @@ var Finder = class {
       }
     ]);
     this._registerEventListeners();
+    this.clearResults(true);
   }
   /**
    * Handles errors.
@@ -1668,13 +1667,24 @@ var Finder = class {
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
-    this.#invalidateResults = /* @__PURE__ */ new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = /* @__PURE__ */ new WeakMap();
     this.#nodeWalker = null;
     this.#rootWalker = null;
     this.#verifyShadowHost = null;
+    this.clearResults();
     return this;
+  };
+  /**
+   * Clear cached results.
+   * @param {boolean} all - clear all results
+   * @returns {void}
+   */
+  clearResults = (all = false) => {
+    this.#invalidateResults = /* @__PURE__ */ new WeakMap();
+    if (all) {
+      this.#results = /* @__PURE__ */ new WeakMap();
+    }
   };
   /**
    * Handles focus events.
@@ -2385,6 +2395,7 @@ var Finder = class {
             break;
           }
           case "current":
+          case "heading":
           case "nth-col":
           case "nth-last-col": {
             if (warn) {
@@ -2966,6 +2977,7 @@ var Finder = class {
         case "fullscreen":
         case "future":
         case "has-slotted":
+        case "heading":
         case "modal":
         case "muted":
         case "past":
@@ -3782,9 +3794,6 @@ var Finder = class {
         break;
       }
       case CLASS_SELECTOR: {
-        if (!complex && !filterLeaves.length) {
-          this.#invalidate = true;
-        }
         result = this._findEntryNodesForClass(leaves, targetType, {
           complex,
           precede
@@ -4332,6 +4341,13 @@ var DOMSelector = class {
     this.#cache = new import_lru_cache.LRUCache({
       max: MAX_CACHE
     });
+  }
+  /**
+   * clear
+   * @returns {void}
+   */
+  clear() {
+    this.#finder.clearResults(true);
   }
   /**
    * @typedef CheckResult
