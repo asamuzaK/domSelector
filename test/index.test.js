@@ -91,6 +91,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res.onError, undefined, 'onError is undefined');
       assert.strictEqual(res.setup, undefined, 'setup is undefined');
       assert.strictEqual(res.find, undefined, 'find is undefined');
+      assert.strictEqual(typeof res.clear, 'function', 'clear');
       assert.strictEqual(typeof res.check, 'function', 'check');
       assert.strictEqual(typeof res.matches, 'function', 'matches');
       assert.strictEqual(typeof res.closest, 'function', 'closest');
@@ -110,6 +111,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res.onError, undefined, 'onError is undefined');
       assert.strictEqual(res.setup, undefined, 'setup is undefined');
       assert.strictEqual(res.find, undefined, 'find is undefined');
+      assert.strictEqual(typeof res.clear, 'function', 'clear');
       assert.strictEqual(typeof res.check, 'function', 'check');
       assert.strictEqual(typeof res.matches, 'function', 'matches');
       assert.strictEqual(typeof res.closest, 'function', 'closest');
@@ -119,6 +121,20 @@ describe('DOMSelector', () => {
         'function',
         'querySelectorAll'
       );
+    });
+  });
+
+  describe('clear', () => {
+    it('should get result', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.setAttribute('class', 'foo');
+      assert.deepEqual(domSelector.querySelector('.foo', parent), node);
+      node.removeAttribute('class');
+      domSelector.clear();
+      assert.deepEqual(domSelector.querySelector('.foo', parent), null);
     });
   });
 

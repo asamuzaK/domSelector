@@ -141,8 +141,6 @@ export class Finder {
     this.#window = window;
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
-    this.#invalidateResults = new WeakMap();
-    this.#results = new WeakMap();
     this.#event = null;
     this.#focus = null;
     this.#lastFocusVisible = null;
@@ -161,6 +159,7 @@ export class Finder {
       }
     ]);
     this._registerEventListeners();
+    this.clearResults(true);
   }
 
   /**
@@ -213,13 +212,25 @@ export class Finder {
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
-    this.#invalidateResults = new WeakMap();
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
     this.#nodeWalker = null;
     this.#rootWalker = null;
     this.#verifyShadowHost = null;
+    this.clearResults();
     return this;
+  };
+
+  /**
+   * Clear cached results.
+   * @param {boolean} all - clear all results
+   * @returns {void}
+   */
+  clearResults = (all = false) => {
+    this.#invalidateResults = new WeakMap();
+    if (all) {
+      this.#results = new WeakMap();
+    }
   };
 
   /**
@@ -2521,10 +2532,6 @@ export class Finder {
         break;
       }
       case CLASS_SELECTOR: {
-        // Invalidate cache for simple class selector.
-        if (!complex && !filterLeaves.length) {
-          this.#invalidate = true;
-        }
         result = this._findEntryNodesForClass(leaves, targetType, {
           complex,
           precede
