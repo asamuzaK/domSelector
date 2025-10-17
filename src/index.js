@@ -21,6 +21,12 @@ import {
 } from './js/constant.js';
 const MAX_CACHE = 1024;
 
+/**
+ * @typedef {object} CheckResult
+ * @property {boolean} match - The match result.
+ * @property {string?} pseudoElement - The pseudo-element, if any.
+ */
+
 /* DOMSelector */
 export class DOMSelector {
   /* private fields */
@@ -32,10 +38,10 @@ export class DOMSelector {
   #cache;
 
   /**
-   * constructor
-   * @param {object} window - window
-   * @param {object} document - document
-   * @param {object} [opt] - options
+   * Creates an instance of DOMSelector.
+   * @param {Window} window - The window object.
+   * @param {Document} document - The document object.
+   * @param {object} [opt] - Options.
    */
   constructor(window, document, opt = {}) {
     const { idlUtils } = opt;
@@ -50,28 +56,21 @@ export class DOMSelector {
   }
 
   /**
-   * clear
+   * Clears the internal cache of finder results.
    * @returns {void}
    */
-  clear() {
+  clear = () => {
     this.#finder.clearResults(true);
-  }
+  };
 
   /**
-   * @typedef CheckResult
-   * @type {object}
-   * @property {boolean} match - match result excluding pseudo-element selector
-   * @property {string?} pseudoElement - pseudo-element selector
+   * Checks if an element matches a CSS selector.
+   * @param {string} selector - The CSS selector to check against.
+   * @param {Element} node - The element node to check.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {CheckResult} An object containing the check result.
    */
-
-  /**
-   * check
-   * @param {string} selector - CSS selector
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {CheckResult} - check result
-   */
-  check(selector, node, opt = {}) {
+  check = (selector, node, opt = {}) => {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
@@ -121,16 +120,16 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return res;
-  }
+  };
 
   /**
-   * matches
-   * @param {string} selector - CSS selector
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {boolean} - `true` if matched `false` otherwise
+   * Returns true if the element matches the selector.
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Element} node - The element node to test.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {boolean} `true` if the element matches, or `false` otherwise.
    */
-  matches(selector, node, opt = {}) {
+  matches = (selector, node, opt = {}) => {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
@@ -175,16 +174,16 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return !!res;
-  }
+  };
 
   /**
-   * closest
-   * @param {string} selector - CSS selector
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {?object} - matched node
+   * Traverses up the DOM tree to find the first node that matches the selector.
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Element} node - The element from which to start traversing.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {?Element} The first matching ancestor element, or `null`.
    */
-  closest(selector, node, opt = {}) {
+  closest = (selector, node, opt = {}) => {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
@@ -238,16 +237,16 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return res ?? null;
-  }
+  };
 
   /**
-   * query selector
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @returns {?object} - matched node
+   * Returns the first element within the subtree that matches the selector.
+   * @param {string} selector - The CSS selector to match.
+   * @param {Document|DocumentFragment|Element} node - The node to find within.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {?Element} The first matching element, or `null`.
    */
-  querySelector(selector, node, opt = {}) {
+  querySelector = (selector, node, opt = {}) => {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
@@ -266,17 +265,17 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return res ?? null;
-  }
+  };
 
   /**
-   * query selector all
-   * NOTE: returns Array, not NodeList
-   * @param {string} selector - CSS selector
-   * @param {object} node - Document, DocumentFragment, Element node
-   * @param {object} [opt] - options
-   * @returns {Array.<object|undefined>} - collection of matched nodes
+   * Returns an array of elements within the subtree that match the selector.
+   * Note: This method returns an Array, not a NodeList.
+   * @param {string} selector - The CSS selector to match.
+   * @param {Document|DocumentFragment|Element} node - The node to find within.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {Array<Element>} An array of elements, or an empty array.
    */
-  querySelectorAll(selector, node, opt = {}) {
+  querySelectorAll = (selector, node, opt = {}) => {
     if (!node?.nodeType) {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
@@ -320,5 +319,5 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return res ?? [];
-  }
+  };
 }
