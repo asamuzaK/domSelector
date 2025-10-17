@@ -50,6 +50,14 @@ export class DOMSelector {
   }
 
   /**
+   * clear
+   * @returns {void}
+   */
+  clear() {
+    this.#finder.clearResults(true);
+  }
+
+  /**
    * @typedef CheckResult
    * @type {object}
    * @property {boolean} match - match result excluding pseudo-element selector
