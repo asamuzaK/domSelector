@@ -3072,6 +3072,81 @@ describe('matcher', () => {
       const res = func(ast, node);
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should match', () => {
+      const ast = {
+        flags: null,
+        loc: null,
+        matcher: null,
+        name: {
+          loc: null,
+          name: '\\:src',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('img');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.setAttribute(':src', './foo');
+      const res = func(ast, node);
+      assert.deepEqual(res, true, 'result');
+    });
+
+    it('should throw', () => {
+      const ast = {
+        flags: null,
+        loc: null,
+        matcher: null,
+        name: {
+          loc: null,
+          name: 'bar|\\:src',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('img');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.setAttribute('bar::src', './foo');
+      assert.throws(
+        () => func(ast, node),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector [bar|\\:src]',
+            'message'
+          );
+          return true;
+        },
+        'result'
+      );
+    });
+
+    it('should not match', () => {
+      const ast = {
+        flags: null,
+        loc: null,
+        matcher: null,
+        name: {
+          loc: null,
+          name: '*|\\:src',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('img');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.setAttribute('bar::src', './foo');
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
   });
 
   describe('match type selector', () => {

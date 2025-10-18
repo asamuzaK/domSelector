@@ -963,6 +963,72 @@ describe('create AST from CSS selector', () => {
         'result'
       );
     });
+
+    it('should get selector list', () => {
+      const res = func('img[\\:src]');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'img',
+                type: TYPE_SELECTOR
+              },
+              {
+                flags: null,
+                loc: null,
+                matcher: null,
+                name: {
+                  loc: null,
+                  name: '\\:src',
+                  type: IDENT
+                },
+                type: ATTR_SELECTOR,
+                value: null
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      });
+    });
+
+    it('should get selector list', () => {
+      const res = func('img[foo|\\:src]');
+      assert.deepEqual(res, {
+        children: [
+          {
+            children: [
+              {
+                loc: null,
+                name: 'img',
+                type: TYPE_SELECTOR
+              },
+              {
+                flags: null,
+                loc: null,
+                matcher: null,
+                name: {
+                  loc: null,
+                  name: 'foo|\\:src',
+                  type: IDENT
+                },
+                type: ATTR_SELECTOR,
+                value: null
+              }
+            ],
+            loc: null,
+            type: SELECTOR
+          }
+        ],
+        loc: null,
+        type: SELECTOR_LIST
+      });
+    });
   });
 
   describe('type selector', () => {

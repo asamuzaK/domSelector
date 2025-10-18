@@ -354,7 +354,9 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         }
         case '*': {
           if (itemName.indexOf(':') > -1) {
-            if (itemName.endsWith(`:${astLocalName}`)) {
+            const [, ...restItemName] = itemName.split(':');
+            const itemLocalName = restItemName.join(':').replace(/^:/, '');
+            if (itemLocalName === astLocalName) {
               attrValues.add(itemValue);
             }
           } else if (astLocalName === itemName) {
@@ -375,8 +377,9 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
             );
           }
           if (itemName.indexOf(':') > -1) {
-            const [itemPrefix, itemLocalName] = itemName.split(':');
-            // Ignore the special 'xml:lang' attribute.
+            const [itemPrefix, ...restItemName] = itemName.split(':');
+            const itemLocalName = restItemName.join(':').replace(/^:/, '');
+            // Ignore the 'xml:lang' attribute.
             if (itemPrefix === 'xml' && itemLocalName === 'lang') {
               continue;
             } else if (
@@ -400,9 +403,13 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         itemValue = itemValue.toLowerCase();
       }
       if (itemName.indexOf(':') > -1) {
-        const [itemPrefix, itemLocalName] = itemName.split(':');
-        // Ignore the special 'xml:lang' attribute.
-        if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+        const [itemPrefix, ...restItemName] = itemName.split(':');
+        const itemLocalName = restItemName.join(':').replace(/^:/, '');
+        // The attribute is starting with ':'.
+        if (!itemPrefix && astAttrName === `:${itemLocalName}`) {
+          attrValues.add(itemValue);
+          // Ignore the 'xml:lang' attribute.
+        } else if (itemPrefix === 'xml' && itemLocalName === 'lang') {
           continue;
         } else if (astAttrName === itemLocalName) {
           attrValues.add(itemValue);
