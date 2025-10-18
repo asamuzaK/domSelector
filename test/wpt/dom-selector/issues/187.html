@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>187</title>
+<script src="https://wpt.live/resources/testharness.js"></script>
+<script src="https://wpt.live/resources/testharnessreport.js"></script>
+<!-- Regression test for https://github.com/asamuzaK/domSelector/issues/187 -->
+
+<div>
+  <img id="img" :src="./foo">
+  <img id="img2" xmlns:bar="https://example.com" bar::src="./bar">
+</div>
+
+<script>
+"use strict";
+
+const img = document.getElementById('img');
+const img2 = document.getElementById('img2');
+
+test(() => {
+  assert_equals(img.matches('img'), true, 'img');
+  assert_equals(img.attributes.length, 2, 'length');
+  assert_equals(img.matches('img[\\:src]'), true, 'attr');
+});
+
+test(() => {
+  assert_equals(img2.matches('img'), true, 'img');
+  assert_equals(img2.attributes.length, 3, 'length');
+  assert_equals(img2.matches('img[*|\\:src]'), false, '* prefixed attr');
+  assert_throws_dom("SyntaxError", () => {
+    img2.matches('img[bar|\\:src]');
+  }, 'attr');
+}, 'namespaced');
+</script>
