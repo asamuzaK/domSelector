@@ -213,8 +213,10 @@ export const parseSelector = sel => {
 export const walkAST = (ast = {}) => {
   const branches = new Set();
   const info = {
+    hasForgivenPseudoFunc: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
+    hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
     hasNestedSelector: false,
     hasStatePseudoClass: false
@@ -246,6 +248,10 @@ export const walkAST = (ast = {}) => {
             info.hasLogicalPseudoFunc = true;
             if (node.name === 'has') {
               info.hasHasPseudoFunc = true;
+            } else if (node.name === 'not') {
+              info.hasNotPseudoFunc = true;
+            } else {
+              info.hasForgivenPseudoFunc = true;
             }
           } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
             info.hasStatePseudoClass = true;

@@ -742,7 +742,8 @@ var initNwsapi = (window, document) => {
   return nw;
 };
 var filterSelector = (selector, target) => {
-  if (!selector || typeof selector !== "string" || /null|undefined/.test(selector) || target === TARGET_FIRST) {
+  const isQuerySelectorType = target === TARGET_FIRST || target === TARGET_ALL;
+  if (!selector || typeof selector !== "string" || /null|undefined/.test(selector)) {
     return false;
   }
   if (selector.includes("[")) {
@@ -757,12 +758,12 @@ var filterSelector = (selector, target) => {
   }
   if (selector.includes(":")) {
     let complex = false;
-    if (target !== TARGET_ALL) {
+    if (target !== isQuerySelectorType) {
       complex = REG_COMPLEX.test(selector);
     }
-    if (target === TARGET_ALL && REG_DESCEND.test(selector) && !REG_SIBLING.test(selector)) {
+    if (isQuerySelectorType && REG_DESCEND.test(selector) && !REG_SIBLING.test(selector)) {
       return false;
-    } else if (target !== TARGET_ALL && /:has\(/.test(selector)) {
+    } else if (!isQuerySelectorType && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }
@@ -929,8 +930,10 @@ var parseSelector = (sel) => {
 var walkAST = (ast = {}) => {
   const branches = /* @__PURE__ */ new Set();
   const info = {
+    hasForgivenPseudoFunc: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
+    hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
     hasNestedSelector: false,
     hasStatePseudoClass: false
@@ -962,6 +965,10 @@ var walkAST = (ast = {}) => {
             info.hasLogicalPseudoFunc = true;
             if (node.name === "has") {
               info.hasHasPseudoFunc = true;
+            } else if (node.name === "not") {
+              info.hasNotPseudoFunc = true;
+            } else {
+              info.hasForgivenPseudoFunc = true;
             }
           } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
             info.hasStatePseudoClass = true;
@@ -1669,7 +1676,7 @@ var Finder = class {
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
-    this.#documentURL = new URL(this.#document.URL);
+    this.#documentURL = null;
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
@@ -1748,11 +1755,10 @@ var Finder = class {
    * @private
    * @param {Array.<Array.<object>>} branches - The branches from walkAST.
    * @param {string} selector - The original selector for error reporting.
-   * @returns {{ast: Array, descendant: boolean, invalidate: boolean}}
-   * An object with the AST, descendant flag, and invalidate flag.
+   * @returns {{ast: Array, descendant: boolean}}
+   * An object with the AST, descendant flag.
    */
   _processSelectorBranches = (branches, selector) => {
-    let invalidate = false;
     let descendant = false;
     const ast = [];
     const l = branches.length;
@@ -1770,9 +1776,7 @@ var Finder = class {
               this.onError(generateException(msg, SYNTAX_ERR, this.#window));
               return { ast: [], descendant: false, invalidate: false };
             }
-            if (item.name === "+" || item.name === "~") {
-              invalidate = true;
-            } else {
+            if (item.name === " " || item.name === ">") {
               descendant = true;
             }
             branch.push({ combo: item, leaves: sortAST(leaves) });
@@ -1800,7 +1804,7 @@ var Finder = class {
       }
       ast.push({ branch, dir: null, filtered: false, find: false });
     }
-    return { ast, descendant, invalidate };
+    return { ast, descendant };
   };
   /**
    * Corresponds AST and nodes.
@@ -1844,11 +1848,10 @@ var Finder = class {
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate = hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      this.#invalidate = hasHasPseudoFunc || hasStatePseudoClass || !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
       this.#descendant = processed.descendant;
-      this.#invalidate = baseInvalidate || processed.invalidate;
       let cachedItem;
       if (this.#documentCache.has(this.#document)) {
         cachedItem = this.#documentCache.get(this.#document);
@@ -2530,6 +2533,9 @@ var Finder = class {
         }
         case "local-link": {
           if ((localName === "a" || localName === "area") && node.hasAttribute("href")) {
+            if (!this.#documentURL) {
+              this.#documentURL = new URL(this.#document.URL);
+            }
             const { href, origin, pathname } = this.#documentURL;
             const attrURL = new URL(node.getAttribute("href"), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
@@ -2556,6 +2562,9 @@ var Finder = class {
           break;
         }
         case "target": {
+          if (!this.#documentURL) {
+            this.#documentURL = new URL(this.#document.URL);
+          }
           const { hash } = this.#documentURL;
           if (node.id && hash === `#${node.id}` && this.#document.contains(node)) {
             matched.add(node);
@@ -2563,6 +2572,9 @@ var Finder = class {
           break;
         }
         case "target-within": {
+          if (!this.#documentURL) {
+            this.#documentURL = new URL(this.#document.URL);
+          }
           const { hash } = this.#documentURL;
           if (hash) {
             const id = hash.replace(/^#/, "");
@@ -2605,7 +2617,10 @@ var Finder = class {
                   bool = true;
                 } else if (this.#event) {
                   const {
+                    altKey: eventAltKey,
+                    ctrlKey: eventCtrlKey,
                     key: eventKey,
+                    metaKey: eventMetaKey,
                     target: eventTarget,
                     type: eventType
                   } = this.#event;
@@ -2628,7 +2643,7 @@ var Finder = class {
                       }
                     }
                   } else if (eventKey) {
-                    if ((eventType === "keydown" || eventType === "keyup") && eventTarget === node) {
+                    if ((eventType === "keydown" || eventType === "keyup") && !eventAltKey && !eventCtrlKey && !eventMetaKey && eventTarget === node) {
                       bool = true;
                     }
                   }
@@ -3491,7 +3506,7 @@ var Finder = class {
       if (boundaryNode && currentNode === boundaryNode) {
         break;
       }
-      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
+      if (this._matchLeaves(leaves, currentNode, matchOpt) && currentNode !== this.#node) {
         collectedNodes.push(currentNode);
         if (targetType !== TARGET_ALL) {
           break;
@@ -4551,7 +4566,7 @@ var DOMSelector = class {
       return this.#finder.onError(e, opt);
     }
     const document = node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (document === this.#document && document.contentType === "text/html" && document.documentElement) {
+    if (document === this.#document && document.contentType === "text/html" && document.documentElement && (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = false;
       if (this.#cache.has(cacheKey)) {

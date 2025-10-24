@@ -8157,10 +8157,12 @@ describe('walk AST', () => {
       {
         branches: [],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
-          hasNthChildOfSelector: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
+          hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
       },
@@ -8336,9 +8338,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8437,9 +8441,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8500,9 +8506,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8543,9 +8551,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8586,9 +8596,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: true
         }
@@ -8643,9 +8655,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8734,9 +8748,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8815,9 +8831,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8896,9 +8914,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -8965,9 +8985,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9034,9 +9056,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9103,9 +9127,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9214,9 +9240,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9325,9 +9353,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: true,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9390,9 +9420,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false
         }
@@ -9541,9 +9573,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false
         }
@@ -9640,9 +9674,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNotPseudoFunc: false,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false
         }
@@ -9777,9 +9813,11 @@ describe('walk AST', () => {
           ]
         ],
         info: {
+          hasForgivenPseudoFunc: false,
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false
         }

@@ -13,6 +13,7 @@ import { filterSelector, getType, initNwsapi } from './js/utility.js';
 /* constants */
 import {
   DOCUMENT_NODE,
+  DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   TARGET_ALL,
   TARGET_FIRST,
@@ -251,6 +252,34 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
+    /*
+    const document =
+      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement &&
+      (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
+    ) {
+      const cacheKey = `querySelector_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        filterMatches = filterSelector(selector, TARGET_FIRST);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
+        try {
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          const res = this.#nwsapi.first(selector, n);
+          return res;
+        } catch (e) {
+          // fall through
+        }
+      }
+    }
+    */
     let res;
     try {
       if (this.#idlUtils) {
@@ -285,7 +314,8 @@ export class DOMSelector {
     if (
       document === this.#document &&
       document.contentType === 'text/html' &&
-      document.documentElement
+      document.documentElement &&
+      (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
     ) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = false;
