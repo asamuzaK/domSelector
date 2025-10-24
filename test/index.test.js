@@ -887,6 +887,36 @@ describe('DOMSelector', () => {
     });
 
     it('should get matched node', () => {
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      const node3 = document.createElement('div');
+      const node4 = document.createElement('div');
+      const node5 = document.createElement('div');
+      const parent = document.getElementById('div0');
+      node1.id = 'node1';
+      node1.classList.add('foo');
+      node2.id = 'node2';
+      node2.classList.add('foo');
+      node3.id = 'node3';
+      node3.classList.add('foo');
+      node4.id = 'node4';
+      node4.classList.add('foo');
+      node5.id = 'node5';
+      node5.classList.add('foo');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      parent.appendChild(node3);
+      parent.appendChild(node4);
+      parent.appendChild(node5);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(
+        '.foo + .foo + .foo:nth-child(5 of .foo)',
+        parent
+      );
+      assert.deepEqual(res, node5, 'result');
+    });
+
+    it('should get matched node', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('li ~ li', document);

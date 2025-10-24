@@ -208,7 +208,7 @@ export class Finder {
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
-    this.#documentURL = new URL(this.#document.URL);
+    this.#documentURL = null;
     this.#node = node;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
@@ -293,11 +293,10 @@ export class Finder {
    * @private
    * @param {Array.<Array.<object>>} branches - The branches from walkAST.
    * @param {string} selector - The original selector for error reporting.
-   * @returns {{ast: Array, descendant: boolean, invalidate: boolean}}
-   * An object with the AST, descendant flag, and invalidate flag.
+   * @returns {{ast: Array, descendant: boolean}}
+   * An object with the AST, descendant flag.
    */
   _processSelectorBranches = (branches, selector) => {
-    let invalidate = false;
     let descendant = false;
     const ast = [];
     const l = branches.length;
@@ -316,9 +315,7 @@ export class Finder {
               // Stop processing on invalid selector.
               return { ast: [], descendant: false, invalidate: false };
             }
-            if (item.name === '+' || item.name === '~') {
-              invalidate = true;
-            } else {
+            if (item.name === ' ' || item.name === '>') {
               descendant = true;
             }
             branch.push({ combo: item, leaves: sortAST(leaves) });
@@ -346,7 +343,7 @@ export class Finder {
       }
       ast.push({ branch, dir: null, filtered: false, find: false });
     }
-    return { ast, descendant, invalidate };
+    return { ast, descendant };
   };
 
   /**
@@ -391,14 +388,13 @@ export class Finder {
         hasNthChildOfSelector,
         hasStatePseudoClass
       } = info;
-      const baseInvalidate =
+      this.#invalidate =
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
       this.#descendant = processed.descendant;
-      this.#invalidate = baseInvalidate || processed.invalidate;
       let cachedItem;
       if (this.#documentCache.has(this.#document)) {
         cachedItem = this.#documentCache.get(this.#document);
@@ -1115,6 +1111,9 @@ export class Finder {
             (localName === 'a' || localName === 'area') &&
             node.hasAttribute('href')
           ) {
+            if (!this.#documentURL) {
+              this.#documentURL = new URL(this.#document.URL);
+            }
             const { href, origin, pathname } = this.#documentURL;
             const attrURL = new URL(node.getAttribute('href'), href);
             if (attrURL.origin === origin && attrURL.pathname === pathname) {
@@ -1145,6 +1144,9 @@ export class Finder {
           break;
         }
         case 'target': {
+          if (!this.#documentURL) {
+            this.#documentURL = new URL(this.#document.URL);
+          }
           const { hash } = this.#documentURL;
           if (
             node.id &&
@@ -1156,6 +1158,9 @@ export class Finder {
           break;
         }
         case 'target-within': {
+          if (!this.#documentURL) {
+            this.#documentURL = new URL(this.#document.URL);
+          }
           const { hash } = this.#documentURL;
           if (hash) {
             const id = hash.replace(/^#/, '');
@@ -1198,7 +1203,10 @@ export class Finder {
                   bool = true;
                 } else if (this.#event) {
                   const {
+                    altKey: eventAltKey,
+                    ctrlKey: eventCtrlKey,
                     key: eventKey,
+                    metaKey: eventMetaKey,
                     target: eventTarget,
                     type: eventType
                   } = this.#event;
@@ -1230,6 +1238,9 @@ export class Finder {
                   } else if (eventKey) {
                     if (
                       (eventType === 'keydown' || eventType === 'keyup') &&
+                      !eventAltKey &&
+                      !eventCtrlKey &&
+                      !eventMetaKey &&
                       eventTarget === node
                     ) {
                       bool = true;
@@ -2206,7 +2217,10 @@ export class Finder {
       if (boundaryNode && currentNode === boundaryNode) {
         break;
       }
-      if (this._matchLeaves(leaves, currentNode, matchOpt)) {
+      if (
+        this._matchLeaves(leaves, currentNode, matchOpt) &&
+        currentNode !== this.#node
+      ) {
         collectedNodes.push(currentNode);
         // Stop after the first match if not collecting all.
         if (targetType !== TARGET_ALL) {

@@ -1047,11 +1047,11 @@ export const initNwsapi = (window, document) => {
  * @returns {boolean} - True if the selector is valid for nwsapi.
  */
 export const filterSelector = (selector, target) => {
+  const isQuerySelectorType = target === TARGET_FIRST || target === TARGET_ALL;
   if (
     !selector ||
     typeof selector !== 'string' ||
-    /null|undefined/.test(selector) ||
-    target === TARGET_FIRST
+    /null|undefined/.test(selector)
   ) {
     return false;
   }
@@ -1079,16 +1079,16 @@ export const filterSelector = (selector, target) => {
   // Include pseudo-classes that are known to work correctly.
   if (selector.includes(':')) {
     let complex = false;
-    if (target !== TARGET_ALL) {
+    if (target !== isQuerySelectorType) {
       complex = REG_COMPLEX.test(selector);
     }
     if (
-      target === TARGET_ALL &&
+      isQuerySelectorType &&
       REG_DESCEND.test(selector) &&
       !REG_SIBLING.test(selector)
     ) {
       return false;
-    } else if (target !== TARGET_ALL && /:has\(/.test(selector)) {
+    } else if (!isQuerySelectorType && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }

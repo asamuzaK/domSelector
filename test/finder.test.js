@@ -11656,7 +11656,7 @@ describe('Finder', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
       const node = document.createElement('ul');
       const child = document.createElement('li');
       node.appendChild(child);
@@ -11670,7 +11670,7 @@ describe('Finder', () => {
         ]
       ] = finder._correspond('ul');
       const res = finder._findNodeWalker(leaves, node);
-      assert.deepEqual(res, [node], 'result');
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node', () => {
@@ -11728,7 +11728,7 @@ describe('Finder', () => {
       assert.deepEqual(res, [child, child2], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should not match', () => {
       const node = document.createElement('ul');
       const child = document.createElement('li');
       node.appendChild(child);
@@ -11742,7 +11742,7 @@ describe('Finder', () => {
         ]
       ] = finder._correspond('ul');
       const res = finder._findNodeWalker(leaves, node);
-      assert.deepEqual(res, [node], 'result');
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node', () => {
@@ -12787,7 +12787,7 @@ describe('Finder', () => {
         ]
       ] = finder._correspond('div');
       const res = finder._findEntryNodes(twig, 'all');
-      assert.deepEqual(res.nodes, [parent, node], 'nodes');
+      assert.deepEqual(res.nodes, [node], 'nodes');
       assert.strictEqual(res.compound, false, 'compound');
       assert.strictEqual(res.filtered, true, 'filtered');
       assert.strictEqual(res.pending, false, 'pending');
