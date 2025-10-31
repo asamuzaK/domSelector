@@ -2217,7 +2217,10 @@ export class Finder {
       if (boundaryNode) {
         if (currentNode === boundaryNode) {
           break;
-        } else if (targetType === TARGET_ALL && !boundaryNode.contains(currentNode)) {
+        } else if (
+          targetType === TARGET_ALL &&
+          !boundaryNode.contains(currentNode)
+        ) {
           break;
         }
       }

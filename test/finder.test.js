@@ -11583,11 +11583,7 @@ describe('Finder', () => {
       const res = finder._findPrecede(leaves, document, {
         targetType: 'all'
       });
-      assert.deepEqual(
-        res,
-        [],
-        'result'
-      );
+      assert.deepEqual(res, [], 'result');
     });
 
     it('should get matched node', () => {

@@ -3503,8 +3503,12 @@ var Finder = class {
       warn: this.#warn
     };
     while (currentNode) {
-      if (boundaryNode && currentNode === boundaryNode) {
-        break;
+      if (boundaryNode) {
+        if (currentNode === boundaryNode) {
+          break;
+        } else if (targetType === TARGET_ALL && !boundaryNode.contains(currentNode)) {
+          break;
+        }
       }
       if (this._matchLeaves(leaves, currentNode, matchOpt) && currentNode !== this.#node) {
         collectedNodes.push(currentNode);
