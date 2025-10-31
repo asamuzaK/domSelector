@@ -1017,4 +1017,60 @@ describe('jsdom issues tagged with `selectors` label', () => {
       assert.deepEqual(doc.querySelector('test > my-tag'), null, 'tag');
     });
   });
+
+  describe('#190 - https://github.com/asamuzaK/domSelector/issues/190', () => {
+    const html = `
+      <div class="card">
+        <div class="child_class">
+          <a href="#">link11</a>
+          <a href="#">link21</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="child_class">
+          <a href="#">link12</a>
+          <a href="#">link22</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="child_class">
+          <a href="#">link13</a>
+          <a href="#">link23</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="child_class">
+          <a href="#">link14</a>
+          <a href="#">link24</a>
+        </div>
+      </div>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window = null;
+      document = null;
+    });
+
+    it('should match last anchor', () => {
+      const containerSelector = '.card';
+      const subElementSelector = '.child_class > a:last-of-type';
+      const selectedContainers = document.querySelectorAll(containerSelector);
+      assert.strictEqual(selectedContainers.length, 4, 'containers length');
+      for (const container of selectedContainers) {
+        const selectedLinks = container.querySelectorAll(subElementSelector);
+        assert.strictEqual(selectedLinks.length, 1, 'links length');
+        const [selectedLink] = [...selectedLinks];
+        assert.deepEqual(
+          selectedLink,
+          selectedLink.parentNode.lastElementChild,
+          'link'
+        );
+      }
+    });
+  });
 });

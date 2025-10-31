@@ -11569,7 +11569,7 @@ describe('Finder', () => {
       assert.deepEqual(res, [document.getElementById('div5')], 'result');
     });
 
-    it('should get matched nodes', () => {
+    it('should not match', () => {
       const finder = new Finder(window);
       const node = document.getElementById('p5');
       finder.setup('div.foo p', node);
@@ -11585,7 +11585,7 @@ describe('Finder', () => {
       });
       assert.deepEqual(
         res,
-        [document.getElementById('div5'), document.getElementById('div6')],
+        [],
         'result'
       );
     });

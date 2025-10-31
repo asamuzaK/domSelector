@@ -2213,9 +2213,13 @@ export class Finder {
       warn: this.#warn
     };
     while (currentNode) {
-      // Stop when we reach the boundary node.
-      if (boundaryNode && currentNode === boundaryNode) {
-        break;
+      // Stop when we reach the boundary.
+      if (boundaryNode) {
+        if (currentNode === boundaryNode) {
+          break;
+        } else if (targetType === TARGET_ALL && !boundaryNode.contains(currentNode)) {
+          break;
+        }
       }
       if (
         this._matchLeaves(leaves, currentNode, matchOpt) &&
