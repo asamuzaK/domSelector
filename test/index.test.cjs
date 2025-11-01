@@ -74,6 +74,7 @@ describe('DOMSelector', () => {
     document = dom.window.document;
   });
   afterEach(() => {
+    window.close();
     window = null;
     document = null;
   });
@@ -835,6 +836,7 @@ describe('patched JSDOM', () => {
   });
   afterEach(() => {
     document = null;
+    window.close();
     window = null;
     for (const key of globalKeys) {
       delete global[key];

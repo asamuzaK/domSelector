@@ -691,6 +691,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       document = dom.window.document;
     });
     afterEach(() => {
+      window.close();
       window = null;
       document = null;
     });
@@ -732,6 +733,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -772,6 +774,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -822,6 +825,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -846,6 +850,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -868,6 +873,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -899,6 +905,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -961,6 +968,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       window = dom.window;
     });
     afterEach(() => {
+      window.close();
       window = null;
     });
 
@@ -1052,6 +1060,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
       document = window.document;
     });
     afterEach(() => {
+      window.close();
       window = null;
       document = null;
     });

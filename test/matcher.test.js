@@ -83,6 +83,7 @@ describe('matcher', () => {
     document = dom.window.document;
   });
   afterEach(() => {
+    window.close();
     window = null;
     document = null;
   });

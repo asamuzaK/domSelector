@@ -109,6 +109,7 @@ describe('local wpt test cases', () => {
     }
   });
   afterEach(() => {
+    window.close();
     window = null;
     document = null;
     for (const key of globalKeys) {
