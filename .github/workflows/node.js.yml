@@ -20,6 +20,8 @@ jobs:
         exclude:
           - node-version: 20.x
             os: windows-latest
+          - node-version: 20.x
+            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5

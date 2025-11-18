@@ -65,7 +65,6 @@
     "wpt-runner": "^6.1.0"
   },
   "overrides": {
-    "glob": "^11.1.0",
     "jsdom": "$jsdom"
   },
   "scripts": {
