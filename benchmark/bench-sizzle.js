@@ -10,12 +10,9 @@ import path from 'node:path';
 import process from 'node:process';
 import Benchmark from 'benchmark';
 import { JSDOM } from 'jsdom';
-import * as happyDom from 'happy-dom';
-import * as linkedom from 'linkedom';
 import { DOMSelector } from '../src/index.js';
 
 let document, reflowNode, patchedDoc, patchedReflow;
-let happyDoc, happyReflow, linkedDoc, linkedReflow;
 let selectors, total;
 const errors = new Map();
 
@@ -39,20 +36,6 @@ const prepareDom = () => {
   const { window } = new JSDOM(domstr);
   document = window.document;
   reflowNode = document.createElement('div');
-
-  /* prepare happy-dom */
-  const { window: happyWin } = new happyDom.Window({
-    url: 'http://localhost',
-    width: 1024,
-    height: 768
-  });
-
-  happyDoc = new happyWin.DOMParser().parseFromString(domstr, 'text/html');
-  happyReflow = happyDoc.createElement('div');
-
-  /* prepare linkedom */
-  linkedDoc = linkedom.parseHTML(domstr).document;
-  linkedReflow = linkedDoc.createElement('div');
 
   /* prepare patched jsdom */
   const { window: patchedWin } = new JSDOM(domstr, {
@@ -138,14 +121,6 @@ const benchQuerySelectorAll = api => {
       doc = document;
       reflow = reflowNode;
       break;
-    case 'happydom':
-      doc = happyDoc;
-      reflow = happyReflow;
-      break;
-    case 'linkedom':
-      doc = linkedDoc;
-      reflow = linkedReflow;
-      break;
     default:
       doc = patchedDoc;
       reflow = patchedReflow;
@@ -168,14 +143,6 @@ const benchQuerySelector = api => {
     case 'jsdom':
       doc = document;
       reflow = reflowNode;
-      break;
-    case 'happydom':
-      doc = happyDoc;
-      reflow = happyReflow;
-      break;
-    case 'linkedom':
-      doc = linkedDoc;
-      reflow = linkedReflow;
       break;
     default:
       doc = patchedDoc;
@@ -208,18 +175,10 @@ suite.on('start', () => {
   prepareDom();
 }).add('jsdom querySelectorAll', () => {
   benchQuerySelectorAll('jsdom');
-}).add('happydom querySelectorAll', () => {
-  benchQuerySelectorAll('happydom');
-}).add('linkedom querySelectorAll', () => {
-  benchQuerySelectorAll('linkedom');
 }).add('patched-jsdom querySelectorAll', () => {
   benchQuerySelectorAll('patched-jsdom');
 }).add('jsdom querySelector', () => {
   benchQuerySelector('jsdom');
-}).add('happydom querySelector', () => {
-  benchQuerySelector('happydom');
-}).add('linkedom querySelector', () => {
-  benchQuerySelector('linkedom');
 }).add('patched-jsdom querySelector', () => {
   benchQuerySelector('patched-jsdom');
 }).on('cycle', evt => {
@@ -228,6 +187,7 @@ suite.on('start', () => {
   if (str.startsWith('patched-jsdom')) {
     const patchedHz = target.hz;
     const jsdomHz = hz.get('jsdom');
+    /*
     const fastest = {
       key: 'patched-jsdom',
       hz: patchedHz
@@ -241,25 +201,30 @@ suite.on('start', () => {
       }
     }
     const { key: fastestKey, hz: fastestHz } = fastest;
+    */
     const elapsed = `patched-jsdom took ${(1000 / patchedHz).toFixed(3)}msec.`;
+    /*
     let fastestMsg;
     if (fastestKey === 'patched-jsdom') {
       fastestMsg = 'patched-jsdom is the fastest.';
     } else {
       fastestMsg = `${fastestKey} is the fastest and ${(fastestHz / patchedHz).toFixed(1)} times faster than patched-jsdom.`;
     }
+    */
     let jsdomMsg = '';
     if (jsdomHz > patchedHz) {
       jsdomMsg = `jsdom is ${(jsdomHz / patchedHz).toFixed(1)} times faster than patched-jsdom.`;
     } else if (jsdomHz) {
       jsdomMsg = `patched-jsdom is ${(patchedHz / jsdomHz).toFixed(1)} times faster than jsdom.`;
     }
+    /*
     let msg;
     if (fastestKey === 'jsdom') {
       msg = fastestMsg;
     } else {
       msg = `${fastestMsg} ${jsdomMsg}`;
     }
+    */
     hz.clear();
     console.log(`* ${str}`);
     /*
@@ -269,7 +234,7 @@ suite.on('start', () => {
       console.log(`\t'${key}': ${value}`);
     }
     */
-    console.log(`* ${msg} ${elapsed}\n`);
+    console.log(`* ${jsdomMsg} ${elapsed}\n`);
     errors.clear();
   } else {
     const [, key] = /^([a-z-]+)\s/.exec(str);
