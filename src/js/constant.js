@@ -76,14 +76,12 @@ export const COMBO = '\\s?[\\s>~+]\\s?';
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const DESCEND = '\\s?[\\s>]\\s?';
 export const SIBLING = '\\s?[+~]\\s?';
-export const NESTED_LOGIC_A = `:is\\(\\s*${COMPOUND}(?:\\s*,\\s*${COMPOUND})*\\s*\\)`;
-export const NESTED_LOGIC_B = `:is\\(\\s*${COMPLEX}(?:\\s*,\\s*${COMPLEX})*\\s*\\)`;
-export const COMPOUND_A = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC_A})+)`;
-export const COMPOUND_B = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC_B})+)`;
+export const NESTED_LOGIC = `:is\\(\\s*[^)]+\\s*\\)`;
+export const COMPOUND_L = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${NESTED_LOGIC})+)`;
 export const COMPOUND_I = `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
-export const COMPLEX_L = `${COMPOUND_B}(?:${COMBO}${COMPOUND_B})*`;
+export const COMPLEX_L = `${COMPOUND_L}(?:${COMBO}${COMPOUND_L})*`;
 export const LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
-export const LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_A}(?:\\s*,\\s*${COMPOUND_A})*\\s*\\)`;
+export const LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_L}(?:\\s*,\\s*${COMPOUND_L})*\\s*\\)`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
 
 /* forms and input types */
