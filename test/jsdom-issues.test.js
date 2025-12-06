@@ -1025,7 +1025,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
       assert.deepEqual(doc.querySelector('test > my-tag'), null, 'tag');
     });
   });
+});
 
+describe('domSelector regression tests', () => {
   describe('#190 - https://github.com/asamuzaK/domSelector/issues/190', () => {
     const html = `
       <div class="card">
@@ -1080,6 +1082,36 @@ describe('jsdom issues tagged with `selectors` label', () => {
           'link'
         );
       }
+    });
+  });
+
+  describe('#193 - https://github.com/asamuzaK/domSelector/issues/193', () => {
+    const html = `
+      <div id="document">
+        <p id="first">First</p>
+        <p id="second">Second</p>
+      </div>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should return nodes in document order', () => {
+      const node = document.getElementById('document');
+      const res = node.querySelectorAll('#second, :scope > .foo, #first');
+      assert.deepEqual(
+        res.map(n => n.id),
+        ['first', 'second'],
+        'result'
+      );
     });
   });
 });
