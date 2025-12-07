@@ -1,5 +1,5 @@
 /**
- * jsdom-issues.test.js
+ * issues.test.js
  */
 
 /* api */
