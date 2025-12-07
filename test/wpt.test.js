@@ -7978,7 +7978,7 @@ describe('local wpt test cases', () => {
     });
   });
 
-  describe('tu-upstream/dom/nodes/ParentNode-querySelector-parent-context.html', () => {
+  describe('to-upstream/dom/nodes/ParentNode-querySelector-parent-context.html', () => {
     it('should get matched node', () => {
       const html = `
         <div id="container">
