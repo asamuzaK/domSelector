@@ -1114,4 +1114,41 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#198 - https://github.com/asamuzaK/domSelector/issues/198', () => {
+    const html = `
+      <table><tr><td></td></tr></table>
+      <table id="target_table"><tr><td id="target"></td></tr></table>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('target');
+      const tableSelector = 'table#target_table';
+      const subSelector = 'tbody tr td';
+      const workOutlineTableEl = document.body.querySelector(tableSelector);
+      const seriesLinkEl = workOutlineTableEl.querySelector(subSelector);
+      assert.deepEqual(seriesLinkEl, target);
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('target');
+      const tableSelector = 'table#target_table';
+      const subSelector = 'tbody tr td';
+      const seriesLinkElDirect = document.body.querySelector(
+        `${tableSelector} > ${subSelector}`
+      );
+      assert.deepEqual(seriesLinkElDirect, target);
+    });
+  });
 });
