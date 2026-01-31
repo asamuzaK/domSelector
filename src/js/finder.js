@@ -126,6 +126,7 @@ export class Finder {
   #results;
   #root;
   #rootWalker;
+  #scoped;
   #selector;
   #shadow;
   #verifyShadowHost;
@@ -210,6 +211,8 @@ export class Finder {
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
     this.#documentURL = null;
     this.#node = node;
+    this.#scoped =
+      this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#pseudoElement = [];
@@ -2631,6 +2634,9 @@ export class Finder {
     } = lastTwig;
     const { combo: firstCombo } = firstTwig;
     if (
+      (this.#scoped &&
+        targetType === TARGET_FIRST &&
+        lastType === TYPE_SELECTOR) ||
       this.#selector.includes(':scope') ||
       lastType === PS_ELEMENT_SELECTOR ||
       lastType === ID_SELECTOR
@@ -2671,11 +2677,9 @@ export class Finder {
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
-    const isScopedContext =
-      this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     const walker = this.#rootWalker;
     let node = this.#root;
-    if (isScopedContext) {
+    if (this.#scoped) {
       node = this.#node;
     }
     let nextNode = traverseNode(node, walker);
@@ -2694,7 +2698,7 @@ export class Finder {
             this.#nodes[index].push(nextNode);
           }
         }
-      } else if (isScopedContext) {
+      } else if (this.#scoped) {
         break;
       }
       nextNode = walker.nextNode();
@@ -2912,27 +2916,6 @@ export class Finder {
   };
 
   /**
-   * Find a node contained by this.#node.
-   * @private
-   * @param {Array} nodesArr - The set of nodes to find from.
-   * @returns {?object} The matched node, or null.
-   */
-  _findChildNodeContainedByNode = nodesArr => {
-    let matchedNode = null;
-    if (Array.isArray(nodesArr)) {
-      const l = nodesArr.length;
-      for (let i = 0; i < l; i++) {
-        const node = nodesArr[i];
-        if (this.#node.contains(node)) {
-          matchedNode = node;
-          break;
-        }
-      }
-    }
-    return matchedNode;
-  };
-
-  /**
    * Processes a complex selector branch to find the first matching node.
    * @private
    * @param {Array} branch - The selector branch from the AST.
@@ -2993,24 +2976,6 @@ export class Finder {
             targetType,
             force: true
           });
-        }
-      } else {
-        const { combo: firstCombo } = branch[0];
-        let combo = firstCombo;
-        let nextNodes = new Set([entryNode]);
-        for (let j = 1; j < branchLen; j++) {
-          const { combo: nextCombo, leaves } = branch[j];
-          const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (j === lastIndex) {
-              return this._findChildNodeContainedByNode(nodesArr);
-            }
-            combo = nextCombo;
-            nextNodes = new Set(nodesArr);
-          } else {
-            break;
-          }
         }
       }
       // DIR_PREV logic for finding the first match.
