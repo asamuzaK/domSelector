@@ -1596,6 +1596,7 @@ var Finder = class {
   #results;
   #root;
   #rootWalker;
+  #scoped;
   #selector;
   #shadow;
   #verifyShadowHost;
@@ -1676,6 +1677,7 @@ var Finder = class {
     [this.#document, this.#root, this.#shadow] = resolveContent(node);
     this.#documentURL = null;
     this.#node = node;
+    this.#scoped = this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     this.#selector = selector;
     [this.#ast, this.#nodes] = this._correspond(selector);
     this.#pseudoElement = [];
@@ -2598,8 +2600,27 @@ var Finder = class {
           break;
         }
         case "focus": {
-          if (node === this.#document.activeElement && isFocusableArea(node)) {
+          const activeElement = this.#document.activeElement;
+          if (node === activeElement && isFocusableArea(node)) {
             matched.add(node);
+          } else if (activeElement.shadowRoot) {
+            const activeShadowElement = activeElement.shadowRoot.activeElement;
+            let current = activeShadowElement;
+            while (current) {
+              if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
+                const { host } = current;
+                if (host === activeElement) {
+                  if (isFocusableArea(node)) {
+                    matched.add(node);
+                  } else {
+                    matched.add(host);
+                  }
+                }
+                break;
+              } else {
+                current = current.parentNode;
+              }
+            }
           }
           break;
         }
@@ -2660,19 +2681,27 @@ var Finder = class {
           break;
         }
         case "focus-within": {
-          let bool;
-          let current = this.#document.activeElement;
-          if (isFocusableArea(current)) {
-            while (current) {
-              if (current === node) {
-                bool = true;
-                break;
-              }
-              current = current.parentNode;
-            }
-          }
-          if (bool) {
+          const activeElement = this.#document.activeElement;
+          if (node.contains(activeElement) && isFocusableArea(activeElement)) {
             matched.add(node);
+          } else if (activeElement.shadowRoot) {
+            const activeShadowElement = activeElement.shadowRoot.activeElement;
+            if (node.contains(activeShadowElement)) {
+              matched.add(node);
+            } else {
+              let current = activeShadowElement;
+              while (current) {
+                if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
+                  const { host } = current;
+                  if (host === activeElement && node.contains(host)) {
+                    matched.add(node);
+                  }
+                  break;
+                } else {
+                  current = current.parentNode;
+                }
+              }
+            }
           }
           break;
         }
@@ -3865,7 +3894,7 @@ var Finder = class {
       leaves: [{ name: lastName, type: lastType }]
     } = lastTwig;
     const { combo: firstCombo } = firstTwig;
-    if (this.#selector.includes(":scope") || lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
+    if (this.#scoped && targetType === TARGET_FIRST && lastType === TYPE_SELECTOR || this.#selector.includes(":scope") || lastType === PS_ELEMENT_SELECTOR || lastType === ID_SELECTOR) {
       return { dir: DIR_PREV, twig: lastTwig };
     }
     if (firstType === ID_SELECTOR) {
@@ -3900,10 +3929,9 @@ var Finder = class {
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
-    const isScopedContext = this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     const walker = this.#rootWalker;
     let node = this.#root;
-    if (isScopedContext) {
+    if (this.#scoped) {
       node = this.#node;
     }
     let nextNode = traverseNode(node, walker);
@@ -3919,7 +3947,7 @@ var Finder = class {
             this.#nodes[index].push(nextNode);
           }
         }
-      } else if (isScopedContext) {
+      } else if (this.#scoped) {
         break;
       }
       nextNode = walker.nextNode();
@@ -4126,26 +4154,6 @@ var Finder = class {
     return matchedNodes;
   };
   /**
-   * Find a node contained by this.#node.
-   * @private
-   * @param {Array} nodesArr - The set of nodes to find from.
-   * @returns {?object} The matched node, or null.
-   */
-  _findChildNodeContainedByNode = (nodesArr) => {
-    let matchedNode = null;
-    if (Array.isArray(nodesArr)) {
-      const l = nodesArr.length;
-      for (let i = 0; i < l; i++) {
-        const node = nodesArr[i];
-        if (this.#node.contains(node)) {
-          matchedNode = node;
-          break;
-        }
-      }
-    }
-    return matchedNode;
-  };
-  /**
    * Processes a complex selector branch to find the first matching node.
    * @private
    * @param {Array} branch - The selector branch from the AST.
@@ -4198,24 +4206,6 @@ var Finder = class {
             targetType,
             force: true
           });
-        }
-      } else {
-        const { combo: firstCombo } = branch[0];
-        let combo = firstCombo;
-        let nextNodes = /* @__PURE__ */ new Set([entryNode]);
-        for (let j = 1; j < branchLen; j++) {
-          const { combo: nextCombo, leaves } = branch[j];
-          const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (j === lastIndex) {
-              return this._findChildNodeContainedByNode(nodesArr);
-            }
-            combo = nextCombo;
-            nextNodes = new Set(nodesArr);
-          } else {
-            break;
-          }
         }
       }
     } else {

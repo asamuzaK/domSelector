@@ -57,7 +57,6 @@ export class Finder {
     private _matchNodeNext;
     private _matchNodePrev;
     private _processComplexBranchAll;
-    private _findChildNodeContainedByNode;
     private _processComplexBranchFirst;
     find: (targetType: string) => Set<object>;
     #private;
