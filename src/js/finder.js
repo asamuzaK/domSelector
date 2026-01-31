@@ -1186,8 +1186,27 @@ export class Finder {
           break;
         }
         case 'focus': {
-          if (node === this.#document.activeElement && isFocusableArea(node)) {
+          const activeElement = this.#document.activeElement;
+          if (node === activeElement && isFocusableArea(node)) {
             matched.add(node);
+          } else if (activeElement.shadowRoot) {
+            const activeShadowElement = activeElement.shadowRoot.activeElement;
+            let current = activeShadowElement;
+            while (current) {
+              if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
+                const { host } = current;
+                if (host === activeElement) {
+                  if (isFocusableArea(node)) {
+                    matched.add(node);
+                  } else {
+                    matched.add(host);
+                  }
+                }
+                break;
+              } else {
+                current = current.parentNode;
+              }
+            }
           }
           break;
         }
@@ -1264,19 +1283,27 @@ export class Finder {
           break;
         }
         case 'focus-within': {
-          let bool;
-          let current = this.#document.activeElement;
-          if (isFocusableArea(current)) {
-            while (current) {
-              if (current === node) {
-                bool = true;
-                break;
-              }
-              current = current.parentNode;
-            }
-          }
-          if (bool) {
+          const activeElement = this.#document.activeElement;
+          if (node.contains(activeElement) && isFocusableArea(activeElement)) {
             matched.add(node);
+          } else if (activeElement.shadowRoot) {
+            const activeShadowElement = activeElement.shadowRoot.activeElement;
+            if (node.contains(activeShadowElement)) {
+              matched.add(node);
+            } else {
+              let current = activeShadowElement;
+              while (current) {
+                if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
+                  const { host } = current;
+                  if (host === activeElement && node.contains(host)) {
+                    matched.add(node);
+                  }
+                  break;
+                } else {
+                  current = current.parentNode;
+                }
+              }
+            }
           }
           break;
         }

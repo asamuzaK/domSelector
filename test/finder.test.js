@@ -5324,6 +5324,62 @@ describe('Finder', () => {
     it('should get matched node', () => {
       const leaf = {
         children: null,
+        name: 'focus',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+        <template id="template">
+          <button id="button">Click Me</button>
+        </template>
+        <div id="container">
+          <div id="host"></div>
+        </div>
+      `;
+      const div = document.getElementById('div0');
+      div.innerHTML = html;
+      const template = document.getElementById('template');
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(template.content.cloneNode(true));
+      const node = shadowRoot.getElementById('button');
+      node.focus();
+      const finder = new Finder(window);
+      finder.setup(':focus', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [node], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+        <template id="template">
+          <button id="button">Click Me</button>
+        </template>
+        <div id="container">
+          <div id="host"></div>
+        </div>
+      `;
+      const div = document.getElementById('div0');
+      div.innerHTML = html;
+      const template = document.getElementById('template');
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(template.content.cloneNode(true));
+      const node = shadowRoot.getElementById('button');
+      node.focus();
+      const finder = new Finder(window);
+      finder.setup(':focus', host);
+      const res = finder._matchPseudoClassSelector(leaf, host, {});
+      assert.deepEqual([...res], [host], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
         name: 'focus-visible',
         type: PS_CLASS_SELECTOR
       };
@@ -5936,6 +5992,91 @@ describe('Finder', () => {
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
       assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+        <template id="template">
+          <button id="button">Click Me</button>
+        </template>
+        <div id="container">
+          <div id="host"></div>
+        </div>
+      `;
+      const div = document.getElementById('div0');
+      div.innerHTML = html;
+      const template = document.getElementById('template');
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(template.content.cloneNode(true));
+      const node = shadowRoot.getElementById('button');
+      node.focus();
+      const finder = new Finder(window);
+      finder.setup(':focus-within', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.deepEqual([...res], [node], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+        <template id="template">
+          <button id="button">Click Me</button>
+        </template>
+        <div id="container">
+          <div id="host"></div>
+        </div>
+      `;
+      const div = document.getElementById('div0');
+      div.innerHTML = html;
+      const template = document.getElementById('template');
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(template.content.cloneNode(true));
+      const node = shadowRoot.getElementById('button');
+      node.focus();
+      const finder = new Finder(window);
+      finder.setup(':focus-within', host);
+      const res = finder._matchPseudoClassSelector(leaf, host, {});
+      assert.deepEqual([...res], [host], 'result');
+    });
+
+    it('should get matched node', () => {
+      const leaf = {
+        children: null,
+        name: 'focus-within',
+        type: PS_CLASS_SELECTOR
+      };
+      const html = `
+        <template id="template">
+          <button id="button">Click Me</button>
+        </template>
+        <div id="container">
+          <div id="host"></div>
+        </div>
+      `;
+      const div = document.getElementById('div0');
+      div.innerHTML = html;
+      const template = document.getElementById('template');
+      const container = document.getElementById('container');
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(template.content.cloneNode(true));
+      const node = shadowRoot.getElementById('button');
+      node.focus();
+      const finder = new Finder(window);
+      finder.setup(':focus-within', container);
+      const res = finder._matchPseudoClassSelector(leaf, container, {});
+      assert.deepEqual([...res], [container], 'result');
     });
 
     it('should get matched node(s)', () => {
