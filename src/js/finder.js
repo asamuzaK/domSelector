@@ -2634,9 +2634,6 @@ export class Finder {
     } = lastTwig;
     const { combo: firstCombo } = firstTwig;
     if (
-      (this.#scoped &&
-        targetType === TARGET_FIRST &&
-        lastType === TYPE_SELECTOR) ||
       this.#selector.includes(':scope') ||
       lastType === PS_ELEMENT_SELECTOR ||
       lastType === ID_SELECTOR
@@ -2658,6 +2655,23 @@ export class Finder {
       }
       const { name: comboName } = firstCombo;
       if (comboName === '+' || comboName === '~') {
+        return { dir: DIR_PREV, twig: lastTwig };
+      }
+    } else if (branchLen > 2 && this.#scoped && targetType === TARGET_FIRST) {
+      if (lastType === TYPE_SELECTOR) {
+        return { dir: DIR_PREV, twig: lastTwig };
+      }
+      let isChildOrDescendant = false;
+      for (const { combo } of branch) {
+        if (combo) {
+          const { name: comboName } = combo;
+          isChildOrDescendant = comboName === '>' || comboName === ' ';
+          if (!isChildOrDescendant) {
+            break;
+          }
+        }
+      }
+      if (isChildOrDescendant) {
         return { dir: DIR_PREV, twig: lastTwig };
       }
     }

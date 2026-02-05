@@ -1118,7 +1118,7 @@ describe('domSelector regression tests', () => {
   describe('#198 - https://github.com/asamuzaK/domSelector/issues/198', () => {
     const html = `
       <table><tr><td></td></tr></table>
-      <table id="target_table"><tr><td id="target"></td></tr></table>
+      <table id="target_table"><tr><td id="target" class="target_td"></td></tr></table>
     `;
     let window, document;
     beforeEach(() => {
@@ -1145,6 +1145,25 @@ describe('domSelector regression tests', () => {
       const target = document.getElementById('target');
       const tableSelector = 'table#target_table';
       const subSelector = 'tbody tr td';
+      const seriesLinkElDirect = document.body.querySelector(
+        `${tableSelector} > ${subSelector}`
+      );
+      assert.deepEqual(seriesLinkElDirect, target);
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('target');
+      const tableSelector = 'table#target_table';
+      const subSelector = 'tbody tr .target_td';
+      const workOutlineTableEl = document.body.querySelector(tableSelector);
+      const seriesLinkEl = workOutlineTableEl.querySelector(subSelector);
+      assert.deepEqual(seriesLinkEl, target);
+    });
+
+    it('should get matched node', () => {
+      const target = document.getElementById('target');
+      const tableSelector = 'table#target_table';
+      const subSelector = 'tbody tr .target_td';
       const seriesLinkElDirect = document.body.querySelector(
         `${tableSelector} > ${subSelector}`
       );
