@@ -892,11 +892,10 @@ var parseSelector = (sel) => {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   try {
-    const ast = cssTree2.parse(selector, {
+    return cssTree2.parse(selector, {
       context: "selectorList",
       parseCustomProperty: true
     });
-    return cssTree2.toPlainObject(ast);
   } catch (e) {
     const { message } = e;
     if (/^(?:"\]"|Attribute selector [()\s,=~^$*|]+) is expected$/.test(
@@ -925,7 +924,7 @@ var parseSelector = (sel) => {
     }
   }
 };
-var walkAST = (ast = {}) => {
+var walkAST = (ast = {}, toObject = false) => {
   const branches = /* @__PURE__ */ new Set();
   const info = {
     hasForgivenPseudoFunc: false,
@@ -996,9 +995,10 @@ var walkAST = (ast = {}) => {
       }
     }
   };
-  cssTree2.walk(ast, opt);
+  const clonedAst = cssTree2.clone(ast);
+  cssTree2.walk(toObject ? cssTree2.toPlainObject(clonedAst) : clonedAst, opt);
   if (info.hasNestedSelector === true) {
-    cssTree2.findAll(ast, (node, item, list) => {
+    cssTree2.findAll(clonedAst, (node, item, list) => {
       if (list) {
         if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter((i) => {
@@ -1598,6 +1598,7 @@ var Finder = class {
   #rootWalker;
   #scoped;
   #selector;
+  #selectorAST;
   #shadow;
   #verifyShadowHost;
   #walkers;
@@ -1835,13 +1836,13 @@ var Finder = class {
         nodes[i] = [];
       }
     } else {
-      let cssAst;
       try {
-        cssAst = parseSelector(selector);
+        this.#selectorAST = parseSelector(selector);
       } catch (e) {
+        this.#selectorAST = null;
         return this.onError(e);
       }
-      const { branches, info } = walkAST(cssAst);
+      const { branches, info } = walkAST(this.#selectorAST, true);
       const {
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
@@ -4333,7 +4334,11 @@ var Finder = class {
       } else {
         pseudoElement = null;
       }
-      return { match, pseudoElement };
+      return {
+        match,
+        pseudoElement,
+        ast: this.#selectorAST
+      };
     }
     if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
       nodes.delete(this.#node);
@@ -4342,6 +4347,17 @@ var Finder = class {
       return new Set(sortNodes(nodes));
     }
     return nodes;
+  };
+  /**
+   * Gets AST for selector.
+   * @param {string} selector - The selector text.
+   * @returns {object} The AST for the selector.
+   */
+  getAST = (selector) => {
+    if (selector === this.#selector) {
+      return this.#selectorAST;
+    }
+    return parseSelector(selector);
   };
 };
 
@@ -4408,8 +4424,19 @@ var DOMSelector = class {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
           const match = this.#nwsapi.match(selector, n);
+          let ast = null;
+          if (match) {
+            const astCacheKey = `check_ast_${selector}`;
+            if (this.#cache.has(astCacheKey)) {
+              ast = this.#cache.get(astCacheKey);
+            } else {
+              ast = this.#finder.getAST(selector);
+              this.#cache.set(astCacheKey, ast);
+            }
+          }
           return {
             match,
+            ast,
             pseudoElement: null
           };
         } catch (e) {

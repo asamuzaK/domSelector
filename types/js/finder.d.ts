@@ -59,5 +59,6 @@ export class Finder {
     private _processComplexBranchAll;
     private _processComplexBranchFirst;
     find: (targetType: string) => Set<object>;
+    getAST: (selector: string) => object;
     #private;
 }
