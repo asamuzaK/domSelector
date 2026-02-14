@@ -5,6 +5,7 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'mocha';
+import * as cssTree from 'css-tree';
 
 /* test */
 import * as parser from '../src/js/parser.js';
@@ -175,7 +176,7 @@ describe('preprocess', () => {
 });
 
 describe('create AST from CSS selector', () => {
-  const func = parser.parseSelector;
+  const func = sel => cssTree.toPlainObject(parser.parseSelector(sel));
 
   describe('invalid selectors', () => {
     it('should throw', () => {
@@ -8171,7 +8172,7 @@ describe('walk AST', () => {
   });
 
   it('should throw', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8187,7 +8188,7 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
+    });
     assert.throws(
       () => func(ast),
       e => {
@@ -8200,7 +8201,7 @@ describe('walk AST', () => {
   });
 
   it('should throw', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8216,7 +8217,7 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
+    });
     assert.throws(
       () => func(ast),
       e => {
@@ -8229,7 +8230,7 @@ describe('walk AST', () => {
   });
 
   it('should throw', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8245,7 +8246,7 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
+    });
     assert.throws(
       () => func(ast),
       e => {
@@ -8258,7 +8259,7 @@ describe('walk AST', () => {
   });
 
   it('should throw', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8274,7 +8275,7 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
+    });
     assert.throws(
       () => func(ast),
       e => {
@@ -8352,7 +8353,72 @@ describe('walk AST', () => {
   });
 
   it('should get selectors', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    });
+    const res = func(ast, true);
+    assert.deepEqual(
+      res,
+      {
+        branches: [
+          [
+            {
+              loc: null,
+              name: 'ul',
+              type: TYPE_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ],
+        info: {
+          hasForgivenPseudoFunc: false,
+          hasHasPseudoFunc: false,
+          hasLogicalPseudoFunc: false,
+          hasNestedSelector: false,
+          hasNotPseudoFunc: false,
+          hasNthChildOfSelector: false,
+          hasStatePseudoClass: false
+        }
+      },
+      'result'
+    );
+  });
+
+  it('should get selectors', () => {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8399,8 +8465,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8455,7 +8521,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8481,8 +8547,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8520,7 +8586,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8536,8 +8602,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8565,7 +8631,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8581,8 +8647,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8610,7 +8676,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8633,8 +8699,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8669,7 +8735,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8709,8 +8775,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8762,7 +8828,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8797,8 +8863,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8845,7 +8911,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8880,8 +8946,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8928,7 +8994,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -8957,8 +9023,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -8999,7 +9065,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9028,8 +9094,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9070,7 +9136,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9099,8 +9165,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9141,7 +9207,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9191,8 +9257,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9254,7 +9320,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9304,8 +9370,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9367,7 +9433,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9394,8 +9460,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9434,7 +9500,7 @@ describe('walk AST', () => {
   });
 
   it('should get selectors and info', () => {
-    const ast = {
+    const ast = cssTree.fromPlainObject({
       children: [
         {
           children: [
@@ -9504,8 +9570,8 @@ describe('walk AST', () => {
       ],
       loc: null,
       type: SELECTOR_LIST
-    };
-    const res = func(ast);
+    });
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9632,7 +9698,7 @@ describe('walk AST', () => {
       loc: null,
       type: SELECTOR_LIST
     };
-    const res = func(ast);
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {
@@ -9752,7 +9818,7 @@ describe('walk AST', () => {
       loc: null,
       type: SELECTOR_LIST
     };
-    const res = func(ast);
+    const res = func(ast, true);
     assert.deepEqual(
       res,
       {

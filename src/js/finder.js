@@ -128,6 +128,7 @@ export class Finder {
   #rootWalker;
   #scoped;
   #selector;
+  #selectorAST;
   #shadow;
   #verifyShadowHost;
   #walkers;
@@ -378,13 +379,13 @@ export class Finder {
         nodes[i] = [];
       }
     } else {
-      let cssAst;
       try {
-        cssAst = parseSelector(selector);
+        this.#selectorAST = parseSelector(selector);
       } catch (e) {
+        this.#selectorAST = null;
         return this.onError(e);
       }
-      const { branches, info } = walkAST(cssAst);
+      const { branches, info } = walkAST(this.#selectorAST, true);
       const {
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
@@ -3109,7 +3110,11 @@ export class Finder {
       } else {
         pseudoElement = null;
       }
-      return { match, pseudoElement };
+      return {
+        match,
+        pseudoElement,
+        ast: this.#selectorAST
+      };
     }
     if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
       nodes.delete(this.#node);
@@ -3118,5 +3123,17 @@ export class Finder {
       return new Set(sortNodes(nodes));
     }
     return nodes;
+  };
+
+  /**
+   * Gets AST for selector.
+   * @param {string} selector - The selector text.
+   * @returns {object} The AST for the selector.
+   */
+  getAST = selector => {
+    if (selector === this.#selector) {
+      return this.#selectorAST;
+    }
+    return parseSelector(selector);
   };
 }
