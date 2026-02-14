@@ -173,6 +173,16 @@ describe('preprocess', () => {
     const res = func('\u0000');
     assert.strictEqual(res, '\uFFFD', 'result');
   });
+
+  it('should get value', () => {
+    const res = func('&');
+    assert.strictEqual(res, '', 'result');
+  });
+
+  it('should get value', () => {
+    const res = func('& .foo');
+    assert.strictEqual(res, ':scope .foo', 'result');
+  });
 });
 
 describe('create AST from CSS selector', () => {
