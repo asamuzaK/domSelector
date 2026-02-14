@@ -148,10 +148,13 @@ export const preprocess = value => {
     selector = `${preHash}${postHash}`;
     index++;
   }
-  return selector
+  selector = selector
     .replace(/\f|\r\n?/g, '\n')
-    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD)
-    .replace(/\x26/g, ':scope');
+    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD);
+  if (selector === '&') {
+    return '';
+  }
+  return selector.replace(/\x26/g, ':scope');
 };
 
 /**
