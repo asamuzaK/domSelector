@@ -7,6 +7,7 @@ import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+import * as cssTree from 'css-tree';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
@@ -164,7 +165,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('li', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -174,7 +179,11 @@ describe('DOMSelector', () => {
         res2,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('li', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -188,7 +197,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: '::before'
+          pseudoElement: '::before',
+          ast: cssTree.parse('li::before', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -201,7 +214,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('null', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -247,7 +264,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('#main p:not(.foo)', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -264,7 +285,32 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse(
+            ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
+            {
+              context: 'selectorList',
+              parseCustomProperty: true
+            }
+          )
+        },
+        'result'
+      );
+    });
+
+    it('should get result', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.getElementById('li3');
+      const res = domSelector.check(
+        'ol > li:is(:only-child, :last-child)',
+        node
+      );
+      assert.deepEqual(
+        res,
+        {
+          match: false,
+          pseudoElement: null,
+          ast: null
         },
         'result'
       );
@@ -289,7 +335,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('li', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -314,7 +364,11 @@ describe('DOMSelector', () => {
         res,
         {
           match: true,
-          pseudoElement: '::before'
+          pseudoElement: '::before',
+          ast: cssTree.parse('li::before', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );

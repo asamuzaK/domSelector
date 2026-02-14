@@ -7,6 +7,7 @@ import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it, xit } from 'mocha';
 import sinon from 'sinon';
+import * as cssTree from 'css-tree';
 
 /* test */
 import { Finder } from '../src/js/finder.js';
@@ -14689,7 +14690,11 @@ describe('Finder', () => {
         res,
         {
           match: true,
-          pseudoElement: '::before'
+          pseudoElement: '::before',
+          ast: cssTree.parse('li::before', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -14706,7 +14711,11 @@ describe('Finder', () => {
         res,
         {
           match: true,
-          pseudoElement: '::before::marker'
+          pseudoElement: '::before::marker',
+          ast: cssTree.parse('li.li::before::marker', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
         'result'
       );
@@ -14723,8 +14732,42 @@ describe('Finder', () => {
         res,
         {
           match: true,
-          pseudoElement: null
+          pseudoElement: null,
+          ast: cssTree.parse('li', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          })
         },
+        'result'
+      );
+    });
+  });
+
+  describe('get AST for selector', () => {
+    it('should get AST', () => {
+      const finder = new Finder(window);
+      finder.setup('ul', document);
+      const res = finder.getAST('ol');
+      assert.deepEqual(
+        res,
+        cssTree.parse('ol', {
+          context: 'selectorList',
+          parseCustomProperty: true
+        }),
+        'result'
+      );
+    });
+
+    it('should get AST', () => {
+      const finder = new Finder(window);
+      finder.setup('ul', document);
+      const res = finder.getAST('ul');
+      assert.deepEqual(
+        res,
+        cssTree.parse('ul', {
+          context: 'selectorList',
+          parseCustomProperty: true
+        }),
         'result'
       );
     });

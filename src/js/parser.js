@@ -166,11 +166,10 @@ export const parseSelector = sel => {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   try {
-    const ast = cssTree.parse(selector, {
+    return cssTree.parse(selector, {
       context: 'selectorList',
       parseCustomProperty: true
     });
-    return cssTree.toPlainObject(ast);
   } catch (e) {
     const { message } = e;
     if (
@@ -208,9 +207,10 @@ export const parseSelector = sel => {
  * Walks the provided AST to collect selector branches and gather information
  * about its contents.
  * @param {object} ast - The AST to traverse.
+ * @param {boolean} toObject - True if converts ast to object, false otherwise.
  * @returns {{branches: Array<object>, info: object}} An object containing the selector branches and info.
  */
-export const walkAST = (ast = {}) => {
+export const walkAST = (ast = {}, toObject = false) => {
   const branches = new Set();
   const info = {
     hasForgivenPseudoFunc: false,
@@ -285,9 +285,10 @@ export const walkAST = (ast = {}) => {
       }
     }
   };
-  cssTree.walk(ast, opt);
+  const clonedAst = cssTree.clone(ast);
+  cssTree.walk(toObject ? cssTree.toPlainObject(clonedAst) : clonedAst, opt);
   if (info.hasNestedSelector === true) {
-    cssTree.findAll(ast, (node, item, list) => {
+    cssTree.findAll(clonedAst, (node, item, list) => {
       if (list) {
         if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter(i => {
