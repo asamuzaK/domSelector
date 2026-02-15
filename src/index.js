@@ -26,6 +26,7 @@ const MAX_CACHE = 1024;
  * @typedef {object} CheckResult
  * @property {boolean} match - The match result.
  * @property {string?} pseudoElement - The pseudo-element, if any.
+ * @property {object} ast - The AST object.
  */
 
 /* DOMSelector */
