@@ -11,4 +11,5 @@ export class DOMSelector {
 export type CheckResult = {
     match: boolean;
     pseudoElement: string | null;
+    ast: object;
 };
