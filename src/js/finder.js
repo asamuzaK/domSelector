@@ -1663,9 +1663,13 @@ export class Finder {
           break;
         }
         case 'popover-open': {
+          // FIXME: not implemented in jsdom
+          // @see https://github.com/jsdom/jsdom/issues/3721
+          /*
           if (node.popover && isVisible(node)) {
             matched.add(node);
           }
+          */
           break;
         }
         // Ignore :host.
