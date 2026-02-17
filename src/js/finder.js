@@ -3131,7 +3131,7 @@ export class Finder {
    * @returns {object} The AST for the selector.
    */
   getAST = selector => {
-    if (selector === this.#selector) {
+    if (selector === this.#selector && this.#selectorAST) {
       return this.#selectorAST;
     }
     return parseSelector(selector);
