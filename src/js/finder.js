@@ -469,17 +469,19 @@ export class Finder {
     let childNode = walker.firstChild();
     while (childNode) {
       if (selectorBranches) {
-        if (isVisible(childNode)) {
-          let isMatch = false;
-          const l = selectorBranches.length;
-          for (let i = 0; i < l; i++) {
-            const leaves = selectorBranches[i];
-            if (this._matchLeaves(leaves, childNode, opt)) {
-              isMatch = true;
-              break;
-            }
+        let isMatch = false;
+        const l = selectorBranches.length;
+        for (let i = 0; i < l; i++) {
+          const leaves = selectorBranches[i];
+          if (this._matchLeaves(leaves, childNode, opt)) {
+            isMatch = true;
+            break;
           }
-          if (isMatch) {
+        }
+        if (isMatch) {
+          if (this.#node === childNode) {
+            children.push(childNode);
+          } else if (isVisible(childNode)) {
             children.push(childNode);
           }
         }

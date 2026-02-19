@@ -647,12 +647,10 @@ export const isVisible = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
     return false;
   }
+  // TODO: switch to node.checkVisibility()
   const window = node.ownerDocument.defaultView;
   const { display, visibility } = window.getComputedStyle(node);
-  if (display !== 'none' && visibility === 'visible') {
-    return true;
-  }
-  return false;
+  return display !== 'none' && visibility === 'visible';
 };
 
 /**
