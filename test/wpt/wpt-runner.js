@@ -96,13 +96,14 @@ const setup = window => {
 };
 
 const rootURLs = [
-  'css/css-scoping/',
+  'css/css-shadow/',
   'css/selectors/',
   'html/semantics/selectors/'
 ];
 
 const excludeFilter = testPath => {
   const ignoreDir = [
+    'part', // ::part() not implemented
     'reference/',
     'resources/',
     'tentative/',
@@ -116,7 +117,7 @@ const excludeFilter = testPath => {
     return false;
   }
   const ignoreFile = [
-    // css/css-scoping
+    // css/css-shadow
     'css-scoping-shadow-assigned-node-with-before-after.html',
     'css-scoping-shadow-assigned-node-with-rules.html',
     'css-scoping-shadow-dynamic-remove-style-detached.html',
@@ -236,6 +237,7 @@ const excludeFilter = testPath => {
     'slotted-placeholder.html',
     'slotted-specificity-002.html',
     'slotted-specificity.html',
+    'slotted-text-with-flex.html',
     'slotted-with-pseudo-element.html',
     'stylesheet-title-001.html',
     'stylesheet-title-002.html',
@@ -526,6 +528,7 @@ const excludeFilter = testPath => {
     'invalidation/nth-last-child-of-sibling.html',
     'invalidation/nth-last-child-when-ancestor-changes.html',
     'invalidation/nth-last-child-when-sibling-changes.html',
+    'invalidation/open-pseudo-class-in-has.html',
     'invalidation/part-pseudo.html',
     'invalidation/placeholder-shown.html',
     'invalidation/quirks-mode-stylesheet-dynamic-add-001.html',
@@ -546,7 +549,9 @@ const excludeFilter = testPath => {
     'is-where-pseudo-elements.html',
     'is-where-shadow.html',
     'is-where-visited.html',
+    'media/media-loading-state-timing.sub.html',
     'media/media-loading-state.html',
+    'media/media-playback-state-timing.html',
     'media/media-playback-state.html',
     'media/sound-state.html',
     'missing-right-token.html',
