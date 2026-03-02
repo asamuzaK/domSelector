@@ -802,13 +802,13 @@ export class Finder {
   };
 
   /**
-   * match pseudo-class selector
+   * Matches pseudo-class selector.
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} ast - The AST.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
@@ -1535,7 +1535,7 @@ export class Finder {
           const attrType = node.getAttribute('type');
           if (
             localName === 'input' &&
-            !(node.readonly || node.hasAttribute('readonly')) &&
+            !(node.readOnly || node.hasAttribute('readonly')) &&
             !(node.disabled || node.hasAttribute('disabled')) &&
             KEYS_INPUT_RANGE.has(attrType)
           ) {
