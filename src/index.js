@@ -125,9 +125,7 @@ export class DOMSelector {
     opt.check = true;
     opt.noexcept = true;
     opt.warn = false;
-    this.#finder.setup(selector, node, opt);
-    const res = this.#finder.find(TARGET_SELF);
-    return res;
+    return this.#finder.setup(selector, node, opt).find(TARGET_SELF);
   };
 
   /**
@@ -163,8 +161,7 @@ export class DOMSelector {
       if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res = this.#nwsapi.match(selector, n);
-          return res;
+          return this.#nwsapi.match(selector, n);
         } catch (e) {
           // fall through
         }
@@ -175,8 +172,7 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      this.#finder.setup(selector, node, opt);
-      const nodes = this.#finder.find(TARGET_SELF);
+      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_SELF);
       res = nodes.size;
     } catch (e) {
       this.#finder.onError(e, opt);
@@ -217,8 +213,7 @@ export class DOMSelector {
       if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res = this.#nwsapi.closest(selector, n);
-          return res;
+          return this.#nwsapi.closest(selector, n);
         } catch (e) {
           // fall through
         }
@@ -229,8 +224,7 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      this.#finder.setup(selector, node, opt);
-      const nodes = this.#finder.find(TARGET_LINEAL);
+      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_LINEAL);
       if (nodes.size) {
         let refNode = node;
         while (refNode) {
@@ -264,8 +258,7 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      this.#finder.setup(selector, node, opt);
-      const nodes = this.#finder.find(TARGET_FIRST);
+      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_FIRST);
       if (nodes.size) {
         [res] = [...nodes];
       }
@@ -307,8 +300,7 @@ export class DOMSelector {
       if (filterMatches) {
         try {
           const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const res = this.#nwsapi.select(selector, n);
-          return res;
+          return this.#nwsapi.select(selector, n);
         } catch (e) {
           // fall through
         }
@@ -319,8 +311,7 @@ export class DOMSelector {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
-      this.#finder.setup(selector, node, opt);
-      const nodes = this.#finder.find(TARGET_ALL);
+      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_ALL);
       if (nodes.size) {
         res = [...nodes];
       }

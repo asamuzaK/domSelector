@@ -3152,7 +3152,6 @@ export class Finder {
    * @returns {object} The AST for the selector.
    */
   getAST = selector => {
-    // TBD: get cached AST if possible.
     return parseSelector(selector);
   };
 }
