@@ -266,11 +266,7 @@ describe('Finder', () => {
       assert.throws(
         () => finder._correspond('[foo==bar]'),
         e => {
-          assert.strictEqual(
-            e instanceof DOMException,
-            true,
-            'instance'
-          );
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
           assert.strictEqual(e.name, SYNTAX_ERR, 'name');
           assert.strictEqual(
             e.message,

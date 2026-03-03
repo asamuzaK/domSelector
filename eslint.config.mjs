@@ -31,15 +31,6 @@ export default [
       unicorn
     },
     rules: {
-      'import-x/order': [
-        'error',
-        {
-          alphabetize: {
-            order: 'ignore',
-            caseInsensitive: false
-          }
-        }
-      ],
       'no-await-in-loop': 'error',
       'no-use-before-define': [
         'error',

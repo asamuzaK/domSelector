@@ -43,10 +43,10 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-regexp": "^3.0.0",
     "eslint-plugin-unicorn": "^63.0.0",
-    "globals": "^17.3.0",
+    "globals": "^17.4.0",
     "jsdom": "^28.1.0",
     "mocha": "^11.7.5",
-    "neostandard": "^0.12.2",
+    "neostandard": "^0.13.0",
     "prettier": "^3.8.1",
     "sinon": "^21.0.1",
     "typescript": "^5.9.3",
@@ -56,7 +56,8 @@
     "c8": {
       "yargs": "^18.0.0"
     },
-    "jsdom": "$jsdom"
+    "jsdom": "$jsdom",
+    "serialize-javascript": "^7.0.4"
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
@@ -71,5 +72,5 @@
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
   },
-  "version": "7.0.0"
+  "version": "7.0.1"
 }

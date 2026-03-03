@@ -241,8 +241,10 @@ describe('DOMSelector', () => {
     });
 
     it('should not throw and get result', () => {
-      const res =
-        new DOMSelector(window).check('[foo=bar baz]::before', document.body);
+      const res = new DOMSelector(window).check(
+        '[foo=bar baz]::before',
+        document.body
+      );
       assert.deepEqual(
         res,
         {

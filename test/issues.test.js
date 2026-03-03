@@ -1178,7 +1178,7 @@ describe('domSelector regression tests', () => {
     `;
     let window, document;
     beforeEach(() => {
-      const dom = jsdom(html, { contentType: "application/xhtml+xml" });
+      const dom = jsdom(html, { contentType: 'application/xhtml+xml' });
       window = dom.window;
       document = window.document;
     });
@@ -1191,29 +1191,41 @@ describe('domSelector regression tests', () => {
     it('should get result', () => {
       const domSelector = new DOMSelector(window);
       const p = document.querySelector('p');
-      assert.deepEqual(domSelector.check('p', p), {
-        ast: cssTree.parse('p', {
-          context: 'selectorList',
-          parseCustomProperty: true
-        }),
-        match: true,
-        pseudoElement: null
-      }, 'Valid selector: #selectorAST set correctly');
+      assert.deepEqual(
+        domSelector.check('p', p),
+        {
+          ast: cssTree.parse('p', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          }),
+          match: true,
+          pseudoElement: null
+        },
+        'Valid selector: #selectorAST set correctly'
+      );
 
-      assert.deepEqual(domSelector.check('', p), {
-        ast: null,
-        match: false,
-        pseudoElement: null
-      }, 'Invalid selector: #selectorAST is null');
+      assert.deepEqual(
+        domSelector.check('', p),
+        {
+          ast: null,
+          match: false,
+          pseudoElement: null
+        },
+        'Invalid selector: #selectorAST is null'
+      );
 
-      assert.deepEqual(domSelector.check('p', p), {
-        ast: cssTree.parse('p', {
-          context: 'selectorList',
-          parseCustomProperty: true
-        }),
-        match: true,
-        pseudoElement: null
-      }, 'Same valid selector: #selectorAST set correctly');
+      assert.deepEqual(
+        domSelector.check('p', p),
+        {
+          ast: cssTree.parse('p', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          }),
+          match: true,
+          pseudoElement: null
+        },
+        'Same valid selector: #selectorAST set correctly'
+      );
     });
   });
 });
