@@ -2408,7 +2408,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (
@@ -2447,7 +2447,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2470,7 +2470,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2542,7 +2542,7 @@ export class Finder {
         }
       }
     } else if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (targetType === TARGET_FIRST) {
@@ -3039,7 +3039,26 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   find = targetType => {
-    const [[...branches], collectedNodes] = this._collectNodes(targetType);
+    let collection;
+    try {
+      collection = this._collectNodes(targetType);
+    } catch (e) {
+      if (this.#check) {
+        let pseudoElement;
+        if (this.#pseudoElement.length) {
+          pseudoElement = this.#pseudoElement.join('');
+        } else {
+          pseudoElement = null;
+        }
+        return {
+          pseudoElement,
+          match: false,
+          ast: this.#selectorAST
+        };
+      }
+      throw e;
+    }
+    const [[...branches], collectedNodes] = collection;
     const l = branches.length;
     let sort =
       l > 1 && targetType === TARGET_ALL && this.#selector.includes(':scope');
@@ -3137,9 +3156,7 @@ export class Finder {
    * @returns {object} The AST for the selector.
    */
   getAST = selector => {
-    if (selector === this.#selector && this.#selectorAST) {
-      return this.#selectorAST;
-    }
+    // TBD: get cached AST if possible.
     return parseSelector(selector);
   };
 }
