@@ -1201,7 +1201,7 @@ describe('domSelector regression tests', () => {
           match: true,
           pseudoElement: null
         },
-        'Valid selector: #selectorAST set correctly'
+        'Valid selector: AST set correctly'
       );
 
       assert.deepEqual(
@@ -1211,7 +1211,7 @@ describe('domSelector regression tests', () => {
           match: false,
           pseudoElement: null
         },
-        'Invalid selector: #selectorAST is null'
+        'Invalid selector: AST is null'
       );
 
       assert.deepEqual(
@@ -1224,7 +1224,7 @@ describe('domSelector regression tests', () => {
           match: true,
           pseudoElement: null
         },
-        'Same valid selector: #selectorAST set correctly'
+        'Same valid selector: AST set correctly'
       );
     });
   });
