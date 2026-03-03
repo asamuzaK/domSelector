@@ -6,6 +6,7 @@
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import * as cssTree from 'css-tree';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
@@ -1168,6 +1169,51 @@ describe('domSelector regression tests', () => {
         `${tableSelector} > ${subSelector}`
       );
       assert.deepEqual(seriesLinkElDirect, target);
+    });
+  });
+
+  describe('#208 - https://github.com/asamuzaK/domSelector/issues/208', () => {
+    const html = `
+      <html xmlns="http://www.w3.org/1999/xhtml"><body><p>test</p></body></html>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html, { contentType: "application/xhtml+xml" });
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should get result', () => {
+      const domSelector = new DOMSelector(window);
+      const p = document.querySelector('p');
+      assert.deepEqual(domSelector.check('p', p), {
+        ast: cssTree.parse('p', {
+          context: 'selectorList',
+          parseCustomProperty: true
+        }),
+        match: true,
+        pseudoElement: null
+      }, 'Valid selector: #selectorAST set correctly');
+
+      assert.deepEqual(domSelector.check('', p), {
+        ast: null,
+        match: false,
+        pseudoElement: null
+      }, 'Invalid selector: #selectorAST is null');
+
+      assert.deepEqual(domSelector.check('p', p), {
+        ast: cssTree.parse('p', {
+          context: 'selectorList',
+          parseCustomProperty: true
+        }),
+        match: true,
+        pseudoElement: null
+      }, 'Same valid selector: #selectorAST set correctly');
     });
   });
 });

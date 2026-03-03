@@ -224,23 +224,36 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
-      assert.throws(
-        () => new DOMSelector(window).check('[foo=bar baz]', document.body),
-        e => {
-          assert.strictEqual(
-            e instanceof window.DOMException,
-            true,
-            'instance'
-          );
-          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.strictEqual(
-            e.message,
-            'Invalid selector [foo=bar baz]',
-            'message'
-          );
-          return true;
-        }
+    it('should not throw and get result', () => {
+      const res = new DOMSelector(window).check('[foo=bar baz]', document.body);
+      assert.deepEqual(
+        res,
+        {
+          ast: cssTree.parse('[foo=bar baz]', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          }),
+          match: false,
+          pseudoElement: null
+        },
+        'result'
+      );
+    });
+
+    it('should not throw and get result', () => {
+      const res =
+        new DOMSelector(window).check('[foo=bar baz]::before', document.body);
+      assert.deepEqual(
+        res,
+        {
+          ast: cssTree.parse('[foo=bar baz]::before', {
+            context: 'selectorList',
+            parseCustomProperty: true
+          }),
+          match: false,
+          pseudoElement: '::before'
+        },
+        'result'
       );
     });
 

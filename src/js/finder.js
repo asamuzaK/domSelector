@@ -215,7 +215,6 @@ export class Finder {
     this.#scoped =
       this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     this.#selector = selector;
-    [this.#ast, this.#nodes] = this._correspond(selector);
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
     this.#nodeWalker = null;
@@ -379,12 +378,7 @@ export class Finder {
         nodes[i] = [];
       }
     } else {
-      try {
-        this.#selectorAST = parseSelector(selector);
-      } catch (e) {
-        this.#selectorAST = null;
-        return this.onError(e);
-      }
+      this.#selectorAST = parseSelector(selector);
       const { branches, info } = walkAST(this.#selectorAST, true);
       const {
         hasHasPseudoFunc,
@@ -802,13 +796,13 @@ export class Finder {
   };
 
   /**
-   * match pseudo-class selector
+   * Matches pseudo-class selector.
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
-   * @param {object} ast - AST
-   * @param {object} node - Element node
-   * @param {object} [opt] - options
-   * @returns {Set.<object>} - collection of matched nodes
+   * @param {object} ast - The AST.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
@@ -1535,7 +1529,7 @@ export class Finder {
           const attrType = node.getAttribute('type');
           if (
             localName === 'input' &&
-            !(node.readonly || node.hasAttribute('readonly')) &&
+            !(node.readOnly || node.hasAttribute('readonly')) &&
             !(node.disabled || node.hasAttribute('disabled')) &&
             KEYS_INPUT_RANGE.has(attrType)
           ) {
@@ -2408,7 +2402,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (
@@ -2447,7 +2441,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2470,7 +2464,7 @@ export class Finder {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2542,7 +2536,7 @@ export class Finder {
         }
       }
     } else if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      [nodes, filtered] = this._matchSelf(leaves, this.#check);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (targetType === TARGET_FIRST) {
@@ -2733,6 +2727,7 @@ export class Finder {
    * @returns {Array.<Array.<object>>} An array containing the AST and nodes.
    */
   _collectNodes = targetType => {
+    [this.#ast, this.#nodes] = this._correspond(this.#selector);
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
@@ -3039,7 +3034,27 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   find = targetType => {
-    const [[...branches], collectedNodes] = this._collectNodes(targetType);
+    let collection;
+    try {
+      collection = this._collectNodes(targetType);
+    } catch (e) {
+      if (this.#check) {
+        let pseudoElement;
+        if (this.#pseudoElement.length) {
+          pseudoElement = this.#pseudoElement.join('');
+        } else {
+          pseudoElement = null;
+        }
+        return {
+          pseudoElement,
+          match: false,
+          ast: this.#selectorAST ?? null
+        };
+      } else {
+        throw e;
+      }
+    }
+    const [[...branches], collectedNodes] = collection;
     const l = branches.length;
     let sort =
       l > 1 && targetType === TARGET_ALL && this.#selector.includes(':scope');
@@ -3137,9 +3152,7 @@ export class Finder {
    * @returns {object} The AST for the selector.
    */
   getAST = selector => {
-    if (selector === this.#selector && this.#selectorAST) {
-      return this.#selectorAST;
-    }
+    // TBD: get cached AST if possible.
     return parseSelector(selector);
   };
 }

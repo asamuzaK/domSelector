@@ -119,19 +119,14 @@ export class DOMSelector {
         }
       }
     }
-    let res;
-    try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      opt.check = true;
-      opt.noexept = true;
-      opt.warn = false;
-      this.#finder.setup(selector, node, opt);
-      res = this.#finder.find(TARGET_SELF);
-    } catch (e) {
-      this.#finder.onError(e, opt);
+    if (this.#idlUtils) {
+      node = this.#idlUtils.wrapperForImpl(node);
     }
+    opt.check = true;
+    opt.noexcept = true;
+    opt.warn = false;
+    this.#finder.setup(selector, node, opt);
+    const res = this.#finder.find(TARGET_SELF);
     return res;
   };
 
