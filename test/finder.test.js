@@ -267,7 +267,7 @@ describe('Finder', () => {
         () => finder._correspond('[foo==bar]'),
         e => {
           assert.strictEqual(
-            e instanceof window.DOMException,
+            e instanceof DOMException,
             true,
             'instance'
           );

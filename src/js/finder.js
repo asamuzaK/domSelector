@@ -215,7 +215,6 @@ export class Finder {
     this.#scoped =
       this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     this.#selector = selector;
-    [this.#ast, this.#nodes] = this._correspond(selector);
     this.#pseudoElement = [];
     this.#walkers = new WeakMap();
     this.#nodeWalker = null;
@@ -379,12 +378,7 @@ export class Finder {
         nodes[i] = [];
       }
     } else {
-      try {
-        this.#selectorAST = parseSelector(selector);
-      } catch (e) {
-        this.#selectorAST = null;
-        return this.onError(e);
-      }
+      this.#selectorAST = parseSelector(selector);
       const { branches, info } = walkAST(this.#selectorAST, true);
       const {
         hasHasPseudoFunc,
@@ -2733,6 +2727,7 @@ export class Finder {
    * @returns {Array.<Array.<object>>} An array containing the AST and nodes.
    */
   _collectNodes = targetType => {
+    [this.#ast, this.#nodes] = this._correspond(this.#selector);
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
@@ -3053,10 +3048,11 @@ export class Finder {
         return {
           pseudoElement,
           match: false,
-          ast: this.#selectorAST
+          ast: this.#selectorAST ?? null
         };
+      } else {
+        throw e;
       }
-      throw e;
     }
     const [[...branches], collectedNodes] = collection;
     const l = branches.length;
