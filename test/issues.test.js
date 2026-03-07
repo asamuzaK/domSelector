@@ -1195,8 +1195,7 @@ describe('domSelector regression tests', () => {
         domSelector.check('p', p),
         {
           ast: cssTree.parse('p', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           }),
           match: true,
           pseudoElement: null
@@ -1218,8 +1217,7 @@ describe('domSelector regression tests', () => {
         domSelector.check('p', p),
         {
           ast: cssTree.parse('p', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           }),
           match: true,
           pseudoElement: null

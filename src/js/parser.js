@@ -170,8 +170,7 @@ export const parseSelector = sel => {
   }
   try {
     return cssTree.parse(selector, {
-      context: 'selectorList',
-      parseCustomProperty: true
+      context: 'selectorList'
     });
   } catch (e) {
     const { message } = e;

@@ -167,8 +167,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: null,
           ast: cssTree.parse('li', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -181,8 +180,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: null,
           ast: cssTree.parse('li', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -199,8 +197,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: '::before',
           ast: cssTree.parse('li::before', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -216,8 +213,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: null,
           ast: cssTree.parse('null', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -230,8 +226,7 @@ describe('DOMSelector', () => {
         res,
         {
           ast: cssTree.parse('[foo=bar baz]', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           }),
           match: false,
           pseudoElement: null
@@ -249,8 +244,7 @@ describe('DOMSelector', () => {
         res,
         {
           ast: cssTree.parse('[foo=bar baz]::before', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           }),
           match: false,
           pseudoElement: '::before'
@@ -281,8 +275,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: null,
           ast: cssTree.parse('#main p:not(.foo)', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -304,8 +297,7 @@ describe('DOMSelector', () => {
           ast: cssTree.parse(
             ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
             {
-              context: 'selectorList',
-              parseCustomProperty: true
+              context: 'selectorList'
             }
           )
         },
@@ -352,8 +344,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: null,
           ast: cssTree.parse('li', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
@@ -381,8 +372,7 @@ describe('DOMSelector', () => {
           match: true,
           pseudoElement: '::before',
           ast: cssTree.parse('li::before', {
-            context: 'selectorList',
-            parseCustomProperty: true
+            context: 'selectorList'
           })
         },
         'result'
