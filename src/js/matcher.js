@@ -427,15 +427,15 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
   let attrValue;
   if (astIdentValue) {
     if (caseInsensitive) {
-      attrValue = astIdentValue.toLowerCase();
+      attrValue = astIdentValue.toLowerCase().replace(/\\(?!\\)/g, '');
     } else {
-      attrValue = astIdentValue;
+      attrValue = astIdentValue.replace(/\\(?!\\)/g, '');
     }
   } else if (astStringValue) {
     if (caseInsensitive) {
-      attrValue = astStringValue.toLowerCase();
+      attrValue = astStringValue.toLowerCase().replace(/\\(?!\\)/g, '');
     } else {
-      attrValue = astStringValue;
+      attrValue = astStringValue.replace(/\\(?!\\)/g, '');
     }
   } else if (astStringValue === '') {
     attrValue = astStringValue;

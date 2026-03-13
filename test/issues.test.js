@@ -354,6 +354,43 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#3033 - https://github.com/jsdom/jsdom/issues/3033', () => {
+    function cssOnlyEscapeSpaces(string) {
+      // First escape backslashes, then escape spaces
+      return string.replace(/\\/g, "\\\\").replace(/ /g, "\\ ");
+    }
+    let window;
+    beforeEach(() => {
+      const dom = jsdom('');
+      window = dom.window;
+    });
+    afterEach(() => {
+      window = null;
+    });
+
+    it('should get result', () => {
+      const original = "               ";
+      const escaped = cssOnlyEscapeSpaces(original + original);
+      const doc = new window.DOMParser().parseFromString(
+        `<div id="div" style="${original + original}">hello</div>`,
+        "text/html"
+      );
+      const div = doc.getElementById("div");
+      assert.deepEqual(doc.querySelector(`[style=${escaped}]`), div);
+    });
+
+    it('should get result', () => {
+      const original = "               ";
+      const escaped = cssOnlyEscapeSpaces(original + '\\');
+      const doc = new window.DOMParser().parseFromString(
+        `<div id="div" style="${original + '\\'}">hello</div>`,
+        "text/html"
+      );
+      const div = doc.getElementById("div");
+      assert.deepEqual(doc.querySelector(`[style=${escaped}]`), div);
+    });
+  });
+
   describe('#3067 - https://github.com/jsdom/jsdom/issues/3067', () => {
     const domStr = `<!DOCTYPE html>
     <html>
