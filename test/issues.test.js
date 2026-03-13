@@ -356,7 +356,8 @@ describe('jsdom issues tagged with `selectors` label', () => {
 
   describe('#3033 - https://github.com/jsdom/jsdom/issues/3033', () => {
     function cssOnlyEscapeSpaces(string) {
-      return string.replace(/ /gi, "\\ ");
+      // First escape backslashes, then escape spaces
+      return string.replace(/\\/g, "\\\\").replace(/ /g, "\\ ");
     }
     let window;
     beforeEach(() => {
@@ -380,9 +381,9 @@ describe('jsdom issues tagged with `selectors` label', () => {
 
     it('should get result', () => {
       const original = "               ";
-      const escaped = cssOnlyEscapeSpaces(original + '\\\\' + original);
+      const escaped = cssOnlyEscapeSpaces(original + '\\');
       const doc = new window.DOMParser().parseFromString(
-        `<div id="div" style="${original + '\\\\' + original}">hello</div>`,
+        `<div id="div" style="${original + '\\'}">hello</div>`,
         "text/html"
       );
       const div = doc.getElementById("div");
