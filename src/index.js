@@ -253,6 +253,31 @@ export class DOMSelector {
       const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
       return this.#finder.onError(e, opt);
     }
+    const document =
+      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+    if (
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement &&
+      (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
+    ) {
+      const cacheKey = `querySelector_${selector}`;
+      let filterMatches = false;
+      if (this.#cache.has(cacheKey)) {
+        filterMatches = this.#cache.get(cacheKey);
+      } else {
+        filterMatches = filterSelector(selector, TARGET_FIRST);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
+        try {
+          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+          return this.#nwsapi.first(selector, n);
+        } catch (e) {
+          // fall through
+        }
+      }
+    }
     let res;
     try {
       if (this.#idlUtils) {

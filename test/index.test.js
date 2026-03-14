@@ -854,6 +854,33 @@ describe('DOMSelector', () => {
       const node = document.getElementById('div1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('[id="dt1"]', node);
+      assert.deepEqual(res, target, 'result');
+    });
+
+    // FIXME
+    it('should get matched node', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('div1');
+      node._ownerDocument = document;
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('[id="dt1"]', node);
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('div1');
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('dt', node);
       assert.deepEqual(res, target, 'result');
     });
