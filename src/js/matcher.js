@@ -315,9 +315,8 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
     return false;
   }
   // Determine case sensitivity based on document type and flags.
-  const contentType = node.ownerDocument.contentType;
   let caseInsensitive;
-  if (contentType === 'text/html') {
+  if (node.ownerDocument.contentType === 'text/html') {
     if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
       caseInsensitive = false;
     } else {
@@ -345,6 +344,7 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         itemName = itemName.toLowerCase();
         itemValue = itemValue.toLowerCase();
       }
+      const colonIdx = itemName.indexOf(':');
       switch (astPrefix) {
         case '': {
           if (astLocalName === itemName) {
@@ -353,9 +353,10 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
           break;
         }
         case '*': {
-          if (itemName.indexOf(':') > -1) {
-            const [, ...restItemName] = itemName.split(':');
-            const itemLocalName = restItemName.join(':').replace(/^:/, '');
+          if (colonIdx > -1) {
+            const itemLocalName = itemName
+              .substring(colonIdx + 1)
+              .replace(/^:/, '');
             if (itemLocalName === astLocalName) {
               attrValues.add(itemValue);
             }
@@ -376,9 +377,11 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
               globalObject
             );
           }
-          if (itemName.indexOf(':') > -1) {
-            const [itemPrefix, ...restItemName] = itemName.split(':');
-            const itemLocalName = restItemName.join(':').replace(/^:/, '');
+          if (colonIdx > -1) {
+            const itemPrefix = itemName.substring(0, colonIdx);
+            const itemLocalName = itemName
+              .substring(colonIdx + 1)
+              .replace(/^:/, '');
             // Ignore the 'xml:lang' attribute.
             if (itemPrefix === 'xml' && itemLocalName === 'lang') {
               continue;
@@ -402,9 +405,12 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         itemName = itemName.toLowerCase();
         itemValue = itemValue.toLowerCase();
       }
-      if (itemName.indexOf(':') > -1) {
-        const [itemPrefix, ...restItemName] = itemName.split(':');
-        const itemLocalName = restItemName.join(':').replace(/^:/, '');
+      const colonIdx = itemName.indexOf(':');
+      if (colonIdx > -1) {
+        const itemPrefix = itemName.substring(0, colonIdx);
+        const itemLocalName = itemName
+          .substring(colonIdx + 1)
+          .replace(/^:/, '');
         // The attribute is starting with ':'.
         if (!itemPrefix && astAttrName === `:${itemLocalName}`) {
           attrValues.add(itemValue);

@@ -59,6 +59,7 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
+const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}="?[A-Z\d\s-]{1,255}"?\]$/i;
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
@@ -1045,7 +1046,7 @@ export const initNwsapi = (window, document) => {
  * @returns {boolean} - True if the selector is valid for nwsapi.
  */
 export const filterSelector = (selector, target) => {
-  const isQuerySelectorType = target === TARGET_FIRST || target === TARGET_ALL;
+  const isQuerySelectorAll = target === TARGET_ALL;
   if (
     !selector ||
     typeof selector !== 'string' ||
@@ -1060,6 +1061,13 @@ export const filterSelector = (selector, target) => {
     if (sel.indexOf(']') < 0) {
       return false;
     }
+  }
+  // Match only simple attribute selector for TARGET_FIRST.
+  if (target === TARGET_FIRST) {
+    if (REG_ATTR_SIMPLE.test(selector)) {
+      return true;
+    }
+    return false;
   }
   // Exclude various complex or unsupported selectors.
   // - selectors containing '/'
@@ -1077,16 +1085,16 @@ export const filterSelector = (selector, target) => {
   // Include pseudo-classes that are known to work correctly.
   if (selector.includes(':')) {
     let complex = false;
-    if (target !== isQuerySelectorType) {
+    if (target !== isQuerySelectorAll) {
       complex = REG_COMPLEX.test(selector);
     }
     if (
-      isQuerySelectorType &&
+      isQuerySelectorAll &&
       REG_DESCEND.test(selector) &&
       !REG_SIBLING.test(selector)
     ) {
       return false;
-    } else if (!isQuerySelectorType && /:has\(/.test(selector)) {
+    } else if (!isQuerySelectorAll && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }
