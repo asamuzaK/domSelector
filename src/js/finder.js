@@ -2880,8 +2880,8 @@ export class Finder {
       combo,
       leaves
     };
-    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_NEXT));
-    if (nextNodes.size) {
+    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
+    if (nextNodes.length) {
       if (index === branch.length - 1) {
         const [nextNode] = sortNodes(nextNodes);
         return nextNode;
@@ -2906,9 +2906,8 @@ export class Finder {
   _matchNodePrev = (branch, node, opt) => {
     const { index } = opt;
     const twig = branch[index];
-    const nodes = new Set([node]);
-    const nextNodes = new Set(this._getCombinedNodes(twig, nodes, DIR_PREV));
-    if (nextNodes.size) {
+    const nextNodes = this._getCombinedNodes(twig, [node], DIR_PREV);
+    if (nextNodes.length) {
       if (index === 0) {
         return node;
       }
@@ -2945,7 +2944,7 @@ export class Finder {
       const { combo: firstCombo } = branch[0];
       for (const node of entryNodes) {
         let combo = firstCombo;
-        let nextNodes = new Set([node]);
+        let nextNodes = [node];
         for (let j = 1; j < branchLen; j++) {
           const { combo: nextCombo, leaves } = branch[j];
           const twig = { combo, leaves };
@@ -2957,10 +2956,8 @@ export class Finder {
               }
             }
             combo = nextCombo;
-            nextNodes = new Set(nodesArr);
+            nextNodes = nodesArr;
           } else {
-            // No further matches down this path.
-            nextNodes.clear();
             break;
           }
         }
@@ -2968,7 +2965,7 @@ export class Finder {
       // DIR_PREV
     } else {
       for (const node of entryNodes) {
-        let nextNodes = new Set([node]);
+        let nextNodes = [node];
         for (let j = lastIndex - 1; j >= 0; j--) {
           const twig = branch[j];
           const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
@@ -2977,10 +2974,8 @@ export class Finder {
             if (j === 0) {
               matchedNodes.add(node);
             }
-            nextNodes = new Set(nodesArr);
+            nextNodes = nodesArr;
           } else {
-            // No further matches down this path.
-            nextNodes.clear();
             break;
           }
         }
