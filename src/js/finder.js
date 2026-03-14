@@ -2202,7 +2202,9 @@ export class Finder {
     switch (comboName) {
       case '+': {
         const refNode =
-          dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
         if (refNode && this._matchLeaves(leaves, refNode, opt)) {
           matched.push(refNode);
         }
@@ -2210,7 +2212,9 @@ export class Finder {
       }
       case '~': {
         let refNode =
-          dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
         while (refNode) {
           if (this._matchLeaves(leaves, refNode, opt)) {
             matched.push(refNode);
