@@ -2883,6 +2883,9 @@ export class Finder {
     const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
     if (nextNodes.length) {
       if (index === branch.length - 1) {
+        if (nextNodes.length === 1) {
+          return nextNodes[0];
+        }
         const [nextNode] = sortNodes(nextNodes);
         return nextNode;
       }
