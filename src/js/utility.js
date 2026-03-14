@@ -65,6 +65,7 @@ const REG_EXCLUDE_BASIC =
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
+const REG_SIBLING_FALLBACK = /(?:[\w\]\)*])\s*[+~]\s*(?:[.#:[\w*])/i;
 const REG_LOGIC_COMPLEX = new RegExp(
   `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
 );
@@ -1090,10 +1091,10 @@ export const filterSelector = (selector, target) => {
     }
     if (
       isQuerySelectorAll &&
-      REG_SIBLING.test(selector) &&
-      /:(?:first|last|only)-child|:nth-(?:last-)?(?:child|of-type)\(/.test(
-        selector
-      )
+      ((REG_SIBLING.test(selector) &&
+        /:(?:first|last|only)-child|:nth-(?:last-)?child\(/.test(selector)) ||
+        ((REG_SIBLING.test(selector) || REG_SIBLING_FALLBACK.test(selector)) &&
+          /:nth-(?:last-)?of-type\(/.test(selector)))
     ) {
       return false;
     }
