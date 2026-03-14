@@ -2077,113 +2077,6 @@ export class Finder {
   };
 
   /**
-   * Matches the descendant combinator ' '.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchDescendantCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { parentNode } = node;
-    const { dir } = opt;
-    if (dir === DIR_NEXT) {
-      return this._findDescendantNodes(leaves, node, opt);
-    }
-    // DIR_PREV
-    const ancestors = [];
-    let refNode = parentNode;
-    while (refNode) {
-      if (this._matchLeaves(leaves, refNode, opt)) {
-        ancestors.push(refNode);
-      }
-      refNode = refNode.parentNode;
-    }
-    if (ancestors.length) {
-      // Reverse to maintain document order.
-      return new Set(ancestors.reverse());
-    }
-    return new Set();
-  };
-
-  /**
-   * Matches the child combinator '>'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchChildCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const { parentNode } = node;
-    const matched = new Set();
-    if (dir === DIR_NEXT) {
-      let refNode = node.firstElementChild;
-      while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
-          matched.add(refNode);
-        }
-        refNode = refNode.nextElementSibling;
-      }
-    } else {
-      // DIR_PREV
-      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
-        matched.add(parentNode);
-      }
-    }
-    return matched;
-  };
-
-  /**
-   * Matches the adjacent sibling combinator '+'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchAdjacentSiblingCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const matched = new Set();
-    const refNode =
-      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
-    if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-      matched.add(refNode);
-    }
-    return matched;
-  };
-
-  /**
-   * Matches the general sibling combinator '~'.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchGeneralSiblingCombinator = (twig, node, opt = {}) => {
-    const { leaves } = twig;
-    const { dir } = opt;
-    const matched = new Set();
-    let refNode =
-      dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
-    while (refNode) {
-      if (this._matchLeaves(leaves, refNode, opt)) {
-        matched.add(refNode);
-      }
-      refNode =
-        dir === DIR_NEXT
-          ? refNode.nextElementSibling
-          : refNode.previousElementSibling;
-    }
-    return matched;
-  };
-
-  /**
    * Collects combinator matches into an array without creating intermediate sets.
    * @private
    * @param {object} twig - The twig object.
@@ -2198,7 +2091,6 @@ export class Finder {
       leaves
     } = twig;
     const { dir } = opt;
-
     switch (comboName) {
       case '+': {
         const refNode =
@@ -2264,7 +2156,6 @@ export class Finder {
         }
       }
     }
-
     return matched;
   };
 
