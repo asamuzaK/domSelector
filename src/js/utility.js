@@ -28,6 +28,8 @@ import {
   LOGIC_COMPLEX,
   LOGIC_COMPOUND,
   N_TH,
+  N_TH_CHILD,
+  N_TH_OF_TYPE,
   PSEUDO_CLASS,
   RULE,
   SCOPE,
@@ -65,6 +67,11 @@ const REG_EXCLUDE_BASIC =
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_SIBLING = new RegExp(`${COMPOUND_I}${SIBLING}${COMPOUND_I}`, 'i');
+const REG_SIBLING_FALLBACK = /[\w\])*]\s*[+~]\s*[.#:[\w*]/;
+const REG_N_TH_CHILD = new RegExp(
+  `:(?:${N_TH_CHILD}|(?:first|last|only)-child)`
+);
+const REG_N_TH_OF_TYPE = new RegExp(`:${N_TH_OF_TYPE}`);
 const REG_LOGIC_COMPLEX = new RegExp(
   `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
 );
@@ -1084,17 +1091,20 @@ export const filterSelector = (selector, target) => {
   }
   // Include pseudo-classes that are known to work correctly.
   if (selector.includes(':')) {
-    let complex = false;
-    if (target !== isQuerySelectorAll) {
-      complex = REG_COMPLEX.test(selector);
+    if (isQuerySelectorAll) {
+      if (REG_N_TH_CHILD.test(selector) && REG_SIBLING.test(selector)) {
+        return false;
+      } else if (
+        REG_N_TH_OF_TYPE.test(selector) &&
+        (REG_SIBLING.test(selector) || REG_SIBLING_FALLBACK.test(selector))
+      ) {
+        return false;
+      } else if (REG_DESCEND.test(selector) && !REG_SIBLING.test(selector)) {
+        return false;
+      }
     }
-    if (
-      isQuerySelectorAll &&
-      REG_DESCEND.test(selector) &&
-      !REG_SIBLING.test(selector)
-    ) {
-      return false;
-    } else if (!isQuerySelectorAll && /:has\(/.test(selector)) {
+    const complex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
+    if (!isQuerySelectorAll && /:has\(/.test(selector)) {
       if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }

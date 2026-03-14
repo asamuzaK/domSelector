@@ -1260,6 +1260,52 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
+    it('should ignore text and comment nodes for nth-child matching', () => {
+      const root = document.createElement('div');
+      const foo1 = document.createElement('div');
+      const foo2 = document.createElement('div');
+      const foo3 = document.createElement('div');
+      foo1.className = 'foo';
+      foo2.className = 'foo';
+      foo3.className = 'foo';
+      root.append(
+        document.createTextNode('before'),
+        foo1,
+        document.createComment('gap'),
+        foo2,
+        document.createTextNode('middle'),
+        foo3,
+        document.createComment('after')
+      );
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('.foo:nth-child(odd)', root);
+      assert.deepEqual(res, [foo1, foo3], 'result');
+    });
+
+    it('should ignore text and comment nodes for nth-of-type matching', () => {
+      const root = document.createElement('div');
+      const span1 = document.createElement('span');
+      const div = document.createElement('div');
+      const span2 = document.createElement('span');
+      const span3 = document.createElement('span');
+      span1.id = 'span1';
+      span2.id = 'span2';
+      span3.id = 'span3';
+      root.append(
+        document.createTextNode('before'),
+        span1,
+        document.createComment('gap'),
+        div,
+        document.createTextNode('middle'),
+        span2,
+        document.createComment('after'),
+        span3
+      );
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('span:nth-of-type(odd)', root);
+      assert.deepEqual(res, [span1, span3], 'result');
+    });
+
     it('should get matched node(s)', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');

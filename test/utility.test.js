@@ -1018,6 +1018,16 @@ describe('utility functions', () => {
       assert.deepEqual(res, [document, frag, false]);
     });
 
+    it('should get result for detached template content descendants', () => {
+      const template = document.createElement('template');
+      template.innerHTML = '<div id="inner"><span id="leaf"></span></div>';
+      const node = template.content.getElementById('leaf');
+      const res = func(node);
+      assert.strictEqual(res[0], node.ownerDocument, 'document');
+      assert.strictEqual(res[1], template.content, 'root');
+      assert.strictEqual(res[2], false, 'shadow');
+    });
+
     it('should get result', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
@@ -3443,6 +3453,56 @@ describe('utility functions', () => {
     it('should get false', () => {
       const res = func(':first-child :last-child', TARGET_ALL);
       assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('div:first-child + span', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('div:last-child ~ span', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('span:only-child + div', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('div:nth-last-child(2) + span', TARGET_ALL);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('div:nth-of-type(2) + span', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('div:nth-last-of-type(2) + span', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('div:nth-of-type(2)[data-role~="tile"]', TARGET_ALL);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('div:first-of-type + span', TARGET_ALL);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('div:last-of-type ~ span', TARGET_ALL);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('span:only-of-type + div', TARGET_ALL);
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
