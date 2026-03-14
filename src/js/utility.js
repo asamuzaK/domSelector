@@ -1085,7 +1085,7 @@ export const filterSelector = (selector, target) => {
   // Include pseudo-classes that are known to work correctly.
   if (selector.includes(':')) {
     let complex = false;
-    if (target !== isQuerySelectorAll) {
+    if (!isQuerySelectorAll) {
       complex = REG_COMPLEX.test(selector);
     }
     if (
