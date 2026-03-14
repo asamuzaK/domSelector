@@ -1018,6 +1018,16 @@ describe('utility functions', () => {
       assert.deepEqual(res, [document, frag, false]);
     });
 
+    it('should get result for detached template content descendants', () => {
+      const template = document.createElement('template');
+      template.innerHTML = '<div id=\"inner\"><span id=\"leaf\"></span></div>';
+      const node = template.content.getElementById('leaf');
+      const res = func(node);
+      assert.strictEqual(res[0], node.ownerDocument, 'document');
+      assert.strictEqual(res[1], template.content, 'root');
+      assert.strictEqual(res[2], false, 'shadow');
+    });
+
     it('should get result', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
