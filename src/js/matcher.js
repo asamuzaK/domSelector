@@ -34,7 +34,6 @@ const KEYS_FORM_PS_DISABLED = new Set([
 ]);
 const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
-const REG_TAG_NAME = /[A-Z][\\w-]*/i;
 
 /**
  * Validates a pseudo-element selector.
@@ -527,39 +526,39 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     astName,
     node
   );
+  const firstChar = localName.charCodeAt(0);
+  const isAlphabet =
+    (firstChar >= 65 && firstChar <= 90) ||
+    (firstChar >= 97 && firstChar <= 122);
   if (
     node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml') &&
-    REG_TAG_NAME.test(localName)
+    isAlphabet
   ) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
   }
   let nodePrefix;
   let nodeLocalName;
-  // just in case that the namespaced content is parsed as text/html
-  if (localName.indexOf(':') > -1) {
-    [nodePrefix, nodeLocalName] = localName.split(':');
+  const colonIdx = localName.indexOf(':');
+  if (colonIdx > -1) {
+    nodePrefix = localName.substring(0, colonIdx);
+    nodeLocalName = localName.substring(colonIdx + 1);
   } else {
     nodePrefix = prefix || '';
     nodeLocalName = localName;
   }
+  const isUniversal = astLocalName === '*';
   switch (astPrefix) {
     case '': {
-      if (
+      return (
         !nodePrefix &&
         !namespaceURI &&
-        (astLocalName === '*' || astLocalName === nodeLocalName)
-      ) {
-        return true;
-      }
-      return false;
+        (isUniversal || astLocalName === nodeLocalName)
+      );
     }
     case '*': {
-      if (astLocalName === '*' || astLocalName === nodeLocalName) {
-        return true;
-      }
-      return false;
+      return isUniversal || astLocalName === nodeLocalName;
     }
     default: {
       if (!check) {
@@ -576,10 +575,7 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
       const astNS = node.lookupNamespaceURI(astPrefix);
       const nodeNS = node.lookupNamespaceURI(nodePrefix);
       if (astNS === nodeNS && astPrefix === nodePrefix) {
-        if (astLocalName === '*' || astLocalName === nodeLocalName) {
-          return true;
-        }
-        return false;
+        return isUniversal || astLocalName === nodeLocalName;
       } else if (!forgive && !astNS) {
         throw generateException(
           `Undeclared namespace ${astPrefix}`,
