@@ -1090,6 +1090,15 @@ export const filterSelector = (selector, target) => {
     }
     if (
       isQuerySelectorAll &&
+      REG_SIBLING.test(selector) &&
+      /:(?:first|last|only)-child|:nth-(?:last-)?(?:child|of-type)\(/.test(
+        selector
+      )
+    ) {
+      return false;
+    }
+    if (
+      isQuerySelectorAll &&
       REG_DESCEND.test(selector) &&
       !REG_SIBLING.test(selector)
     ) {
