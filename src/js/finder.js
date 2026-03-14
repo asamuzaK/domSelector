@@ -662,8 +662,8 @@ export class Finder {
         leaves: twigLeaves
       };
       opt.dir = DIR_NEXT;
-      const nodes = this._matchCombinator(twig, node, opt);
-      if (nodes.size) {
+      const nodes = this._collectCombinatorMatches(twig, node, opt, []);
+      if (nodes.length) {
         if (leaves.length) {
           let bool = false;
           for (const nextNode of nodes) {
@@ -763,10 +763,7 @@ export class Finder {
           const arr = [];
           opt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
-            const m = this._matchCombinator(twig, nextNode, opt);
-            if (m.size) {
-              arr.push(...m);
-            }
+            this._collectCombinatorMatches(twig, nextNode, opt, arr);
           }
           if (arr.length) {
             if (j === 0) {
@@ -2187,6 +2184,87 @@ export class Finder {
   };
 
   /**
+   * Collects combinator matches into an array without creating intermediate sets.
+   * @private
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @param {Array.<object>} matched - The collector array.
+   * @returns {Array.<object>} The collector array.
+   */
+  _collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
+    const {
+      combo: { name: comboName },
+      leaves
+    } = twig;
+    const { dir } = opt;
+
+    switch (comboName) {
+      case '+': {
+        const refNode =
+          dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+          matched.push(refNode);
+        }
+        break;
+      }
+      case '~': {
+        let refNode =
+          dir === DIR_NEXT ? node.nextElementSibling : node.previousElementSibling;
+        while (refNode) {
+          if (this._matchLeaves(leaves, refNode, opt)) {
+            matched.push(refNode);
+          }
+          refNode =
+            dir === DIR_NEXT
+              ? refNode.nextElementSibling
+              : refNode.previousElementSibling;
+        }
+        break;
+      }
+      case '>': {
+        if (dir === DIR_NEXT) {
+          let refNode = node.firstElementChild;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              matched.push(refNode);
+            }
+            refNode = refNode.nextElementSibling;
+          }
+        } else {
+          const { parentNode } = node;
+          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+            matched.push(parentNode);
+          }
+        }
+        break;
+      }
+      case ' ':
+      default: {
+        if (dir === DIR_NEXT) {
+          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
+            matched.push(refNode);
+          }
+        } else {
+          const ancestors = [];
+          let refNode = node.parentNode;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              ancestors.push(refNode);
+            }
+            refNode = refNode.parentNode;
+          }
+          if (ancestors.length) {
+            matched.push(...ancestors.reverse());
+          }
+        }
+      }
+    }
+
+    return matched;
+  };
+
+  /**
    * Matches a combinator.
    * @private
    * @param {object} twig - The twig object.
@@ -2195,24 +2273,7 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchCombinator = (twig, node, opt = {}) => {
-    const {
-      combo: { name: comboName }
-    } = twig;
-    switch (comboName) {
-      case '+': {
-        return this._matchAdjacentSiblingCombinator(twig, node, opt);
-      }
-      case '~': {
-        return this._matchGeneralSiblingCombinator(twig, node, opt);
-      }
-      case '>': {
-        return this._matchChildCombinator(twig, node, opt);
-      }
-      case ' ':
-      default: {
-        return this._matchDescendantCombinator(twig, node, opt);
-      }
-    }
+    return new Set(this._collectCombinatorMatches(twig, node, opt));
   };
 
   /**
@@ -2797,10 +2858,7 @@ export class Finder {
       warn: this.#warn
     };
     for (const node of nodes) {
-      const matched = this._matchCombinator(twig, node, options);
-      if (matched.size) {
-        arr.push(...matched);
-      }
+      this._collectCombinatorMatches(twig, node, options, arr);
     }
     return arr;
   };
