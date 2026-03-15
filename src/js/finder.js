@@ -2765,10 +2765,7 @@ export class Finder {
       this._collectCombinatorMatches(
         twig,
         node,
-        {
-          dir,
-          warn: this.#warn
-        },
+        { dir, warn: this.#warn },
         arr
       );
     }
