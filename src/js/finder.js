@@ -275,17 +275,18 @@ export class Finder {
    * @returns {Array.<void>} An array of return values from addEventListener.
    */
   _registerEventListeners = () => {
-    const opt = {
-      capture: true,
-      passive: true
-    };
     const func = [];
     for (const eventHandler of this.#eventHandlers) {
       const { keys, handler } = eventHandler;
       const l = keys.length;
       for (let i = 0; i < l; i++) {
         const key = keys[i];
-        func.push(this.#window.addEventListener(key, handler, opt));
+        func.push(
+          this.#window.addEventListener(key, handler, {
+            capture: true,
+            passive: true
+          })
+        );
       }
     }
     return func;
@@ -454,10 +455,10 @@ export class Finder {
    * @private
    * @param {object} parentNode - The parent element.
    * @param {Array.<Array.<object>>} selectorBranches - The selector branches.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Array.<object>} An array of child nodes.
    */
-  _getFilteredChildren = (parentNode, selectorBranches, opt = {}) => {
+  _getFilteredChildren = (parentNode, selectorBranches, opt) => {
     const children = [];
     const walker = this._createTreeWalker(parentNode, { force: true });
     let childNode = walker.firstChild();
@@ -496,10 +497,10 @@ export class Finder {
    * @param {boolean} [anb.reverse] - If true, reverses the order.
    * @param {object} [anb.selector] - The AST.
    * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _collectNthChild = (anb, node, opt = {}) => {
+  _collectNthChild = (anb, node, opt) => {
     const { a, b, selector } = anb;
     const { parentNode } = node;
     if (!parentNode) {
@@ -574,10 +575,10 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
    * @param {string} nthName - The name of the nth pseudo-class.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchAnPlusB = (ast, node, nthName, opt = {}) => {
+  _matchAnPlusB = (ast, node, nthName, opt) => {
     const {
       nth: { a, b, name: nthIdentName },
       selector
@@ -688,7 +689,7 @@ export class Finder {
    * @param {object} [opt] - Options.
    * @returns {?object} The matched node.
    */
-  _evaluateHasPseudo = (astData, node, opt) => {
+  _evaluateHasPseudo = (astData, node, opt = {}) => {
     const { branches } = astData;
     let bool = false;
     const l = branches.length;
@@ -799,6 +800,8 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
    * @param {object} [opt] - Options.
+   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
+   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchPseudoClassSelector(ast, node, opt = {}) {
@@ -1848,10 +1851,10 @@ export class Finder {
    * @private
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchSelectorForElement = (ast, node, opt = {}) => {
+  _matchSelectorForElement = (ast, node, opt) => {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
     const matched = new Set();
@@ -1886,7 +1889,7 @@ export class Finder {
       // PS_ELEMENT_SELECTOR is handled by default.
       default: {
         try {
-          if (opt.check) {
+          if (this.#check) {
             const css = generateCSS(ast);
             this.#pseudoElement.push(css);
             matched.add(node);
@@ -1931,10 +1934,10 @@ export class Finder {
    * @private
    * @param {object} ast - The AST.
    * @param {object} node - The Document, DocumentFragment, or Element node.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchSelector = (ast, node, opt = {}) => {
+  _matchSelector = (ast, node, opt) => {
     if (node.nodeType === ELEMENT_NODE) {
       return this._matchSelectorForElement(ast, node, opt);
     }
@@ -1953,10 +1956,10 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves.
    * @param {object} node - The node.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {boolean} The result.
    */
-  _matchLeaves = (leaves, node, opt = {}) => {
+  _matchLeaves = (leaves, node, opt) => {
     const results = this.#invalidate ? this.#invalidateResults : this.#results;
     let result = results.get(leaves);
     if (result && result.has(node)) {
@@ -2009,10 +2012,10 @@ export class Finder {
    * @private
    * @param {object} baseNode - The base Element node or Element.shadowRoot.
    * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _traverseAllDescendants = (baseNode, leaves, opt = {}) => {
+  _traverseAllDescendants = (baseNode, leaves, opt) => {
     const walker = this._createTreeWalker(baseNode);
     traverseNode(baseNode, walker);
     let currentNode = walker.firstChild();
@@ -2031,10 +2034,10 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves.
    * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _findDescendantNodes = (leaves, baseNode, opt = {}) => {
+  _findDescendantNodes = (leaves, baseNode, opt) => {
     const [leaf, ...filterLeaves] = leaves;
     const { type: leafType } = leaf;
     switch (leafType) {
@@ -2082,6 +2085,7 @@ export class Finder {
    * @param {object} twig - The twig object.
    * @param {object} node - The Element node.
    * @param {object} [opt] - Options.
+   * @param {string} [opt.dir] - The find direction.
    * @param {Array.<object>} matched - The collector array.
    * @returns {Array.<object>} The collector array.
    */
@@ -2175,15 +2179,15 @@ export class Finder {
    * @private
    * @param {TreeWalker} walker - The TreeWalker instance to use.
    * @param {Array} leaves - The AST leaves to match against.
-   * @param {object} options - Traversal options.
-   * @param {Node} options.startNode - The node to start traversal from.
-   * @param {string} options.targetType - The type of target ('all' or 'first').
-   * @param {Node} [options.boundaryNode] - The node to stop traversal at.
-   * @param {boolean} [options.force] - Force traversal to the next node.
+   * @param {object} [opt] - Traversal options.
+   * @param {Node} [opt.boundaryNode] - The node to stop traversal at.
+   * @param {boolean} [opt.force] - Force traversal to the next node.
+   * @param {Node} [opt.startNode] - The node to start traversal from.
+   * @param {string} [opt.targetType] - The type of target ('all' or 'first').
    * @returns {Array.<Node>} An array of matched nodes.
    */
-  _traverseAndCollectNodes = (walker, leaves, options) => {
-    const { boundaryNode, force, startNode, targetType } = options;
+  _traverseAndCollectNodes = (walker, leaves, opt = {}) => {
+    const { boundaryNode, force, startNode, targetType } = opt;
     const collectedNodes = [];
     let currentNode = traverseNode(startNode, walker, !!force);
     if (!currentNode) {
@@ -2230,7 +2234,7 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves.
    * @param {object} node - The node to start from.
-   * @param {object} opt - Options.
+   * @param {object} [opt] - Options.
    * @param {boolean} [opt.force] - If true, traverses only to the next node.
    * @param {string} [opt.targetType] - The target type.
    * @returns {Array.<object>} A collection of matched nodes.
@@ -2253,7 +2257,7 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves.
    * @param {object} node - The node to start from.
-   * @param {object} opt - Options.
+   * @param {object} [opt] - Options.
    * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {Array.<object>} A collection of matched nodes.
    */
@@ -2278,12 +2282,13 @@ export class Finder {
    * Matches the node itself.
    * @private
    * @param {Array} leaves - The AST leaves.
-   * @param {boolean} check - Indicates if running in internal check().
    * @returns {Array} An array containing [nodes, filtered, pseudoElement].
    */
-  _matchSelf = (leaves, check = false) => {
-    const options = { check, warn: this.#warn };
-    const matched = this._matchLeaves(leaves, this.#node, options);
+  _matchSelf = leaves => {
+    const matched = this._matchLeaves(leaves, this.#node, {
+      check: this.#check,
+      warn: this.#warn
+    });
     const nodes = matched ? [this.#node] : [];
     return [nodes, matched, this.#pseudoElement];
   };
@@ -2292,21 +2297,22 @@ export class Finder {
    * Finds lineal nodes (self and ancestors).
    * @private
    * @param {Array} leaves - The AST leaves.
-   * @param {object} opt - Options.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
    * @returns {Array} An array containing [nodes, filtered].
    */
-  _findLineal = (leaves, opt) => {
+  _findLineal = (leaves, opt = {}) => {
     const { complex } = opt;
     const nodes = [];
-    const options = { warn: this.#warn };
-    const selfMatched = this._matchLeaves(leaves, this.#node, options);
+    const matchOpts = { warn: this.#warn };
+    const selfMatched = this._matchLeaves(leaves, this.#node, matchOpts);
     if (selfMatched) {
       nodes.push(this.#node);
     }
     if (!selfMatched || complex) {
       let currentNode = this.#node.parentNode;
       while (currentNode) {
-        if (this._matchLeaves(leaves, currentNode, options)) {
+        if (this._matchLeaves(leaves, currentNode, matchOpts)) {
           nodes.push(currentNode);
         }
         currentNode = currentNode.parentNode;
@@ -2331,7 +2337,7 @@ export class Finder {
       const css = generateCSS(leaf);
       this.#pseudoElement.push(css);
       if (filterLeaves.length) {
-        [nodes, filtered] = this._matchSelf(filterLeaves, this.#check);
+        [nodes, filtered] = this._matchSelf(filterLeaves);
       } else {
         nodes.push(this.#node);
         filtered = true;
@@ -2347,17 +2353,19 @@ export class Finder {
    * @private
    * @param {object} twig - The current twig from the AST branch.
    * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
+   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForId = (twig, targetType, opt) => {
+  _findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
     const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves, this.#check);
+      [nodes, filtered] = this._matchSelf(leaves);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (
@@ -2388,15 +2396,17 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves for the selector.
    * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
+   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForClass = (leaves, targetType, opt) => {
+  _findEntryNodesForClass = (leaves, targetType, opt = {}) => {
     const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves, this.#check);
+      [nodes, filtered] = this._matchSelf(leaves);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2411,15 +2421,17 @@ export class Finder {
    * @private
    * @param {Array.<object>} leaves - The AST leaves for the selector.
    * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
+   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForType = (leaves, targetType, opt) => {
+  _findEntryNodesForType = (leaves, targetType, opt = {}) => {
     const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves, this.#check);
+      [nodes, filtered] = this._matchSelf(leaves);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
@@ -2434,10 +2446,12 @@ export class Finder {
    * @private
    * @param {object} twig - The current twig from the AST branch.
    * @param {string} targetType - The type of target to find.
-   * @param {object} opt - Additional options for finding nodes.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.complex] - If true, the selector is complex.
+   * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForOther = (twig, targetType, opt) => {
+  _findEntryNodesForOther = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf, ...filterLeaves] = leaves;
     const { complex, precede } = opt;
@@ -2491,7 +2505,7 @@ export class Finder {
         }
       }
     } else if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves, this.#check);
+      [nodes, filtered] = this._matchSelf(leaves);
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else if (targetType === TARGET_FIRST) {
@@ -2747,12 +2761,16 @@ export class Finder {
    */
   _getCombinedNodes = (twig, nodes, dir) => {
     const arr = [];
-    const options = {
-      dir,
-      warn: this.#warn
-    };
     for (const node of nodes) {
-      this._collectCombinatorMatches(twig, node, options, arr);
+      this._collectCombinatorMatches(
+        twig,
+        node,
+        {
+          dir,
+          warn: this.#warn
+        },
+        arr
+      );
     }
     return arr;
   };
@@ -2762,12 +2780,12 @@ export class Finder {
    * @private
    * @param {Array} branch - The branch.
    * @param {Set.<object>} nodes - A collection of Element nodes.
-   * @param {object} opt - Options.
-   * @param {object} opt.combo - The combo object.
-   * @param {number} opt.index - The index.
+   * @param {object} [opt] - Options.
+   * @param {object} [opt.combo] - The combo object.
+   * @param {number} [opt.index] - The index.
    * @returns {?object} The matched node.
    */
-  _matchNodeNext = (branch, nodes, opt) => {
+  _matchNodeNext = (branch, nodes, opt = {}) => {
     const { combo, index } = opt;
     const { combo: nextCombo, leaves } = branch[index];
     const twig = {
@@ -2796,11 +2814,11 @@ export class Finder {
    * @private
    * @param {Array} branch - The branch.
    * @param {object} node - The Element node.
-   * @param {object} opt - Options.
-   * @param {number} opt.index - The index.
+   * @param {object} [opt] - Options.
+   * @param {number} [opt.index] - The index.
    * @returns {?object} The node.
    */
-  _matchNodePrev = (branch, node, opt) => {
+  _matchNodePrev = (branch, node, opt = {}) => {
     const { index } = opt;
     const twig = branch[index];
     const nextNodes = this._getCombinedNodes(twig, [node], DIR_PREV);

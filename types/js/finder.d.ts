@@ -34,10 +34,7 @@ export class Finder {
     private _matchLeaves;
     private _traverseAllDescendants;
     private _findDescendantNodes;
-    private _matchDescendantCombinator;
-    private _matchChildCombinator;
-    private _matchAdjacentSiblingCombinator;
-    private _matchGeneralSiblingCombinator;
+    private _collectCombinatorMatches;
     private _matchCombinator;
     private _traverseAndCollectNodes;
     private _findPrecede;
