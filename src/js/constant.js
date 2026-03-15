@@ -70,8 +70,6 @@ export const SIBLING = '\\s?[+~]\\s?';
 export const LOGIC_IS = `:is\\(\\s*[^)]+\\s*\\)`;
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
 export const N_TH = `nth-(?:last-)?(?:child|of-type)\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
-export const N_TH_CHILD = `nth-(?:last-)?child\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
-export const N_TH_OF_TYPE = `nth-(?:last-)?of-type\\(\\s*(?:even|odd|${ANB})\\s*\\)`;
 // SUB_TYPE: attr, id, class, pseudo-class, note that [foo|=bar] is excluded
 export const SUB_TYPE = '\\[[^|\\]]+\\]|[#.:][\\w-]+';
 export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';

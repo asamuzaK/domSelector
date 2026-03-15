@@ -172,7 +172,11 @@ const selectors = [
   ':is(.container > .content, .container > .box)',
   'p:not(:is(:not(.content))):not(.foo)',
   'div:not(:is(:not(.container))):not(.box)',
-  'p'
+  'p',
+  '.box:first-child',
+  '.box:nth-child(2n+1)',
+  '.box:first-of-type',
+  '.box:nth-of-type(2n+1)'
 ];
 
 /* matcher tests */
@@ -650,6 +654,7 @@ suite.on('start', () => {
   parentNodeQuerySelector('jsdom', selectors[14], 'p0-0-0');
 }).add(`patched-jsdom querySelector('${selectors[14]}')`, () => {
   parentNodeQuerySelector('patched-jsdom', selectors[14], 'p0-0-0');
+*/
 }).add(`jsdom querySelectorAll('${selectors[11]}')`, () => {
   parentNodeQuerySelectorAll('jsdom', selectors[11], 9);
 }).add(`patched-jsdom querySelectorAll('${selectors[11]}')`, () => {
@@ -666,7 +671,22 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('jsdom', selectors[14], 1000);
 }).add(`patched-jsdom querySelectorAll('${selectors[14]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[14], 1000);
-*/
+}).add(`jsdom querySelectorAll('${selectors[20]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[20], 1);
+}).add(`patched-jsdom querySelectorAll('${selectors[20]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[20], 1);
+}).add(`jsdom querySelectorAll('${selectors[21]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[21], 5);
+}).add(`patched-jsdom querySelectorAll('${selectors[21]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[21], 5);
+}).add(`jsdom querySelectorAll('${selectors[22]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[22], 1);
+}).add(`patched-jsdom querySelectorAll('${selectors[22]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[22], 1);
+}).add(`jsdom querySelectorAll('${selectors[23]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[23], 5);
+}).add(`patched-jsdom querySelectorAll('${selectors[23]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[23], 5);
 }).on('cycle', evt => {
   const { target } = evt;
   let str;

@@ -3455,19 +3455,19 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('div:first-child + span', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('div:last-child ~ span', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('span:only-child + div', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
@@ -3475,14 +3475,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('div:nth-of-type(2) + span', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should get true', () => {
       const res = func('div:nth-last-of-type(2) + span', TARGET_ALL);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get true', () => {
