@@ -2164,12 +2164,11 @@ export class Finder {
    * @private
    * @param {object} twig - The twig object.
    * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchCombinator = (twig, node, opt = {}) => {
-    return new Set(this._collectCombinatorMatches(twig, node, opt));
-  };
+  _matchCombinator = (twig, node, opt) =>
+    new Set(this._collectCombinatorMatches(twig, node, opt));
 
   /**
    * Traverses with a TreeWalker and collects nodes matching the leaves.
