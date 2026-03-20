@@ -3226,7 +3226,17 @@ describe('utility functions', () => {
     });
 
     it('should get true', () => {
+      const res = func('[foo]', TARGET_FIRST);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
       const res = func('[foo=bar]', TARGET_FIRST);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true', () => {
+      const res = func('[foo="bar"]', TARGET_FIRST);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3253,6 +3263,11 @@ describe('utility functions', () => {
     it('should get true', () => {
       const res = func('p');
       assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func('p', TARGET_ALL);
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get false', () => {

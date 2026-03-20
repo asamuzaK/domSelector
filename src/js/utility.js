@@ -32,6 +32,7 @@ import {
   RULE,
   SCOPE,
   SELECTOR_LIST,
+  TAG_TYPE,
   TARGET_ALL,
   TARGET_FIRST,
   TEXT_NODE,
@@ -58,7 +59,8 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
-const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}="?[A-Z\d\s-]{1,255}"?\]$/i;
+const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}(?:="?[A-Z\d\s-]{1,255}"?)?\]$/i;
+const REG_TAG_SIMPLE = new RegExp(`^(?:${TAG_TYPE})$`);
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
@@ -1067,6 +1069,12 @@ export const filterSelector = (selector, target) => {
     }
     return false;
   }
+
+  // Exclude simple tag selector for TARGET_ALL
+  if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
+    return false;
+  }
+
   // Exclude various complex or unsupported selectors.
   // - selectors containing '/'
   // - namespaced selectors
