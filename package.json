@@ -43,11 +43,11 @@
     "eslint-plugin-regexp": "^3.1.0",
     "eslint-plugin-unicorn": "^63.0.0",
     "globals": "^17.4.0",
-    "jsdom": "^28.1.0",
+    "jsdom": "^29.0.1",
     "mocha": "^11.7.5",
     "neostandard": "^0.13.0",
     "prettier": "^3.8.1",
-    "sinon": "^21.0.2",
+    "sinon": "^21.0.3",
     "typescript": "^5.9.3",
     "wpt-runner": "^6.1.0"
   },
@@ -71,5 +71,5 @@
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
   },
-  "version": "7.0.3"
+  "version": "7.0.4"
 }
