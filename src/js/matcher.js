@@ -526,7 +526,8 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     astName,
     node
   );
-  const isHTML = node.ownerDocument.contentType === 'text/html' &&
+  const isHTML =
+    node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml');
   if (isHTML && localName === astLocalName && !astName.includes('|')) {
     return true;
@@ -535,11 +536,7 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
   const isAlphabet =
     (firstChar >= 65 && firstChar <= 90) ||
     (firstChar >= 97 && firstChar <= 122);
-  if (
-    node.ownerDocument.contentType === 'text/html' &&
-    (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml') &&
-    isAlphabet
-  ) {
+  if (isHTML && isAlphabet) {
     astPrefix = astPrefix.toLowerCase();
     astLocalName = astLocalName.toLowerCase();
   }
