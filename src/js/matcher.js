@@ -526,6 +526,11 @@ export const matchTypeSelector = (ast, node, opt = {}) => {
     astName,
     node
   );
+  const isHTML = node.ownerDocument.contentType === 'text/html' &&
+    (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml');
+  if (isHTML && localName === astLocalName && !astName.includes('|')) {
+    return true;
+  }
   const firstChar = localName.charCodeAt(0);
   const isAlphabet =
     (firstChar >= 65 && firstChar <= 90) ||

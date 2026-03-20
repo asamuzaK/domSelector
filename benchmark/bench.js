@@ -176,7 +176,8 @@ const selectors = [
   '.box:first-child',
   '.box:nth-child(2n+1)',
   '.box:first-of-type',
-  '.box:nth-of-type(2n+1)'
+  '.box:nth-of-type(2n+1)',
+  '*'
 ];
 
 /* matcher tests */
@@ -449,7 +450,7 @@ const parentNodeQuerySelector = (api, selector, result) => {
   }
 };
 
-const parentNodeQuerySelectorAll = (api, selector, result) => {
+const parentNodeQuerySelectorAll = (api, selector, result, asterisk) => {
   let doc, reflow;
   if (api === 'jsdom') {
     doc = document;
@@ -462,11 +463,29 @@ const parentNodeQuerySelectorAll = (api, selector, result) => {
   doc.body.appendChild(reflow);
   const res = node.querySelectorAll(selector);
   doc.body.removeChild(reflow);
-  if (res.length !== result) {
+  if (asterisk) {
+    if (node === doc) {
+      if (res.length !== result) {
+        console.log("res, doc", res.length, result)
+        throw new Error('result does not match.');
+      }
+    } else if (res.length !== result - 3) {
+      console.log("res, doc.body", res.length, result - 3)
+      throw new Error('result does not match.');
+    }
+  } else if (res.length !== result) {
     throw new Error('result does not match.');
   }
   const res2 = node.querySelectorAll(selector);
-  if (res2.length !== result) {
+  if (asterisk) {
+    if (node === doc) {
+      if (res2.length !== result - 1) {
+        throw new Error('result does not match.');
+      }
+    } else if (res2.length !== result - 4) {
+      throw new Error('result does not match.');
+    }
+  } else if (res.length !== result) {
     throw new Error('result does not match.');
   }
 };
@@ -687,6 +706,10 @@ suite.on('start', () => {
   parentNodeQuerySelectorAll('jsdom', selectors[23], 5);
 }).add(`patched-jsdom querySelectorAll('${selectors[23]}')`, () => {
   parentNodeQuerySelectorAll('patched-jsdom', selectors[23], 5);
+}).add(`jsdom querySelectorAll('${selectors[24]}')`, () => {
+  parentNodeQuerySelectorAll('jsdom', selectors[24], 2115, true);
+}).add(`patched-jsdom querySelectorAll('${selectors[24]}')`, () => {
+  parentNodeQuerySelectorAll('patched-jsdom', selectors[24], 2115, true);
 }).on('cycle', evt => {
   const { target } = evt;
   let str;
