@@ -368,6 +368,7 @@ export class Finder {
         ast = item.ast;
         this.#descendant = item.descendant;
         this.#invalidate = item.invalidate;
+        this.#selectorAST = item.selectorAST;
       }
     }
     if (ast) {
@@ -403,7 +404,8 @@ export class Finder {
       cachedItem.set(`${selector}`, {
         ast,
         descendant: this.#descendant,
-        invalidate: this.#invalidate
+        invalidate: this.#invalidate,
+        selectorAST: this.#selectorAST
       });
       this.#documentCache.set(this.#document, cachedItem);
       // Initialize nodes array for each branch.
