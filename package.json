@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
+    "@types/node": "^25.5.2",
     "benchmark": "^2.1.4",
     "c8": "^11.0.0",
     "chai": "^6.2.2",
@@ -71,5 +72,5 @@
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
   },
-  "version": "7.0.4"
+  "version": "7.0.5"
 }

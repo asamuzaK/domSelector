@@ -1,12 +1,12 @@
 export class Finder {
     constructor(window: object);
     onError: (e: Error, opt?: {
-        noexcept?: boolean;
+        noexcept?: boolean | undefined;
     }) => void;
     setup: (selector: string, node: object, opt?: {
-        check?: boolean;
-        noexcept?: boolean;
-        warn?: boolean;
+        check?: boolean | undefined;
+        noexcept?: boolean | undefined;
+        warn?: boolean | undefined;
     }) => object;
     clearResults: (all?: boolean) => void;
     private _handleFocusEvent;

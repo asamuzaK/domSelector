@@ -3,14 +3,16 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationDir": "types",
+    "declarationDir": "./types",
     "emitDeclarationOnly": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "newLine": "LF",
     "removeComments": true,
     "resolveJsonModule": true,
-    "target": "esnext"
+    "rootDir": "./src",
+    "target": "esnext",
+    "types": ["node"]
   },
-  "include": ["src/index.js"]
+  "include": ["./src/index.js"]
 }
