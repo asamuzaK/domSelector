@@ -1262,4 +1262,58 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#221 - https://github.com/asamuzaK/domSelector/issues/221', () => {
+    const html = `
+      <html><body><a href="http://example.com" class="foo">link</a></body></html>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html, { url: 'http://localhost' });
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should get result', () => {
+      const ds = new DOMSelector(window, document);
+      const link = document.querySelector('a');
+      // Round 1 — both miss Finder's document cache, so _correspond()
+      // parses each and sets #selectorAST. After this round,
+      // #selectorAST = AST for ".foo:focus-visible" (the last one parsed).
+      ds.check(':link, :visited', link);
+      ds.check('.foo:focus-visible', link);
+      const result = ds.check('.foo:focus-visible', link);
+      assert.deepEqual(
+        result,
+        {
+          ast: cssTree.parse('.foo:focus-visible', {
+            context: 'selectorList'
+          }),
+          match: false,
+          pseudoElement: null
+        },
+        'AST set correctly for result'
+      );
+
+      // Round 2 — both HIT the document cache. _correspond() doesn't
+      // update #selectorAST on a hit. find() returns the stale value.
+      const result2 = ds.check(':link, :visited', link);
+      assert.deepEqual(
+        result2,
+        {
+          ast: cssTree.parse(':link, :visited', {
+            context: 'selectorList'
+          }),
+          match: true,
+          pseudoElement: null
+        },
+        'AST set correctly for result2'
+      );
+    });
+  });
 });
