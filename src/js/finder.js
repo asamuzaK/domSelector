@@ -114,6 +114,7 @@ export class Finder {
   #documentURL;
   #event;
   #eventHandlers;
+  #filterLeavesCache;
   #focus;
   #invalidate;
   #invalidateResults;
@@ -160,6 +161,7 @@ export class Finder {
         handler: this._handleMouseEvent
       }
     ]);
+    this.#filterLeavesCache = new WeakMap();
     this._registerEventListeners();
     this.clearResults(true);
   }
@@ -233,6 +235,7 @@ export class Finder {
     this.#invalidateResults = new WeakMap();
     if (all) {
       this.#results = new WeakMap();
+      this.#filterLeavesCache = new WeakMap();
     }
   };
 
@@ -462,8 +465,7 @@ export class Finder {
    */
   _getFilteredChildren = (parentNode, selectorBranches, opt) => {
     const children = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let childNode = walker.firstChild();
+    let childNode = parentNode.firstElementChild;
     while (childNode) {
       if (selectorBranches) {
         let isMatch = false;
@@ -485,7 +487,7 @@ export class Finder {
       } else {
         children.push(childNode);
       }
-      childNode = walker.nextSibling();
+      childNode = childNode.nextElementSibling;
     }
     return children;
   };
@@ -555,8 +557,7 @@ export class Finder {
       return new Set();
     }
     const typedSiblings = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let sibling = walker.firstChild();
+    let sibling = parentNode.firstElementChild;
     while (sibling) {
       if (
         sibling.localName === node.localName &&
@@ -565,7 +566,7 @@ export class Finder {
       ) {
         typedSiblings.push(sibling);
       }
-      sibling = walker.nextSibling();
+      sibling = sibling.nextElementSibling;
     }
     const matchedNodes = filterNodesByAnB(typedSiblings, anb);
     return new Set(matchedNodes);
@@ -2010,6 +2011,21 @@ export class Finder {
   };
 
   /**
+   * Returns a cached slice of the leaves array (excluding the first item).
+   * @private
+   * @param {Array.<object>} leaves - The original AST leaves array.
+   * @returns {Array.<object>} The filtered leaves.
+   */
+  _getFilterLeaves = leaves => {
+    if (this.#filterLeavesCache.has(leaves)) {
+      return this.#filterLeavesCache.get(leaves);
+    }
+    const filterLeaves = leaves.slice(1);
+    this.#filterLeavesCache.set(leaves, filterLeaves);
+    return filterLeaves;
+  };
+
+  /**
    * Traverses all descendant nodes and collects matches.
    * @private
    * @param {object} baseNode - The base Element node or Element.shadowRoot.
@@ -2040,7 +2056,8 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _findDescendantNodes = (leaves, baseNode, opt) => {
-    const [leaf, ...filterLeaves] = leaves;
+    const [leaf] = leaves;
+    const filterLeaves = this._getFilterLeaves(leaves);
     const { type: leafType } = leaf;
     switch (leafType) {
       case ID_SELECTOR: {
@@ -2362,7 +2379,8 @@ export class Finder {
    */
   _findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const [leaf, ...filterLeaves] = leaves;
+    const [leaf] = leaves;
+    const filterLeaves = this._getFilterLeaves(leaves);
     const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
@@ -2455,7 +2473,8 @@ export class Finder {
    */
   _findEntryNodesForOther = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const [leaf, ...filterLeaves] = leaves;
+    const [leaf] = leaves;
+    const filterLeaves = this._getFilterLeaves(leaves);
     const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
@@ -2531,7 +2550,8 @@ export class Finder {
    */
   _findEntryNodes = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const [leaf, ...filterLeaves] = leaves;
+    const [leaf] = leaves;
+    const filterLeaves = this._getFilterLeaves(leaves);
     const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&

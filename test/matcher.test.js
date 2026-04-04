@@ -561,6 +561,8 @@ describe('matcher', () => {
       parent.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, false, 'result');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, false, 'result');
     });
 
     it('should not match', () => {
@@ -574,6 +576,8 @@ describe('matcher', () => {
       parent.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, false, 'result');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, false, 'result');
     });
 
     it('should match', () => {
@@ -587,6 +591,8 @@ describe('matcher', () => {
       parent.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, true, 'result');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, true, 'result');
     });
 
     it('should match', () => {
@@ -600,6 +606,8 @@ describe('matcher', () => {
       parent.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, true, 'result');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, true, 'result');
     });
 
     it('should match', () => {
@@ -689,6 +697,8 @@ describe('matcher', () => {
       parent.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, true, 'result');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, true, 'result');
     });
 
     it('should match', () => {
