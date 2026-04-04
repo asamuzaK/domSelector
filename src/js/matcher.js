@@ -136,6 +136,22 @@ export const matchDirectionPseudoClass = (ast, node) => {
  * @returns {boolean} - True if the language matches, otherwise false.
  */
 export const matchLanguagePseudoClass = (ast, node) => {
+  // Get the effective language attribute for the current node.
+  const elementLang = getLanguageAttribute(node);
+  // If the element has no language, it cannot match a specific pattern.
+  if (elementLang === null) {
+    return false;
+  }
+  // Use cached regex.
+  if (ast._langRegex !== undefined) {
+    if (ast._langPattern === '*') {
+      return elementLang !== '';
+    }
+    if (ast._langRegex === null) {
+      return false;
+    }
+    return ast._langRegex.test(elementLang);
+  }
   const { name, type, value } = ast;
   let langPattern;
   // Determine the language pattern from the AST.
@@ -144,35 +160,31 @@ export const matchLanguagePseudoClass = (ast, node) => {
   } else if (type === IDENT && name) {
     langPattern = unescapeSelector(name);
   }
+  // Cache lang pattern.
+  ast._langPattern = langPattern;
   // If no valid language pattern is provided, it cannot match.
   if (typeof langPattern !== 'string') {
-    return false;
-  }
-  // Get the effective language attribute for the current node.
-  const elementLang = getLanguageAttribute(node);
-  // If the element has no language, it cannot match a specific pattern.
-  if (elementLang === null) {
+    ast._langRegex = null;
     return false;
   }
   // Handle the universal selector '*' for :lang.
   if (langPattern === '*') {
-    // It matches any language unless attribute is not empty.
+    ast._langRegex = null;
     return elementLang !== '';
   }
   // Validate the provided language pattern structure.
   if (!REG_LANG_VALID.test(langPattern)) {
+    ast._langRegex = null;
     return false;
   }
   // Build a regex for extended language range matching.
   let matcherRegex;
   if (langPattern.indexOf('-') > -1) {
-    // Handle complex patterns with wildcards and sub-tags (e.g., '*-US').
     const [langMain, langSub, ...langRest] = langPattern.split('-');
     const extendedMain =
       langMain === '*' ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
     const extendedSub = `-${langSub}${LANG_PART}`;
     let extendedRest = '';
-    // Use a standard for loop for performance as per the rules.
     for (let i = 0; i < langRest.length; i++) {
       extendedRest += `-${langRest[i]}${LANG_PART}`;
     }
@@ -181,9 +193,9 @@ export const matchLanguagePseudoClass = (ast, node) => {
       'i'
     );
   } else {
-    // Handle simple language patterns (e.g., 'en').
     matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, 'i');
   }
+  ast._langRegex = matcherRegex;
   // Test the element's language against the constructed regex.
   return matcherRegex.test(elementLang);
 };
@@ -452,9 +464,15 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
     }
     case '~=': {
       if (attrValue && typeof attrValue === 'string') {
+        if (/\s/.test(attrValue)) {
+          return false;
+        }
+        if (ast._tildeTarget === undefined) {
+          ast._tildeTarget = ` ${attrValue} `;
+        }
+        const target = ast._tildeTarget;
         for (const value of attrValues) {
-          const item = new Set(value.split(/\s+/));
-          if (item.has(attrValue)) {
+          if (` ${value.replace(/[\t\r\n\f]/g, ' ')} `.includes(target)) {
             return true;
           }
         }
