@@ -32,6 +32,7 @@ export class Finder {
     private _matchSelectorForShadowRoot;
     private _matchSelector;
     private _matchLeaves;
+    private _getFilterLeaves;
     private _traverseAllDescendants;
     private _findDescendantNodes;
     private _collectCombinatorMatches;
