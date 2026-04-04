@@ -462,8 +462,7 @@ export class Finder {
    */
   _getFilteredChildren = (parentNode, selectorBranches, opt) => {
     const children = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let childNode = walker.firstChild();
+    let childNode = parentNode.firstElementChild;
     while (childNode) {
       if (selectorBranches) {
         let isMatch = false;
@@ -485,7 +484,7 @@ export class Finder {
       } else {
         children.push(childNode);
       }
-      childNode = walker.nextSibling();
+      childNode = childNode.nextElementSibling;
     }
     return children;
   };
@@ -555,8 +554,7 @@ export class Finder {
       return new Set();
     }
     const typedSiblings = [];
-    const walker = this._createTreeWalker(parentNode, { force: true });
-    let sibling = walker.firstChild();
+    let sibling = parentNode.firstElementChild;
     while (sibling) {
       if (
         sibling.localName === node.localName &&
@@ -565,7 +563,7 @@ export class Finder {
       ) {
         typedSiblings.push(sibling);
       }
-      sibling = walker.nextSibling();
+      sibling = sibling.nextElementSibling;
     }
     const matchedNodes = filterNodesByAnB(typedSiblings, anb);
     return new Set(matchedNodes);
