@@ -27,8 +27,7 @@
     "@asamuzakjp/nwsapi": "^2.3.9",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
-    "is-potential-custom-element-name": "^1.0.1",
-    "lru-cache": "^11.2.7"
+    "is-potential-custom-element-name": "^1.0.1"
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
