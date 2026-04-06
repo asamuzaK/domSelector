@@ -6,7 +6,6 @@
  */
 
 /* import */
-import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
 import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
@@ -21,6 +20,50 @@ import {
   TARGET_SELF
 } from './js/constant.js';
 const MAX_CACHE = 1024;
+
+/* Generational Cache */
+export class GenerationalCache {
+  constructor(max) {
+    this.max = Math.ceil(max / 2);
+    this.current = new Map();
+    this.old = new Map();
+  }
+
+  get(key) {
+    let value = this.current.get(key);
+    if (value !== undefined) {
+      return value;
+    }
+    value = this.old.get(key);
+    if (value !== undefined) {
+      this.set(key, value);
+      return value;
+    }
+    return undefined;
+  }
+
+  set(key, value) {
+    this.current.set(key, value);
+    if (this.current.size >= this.max) {
+      this.old = this.current;
+      this.current = new Map();
+    }
+  }
+
+  has(key) {
+    return this.current.has(key) || this.old.has(key);
+  }
+
+  delete(key) {
+    this.current.delete(key);
+    this.old.delete(key);
+  }
+
+  clear() {
+    this.current.clear();
+    this.old.clear();
+  }
+}
 
 /**
  * @typedef {object} CheckResult
@@ -52,9 +95,7 @@ export class DOMSelector {
     this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
-    this.#cache = new LRUCache({
-      max: MAX_CACHE
-    });
+    this.#cache = new GenerationalCache(MAX_CACHE);
   }
 
   /**
@@ -63,6 +104,7 @@ export class DOMSelector {
    */
   clear = () => {
     this.#finder.clearResults(true);
+    // this.#cache.clear();
   };
 
   /**
