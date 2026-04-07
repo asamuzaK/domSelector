@@ -130,10 +130,8 @@ export class DOMSelector {
       node.parentNode
     ) {
       const cacheKey = `check_${selector}`;
-      let filterMatches = false;
-      if (this.#cache.has(cacheKey)) {
-        filterMatches = this.#cache.get(cacheKey);
-      } else {
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
         filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
@@ -144,9 +142,8 @@ export class DOMSelector {
           let ast = null;
           if (match) {
             const astCacheKey = `check_ast_${selector}`;
-            if (this.#cache.has(astCacheKey)) {
-              ast = this.#cache.get(astCacheKey);
-            } else {
+            ast = this.#cache.get(astCacheKey);
+            if (ast === undefined) {
               ast = this.#finder.getAST(selector);
               this.#cache.set(astCacheKey, ast);
             }
@@ -193,10 +190,8 @@ export class DOMSelector {
       node.parentNode
     ) {
       const cacheKey = `matches_${selector}`;
-      let filterMatches = false;
-      if (this.#cache.has(cacheKey)) {
-        filterMatches = this.#cache.get(cacheKey);
-      } else {
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
         filterMatches = filterSelector(selector, TARGET_SELF);
         this.#cache.set(cacheKey, filterMatches);
       }
@@ -245,10 +240,8 @@ export class DOMSelector {
       node.parentNode
     ) {
       const cacheKey = `closest_${selector}`;
-      let filterMatches = false;
-      if (this.#cache.has(cacheKey)) {
-        filterMatches = this.#cache.get(cacheKey);
-      } else {
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
         filterMatches = filterSelector(selector, TARGET_LINEAL);
         this.#cache.set(cacheKey, filterMatches);
       }
@@ -304,10 +297,8 @@ export class DOMSelector {
       (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
     ) {
       const cacheKey = `querySelector_${selector}`;
-      let filterMatches = false;
-      if (this.#cache.has(cacheKey)) {
-        filterMatches = this.#cache.get(cacheKey);
-      } else {
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
         filterMatches = filterSelector(selector, TARGET_FIRST);
         this.#cache.set(cacheKey, filterMatches);
       }
@@ -357,10 +348,8 @@ export class DOMSelector {
       (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
     ) {
       const cacheKey = `querySelectorAll_${selector}`;
-      let filterMatches = false;
-      if (this.#cache.has(cacheKey)) {
-        filterMatches = this.#cache.get(cacheKey);
-      } else {
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
         filterMatches = filterSelector(selector, TARGET_ALL);
         this.#cache.set(cacheKey, filterMatches);
       }
