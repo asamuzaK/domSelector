@@ -20,7 +20,7 @@ import {
   TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
-const MAX_CACHE = 1024;
+const MAX_CACHE = 2048;
 
 /**
  * @typedef {object} CheckResult

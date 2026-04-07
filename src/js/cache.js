@@ -4,6 +4,10 @@
 
 /* Generational Cache */
 export class GenerationalCache {
+  /**
+   * constructor
+   * @param {number} max - max cache size
+   */
   constructor(max) {
     this.max = Math.ceil(max / 2);
     this.current = new Map();
