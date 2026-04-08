@@ -23,6 +23,9 @@ export class GenerationalCache {
     return this.#current.size + this.#old.size;
   }
 
+  /**
+   * @returns {number} max cache size
+   */
   get max() {
     return this.#max;
   }
@@ -39,11 +42,10 @@ export class GenerationalCache {
   }
 
   get(key) {
-    let value = this.#current.get(key);
-    if (value !== undefined) {
-      return value;
+    if (this.#current.has(key)) {
+      return this.#current.get(key);
     }
-    value = this.#old.get(key);
+    const value = this.#old.get(key);
     if (value !== undefined) {
       this.set(key, value);
       return value;

@@ -1,5 +1,5 @@
 /**
- * utility.test.js
+ * cache.test.js
  */
 
 /* api */
@@ -10,26 +10,26 @@ import { describe, it } from 'mocha';
 import { GenerationalCache } from '../src/js/cache.js';
 
 describe('GenerationalCache', () => {
-  it('should initialize with 4 for the max generation size.', () => {
+  it('should initialize with 4 for the max cache size.', () => {
     const cache = new GenerationalCache();
-    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+    assert.strictEqual(cache.max, 4, 'max cache size should be 4');
   });
 
-  it('should initialize with 4 for the max generation size', () => {
+  it('should initialize with 4 for the max cache size', () => {
     const cache = new GenerationalCache(2);
-    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+    assert.strictEqual(cache.max, 4, 'max cache size should be 4');
   });
 
-  it('should initialize with correct max generation size', () => {
+  it('should initialize with correct max cache size', () => {
     const cache = new GenerationalCache(5);
     assert.strictEqual(
       cache.max,
       5,
-      'max generation size should be given value'
+      'max cache size should be given value'
     );
   });
 
-  it('should set max generation size and clear cache', () => {
+  it('should set max cache size and clear cache', () => {
     const cache = new GenerationalCache(2);
     cache.set('foo', 'bar');
     assert.strictEqual(cache.size, 1, 'cache is added');
@@ -37,21 +37,21 @@ describe('GenerationalCache', () => {
     assert.strictEqual(
       cache.max,
       5,
-      'max generation size should be given value'
+      'max cache size should be given value'
     );
     assert.strictEqual(cache.size, 0, 'cache is cleared');
   });
 
-  it('should set max generation size and clear cache', () => {
+  it('should set max cache size and clear cache', () => {
     const cache = new GenerationalCache(5);
     cache.set('foo', 'bar');
     assert.strictEqual(cache.size, 1, 'cache is added');
     cache.max = 2;
-    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+    assert.strictEqual(cache.max, 4, 'max cache size should be 4');
     assert.strictEqual(cache.size, 0, 'cache is cleared');
   });
 
-  it('should be within max generation size', () => {
+  it('should be within max cache size', () => {
     const cache = new GenerationalCache(9);
     for (let i = 1; i < 20; i++) {
       cache.set(`key${i}`, i);
