@@ -10,13 +10,60 @@ import { describe, it } from 'mocha';
 import { GenerationalCache } from '../src/js/cache.js';
 
 describe('GenerationalCache', () => {
+  it('should initialize with 4 for the max generation size.', () => {
+    const cache = new GenerationalCache();
+    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+  });
+
+  it('should initialize with 4 for the max generation size', () => {
+    const cache = new GenerationalCache(2);
+    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+  });
+
   it('should initialize with correct max generation size', () => {
     const cache = new GenerationalCache(5);
     assert.strictEqual(
       cache.max,
-      3,
-      'max generation size should be Math.ceil(max / 2)'
+      5,
+      'max generation size should be given value'
     );
+  });
+
+  it('should set max generation size and clear cache', () => {
+    const cache = new GenerationalCache(2);
+    cache.set('foo', 'bar');
+    assert.strictEqual(cache.size, 1, 'cache is added');
+    cache.max = 5;
+    assert.strictEqual(
+      cache.max,
+      5,
+      'max generation size should be given value'
+    );
+    assert.strictEqual(cache.size, 0, 'cache is cleared');
+  });
+
+  it('should set max generation size and clear cache', () => {
+    const cache = new GenerationalCache(5);
+    cache.set('foo', 'bar');
+    assert.strictEqual(cache.size, 1, 'cache is added');
+    cache.max = 2;
+    assert.strictEqual(cache.max, 4, 'max generation size should be 4');
+    assert.strictEqual(cache.size, 0, 'cache is cleared');
+  });
+
+  it('should be within max generation size', () => {
+    const cache = new GenerationalCache(9);
+    for (let i = 1; i < 20; i++) {
+      cache.set(`key${i}`, i);
+      if (i < cache.max) {
+        assert.equal(cache.size, i);
+      } else {
+        assert.equal(
+          cache.size,
+          (i % Math.ceil(cache.max / 2)) + Math.ceil(cache.max / 2)
+        );
+      }
+    }
   });
 
   it('should set and get values', () => {
