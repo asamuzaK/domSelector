@@ -22,11 +22,7 @@ describe('GenerationalCache', () => {
 
   it('should initialize with correct max cache size', () => {
     const cache = new GenerationalCache(5);
-    assert.strictEqual(
-      cache.max,
-      5,
-      'max cache size should be given value'
-    );
+    assert.strictEqual(cache.max, 5, 'max cache size should be given value');
   });
 
   it('should set max cache size and clear cache', () => {
@@ -34,11 +30,7 @@ describe('GenerationalCache', () => {
     cache.set('foo', 'bar');
     assert.strictEqual(cache.size, 1, 'cache is added');
     cache.max = 5;
-    assert.strictEqual(
-      cache.max,
-      5,
-      'max cache size should be given value'
-    );
+    assert.strictEqual(cache.max, 5, 'max cache size should be given value');
     assert.strictEqual(cache.size, 0, 'cache is cleared');
   });
 
