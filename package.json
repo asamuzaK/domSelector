@@ -60,6 +60,7 @@
   },
   "scripts": {
     "bench": "node benchmark/bench.js",
+    "bench:test-cases": "node benchmark/bench-test-cases.js",
     "bench:sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
