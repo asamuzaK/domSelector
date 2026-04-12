@@ -6,7 +6,7 @@
  */
 
 /* import */
-import { GenerationalCache } from './js/cache.js';
+import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { Finder } from './js/finder.js';
 import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
