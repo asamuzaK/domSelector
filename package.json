@@ -24,6 +24,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
+    "@asamuzakjp/generational-cache": "^0.1.0",
     "@asamuzakjp/nwsapi": "^2.3.9",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
