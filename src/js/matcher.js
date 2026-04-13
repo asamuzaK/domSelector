@@ -443,16 +443,19 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
   const { name: astIdentValue, value: astStringValue } = astValue ?? {};
   let attrValue;
   if (astIdentValue) {
+    // Ident values are not unescaped by css-tree, so we must unescape them
+    // (e.g. `\5c` hex escapes, `\n` character escapes).
     if (caseInsensitive) {
-      attrValue = astIdentValue.toLowerCase().replace(/\\(?!\\)/g, '');
+      attrValue = unescapeSelector(astIdentValue).toLowerCase();
     } else {
-      attrValue = astIdentValue.replace(/\\(?!\\)/g, '');
+      attrValue = unescapeSelector(astIdentValue);
     }
   } else if (astStringValue) {
+    // String values (quoted) are already unescaped by css-tree, so use as-is.
     if (caseInsensitive) {
-      attrValue = astStringValue.toLowerCase().replace(/\\(?!\\)/g, '');
+      attrValue = astStringValue.toLowerCase();
     } else {
-      attrValue = astStringValue.replace(/\\(?!\\)/g, '');
+      attrValue = astStringValue;
     }
   } else if (astStringValue === '') {
     attrValue = astStringValue;

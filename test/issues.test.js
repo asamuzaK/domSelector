@@ -1316,4 +1316,48 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('attribute selector with hex-escaped backslash in value', () => {
+    let window;
+    beforeEach(() => {
+      const dom = jsdom('');
+      window = dom.window;
+    });
+    afterEach(() => {
+      window = null;
+    });
+
+    it('should match string value containing backslash via hex escape', () => {
+      const doc = new window.DOMParser().parseFromString(
+        '<div data-k="a\\b">content</div>',
+        'text/html'
+      );
+      const div = doc.querySelector('div');
+      // \5c is the CSS hex escape for backslash (U+005C)
+      const res = doc.querySelector('[data-k="a\\5c b"]');
+      assert.deepEqual(res, div, 'hex escape \\5c should match literal backslash');
+    });
+
+    it('should match ident value containing backslash via hex escape', () => {
+      const doc = new window.DOMParser().parseFromString(
+        '<div data-k="ab">content</div>',
+        'text/html'
+      );
+      const div = doc.querySelector('div');
+      // \61 is hex for 'a', \62 is hex for 'b'
+      const res = doc.querySelector('[data-k=\\61 \\62]');
+      assert.deepEqual(res, div, 'hex escapes in ident value should match');
+    });
+
+    it('should match string value with escaped backslash (double backslash)', () => {
+      const doc = new window.DOMParser().parseFromString(
+        '<div data-k="a\\b">content</div>',
+        'text/html'
+      );
+      const div = doc.querySelector('div');
+      // In CSS, \\ is an escaped backslash
+      const res = doc.querySelector('[data-k="a\\\\b"]');
+      assert.deepEqual(res, div, 'escaped backslash should match literal backslash');
+    });
+  });
 });
