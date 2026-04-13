@@ -72,6 +72,13 @@ export const unescapeSelector = (selector = '') => {
       const item = arr[i];
       if (item === '' && i === l - 1) {
         selectorItems.push(U_FFFD);
+      } else if (item === '') {
+        // Empty segment at non-last position means \\ (escaped backslash)
+        selectorItems.push('\\');
+        i++; // skip the next segment which is the remainder after \\
+        if (i < l) {
+          selectorItems.push(arr[i]);
+        }
       } else {
         const hexExists = /^([\da-f]{1,6}\s?)/i.exec(item);
         if (hexExists) {
