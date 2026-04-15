@@ -20,7 +20,7 @@ import {
   TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
-const CACHE_SIZE = 4096;
+const CACHE_SIZE = 1024;
 
 /**
  * @typedef {object} CheckResult
@@ -46,13 +46,13 @@ export class DOMSelector {
    * @param {object} [opt] - Options.
    */
   constructor(window, document, opt = {}) {
-    const { idlUtils } = opt;
+    const { cacheSize, idlUtils } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
     this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
     this.#nwsapi = initNwsapi(window, document);
-    this.#cache = new GenerationalCache(CACHE_SIZE);
+    this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE);
   }
 
   /**
