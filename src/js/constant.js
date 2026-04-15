@@ -63,9 +63,9 @@ export const LANG_PART = `(?:-${ALPHA_NUM})*`;
 export const PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|target`;
 export const ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 // combinators
-export const COMBO = '\\s?[\\s>~+]\\s?';
-export const DESCEND = '\\s?[\\s>]\\s?';
-export const SIBLING = '\\s?[+~]\\s?';
+export const COMBO = '(?:\\s*[>~+]\\s*|\\s+)';
+export const DESCEND = '(?:\\s*>\\s*|\\s+)';
+export const SIBLING = '\\s*[+~]\\s*';
 // LOGIC_IS: :is()
 export const LOGIC_IS = `:is\\(\\s*[^)]+\\s*\\)`;
 // N_TH: excludes An+B with selector list, e.g. :nth-child(2n+1 of .foo)
@@ -76,10 +76,10 @@ export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
-export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
-export const COMPOUND_L = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${LOGIC_IS})+)`;
-export const COMPOUND_I = `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
-export const COMPOUND_WO_PSEUDO = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE_WO_PSEUDO})+)`;
+export const COMPOUND = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE})*|(?:${SUB_TYPE})+)`;
+export const COMPOUND_L = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE}|${LOGIC_IS})*|(?:${SUB_TYPE}|${LOGIC_IS})+)`;
+export const COMPOUND_I = `(?:(?:${TAG_TYPE_I})(?:${SUB_TYPE})*|(?:${SUB_TYPE})+)`;
+export const COMPOUND_WO_PSEUDO = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE_WO_PSEUDO})*|(?:${SUB_TYPE_WO_PSEUDO})+)`;
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const COMPLEX_L = `${COMPOUND_L}(?:${COMBO}${COMPOUND_L})*`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
