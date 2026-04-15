@@ -24,7 +24,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@asamuzakjp/generational-cache": "^0.1.0",
+    "@asamuzakjp/generational-cache": "^1.0.1",
     "@asamuzakjp/nwsapi": "^2.3.9",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "benchmark": "^2.1.4",
     "c8": "^11.0.0",
     "chai": "^6.2.2",
@@ -43,13 +43,13 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-regexp": "^3.1.0",
     "eslint-plugin-unicorn": "^64.0.0",
-    "globals": "^17.4.0",
+    "globals": "^17.5.0",
     "jsdom": "^29.0.2",
     "mitata": "^1.0.34",
     "mocha": "^11.7.5",
     "neostandard": "^0.13.0",
-    "prettier": "^3.8.1",
-    "sinon": "^21.0.3",
+    "prettier": "^3.8.2",
+    "sinon": "^21.1.2",
     "typescript": "^6.0.2",
     "wpt-runner": "^7.0.0"
   },
