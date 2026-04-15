@@ -8,38 +8,42 @@ import { run, bench, group } from 'mitata';
 import { JSDOM } from 'jsdom';
 import { DOMSelector } from '../src/index.js';
 
-// 1. Get cache size from command line arguments
-let cacheSize = 4096; // Default value
-const sizeArg = process.argv.find(arg => arg.startsWith('--size='));
-if (sizeArg) {
-  cacheSize = parseInt(sizeArg.split('=')[1], 10);
-}
+// 1. Get arguments from command line
+let cacheSize = 4096;      // Default
+let nodeCount = 5;         // Default
+let totalSelectors = 8000; // Default
+
+process.argv.forEach(arg => {
+  if (arg.startsWith('--size=')) {
+    cacheSize = parseInt(arg.split('=')[1], 10);
+  } else if (arg.startsWith('--nodes=')) {
+    nodeCount = parseInt(arg.split('=')[1], 10);
+  } else if (arg.startsWith('--selectors=')) {
+    totalSelectors = parseInt(arg.split('=')[1], 10);
+  }
+});
 
 // 2. Setup JSDOM
 const { window } = new JSDOM('<!DOCTYPE html><html><body></body></html>');
 const document = window.document;
 
-// Create target nodes and add a common class to them
-const targetNodes = [
-  document.createElement('div'),
-  document.createElement('span'),
-  document.createElement('a'),
-  document.createElement('p'),
-  document.createElement('button')
-];
-// Add a class so we can easily target them with matching selectors
-targetNodes.forEach(n => n.classList.add('benchmark-target'));
+// Create target nodes
+const targetNodes = [];
+for (let i = 0; i < nodeCount; i++) {
+  const div = document.createElement('div');
+  div.classList.add('benchmark-target');
+  div.id = `node-${i}`;
+  targetNodes.push(div);
+}
 
 // 3. Instantiate DOMSelector
 const selectorEngine = new DOMSelector(window, document, { cacheSize });
 
-// 4. Generate selectors
-const TOTAL_SELECTORS = 8000;
+// 4. Generate selectors (using totalSelectors)
 const selectors = [];
-for (let i = 0; i < TOTAL_SELECTORS; i++) {
+for (let i = 0; i < totalSelectors; i++) {
   if (i % 2 === 0) {
-    // MATCHING selectors: 
-    // These will return `true` for nwsapi.match and FORCE the heavy getAST() parsing.
+    // MATCHING selectors
     selectors.push(`.benchmark-target:not(.dummy-${i})`);
   } else {
     // NON-MATCHING selectors
@@ -50,17 +54,17 @@ for (let i = 0; i < TOTAL_SELECTORS; i++) {
 console.log(`=======================================`);
 console.log(`DOM Selector Cache Benchmark (mitata)`);
 console.log(`Cache Size: ${cacheSize}`);
-console.log(`Selectors : ${TOTAL_SELECTORS} (Per Node, 50% matching)`);
-console.log(`Nodes     : ${targetNodes.length}`);
+console.log(`Selectors : ${totalSelectors} (Per Node, 50% matching)`);
+console.log(`Nodes     : ${nodeCount}`);
 console.log(`=======================================`);
 
 // 5. Setup mitata benchmark
 group(`DOMSelector Check (Cache: ${cacheSize})`, () => {
-  bench(`Check ${TOTAL_SELECTORS} selectors against ${targetNodes.length} nodes`, () => {
+  bench(`Check ${totalSelectors} selectors against ${nodeCount} nodes`, () => {
     // Evaluate all selectors sequentially for all nodes.
     for (let n = 0; n < targetNodes.length; n++) {
       const node = targetNodes[n];
-      for (let s = 0; s < TOTAL_SELECTORS; s++) {
+      for (let s = 0; s < selectors.length; s++) {
         selectorEngine.check(selectors[s], node);
       }
     }
@@ -69,7 +73,6 @@ group(`DOMSelector Check (Cache: ${cacheSize})`, () => {
 
 // Run the benchmark
 await run({
-  // options to enable garbage collection if exposed
   colors: true,
   json: false,
 });
