@@ -1335,7 +1335,11 @@ describe('domSelector regression tests', () => {
       const div = doc.querySelector('div');
       // \5c is the CSS hex escape for backslash (U+005C)
       const res = doc.querySelector('[data-k="a\\5c b"]');
-      assert.deepEqual(res, div, 'hex escape \\5c should match literal backslash');
+      assert.deepEqual(
+        res,
+        div,
+        'hex escape \\5c should match literal backslash'
+      );
     });
 
     it('should match ident value containing backslash via hex escape', () => {
@@ -1357,7 +1361,11 @@ describe('domSelector regression tests', () => {
       const div = doc.querySelector('div');
       // In CSS, \\ is an escaped backslash
       const res = doc.querySelector('[data-k="a\\\\b"]');
-      assert.deepEqual(res, div, 'escaped backslash should match literal backslash');
+      assert.deepEqual(
+        res,
+        div,
+        'escaped backslash should match literal backslash'
+      );
     });
   });
 });
