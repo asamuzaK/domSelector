@@ -67,7 +67,7 @@
     "bench:sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
-    "test": "c8 --reporter=text mocha --parallel --exit test/**/*.test.js",
+    "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
     "test:wpt": "node test/wpt/wpt-runner.js",
     "tsc": "node scripts/index clean --dir=types -i && npx tsc",
     "update:wpt": "git submodule update --init --recursive --remote"
