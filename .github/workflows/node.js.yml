@@ -18,9 +18,14 @@ jobs:
       matrix:
         node-version: [20.19.0, 20.x, 22.12.0, 22.x, 24.0.0, lts/*, latest]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
+        include:
+          - os: macos-latest
+            node-version: 20.19.0
+            heap_size: 6144
+          - os: macos-latest
+            node-version: 22.x
+            heap_size: 6144
     runs-on: ${{ matrix.os }}
-    env:
-      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
