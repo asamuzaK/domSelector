@@ -76,10 +76,10 @@ export const SUB_TYPE_WO_PSEUDO = '\\[[^|\\]]+\\]|[#.][\\w-]+';
 // TAG_TYPE: *, tag
 export const TAG_TYPE = '\\*|[A-Za-z][\\w-]*';
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
-export const COMPOUND = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE})*|(?:${SUB_TYPE})+)`;
-export const COMPOUND_L = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE}|${LOGIC_IS})*|(?:${SUB_TYPE}|${LOGIC_IS})+)`;
-export const COMPOUND_I = `(?:(?:${TAG_TYPE_I})(?:${SUB_TYPE})*|(?:${SUB_TYPE})+)`;
-export const COMPOUND_WO_PSEUDO = `(?:(?:${TAG_TYPE})(?:${SUB_TYPE_WO_PSEUDO})*|(?:${SUB_TYPE_WO_PSEUDO})+)`;
+export const COMPOUND = `(?:${TAG_TYPE}|${SUB_TYPE})+`;
+export const COMPOUND_L = `(?:${TAG_TYPE}|${SUB_TYPE}|${LOGIC_IS})+`;
+export const COMPOUND_I = `(?:${TAG_TYPE_I}|${SUB_TYPE})+`;
+export const COMPOUND_WO_PSEUDO = `(?:${TAG_TYPE}|${SUB_TYPE_WO_PSEUDO})+`;
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;
 export const COMPLEX_L = `${COMPOUND_L}(?:${COMBO}${COMPOUND_L})*`;
 export const HAS_COMPOUND = `has\\([\\s>]?\\s*${COMPOUND_WO_PSEUDO}\\s*\\)`;
