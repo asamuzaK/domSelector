@@ -1063,17 +1063,13 @@ export const filterSelector = (selector, target) => {
   // Validate attribute selector integrity
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
-    const sel = selector.substring(index);
-    if (!sel.includes(']')) {
+    if (selector.indexOf(']', index) === -1) {
       return false;
     }
   }
   // Target-specific early exits
   if (target === TARGET_FIRST) {
-    if (REG_ATTR_SIMPLE.test(selector)) {
-      return true;
-    }
-    return false;
+    return REG_ATTR_SIMPLE.test(selector);
   }
   if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
     return false;
