@@ -1047,6 +1047,7 @@ export const initNwsapi = (window, document) => {
  */
 export const filterSelector = (selector, target) => {
   const isQuerySelectorAll = target === TARGET_ALL;
+  // Basic validation and fast-fail for null/undefined/non-string values
   if (
     !selector ||
     typeof selector !== 'string' ||
@@ -1054,59 +1055,58 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // Exclude missing close square bracket.
+  // Exclude various complex or unsupported selectors early
+  // i.e. non-ASCII, escaped selectors, namespaced selectors and pseudo-elements
+  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
+    return false;
+  }
+  // Validate attribute selector integrity
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
     const sel = selector.substring(index);
-    if (sel.indexOf(']') < 0) {
+    if (!sel.includes(']')) {
       return false;
     }
   }
-  // Match only simple attribute selector for TARGET_FIRST.
+  // Target-specific early exits
   if (target === TARGET_FIRST) {
     if (REG_ATTR_SIMPLE.test(selector)) {
       return true;
     }
     return false;
   }
-
-  // Exclude simple tag selector for TARGET_ALL
   if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
     return false;
   }
-
-  // Exclude various complex or unsupported selectors.
-  // - selectors containing '/'
-  // - namespaced selectors
-  // - escaped selectors
-  // - pseudo-element selectors
-  // - selectors containing non-ASCII
-  // - selectors containing control character other than whitespace
-  // - attribute selectors with case flag, e.g. [attr i]
-  // - attribute selectors with unclosed quotes
-  // - empty :is() or :where()
-  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
-    return false;
-  }
-  // Include pseudo-classes that are known to work correctly.
+  // Logic for pseudo-classes
   if (selector.includes(':')) {
+    // Exclude descendant combinators in logical selectors for querySelectorAll
     if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
       return false;
     }
-    const complex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
-    if (!isQuerySelectorAll && /:has\(/.test(selector)) {
-      if (!complex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
+    // Determine if the selector has complex logical structures
+    const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
+    // Handle :has() specifically
+    if (selector.includes(':has(')) {
+      if (isQuerySelectorAll) {
+        return false;
+      }
+      if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }
       return REG_END_WITH_HAS.test(selector);
-    } else if (/:(?:is|not)\(/.test(selector)) {
-      if (complex) {
+    }
+    // Handle :is() and :not()
+    if (/(?:is|not)\(/.test(selector)) {
+      if (isComplex) {
         return !REG_LOGIC_COMPLEX.test(selector);
       } else {
         return !REG_LOGIC_COMPOUND.test(selector);
       }
-    } else {
-      return !REG_WO_LOGICAL.test(selector);
+    }
+    // Default check for other pseudo-classes against known list
+    if (REG_WO_LOGICAL.test(selector)) {
+      return false;
     }
   }
   return true;

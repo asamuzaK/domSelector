@@ -1095,6 +1095,24 @@ describe('DOMSelector', () => {
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(res, null, 'result');
     });
+
+    it('should match', () => {
+      const wrapperForImpl = sinon.stub();
+      wrapperForImpl.onFirstCall().throws();
+      wrapperForImpl.onSecondCall().callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window, document, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('[id="li2"]', document);
+      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
+      assert.deepEqual(res, node, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {

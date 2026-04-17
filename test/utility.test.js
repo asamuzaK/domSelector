@@ -3849,5 +3849,21 @@ describe('utility functions', () => {
       const res = func('.undefined');
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should get true', () => {
+      const res = func(
+        'div:nth-child(2n + 1):is(.foo, [data-role="tile"]):not(:is(span, a))',
+        TARGET_ALL
+      );
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false', () => {
+      const res = func(
+        'div:is(.parent .child):not([title="foo" i])',
+        TARGET_ALL
+      );
+      assert.strictEqual(res, false, 'result');
+    });
   });
 });
