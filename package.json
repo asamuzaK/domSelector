@@ -50,7 +50,7 @@
     "neostandard": "^0.13.0",
     "prettier": "^3.8.3",
     "sinon": "^21.1.2",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "wpt-runner": "^7.0.0"
   },
   "overrides": {
@@ -75,5 +75,5 @@
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
   },
-  "version": "7.0.10"
+  "version": "7.1.0"
 }
