@@ -803,7 +803,8 @@ describe('jsdom issues tagged with `selectors` label', () => {
       document = null;
     });
 
-    it('should not throw and get result', () => {
+    // TODO: Enable after jsdom updates dom-selector
+    it.skip('should not throw and get result', () => {
       window.dispatchEvent(
         new window.MouseEvent('mousedown', {
           bubbles: true,
@@ -816,10 +817,15 @@ describe('jsdom issues tagged with `selectors` label', () => {
         '[data-testid="inner-element"]'
       );
       assert.doesNotThrow(() => {
-        const result =
-          window.getComputedStyle(innerElement)['background-color'];
+        // eslint-disable-next-line
+        window.getComputedStyle(innerElement)['background-color']
         // jsdom does not have a layout, so the following assertion will fail.
-        // assert.strictEqual(result, 'rgb(0, 0, 0)');
+        /*
+        assert.strictEqual(
+          window.getComputedStyle(innerElement)['background-color'],
+          'rgb(0, 0, 0)'
+        );
+        */
       });
     });
   });
