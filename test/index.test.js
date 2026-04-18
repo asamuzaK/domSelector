@@ -140,6 +140,115 @@ describe('DOMSelector', () => {
     });
   });
 
+  describe('extractSubjects', () => {
+    it('should return universal fallback for empty/invalid inputs', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(
+        domSelector.extractSubjects(),
+        [{ id: null, className: null, tag: null }],
+        'undefined'
+      );
+      assert.deepEqual(
+        domSelector.extractSubjects(null),
+        [{ id: null, className: null, tag: null }],
+        'null'
+      );
+      assert.deepEqual(
+        domSelector.extractSubjects(''),
+        [{ id: null, className: null, tag: null }],
+        'empty string'
+      );
+    });
+
+    it('should extract single type selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('div'), [
+        { id: null, className: null, tag: 'div' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects('*'), [
+        { id: null, className: null, tag: null }
+      ]);
+    });
+
+    it('should extract single id selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('#foo'), [
+        { id: 'foo', className: null, tag: null }
+      ]);
+    });
+
+    it('should extract single class selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('.bar'), [
+        { id: null, className: 'bar', tag: null }
+      ]);
+    });
+
+    it('should extract compound selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('div#foo.bar'), [
+        { id: 'foo', className: 'bar', tag: 'div' }
+      ]);
+    });
+
+    it('should extract rightmost subject of complex selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('ul > li.item'), [
+        { id: null, className: 'item', tag: 'li' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects('div .foo + p#bar'), [
+        { id: 'bar', className: null, tag: 'p' }
+      ]);
+      assert.deepEqual(
+        domSelector.extractSubjects('main ~ section.content > h1'),
+        [{ id: null, className: null, tag: 'h1' }]
+      );
+    });
+
+    it('should extract selector list', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('.foo, div#bar'), [
+        { id: null, className: 'foo', tag: null },
+        { id: 'bar', className: null, tag: 'div' }
+      ]);
+    });
+
+    it('should ignore attributes and pseudo-classes/elements', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('a[href]:hover::before'), [
+        { id: null, className: null, tag: 'a' }
+      ]);
+      assert.deepEqual(
+        domSelector.extractSubjects('input[type="text"].input-box:focus'),
+        [{ id: null, className: 'input-box', tag: 'input' }]
+      );
+    });
+
+    it('should handle escaped characters properly', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('.foo\\!bar'), [
+        { id: null, className: 'foo!bar', tag: null }
+      ]);
+    });
+
+    it('should fallback to universal for unparseable selectors', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('.foo + .123'), [
+        { id: null, className: null, tag: null }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects(':invalid-pseudo('), [
+        { id: null, className: null, tag: null }
+      ]);
+    });
+
+    it('should utilize cache for same selectors', () => {
+      const domSelector = new DOMSelector(window);
+      const res1 = domSelector.extractSubjects('div.foo');
+      const res2 = domSelector.extractSubjects('div.foo');
+      assert.strictEqual(res1, res2);
+    });
+  });
+
   describe('check', () => {
     it('should throw', () => {
       assert.throws(
