@@ -8,6 +8,7 @@
 /* import */
 import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { Finder } from './js/finder.js';
+import { unescapeSelector, parseAstName } from './js/parser.js';
 import { filterSelector, getType, initNwsapi } from './js/utility.js';
 
 /* constants */
@@ -18,9 +19,13 @@ import {
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
-  TARGET_SELF
+  TARGET_SELF,
+  COMBINATOR,
+  ID_SELECTOR,
+  CLASS_SELECTOR,
+  TYPE_SELECTOR
 } from './js/constant.js';
-const CACHE_SIZE = 1024;
+const CACHE_SIZE = 2048;
 
 /**
  * @typedef {object} CheckResult
@@ -61,6 +66,59 @@ export class DOMSelector {
    */
   clear = () => {
     this.#finder.clearResults(true);
+  };
+
+  /**
+   * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
+   * @param {string} selector - The CSS selector to parse.
+   * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+   */
+  extractSubjects = selector => {
+    if (!selector || typeof selector !== 'string') {
+      return [{ id: null, className: null, tag: null }];
+    }
+    const cacheKey = `extract_${selector}`;
+    let subjects = this.#cache.get(cacheKey);
+    if (subjects !== undefined) {
+      return subjects;
+    }
+    subjects = [];
+    try {
+      const ast = this.#finder.getAST(selector);
+      if (ast?.type === 'SelectorList') {
+        for (const selectorNode of ast.children) {
+          let idKey = null;
+          let classKey = null;
+          let tagKey = null;
+          let current = selectorNode.children.tail;
+          while (current) {
+            const node = current.data;
+            if (node.type === COMBINATOR) {
+              break;
+            }
+            if (node.type === ID_SELECTOR) {
+              idKey = idKey ?? unescapeSelector(node.name);
+            } else if (node.type === CLASS_SELECTOR) {
+              classKey = classKey ?? unescapeSelector(node.name);
+            } else if (node.type === TYPE_SELECTOR) {
+              const { localName } = parseAstName(unescapeSelector(node.name));
+              if (localName !== '*') {
+                tagKey = tagKey ?? localName.toLowerCase();
+              }
+            }
+            current = current.prev;
+          }
+          subjects.push({ id: idKey, className: classKey, tag: tagKey });
+        }
+      }
+    } catch (e) {
+      // fall through
+    }
+    if (!subjects.length) {
+      subjects.push({ id: null, className: null, tag: null });
+    }
+    this.#cache.set(cacheKey, subjects);
+    return subjects;
   };
 
   /**
