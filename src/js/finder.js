@@ -1133,6 +1133,7 @@ export class Finder {
           const { target, type } = this.#event ?? {};
           if (
             /^(?:click|mouse(?:down|over|up))$/.test(type) &&
+            target?.nodeType === ELEMENT_NODE &&
             node.contains(target)
           ) {
             matched.add(node);
@@ -1141,7 +1142,12 @@ export class Finder {
         }
         case 'active': {
           const { buttons, target, type } = this.#event ?? {};
-          if (type === 'mousedown' && buttons & 1 && node.contains(target)) {
+          if (
+            type === 'mousedown' &&
+            buttons & 1 &&
+            target?.nodeType === ELEMENT_NODE &&
+            node.contains(target)
+          ) {
             matched.add(node);
           }
           break;
