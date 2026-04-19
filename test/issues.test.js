@@ -762,6 +762,74 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#4149 - https://github.com/jsdom/jsdom/issues/4149', () => {
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(`<!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            .outer {
+              background-color: black;
+              height: 200px;
+              width: 200px;
+            }
+            .inner {
+              background-color: white;
+              height: 100px;
+              width: 100px;
+            }
+            .outer:hover {
+              background-color: white;
+            }
+            .outer:hover .inner {
+              background-color: black;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="outer">
+            <div class="inner" data-testid="inner-element"></div>
+          </div>
+        </body>
+      </html>
+      `);
+      window = dom.window;
+      document = dom.window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    // TODO: Enable after jsdom updates dom-selector
+    it.skip('should not throw and get result', () => {
+      window.dispatchEvent(
+        new window.MouseEvent('mousedown', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 150,
+          clientY: 150
+        })
+      );
+      const innerElement = document.querySelector(
+        '[data-testid="inner-element"]'
+      );
+      assert.doesNotThrow(() => {
+        // eslint-disable-next-line
+        window.getComputedStyle(innerElement)['background-color']
+        // jsdom does not have a layout, so the following assertion will fail.
+        /*
+        assert.strictEqual(
+          window.getComputedStyle(innerElement)['background-color'],
+          'rgb(0, 0, 0)'
+        );
+        */
+      });
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;
