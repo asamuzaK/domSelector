@@ -3,6 +3,7 @@
  */
 
 /* import */
+import { EventTracker } from './event-tracker.js';
 import {
   matchAttributeSelector,
   matchDirectionPseudoClass,
@@ -70,22 +71,6 @@ const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
 const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
 const KEYS_INPUT_RESET = new Set(['button', 'reset']);
 const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
-const KEYS_MODIFIER = new Set([
-  'Alt',
-  'AltGraph',
-  'CapsLock',
-  'Control',
-  'Fn',
-  'FnLock',
-  'Hyper',
-  'Meta',
-  'NumLock',
-  'ScrollLock',
-  'Shift',
-  'Super',
-  'Symbol',
-  'SymbolLock'
-]);
 const KEYS_PS_UNCACHE = new Set([
   'any-link',
   'defined',
@@ -112,13 +97,9 @@ export class Finder {
   #document;
   #documentCache;
   #documentURL;
-  #event;
-  #eventHandlers;
   #filterLeavesCache;
-  #focus;
   #invalidate;
   #invalidateResults;
-  #lastFocusVisible;
   #node;
   #nodeWalker;
   #nodes;
@@ -131,6 +112,7 @@ export class Finder {
   #selector;
   #selectorAST;
   #shadow;
+  #tracker;
   #verifyShadowHost;
   #walkers;
   #warn;
@@ -144,25 +126,8 @@ export class Finder {
     this.#window = window;
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
-    this.#event = null;
-    this.#focus = null;
-    this.#lastFocusVisible = null;
-    this.#eventHandlers = new Set([
-      {
-        keys: ['focus', 'focusin'],
-        handler: this._handleFocusEvent
-      },
-      {
-        keys: ['keydown', 'keyup'],
-        handler: this._handleKeyboardEvent
-      },
-      {
-        keys: ['mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'],
-        handler: this._handleMouseEvent
-      }
-    ]);
+    this.#tracker = new EventTracker(window);
     this.#filterLeavesCache = new WeakMap();
-    this._registerEventListeners();
     this.clearResults(true);
   }
 
@@ -237,62 +202,6 @@ export class Finder {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
     }
-  };
-
-  /**
-   * Handles focus events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleFocusEvent = evt => {
-    this.#focus = evt;
-  };
-
-  /**
-   * Handles keyboard events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleKeyboardEvent = evt => {
-    const { key } = evt;
-    if (!KEYS_MODIFIER.has(key)) {
-      this.#event = evt;
-    }
-  };
-
-  /**
-   * Handles mouse events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleMouseEvent = evt => {
-    this.#event = evt;
-  };
-
-  /**
-   * Registers event listeners.
-   * @private
-   * @returns {Array.<void>} An array of return values from addEventListener.
-   */
-  _registerEventListeners = () => {
-    const func = [];
-    for (const eventHandler of this.#eventHandlers) {
-      const { keys, handler } = eventHandler;
-      const l = keys.length;
-      for (let i = 0; i < l; i++) {
-        const key = keys[i];
-        func.push(
-          this.#window.addEventListener(key, handler, {
-            capture: true,
-            passive: true
-          })
-        );
-      }
-    }
-    return func;
   };
 
   /**
@@ -1130,7 +1039,7 @@ export class Finder {
           break;
         }
         case 'hover': {
-          const { target, type } = this.#event ?? {};
+          const { target, type } = this.#tracker.event ?? {};
           if (
             /^(?:click|mouse(?:down|over|up))$/.test(type) &&
             target?.nodeType === ELEMENT_NODE &&
@@ -1141,7 +1050,7 @@ export class Finder {
           break;
         }
         case 'active': {
-          const { buttons, target, type } = this.#event ?? {};
+          const { buttons, target, type } = this.#tracker.event ?? {};
           if (
             type === 'mousedown' &&
             buttons & 1 &&
@@ -1224,12 +1133,13 @@ export class Finder {
             let bool;
             if (isFocusVisible(node)) {
               bool = true;
-            } else if (this.#focus) {
-              const { relatedTarget, target: focusTarget } = this.#focus;
+            } else if (this.#tracker.focus) {
+              const { relatedTarget, target: focusTarget } =
+                this.#tracker.focus;
               if (focusTarget === node) {
                 if (isFocusVisible(relatedTarget)) {
                   bool = true;
-                } else if (this.#event) {
+                } else if (this.#tracker.event) {
                   const {
                     altKey: eventAltKey,
                     ctrlKey: eventCtrlKey,
@@ -1237,12 +1147,12 @@ export class Finder {
                     metaKey: eventMetaKey,
                     target: eventTarget,
                     type: eventType
-                  } = this.#event;
-                  // this.#event is irrelevant if eventTarget === relatedTarget
+                  } = this.#tracker.event;
+                  // Irrelevant if eventTarget === relatedTarget.
                   if (eventTarget === relatedTarget) {
-                    if (this.#lastFocusVisible === null) {
+                    if (this.#tracker.lastFocusVisible === null) {
                       bool = true;
-                    } else if (focusTarget === this.#lastFocusVisible) {
+                    } else if (focusTarget === this.#tracker.lastFocusVisible) {
                       bool = true;
                     }
                   } else if (eventKey === 'Tab') {
@@ -1251,10 +1161,10 @@ export class Finder {
                       (eventType === 'keyup' && eventTarget === node)
                     ) {
                       if (eventTarget === focusTarget) {
-                        if (this.#lastFocusVisible === null) {
+                        if (this.#tracker.lastFocusVisible === null) {
                           bool = true;
                         } else if (
-                          eventTarget === this.#lastFocusVisible &&
+                          eventTarget === this.#tracker.lastFocusVisible &&
                           relatedTarget === null
                         ) {
                           bool = true;
@@ -1276,17 +1186,17 @@ export class Finder {
                   }
                 } else if (
                   relatedTarget === null ||
-                  relatedTarget === this.#lastFocusVisible
+                  relatedTarget === this.#tracker.lastFocusVisible
                 ) {
                   bool = true;
                 }
               }
             }
             if (bool) {
-              this.#lastFocusVisible = node;
+              this.#tracker.lastFocusVisible = node;
               matched.add(node);
-            } else if (this.#lastFocusVisible === node) {
-              this.#lastFocusVisible = null;
+            } else if (this.#tracker.lastFocusVisible === node) {
+              this.#tracker.lastFocusVisible = null;
             }
           }
           break;

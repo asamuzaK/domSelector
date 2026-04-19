@@ -237,28 +237,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('register event listeners', () => {
-    it('should register listeners', () => {
-      const finder = new Finder(window);
-      const res = finder._registerEventListeners();
-      assert.deepEqual(
-        res,
-        [
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined
-        ],
-        'result'
-      );
-    });
-  });
-
   describe('correspond ast and nodes', () => {
     it('should throw', () => {
       const finder = new Finder(window);
