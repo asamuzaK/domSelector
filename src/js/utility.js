@@ -366,9 +366,10 @@ export const traverseNode = (node, walker, force = false) => {
  * Check if a node is a custom element.
  * @param {object} node - The Element node.
  * @param {object} [opt] - Options.
+ * @@aram {boolean} [opt.formAssociated] - True if the node is form associated.
  * @returns {boolean} - True if it's a custom element.
  */
-export const isCustomElement = (node, opt = {}) => {
+export const isCustomElement = (node, { formAssociated } = {}) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -376,7 +377,6 @@ export const isCustomElement = (node, opt = {}) => {
     return false;
   }
   const { localName, ownerDocument } = node;
-  const { formAssociated } = opt;
   const window = ownerDocument.defaultView;
   let elmConstructor;
   const attr = node.getAttribute('is');
@@ -648,7 +648,7 @@ export const isVisible = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
     return false;
   }
-  // TODO: switch to node.checkVisibility()
+  // TODO: switch to node.checkVisibility().
   const window = node.ownerDocument.defaultView;
   const { display, visibility } = window.getComputedStyle(node);
   return display !== 'none' && visibility === 'visible';
@@ -1047,7 +1047,7 @@ export const initNwsapi = (window, document) => {
  */
 export const filterSelector = (selector, target) => {
   const isQuerySelectorAll = target === TARGET_ALL;
-  // Basic validation and fast-fail for null/undefined/non-string values
+  // Basic validation and fast-fail for null/undefined/non-string values.
   if (
     !selector ||
     typeof selector !== 'string' ||
@@ -1055,34 +1055,34 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // Exclude various complex or unsupported selectors early
-  // i.e. non-ASCII, escaped selectors, namespaced selectors and pseudo-elements
+  // Exclude various complex or unsupported selectors early.
+  // i.e. non-ASCII, escaped selectors, namespaced selectors, pseudo-elements.
   if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
     return false;
   }
-  // Validate attribute selector integrity
+  // Validate attribute selector integrity.
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
     if (selector.indexOf(']', index) === -1) {
       return false;
     }
   }
-  // Target-specific early exits
+  // Target-specific early exits.
   if (target === TARGET_FIRST) {
     return REG_ATTR_SIMPLE.test(selector);
   }
   if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
     return false;
   }
-  // Logic for pseudo-classes
+  // Logic for pseudo-classes.
   if (selector.includes(':')) {
-    // Exclude descendant combinators in logical selectors for querySelectorAll
+    // Exclude descendant combinators in logical selectors for querySelectorAll.
     if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
       return false;
     }
-    // Determine if the selector has complex logical structures
+    // Determine if the selector has complex logical structures.
     const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
-    // Handle :has() specifically
+    // Handle :has() specifically.
     if (selector.includes(':has(')) {
       if (isQuerySelectorAll) {
         return false;
@@ -1092,7 +1092,7 @@ export const filterSelector = (selector, target) => {
       }
       return REG_END_WITH_HAS.test(selector);
     }
-    // Handle :is() and :not()
+    // Handle :is() and :not().
     if (/(?:is|not)\(/.test(selector)) {
       if (isComplex) {
         return !REG_LOGIC_COMPLEX.test(selector);
@@ -1100,7 +1100,7 @@ export const filterSelector = (selector, target) => {
         return !REG_LOGIC_COMPOUND.test(selector);
       }
     }
-    // Default check for other pseudo-classes against known list
+    // Default check for other pseudo-classes against known list.
     if (REG_WO_LOGICAL.test(selector)) {
       return false;
     }

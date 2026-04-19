@@ -56,7 +56,6 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
  * A class dedicated to evaluating CSS pseudo-classes for the Finder.
  */
 export class PseudoClassEvaluator {
-  /** @type {object} */
   #finder;
 
   /**
@@ -72,13 +71,12 @@ export class PseudoClassEvaluator {
    * @private
    * @param {object} anb - An+B options.
    * @param {object} node - The Element node to evaluate.
-   * @param {object} [opt] - Evaluation options.
+   * @param {object} opt - Evaluation options.
    * @returns {Set<object>} A collection of matched nodes.
    */
   _collectNthChild(anb, node, opt) {
     const { a, b, selector } = anb;
     const { parentNode } = node;
-
     if (!parentNode) {
       const matchedNode = new Set();
       if (node === this.#finder.root && a * 1 + b * 1 === 1) {
@@ -98,7 +96,6 @@ export class PseudoClassEvaluator {
       }
       return matchedNode;
     }
-
     const selectorBranches = selector
       ? this.#finder._getSelectorBranches(selector)
       : null;
@@ -108,7 +105,6 @@ export class PseudoClassEvaluator {
       opt
     );
     const matchedNodes = filterNodesByAnB(children, anb);
-
     return new Set(matchedNodes);
   }
 
@@ -121,14 +117,12 @@ export class PseudoClassEvaluator {
    */
   _collectNthOfType(anb, node) {
     const { parentNode } = node;
-
     if (!parentNode) {
       if (node === this.#finder.root && anb.a * 1 + anb.b * 1 === 1) {
         return new Set([node]);
       }
       return new Set();
     }
-
     const typedSiblings = [];
     let sibling = parentNode.firstElementChild;
     while (sibling) {
@@ -141,7 +135,6 @@ export class PseudoClassEvaluator {
       }
       sibling = sibling.nextElementSibling;
     }
-
     const matchedNodes = filterNodesByAnB(typedSiblings, anb);
     return new Set(matchedNodes);
   }
@@ -152,7 +145,7 @@ export class PseudoClassEvaluator {
    * @param {object} ast - The AST branch representing the argument.
    * @param {object} node - The Element node to evaluate.
    * @param {string} nthName - The name of the nth pseudo-class.
-   * @param {object} [opt] - Evaluation options.
+   * @param {object} opt - Evaluation options.
    * @returns {Set<object>} A collection of matched nodes.
    */
   _matchAnPlusB(ast, node, nthName, opt) {
@@ -161,7 +154,6 @@ export class PseudoClassEvaluator {
       selector
     } = ast;
     const anbMap = new Map();
-
     if (nthIdentName) {
       if (nthIdentName === 'even') {
         anbMap.set('a', 2);
@@ -179,18 +171,15 @@ export class PseudoClassEvaluator {
       } else {
         anbMap.set('a', 0);
       }
-
       if (typeof b === 'string' && /-?\d+/.test(b)) {
         anbMap.set('b', b * 1);
       } else {
         anbMap.set('b', 0);
       }
-
       if (nthName.indexOf('last') > -1) {
         anbMap.set('reverse', true);
       }
     }
-
     if (nthName === 'nth-child' || nthName === 'nth-last-child') {
       if (selector) {
         anbMap.set('selector', selector);
@@ -199,7 +188,6 @@ export class PseudoClassEvaluator {
     } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
       return this._collectNthOfType(Object.fromEntries(anbMap), node);
     }
-
     return new Set();
   }
 
@@ -215,26 +203,20 @@ export class PseudoClassEvaluator {
     if (!Array.isArray(astLeaves) || !astLeaves.length) {
       return false;
     }
-
     const hasLeadingCombinator = astLeaves[0].type === COMBINATOR;
     const combo = hasLeadingCombinator
       ? astLeaves[0]
       : { name: ' ', type: COMBINATOR };
-
     const startIndex = hasLeadingCombinator ? 1 : 0;
     const nextCombinatorIndex = astLeaves.findIndex(
       (leaf, i) => i >= startIndex && leaf.type === COMBINATOR
     );
-
     const endIndex =
       nextCombinatorIndex === -1 ? astLeaves.length : nextCombinatorIndex;
     const twigLeaves = astLeaves.slice(startIndex, endIndex);
-
     const twig = { combo, leaves: twigLeaves };
     opt.dir = DIR_NEXT;
-
-    const nodes = this.#finder._collectCombinatorMatches(twig, node, opt, []);
-
+    const nodes = this.#finder._collectCombinatorMatches(twig, node, opt);
     if (nodes.length) {
       if (nextCombinatorIndex !== -1) {
         const remainingLeaves = astLeaves.slice(nextCombinatorIndex);
@@ -244,7 +226,6 @@ export class PseudoClassEvaluator {
       }
       return true;
     }
-
     return false;
   }
 
@@ -259,18 +240,15 @@ export class PseudoClassEvaluator {
   _evaluateHasPseudo(astData, node, opt = {}) {
     const { branches } = astData;
     let bool = false;
-
     for (let i = 0; i < branches.length; i++) {
       bool = this._matchHasPseudoFunc(branches[i], node, opt);
       if (bool) {
         break;
       }
     }
-
     if (!bool) {
       return null;
     }
-
     if (
       (opt.isShadowRoot || this.#finder.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE
@@ -281,7 +259,6 @@ export class PseudoClassEvaluator {
         return null;
       }
     }
-
     return node;
   }
 
@@ -296,15 +273,12 @@ export class PseudoClassEvaluator {
    */
   _matchLogicalPseudoFunc(astData, node, opt = {}) {
     const { astName, branches, twigBranches } = astData;
-
     if (astName === 'has') {
       return this._evaluateHasPseudo(astData, node, opt);
     }
-
     const isShadowRoot =
       (opt.isShadowRoot || this.#finder.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
-
     if (isShadowRoot) {
       let invalid = false;
       for (const branch of branches) {
@@ -320,16 +294,13 @@ export class PseudoClassEvaluator {
         return null;
       }
     }
-
     opt.forgive = astName === 'is' || astName === 'where';
     let bool;
-
     for (let i = 0; i < twigBranches.length; i++) {
       const branch = twigBranches[i];
       const lastIndex = branch.length - 1;
       const { leaves } = branch[lastIndex];
       bool = this.#finder._matchLeaves(leaves, node, opt);
-
       if (bool && lastIndex > 0) {
         let nextNodes = new Set([node]);
         for (let j = lastIndex - 1; j >= 0; j--) {
@@ -337,7 +308,12 @@ export class PseudoClassEvaluator {
           const arr = [];
           opt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
-            this.#finder._collectCombinatorMatches(twig, nextNode, opt, arr);
+            const matches = this.#finder._collectCombinatorMatches(
+              twig,
+              nextNode,
+              opt
+            );
+            arr.push(...matches);
           }
           if (arr.length) {
             if (j === 0) {
@@ -351,12 +327,10 @@ export class PseudoClassEvaluator {
           }
         }
       }
-
       if (bool) {
         break;
       }
     }
-
     if (astName === 'not') {
       if (bool) {
         return null;
@@ -364,7 +338,6 @@ export class PseudoClassEvaluator {
         return node;
       }
     }
-
     if (bool) {
       return node;
     } else {
@@ -386,7 +359,6 @@ export class PseudoClassEvaluator {
     const { forgive, warn = this.#finder.warn } = opt;
     const matched = new Set();
     const window = this.#finder.window;
-
     if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
       if (!astChildren.length && astName !== 'is' && astName !== 'where') {
         return this.#finder.onError(
@@ -397,7 +369,6 @@ export class PseudoClassEvaluator {
           )
         );
       }
-
       let astData;
       if (this.#finder.astCache.has(ast)) {
         astData = this.#finder.astCache.get(ast);
@@ -422,7 +393,6 @@ export class PseudoClassEvaluator {
               }
             }
           }
-
           if (forgiven) {
             return matched;
           }
@@ -433,7 +403,6 @@ export class PseudoClassEvaluator {
             const [...leaves] = branches[i];
             const branch = [];
             const leavesSet = new Set();
-
             for (const item of leaves) {
               if (item.type === COMBINATOR) {
                 branch.push({ combo: item, leaves: [...leavesSet] });
@@ -450,7 +419,6 @@ export class PseudoClassEvaluator {
           this.#finder.astCache.set(ast, astData);
         }
       }
-
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
       if (res) {
         matched.add(res);
@@ -860,7 +828,6 @@ export class PseudoClassEvaluator {
           } else if (node.hasAttribute('placeholder')) {
             placeholder = node.getAttribute('placeholder');
           }
-
           if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
             let targetNode;
             if (localName === 'textarea') {
@@ -872,7 +839,6 @@ export class PseudoClassEvaluator {
             ) {
               targetNode = node;
             }
-
             if (targetNode && node.value === '') {
               matched.add(node);
             }
@@ -913,16 +879,13 @@ export class PseudoClassEvaluator {
               }
               parent = parent.parentNode;
             }
-
             if (!parent) {
               parent = this.#finder.document.documentElement;
             }
-
             const walker = this.#finder._createTreeWalker(parent);
             let refNode = traverseNode(parent, walker);
             refNode = walker.firstChild();
             let checked;
-
             while (refNode) {
               if (
                 refNode.localName === 'input' &&
@@ -940,7 +903,6 @@ export class PseudoClassEvaluator {
               }
               refNode = walker.nextNode();
             }
-
             if (!checked) {
               matched.add(node);
             }
@@ -984,7 +946,6 @@ export class PseudoClassEvaluator {
                     refNode.hasAttribute('type') &&
                     KEYS_INPUT_SUBMIT.has(nodeAttrType);
                 }
-
                 if (m) {
                   if (refNode === node) {
                     matched.add(node);
@@ -1016,7 +977,6 @@ export class PseudoClassEvaluator {
                   ? node.maxLength >= node.value.length
                   : true;
             }
-
             if (valid) {
               if (astName === 'valid') {
                 matched.add(node);
@@ -1261,7 +1221,6 @@ export class PseudoClassEvaluator {
         }
       }
     }
-
     return matched;
   }
 }

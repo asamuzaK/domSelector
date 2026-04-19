@@ -62,34 +62,33 @@ const KEYS_PS_UNCACHE = new Set([
  * NOTE: #ast[i] corresponds to #nodes[i]
  */
 export class Finder {
-  /* private fields */
   #ast;
-  #astCache;
-  #check;
-  #descendant;
+  #astCache = new WeakMap();
+  #check = false;
+  #descendant = false;
   #document;
-  #documentCache;
-  #documentURL;
-  #filterLeavesCache;
-  #invalidate;
-  #invalidateResults;
+  #documentCache = new WeakMap();
+  #documentURL = null;
+  #filterLeavesCache = new WeakMap();
+  #invalidate = false;
+  #invalidateResults = new WeakMap();
   #node;
-  #nodeWalker;
-  #nodes;
-  #noexcept;
-  #pseudoElement;
+  #nodeWalker = null;
+  #nodes = [];
+  #noexcept = false;
+  #pseudoElement = [];
   #pseudoEvaluator;
-  #results;
+  #results = new WeakMap();
   #root;
-  #rootWalker;
-  #scoped;
+  #rootWalker = null;
+  #scoped = false;
   #selector;
-  #selectorAST;
-  #shadow;
+  #selectorAST = null;
+  #shadow = false;
   #tracker;
-  #verifyShadowHost;
-  #walkers;
-  #warn;
+  #verifyShadowHost = null;
+  #walkers = new WeakMap();
+  #warn = false;
   #window;
 
   /**
@@ -98,12 +97,8 @@ export class Finder {
    */
   constructor(window) {
     this.#window = window;
-    this.#astCache = new WeakMap();
-    this.#documentCache = new WeakMap();
-    this.#filterLeavesCache = new WeakMap();
     this.#tracker = new EventTracker(window);
     this.#pseudoEvaluator = new PseudoClassEvaluator(this);
-    this.clearResults(true);
   }
 
   get window() {
@@ -182,8 +177,7 @@ export class Finder {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {object} The finder instance.
    */
-  setup = (selector, node, opt = {}) => {
-    const { check, noexcept, warn } = opt;
+  setup = (selector, node, { check, noexcept, warn } = {}) => {
     this.#check = !!check;
     this.#noexcept = !!noexcept;
     this.#warn = !!warn;
@@ -201,17 +195,6 @@ export class Finder {
     this.clearResults();
     return this;
   };
-
-  /**
-   * Get document URL.
-   * @returns {string} document.URL
-   */
-  getDocumentURL() {
-    if (!this.#documentURL) {
-      this.#documentURL = new URL(this.#document.URL);
-    }
-    return this.#documentURL;
-  }
 
   /**
    * Clear cached results.
@@ -359,8 +342,10 @@ export class Finder {
    * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
    * @returns {object} The TreeWalker object.
    */
-  _createTreeWalker = (node, opt = {}) => {
-    const { force = false, whatToShow = SHOW_CONTAINER } = opt;
+  _createTreeWalker = (
+    node,
+    { force = false, whatToShow = SHOW_CONTAINER } = {}
+  ) => {
     if (force) {
       return this.#document.createTreeWalker(node, whatToShow);
     } else if (this.#walkers.has(node)) {
@@ -374,15 +359,20 @@ export class Finder {
   /**
    * Gets selector branches from cache or parses them.
    * @private
-   * @param {object} selector - The AST.
+   * @param {object|string} selector - The AST or selector string.
    * @returns {Array.<Array.<object>>} The selector branches.
    */
   _getSelectorBranches = selector => {
-    if (this.#astCache.has(selector)) {
+    const isObject = typeof selector === 'object' && selector !== null;
+    if (isObject && this.#astCache.has(selector)) {
       return this.#astCache.get(selector);
     }
-    const { branches } = walkAST(selector);
-    this.#astCache.set(selector, branches);
+    const ast =
+      typeof selector === 'string' ? parseSelector(selector) : selector;
+    const { branches } = walkAST(ast);
+    if (isObject) {
+      this.#astCache.set(selector, branches);
+    }
     return branches;
   };
 
@@ -429,14 +419,11 @@ export class Finder {
    * @see https://html.spec.whatwg.org/#pseudo-classes
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchPseudoClassSelector = (ast, node, opt = {}) => {
-    return this.#pseudoEvaluator.evaluate(ast, node, opt);
-  };
+  _matchPseudoClassSelector = (ast, node, opt) =>
+    this.#pseudoEvaluator.evaluate(ast, node, opt);
 
   /**
    * Evaluates the :host() pseudo-class.
@@ -531,8 +518,8 @@ export class Finder {
     let isMatch = false;
     if (astName === 'host') {
       isMatch = this._evaluateHostPseudo(leaves, host, ast);
-      // astName === 'host-context'.
     } else {
+      // astName === 'host-context'.
       isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
     }
     return isMatch ? node : null;
@@ -788,50 +775,46 @@ export class Finder {
   };
 
   /**
-   * Collects combinator matches into an array without creating intermediate sets.
+   * Collects combinator matches into an array.
    * @private
    * @param {object} twig - The twig object.
    * @param {object} node - The Element node.
    * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
-   * @param {Array.<object>} matched - The collector array.
    * @returns {Array.<object>} The collector array.
    */
-  _collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
+  _collectCombinatorMatches = (twig, node, opt = {}) => {
     const {
       combo: { name: comboName },
       leaves
     } = twig;
-    const { dir } = opt;
+    const isNext = opt.dir === DIR_NEXT;
     switch (comboName) {
       case '+': {
-        const refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-          matched.push(refNode);
-        }
-        break;
+        const refNode = isNext
+          ? node.nextElementSibling
+          : node.previousElementSibling;
+        return refNode && this._matchLeaves(leaves, refNode, opt)
+          ? [refNode]
+          : [];
       }
       case '~': {
-        let refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
+        const matched = [];
+        let refNode = isNext
+          ? node.nextElementSibling
+          : node.previousElementSibling;
         while (refNode) {
           if (this._matchLeaves(leaves, refNode, opt)) {
             matched.push(refNode);
           }
-          refNode =
-            dir === DIR_NEXT
-              ? refNode.nextElementSibling
-              : refNode.previousElementSibling;
+          refNode = isNext
+            ? refNode.nextElementSibling
+            : refNode.previousElementSibling;
         }
-        break;
+        return matched;
       }
       case '>': {
-        if (dir === DIR_NEXT) {
+        const matched = [];
+        if (isNext) {
           let refNode = node.firstElementChild;
           while (refNode) {
             if (this._matchLeaves(leaves, refNode, opt)) {
@@ -845,14 +828,12 @@ export class Finder {
             matched.push(parentNode);
           }
         }
-        break;
+        return matched;
       }
       case ' ':
       default: {
-        if (dir === DIR_NEXT) {
-          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
-            matched.push(refNode);
-          }
+        if (isNext) {
+          return [...this._findDescendantNodes(leaves, node, opt)];
         } else {
           const ancestors = [];
           let refNode = node.parentNode;
@@ -862,13 +843,10 @@ export class Finder {
             }
             refNode = refNode.parentNode;
           }
-          if (ancestors.length) {
-            matched.push(...ancestors.reverse());
-          }
+          return ancestors.reverse();
         }
       }
     }
-    return matched;
   };
 
   /**
@@ -894,8 +872,11 @@ export class Finder {
    * @param {string} [opt.targetType] - The type of target ('all' or 'first').
    * @returns {Array.<Node>} An array of matched nodes.
    */
-  _traverseAndCollectNodes = (walker, leaves, opt = {}) => {
-    const { boundaryNode, force, startNode, targetType } = opt;
+  _traverseAndCollectNodes = (
+    walker,
+    leaves,
+    { boundaryNode, force, startNode, targetType } = {}
+  ) => {
     const collectedNodes = [];
     let currentNode = traverseNode(startNode, walker, !!force);
     if (!currentNode) {
@@ -947,8 +928,7 @@ export class Finder {
    * @param {string} [opt.targetType] - The target type.
    * @returns {Array.<object>} A collection of matched nodes.
    */
-  _findPrecede = (leaves, node, opt = {}) => {
-    const { force, targetType } = opt;
+  _findPrecede = (leaves, node, { force, targetType } = {}) => {
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
@@ -1009,8 +989,7 @@ export class Finder {
    * @param {boolean} [opt.complex] - If true, the selector is complex.
    * @returns {Array} An array containing [nodes, filtered].
    */
-  _findLineal = (leaves, opt = {}) => {
-    const { complex } = opt;
+  _findLineal = (leaves, { complex } = {}) => {
     const nodes = [];
     const matchOpts = { warn: this.#warn };
     const selfMatched = this._matchLeaves(leaves, this.#node, matchOpts);
@@ -1066,11 +1045,10 @@ export class Finder {
    * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForId = (twig, targetType, opt = {}) => {
+  _findEntryNodesForId = (twig, targetType, { complex, precede } = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
     const filterLeaves = this._getFilterLeaves(leaves);
-    const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
@@ -1110,8 +1088,7 @@ export class Finder {
    * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForClass = (leaves, targetType, opt = {}) => {
-    const { complex, precede } = opt;
+  _findEntryNodesForClass = (leaves, targetType, { complex, precede } = {}) => {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
@@ -1135,8 +1112,7 @@ export class Finder {
    * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForType = (leaves, targetType, opt = {}) => {
-    const { complex, precede } = opt;
+  _findEntryNodesForType = (leaves, targetType, { complex, precede } = {}) => {
     let nodes = [];
     let filtered = false;
     if (targetType === TARGET_SELF) {
@@ -1160,11 +1136,10 @@ export class Finder {
    * @param {boolean} [opt.precede] - If true, finds preceding nodes.
    * @returns {object} The result { nodes, filtered, pending }.
    */
-  _findEntryNodesForOther = (twig, targetType, opt = {}) => {
+  _findEntryNodesForOther = (twig, targetType, { complex, precede } = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
     const filterLeaves = this._getFilterLeaves(leaves);
-    const { complex, precede } = opt;
     let nodes = [];
     let filtered = false;
     let pending = false;
@@ -1237,11 +1212,14 @@ export class Finder {
    * @param {string} [opt.dir] - The find direction.
    * @returns {object} An object with nodes and their state.
    */
-  _findEntryNodes = (twig, targetType, opt = {}) => {
+  _findEntryNodes = (
+    twig,
+    targetType,
+    { complex = false, dir = DIR_PREV } = {}
+  ) => {
     const { leaves } = twig;
     const [leaf] = leaves;
     const filterLeaves = this._getFilterLeaves(leaves);
-    const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&
       this.#node.nodeType === ELEMENT_NODE &&
@@ -1466,21 +1444,14 @@ export class Finder {
    * Gets combined nodes.
    * @private
    * @param {object} twig - The twig object.
-   * @param {object} nodes - A collection of nodes.
+   * @param {object} nodes - A collection of nodes (Array or Set).
    * @param {string} dir - The direction.
    * @returns {Array.<object>} A collection of matched nodes.
    */
   _getCombinedNodes = (twig, nodes, dir) => {
-    const arr = [];
-    for (const node of nodes) {
-      this._collectCombinatorMatches(
-        twig,
-        node,
-        { dir, warn: this.#warn },
-        arr
-      );
-    }
-    return arr;
+    return [...nodes].flatMap(node =>
+      this._collectCombinatorMatches(twig, node, { dir, warn: this.#warn })
+    );
   };
 
   /**
@@ -1493,8 +1464,7 @@ export class Finder {
    * @param {number} [opt.index] - The index.
    * @returns {?object} The matched node.
    */
-  _matchNodeNext = (branch, nodes, opt = {}) => {
-    const { combo, index } = opt;
+  _matchNodeNext = (branch, nodes, { combo, index } = {}) => {
     const { combo: nextCombo, leaves } = branch[index];
     const twig = {
       combo,
@@ -1526,8 +1496,7 @@ export class Finder {
    * @param {number} [opt.index] - The index.
    * @returns {?object} The node.
    */
-  _matchNodePrev = (branch, node, opt = {}) => {
-    const { index } = opt;
+  _matchNodePrev = (branch, node, { index } = {}) => {
     const twig = branch[index];
     const nextNodes = this._getCombinedNodes(twig, [node], DIR_PREV);
     if (nextNodes.length) {
@@ -1562,7 +1531,6 @@ export class Finder {
     const matchedNodes = new Set();
     const branchLen = branch.length;
     const lastIndex = branchLen - 1;
-
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
       for (const node of entryNodes) {
@@ -1571,35 +1539,31 @@ export class Finder {
         for (let j = 1; j < branchLen; j++) {
           const { combo: nextCombo, leaves } = branch[j];
           const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (j === lastIndex) {
-              for (const nextNode of nodesArr) {
-                matchedNodes.add(nextNode);
-              }
-            }
-            combo = nextCombo;
-            nextNodes = nodesArr;
-          } else {
+          nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+          if (!nextNodes.length) {
             break;
           }
+          if (j === lastIndex) {
+            for (const nextNode of nextNodes) {
+              matchedNodes.add(nextNode);
+            }
+          }
+          combo = nextCombo;
         }
       }
-      // DIR_PREV
     } else {
+      // DIR_PREV
       for (const node of entryNodes) {
         let nextNodes = [node];
         for (let j = lastIndex - 1; j >= 0; j--) {
           const twig = branch[j];
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            // The entry node is the final match
-            if (j === 0) {
-              matchedNodes.add(node);
-            }
-            nextNodes = nodesArr;
-          } else {
+          nextNodes = this._getCombinedNodes(twig, nextNodes, dir);
+          if (!nextNodes.length) {
             break;
+          }
+          // The entry node is the final match
+          if (j === 0) {
+            matchedNodes.add(node);
           }
         }
       }
@@ -1670,8 +1634,8 @@ export class Finder {
           });
         }
       }
-      // DIR_PREV logic for finding the first match.
     } else {
+      // DIR_PREV logic for finding the first match.
       for (const node of entryNodes) {
         const matchedNode = this._matchNodePrev(branch, node, {
           index: lastIndex - 1
@@ -1770,8 +1734,8 @@ export class Finder {
             nodes.add(entryNodes[0]);
           }
         }
-        // Handle complex selectors.
       } else {
+        // Handle complex selectors.
         if (targetType === TARGET_ALL) {
           const newNodes = this._processComplexBranchAll(
             branch,
@@ -1830,4 +1794,15 @@ export class Finder {
   getAST = selector => {
     return parseSelector(selector);
   };
+
+  /**
+   * Get document URL.
+   * @returns {string} document.URL
+   */
+  getDocumentURL() {
+    if (!this.#documentURL) {
+      this.#documentURL = new URL(this.#document.URL);
+    }
+    return this.#documentURL;
+  }
 }

@@ -75,7 +75,8 @@ export const unescapeSelector = (selector = '') => {
       } else if (item === '') {
         // Empty segment at non-last position means \\ (escaped backslash)
         selectorItems.push('\\');
-        i++; // skip the next segment which is the remainder after \\
+        // skip the next segment which is the remainder after \\
+        i++;
         if (i < l) {
           selectorItems.push(arr[i]);
         }
@@ -101,8 +102,8 @@ export const unescapeSelector = (selector = '') => {
             postStr = item.substring(hex.length);
           }
           selectorItems.push(`${str}${postStr}`);
-          // whitespace
         } else if (/^[\n\r\f]/.test(item)) {
+          // whitespace
           selectorItems.push(`\\${item}`);
         } else {
           selectorItems.push(item);

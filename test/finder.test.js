@@ -452,6 +452,29 @@ describe('Finder', () => {
     });
   });
 
+  describe('get selector branches', () => {
+    it('should parse a string selector and return branches', () => {
+      const finder = new Finder(window);
+      const branches = finder._getSelectorBranches('.foo');
+      assert.strictEqual(
+        Array.isArray(branches),
+        true,
+        'Should return an array of branches'
+      );
+    });
+
+    it('should use a provided AST object directly', () => {
+      const finder = new Finder(window);
+      const ast = finder.getAST('.bar');
+      const branches = finder._getSelectorBranches(ast);
+      assert.strictEqual(
+        Array.isArray(branches),
+        true,
+        'Should return an array of branches'
+      );
+    });
+  });
+
   describe('match pseudo class selector', () => {
     it('should throw', () => {
       const leaf = {

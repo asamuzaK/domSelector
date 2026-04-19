@@ -41,12 +41,16 @@ const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
  * @param {string} astType - The type of the selector from the AST.
  * @param {object} [opt] - Optional parameters.
  * @param {boolean} [opt.forgive] - If true, ignores unknown pseudo-elements.
+ * @param {object} [opt.globalObject] - The global object.
  * @param {boolean} [opt.warn] - If true, throws an error for unsupported ones.
  * @throws {DOMException} If the selector is invalid or unsupported.
  * @returns {void}
  */
-export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
-  const { forgive, globalObject, warn } = opt;
+export const matchPseudoElementSelector = (
+  astName,
+  astType,
+  { forgive, globalObject, warn } = {}
+) => {
   if (astType !== PS_ELEMENT_SELECTOR) {
     // Ensure the AST node is a pseudo-element selector.
     throw new TypeError(`Unexpected ast type ${getType(astType)}`);
@@ -96,8 +100,8 @@ export const matchPseudoElementSelector = (astName, astType, opt = {}) => {
             globalObject
           );
         }
-        // Throw an error for unknown pseudo-elements if not forgiven.
       } else if (!forgive) {
+        // Throw an error for unknown pseudo-elements if not forgiven.
         throw generateException(
           `Unknown pseudo-element ::${astName}`,
           SYNTAX_ERR,
@@ -301,16 +305,20 @@ export const matchReadOnlyPseudoClass = (astName, node) => {
  * @param {object} [opt] - Optional parameters.
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
+ * @param {object} [opt.globalObject] - The global object.
  * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
-export const matchAttributeSelector = (ast, node, opt = {}) => {
+export const matchAttributeSelector = (
+  ast,
+  node,
+  { check, forgive, globalObject } = {}
+) => {
   const {
     flags: astFlags,
     matcher: astMatcher,
     name: astName,
     value: astValue
   } = ast;
-  const { check, forgive, globalObject } = opt;
   // Validate selector flags ('i' or 's').
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = generateCSS(ast);
@@ -409,8 +417,8 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         }
       }
     }
-    // Handle non-namespaced attribute names.
   } else {
+    // Handle non-namespaced attribute names.
     for (let { name: itemName, value: itemValue } of attributes) {
       if (caseInsensitive) {
         itemName = itemName.toLowerCase();
@@ -425,8 +433,8 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
         // The attribute is starting with ':'.
         if (!itemPrefix && astAttrName === `:${itemLocalName}`) {
           attrValues.add(itemValue);
-          // Ignore the 'xml:lang' attribute.
         } else if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+          // Ignore the 'xml:lang' attribute.
           continue;
         } else if (astAttrName === itemLocalName) {
           attrValues.add(itemValue);
@@ -537,12 +545,16 @@ export const matchAttributeSelector = (ast, node, opt = {}) => {
  * @param {object} [opt] - options
  * @param {boolean} [opt.check] - running in internal check()
  * @param {boolean} [opt.forgive] - forgive undeclared namespace
+ * @param {object} [opt.globalObject] - The global object.
  * @returns {boolean} - result
  */
-export const matchTypeSelector = (ast, node, opt = {}) => {
+export const matchTypeSelector = (
+  ast,
+  node,
+  { check, forgive, globalObject } = {}
+) => {
   const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  const { check, forgive, globalObject } = opt;
   let { prefix: astPrefix, localName: astLocalName } = parseAstName(
     astName,
     node

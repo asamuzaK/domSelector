@@ -24,16 +24,11 @@ const KEYS_MODIFIER = new Set([
  * A class to track and manage browser events for the Finder.
  */
 export class EventTracker {
-  /** @type {object} */
-  #window;
-  /** @type {Event|null} */
   #event = null;
-  /** @type {FocusEvent|null} */
-  #focus = null;
-  /** @type {Element|null} */
-  #lastFocusVisible = null;
-  /** @type {Set<object>} */
   #eventHandlers;
+  #focus = null;
+  #lastFocusVisible = null;
+  #window;
 
   /**
    * Creates an instance of EventTracker.
