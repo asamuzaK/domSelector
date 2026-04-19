@@ -864,15 +864,15 @@ describe('PseudoClassEvaluator Coverage Suite', () => {
 
       // node.matches をモックして強制的に true を返すようにする
       const originalMatches = div.matches;
-      div.matches = function(sel) {
+      div.matches = function (sel) {
         if (sel === ':popover-open') return true;
         return originalMatches.call(this, sel);
       };
 
       const res = evaluate(':popover-open', div);
       assert.strictEqual(
-        res.has(div), 
-        true, 
+        res.has(div),
+        true,
         'Should match when node.matches(":popover-open") is true'
       );
     });
@@ -884,15 +884,15 @@ describe('PseudoClassEvaluator Coverage Suite', () => {
 
       // node.matches をモックして強制的に false を返すようにする
       const originalMatches = div.matches;
-      div.matches = function(sel) {
+      div.matches = function (sel) {
         if (sel === ':popover-open') return false;
         return originalMatches.call(this, sel);
       };
 
       const res = evaluate(':popover-open', div);
       assert.strictEqual(
-        res.size, 
-        0, 
+        res.size,
+        0,
         'Should not match when node.matches(":popover-open") is false'
       );
     });
@@ -903,7 +903,7 @@ describe('PseudoClassEvaluator Coverage Suite', () => {
       finder.setup('div', div);
 
       const originalMatches = div.matches;
-      div.matches = function(sel) {
+      div.matches = function (sel) {
         if (sel === ':popover-open') {
           throw new Error('SyntaxError: Unknown pseudo-class');
         }
@@ -912,8 +912,8 @@ describe('PseudoClassEvaluator Coverage Suite', () => {
 
       const res = evaluate(':popover-open', div);
       assert.strictEqual(
-        res.size, 
-        0, 
+        res.size,
+        0,
         'Should catch exception and return empty set'
       );
     });

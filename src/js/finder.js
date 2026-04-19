@@ -10,7 +10,6 @@ import {
   matchTypeSelector
 } from './matcher.js';
 import {
-  findAST,
   generateCSS,
   parseSelector,
   sortAST,
@@ -19,12 +18,7 @@ import {
 } from './parser.js';
 import { PseudoClassEvaluator } from './pseudo-evaluator.js';
 import {
-  filterNodesByAnB,
-  findLogicalWithNestedHas,
   generateException,
-  isCustomElement,
-  isFocusVisible,
-  isFocusableArea,
   isVisible,
   resolveContent,
   sortNodes,
@@ -40,45 +34,27 @@ import {
   ELEMENT_NODE,
   FORM_PARTS,
   ID_SELECTOR,
-  INPUT_CHECK,
-  INPUT_DATE,
-  INPUT_EDIT,
-  INPUT_TEXT,
   KEYS_LOGICAL,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
-  SHOW_ALL,
   SHOW_CONTAINER,
   SYNTAX_ERR,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
   TARGET_SELF,
-  TEXT_NODE,
   TYPE_SELECTOR
 } from './constant.js';
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
-const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
-const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
-const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
-const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
-const KEYS_INPUT_RESET = new Set(['button', 'reset']);
-const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
 const KEYS_PS_UNCACHE = new Set([
   'any-link',
   'defined',
   'dir',
   'link',
   'scope'
-]);
-const KEYS_PS_NTH_OF_TYPE = new Set([
-  'first-of-type',
-  'last-of-type',
-  'only-of-type'
 ]);
 
 /**
@@ -445,310 +421,6 @@ export class Finder {
       childNode = childNode.nextElementSibling;
     }
     return children;
-  };
-
-  /**
-   * Collects nth-child nodes.
-   * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} [anb.selector] - The AST.
-   * @param {object} node - The Element node.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _collectNthChild = (anb, node, opt) => {
-    const { a, b, selector } = anb;
-    const { parentNode } = node;
-    if (!parentNode) {
-      const matchedNode = new Set();
-      if (node === this.#root && a * 1 + b * 1 === 1) {
-        if (selector) {
-          const selectorBranches = this._getSelectorBranches(selector);
-          const l = selectorBranches.length;
-          for (let i = 0; i < l; i++) {
-            const leaves = selectorBranches[i];
-            if (this._matchLeaves(leaves, node, opt)) {
-              matchedNode.add(node);
-              break;
-            }
-          }
-        } else {
-          matchedNode.add(node);
-        }
-      }
-      return matchedNode;
-    }
-    const selectorBranches = selector
-      ? this._getSelectorBranches(selector)
-      : null;
-    const children = this._getFilteredChildren(
-      parentNode,
-      selectorBranches,
-      opt
-    );
-    const matchedNodes = filterNodesByAnB(children, anb);
-    return new Set(matchedNodes);
-  };
-
-  /**
-   * Collects nth-of-type nodes.
-   * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} node - The Element node.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _collectNthOfType = (anb, node) => {
-    const { parentNode } = node;
-    if (!parentNode) {
-      if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
-        return new Set([node]);
-      }
-      return new Set();
-    }
-    const typedSiblings = [];
-    let sibling = parentNode.firstElementChild;
-    while (sibling) {
-      if (
-        sibling.localName === node.localName &&
-        sibling.namespaceURI === node.namespaceURI &&
-        sibling.prefix === node.prefix
-      ) {
-        typedSiblings.push(sibling);
-      }
-      sibling = sibling.nextElementSibling;
-    }
-    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
-    return new Set(matchedNodes);
-  };
-
-  /**
-   * Matches An+B.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
-   * @param {string} nthName - The name of the nth pseudo-class.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchAnPlusB = (ast, node, nthName, opt) => {
-    const {
-      nth: { a, b, name: nthIdentName },
-      selector
-    } = ast;
-    const anbMap = new Map();
-    if (nthIdentName) {
-      if (nthIdentName === 'even') {
-        anbMap.set('a', 2);
-        anbMap.set('b', 0);
-      } else if (nthIdentName === 'odd') {
-        anbMap.set('a', 2);
-        anbMap.set('b', 1);
-      }
-      if (nthName.indexOf('last') > -1) {
-        anbMap.set('reverse', true);
-      }
-    } else {
-      if (typeof a === 'string' && /-?\d+/.test(a)) {
-        anbMap.set('a', a * 1);
-      } else {
-        anbMap.set('a', 0);
-      }
-      if (typeof b === 'string' && /-?\d+/.test(b)) {
-        anbMap.set('b', b * 1);
-      } else {
-        anbMap.set('b', 0);
-      }
-      if (nthName.indexOf('last') > -1) {
-        anbMap.set('reverse', true);
-      }
-    }
-    if (nthName === 'nth-child' || nthName === 'nth-last-child') {
-      if (selector) {
-        anbMap.set('selector', selector);
-      }
-      const anb = Object.fromEntries(anbMap);
-      const nodes = this._collectNthChild(anb, node, opt);
-      return nodes;
-    } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
-      const anb = Object.fromEntries(anbMap);
-      const nodes = this._collectNthOfType(anb, node);
-      return nodes;
-    }
-    return new Set();
-  };
-
-  /**
-   * Matches the :has() pseudo-class function.
-   * @private
-   * @param {Array.<object>} astLeaves - The AST leaves.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {boolean} The result.
-   */
-  _matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
-    if (Array.isArray(astLeaves) && astLeaves.length) {
-      // Prepare a copy to avoid astLeaves being consumed.
-      const leaves = [...astLeaves];
-      const [leaf] = leaves;
-      const { type: leafType } = leaf;
-      let combo;
-      if (leafType === COMBINATOR) {
-        combo = leaves.shift();
-      } else {
-        combo = {
-          name: ' ',
-          type: COMBINATOR
-        };
-      }
-      const twigLeaves = [];
-      while (leaves.length) {
-        const [item] = leaves;
-        const { type: itemType } = item;
-        if (itemType === COMBINATOR) {
-          break;
-        } else {
-          twigLeaves.push(leaves.shift());
-        }
-      }
-      const twig = {
-        combo,
-        leaves: twigLeaves
-      };
-      opt.dir = DIR_NEXT;
-      const nodes = this._collectCombinatorMatches(twig, node, opt, []);
-      if (nodes.length) {
-        if (leaves.length) {
-          let bool = false;
-          for (const nextNode of nodes) {
-            bool = this._matchHasPseudoFunc(leaves, nextNode, opt);
-            if (bool) {
-              break;
-            }
-          }
-          return bool;
-        }
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Evaluates the :has() pseudo-class.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _evaluateHasPseudo = (astData, node, opt = {}) => {
-    const { branches } = astData;
-    let bool = false;
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const leaves = branches[i];
-      bool = this._matchHasPseudoFunc(leaves, node, opt);
-      if (bool) {
-        break;
-      }
-    }
-    if (!bool) {
-      return null;
-    }
-    if (
-      (opt.isShadowRoot || this.#shadow) &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE
-    ) {
-      return this.#verifyShadowHost ? node : null;
-    }
-    return node;
-  };
-
-  /**
-   * Matches logical pseudo-class functions.
-   * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
-   */
-  _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
-    const { astName, branches, twigBranches } = astData;
-    // Handle :has().
-    if (astName === 'has') {
-      return this._evaluateHasPseudo(astData, node, opt);
-    }
-    // Handle :is(), :not(), :where().
-    const isShadowRoot =
-      (opt.isShadowRoot || this.#shadow) &&
-      node.nodeType === DOCUMENT_FRAGMENT_NODE;
-    // Check for invalid shadow root.
-    if (isShadowRoot) {
-      let invalid = false;
-      for (const branch of branches) {
-        if (branch.length > 1) {
-          invalid = true;
-          break;
-        } else if (astName === 'not') {
-          const [{ type: childAstType }] = branch;
-          if (childAstType !== PS_CLASS_SELECTOR) {
-            invalid = true;
-            break;
-          }
-        }
-      }
-      if (invalid) {
-        return null;
-      }
-    }
-    opt.forgive = astName === 'is' || astName === 'where';
-    const l = twigBranches.length;
-    let bool;
-    for (let i = 0; i < l; i++) {
-      const branch = twigBranches[i];
-      const lastIndex = branch.length - 1;
-      const { leaves } = branch[lastIndex];
-      bool = this._matchLeaves(leaves, node, opt);
-      if (bool && lastIndex > 0) {
-        let nextNodes = new Set([node]);
-        for (let j = lastIndex - 1; j >= 0; j--) {
-          const twig = branch[j];
-          const arr = [];
-          opt.dir = DIR_PREV;
-          for (const nextNode of nextNodes) {
-            this._collectCombinatorMatches(twig, nextNode, opt, arr);
-          }
-          if (arr.length) {
-            if (j === 0) {
-              bool = true;
-            } else {
-              nextNodes = new Set(arr);
-            }
-          } else {
-            bool = false;
-            break;
-          }
-        }
-      }
-      if (bool) {
-        break;
-      }
-    }
-    if (astName === 'not') {
-      if (bool) {
-        return null;
-      }
-      return node;
-    } else if (bool) {
-      return node;
-    }
-    return null;
   };
 
   /**
