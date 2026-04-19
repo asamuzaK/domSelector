@@ -366,7 +366,7 @@ export const traverseNode = (node, walker, force = false) => {
  * Check if a node is a custom element.
  * @param {object} node - The Element node.
  * @param {object} [opt] - Options.
- * @@aram {boolean} [opt.formAssociated] - True if the node is form associated.
+ * @param {boolean} [opt.formAssociated] - True if the node is form associated.
  * @returns {boolean} - True if it's a custom element.
  */
 export const isCustomElement = (node, { formAssociated } = {}) => {
