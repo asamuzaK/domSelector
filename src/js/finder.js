@@ -6,11 +6,7 @@
 import { EventTracker } from './event-tracker.js';
 import {
   matchAttributeSelector,
-  matchDirectionPseudoClass,
-  matchDisabledPseudoClass,
-  matchLanguagePseudoClass,
   matchPseudoElementSelector,
-  matchReadOnlyPseudoClass,
   matchTypeSelector
 } from './matcher.js';
 import {
@@ -21,6 +17,7 @@ import {
   unescapeSelector,
   walkAST
 } from './parser.js';
+import { PseudoClassEvaluator } from './pseudo-evaluator.js';
 import {
   filterNodesByAnB,
   findLogicalWithNestedHas,
@@ -105,6 +102,7 @@ export class Finder {
   #nodes;
   #noexcept;
   #pseudoElement;
+  #pseudoEvaluator;
   #results;
   #root;
   #rootWalker;
@@ -126,9 +124,46 @@ export class Finder {
     this.#window = window;
     this.#astCache = new WeakMap();
     this.#documentCache = new WeakMap();
-    this.#tracker = new EventTracker(window);
     this.#filterLeavesCache = new WeakMap();
+    this.#tracker = new EventTracker(window);
+    this.#pseudoEvaluator = new PseudoClassEvaluator(this);
     this.clearResults(true);
+  }
+
+  get window() {
+    return this.#window;
+  }
+
+  get document() {
+    return this.#document;
+  }
+
+  get root() {
+    return this.#root;
+  }
+
+  get shadow() {
+    return this.#shadow;
+  }
+
+  get tracker() {
+    return this.#tracker;
+  }
+
+  get warn() {
+    return this.#warn;
+  }
+
+  get astCache() {
+    return this.#astCache;
+  }
+
+  get node() {
+    return this.#node;
+  }
+
+  get verifyShadowHost() {
+    return this.#verifyShadowHost;
   }
 
   /**
@@ -190,6 +225,17 @@ export class Finder {
     this.clearResults();
     return this;
   };
+
+  /**
+   * Get document URL.
+   * @returns {string} document.URL
+   */
+  getDocumentURL() {
+    if (!this.#documentURL) {
+      this.#documentURL = new URL(this.#document.URL);
+    }
+    return this.#documentURL;
+  }
 
   /**
    * Clear cached results.
@@ -706,7 +752,7 @@ export class Finder {
   };
 
   /**
-   * Matches pseudo-class selector.
+   * Matches pseudo-class selector by delegating to PseudoClassEvaluator.
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
    * @param {object} ast - The AST.
@@ -716,954 +762,9 @@ export class Finder {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {Set.<object>} A collection of matched nodes.
    */
-  _matchPseudoClassSelector(ast, node, opt = {}) {
-    const { children: astChildren, name: astName } = ast;
-    const { localName, parentNode } = node;
-    const { forgive, warn = this.#warn } = opt;
-    const matched = new Set();
-    // :has(), :is(), :not(), :where()
-    if (Array.isArray(astChildren) && KEYS_LOGICAL.has(astName)) {
-      if (!astChildren.length && astName !== 'is' && astName !== 'where') {
-        const css = generateCSS(ast);
-        const msg = `Invalid selector ${css}`;
-        return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-      }
-      let astData;
-      if (this.#astCache.has(ast)) {
-        astData = this.#astCache.get(ast);
-      } else {
-        const { branches } = walkAST(ast);
-        if (astName === 'has') {
-          // Check for nested :has().
-          let forgiven = false;
-          const l = astChildren.length;
-          for (let i = 0; i < l; i++) {
-            const child = astChildren[i];
-            const item = findAST(child, findLogicalWithNestedHas);
-            if (item) {
-              const itemName = item.name;
-              if (itemName === 'is' || itemName === 'where') {
-                forgiven = true;
-                break;
-              } else {
-                const css = generateCSS(ast);
-                const msg = `Invalid selector ${css}`;
-                return this.onError(
-                  generateException(msg, SYNTAX_ERR, this.#window)
-                );
-              }
-            }
-          }
-          if (forgiven) {
-            return matched;
-          }
-          astData = {
-            astName,
-            branches
-          };
-        } else {
-          const twigBranches = [];
-          const l = branches.length;
-          for (let i = 0; i < l; i++) {
-            const [...leaves] = branches[i];
-            const branch = [];
-            const leavesSet = new Set();
-            let item = leaves.shift();
-            while (item) {
-              if (item.type === COMBINATOR) {
-                branch.push({
-                  combo: item,
-                  leaves: [...leavesSet]
-                });
-                leavesSet.clear();
-              } else if (item) {
-                leavesSet.add(item);
-              }
-              if (leaves.length) {
-                item = leaves.shift();
-              } else {
-                branch.push({
-                  combo: null,
-                  leaves: [...leavesSet]
-                });
-                leavesSet.clear();
-                break;
-              }
-            }
-            twigBranches.push(branch);
-          }
-          astData = {
-            astName,
-            branches,
-            twigBranches
-          };
-          this.#astCache.set(ast, astData);
-        }
-      }
-      const res = this._matchLogicalPseudoFunc(astData, node, opt);
-      if (res) {
-        matched.add(res);
-      }
-    } else if (Array.isArray(astChildren)) {
-      // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
-      if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
-        if (astChildren.length !== 1) {
-          const css = generateCSS(ast);
-          return this.onError(
-            generateException(
-              `Invalid selector ${css}`,
-              SYNTAX_ERR,
-              this.#window
-            )
-          );
-        }
-        const [branch] = astChildren;
-        const nodes = this._matchAnPlusB(branch, node, astName, opt);
-        return nodes;
-      } else {
-        switch (astName) {
-          // :dir()
-          case 'dir': {
-            if (astChildren.length !== 1) {
-              const css = generateCSS(ast);
-              return this.onError(
-                generateException(
-                  `Invalid selector ${css}`,
-                  SYNTAX_ERR,
-                  this.#window
-                )
-              );
-            }
-            const [astChild] = astChildren;
-            const res = matchDirectionPseudoClass(astChild, node);
-            if (res) {
-              matched.add(node);
-            }
-            break;
-          }
-          // :lang()
-          case 'lang': {
-            if (!astChildren.length) {
-              const css = generateCSS(ast);
-              return this.onError(
-                generateException(
-                  `Invalid selector ${css}`,
-                  SYNTAX_ERR,
-                  this.#window
-                )
-              );
-            }
-            let bool;
-            for (const astChild of astChildren) {
-              bool = matchLanguagePseudoClass(astChild, node);
-              if (bool) {
-                break;
-              }
-            }
-            if (bool) {
-              matched.add(node);
-            }
-            break;
-          }
-          // :state()
-          case 'state': {
-            if (isCustomElement(node)) {
-              const [{ value: stateValue }] = astChildren;
-              if (stateValue) {
-                if (node[stateValue]) {
-                  matched.add(node);
-                } else {
-                  for (const i in node) {
-                    const prop = node[i];
-                    if (prop instanceof this.#window.ElementInternals) {
-                      if (prop?.states?.has(stateValue)) {
-                        matched.add(node);
-                      }
-                      break;
-                    }
-                  }
-                }
-              }
-            }
-            break;
-          }
-          case 'current':
-          case 'heading':
-          case 'nth-col':
-          case 'nth-last-col': {
-            if (warn) {
-              this.onError(
-                generateException(
-                  `Unsupported pseudo-class :${astName}()`,
-                  NOT_SUPPORTED_ERR,
-                  this.#window
-                )
-              );
-            }
-            break;
-          }
-          // Ignore :host() and :host-context().
-          case 'host':
-          case 'host-context': {
-            break;
-          }
-          // Deprecated in CSS Selectors 3.
-          case 'contains': {
-            if (warn) {
-              this.onError(
-                generateException(
-                  `Unknown pseudo-class :${astName}()`,
-                  NOT_SUPPORTED_ERR,
-                  this.#window
-                )
-              );
-            }
-            break;
-          }
-          default: {
-            if (!forgive) {
-              this.onError(
-                generateException(
-                  `Unknown pseudo-class :${astName}()`,
-                  SYNTAX_ERR,
-                  this.#window
-                )
-              );
-            }
-          }
-        }
-      }
-    } else if (KEYS_PS_NTH_OF_TYPE.has(astName)) {
-      if (node === this.#root) {
-        matched.add(node);
-      } else if (parentNode) {
-        switch (astName) {
-          case 'first-of-type': {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
-            if (node1) {
-              matched.add(node1);
-            }
-            break;
-          }
-          case 'last-of-type': {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1,
-                reverse: true
-              },
-              node
-            );
-            if (node1) {
-              matched.add(node1);
-            }
-            break;
-          }
-          // 'only-of-type' is handled by default.
-          default: {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
-            if (node1 === node) {
-              const [node2] = this._collectNthOfType(
-                {
-                  a: 0,
-                  b: 1,
-                  reverse: true
-                },
-                node
-              );
-              if (node2 === node) {
-                matched.add(node);
-              }
-            }
-          }
-        }
-      }
-    } else {
-      switch (astName) {
-        case 'disabled':
-        case 'enabled': {
-          const isMatch = matchDisabledPseudoClass(astName, node);
-          if (isMatch) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'read-only':
-        case 'read-write': {
-          const isMatch = matchReadOnlyPseudoClass(astName, node);
-          if (isMatch) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'any-link':
-        case 'link': {
-          if (
-            (localName === 'a' || localName === 'area') &&
-            node.hasAttribute('href')
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'local-link': {
-          if (
-            (localName === 'a' || localName === 'area') &&
-            node.hasAttribute('href')
-          ) {
-            if (!this.#documentURL) {
-              this.#documentURL = new URL(this.#document.URL);
-            }
-            const { href, origin, pathname } = this.#documentURL;
-            const attrURL = new URL(node.getAttribute('href'), href);
-            if (attrURL.origin === origin && attrURL.pathname === pathname) {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'visited': {
-          // prevent fingerprinting
-          break;
-        }
-        case 'hover': {
-          const { target, type } = this.#tracker.event ?? {};
-          if (
-            /^(?:click|mouse(?:down|over|up))$/.test(type) &&
-            target?.nodeType === ELEMENT_NODE &&
-            node.contains(target)
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'active': {
-          const { buttons, target, type } = this.#tracker.event ?? {};
-          if (
-            type === 'mousedown' &&
-            buttons & 1 &&
-            target?.nodeType === ELEMENT_NODE &&
-            node.contains(target)
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'target': {
-          if (!this.#documentURL) {
-            this.#documentURL = new URL(this.#document.URL);
-          }
-          const { hash } = this.#documentURL;
-          if (
-            node.id &&
-            hash === `#${node.id}` &&
-            this.#document.contains(node)
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'target-within': {
-          if (!this.#documentURL) {
-            this.#documentURL = new URL(this.#document.URL);
-          }
-          const { hash } = this.#documentURL;
-          if (hash) {
-            const id = hash.replace(/^#/, '');
-            let current = this.#document.getElementById(id);
-            while (current) {
-              if (current === node) {
-                matched.add(node);
-                break;
-              }
-              current = current.parentNode;
-            }
-          }
-          break;
-        }
-        case 'scope': {
-          if (this.#node.nodeType === ELEMENT_NODE) {
-            if (!this.#shadow && node === this.#node) {
-              matched.add(node);
-            }
-          } else if (node === this.#document.documentElement) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'focus': {
-          const activeElement = this.#document.activeElement;
-          if (node === activeElement && isFocusableArea(node)) {
-            matched.add(node);
-          } else if (activeElement.shadowRoot) {
-            const activeShadowElement = activeElement.shadowRoot.activeElement;
-            let current = activeShadowElement;
-            while (current) {
-              if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
-                const { host } = current;
-                if (host === activeElement) {
-                  if (isFocusableArea(node)) {
-                    matched.add(node);
-                  } else {
-                    matched.add(host);
-                  }
-                }
-                break;
-              } else {
-                current = current.parentNode;
-              }
-            }
-          }
-          break;
-        }
-        case 'focus-visible': {
-          if (node === this.#document.activeElement && isFocusableArea(node)) {
-            let bool;
-            if (isFocusVisible(node)) {
-              bool = true;
-            } else if (this.#tracker.focus) {
-              const { relatedTarget, target: focusTarget } =
-                this.#tracker.focus;
-              if (focusTarget === node) {
-                if (isFocusVisible(relatedTarget)) {
-                  bool = true;
-                } else if (this.#tracker.event) {
-                  const {
-                    altKey: eventAltKey,
-                    ctrlKey: eventCtrlKey,
-                    key: eventKey,
-                    metaKey: eventMetaKey,
-                    target: eventTarget,
-                    type: eventType
-                  } = this.#tracker.event;
-                  // Irrelevant if eventTarget === relatedTarget.
-                  if (eventTarget === relatedTarget) {
-                    if (this.#tracker.lastFocusVisible === null) {
-                      bool = true;
-                    } else if (focusTarget === this.#tracker.lastFocusVisible) {
-                      bool = true;
-                    }
-                  } else if (eventKey === 'Tab') {
-                    if (
-                      (eventType === 'keydown' && eventTarget !== node) ||
-                      (eventType === 'keyup' && eventTarget === node)
-                    ) {
-                      if (eventTarget === focusTarget) {
-                        if (this.#tracker.lastFocusVisible === null) {
-                          bool = true;
-                        } else if (
-                          eventTarget === this.#tracker.lastFocusVisible &&
-                          relatedTarget === null
-                        ) {
-                          bool = true;
-                        }
-                      } else {
-                        bool = true;
-                      }
-                    }
-                  } else if (eventKey) {
-                    if (
-                      (eventType === 'keydown' || eventType === 'keyup') &&
-                      !eventAltKey &&
-                      !eventCtrlKey &&
-                      !eventMetaKey &&
-                      eventTarget === node
-                    ) {
-                      bool = true;
-                    }
-                  }
-                } else if (
-                  relatedTarget === null ||
-                  relatedTarget === this.#tracker.lastFocusVisible
-                ) {
-                  bool = true;
-                }
-              }
-            }
-            if (bool) {
-              this.#tracker.lastFocusVisible = node;
-              matched.add(node);
-            } else if (this.#tracker.lastFocusVisible === node) {
-              this.#tracker.lastFocusVisible = null;
-            }
-          }
-          break;
-        }
-        case 'focus-within': {
-          const activeElement = this.#document.activeElement;
-          if (node.contains(activeElement) && isFocusableArea(activeElement)) {
-            matched.add(node);
-          } else if (activeElement.shadowRoot) {
-            const activeShadowElement = activeElement.shadowRoot.activeElement;
-            if (node.contains(activeShadowElement)) {
-              matched.add(node);
-            } else {
-              let current = activeShadowElement;
-              while (current) {
-                if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
-                  const { host } = current;
-                  if (host === activeElement && node.contains(host)) {
-                    matched.add(node);
-                  }
-                  break;
-                } else {
-                  current = current.parentNode;
-                }
-              }
-            }
-          }
-          break;
-        }
-        case 'open':
-        case 'closed': {
-          if (localName === 'details' || localName === 'dialog') {
-            if (node.hasAttribute('open')) {
-              if (astName === 'open') {
-                matched.add(node);
-              }
-            } else if (astName === 'closed') {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'placeholder-shown': {
-          let placeholder;
-          if (node.placeholder) {
-            placeholder = node.placeholder;
-          } else if (node.hasAttribute('placeholder')) {
-            placeholder = node.getAttribute('placeholder');
-          }
-          if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
-            let targetNode;
-            if (localName === 'textarea') {
-              targetNode = node;
-            } else if (localName === 'input') {
-              if (node.hasAttribute('type')) {
-                if (KEYS_INPUT_PLACEHOLDER.has(node.getAttribute('type'))) {
-                  targetNode = node;
-                }
-              } else {
-                targetNode = node;
-              }
-            }
-            if (targetNode && node.value === '') {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'checked': {
-          const attrType = node.getAttribute('type');
-          if (
-            (node.checked &&
-              localName === 'input' &&
-              (attrType === 'checkbox' || attrType === 'radio')) ||
-            (node.selected && localName === 'option')
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'indeterminate': {
-          if (
-            (node.indeterminate &&
-              localName === 'input' &&
-              node.type === 'checkbox') ||
-            (localName === 'progress' && !node.hasAttribute('value'))
-          ) {
-            matched.add(node);
-          } else if (
-            localName === 'input' &&
-            node.type === 'radio' &&
-            !node.hasAttribute('checked')
-          ) {
-            const nodeName = node.name;
-            let parent = node.parentNode;
-            while (parent) {
-              if (parent.localName === 'form') {
-                break;
-              }
-              parent = parent.parentNode;
-            }
-            if (!parent) {
-              parent = this.#document.documentElement;
-            }
-            const walker = this._createTreeWalker(parent);
-            let refNode = traverseNode(parent, walker);
-            refNode = walker.firstChild();
-            let checked;
-            while (refNode) {
-              if (
-                refNode.localName === 'input' &&
-                refNode.getAttribute('type') === 'radio'
-              ) {
-                if (refNode.hasAttribute('name')) {
-                  if (refNode.getAttribute('name') === nodeName) {
-                    checked = !!refNode.checked;
-                  }
-                } else {
-                  checked = !!refNode.checked;
-                }
-                if (checked) {
-                  break;
-                }
-              }
-              refNode = walker.nextNode();
-            }
-            if (!checked) {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'default': {
-          // button[type="submit"], input[type="submit"], input[type="image"]
-          const attrType = node.getAttribute('type');
-          if (
-            (localName === 'button' &&
-              !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
-            (localName === 'input' &&
-              node.hasAttribute('type') &&
-              KEYS_INPUT_SUBMIT.has(attrType))
-          ) {
-            let form = node.parentNode;
-            while (form) {
-              if (form.localName === 'form') {
-                break;
-              }
-              form = form.parentNode;
-            }
-            if (form) {
-              const walker = this._createTreeWalker(form);
-              let refNode = traverseNode(form, walker);
-              refNode = walker.firstChild();
-              while (refNode) {
-                const nodeName = refNode.localName;
-                const nodeAttrType = refNode.getAttribute('type');
-                let m;
-                if (nodeName === 'button') {
-                  m = !(
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_RESET.has(nodeAttrType)
-                  );
-                } else if (nodeName === 'input') {
-                  m =
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_SUBMIT.has(nodeAttrType);
-                }
-                if (m) {
-                  if (refNode === node) {
-                    matched.add(node);
-                  }
-                  break;
-                }
-                refNode = walker.nextNode();
-              }
-            }
-            // input[type="checkbox"], input[type="radio"]
-          } else if (
-            localName === 'input' &&
-            node.hasAttribute('type') &&
-            node.hasAttribute('checked') &&
-            KEYS_INPUT_CHECK.has(attrType)
-          ) {
-            matched.add(node);
-            // option
-          } else if (localName === 'option' && node.hasAttribute('selected')) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'valid':
-        case 'invalid': {
-          if (KEYS_FORM_PS_VALID.has(localName)) {
-            let valid;
-            if (node.checkValidity()) {
-              if (node.maxLength >= 0) {
-                if (node.maxLength >= node.value.length) {
-                  valid = true;
-                }
-              } else {
-                valid = true;
-              }
-            }
-            if (valid) {
-              if (astName === 'valid') {
-                matched.add(node);
-              }
-            } else if (astName === 'invalid') {
-              matched.add(node);
-            }
-          } else if (localName === 'fieldset') {
-            const walker = this._createTreeWalker(node);
-            let refNode = traverseNode(node, walker);
-            refNode = walker.firstChild();
-            let valid;
-            if (!refNode) {
-              valid = true;
-            } else {
-              while (refNode) {
-                if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-                  if (refNode.checkValidity()) {
-                    if (refNode.maxLength >= 0) {
-                      valid = refNode.maxLength >= refNode.value.length;
-                    } else {
-                      valid = true;
-                    }
-                  } else {
-                    valid = false;
-                  }
-                  if (!valid) {
-                    break;
-                  }
-                }
-                refNode = walker.nextNode();
-              }
-            }
-            if (valid) {
-              if (astName === 'valid') {
-                matched.add(node);
-              }
-            } else if (astName === 'invalid') {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'in-range':
-        case 'out-of-range': {
-          const attrType = node.getAttribute('type');
-          if (
-            localName === 'input' &&
-            !(node.readOnly || node.hasAttribute('readonly')) &&
-            !(node.disabled || node.hasAttribute('disabled')) &&
-            KEYS_INPUT_RANGE.has(attrType)
-          ) {
-            const flowed =
-              node.validity.rangeUnderflow || node.validity.rangeOverflow;
-            if (astName === 'out-of-range' && flowed) {
-              matched.add(node);
-            } else if (
-              astName === 'in-range' &&
-              !flowed &&
-              (node.hasAttribute('min') ||
-                node.hasAttribute('max') ||
-                attrType === 'range')
-            ) {
-              matched.add(node);
-            }
-          }
-          break;
-        }
-        case 'required':
-        case 'optional': {
-          let required;
-          let optional;
-          if (localName === 'select' || localName === 'textarea') {
-            if (node.required || node.hasAttribute('required')) {
-              required = true;
-            } else {
-              optional = true;
-            }
-          } else if (localName === 'input') {
-            if (node.hasAttribute('type')) {
-              const attrType = node.getAttribute('type');
-              if (KEYS_INPUT_REQUIRED.has(attrType)) {
-                if (node.required || node.hasAttribute('required')) {
-                  required = true;
-                } else {
-                  optional = true;
-                }
-              } else {
-                optional = true;
-              }
-            } else if (node.required || node.hasAttribute('required')) {
-              required = true;
-            } else {
-              optional = true;
-            }
-          }
-          if (astName === 'required' && required) {
-            matched.add(node);
-          } else if (astName === 'optional' && optional) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'root': {
-          if (node === this.#document.documentElement) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'empty': {
-          if (node.hasChildNodes()) {
-            const walker = this._createTreeWalker(node, {
-              force: true,
-              whatToShow: SHOW_ALL
-            });
-            let refNode = walker.firstChild();
-            let bool;
-            while (refNode) {
-              bool =
-                refNode.nodeType !== ELEMENT_NODE &&
-                refNode.nodeType !== TEXT_NODE;
-              if (!bool) {
-                break;
-              }
-              refNode = walker.nextSibling();
-            }
-            if (bool) {
-              matched.add(node);
-            }
-          } else {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'first-child': {
-          if (
-            (parentNode && node === parentNode.firstElementChild) ||
-            node === this.#root
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'last-child': {
-          if (
-            (parentNode && node === parentNode.lastElementChild) ||
-            node === this.#root
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'only-child': {
-          if (
-            (parentNode &&
-              node === parentNode.firstElementChild &&
-              node === parentNode.lastElementChild) ||
-            node === this.#root
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'defined': {
-          if (node.hasAttribute('is') || localName.includes('-')) {
-            if (isCustomElement(node)) {
-              matched.add(node);
-            }
-            // NOTE: MathMLElement is not implemented in jsdom.
-          } else if (
-            node instanceof this.#window.HTMLElement ||
-            node instanceof this.#window.SVGElement
-          ) {
-            matched.add(node);
-          }
-          break;
-        }
-        case 'popover-open': {
-          // FIXME: not implemented in jsdom
-          // @see https://github.com/jsdom/jsdom/issues/3721
-          /*
-          if (node.popover && isVisible(node)) {
-            matched.add(node);
-          }
-          */
-          break;
-        }
-        // Ignore :host.
-        case 'host': {
-          break;
-        }
-        // Legacy pseudo-elements.
-        case 'after':
-        case 'before':
-        case 'first-letter':
-        case 'first-line': {
-          if (warn) {
-            this.onError(
-              generateException(
-                `Unsupported pseudo-element ::${astName}`,
-                NOT_SUPPORTED_ERR,
-                this.#window
-              )
-            );
-          }
-          break;
-        }
-        // Not supported.
-        case 'autofill':
-        case 'blank':
-        case 'buffering':
-        case 'current':
-        case 'fullscreen':
-        case 'future':
-        case 'has-slotted':
-        case 'heading':
-        case 'modal':
-        case 'muted':
-        case 'past':
-        case 'paused':
-        case 'picture-in-picture':
-        case 'playing':
-        case 'seeking':
-        case 'stalled':
-        case 'user-invalid':
-        case 'user-valid':
-        case 'volume-locked':
-        case '-webkit-autofill': {
-          if (warn) {
-            this.onError(
-              generateException(
-                `Unsupported pseudo-class :${astName}`,
-                NOT_SUPPORTED_ERR,
-                this.#window
-              )
-            );
-          }
-          break;
-        }
-        default: {
-          if (astName.startsWith('-webkit-')) {
-            if (warn) {
-              this.onError(
-                generateException(
-                  `Unsupported pseudo-class :${astName}`,
-                  NOT_SUPPORTED_ERR,
-                  this.#window
-                )
-              );
-            }
-          } else if (!forgive) {
-            this.onError(
-              generateException(
-                `Unknown pseudo-class :${astName}`,
-                SYNTAX_ERR,
-                this.#window
-              )
-            );
-          }
-        }
-      }
-    }
-    return matched;
-  }
+  _matchPseudoClassSelector = (ast, node, opt = {}) => {
+    return this.#pseudoEvaluator.evaluate(ast, node, opt);
+  };
 
   /**
    * Evaluates the :host() pseudo-class.
