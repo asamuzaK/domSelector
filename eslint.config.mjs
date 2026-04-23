@@ -44,5 +44,18 @@ export default [
       'prefer-object-has-own': 'error',
       'unicorn/prefer-node-protocol': 'error'
     }
+  },
+  {
+    files: ['**/nwsapi.js'],
+    rules: {
+      'no-new-func': 'off',
+      'regexp/confusing-quantifier': 'off',
+      'regexp/no-optional-assertion': 'off',
+      'regexp/no-trivially-nested-quantifier': 'off',
+      'regexp/no-unused-capturing-group': 'off',
+      'regexp/no-useless-non-capturing-group': 'off',
+      'regexp/no-useless-quantifier': 'off',
+      'regexp/prefer-character-class': 'off'
+    }
   }
 ];

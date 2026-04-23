@@ -64,6 +64,7 @@
     "bench": "node benchmark/bench.js",
     "bench:cache": "node benchmark/bench-cache.js",
     "bench:cacheMonster": "node benchmark/bench-cache-monster.js",
+    "bench:nwsapi": "node benchmark/bench-nwsapi.js",
     "bench:sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
