@@ -306,20 +306,18 @@ export class Finder {
   _processSelectorBranches = (branches, selector) => {
     let descendant = false;
     const ast = [];
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const items = [...branches[i]];
+    for (const items of branches) {
       const branch = [];
-      let item = items.shift();
-      if (item && item.type !== COMBINATOR) {
+      const itemsLength = items.length;
+      if (itemsLength > 0 && items[0].type !== COMBINATOR) {
         const leaves = new Set();
-        while (item) {
+        for (let i = 0; i < itemsLength; i++) {
+          const item = items[i];
           if (item.type === COMBINATOR) {
-            const [nextItem] = items;
+            const nextItem = items[i + 1];
             if (!nextItem || nextItem.type === COMBINATOR) {
               const msg = `Invalid selector ${selector}`;
               this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-              // Stop processing on invalid selector.
               return { ast: [], descendant: false, invalidate: false };
             }
             if (item.name === ' ' || item.name === '>') {
@@ -339,12 +337,9 @@ export class Finder {
             }
             leaves.add(item);
           }
-          if (items.length) {
-            item = items.shift();
-          } else {
+          if (i === itemsLength - 1) {
             branch.push({ combo: null, leaves: sortAST(leaves) });
             leaves.clear();
-            break;
           }
         }
       }
@@ -366,8 +361,8 @@ export class Finder {
     let ast;
     if (this.#documentCache.has(this.#document)) {
       const cachedItem = this.#documentCache.get(this.#document);
-      if (cachedItem && cachedItem.has(`${selector}`)) {
-        const item = cachedItem.get(`${selector}`);
+      if (cachedItem && cachedItem.has(selector)) {
+        const item = cachedItem.get(selector);
         ast = item.ast;
         this.#descendant = item.descendant;
         this.#invalidate = item.invalidate;
@@ -1844,13 +1839,12 @@ export class Finder {
     const { host } = node;
     const { branches } = walkAST(astChildren[0]);
     const [branch] = branches;
-    const [...leaves] = branch;
     let isMatch = false;
     if (astName === 'host') {
-      isMatch = this._evaluateHostPseudo(leaves, host, ast);
-      // astName === 'host-context'.
+      isMatch = this._evaluateHostPseudo(branch, host, ast);
     } else {
-      isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
+      // astName === 'host-context'
+      isMatch = this._evaluateHostContextPseudo(branch, host, ast);
     }
     return isMatch ? node : null;
   };
@@ -2179,9 +2173,7 @@ export class Finder {
             }
             refNode = refNode.parentNode;
           }
-          if (ancestors.length) {
-            matched.push(...ancestors.reverse());
-          }
+          return ancestors;
         }
       }
     }
@@ -2788,16 +2780,15 @@ export class Finder {
    * @returns {Array.<object>} A collection of matched nodes.
    */
   _getCombinedNodes = (twig, nodes, dir) => {
-    const arr = [];
+    const result = [];
+    const opt = { dir, warn: this.#warn };
     for (const node of nodes) {
-      this._collectCombinatorMatches(
-        twig,
-        node,
-        { dir, warn: this.#warn },
-        arr
-      );
+      const items = this._collectCombinatorMatches(twig, node, opt);
+      for (const item of items) {
+        result.push(item);
+      }
     }
-    return arr;
+    return result;
   };
 
   /**

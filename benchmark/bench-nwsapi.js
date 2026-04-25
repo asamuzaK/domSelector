@@ -6,7 +6,7 @@
 import process from 'node:process';
 import { run, bench, group } from 'mitata';
 import { JSDOM } from 'jsdom';
-import { nwsapi } from '../src/js/nwsapi.js';
+import { Nwsapi } from '../src/js/nwsapi.js';
 
 let cacheSize = 2048;
 let nodeCount = 5;
@@ -40,15 +40,7 @@ for (let i = 0; i < nodeCount; i++) {
   targetNodes.push(div);
 }
 
-const nw = nwsapi({
-  document: document,
-  DOMException: window.document.defaultView.DOMException // JSDOMの型に合わせる
-});
-
-nw.configure({ 
-  CACHE_SIZE: cacheSize,
-}, true);
-
+const nw = new Nwsapi(window, document, cacheSize);
 const selectors = [];
 for (let i = 0; i < totalSelectors; i++) {
   const mod = i % 4;
