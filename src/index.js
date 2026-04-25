@@ -8,8 +8,9 @@
 /* import */
 import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { Finder } from './js/finder.js';
+import { Nwsapi } from './js/nwsapi.js';
 import { unescapeSelector, parseAstName } from './js/parser.js';
-import { filterSelector, getType, initNwsapi } from './js/utility.js';
+import { filterSelector, getType } from './js/utility.js';
 
 /* constants */
 import {
@@ -54,10 +55,10 @@ export class DOMSelector {
     const { cacheSize, idlUtils } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
-    this.#finder = new Finder(window);
     this.#idlUtils = idlUtils;
-    this.#nwsapi = initNwsapi(window, document);
     this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE);
+    this.#finder = new Finder(this.#window);
+    this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
   }
 
   /**

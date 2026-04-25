@@ -3158,55 +3158,6 @@ describe('utility functions', () => {
     });
   });
 
-  describe('init nwsapi', () => {
-    const func = util.initNwsapi;
-
-    it('should throw', () => {
-      assert.throws(
-        () => func(),
-        TypeError,
-        'Unexpected global object Undefined'
-      );
-    });
-
-    it('should throw', () => {
-      assert.throws(
-        () => func(document),
-        TypeError,
-        'Unexpected global object Document'
-      );
-    });
-
-    it('should get nwsapi', () => {
-      const res = func(window);
-      assert.strictEqual(typeof res.match, 'function', 'nwsapi.match');
-      assert.strictEqual(typeof res.closest, 'function', 'nwsapi.closest');
-      assert.strictEqual(typeof res.first, 'function', 'nwsapi.first');
-      assert.strictEqual(typeof res.select, 'function', 'nwsapi.select');
-    });
-
-    it('should get nwsapi', () => {
-      const res = func(window, document);
-      assert.strictEqual(typeof res.match, 'function', 'nwsapi.match');
-      assert.strictEqual(typeof res.closest, 'function', 'nwsapi.closest');
-      assert.strictEqual(typeof res.first, 'function', 'nwsapi.first');
-      assert.strictEqual(typeof res.select, 'function', 'nwsapi.select');
-    });
-
-    it('should get nwsapi', () => {
-      const iframe = document.createElement('iframe');
-      document.body.appendChild(iframe);
-      const iframeDocument = iframe.contentDocument;
-      const iframeWindow = iframeDocument.defaultView;
-      assert.notDeepEqual(window, iframeWindow, 'window');
-      const res = func(iframeWindow);
-      assert.strictEqual(typeof res.match, 'function', 'nwsapi.match');
-      assert.strictEqual(typeof res.closest, 'function', 'nwsapi.closest');
-      assert.strictEqual(typeof res.first, 'function', 'nwsapi.first');
-      assert.strictEqual(typeof res.select, 'function', 'nwsapi.select');
-    });
-  });
-
   describe('filter selector', () => {
     const func = util.filterSelector;
 

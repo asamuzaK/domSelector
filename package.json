@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@asamuzakjp/generational-cache": "^1.0.1",
-    "@asamuzakjp/nwsapi": "^2.3.9",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
     "is-potential-custom-element-name": "^1.0.1"
@@ -64,6 +63,7 @@
     "bench": "node benchmark/bench.js",
     "bench:cache": "node benchmark/bench-cache.js",
     "bench:cacheMonster": "node benchmark/bench-cache-monster.js",
+    "bench:nwsapi": "node benchmark/bench-nwsapi.js",
     "bench:sizzle": "node benchmark/bench-sizzle.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
