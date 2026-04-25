@@ -44,5 +44,11 @@ export default [
       'prefer-object-has-own': 'error',
       'unicorn/prefer-node-protocol': 'error'
     }
+  },
+  {
+    files: ['**/nwsapi.js'],
+    rules: {
+      'no-new-func': 'off'
+    }
   }
 ];

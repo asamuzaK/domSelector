@@ -3,7 +3,6 @@
  */
 
 /* import */
-import nwsapi from '@asamuzakjp/nwsapi';
 import bidiFactory from 'bidi-js';
 import * as cssTree from 'css-tree';
 import isCustomElementName from 'is-potential-custom-element-name';
@@ -1014,29 +1013,6 @@ export const extractNestedSelectors = css => {
     leave: extractor.leave.bind(extractor)
   });
   return extractor.selectors;
-};
-
-/**
- * Initialize nwsapi.
- * @param {object} window - The Window object.
- * @param {object} document - The Document object.
- * @returns {object} - The nwsapi instance.
- */
-export const initNwsapi = (window, document) => {
-  if (!window?.DOMException) {
-    throw new TypeError(`Unexpected global object ${getType(window)}`);
-  }
-  if (document?.nodeType !== DOCUMENT_NODE) {
-    document = window.document;
-  }
-  const nw = nwsapi({
-    document,
-    DOMException: window.DOMException
-  });
-  nw.configure({
-    LOGERRORS: false
-  });
-  return nw;
 };
 
 /**
