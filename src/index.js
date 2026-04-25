@@ -58,7 +58,7 @@ export class DOMSelector {
     this.#idlUtils = idlUtils;
     this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE);
     this.#finder = new Finder(this.#window);
-    this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
+    this.#nwsapi = new Nwsapi(this.#window, this.#document);
   }
 
   /**
