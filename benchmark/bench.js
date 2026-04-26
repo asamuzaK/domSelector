@@ -5,7 +5,7 @@
 /* import */
 import fs from 'node:fs';
 import path from 'node:path';
-import Benchmark from 'benchmark';
+import { Bench } from 'tinybench';
 import { JSDOM } from 'jsdom';
 import { DOMSelector } from '../src/index.js';
 
@@ -466,11 +466,9 @@ const parentNodeQuerySelectorAll = (api, selector, result, asterisk) => {
   if (asterisk) {
     if (node === doc) {
       if (res.length !== result) {
-        console.log("res, doc", res.length, result)
         throw new Error('result does not match.');
       }
     } else if (res.length !== result - 3) {
-      console.log("res, doc.body", res.length, result - 3)
       throw new Error('result does not match.');
     }
   } else if (res.length !== result) {
@@ -490,286 +488,348 @@ const parentNodeQuerySelectorAll = (api, selector, result, asterisk) => {
   }
 };
 
-/* benchmark */
-const hz = new Map();
-const suite = new Benchmark.Suite();
+/* benchmark execution */
+const filePath = path.resolve('./package.json');
+const value = fs.readFileSync(filePath, {
+  encoding: 'utf8',
+  flag: 'r'
+});
+const { name: pkgName, version } = JSON.parse(value);
+console.log(`benchmark ${pkgName} v${version}`);
+prepareDomstr();
+prepareDom();
 
-suite.on('start', () => {
-  const filePath = path.resolve('./package.json');
-  const value = fs.readFileSync(filePath, {
-    encoding: 'utf8',
-    flag: 'r'
+const bench = new Bench({ time: 100, iterations: 100 });
+
+bench
+  .add(`jsdom matches('${selectors[19]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[19], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[19]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[19], 'p');
+  })
+  .add(`jsdom matches('${selectors[0]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[0], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[0]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[0], 'p');
+  })
+  .add(`jsdom matches('${selectors[3]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[3], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[3]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[3], 'p');
+  })
+  .add(`jsdom matches('${selectors[4]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[4], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[4]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[4], 'p');
+  })
+  .add(`jsdom matches('${selectors[5]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[5], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[5]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[5], 'p');
+  })
+  .add(`jsdom matches('${selectors[9]}')`, () => {
+    elementMatchesRandom2('jsdom', selectors[9], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[9]}')`, () => {
+    elementMatchesRandom2('patched-jsdom', selectors[9], 'p');
+  })
+  .add(`jsdom matches('${selectors[10]}')`, () => {
+    elementMatchesRandom2('jsdom', selectors[10], 'div');
+  })
+  .add(`patched-jsdom matches('${selectors[10]}')`, () => {
+    elementMatchesRandom2('patched-jsdom', selectors[10], 'div');
+  })
+  .add(`jsdom matches('${selectors[15]}')`, () => {
+    elementMatchesRandom2('jsdom', selectors[15], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[15]}')`, () => {
+    elementMatchesRandom2('patched-jsdom', selectors[15], 'p');
+  })
+  .add(`jsdom matches('${selectors[17]}')`, () => {
+    elementMatchesRandom2('jsdom', selectors[17], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[17]}')`, () => {
+    elementMatchesRandom2('patched-jsdom', selectors[17], 'p');
+  })
+  .add(`jsdom closest('${selectors[19]}')`, () => {
+    elementClosestRandom('jsdom', selectors[19], 'p');
+  })
+  .add(`patched-jsdom closest('${selectors[19]}')`, () => {
+    elementClosestRandom('patched-jsdom', selectors[19], 'p');
+  })
+  .add(`jsdom closest('${selectors[1]}')`, () => {
+    elementClosestRandom('jsdom', selectors[1], 'box');
+  })
+  .add(`patched-jsdom closest('${selectors[1]}')`, () => {
+    elementClosestRandom('patched-jsdom', selectors[1], 'box');
+  })
+  .add(`jsdom closest('${selectors[7]}')`, () => {
+    elementClosestRandom('jsdom', selectors[7], 'container');
+  })
+  .add(`patched-jsdom closest('${selectors[7]}')`, () => {
+    elementClosestRandom('patched-jsdom', selectors[7], 'container');
+  })
+  .add(`jsdom closest('${selectors[9]}')`, () => {
+    elementClosestRandom2('jsdom', selectors[9], 'p');
+  })
+  .add(`patched-jsdom closest('${selectors[9]}')`, () => {
+    elementClosestRandom2('patched-jsdom', selectors[9], 'p');
+  })
+  .add(`jsdom closest('${selectors[10]}')`, () => {
+    elementClosestRandom2('jsdom', selectors[10], 'div');
+  })
+  .add(`patched-jsdom closest('${selectors[10]}')`, () => {
+    elementClosestRandom2('patched-jsdom', selectors[10], 'div');
+  })
+  .add(`jsdom closest('${selectors[16]}')`, () => {
+    elementClosestRandom2('jsdom', selectors[16], 'box');
+  })
+  .add(`patched-jsdom closest('${selectors[16]}')`, () => {
+    elementClosestRandom2('patched-jsdom', selectors[16], 'box');
+  })
+  .add(`jsdom closest('${selectors[18]}')`, () => {
+    elementClosestRandom('jsdom', selectors[18], 'container');
+  })
+  .add(`patched-jsdom closest('${selectors[18]}')`, () => {
+    elementClosestRandom('patched-jsdom', selectors[18], 'container');
+  })
+  .add(`jsdom querySelector('${selectors[19]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[19], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[19]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[19], 'p');
+  })
+  .add(`jsdom querySelector('${selectors[0]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[0], 'p');
+  })
+  .add(`jsdom querySelector('${selectors[3]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[3], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[3], 'p');
+  })
+  .add(`jsdom querySelector('${selectors[9]}')`, () => {
+    parentNodeQuerySelectorRandom2('jsdom', selectors[9], 'p5-0-0');
+  })
+  .add(`patched-jsdom querySelector('${selectors[9]}')`, () => {
+    parentNodeQuerySelectorRandom2('patched-jsdom', selectors[9], 'p5-0-0');
+  })
+  .add(`jsdom querySelector('${selectors[10]}')`, () => {
+    parentNodeQuerySelectorRandom2('jsdom', selectors[10], 'div5-0-0');
+  })
+  .add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
+    parentNodeQuerySelectorRandom2('patched-jsdom', selectors[10], 'div5-0-0');
+  })
+  .add(`jsdom querySelector('${selectors[15]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[15], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[15]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[15], 'p');
+  })
+  .add(`jsdom querySelector('${selectors[17]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[17], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[17]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[17], 'p');
+  })
+  .add(`jsdom querySelectorAll('${selectors[19]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[19], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[19]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[19], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[0], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[3]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[3], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[3], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[9]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[9], 200);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[9]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[9], 200);
+  })
+  .add(`jsdom querySelectorAll('${selectors[10]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[10], 200);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[10]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[10], 200);
+  })
+  .add(`jsdom querySelectorAll('${selectors[15]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[15], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[15]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[15], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[17]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[17], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[17]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[17], 1000);
+  /*
+  }).add(`jsdom matches('${selectors[11]}')`, () => {
+    elementMatches('jsdom', selectors[11], false);
+  }).add(`patched-jsdom matches('${selectors[11]}')`, () => {
+    elementMatches('patched-jsdom', selectors[11], false);
+  }).add(`jsdom matches('${selectors[12]}')`, () => {
+    elementMatches('jsdom', selectors[12], false);
+  }).add(`patched-jsdom matches('${selectors[12]}')`, () => {
+    elementMatches('patched-jsdom', selectors[12], false);
+  }).add(`jsdom matches('${selectors[13]}')`, () => {
+    elementMatches('jsdom', selectors[13], false);
+  }).add(`patched-jsdom matches('${selectors[13]}')`, () => {
+    elementMatches('patched-jsdom', selectors[13], false);
+  }).add(`jsdom matches('${selectors[14]}')`, () => {
+    elementMatches('jsdom', selectors[14], true);
+  }).add(`patched-jsdom matches('${selectors[14]}')`, () => {
+    elementMatches('patched-jsdom', selectors[14], true);
+  }).add(`jsdom closest('${selectors[11]}')`, () => {
+    elementClosest('jsdom', selectors[11], 'box9');
+  }).add(`patched-jsdom closest('${selectors[11]}')`, () => {
+    elementClosest('patched-jsdom', selectors[11], 'box9');
+  }).add(`jsdom closest('${selectors[12]}')`, () => {
+    elementClosest('jsdom', selectors[12], 'box9');
+  }).add(`patched-jsdom closest('${selectors[12]}')`, () => {
+    elementClosest('patched-jsdom', selectors[12], 'box9');
+  }).add(`jsdom closest('${selectors[13]}')`, () => {
+    elementClosest('jsdom', selectors[13], 'div9-9');
+  }).add(`patched-jsdom closest('${selectors[13]}')`, () => {
+    elementClosest('patched-jsdom', selectors[13], 'div9-9');
+  }).add(`jsdom closest('${selectors[14]}')`, () => {
+    elementClosest('jsdom', selectors[14], 'p9-9-9');
+  }).add(`patched-jsdom closest('${selectors[14]}')`, () => {
+    elementClosest('patched-jsdom', selectors[14], 'p9-9-9');
+  }).add(`jsdom querySelector('${selectors[11]}')`, () => {
+    parentNodeQuerySelector('jsdom', selectors[11], 'box1');
+  }).add(`patched-jsdom querySelector('${selectors[11]}')`, () => {
+    parentNodeQuerySelector('patched-jsdom', selectors[11], 'box1');
+  }).add(`jsdom querySelector('${selectors[12]}')`, () => {
+    parentNodeQuerySelector('jsdom', selectors[12], 'box1');
+  }).add(`patched-jsdom querySelector('${selectors[12]}')`, () => {
+    parentNodeQuerySelector('patched-jsdom', selectors[12], 'box1');
+  }).add(`jsdom querySelector('${selectors[13]}')`, () => {
+    parentNodeQuerySelector('jsdom', selectors[13], 'div0-0');
+  }).add(`patched-jsdom querySelector('${selectors[13]}')`, () => {
+    parentNodeQuerySelector('patched-jsdom', selectors[13], 'div0-0');
+  }).add(`jsdom querySelector('${selectors[14]}')`, () => {
+    parentNodeQuerySelector('jsdom', selectors[14], 'p0-0-0');
+  }).add(`patched-jsdom querySelector('${selectors[14]}')`, () => {
+    parentNodeQuerySelector('patched-jsdom', selectors[14], 'p0-0-0');
+  */
+  })
+  .add(`jsdom querySelectorAll('${selectors[11]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[11], 9);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[11]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[11], 9);
+  })
+  .add(`jsdom querySelectorAll('${selectors[12]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[12], 9);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[12]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[12], 9);
+  })
+  .add(`jsdom querySelectorAll('${selectors[13]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[13], 100);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[13]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[13], 100);
+  })
+  .add(`jsdom querySelectorAll('${selectors[14]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[14], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[14]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[14], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[20]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[20], 1);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[20]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[20], 1);
+  })
+  .add(`jsdom querySelectorAll('${selectors[21]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[21], 5);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[21]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[21], 5);
+  })
+  .add(`jsdom querySelectorAll('${selectors[22]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[22], 1);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[22]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[22], 1);
+  })
+  .add(`jsdom querySelectorAll('${selectors[23]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[23], 5);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[23]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[23], 5);
+  })
+  .add(`jsdom querySelectorAll('${selectors[24]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[24], 2115, true);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[24]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[24], 2115, true);
   });
-  const { name: pkgName, version } = JSON.parse(value);
-  console.log(`benchmark ${pkgName} v${version}`);
-  prepareDomstr();
-  prepareDom();
-}).add(`jsdom matches('${selectors[19]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[19], 'p');
-}).add(`patched-jsdom matches('${selectors[19]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[19], 'p');
-}).add(`jsdom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[0], 'p');
-}).add(`patched-jsdom matches('${selectors[0]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[0], 'p');
-}).add(`jsdom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[3], 'p');
-}).add(`patched-jsdom matches('${selectors[3]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[3], 'p');
-}).add(`jsdom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[4], 'p');
-}).add(`patched-jsdom matches('${selectors[4]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[4], 'p');
-}).add(`jsdom matches('${selectors[5]}')`, () => {
-  elementMatchesRandom('jsdom', selectors[5], 'p');
-}).add(`patched-jsdom matches('${selectors[5]}')`, () => {
-  elementMatchesRandom('patched-jsdom', selectors[5], 'p');
-}).add(`jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom2('jsdom', selectors[9], 'p');
-}).add(`patched-jsdom matches('${selectors[9]}')`, () => {
-  elementMatchesRandom2('patched-jsdom', selectors[9], 'p');
-}).add(`jsdom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom2('jsdom', selectors[10], 'div');
-}).add(`patched-jsdom matches('${selectors[10]}')`, () => {
-  elementMatchesRandom2('patched-jsdom', selectors[10], 'div');
-}).add(`jsdom matches('${selectors[15]}')`, () => {
-  elementMatchesRandom2('jsdom', selectors[15], 'p');
-}).add(`patched-jsdom matches('${selectors[15]}')`, () => {
-  elementMatchesRandom2('patched-jsdom', selectors[15], 'p');
-}).add(`jsdom matches('${selectors[17]}')`, () => {
-  elementMatchesRandom2('jsdom', selectors[17], 'p');
-}).add(`patched-jsdom matches('${selectors[17]}')`, () => {
-  elementMatchesRandom2('patched-jsdom', selectors[17], 'p');
-}).add(`jsdom closest('${selectors[19]}')`, () => {
-  elementClosestRandom('jsdom', selectors[19], 'p');
-}).add(`patched-jsdom closest('${selectors[19]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[19], 'p');
-}).add(`jsdom closest('${selectors[1]}')`, () => {
-  elementClosestRandom('jsdom', selectors[1], 'box');
-}).add(`patched-jsdom closest('${selectors[1]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[1], 'box');
-}).add(`jsdom closest('${selectors[7]}')`, () => {
-  elementClosestRandom('jsdom', selectors[7], 'container');
-}).add(`patched-jsdom closest('${selectors[7]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[7], 'container');
-}).add(`jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom2('jsdom', selectors[9], 'p');
-}).add(`patched-jsdom closest('${selectors[9]}')`, () => {
-  elementClosestRandom2('patched-jsdom', selectors[9], 'p');
-}).add(`jsdom closest('${selectors[10]}')`, () => {
-  elementClosestRandom2('jsdom', selectors[10], 'div');
-}).add(`patched-jsdom closest('${selectors[10]}')`, () => {
-  elementClosestRandom2('patched-jsdom', selectors[10], 'div');
-}).add(`jsdom closest('${selectors[16]}')`, () => {
-  elementClosestRandom2('jsdom', selectors[16], 'box');
-}).add(`patched-jsdom closest('${selectors[16]}')`, () => {
-  elementClosestRandom2('patched-jsdom', selectors[16], 'box');
-}).add(`jsdom closest('${selectors[18]}')`, () => {
-  elementClosestRandom('jsdom', selectors[18], 'container');
-}).add(`patched-jsdom closest('${selectors[18]}')`, () => {
-  elementClosestRandom('patched-jsdom', selectors[18], 'container');
-}).add(`jsdom querySelector('${selectors[19]}')`, () => {
-  parentNodeQuerySelectorRandom('jsdom', selectors[19], 'p');
-}).add(`patched-jsdom querySelector('${selectors[19]}')`, () => {
-  parentNodeQuerySelectorRandom('patched-jsdom', selectors[19], 'p');
-}).add(`jsdom querySelector('${selectors[0]}')`, () => {
-  parentNodeQuerySelectorRandom('jsdom', selectors[0], 'p');
-}).add(`patched-jsdom querySelector('${selectors[0]}')`, () => {
-  parentNodeQuerySelectorRandom('patched-jsdom', selectors[0], 'p');
-}).add(`jsdom querySelector('${selectors[3]}')`, () => {
-  parentNodeQuerySelectorRandom('jsdom', selectors[3], 'p');
-}).add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
-  parentNodeQuerySelectorRandom('patched-jsdom', selectors[3], 'p');
-}).add(`jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelectorRandom2('jsdom', selectors[9], 'p5-0-0');
-}).add(`patched-jsdom querySelector('${selectors[9]}')`, () => {
-  parentNodeQuerySelectorRandom2('patched-jsdom', selectors[9], 'p5-0-0');
-}).add(`jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorRandom2('jsdom', selectors[10], 'div5-0-0');
-}).add(`patched-jsdom querySelector('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorRandom2('patched-jsdom', selectors[10], 'div5-0-0');
-}).add(`jsdom querySelector('${selectors[15]}')`, () => {
-  parentNodeQuerySelectorRandom('jsdom', selectors[15], 'p');
-}).add(`patched-jsdom querySelector('${selectors[15]}')`, () => {
-  parentNodeQuerySelectorRandom('patched-jsdom', selectors[15], 'p');
-}).add(`jsdom querySelector('${selectors[17]}')`, () => {
-  parentNodeQuerySelectorRandom('jsdom', selectors[17], 'p');
-}).add(`patched-jsdom querySelector('${selectors[17]}')`, () => {
-  parentNodeQuerySelectorRandom('patched-jsdom', selectors[17], 'p');
-}).add(`jsdom querySelectorAll('${selectors[19]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[19], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[19]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[19], 1000);
-}).add(`jsdom querySelectorAll('${selectors[0]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[0], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[0]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[0], 1000);
-}).add(`jsdom querySelectorAll('${selectors[3]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[3], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[3], 1000);
-}).add(`jsdom querySelectorAll('${selectors[9]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[9], 200);
-}).add(`patched-jsdom querySelectorAll('${selectors[9]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[9], 200);
-}).add(`jsdom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[10], 200);
-}).add(`patched-jsdom querySelectorAll('${selectors[10]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[10], 200);
-}).add(`jsdom querySelectorAll('${selectors[15]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[15], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[15]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[15], 1000);
-}).add(`jsdom querySelectorAll('${selectors[17]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[17], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[17]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[17], 1000);
-/*
-}).add(`jsdom matches('${selectors[11]}')`, () => {
-  elementMatches('jsdom', selectors[11], false);
-}).add(`patched-jsdom matches('${selectors[11]}')`, () => {
-  elementMatches('patched-jsdom', selectors[11], false);
-}).add(`jsdom matches('${selectors[12]}')`, () => {
-  elementMatches('jsdom', selectors[12], false);
-}).add(`patched-jsdom matches('${selectors[12]}')`, () => {
-  elementMatches('patched-jsdom', selectors[12], false);
-}).add(`jsdom matches('${selectors[13]}')`, () => {
-  elementMatches('jsdom', selectors[13], false);
-}).add(`patched-jsdom matches('${selectors[13]}')`, () => {
-  elementMatches('patched-jsdom', selectors[13], false);
-}).add(`jsdom matches('${selectors[14]}')`, () => {
-  elementMatches('jsdom', selectors[14], true);
-}).add(`patched-jsdom matches('${selectors[14]}')`, () => {
-  elementMatches('patched-jsdom', selectors[14], true);
-}).add(`jsdom closest('${selectors[11]}')`, () => {
-  elementClosest('jsdom', selectors[11], 'box9');
-}).add(`patched-jsdom closest('${selectors[11]}')`, () => {
-  elementClosest('patched-jsdom', selectors[11], 'box9');
-}).add(`jsdom closest('${selectors[12]}')`, () => {
-  elementClosest('jsdom', selectors[12], 'box9');
-}).add(`patched-jsdom closest('${selectors[12]}')`, () => {
-  elementClosest('patched-jsdom', selectors[12], 'box9');
-}).add(`jsdom closest('${selectors[13]}')`, () => {
-  elementClosest('jsdom', selectors[13], 'div9-9');
-}).add(`patched-jsdom closest('${selectors[13]}')`, () => {
-  elementClosest('patched-jsdom', selectors[13], 'div9-9');
-}).add(`jsdom closest('${selectors[14]}')`, () => {
-  elementClosest('jsdom', selectors[14], 'p9-9-9');
-}).add(`patched-jsdom closest('${selectors[14]}')`, () => {
-  elementClosest('patched-jsdom', selectors[14], 'p9-9-9');
-}).add(`jsdom querySelector('${selectors[11]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[11], 'box1');
-}).add(`patched-jsdom querySelector('${selectors[11]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[11], 'box1');
-}).add(`jsdom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[12], 'box1');
-}).add(`patched-jsdom querySelector('${selectors[12]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[12], 'box1');
-}).add(`jsdom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[13], 'div0-0');
-}).add(`patched-jsdom querySelector('${selectors[13]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[13], 'div0-0');
-}).add(`jsdom querySelector('${selectors[14]}')`, () => {
-  parentNodeQuerySelector('jsdom', selectors[14], 'p0-0-0');
-}).add(`patched-jsdom querySelector('${selectors[14]}')`, () => {
-  parentNodeQuerySelector('patched-jsdom', selectors[14], 'p0-0-0');
-*/
-}).add(`jsdom querySelectorAll('${selectors[11]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[11], 9);
-}).add(`patched-jsdom querySelectorAll('${selectors[11]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[11], 9);
-}).add(`jsdom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[12], 9);
-}).add(`patched-jsdom querySelectorAll('${selectors[12]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[12], 9);
-}).add(`jsdom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[13], 100);
-}).add(`patched-jsdom querySelectorAll('${selectors[13]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[13], 100);
-}).add(`jsdom querySelectorAll('${selectors[14]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[14], 1000);
-}).add(`patched-jsdom querySelectorAll('${selectors[14]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[14], 1000);
-}).add(`jsdom querySelectorAll('${selectors[20]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[20], 1);
-}).add(`patched-jsdom querySelectorAll('${selectors[20]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[20], 1);
-}).add(`jsdom querySelectorAll('${selectors[21]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[21], 5);
-}).add(`patched-jsdom querySelectorAll('${selectors[21]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[21], 5);
-}).add(`jsdom querySelectorAll('${selectors[22]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[22], 1);
-}).add(`patched-jsdom querySelectorAll('${selectors[22]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[22], 1);
-}).add(`jsdom querySelectorAll('${selectors[23]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[23], 5);
-}).add(`patched-jsdom querySelectorAll('${selectors[23]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[23], 5);
-}).add(`jsdom querySelectorAll('${selectors[24]}')`, () => {
-  parentNodeQuerySelectorAll('jsdom', selectors[24], 2115, true);
-}).add(`patched-jsdom querySelectorAll('${selectors[24]}')`, () => {
-  parentNodeQuerySelectorAll('patched-jsdom', selectors[24], 2115, true);
-}).on('cycle', evt => {
-  const { target } = evt;
-  let str;
-  if (target.error) {
-    str = target.name;
-  } else {
-    str = String(target);
+
+const hzMap = new Map();
+bench.addEventListener('cycle', (e) => {
+  const task = e.task;
+  const str = task.name;
+  const taskError = task.error || task.result?.error;
+  if (taskError) {
+    console.log(`* ${str} - Error: ${taskError.message}`);
+    return;
   }
+  if (!task.result) {
+    console.log(`* ${str} - Error: No benchmark result generated.`);
+    return;
+  }
+  const hz = task.result.throughput?.mean ?? 0;
+  const meanMs = task.result.latency?.mean ?? 0;
+  const rmeVal = task.result.throughput?.rme ?? 0;
+  const samplesCount = task.result.throughput?.samplesCount ?? 0;
+  const hzStr = hz.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  const rme = typeof rmeVal === 'number' ? rmeVal.toFixed(2) : 'N/A';
+  const formattedStr =
+    `${str} x ${hzStr} ops/sec \xB1${rme}% (${samplesCount} runs sampled)`;
   if (str.startsWith('patched-jsdom')) {
-    const patchedHz = target.hz;
-    const jsdomHz = hz.get('jsdom');
-    /*
-    const fastest = {
-      key: 'patched-jsdom',
-      hz: patchedHz
-    };
-    const items = hz.entries();
-    for (const [key, value] of items) {
-      const { hz: provFastestHz } = fastest;
-      if (value > provFastestHz) {
-        fastest.key = key;
-        fastest.hz = value;
+    const patchedHz = hz;
+    const jsdomHz = hzMap.get('jsdom') ?? 0;
+    const figures = meanMs > 0.001 ? 3 : 6;
+    const elapsedTime = `patched-jsdom took ${meanMs.toFixed(figures)}msec.`;
+    let jsdomMsg = '';
+    if (jsdomHz > 0 && patchedHz > 0) {
+      if (jsdomHz > patchedHz) {
+        jsdomMsg = `jsdom is ${(jsdomHz / patchedHz).toFixed(1)} times faster than patched-jsdom.`;
+      } else {
+        jsdomMsg = `patched-jsdom is ${(patchedHz / jsdomHz).toFixed(1)} times faster than jsdom.`;
       }
     }
-    const { key: fastestKey, hz: fastestHz } = fastest;
-    */
-    const elapsed = 1000 / patchedHz;
-    const figures = elapsed > 0.001 ? 3 : 6;
-    const elapsedTime = `patched-jsdom took ${elapsed.toFixed(figures)}msec.`;
-    /*
-    let fastestMsg;
-    if (fastestKey === 'patched-jsdom') {
-      fastestMsg = 'patched-jsdom is the fastest.';
-    } else {
-      fastestMsg = `${fastestKey} is the fastest and ${(fastestHz / patchedHz).toFixed(1)} times faster than patched-jsdom.`;
-    }
-    */
-    let jsdomMsg = '';
-    if (jsdomHz > patchedHz) {
-      jsdomMsg = `jsdom is ${(jsdomHz / patchedHz).toFixed(1)} times faster than patched-jsdom.`;
-    } else if (jsdomHz) {
-      jsdomMsg = `patched-jsdom is ${(patchedHz / jsdomHz).toFixed(1)} times faster than jsdom.`;
-    }
-    /*
-    let msg;
-    if (fastestKey === 'jsdom') {
-      msg = fastestMsg;
-    } else {
-      msg = `${fastestMsg} ${jsdomMsg}`;
-    }
-    */
-    hz.clear();
-    console.log(`* ${str}`);
+    hzMap.clear();
+    console.log(`* ${formattedStr}`);
     console.log(`* ${jsdomMsg} ${elapsedTime}\n`);
   } else {
-    const [, key] = /^([a-z-]+)\s/.exec(str);
-    hz.set(key, target.hz);
-    console.log(`* ${str}`);
+    const match = /^([a-z-]+)\s/.exec(str);
+    const key = match ? match[1] : 'jsdom';
+    hzMap.set(key, hz);
+    console.log(`* ${formattedStr}`);
   }
-  // prepareDom();
-}).run({
-  async: true
 });
+
+await bench.run();
