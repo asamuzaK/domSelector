@@ -493,7 +493,7 @@ export class Nwsapi {
         nthElement: (element, dir) =>
           solveNth(element, dir, this.#nthChildState, false),
         nthOfType: (element, dir) =>
-          solveNth(element, dir, this.#nthChildState, true)
+          solveNth(element, dir, this.#nthTypeState, true)
       })
     );
     this.#compat = Object.freeze(
