@@ -32,7 +32,6 @@
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
     "@types/node": "^25.6.0",
-    "benchmark": "^2.1.4",
     "c8": "^11.0.0",
     "chai": "^6.2.2",
     "commander": "^14.0.3",
@@ -49,6 +48,7 @@
     "neostandard": "^0.13.0",
     "prettier": "^3.8.3",
     "sinon": "^21.1.2",
+    "tinybench": "^6.0.0",
     "typescript": "^6.0.3",
     "wpt-runner": "^7.0.0"
   },
