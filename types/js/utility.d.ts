@@ -10,7 +10,9 @@ export function filterNodesByAnB(nodes: Array<object>, anb: {
 }): Array<object>;
 export function resolveContent(node: object): Array<object | boolean>;
 export function traverseNode(node: object, walker: object, force?: boolean): object | null;
-export function isCustomElement(node: object, opt?: object): boolean;
+export function isCustomElement(node: object, { formAssociated }?: {
+    formAssociated?: boolean | undefined;
+}): boolean;
 export function getSlottedTextContent(node: object): string | null;
 export function getDirectionality(node: object): string | null;
 export function getLanguageAttribute(node: object): string | null;
@@ -26,5 +28,9 @@ export function compareNodes(a: object, b: object): number;
 export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
 export function concatNestedSelectors(selectors: Array<Array<string>>): string;
 export function extractNestedSelectors(css: string): Array<Array<string>>;
-export function initNwsapi(window: object, document: object): object;
+export function extractSubjectsRegExp(selector: string, caseSensitive: boolean): Array<{
+    id: string | null;
+    className: string | null;
+    tag: string | null;
+}>;
 export function filterSelector(selector: string, target: string): boolean;

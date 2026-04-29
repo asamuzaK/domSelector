@@ -11,4 +11,9 @@ export function parseAstName(selector: string): {
     prefix: string;
     localName: string;
 };
+export function extractSubjectsAst(ast: object): Array<{
+    id: string | null;
+    className: string | null;
+    tag: string | null;
+}>;
 export { find as findAST, generate as generateCSS } from "css-tree";

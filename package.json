@@ -42,13 +42,13 @@
     "eslint-plugin-regexp": "^3.1.0",
     "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^17.5.0",
-    "jsdom": "^29.0.2",
+    "jsdom": "^29.1.0",
     "mitata": "^1.0.34",
     "mocha": "^11.7.5",
     "neostandard": "^0.13.0",
     "prettier": "^3.8.3",
     "sinon": "^21.1.2",
-    "tinybench": "^6.0.0",
+    "tinybench": "^6.0.1",
     "typescript": "^6.0.3",
     "wpt-runner": "^7.0.0"
   },
@@ -73,7 +73,7 @@
     "update:wpt": "git submodule update --init --recursive --remote"
   },
   "engines": {
-    "node": "^22.13.0 || >=24.0.0"
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
   },
   "version": "8.0.0-a.1"
 }

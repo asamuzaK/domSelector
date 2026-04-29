@@ -1,29 +1,28 @@
 export class Finder {
     constructor(window: object);
+    get window(): object;
+    get document(): any;
+    get root(): any;
+    get shadow(): boolean;
+    get tracker(): EventTracker;
+    get warn(): boolean;
+    get astCache(): WeakMap<WeakKey, any>;
+    get node(): any;
+    get verifyShadowHost(): null;
     onError: (e: Error, opt?: {
         noexcept?: boolean | undefined;
     }) => void;
-    setup: (selector: string, node: object, opt?: {
+    setup: (selector: string, node: object, { check, noexcept, warn }?: {
         check?: boolean | undefined;
         noexcept?: boolean | undefined;
         warn?: boolean | undefined;
     }) => object;
     clearResults: (all?: boolean) => void;
-    private _handleFocusEvent;
-    private _handleKeyboardEvent;
-    private _handleMouseEvent;
-    private _registerEventListeners;
     private _processSelectorBranches;
     private _correspond;
     private _createTreeWalker;
     private _getSelectorBranches;
     private _getFilteredChildren;
-    private _collectNthChild;
-    private _collectNthOfType;
-    private _matchAnPlusB;
-    private _matchHasPseudoFunc;
-    private _evaluateHasPseudo;
-    private _matchLogicalPseudoFunc;
     private _matchPseudoClassSelector;
     private _evaluateHostPseudo;
     private _evaluateHostContextPseudo;
@@ -58,5 +57,7 @@ export class Finder {
     private _processComplexBranchFirst;
     find: (targetType: string) => Set<object>;
     getAST: (selector: string) => object;
+    getDocumentURL(): string;
     #private;
 }
+import { EventTracker } from './event-tracker.js';

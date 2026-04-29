@@ -10047,3 +10047,103 @@ describe('parse AST name', () => {
     );
   });
 });
+
+describe('extract subjects via AST', () => {
+  const func = parser.extractSubjectsAst;
+  const parse = sel => cssTree.parse(sel, { context: 'selectorList' });
+
+  it('should handle empty or invalid AST gracefully', () => {
+    assert.deepEqual(func(null), [], 'null');
+    assert.deepEqual(func(undefined), [], 'undefined');
+    assert.deepEqual(func({}), [], 'empty object');
+    assert.deepEqual(func({ type: 'Selector' }), [], 'not a SelectorList');
+  });
+
+  it('should extract single type selector', () => {
+    assert.deepEqual(func(parse('div')), [
+      { id: null, className: null, tag: 'div' }
+    ]);
+    assert.deepEqual(func(parse('*')), [
+      { id: null, className: null, tag: null }
+    ]);
+  });
+
+  it('should extract single id selector', () => {
+    assert.deepEqual(func(parse('#foo')), [
+      { id: 'foo', className: null, tag: null }
+    ]);
+  });
+
+  it('should extract single class selector', () => {
+    assert.deepEqual(func(parse('.bar')), [
+      { id: null, className: 'bar', tag: null }
+    ]);
+  });
+
+  it('should extract compound selector', () => {
+    assert.deepEqual(func(parse('div#foo.bar')), [
+      { id: 'foo', className: 'bar', tag: 'div' }
+    ]);
+  });
+
+  it('should extract rightmost subject of complex selector', () => {
+    assert.deepEqual(func(parse('ul > li.item')), [
+      { id: null, className: 'item', tag: 'li' }
+    ]);
+    assert.deepEqual(func(parse('div .foo + p#bar')), [
+      { id: 'bar', className: null, tag: 'p' }
+    ]);
+    assert.deepEqual(func(parse('main ~ section.content > h1')), [
+      { id: null, className: null, tag: 'h1' }
+    ]);
+  });
+
+  it('should extract selector list', () => {
+    assert.deepEqual(func(parse('.foo, div#bar')), [
+      { id: null, className: 'foo', tag: null },
+      { id: 'bar', className: null, tag: 'div' }
+    ]);
+  });
+
+  it('should extract the last class/id when multiple exist in the rightmost compound', () => {
+    assert.deepEqual(func(parse('div.foo.bar')), [
+      { id: null, className: 'bar', tag: 'div' }
+    ]);
+    assert.deepEqual(func(parse('div#first#second')), [
+      { id: 'second', className: null, tag: 'div' }
+    ]);
+  });
+
+  it('should handle escaped characters properly', () => {
+    assert.deepEqual(func(parse('.foo\\!bar')), [
+      { id: null, className: 'foo!bar', tag: null }
+    ]);
+    assert.deepEqual(func(parse('#\\31 23')), [
+      { id: '123', className: null, tag: null }
+    ]);
+  });
+
+  it('should ignore attributes, pseudo-classes, and pseudo-elements', () => {
+    assert.deepEqual(func(parse('a[href]:hover::before')), [
+      { id: null, className: null, tag: 'a' }
+    ]);
+    assert.deepEqual(func(parse('input[type="text"].input-box:focus')), [
+      { id: null, className: 'input-box', tag: 'input' }
+    ]);
+  });
+
+  it('should lowercase tag names', () => {
+    assert.deepEqual(func(parse('SECTION')), [
+      { id: null, className: null, tag: 'section' }
+    ]);
+  });
+
+  it('should strip namespaces from tags', () => {
+    assert.deepEqual(func(parse('svg|a')), [
+      { id: null, className: null, tag: 'a' }
+    ]);
+    assert.deepEqual(func(parse('*|div')), [
+      { id: null, className: null, tag: 'div' }
+    ]);
+  });
+});

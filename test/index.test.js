@@ -247,6 +247,92 @@ describe('DOMSelector', () => {
       const res2 = domSelector.extractSubjects('div.foo');
       assert.strictEqual(res1, res2);
     });
+
+    it('should respect caseSensitive parameter for tag names (fast path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('SECTION', true), [
+        { id: null, className: null, tag: 'SECTION' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects('SECTION', false), [
+        { id: null, className: null, tag: 'section' }
+      ]);
+    });
+
+    it('should handle universal selector combined with pseudo-classes (AST path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('*:hover'), [
+        { id: null, className: null, tag: null }
+      ]);
+    });
+
+    it('should extract the last class/id when multiple exist in the rightmost compound', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('div.foo.bar'), [
+        { id: null, className: 'bar', tag: 'div' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects('div.foo.bar:hover'), [
+        { id: null, className: 'bar', tag: 'div' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects('div#first#second:focus'), [
+        { id: 'second', className: null, tag: 'div' }
+      ]);
+    });
+
+    it('should handle mixed selector lists via AST path correctly', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(
+        domSelector.extractSubjects('a[href]:focus, div.container'),
+        [
+          { id: null, className: null, tag: 'a' },
+          { id: null, className: 'container', tag: 'div' }
+        ]
+      );
+    });
+
+    it('should ignore empty groups in selector lists (fast path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('div, , span'), [
+        { id: null, className: null, tag: 'div' },
+        { id: null, className: null, tag: 'span' }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects(',.foo,,'), [
+        { id: null, className: 'foo', tag: null }
+      ]);
+    });
+
+    it('should return universal fallback when all groups are empty (fast path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects(','), [
+        { id: null, className: null, tag: null }
+      ]);
+      assert.deepEqual(domSelector.extractSubjects(' , , '), [
+        { id: null, className: null, tag: null }
+      ]);
+    });
+
+    it('should return universal fallback when AST parsing fails or yields no subjects (AST path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(domSelector.extractSubjects('()'), [
+        { id: null, className: null, tag: null }
+      ]);
+    });
+
+    it('should break on combinator when extracting rightmost subject (AST path)', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(
+        domSelector.extractSubjects('div[data-foo="bar"] > p.baz'),
+        [{ id: null, className: 'baz', tag: 'p' }]
+      );
+      assert.deepEqual(domSelector.extractSubjects('ul:empty + li#target'), [
+        { id: 'target', className: null, tag: 'li' }
+      ]);
+      assert.deepEqual(
+        domSelector.extractSubjects(
+          'main:not(.hidden) section ~ article.content'
+        ),
+        [{ id: null, className: 'content', tag: 'article' }]
+      );
+    });
   });
 
   describe('check', () => {

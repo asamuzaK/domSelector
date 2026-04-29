@@ -17,6 +17,7 @@ import {
   BIT_32,
   BIT_FFFF,
   CLASS_SELECTOR,
+  COMBINATOR,
   DUO,
   HEX,
   ID_SELECTOR,
@@ -75,7 +76,8 @@ export const unescapeSelector = (selector = '') => {
       } else if (item === '') {
         // Empty segment at non-last position means \\ (escaped backslash)
         selectorItems.push('\\');
-        i++; // skip the next segment which is the remainder after \\
+        // skip the next segment which is the remainder after \\
+        i++;
         if (i < l) {
           selectorItems.push(arr[i]);
         }
@@ -101,8 +103,8 @@ export const unescapeSelector = (selector = '') => {
             postStr = item.substring(hex.length);
           }
           selectorItems.push(`${str}${postStr}`);
-          // whitespace
         } else if (/^[\n\r\f]/.test(item)) {
+          // whitespace
           selectorItems.push(`\\${item}`);
         } else {
           selectorItems.push(item);
@@ -435,6 +437,43 @@ export const parseAstName = selector => {
     prefix,
     localName
   };
+};
+
+/**
+ * Extracts the rightmost subject keys (id, class, tag) from a CSS selector AST.
+ * @param {object} ast - The AST representation of the CSS selector.
+ * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ */
+export const extractSubjectsAst = ast => {
+  const subjects = [];
+  if (ast?.type === 'SelectorList') {
+    for (const selectorNode of ast.children) {
+      let idKey = null;
+      let classKey = null;
+      let tagKey = null;
+      let current = selectorNode.children.tail;
+
+      while (current) {
+        const node = current.data;
+        if (node.type === COMBINATOR) {
+          break;
+        }
+        if (node.type === ID_SELECTOR) {
+          idKey = idKey ?? unescapeSelector(node.name);
+        } else if (node.type === CLASS_SELECTOR) {
+          classKey = classKey ?? unescapeSelector(node.name);
+        } else if (node.type === TYPE_SELECTOR) {
+          const { localName } = parseAstName(unescapeSelector(node.name));
+          if (localName !== '*') {
+            tagKey = tagKey ?? localName.toLowerCase();
+          }
+        }
+        current = current.prev;
+      }
+      subjects.push({ id: idKey, className: classKey, tag: tagKey });
+    }
+  }
+  return subjects;
 };
 
 /* Re-exported from css-tree. */

@@ -451,7 +451,6 @@ describe('nwsapi', () => {
       it('closest() should find the nearest matching ancestor', () => {
         const span1 = document.getElementById('span1');
         const dl1 = document.getElementById('dl1');
-
         assert.deepEqual(api.closest('dl', span1), dl1);
         assert.deepEqual(api.closest('#div0', span1), null);
       });
@@ -459,7 +458,6 @@ describe('nwsapi', () => {
       it('select() should collect all matching descendant elements', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('.li', ul);
-
         assert.strictEqual(res.length, 3);
         assert.strictEqual(res[0].id, 'li1');
         assert.strictEqual(res[2].id, 'li3');

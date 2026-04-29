@@ -78,6 +78,10 @@ const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const REG_COMBO = new RegExp(COMBO);
+const REG_ID = /#(\D[^#.*]+)/g;
+const REG_CLASS = /\.(\D[^#.*]+)/g;
+const REG_TAG = /^([^#.]+)/;
 
 /**
  * Manages state for extracting nested selectors from a CSS AST.
@@ -365,9 +369,10 @@ export const traverseNode = (node, walker, force = false) => {
  * Check if a node is a custom element.
  * @param {object} node - The Element node.
  * @param {object} [opt] - Options.
+ * @param {boolean} [opt.formAssociated] - True if the node is form associated.
  * @returns {boolean} - True if it's a custom element.
  */
-export const isCustomElement = (node, opt = {}) => {
+export const isCustomElement = (node, { formAssociated } = {}) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -375,7 +380,6 @@ export const isCustomElement = (node, opt = {}) => {
     return false;
   }
   const { localName, ownerDocument } = node;
-  const { formAssociated } = opt;
   const window = ownerDocument.defaultView;
   let elmConstructor;
   const attr = node.getAttribute('is');
@@ -647,7 +651,7 @@ export const isVisible = node => {
   if (node?.nodeType !== ELEMENT_NODE) {
     return false;
   }
-  // TODO: switch to node.checkVisibility()
+  // TODO: switch to node.checkVisibility().
   const window = node.ownerDocument.defaultView;
   const { display, visibility } = window.getComputedStyle(node);
   return display !== 'none' && visibility === 'visible';
@@ -1016,6 +1020,47 @@ export const extractNestedSelectors = css => {
 };
 
 /**
+ * Extracts the rightmost subject keys (id, class, tag) from a selector.
+ * @param {string} selector - The CSS selector string to parse.
+ * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
+ * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ */
+export const extractSubjectsRegExp = (selector, caseSensitive) => {
+  const subjects = [];
+  const groups = selector.split(',');
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i].trim();
+    if (!group) continue;
+
+    const compounds = group.split(REG_COMBO);
+    const rightmost = compounds[compounds.length - 1];
+    let idKey = null;
+    let classKey = null;
+    let tagKey = null;
+
+    if (rightmost) {
+      const idMatch = rightmost.match(REG_ID);
+      if (idMatch) {
+        idKey = idMatch[idMatch.length - 1].slice(1);
+      }
+      const classMatch = rightmost.match(REG_CLASS);
+      if (classMatch) {
+        classKey = classMatch[classMatch.length - 1].slice(1);
+      }
+      const tagMatch = rightmost.match(REG_TAG);
+      if (tagMatch) {
+        const tag = tagMatch[1];
+        if (tag !== '*') {
+          tagKey = caseSensitive ? tag : tag.toLowerCase();
+        }
+      }
+    }
+    subjects.push({ id: idKey, className: classKey, tag: tagKey });
+  }
+  return subjects;
+};
+
+/**
  * Filter a selector for use with nwsapi.
  * @param {string} selector - The selector string.
  * @param {string} target - The target type.
@@ -1023,7 +1068,7 @@ export const extractNestedSelectors = css => {
  */
 export const filterSelector = (selector, target) => {
   const isQuerySelectorAll = target === TARGET_ALL;
-  // Basic validation and fast-fail for null/undefined/non-string values
+  // Basic validation and fast-fail for null/undefined/non-string values.
   if (
     !selector ||
     typeof selector !== 'string' ||
@@ -1031,34 +1076,34 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // Exclude various complex or unsupported selectors early
-  // i.e. non-ASCII, escaped selectors, namespaced selectors and pseudo-elements
+  // Exclude various complex or unsupported selectors early.
+  // i.e. non-ASCII, escaped selectors, namespaced selectors, pseudo-elements.
   if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
     return false;
   }
-  // Validate attribute selector integrity
+  // Validate attribute selector integrity.
   if (selector.includes('[')) {
     const index = selector.lastIndexOf('[');
     if (selector.indexOf(']', index) === -1) {
       return false;
     }
   }
-  // Target-specific early exits
+  // Target-specific early exits.
   if (target === TARGET_FIRST) {
     return REG_ATTR_SIMPLE.test(selector);
   }
   if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
     return false;
   }
-  // Logic for pseudo-classes
+  // Logic for pseudo-classes.
   if (selector.includes(':')) {
-    // Exclude descendant combinators in logical selectors for querySelectorAll
+    // Exclude descendant combinators in logical selectors for querySelectorAll.
     if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
       return false;
     }
-    // Determine if the selector has complex logical structures
+    // Determine if the selector has complex logical structures.
     const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
-    // Handle :has() specifically
+    // Handle :has() specifically.
     if (selector.includes(':has(')) {
       if (isQuerySelectorAll) {
         return false;
@@ -1068,7 +1113,7 @@ export const filterSelector = (selector, target) => {
       }
       return REG_END_WITH_HAS.test(selector);
     }
-    // Handle :is() and :not()
+    // Handle :is() and :not().
     if (/(?:is|not)\(/.test(selector)) {
       if (isComplex) {
         return !REG_LOGIC_COMPLEX.test(selector);
@@ -1076,7 +1121,7 @@ export const filterSelector = (selector, target) => {
         return !REG_LOGIC_COMPOUND.test(selector);
       }
     }
-    // Default check for other pseudo-classes against known list
+    // Default check for other pseudo-classes against known list.
     if (REG_WO_LOGICAL.test(selector)) {
       return false;
     }
