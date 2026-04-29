@@ -10,7 +10,7 @@ import { isContentEditable } from './utility.js';
 
 /* constants */
 import { DOCUMENT_NODE, ELEMENT_NODE } from './constant.js';
-const CACHE_SIZE = 1024;
+const CACHE_SIZE = 2048;
 const F_INIT = '"use strict";return function resolver(c,f,x,r)';
 const S_HEAD = 'var e,n,o,j=r.length-1,k=-1';
 const M_HEAD = 'var e,n,o';
