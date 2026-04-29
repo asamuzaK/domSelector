@@ -9,8 +9,12 @@
 import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
-import { unescapeSelector, parseAstName } from './js/parser.js';
-import { filterSelector, getType } from './js/utility.js';
+import { extractSubjectsAst } from './js/parser.js';
+import {
+  filterSelector,
+  getType,
+  extractSubjectsRegExp
+} from './js/utility.js';
 
 /* constants */
 import {
@@ -20,13 +24,12 @@ import {
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
-  TARGET_SELF,
-  COMBINATOR,
-  ID_SELECTOR,
-  CLASS_SELECTOR,
-  TYPE_SELECTOR
+  TARGET_SELF
 } from './js/constant.js';
 const CACHE_SIZE = 2048;
+
+/* regexp */
+const REG_SELECTOR = /[[\]():\\"'`]/;
 
 /**
  * @typedef {object} CheckResult
@@ -72,48 +75,28 @@ export class DOMSelector {
   /**
    * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
    * @param {string} selector - The CSS selector to parse.
+   * @param {boolean} caseSensitive - True if tag key should be case sensitive.
    * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
    */
-  extractSubjects = selector => {
+  extractSubjects = (selector, caseSensitive = false) => {
     if (!selector || typeof selector !== 'string') {
       return [{ id: null, className: null, tag: null }];
     }
-    const cacheKey = `extract_${selector}`;
+    const cacheKey = `extract_${selector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
     if (subjects !== undefined) {
       return subjects;
     }
     subjects = [];
-    try {
-      const ast = this.#finder.getAST(selector);
-      if (ast?.type === 'SelectorList') {
-        for (const selectorNode of ast.children) {
-          let idKey = null;
-          let classKey = null;
-          let tagKey = null;
-          let current = selectorNode.children.tail;
-          while (current) {
-            const node = current.data;
-            if (node.type === COMBINATOR) {
-              break;
-            }
-            if (node.type === ID_SELECTOR) {
-              idKey = idKey ?? unescapeSelector(node.name);
-            } else if (node.type === CLASS_SELECTOR) {
-              classKey = classKey ?? unescapeSelector(node.name);
-            } else if (node.type === TYPE_SELECTOR) {
-              const { localName } = parseAstName(unescapeSelector(node.name));
-              if (localName !== '*') {
-                tagKey = tagKey ?? localName.toLowerCase();
-              }
-            }
-            current = current.prev;
-          }
-          subjects.push({ id: idKey, className: classKey, tag: tagKey });
-        }
+    if (!REG_SELECTOR.test(selector)) {
+      subjects = extractSubjectsRegExp(selector, caseSensitive);
+    } else {
+      try {
+        const ast = this.#finder.getAST(selector);
+        subjects = extractSubjectsAst(ast);
+      } catch (e) {
+        // fall through
       }
-    } catch (e) {
-      // fall through
     }
     if (!subjects.length) {
       subjects.push({ id: null, className: null, tag: null });

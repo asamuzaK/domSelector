@@ -3158,6 +3158,92 @@ describe('utility functions', () => {
     });
   });
 
+  describe('extract subjects via RegExp', () => {
+    const func = util.extractSubjectsRegExp;
+
+    it('should extract single type selector', () => {
+      assert.deepEqual(func('div'), [
+        { id: null, className: null, tag: 'div' }
+      ]);
+      assert.deepEqual(func('*'), [{ id: null, className: null, tag: null }]);
+    });
+
+    it('should extract single id selector', () => {
+      assert.deepEqual(func('#foo'), [
+        { id: 'foo', className: null, tag: null }
+      ]);
+    });
+
+    it('should extract single class selector', () => {
+      assert.deepEqual(func('.bar'), [
+        { id: null, className: 'bar', tag: null }
+      ]);
+    });
+
+    it('should extract compound selector', () => {
+      assert.deepEqual(func('div#foo.bar'), [
+        { id: 'foo', className: 'bar', tag: 'div' }
+      ]);
+    });
+
+    it('should extract rightmost subject of complex selector', () => {
+      assert.deepEqual(func('ul > li.item'), [
+        { id: null, className: 'item', tag: 'li' }
+      ]);
+      assert.deepEqual(func('div .foo + p#bar'), [
+        { id: 'bar', className: null, tag: 'p' }
+      ]);
+      assert.deepEqual(func('main ~ section.content > h1'), [
+        { id: null, className: null, tag: 'h1' }
+      ]);
+    });
+
+    it('should extract selector list', () => {
+      assert.deepEqual(func('.foo, div#bar'), [
+        { id: null, className: 'foo', tag: null },
+        { id: 'bar', className: null, tag: 'div' }
+      ]);
+    });
+
+    it('should ignore empty groups in selector lists', () => {
+      assert.deepEqual(func('div, , span'), [
+        { id: null, className: null, tag: 'div' },
+        { id: null, className: null, tag: 'span' }
+      ]);
+      assert.deepEqual(func(',.foo,,,'), [
+        { id: null, className: 'foo', tag: null }
+      ]);
+      assert.deepEqual(func(','), []);
+    });
+
+    it('should respect caseSensitive parameter for tag names', () => {
+      assert.deepEqual(func('SECTION', true), [
+        { id: null, className: null, tag: 'SECTION' }
+      ]);
+      assert.deepEqual(func('SECTION', false), [
+        { id: null, className: null, tag: 'section' }
+      ]);
+      assert.deepEqual(func('SECTION'), [
+        { id: null, className: null, tag: 'section' }
+      ]);
+    });
+
+    it('should extract the last class/id when multiple exist in the rightmost compound', () => {
+      assert.deepEqual(func('div.foo.bar'), [
+        { id: null, className: 'bar', tag: 'div' }
+      ]);
+      assert.deepEqual(func('div#first#second'), [
+        { id: 'second', className: null, tag: 'div' }
+      ]);
+    });
+
+    it('should handle escaped characters properly', () => {
+      assert.deepEqual(func('.foo\\!bar'), [
+        { id: null, className: 'foo\\!bar', tag: null }
+      ]);
+    });
+  });
+
   describe('filter selector', () => {
     const func = util.filterSelector;
 
