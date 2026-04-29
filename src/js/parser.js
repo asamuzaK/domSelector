@@ -452,7 +452,6 @@ export const extractSubjectsAst = ast => {
       let classKey = null;
       let tagKey = null;
       let current = selectorNode.children.tail;
-
       while (current) {
         const node = current.data;
         if (node.type === COMBINATOR) {

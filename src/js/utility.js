@@ -1030,14 +1030,14 @@ export const extractSubjectsRegExp = (selector, caseSensitive) => {
   const groups = selector.split(',');
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i].trim();
-    if (!group) continue;
-
+    if (!group) {
+      continue;
+    }
     const compounds = group.split(REG_COMBO);
     const rightmost = compounds[compounds.length - 1];
     let idKey = null;
     let classKey = null;
     let tagKey = null;
-
     if (rightmost) {
       const idMatch = rightmost.match(REG_ID);
       if (idMatch) {
