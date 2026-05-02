@@ -24,7 +24,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@asamuzakjp/generational-cache": "^1.0.1",
+    "@asamuzakjp/generational-cache": "^2.0.1",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
     "is-potential-custom-element-name": "^1.0.1"
@@ -79,5 +79,5 @@
   "engines": {
     "node": "^22.13.0 || >=24.0.0"
   },
-  "version": "8.0.0"
+  "version": "8.0.1"
 }
