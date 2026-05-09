@@ -4,19 +4,36 @@
 
 /* import */
 import bidiFactory from 'bidi-js';
+import * as cssTree from 'css-tree';
 import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
+  ATRULE,
+  COMBO,
+  COMPOUND_I,
+  DESCEND,
   DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING,
   ELEMENT_NODE,
+  HAS_COMPOUND,
   INPUT_BUTTON,
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
+  KEYS_LOGICAL,
+  LOGIC_COMPLEX,
+  LOGIC_COMPOUND,
+  N_TH,
+  PSEUDO_CLASS,
+  RULE,
+  SCOPE,
+  SELECTOR_LIST,
+  TAG_TYPE,
+  TARGET_ALL,
+  TARGET_FIRST,
   TEXT_NODE,
   TYPE_FROM,
   TYPE_TO
@@ -41,9 +58,105 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
+const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}(?:="?[A-Z\d\s-]{1,255}"?)?\]$/i;
+const REG_TAG_SIMPLE = new RegExp(`^(?:${TAG_TYPE})$`);
+const REG_EXCLUDE_BASIC =
+  /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
+const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
+const REG_LOGIC_COMPLEX = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
+);
+const REG_LOGIC_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`
+);
+const REG_LOGIC_HAS_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`
+);
+const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
+const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
 const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const REG_COMBO = new RegExp(COMBO);
+const REG_ID = /#(\D[^#.*]+)/g;
+const REG_CLASS = /\.(\D[^#.*]+)/g;
+const REG_TAG = /^([^#.]+)/;
+
+/**
+ * Manages state for extracting nested selectors from a CSS AST.
+ */
+class SelectorExtractor {
+  constructor() {
+    this.selectors = [];
+    this.isScoped = false;
+  }
+
+  /**
+   * Walker enter function.
+   * @param {object} node - The AST node.
+   */
+  enter(node) {
+    switch (node.type) {
+      case ATRULE: {
+        if (node.name === 'scope') {
+          this.isScoped = true;
+        }
+        break;
+      }
+      case SCOPE: {
+        const { children, type } = node.root;
+        const arr = [];
+        if (type === SELECTOR_LIST) {
+          for (const child of children) {
+            const selector = cssTree.generate(child);
+            arr.push(selector);
+          }
+          this.selectors.push(arr);
+        }
+        break;
+      }
+      case RULE: {
+        const { children, type } = node.prelude;
+        const arr = [];
+        if (type === SELECTOR_LIST) {
+          let hasAmp = false;
+          for (const child of children) {
+            const selector = cssTree.generate(child);
+            if (this.isScoped && !hasAmp) {
+              hasAmp = /\x26/.test(selector);
+            }
+            arr.push(selector);
+          }
+          if (this.isScoped) {
+            if (hasAmp) {
+              this.selectors.push(arr);
+              /* FIXME:
+              } else {
+                this.selectors = arr;
+                this.isScoped = false;
+              */
+            }
+          } else {
+            this.selectors.push(arr);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Walker leave function.
+   * @param {object} node - The AST node.
+   */
+  leave(node) {
+    if (node.type === ATRULE) {
+      if (node.name === 'scope') {
+        this.isScoped = false;
+      }
+    }
+  }
+}
 
 /**
  * Get type of an object.
@@ -84,6 +197,27 @@ export const verifyArray = (arr, type) => {
  */
 export const generateException = (msg, name, globalObject = globalThis) => {
   return new globalObject.DOMException(msg, name);
+};
+
+/**
+ * Find a nested :has() pseudo-class.
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it's :has, otherwise null.
+ */
+export const findNestedHas = leaf => {
+  return leaf.name === 'has';
+};
+
+/**
+ * Find a logical pseudo-class that contains a nested :has().
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it matches, otherwise null.
+ */
+export const findLogicalWithNestedHas = leaf => {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+    return leaf;
+  }
+  return null;
 };
 
 /**
@@ -793,4 +927,204 @@ export const sortNodes = (nodes = []) => {
     arr.sort(compareNodes);
   }
   return arr;
+};
+
+/**
+ * Concat an array of nested selectors into an equivalent single selector.
+ * @param {Array.<Array.<string>>} selectors - [parents, children, ...].
+ * @returns {string} - The concatenated selector.
+ */
+export const concatNestedSelectors = selectors => {
+  if (!Array.isArray(selectors)) {
+    throw new TypeError(`Unexpected type ${getType(selectors)}`);
+  }
+  let selector = '';
+  if (selectors.length) {
+    const revSelectors = selectors.toReversed();
+    let child = verifyArray(revSelectors.shift(), 'String');
+    if (child.length === 1) {
+      [child] = child;
+    }
+    while (revSelectors.length) {
+      const parentArr = verifyArray(revSelectors.shift(), 'String');
+      if (!parentArr.length) {
+        continue;
+      }
+      let parent;
+      if (parentArr.length === 1) {
+        [parent] = parentArr;
+        if (!/^[>~+]/.test(parent) && /[\s>~+]/.test(parent)) {
+          parent = `:is(${parent})`;
+        }
+      } else {
+        parent = `:is(${parentArr.join(', ')})`;
+      }
+      if (selector.includes('\x26')) {
+        selector = selector.replace(/\x26/g, parent);
+      }
+      if (Array.isArray(child)) {
+        const items = [];
+        for (let item of child) {
+          if (item.includes('\x26')) {
+            if (/^[>~+]/.test(item)) {
+              item = `${parent} ${item.replace(/\x26/g, parent)} ${selector}`;
+            } else {
+              item = `${item.replace(/\x26/g, parent)} ${selector}`;
+            }
+          } else {
+            item = `${parent} ${item} ${selector}`;
+          }
+          items.push(item.trim());
+        }
+        selector = items.join(', ');
+      } else if (revSelectors.length) {
+        selector = `${child} ${selector}`;
+      } else {
+        if (child.includes('\x26')) {
+          if (/^[>~+]/.test(child)) {
+            selector = `${parent} ${child.replace(/\x26/g, parent)} ${selector}`;
+          } else {
+            selector = `${child.replace(/\x26/g, parent)} ${selector}`;
+          }
+        } else {
+          selector = `${parent} ${child} ${selector}`;
+        }
+      }
+      selector = selector.trim();
+      if (revSelectors.length) {
+        child = parentArr.length > 1 ? parentArr : parent;
+      } else {
+        break;
+      }
+    }
+    selector = selector.replace(/\x26/g, ':scope').trim();
+  }
+  return selector;
+};
+
+/**
+ * Extract nested selectors from CSSRule.cssText.
+ * @param {string} css - CSSRule.cssText.
+ * @returns {Array.<Array.<string>>} - Array of nested selectors.
+ */
+export const extractNestedSelectors = css => {
+  const ast = cssTree.parse(css, {
+    context: 'rule'
+  });
+  const extractor = new SelectorExtractor();
+  cssTree.walk(ast, {
+    enter: extractor.enter.bind(extractor),
+    leave: extractor.leave.bind(extractor)
+  });
+  return extractor.selectors;
+};
+
+/**
+ * Extracts the rightmost subject keys (id, class, tag) from a selector.
+ * @param {string} selector - The CSS selector string to parse.
+ * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
+ * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ */
+export const extractSubjectsRegExp = (selector, caseSensitive) => {
+  const subjects = [];
+  const groups = selector.split(',');
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i].trim();
+    if (!group) {
+      continue;
+    }
+    const compounds = group.split(REG_COMBO);
+    const rightmost = compounds[compounds.length - 1];
+    let idKey = null;
+    let classKey = null;
+    let tagKey = null;
+    if (rightmost) {
+      const idMatch = rightmost.match(REG_ID);
+      if (idMatch) {
+        idKey = idMatch[idMatch.length - 1].slice(1);
+      }
+      const classMatch = rightmost.match(REG_CLASS);
+      if (classMatch) {
+        classKey = classMatch[classMatch.length - 1].slice(1);
+      }
+      const tagMatch = rightmost.match(REG_TAG);
+      if (tagMatch) {
+        const tag = tagMatch[1];
+        if (tag !== '*') {
+          tagKey = caseSensitive ? tag : tag.toLowerCase();
+        }
+      }
+    }
+    subjects.push({ id: idKey, className: classKey, tag: tagKey });
+  }
+  return subjects;
+};
+
+/**
+ * Filter a selector for use with nwsapi.
+ * @param {string} selector - The selector string.
+ * @param {string} target - The target type.
+ * @returns {boolean} - True if the selector is valid for nwsapi.
+ */
+export const filterSelector = (selector, target) => {
+  const isQuerySelectorAll = target === TARGET_ALL;
+  // Basic validation and fast-fail for null/undefined/non-string values.
+  if (
+    !selector ||
+    typeof selector !== 'string' ||
+    /null|undefined/.test(selector)
+  ) {
+    return false;
+  }
+  // Exclude various complex or unsupported selectors early.
+  // i.e. non-ASCII, escaped selectors, namespaced selectors, pseudo-elements.
+  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
+    return false;
+  }
+  // Validate attribute selector integrity.
+  if (selector.includes('[')) {
+    const index = selector.lastIndexOf('[');
+    if (selector.indexOf(']', index) === -1) {
+      return false;
+    }
+  }
+  // Target-specific early exits.
+  if (target === TARGET_FIRST) {
+    return REG_ATTR_SIMPLE.test(selector);
+  }
+  if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
+    return false;
+  }
+  // Logic for pseudo-classes.
+  if (selector.includes(':')) {
+    // Exclude descendant combinators in logical selectors for querySelectorAll.
+    if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
+      return false;
+    }
+    // Determine if the selector has complex logical structures.
+    const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
+    // Handle :has() specifically.
+    if (selector.includes(':has(')) {
+      if (isQuerySelectorAll) {
+        return false;
+      }
+      if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
+        return false;
+      }
+      return REG_END_WITH_HAS.test(selector);
+    }
+    // Handle :is() and :not().
+    if (/(?:is|not)\(/.test(selector)) {
+      if (isComplex) {
+        return !REG_LOGIC_COMPLEX.test(selector);
+      } else {
+        return !REG_LOGIC_COMPOUND.test(selector);
+      }
+    }
+    // Default check for other pseudo-classes against known list.
+    if (REG_WO_LOGICAL.test(selector)) {
+      return false;
+    }
+  }
+  return true;
 };

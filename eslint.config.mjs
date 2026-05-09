@@ -30,13 +30,7 @@ export default [
       regexp,
       unicorn
     },
-    settings: {
-      jsdoc: {
-        mode: 'typescript'
-      }
-    },
     rules: {
-      curly: ['error', 'all'],
       'no-await-in-loop': 'error',
       'no-use-before-define': [
         'error',

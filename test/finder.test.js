@@ -296,47 +296,6 @@ describe('Finder', () => {
       );
     });
 
-    it('should validate :has() nesting and throw SyntaxError for disallowed nesting', () => {
-      const finder = new Finder(window);
-      finder.setup('*', document);
-      assert.throws(
-        () => finder._correspond(':has(:has(li))'),
-        e => {
-          assert.strictEqual(
-            e instanceof window.DOMException,
-            true,
-            'instance'
-          );
-          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
-          assert.match(
-            e.message,
-            /^Disallowed nested :has\(\) pseudo-class: :has\(.*\)$/,
-            'message'
-          );
-          return true;
-        }
-      );
-      assert.throws(
-        () => finder._correspond('div:has(:not(:has(span)))'),
-        e => {
-          assert.strictEqual(e.name, SYNTAX_ERR);
-          return true;
-        }
-      );
-    });
-
-    it('should pass validation for allowed nested :has() (forgiven nesting)', () => {
-      const finder = new Finder(window);
-      finder.setup('*', document);
-      const res = finder._correspond(':has(:is(:has(li)))');
-      assert.strictEqual(
-        Array.isArray(res),
-        true,
-        'should return [ast, nodes]'
-      );
-      assert.strictEqual(res[0].length, 1, 'should have one branch');
-    });
-
     it('should get result', () => {
       const finder = new Finder(window);
       finder.setup('*', document);
@@ -3708,6 +3667,77 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'result');
     });
 
+    it('should throw', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    loc: null,
+                    name: '>',
+                    type: COMBINATOR
+                  },
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                loc: null,
+                                name: 'li',
+                                type: TYPE_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'has',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('ul1').parentNode;
+      const finder = new Finder(window);
+      finder.setup(':has(> :has(li))', node);
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector :has(>:has(li))',
+            'message'
+          );
+          return true;
+        }
+      );
+    });
+
     it('should not match', () => {
       const leaf = {
         children: [
@@ -3786,7 +3816,103 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(:is(:has(li, dd)))', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.deepEqual([...res], [], 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        children: [
+                          {
+                            children: [
+                              {
+                                children: [
+                                  {
+                                    children: [
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'li',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      },
+                                      {
+                                        children: [
+                                          {
+                                            loc: null,
+                                            name: 'dd',
+                                            type: TYPE_SELECTOR
+                                          }
+                                        ],
+                                        loc: null,
+                                        type: SELECTOR
+                                      }
+                                    ],
+                                    loc: null,
+                                    type: SELECTOR_LIST
+                                  }
+                                ],
+                                loc: null,
+                                name: 'has',
+                                type: PS_CLASS_SELECTOR
+                              }
+                            ],
+                            loc: null,
+                            type: SELECTOR
+                          }
+                        ],
+                        loc: null,
+                        type: SELECTOR_LIST
+                      }
+                    ],
+                    loc: null,
+                    name: 'not',
+                    type: PS_CLASS_SELECTOR
+                  }
+                ],
+                loc: null,
+                type: SELECTOR
+              }
+            ],
+            loc: null,
+            type: SELECTOR_LIST
+          }
+        ],
+        loc: null,
+        name: 'has',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('ul1').parentNode;
+      const finder = new Finder(window);
+      finder.setup(':has(:is(:has(li, dd)))', node);
+      assert.throws(
+        () => finder._matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(
+            e.message,
+            'Invalid selector :has(:not(:has(li,dd)))',
+            'message'
+          );
+          return true;
+        }
+      );
     });
 
     it('should throw', () => {

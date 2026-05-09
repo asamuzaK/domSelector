@@ -13,15 +13,16 @@ import {
   matchTypeSelector
 } from './matcher.js';
 import {
+  findAST,
   generateCSS,
   parseSelector,
   sortAST,
   unescapeSelector,
   walkAST
 } from './parser.js';
-import { createHasValidator, isInvalidCombinator } from './selector.js';
 import {
   filterNodesByAnB,
+  findLogicalWithNestedHas,
   generateException,
   isCustomElement,
   isFocusVisible,
@@ -309,18 +310,18 @@ export class Finder {
     for (let i = 0; i < l; i++) {
       const items = [...branches[i]];
       const branch = [];
-      let prevType = null;
       let item = items.shift();
-      if (item) {
+      if (item && item.type !== COMBINATOR) {
         const leaves = new Set();
         while (item) {
-          const isLast = items.length === 0;
-          if (isInvalidCombinator(item.type, prevType, isLast)) {
-            const msg = `Invalid selector ${selector}`;
-            this.onError(generateException(msg, SYNTAX_ERR, this.#window));
-            return { ast: [], descendant: false, invalidate: false };
-          }
           if (item.type === COMBINATOR) {
+            const [nextItem] = items;
+            if (!nextItem || nextItem.type === COMBINATOR) {
+              const msg = `Invalid selector ${selector}`;
+              this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+              // Stop processing on invalid selector.
+              return { ast: [], descendant: false, invalidate: false };
+            }
             if (item.name === ' ' || item.name === '>') {
               descendant = true;
             }
@@ -338,8 +339,7 @@ export class Finder {
             }
             leaves.add(item);
           }
-          prevType = item.type;
-          if (!isLast) {
+          if (items.length) {
             item = items.shift();
           } else {
             branch.push({ combo: null, leaves: sortAST(leaves) });
@@ -384,11 +384,7 @@ export class Finder {
       }
     } else {
       this.#selectorAST = parseSelector(selector);
-      const { branches, info } = walkAST(
-        this.#selectorAST,
-        true,
-        createHasValidator(this.#window)
-      );
+      const { branches, info } = walkAST(this.#selectorAST, true);
       const {
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
@@ -829,6 +825,29 @@ export class Finder {
       } else {
         const { branches } = walkAST(ast);
         if (astName === 'has') {
+          // Check for nested :has().
+          let forgiven = false;
+          const l = astChildren.length;
+          for (let i = 0; i < l; i++) {
+            const child = astChildren[i];
+            const item = findAST(child, findLogicalWithNestedHas);
+            if (item) {
+              const itemName = item.name;
+              if (itemName === 'is' || itemName === 'where') {
+                forgiven = true;
+                break;
+              } else {
+                const css = generateCSS(ast);
+                const msg = `Invalid selector ${css}`;
+                return this.onError(
+                  generateException(msg, SYNTAX_ERR, this.#window)
+                );
+              }
+            }
+          }
+          if (forgiven) {
+            return matched;
+          }
           astData = {
             astName,
             branches

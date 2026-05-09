@@ -3122,9 +3122,7 @@ describe('local wpt test cases', () => {
         target.addEventListener(
           'keydown',
           e => {
-            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') {
-              return;
-            }
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
             e.preventDefault();
             const btns = target.querySelectorAll('button');
             const currentIndex = Array.from(btns).indexOf(
