@@ -125,7 +125,9 @@ describe('nwsapi', () => {
       let count = 0;
       const res = nw.concatCall(nodes, el => {
         count++;
-        if (el.id === 'li1') return true;
+        if (el.id === 'li1') {
+          return true;
+        }
       });
       assert.strictEqual(count, 2);
       assert.deepEqual(res, nodes);
