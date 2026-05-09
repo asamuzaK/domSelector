@@ -403,6 +403,9 @@ describe('selector static analysis and validation', () => {
     it('should NOT support unsupported pseudo-classes', () => {
       assert.strictEqual(func(getAST(':current')), false);
       assert.strictEqual(func(getAST(':fullscreen')), false);
+      assert.strictEqual(func(getAST(':popover-open')), false);
+      assert.strictEqual(func(getAST(':nth-col(1)')), false);
+      assert.strictEqual(func(getAST(':contains("foo")')), false);
       assert.strictEqual(func(getAST(':-webkit-autofill')), false);
       assert.strictEqual(func(getAST(':unknown-pseudo')), false);
     });
