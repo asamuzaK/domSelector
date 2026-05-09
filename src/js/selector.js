@@ -1,0 +1,427 @@
+/**
+ * selector.js
+ */
+
+/* import */
+import * as cssTree from 'css-tree';
+import { generateException } from './utility.js';
+
+/* constants */
+import {
+  COMBINATOR,
+  COMBO,
+  COMPOUND_I,
+  DESCEND,
+  HAS_COMPOUND,
+  KEYS_LOGICAL,
+  LOGIC_COMPLEX,
+  LOGIC_COMPOUND,
+  N_TH,
+  PS_CLASS_SELECTOR,
+  PS_ELEMENT_SELECTOR,
+  PSEUDO_CLASS,
+  SELECTOR,
+  SYNTAX_ERR,
+  TAG_TYPE,
+  TARGET_ALL,
+  TARGET_FIRST
+} from './constant.js';
+
+/* regexp */
+const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}(?:="?[A-Z\d\s-]{1,255}"?)?\]$/i;
+const REG_TAG_SIMPLE = new RegExp(`^(?:${TAG_TYPE})$`);
+const REG_EXCLUDE_BASIC =
+  /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
+const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
+const REG_LOGIC_COMPLEX = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
+);
+const REG_LOGIC_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`
+);
+const REG_LOGIC_HAS_COMPOUND = new RegExp(
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`
+);
+const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
+const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
+const REG_COMBO = new RegExp(COMBO);
+const REG_ID = /#(\D[^#.*]+)/g;
+const REG_CLASS = /\.(\D[^#.*]+)/g;
+const REG_TAG = /^([^#.]+)/;
+const REG_INVALID_SYNTAX =
+  /[+~>]\s*[+~>]|^\s*[+~>]|[+~>]\s*$|^\s*,|,\s*,|,\s*$/;
+
+/* support lists */
+export const SUPPORTED_PSEUDO_CLASSES = new Set([
+  'active',
+  'any-link',
+  'checked',
+  'closed',
+  'default',
+  'defined',
+  'dir',
+  'disabled',
+  'empty',
+  'enabled',
+  'first-child',
+  'first-of-type',
+  'focus',
+  'focus-visible',
+  'focus-within',
+  'has',
+  'host',
+  'host-context',
+  'hover',
+  'in-range',
+  'indeterminate',
+  'invalid',
+  'is',
+  'lang',
+  'last-child',
+  'last-of-type',
+  'link',
+  'local-link',
+  'not',
+  'nth-child',
+  'nth-last-child',
+  'nth-last-of-type',
+  'nth-of-type',
+  'only-child',
+  'only-of-type',
+  'open',
+  'optional',
+  'out-of-range',
+  'placeholder-shown',
+  'popover-open',
+  'read-only',
+  'read-write',
+  'required',
+  'root',
+  'scope',
+  'state',
+  'target',
+  'target-within',
+  'valid',
+  'visited',
+  'where'
+]);
+
+export const UNSUPPORTED_PSEUDO_CLASSES = new Set([
+  'autofill',
+  'blank',
+  'buffering',
+  'current',
+  'fullscreen',
+  'future',
+  'has-slotted',
+  'heading',
+  'modal',
+  'muted',
+  'past',
+  'paused',
+  'picture-in-picture',
+  'playing',
+  'seeking',
+  'stalled',
+  'user-invalid',
+  'user-valid',
+  'volume-locked',
+  '-webkit-autofill'
+]);
+
+export const UNSUPPORTED_PSEUDO_ELEMENTS = new Set([
+  'after',
+  'backdrop',
+  'before',
+  'cue',
+  'cue-region',
+  'first-letter',
+  'first-line',
+  'file-selector-button',
+  'marker',
+  'part',
+  'placeholder',
+  'selection',
+  'slotted',
+  'target-text'
+]);
+
+/**
+ * Find a nested :has() pseudo-class.
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it's :has, otherwise null.
+ */
+export const findNestedHas = leaf => leaf.name === 'has';
+
+/**
+ * Find a logical pseudo-class that contains a nested :has().
+ * @param {object} leaf - The AST leaf to check.
+ * @returns {?object} The leaf if it matches, otherwise null.
+ */
+export const findLogicalWithNestedHas = leaf => {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
+    return leaf;
+  }
+  return null;
+};
+
+/**
+ * Validates nesting restrictions within :has() arguments.
+ * @param {Array<object>} astChildren - The AST nodes representing the :has() arguments.
+ * @returns {boolean} False if there's an invalid nesting constraint violation.
+ */
+export const validateHasNesting = astChildren => {
+  const l = astChildren.length;
+  for (let i = 0; i < l; i++) {
+    const item = cssTree.find(astChildren[i], findLogicalWithNestedHas);
+    if (item) {
+      // If nested :has() is wrapped inside :is() or :where(), it is forgiven.
+      if (item.name !== 'is' && item.name !== 'where') {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+/**
+ * Creates a callback function to validate :has() nesting during AST walk.
+ * @param {object} globalObj - The global window object.
+ * @returns {function(object): void} The callback function for walkAST.
+ */
+export const createHasValidator = globalObj => node => {
+  if (
+    node.type === PS_CLASS_SELECTOR &&
+    node.name === 'has' &&
+    !validateHasNesting(Array.from(node.children || []))
+  ) {
+    const css = cssTree.generate(node);
+    throw generateException(
+      `Disallowed nested :has() pseudo-class: ${css}`,
+      SYNTAX_ERR,
+      globalObj
+    );
+  }
+};
+
+/**
+ * Check if a combinator node is invalid (leading, trailing, or consecutive).
+ * @param {string} type - The current node type.
+ * @param {string|null} prevType - The previous node type.
+ * @param {boolean} isLast - Whether the current node is the last in the list.
+ * @returns {boolean} True if the combinator is invalid.
+ */
+export const isInvalidCombinator = (type, prevType, isLast) =>
+  type === COMBINATOR &&
+  (prevType === null || prevType === COMBINATOR || isLast);
+
+/**
+ * Checks if a given AST is supported by the DOMSelector engine.
+ * @param {object} ast - The AST to validate.
+ * @returns {boolean} True if the selector is fully supported.
+ */
+export const isSupportedAST = ast => {
+  let isSupported = true;
+  const walk = (
+    node,
+    context = { insideHas: false, insideForgiving: false }
+  ) => {
+    if (!isSupported || !node) {
+      return;
+    }
+    const nextContext = { ...context };
+    if (node.type === PS_ELEMENT_SELECTOR) {
+      isSupported = false;
+      return;
+    } else if (node.type === PS_CLASS_SELECTOR) {
+      let name = node.name;
+      if (name && typeof name === 'string') {
+        name = name.toLowerCase();
+      }
+      if (!SUPPORTED_PSEUDO_CLASSES.has(name)) {
+        isSupported = false;
+        return;
+      }
+      if (name === 'has') {
+        if (context.insideHas && !context.insideForgiving) {
+          isSupported = false;
+          return;
+        }
+        nextContext.insideHas = true;
+      } else if (name === 'is' || name === 'where') {
+        nextContext.insideForgiving = true;
+      }
+    }
+    if (node.children) {
+      let prevType = null;
+      if (node.children.head !== undefined) {
+        let current = node.children.head;
+        while (current) {
+          if (!current.data) {
+            current = current.next;
+            continue;
+          }
+          const childType = current.data.type;
+          if (
+            node.type === SELECTOR &&
+            isInvalidCombinator(childType, prevType, !current.next)
+          ) {
+            if (!(prevType === null && context.insideHas)) {
+              isSupported = false;
+              return;
+            }
+          }
+          prevType = childType;
+          walk(current.data, nextContext);
+          if (!isSupported) {
+            return;
+          }
+          current = current.next;
+        }
+      } else if (Array.isArray(node.children)) {
+        const l = node.children.length;
+        for (let i = 0; i < l; i++) {
+          const child = node.children[i];
+          if (!child) {
+            continue;
+          }
+          const childType = child.type;
+          if (
+            node.type === SELECTOR &&
+            isInvalidCombinator(childType, prevType, i === l - 1)
+          ) {
+            if (!(prevType === null && context.insideHas)) {
+              isSupported = false;
+              return;
+            }
+          }
+          prevType = childType;
+          walk(child, nextContext);
+          if (!isSupported) {
+            return;
+          }
+        }
+      }
+    }
+    if (node.selector) {
+      walk(node.selector, nextContext);
+    }
+  };
+  walk(ast);
+  return isSupported;
+};
+
+/**
+ * Extracts the rightmost subject keys (id, class, tag) from a selector.
+ * @param {string} selector - The CSS selector string to parse.
+ * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
+ * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ */
+export const extractSubjectsRegExp = (selector, caseSensitive) => {
+  const subjects = [];
+  const groups = selector.split(',');
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i].trim();
+    if (!group) {
+      continue;
+    }
+    const compounds = group.split(REG_COMBO);
+    const rightmost = compounds[compounds.length - 1];
+    let idKey = null;
+    let classKey = null;
+    let tagKey = null;
+    if (rightmost) {
+      const idMatch = rightmost.match(REG_ID);
+      if (idMatch) {
+        idKey = idMatch[idMatch.length - 1].slice(1);
+      }
+      const classMatch = rightmost.match(REG_CLASS);
+      if (classMatch) {
+        classKey = classMatch[classMatch.length - 1].slice(1);
+      }
+      const tagMatch = rightmost.match(REG_TAG);
+      if (tagMatch) {
+        const tag = tagMatch[1];
+        if (tag !== '*') {
+          tagKey = caseSensitive ? tag : tag.toLowerCase();
+        }
+      }
+    }
+    subjects.push({ id: idKey, className: classKey, tag: tagKey });
+  }
+  return subjects;
+};
+
+/**
+ * Filter a selector for use with nwsapi.
+ * @param {string} selector - The selector string.
+ * @param {string} target - The target type.
+ * @returns {boolean} - True if the selector is valid for nwsapi.
+ */
+export const filterSelector = (selector, target) => {
+  const isQuerySelectorAll = target === TARGET_ALL;
+  // Basic validation and fast-fail for null/undefined/non-string values.
+  if (
+    !selector ||
+    typeof selector !== 'string' ||
+    /null|undefined/.test(selector)
+  ) {
+    return false;
+  }
+  // Validate syntax.
+  if (REG_INVALID_SYNTAX.test(selector)) {
+    return false;
+  }
+  // Exclude various complex or unsupported selectors early.
+  // i.e. non-ASCII, escaped selectors, namespaced selectors, pseudo-elements.
+  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
+    return false;
+  }
+  // Validate attribute selector integrity.
+  if (selector.includes('[')) {
+    const index = selector.lastIndexOf('[');
+    if (selector.indexOf(']', index) === -1) {
+      return false;
+    }
+  }
+  // Target-specific early exits.
+  if (target === TARGET_FIRST) {
+    return REG_ATTR_SIMPLE.test(selector);
+  }
+  if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
+    return false;
+  }
+  // Logic for pseudo-classes.
+  if (selector.includes(':')) {
+    // Exclude descendant combinators in logical selectors for querySelectorAll.
+    if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
+      return false;
+    }
+    // Determine if the selector has complex logical structures.
+    const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
+    // Handle :has() specifically.
+    if (selector.includes(':has(')) {
+      if (isQuerySelectorAll) {
+        return false;
+      }
+      if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
+        return false;
+      }
+      return REG_END_WITH_HAS.test(selector);
+    }
+    // Handle :is() and :not().
+    if (/(?:is|not)\(/.test(selector)) {
+      if (isComplex) {
+        return !REG_LOGIC_COMPLEX.test(selector);
+      } else {
+        return !REG_LOGIC_COMPOUND.test(selector);
+      }
+    }
+    // Default check for other pseudo-classes against known list.
+    if (REG_WO_LOGICAL.test(selector)) {
+      return false;
+    }
+  }
+  return true;
+};

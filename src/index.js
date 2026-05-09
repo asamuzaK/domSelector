@@ -11,10 +11,11 @@ import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst } from './js/parser.js';
 import {
+  extractSubjectsRegExp,
   filterSelector,
-  getType,
-  extractSubjectsRegExp
-} from './js/utility.js';
+  isSupportedAST
+} from './js/selector.js';
+import { getType } from './js/utility.js';
 
 /* constants */
 import {
@@ -94,7 +95,7 @@ export class DOMSelector {
       try {
         const ast = this.#finder.getAST(selector);
         subjects = extractSubjectsAst(ast);
-      } catch (e) {
+      } catch {
         // fall through
       }
     }
@@ -103,6 +104,34 @@ export class DOMSelector {
     }
     this.#cache.set(cacheKey, subjects);
     return subjects;
+  };
+
+  /**
+   * Checks if the given CSS selector is supported by this engine.
+   * @param {string} selector - The CSS selector to check.
+   * @returns {boolean} `true` if the selector is supported, `false` otherwise.
+   */
+  supports = selector => {
+    if (typeof selector !== 'string') {
+      return false;
+    }
+    const cacheKey = `supports_${selector}`;
+    let isSupported = this.#cache.get(cacheKey);
+    if (isSupported !== undefined) {
+      return isSupported;
+    }
+    if (filterSelector(selector, TARGET_SELF)) {
+      isSupported = true;
+    } else {
+      try {
+        const ast = this.#finder.getAST(selector);
+        isSupported = isSupportedAST(ast);
+      } catch {
+        isSupported = false;
+      }
+    }
+    this.#cache.set(cacheKey, isSupported);
+    return isSupported;
   };
 
   /**

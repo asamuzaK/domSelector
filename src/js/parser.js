@@ -219,9 +219,10 @@ export const parseSelector = sel => {
  * about its contents.
  * @param {object} ast - The AST to traverse.
  * @param {boolean} toObject - True if converts ast to object, false otherwise.
+ * @param {function(object): void} [callback] - Optional callback for each node.
  * @returns {{branches: Array<object>, info: object}} An object containing the selector branches and info.
  */
-export const walkAST = (ast = {}, toObject = false) => {
+export const walkAST = (ast = {}, toObject = false, callback = null) => {
   const branches = new Set();
   const info = {
     hasForgivenPseudoFunc: false,
@@ -234,6 +235,9 @@ export const walkAST = (ast = {}, toObject = false) => {
   };
   const opt = {
     enter(node) {
+      if (typeof callback === 'function') {
+        callback(node);
+      }
       switch (node.type) {
         case CLASS_SELECTOR: {
           if (/^-?\d/.test(node.name)) {
