@@ -14,7 +14,7 @@ describe('constants', () => {
   for (const [key, value] of items) {
     it('should get string, number, array or set', () => {
       assert.strictEqual(/^[A-Z][A-Z_\d]+$/.test(key), true, 'key');
-      if (key.startsWith('KEYS_')) {
+      if (key.startsWith('KEYS_') || key.endsWith('SUPPORTED')) {
         assert.strictEqual(value instanceof Set, true, 'Set value');
       } else {
         assert.strictEqual(

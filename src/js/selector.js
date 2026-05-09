@@ -21,6 +21,7 @@ import {
   PS_ELEMENT_SELECTOR,
   PSEUDO_CLASS,
   SELECTOR,
+  PS_CLASS_SUPPORTED,
   SYNTAX_ERR,
   TAG_TYPE,
   TARGET_ALL,
@@ -51,104 +52,6 @@ const REG_CLASS = /\.(\D[^#.*]+)/g;
 const REG_TAG = /^([^#.]+)/;
 const REG_INVALID_SYNTAX =
   /[+~>]\s*[+~>]|^\s*[+~>]|[+~>]\s*$|^\s*,|,\s*,|,\s*$/;
-
-/* support lists */
-export const SUPPORTED_PSEUDO_CLASSES = new Set([
-  'active',
-  'any-link',
-  'checked',
-  'closed',
-  'default',
-  'defined',
-  'dir',
-  'disabled',
-  'empty',
-  'enabled',
-  'first-child',
-  'first-of-type',
-  'focus',
-  'focus-visible',
-  'focus-within',
-  'has',
-  'host',
-  'host-context',
-  'hover',
-  'in-range',
-  'indeterminate',
-  'invalid',
-  'is',
-  'lang',
-  'last-child',
-  'last-of-type',
-  'link',
-  'local-link',
-  'not',
-  'nth-child',
-  'nth-last-child',
-  'nth-last-of-type',
-  'nth-of-type',
-  'only-child',
-  'only-of-type',
-  'open',
-  'optional',
-  'out-of-range',
-  'placeholder-shown',
-  'read-only',
-  'read-write',
-  'required',
-  'root',
-  'scope',
-  'state',
-  'target',
-  'target-within',
-  'valid',
-  'visited',
-  'where'
-]);
-
-export const UNSUPPORTED_PSEUDO_CLASSES = new Set([
-  'autofill',
-  'blank',
-  'buffering',
-  'contains',
-  'current',
-  'fullscreen',
-  'future',
-  'has-slotted',
-  'heading',
-  'modal',
-  'muted',
-  'nth-col',
-  'nth-last-col',
-  'past',
-  'paused',
-  'picture-in-picture',
-  'playing',
-  'popover-open',
-  'seeking',
-  'stalled',
-  'user-invalid',
-  'user-valid',
-  'volume-locked',
-  '-webkit-autofill'
-]);
-
-export const UNSUPPORTED_PSEUDO_ELEMENTS = new Set([
-  'after',
-  'backdrop',
-  'before',
-  'cue',
-  'cue-region',
-  'first-letter',
-  'first-line',
-  'file-selector-button',
-  'marker',
-  'part',
-  'placeholder',
-  'selection',
-  'slotted',
-  'target-text'
-]);
 
 /**
  * Find a nested :has() pseudo-class.
@@ -242,7 +145,7 @@ export const isSupportedAST = ast => {
       if (name && typeof name === 'string') {
         name = name.toLowerCase();
       }
-      if (!SUPPORTED_PSEUDO_CLASSES.has(name)) {
+      if (!PS_CLASS_SUPPORTED.has(name)) {
         isSupported = false;
         return;
       }
