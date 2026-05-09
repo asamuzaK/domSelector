@@ -129,7 +129,7 @@ export const INPUT_LTR = Object.freeze([
 export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
 
 /* lists of supported / unsupported pseudo-classes and pseudo-elements */
-export const PS_CLASS_SUPPORTED = new Set([
+export const KEYS_PS_CLASS_SUPPORTED = new Set([
   'active',
   'any-link',
   'checked',
@@ -182,7 +182,7 @@ export const PS_CLASS_SUPPORTED = new Set([
   'where'
 ]);
 
-export const PS_CLASS_UNSUPPORTED = new Set([
+export const KEYS_PS_CLASS_UNSUPPORTED = new Set([
   'autofill',
   'blank',
   'buffering',
@@ -209,7 +209,7 @@ export const PS_CLASS_UNSUPPORTED = new Set([
   '-webkit-autofill'
 ]);
 
-export const PS_ELEMENT_UNSUPPORTED = new Set([
+export const KEYS_PS_ELEMENT_UNSUPPORTED = new Set([
   'after',
   'backdrop',
   'before',

@@ -14,14 +14,14 @@ import {
   DESCEND,
   HAS_COMPOUND,
   KEYS_LOGICAL,
+  KEYS_PS_CLASS_SUPPORTED,
   LOGIC_COMPLEX,
   LOGIC_COMPOUND,
   N_TH,
+  PSEUDO_CLASS,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
-  PSEUDO_CLASS,
   SELECTOR,
-  PS_CLASS_SUPPORTED,
   SYNTAX_ERR,
   TAG_TYPE,
   TARGET_ALL,
@@ -145,7 +145,7 @@ export const isSupportedAST = ast => {
       if (name && typeof name === 'string') {
         name = name.toLowerCase();
       }
-      if (!PS_CLASS_SUPPORTED.has(name)) {
+      if (!KEYS_PS_CLASS_SUPPORTED.has(name)) {
         isSupported = false;
         return;
       }
