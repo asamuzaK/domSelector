@@ -99,7 +99,7 @@ export const validateHasNesting = astChildren => {
 export const createHasValidator = globalObj => node => {
   if (
     node.type === PS_CLASS_SELECTOR &&
-    node.name === 'has' &&
+    node.name.toLowerCase() === 'has' &&
     !validateHasNesting(Array.from(node.children || []))
   ) {
     const css = cssTree.generate(node);

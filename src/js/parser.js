@@ -22,6 +22,7 @@ import {
   HEX,
   ID_SELECTOR,
   KEYS_LOGICAL,
+  KEYS_PS_CLASS_SUPPORTED,
   NTH,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -231,7 +232,8 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
     hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
     hasNestedSelector: false,
-    hasStatePseudoClass: false
+    hasStatePseudoClass: false,
+    hasUnsupportedPseudoClass: false
   };
   const opt = {
     enter(node) {
@@ -258,24 +260,27 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEYS_LOGICAL.has(node.name)) {
+          const name = node.name.toLowerCase();
+          if (KEYS_LOGICAL.has(name)) {
             info.hasNestedSelector = true;
             info.hasLogicalPseudoFunc = true;
-            if (node.name === 'has') {
+            if (name === 'has') {
               info.hasHasPseudoFunc = true;
-            } else if (node.name === 'not') {
+            } else if (name === 'not') {
               info.hasNotPseudoFunc = true;
             } else {
               info.hasForgivenPseudoFunc = true;
             }
-          } else if (KEYS_PS_CLASS_STATE.has(node.name)) {
+          } else if (KEYS_PS_CLASS_STATE.has(name)) {
             info.hasStatePseudoClass = true;
           } else if (
-            KEYS_SHADOW_HOST.has(node.name) &&
+            KEYS_SHADOW_HOST.has(name) &&
             Array.isArray(node.children) &&
             node.children.length
           ) {
             info.hasNestedSelector = true;
+          } else if (!KEYS_PS_CLASS_SUPPORTED.has(name)) {
+            info.hasUnsupportedPseudoClass = true;
           }
           break;
         }

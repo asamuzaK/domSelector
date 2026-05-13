@@ -651,6 +651,24 @@ describe('DOMSelector', () => {
         'result'
       );
     });
+
+    it('should not throw and get result', () => {
+      const res = new DOMSelector(window).check(
+        ':unknown-pseudo',
+        document.body
+      );
+      assert.deepEqual(
+        res,
+        {
+          ast: cssTree.parse(':unknown-pseudo', {
+            context: 'selectorList'
+          }),
+          match: false,
+          pseudoElement: null
+        },
+        'result'
+      );
+    });
   });
 
   describe('matches', () => {

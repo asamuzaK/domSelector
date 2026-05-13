@@ -66,6 +66,23 @@ export class DOMSelector {
   }
 
   /**
+   * Validates a node and returns an Error if invalid.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The node to check.
+   * @param {boolean} [element] - `true` if the node must be an Element.
+   * @returns {TypeError|null} Returns a TypeError if invalid, otherwise null.
+   */
+  #validateNodeType = (node, element = false) => {
+    if (!node?.nodeType) {
+      return new this.#window.TypeError(`Unexpected type ${getType(node)}`);
+    }
+    if (element && node.nodeType !== ELEMENT_NODE) {
+      return new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
+    }
+    return null;
+  };
+
+  /**
    * Clears the internal cache of finder results.
    * @returns {void}
    */
@@ -142,12 +159,9 @@ export class DOMSelector {
    * @returns {CheckResult} An object containing the check result.
    */
   check = (selector, node, opt = {}) => {
-    if (!node?.nodeType) {
-      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      return this.#finder.onError(e, opt);
-    } else if (node.nodeType !== ELEMENT_NODE) {
-      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      return this.#finder.onError(e, opt);
+    const error = this.#validateNodeType(node, true);
+    if (error) {
+      return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
     if (
@@ -202,12 +216,9 @@ export class DOMSelector {
    * @returns {boolean} `true` if the element matches, or `false` otherwise.
    */
   matches = (selector, node, opt = {}) => {
-    if (!node?.nodeType) {
-      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      return this.#finder.onError(e, opt);
-    } else if (node.nodeType !== ELEMENT_NODE) {
-      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      return this.#finder.onError(e, opt);
+    const error = this.#validateNodeType(node, true);
+    if (error) {
+      return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
     if (
@@ -252,12 +263,9 @@ export class DOMSelector {
    * @returns {?Element} The first matching ancestor element, or `null`.
    */
   closest = (selector, node, opt = {}) => {
-    if (!node?.nodeType) {
-      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      return this.#finder.onError(e, opt);
-    } else if (node.nodeType !== ELEMENT_NODE) {
-      const e = new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-      return this.#finder.onError(e, opt);
+    const error = this.#validateNodeType(node, true);
+    if (error) {
+      return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
     if (
@@ -311,9 +319,9 @@ export class DOMSelector {
    * @returns {?Element} The first matching element, or `null`.
    */
   querySelector = (selector, node, opt = {}) => {
-    if (!node?.nodeType) {
-      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      return this.#finder.onError(e, opt);
+    const error = this.#validateNodeType(node);
+    if (error) {
+      return this.#finder.onError(error, opt);
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
@@ -362,9 +370,9 @@ export class DOMSelector {
    * @returns {Array<Element>} An array of elements, or an empty array.
    */
   querySelectorAll = (selector, node, opt = {}) => {
-    if (!node?.nodeType) {
-      const e = new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-      return this.#finder.onError(e, opt);
+    const error = this.#validateNodeType(node);
+    if (error) {
+      return this.#finder.onError(error, opt);
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;

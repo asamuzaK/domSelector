@@ -393,11 +393,13 @@ export class Finder {
         hasHasPseudoFunc,
         hasLogicalPseudoFunc,
         hasNthChildOfSelector,
-        hasStatePseudoClass
+        hasStatePseudoClass,
+        hasUnsupportedPseudoClass
       } = info;
       this.#invalidate =
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
+        hasUnsupportedPseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
