@@ -1404,6 +1404,26 @@ describe('DOMSelector', () => {
       assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
       assert.deepEqual(res, node, 'result');
     });
+
+    it('should query via fast path with wrapped node when idlUtils is present', () => {
+      const wrapperForImpl = sinon.stub().callsFake(node => node);
+      const idlUtils = { wrapperForImpl };
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window, document, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const res = domSelector.querySelector('[id="dt1"]', document);
+      assert.strictEqual(wrapperForImpl.callCount, 1, 'wrapperForImpl should be called once');
+      assert.deepEqual(res, target, 'result');
+    });
+
+    it('should query via fast path with raw node when idlUtils is absent', () => {
+      const target = document.getElementById('dt1');
+      const domSelector = new DOMSelector(window, document);
+      const res = domSelector.querySelector('[id="dt1"]', document);
+      assert.deepEqual(res, target, 'result');
+    });
   });
 
   describe('querySelectorAll', () => {

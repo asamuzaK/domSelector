@@ -20,7 +20,6 @@ import { getType } from './js/utility.js';
 /* constants */
 import {
   DOCUMENT_NODE,
-  DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   TARGET_ALL,
   TARGET_FIRST,
@@ -326,10 +325,10 @@ export class DOMSelector {
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (
+      node === this.#document &&
       document === this.#document &&
       document.contentType === 'text/html' &&
-      document.documentElement &&
-      (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
+      document.documentElement
     ) {
       const cacheKey = `querySelector_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
@@ -377,10 +376,10 @@ export class DOMSelector {
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (
+      node === this.#document &&
       document === this.#document &&
       document.contentType === 'text/html' &&
-      document.documentElement &&
-      (node.nodeType !== DOCUMENT_FRAGMENT_NODE || !node.host)
+      document.documentElement
     ) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
