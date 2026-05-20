@@ -617,7 +617,9 @@ export class Nwsapi {
       }
       return arr;
     }
-    return [];
+    return this._byTag('*', context).filter(node =>
+      node.classList.contains(cls)
+    );
   }
 
   /**
