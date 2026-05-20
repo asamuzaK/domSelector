@@ -404,6 +404,16 @@ describe('nwsapi', () => {
         assert.strictEqual(res[0].id, 'li1');
         assert.strictEqual(res[1].id, 'li2');
       });
+
+      it('_byClass() fallback should return empty array if context lacks getElementsByClassName', () => {
+        const mockContext = {
+          localName: 'div',
+          id: 'dummy'
+        };
+        const res = api._byClass('item', mockContext);
+        assert.ok(Array.isArray(res), 'Result should be an array');
+        assert.strictEqual(res.length, 0, 'Should return an empty array');
+      });
     });
 
     describe('DOM Matchers & Selectors', () => {
@@ -610,6 +620,54 @@ describe('nwsapi', () => {
         const res3 = api.select('ul:has([class="li item"])', document);
         assert.strictEqual(res3.length, 1);
         assert.strictEqual(res3[0].id, 'ul1');
+      });
+
+      it('select() should correctly evaluate the :last-of-type pseudo-class', () => {
+        const ul = document.getElementById('ul1');
+        const span1 = document.createElement('span');
+        span1.id = 'span-extra';
+        const span2 = document.createElement('span');
+        span2.id = 'span-last';
+        ul.appendChild(span1);
+        ul.appendChild(span2);
+        const resLi = api.select('li:last-of-type', ul);
+        assert.strictEqual(
+          resLi.length,
+          1,
+          'Should match the last li element even if it is not the last child'
+        );
+        assert.strictEqual(resLi[0].id, 'li3');
+        const resSpan = api.select('span:last-of-type', ul);
+        assert.strictEqual(
+          resSpan.length,
+          1,
+          'Should match the last span element'
+        );
+        assert.strictEqual(resSpan[0].id, 'span-last');
+        ul.removeChild(span1);
+        ul.removeChild(span2);
+      });
+
+      it('select() should correctly evaluate the :first-of-type pseudo-class', () => {
+        const ul = document.getElementById('ul1');
+        const span1 = document.createElement('span');
+        span1.id = 'span-first';
+        ul.insertBefore(span1, ul.firstElementChild);
+        const resLi = api.select('li:first-of-type', ul);
+        assert.strictEqual(
+          resLi.length,
+          1,
+          'Should match the first li element even if it is not the first child'
+        );
+        assert.strictEqual(resLi[0].id, 'li1');
+        const resSpan = api.select('span:first-of-type', ul);
+        assert.strictEqual(
+          resSpan.length,
+          1,
+          'Should match the first span element'
+        );
+        assert.strictEqual(resSpan[0].id, 'span-first');
+        ul.removeChild(span1);
       });
     });
 
@@ -880,6 +938,17 @@ describe('nwsapi', () => {
           'Should match attribute with namespace prefix'
         );
       });
+
+      it('_compileAttribute() should compile to if(false) when ~= value contains a space', () => {
+        const div = document.createElement('div');
+        div.setAttribute('data-test', 'foo bar');
+        const res = api.match('[data-test~="foo bar"]', div);
+        assert.strictEqual(
+          res,
+          false,
+          'Should return false when ~= search value contains spaces'
+        );
+      });
     });
 
     describe('Internal Compiler Fallbacks', () => {
@@ -900,6 +969,40 @@ describe('nwsapi', () => {
         const resDiv = api._byTag('DIV', mockContext);
         assert.strictEqual(resDiv.length, 1, 'Specific tag matches div');
         assert.strictEqual(resDiv[0].localName, 'div');
+      });
+
+      it('_byTag() fallback should iterate and collect children elements', () => {
+        const mockChild1 = { localName: 'span' };
+        const mockChild2 = { localName: 'span' };
+        const mockContext = {
+          firstElementChild: {
+            localName: 'div',
+            nextElementSibling: null,
+            getElementsByTagName: tag => {
+              if (tag === 'span' || tag === '*') {
+                return [mockChild1, mockChild2];
+              }
+              return [];
+            }
+          }
+        };
+        const resSpan = api._byTag('span', mockContext);
+        assert.strictEqual(
+          resSpan.length,
+          2,
+          'Should collect elements from children'
+        );
+        assert.strictEqual(resSpan[0].localName, 'span');
+        assert.strictEqual(resSpan[1].localName, 'span');
+        const resWildcard = api._byTag('*', mockContext);
+        assert.strictEqual(
+          resWildcard.length,
+          3,
+          'Should collect context element and its children'
+        );
+        assert.strictEqual(resWildcard[0].localName, 'div');
+        assert.strictEqual(resWildcard[1].localName, 'span');
+        assert.strictEqual(resWildcard[2].localName, 'span');
       });
 
       it('_compileSelector() should throw on unexpected characters via direct call', () => {
