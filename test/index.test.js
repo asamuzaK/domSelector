@@ -1414,7 +1414,11 @@ describe('DOMSelector', () => {
         idlUtils
       });
       const res = domSelector.querySelector('[id="dt1"]', document);
-      assert.strictEqual(wrapperForImpl.callCount, 1, 'wrapperForImpl should be called once');
+      assert.strictEqual(
+        wrapperForImpl.callCount,
+        1,
+        'wrapperForImpl should be called once'
+      );
       assert.deepEqual(res, target, 'result');
     });
 

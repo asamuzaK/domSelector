@@ -16,6 +16,7 @@
     "types"
   ],
   "type": "module",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
@@ -24,20 +25,20 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@asamuzakjp/generational-cache": "^2.0.1",
+    "@asamuzakjp/generational-cache": "^2.0.2",
     "bidi-js": "^1.0.3",
     "css-tree": "^3.2.1",
     "is-potential-custom-element-name": "^1.0.1"
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.1",
     "c8": "^11.0.0",
     "chai": "^6.2.2",
     "commander": "^14.0.3",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^62.9.0",
+    "eslint-plugin-jsdoc": "^63.0.0",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-regexp": "^3.1.0",
     "eslint-plugin-unicorn": "^64.0.0",
@@ -47,8 +48,8 @@
     "mocha": "^11.7.5",
     "neostandard": "^0.13.0",
     "prettier": "^3.8.3",
-    "sinon": "^21.1.2",
-    "tinybench": "^6.0.1",
+    "sinon": "^22.0.0",
+    "tinybench": "^6.0.2",
     "typescript": "^6.0.3",
     "wpt-runner": "^7.0.0"
   },
@@ -79,5 +80,5 @@
   "engines": {
     "node": "^22.13.0 || >=24.0.0"
   },
-  "version": "8.0.1"
+  "version": "8.0.2"
 }

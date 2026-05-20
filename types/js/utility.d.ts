@@ -1,8 +1,6 @@
 export function getType(o: object): string;
 export function verifyArray(arr: any[], type: string): any[];
 export function generateException(msg: string, name: string, globalObject?: object): DOMException;
-export function findNestedHas(leaf: object): object | null;
-export function findLogicalWithNestedHas(leaf: object): object | null;
 export function filterNodesByAnB(nodes: Array<object>, anb: {
     a: number;
     b: number;
@@ -26,11 +24,3 @@ export function isNamespaceDeclared(ns?: string, node?: object): boolean;
 export function isPreceding(nodeA: object, nodeB: object): boolean;
 export function compareNodes(a: object, b: object): number;
 export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
-export function concatNestedSelectors(selectors: Array<Array<string>>): string;
-export function extractNestedSelectors(css: string): Array<Array<string>>;
-export function extractSubjectsRegExp(selector: string, caseSensitive: boolean): Array<{
-    id: string | null;
-    className: string | null;
-    tag: string | null;
-}>;
-export function filterSelector(selector: string, target: string): boolean;

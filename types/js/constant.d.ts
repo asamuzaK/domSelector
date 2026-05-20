@@ -75,3 +75,6 @@ export const INPUT_TEXT: readonly string[];
 export const INPUT_EDIT: readonly string[];
 export const INPUT_LTR: readonly string[];
 export const KEYS_LOGICAL: Set<string>;
+export const KEYS_PS_CLASS_SUPPORTED: Set<string>;
+export const KEYS_PS_CLASS_UNSUPPORTED: Set<string>;
+export const KEYS_PS_ELEMENT_UNSUPPORTED: Set<string>;

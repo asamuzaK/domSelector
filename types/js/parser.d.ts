@@ -1,7 +1,7 @@
 export function unescapeSelector(selector?: string): string;
 export function preprocess(value: string): string;
 export function parseSelector(sel: string): object;
-export function walkAST(ast?: object, toObject?: boolean): {
+export function walkAST(ast?: object, toObject?: boolean, callback?: (arg0: object) => void): {
     branches: Array<object>;
     info: object;
 };
