@@ -8,8 +8,9 @@ The following versions of this project are currently supported with security upd
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.x.x   | :white_check_mark: |
-| < 3.0.0 | :x:                |
+| 8.x.x   | :white_check_mark: |
+| 7.x.x   | :white_check_mark: |
+| < 7.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
