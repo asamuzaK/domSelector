@@ -241,17 +241,16 @@ export class DOMSelector {
         }
       }
     }
-    let res;
     try {
       if (this.#idlUtils) {
         node = this.#idlUtils.wrapperForImpl(node);
       }
       const nodes = this.#finder.setup(selector, node, opt).find(TARGET_SELF);
-      res = nodes.size;
+      return nodes.size > 0;
     } catch (e) {
       this.#finder.onError(e, opt);
     }
-    return !!res;
+    return false;
   };
 
   /**
@@ -352,7 +351,7 @@ export class DOMSelector {
       }
       const nodes = this.#finder.setup(selector, node, opt).find(TARGET_FIRST);
       if (nodes.size) {
-        [res] = [...nodes];
+        res = nodes.values().next().value;
       }
     } catch (e) {
       this.#finder.onError(e, opt);
