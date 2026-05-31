@@ -138,6 +138,20 @@ describe('DOMSelector', () => {
       domSelector.clear();
       assert.deepEqual(domSelector.querySelector('.foo', parent), null);
     });
+
+    it('should clear all caches when true is passed', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.createElement('div');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      node.setAttribute('class', 'bar');
+      assert.deepEqual(domSelector.querySelector('.bar', parent), node);
+      assert.strictEqual(domSelector.matches('.bar', node), true);
+      node.removeAttribute('class');
+      domSelector.clear(true);
+      assert.deepEqual(domSelector.querySelector('.bar', parent), null);
+      assert.strictEqual(domSelector.matches('.bar', node), false);
+    });
   });
 
   describe('extractSubjects', () => {
@@ -888,6 +902,22 @@ describe('DOMSelector', () => {
       const res = domSelector.matches('li::before', node);
       delete node._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false when an invalid selector is passed', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('[foo=bar baz]', document.body, {
+        noexcept: true
+      });
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false when an empty selector is passed', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('', document.body, {
+        noexcept: true
+      });
       assert.strictEqual(res, false, 'result');
     });
   });

@@ -119,10 +119,11 @@ See the table below for the full list of supported selectors.
 * `selector` **{string}** CSS selector.
 * **Returns** **{boolean}** `true` if the selector is supported, `false` otherwise.
 
-### `clear()`
+### `clear(clearAll?)`
 
-Clears the internal cache of finder results to free up memory.
+Clears the internal caches to free up memory.
 
+* `clearAll` **{boolean}?** Whether to clear all caches. If false, only cached matching results are cleared. Defaults to `false`.
 * **Returns** **{void}**
 
 ## Supported CSS selectors
