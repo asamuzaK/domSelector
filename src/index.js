@@ -82,10 +82,15 @@ export class DOMSelector {
   };
 
   /**
-   * Clears the internal cache of finder results.
+   * Clears the internal caches.
+   * @param {boolean} [clearAll] - Whether to clear all caches. If false,
+   * only cached matching results are cleared.
    * @returns {void}
    */
-  clear = () => {
+  clear = (clearAll = false) => {
+    if (clearAll) {
+      this.#cache.clear();
+    }
     this.#finder.clearResults(true);
   };
 
