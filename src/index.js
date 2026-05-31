@@ -82,6 +82,17 @@ export class DOMSelector {
   };
 
   /**
+   * Determines whether Nwsapi can be used for the given document.
+   * @private
+   * @param {Document} doc - The document object to check.
+   * @returns {boolean} `true` if Nwsapi can be used, otherwise `false`.
+   */
+  #canUseNwsapi = doc =>
+    doc === this.#document &&
+    doc.contentType === 'text/html' &&
+    doc.documentElement;
+
+  /**
    * Clears the internal caches.
    * @param {boolean} [clearAll] - Whether to clear all caches. If false,
    * only cached matching results are cleared.
@@ -168,12 +179,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
-    if (
-      document === this.#document &&
-      document.contentType === 'text/html' &&
-      document.documentElement &&
-      node.parentNode
-    ) {
+    if (node.parentNode && this.#canUseNwsapi(document)) {
       const cacheKey = `check_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -206,10 +212,13 @@ export class DOMSelector {
     if (this.#idlUtils) {
       node = this.#idlUtils.wrapperForImpl(node);
     }
-    opt.check = true;
-    opt.noexcept = true;
-    opt.warn = false;
-    return this.#finder.setup(selector, node, opt).find(TARGET_SELF);
+    const options = {
+      ...opt,
+      check: true,
+      noexcept: true,
+      warn: false
+    };
+    return this.#finder.setup(selector, node, options).find(TARGET_SELF);
   };
 
   /**
@@ -225,12 +234,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
-    if (
-      document === this.#document &&
-      document.contentType === 'text/html' &&
-      document.documentElement &&
-      node.parentNode
-    ) {
+    if (node.parentNode && this.#canUseNwsapi(document)) {
       const cacheKey = `matches_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -271,12 +275,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     const document = node.ownerDocument;
-    if (
-      document === this.#document &&
-      document.contentType === 'text/html' &&
-      document.documentElement &&
-      node.parentNode
-    ) {
+    if (this.#canUseNwsapi(document) && node.parentNode) {
       const cacheKey = `closest_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -328,12 +327,7 @@ export class DOMSelector {
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (
-      node === this.#document &&
-      document === this.#document &&
-      document.contentType === 'text/html' &&
-      document.documentElement
-    ) {
+    if (node === this.#document && this.#canUseNwsapi(document)) {
       const cacheKey = `querySelector_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -379,12 +373,7 @@ export class DOMSelector {
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (
-      node === this.#document &&
-      document === this.#document &&
-      document.contentType === 'text/html' &&
-      document.documentElement
-    ) {
+    if (node === this.#document && this.#canUseNwsapi(document)) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
