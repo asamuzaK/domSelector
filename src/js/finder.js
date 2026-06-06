@@ -123,6 +123,7 @@ export class Finder {
   #nodes;
   #noexcept;
   #nthOfTypeCache;
+  #nthResultSetCache;
   #pseudoElement;
   #results;
   #root;
@@ -233,7 +234,8 @@ export class Finder {
    */
   clearResults = (all = false) => {
     this.#invalidateResults = new WeakMap();
-    this.#nthOfTypeCache = new WeakMap(); // ← これを追加
+    this.#nthOfTypeCache = new WeakMap();
+    this.#nthResultSetCache = new WeakMap(); // 【追加】
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -564,6 +566,15 @@ export class Finder {
       }
       return new Set();
     }
+    let parentResultCache = this.#nthResultSetCache.get(parentNode);
+    if (!parentResultCache) {
+      parentResultCache = new WeakMap();
+      this.#nthResultSetCache.set(parentNode, parentResultCache);
+    }
+    const cachedSet = parentResultCache.get(anb);
+    if (cachedSet) {
+      return cachedSet;
+    }
     let typeMap = this.#nthOfTypeCache.get(parentNode);
     if (!typeMap) {
       typeMap = new Map();
@@ -586,8 +597,25 @@ export class Finder {
       }
       typeMap.set(typeKey, typedSiblings);
     }
-    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
-    return new Set(matchedNodes);
+    const resultSet = new Set();
+    const a = anb.a * 1;
+    const b = anb.b * 1;
+    const isReverse = !!anb.reverse;
+    const len = typedSiblings.length;
+    for (let i = 0; i < len; i++) {
+      const index = isReverse ? len - i : i + 1;
+      if (a === 0) {
+        if (index === b) {
+          resultSet.add(typedSiblings[i]);
+        }
+      } else {
+        if ((index - b) % a === 0 && (index - b) / a >= 0) {
+          resultSet.add(typedSiblings[i]);
+        }
+      }
+    }
+    parentResultCache.set(anb, resultSet);
+    return resultSet;
   };
 
   /**
