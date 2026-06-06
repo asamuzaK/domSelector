@@ -122,11 +122,12 @@ export class Finder {
   #nodeWalker;
   #nodes;
   #noexcept;
-  #nthChildCache;
-  #nthChildResultCache;
-  #nthOfTypeCache;
-  #nthOfTypeResultCache;
-  #psIndeterminateCache;
+  #nthChildCache = new WeakMap();
+  #nthChildResultCache = new WeakMap();
+  #nthOfTypeCache = new WeakMap();
+  #nthOfTypeResultCache = new WeakMap();
+  #psDefaultCache = new WeakMap();
+  #psIndeterminateCache = new WeakMap();
   #pseudoElement;
   #results;
   #root;
@@ -235,6 +236,7 @@ export class Finder {
     this.#nthChildResultCache = new WeakMap();
     this.#nthOfTypeCache = new WeakMap();
     this.#nthOfTypeResultCache = new WeakMap();
+    this.#psDefaultCache = new WeakMap();
     this.#psIndeterminateCache = new WeakMap();
     if (all) {
       this.#results = new WeakMap();
@@ -1455,8 +1457,8 @@ export class Finder {
           break;
         }
         case 'default': {
-          // button[type="submit"], input[type="submit"], input[type="image"]
           const attrType = node.getAttribute('type');
+          // button[type="submit"], input[type="submit"], input[type="image"]
           if (
             (localName === 'button' &&
               !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
@@ -1472,42 +1474,47 @@ export class Finder {
               form = form.parentNode;
             }
             if (form) {
-              const walker = this._createTreeWalker(form);
-              let refNode = traverseNode(form, walker);
-              refNode = walker.firstChild();
-              while (refNode) {
-                const nodeName = refNode.localName;
-                const nodeAttrType = refNode.getAttribute('type');
-                let m;
-                if (nodeName === 'button') {
-                  m = !(
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_RESET.has(nodeAttrType)
-                  );
-                } else if (nodeName === 'input') {
-                  m =
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_SUBMIT.has(nodeAttrType);
-                }
-                if (m) {
-                  if (refNode === node) {
-                    matched.add(node);
+              let defaultSubmit = this.#psDefaultCache.get(form);
+              if (defaultSubmit === undefined) {
+                const walker = this._createTreeWalker(form, { force: true });
+                let refNode = traverseNode(form, walker);
+                refNode = walker.firstChild();
+                while (refNode) {
+                  const nodeName = refNode.localName;
+                  const nodeAttrType = refNode.getAttribute('type');
+                  let m;
+                  if (nodeName === 'button') {
+                    m = !(
+                      refNode.hasAttribute('type') &&
+                      KEYS_INPUT_RESET.has(nodeAttrType)
+                    );
+                  } else if (nodeName === 'input') {
+                    m =
+                      refNode.hasAttribute('type') &&
+                      KEYS_INPUT_SUBMIT.has(nodeAttrType);
                   }
-                  break;
+                  if (m) {
+                    defaultSubmit = refNode;
+                    break;
+                  }
+                  refNode = walker.nextNode();
                 }
-                refNode = walker.nextNode();
+                this.#psDefaultCache.set(form, defaultSubmit);
+              }
+              if (defaultSubmit === node) {
+                matched.add(node);
               }
             }
-            // input[type="checkbox"], input[type="radio"]
           } else if (
             localName === 'input' &&
             node.hasAttribute('type') &&
             node.hasAttribute('checked') &&
             KEYS_INPUT_CHECK.has(attrType)
           ) {
+            // input[type="checkbox"], input[type="radio"]
             matched.add(node);
-            // option
           } else if (localName === 'option' && node.hasAttribute('selected')) {
+            // option
             matched.add(node);
           }
           break;
