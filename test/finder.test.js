@@ -7397,6 +7397,31 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node1], 'result');
     });
 
+    it('should utilize cached results for identical radio button groups', () => {
+      const form = document.createElement('form');
+      const r1 = document.createElement('input');
+      r1.type = 'radio';
+      r1.name = 'test-group';
+      const r2 = document.createElement('input');
+      r2.type = 'radio';
+      r2.name = 'test-group';
+      form.appendChild(r1);
+      form.appendChild(r2);
+      document.body.appendChild(form);
+      const finder = new Finder(window);
+      finder.setup('input:indeterminate', form);
+      const ast = { name: 'indeterminate' };
+      const res1 = finder._matchPseudoClassSelector(ast, r1);
+      assert.strictEqual(res1.has(r1), true, 'first radio is indeterminate');
+      const res2 = finder._matchPseudoClassSelector(ast, r2);
+      assert.strictEqual(
+        res2.has(r2),
+        true,
+        'second radio is indeterminate from cache'
+      );
+      document.body.removeChild(form);
+    });
+
     it('should get matched node(s)', () => {
       const leaf = {
         children: null,
