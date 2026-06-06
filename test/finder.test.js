@@ -2073,6 +2073,142 @@ describe('Finder', () => {
       assert.strictEqual(res.size, 0, 'size');
       assert.deepEqual([...res], [], 'result');
     });
+
+    it('should use cached typedSiblings on subsequent calls', () => {
+      const parent = document.createElement('div');
+      const node1 = document.createElement('p');
+      const node2 = document.createElement('p');
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      const finder = new Finder(window);
+      finder.setup('p:nth-of-type(1), p:nth-of-type(2)', parent);
+      const anb1 = { a: 0, b: 1 };
+      const res1 = finder._collectNthOfType(anb1, node1);
+      assert.strictEqual(res1.size, 1, 'first call size');
+      assert.deepEqual([...res1], [node1], 'first call result');
+      const anb2 = { a: 0, b: 2 };
+      const res2 = finder._collectNthOfType(anb2, node2);
+      assert.strictEqual(res2.size, 1, 'second call size');
+      assert.deepEqual([...res2], [node2], 'second call result');
+    });
+
+    it('should get matched node(s) with namespaceURI and without prefix', () => {
+      const parent = document.createElement('div');
+      const node1 = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const node2 = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      const anb = { a: 0, b: 2 };
+      const finder = new Finder(window);
+      finder.setup(':nth-of-type(2)', node2);
+      const res = finder._collectNthOfType(anb, node2);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [node2], 'result');
+    });
+
+    it('should get matched node(s) with namespaceURI and prefix', () => {
+      const parent = document.createElement('div');
+      const node1 = document.createElementNS(
+        'http://example.com/ns',
+        'ex:custom'
+      );
+      const node2 = document.createElementNS(
+        'http://example.com/ns',
+        'ex:custom'
+      );
+      parent.appendChild(node1);
+      parent.appendChild(node2);
+      const anb = { a: 0, b: 1 };
+      const finder = new Finder(window);
+      finder.setup(':nth-of-type(1)', node1);
+      const res = finder._collectNthOfType(anb, node1);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [node1], 'result');
+    });
+
+    it('should get matched node(s) with falsy namespaceURI and falsy prefix', () => {
+      const parent = document.createElement('div');
+      const node = document.createElementNS(null, 'foo');
+      parent.appendChild(node);
+      const anb = { a: 0, b: 1 };
+      const finder = new Finder(window);
+      const res = finder._collectNthOfType(anb, node);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [node], 'result');
+    });
+
+    it('should get matched node(s) with falsy namespaceURI and truthy prefix', () => {
+      const parentNode = { firstElementChild: null };
+      const mockNode = {
+        localName: 'foo',
+        namespaceURI: null,
+        prefix: 'bar',
+        parentNode
+      };
+      parentNode.firstElementChild = mockNode;
+      mockNode.nextElementSibling = null;
+      const anb = { a: 0, b: 1 };
+      const finder = new Finder(window);
+      const res = finder._collectNthOfType(anb, mockNode);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [mockNode], 'result');
+    });
+
+    it('should evaluate edge cases safely with empty strings', () => {
+      const parentNode = { firstElementChild: null };
+      const mockNode = {
+        localName: 'foo',
+        namespaceURI: '',
+        prefix: '',
+        parentNode
+      };
+      parentNode.firstElementChild = mockNode;
+      mockNode.nextElementSibling = null;
+      const anb = { a: 0, b: 1 };
+      const finder = new Finder(window);
+      const res = finder._collectNthOfType(anb, mockNode);
+      assert.strictEqual(res.size, 1, 'size');
+      assert.deepEqual([...res], [mockNode], 'result');
+    });
+
+    it('should return the exact same Set instance for the same anb', () => {
+      const parent = document.createElement('div');
+      const p1 = document.createElement('p');
+      const p2 = document.createElement('p');
+      const p3 = document.createElement('p');
+      parent.appendChild(p1);
+      parent.appendChild(p2);
+      parent.appendChild(p3);
+      const finder = new Finder(window);
+      const anb = { a: 2, b: 0 }; // 2n
+      const res1 = finder._collectNthOfType(anb, p1);
+      assert.strictEqual(res1.size, 1, 'first call size');
+      assert.deepEqual([...res1], [p2], 'first call result');
+      const res2 = finder._collectNthOfType(anb, p2);
+      assert.strictEqual(res2.size, 1, 'second call size');
+      assert.deepEqual([...res2], [p2], 'second call result');
+      assert.strictEqual(res1, res2, 'must return the exact same Set instance');
+    });
+
+    it('should not hit the Set cache if the anb reference is different', () => {
+      const parent = document.createElement('div');
+      const p1 = document.createElement('p');
+      parent.appendChild(p1);
+      const finder = new Finder(window);
+      const anb1 = { a: 0, b: 1 };
+      const anb2 = { a: 0, b: 1 };
+      const res1 = finder._collectNthOfType(anb1, p1);
+      const res2 = finder._collectNthOfType(anb2, p1);
+      assert.strictEqual(res1.size, 1, 'first call size');
+      assert.strictEqual(res2.size, 1, 'second call size');
+      assert.notStrictEqual(res1, res2, 'must return different Set instances');
+    });
   });
 
   describe('match An+B', () => {
