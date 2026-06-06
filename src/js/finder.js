@@ -122,6 +122,7 @@ export class Finder {
   #nodeWalker;
   #nodes;
   #noexcept;
+  #nthOfTypeCache;
   #pseudoElement;
   #results;
   #root;
@@ -232,6 +233,7 @@ export class Finder {
    */
   clearResults = (all = false) => {
     this.#invalidateResults = new WeakMap();
+    this.#nthOfTypeCache = new WeakMap(); // ← これを追加
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -555,24 +557,34 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _collectNthOfType = (anb, node) => {
-    const { parentNode } = node;
+    const { localName, namespaceURI, parentNode, prefix } = node;
     if (!parentNode) {
       if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
         return new Set([node]);
       }
       return new Set();
     }
-    const typedSiblings = [];
-    let sibling = parentNode.firstElementChild;
-    while (sibling) {
-      if (
-        sibling.localName === node.localName &&
-        sibling.namespaceURI === node.namespaceURI &&
-        sibling.prefix === node.prefix
-      ) {
-        typedSiblings.push(sibling);
+    let typeMap = this.#nthOfTypeCache.get(parentNode);
+    if (!typeMap) {
+      typeMap = new Map();
+      this.#nthOfTypeCache.set(parentNode, typeMap);
+    }
+    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
+    let typedSiblings = typeMap.get(typeKey);
+    if (!typedSiblings) {
+      typedSiblings = [];
+      let sibling = parentNode.firstElementChild;
+      while (sibling) {
+        if (
+          sibling.localName === localName &&
+          sibling.namespaceURI === namespaceURI &&
+          sibling.prefix === prefix
+        ) {
+          typedSiblings.push(sibling);
+        }
+        sibling = sibling.nextElementSibling;
       }
-      sibling = sibling.nextElementSibling;
+      typeMap.set(typeKey, typedSiblings);
     }
     const matchedNodes = filterNodesByAnB(typedSiblings, anb);
     return new Set(matchedNodes);
