@@ -105,25 +105,27 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
 export class Finder {
   /* private fields */
   #ast;
-  #astCache;
+  #astCache = new WeakMap();
   #check;
   #descendant;
   #document;
-  #documentCache;
+  #documentCache = new WeakMap();
   #documentURL;
-  #event;
+  #event = null;
   #eventHandlers;
-  #filterLeavesCache;
-  #focus;
+  #filterLeavesCache = new WeakMap();
+  #focus = null;
   #invalidate;
   #invalidateResults;
-  #lastFocusVisible;
+  #lastFocusVisible = null;
   #node;
   #nodeWalker;
   #nodes;
   #noexcept;
+  #nthChildCache;
+  #nthChildResultCache;
   #nthOfTypeCache;
-  #nthResultSetCache;
+  #nthOfTypeResultCache;
   #pseudoElement;
   #results;
   #root;
@@ -143,11 +145,6 @@ export class Finder {
    */
   constructor(window) {
     this.#window = window;
-    this.#astCache = new WeakMap();
-    this.#documentCache = new WeakMap();
-    this.#event = null;
-    this.#focus = null;
-    this.#lastFocusVisible = null;
     this.#eventHandlers = new Set([
       {
         keys: ['focus', 'focusin'],
@@ -162,7 +159,6 @@ export class Finder {
         handler: this._handleMouseEvent
       }
     ]);
-    this.#filterLeavesCache = new WeakMap();
     this._registerEventListeners();
     this.clearResults(true);
   }
@@ -234,8 +230,10 @@ export class Finder {
    */
   clearResults = (all = false) => {
     this.#invalidateResults = new WeakMap();
+    this.#nthChildCache = new WeakMap();
+    this.#nthChildResultCache = new WeakMap();
     this.#nthOfTypeCache = new WeakMap();
-    this.#nthResultSetCache = new WeakMap(); // 【追加】
+    this.#nthOfTypeResultCache = new WeakMap();
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -509,7 +507,7 @@ export class Finder {
    * @param {number} anb.a - The 'a' value.
    * @param {number} anb.b - The 'b' value.
    * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} [anb.selector] - The AST.
+   * @param {object} [anb.selector] - The selector for 'of S'.
    * @param {object} node - The Element node.
    * @param {object} opt - Options.
    * @returns {Set.<object>} A collection of matched nodes.
@@ -566,10 +564,10 @@ export class Finder {
       }
       return new Set();
     }
-    let parentResultCache = this.#nthResultSetCache.get(parentNode);
+    let parentResultCache = this.#nthOfTypeResultCache.get(parentNode);
     if (!parentResultCache) {
       parentResultCache = new WeakMap();
-      this.#nthResultSetCache.set(parentNode, parentResultCache);
+      this.#nthOfTypeResultCache.set(parentNode, parentResultCache);
     }
     const cachedSet = parentResultCache.get(anb);
     if (cachedSet) {
@@ -597,23 +595,8 @@ export class Finder {
       }
       typeMap.set(typeKey, typedSiblings);
     }
-    const resultSet = new Set();
-    const a = anb.a * 1;
-    const b = anb.b * 1;
-    const isReverse = !!anb.reverse;
-    const len = typedSiblings.length;
-    for (let i = 0; i < len; i++) {
-      const index = isReverse ? len - i : i + 1;
-      if (a === 0) {
-        if (index === b) {
-          resultSet.add(typedSiblings[i]);
-        }
-      } else {
-        if ((index - b) % a === 0 && (index - b) / a >= 0) {
-          resultSet.add(typedSiblings[i]);
-        }
-      }
-    }
+    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
+    const resultSet = new Set(matchedNodes);
     parentResultCache.set(anb, resultSet);
     return resultSet;
   };
