@@ -534,16 +534,34 @@ export class Finder {
       }
       return matchedNode;
     }
-    const selectorBranches = selector
-      ? this._getSelectorBranches(selector)
-      : null;
-    const children = this._getFilteredChildren(
-      parentNode,
-      selectorBranches,
-      opt
-    );
-    const matchedNodes = filterNodesByAnB(children, anb);
-    return new Set(matchedNodes);
+    if (selector) {
+      const selectorBranches = this._getSelectorBranches(selector);
+      const children = this._getFilteredChildren(
+        parentNode,
+        selectorBranches,
+        opt
+      );
+      const matchedNodes = filterNodesByAnB(children, anb);
+      return new Set(matchedNodes);
+    }
+    let parentResultCache = this.#nthChildResultCache.get(parentNode);
+    if (!parentResultCache) {
+      parentResultCache = new WeakMap();
+      this.#nthChildResultCache.set(parentNode, parentResultCache);
+    }
+    const cachedSet = parentResultCache.get(anb);
+    if (cachedSet) {
+      return cachedSet;
+    }
+    let siblings = this.#nthChildCache.get(parentNode);
+    if (!siblings) {
+      siblings = this._getFilteredChildren(parentNode, null, opt);
+      this.#nthChildCache.set(parentNode, siblings);
+    }
+    const matchedNodes = filterNodesByAnB(siblings, anb);
+    const resultSet = new Set(matchedNodes);
+    parentResultCache.set(anb, resultSet);
+    return resultSet;
   };
 
   /**

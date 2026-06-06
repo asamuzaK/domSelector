@@ -1815,6 +1815,40 @@ describe('Finder', () => {
       assert.strictEqual(res.size, 1, 'size');
       assert.deepEqual([...res], [node], 'result');
     });
+
+    it('should return the same instance for the same anb reference', () => {
+      const parent = document.createElement('div');
+      const p1 = document.createElement('p');
+      const p2 = document.createElement('p');
+      const p3 = document.createElement('p');
+      parent.appendChild(p1);
+      parent.appendChild(p2);
+      parent.appendChild(p3);
+      const finder = new Finder(window);
+      const anb = { a: 2, b: 0 }; // 2n
+      const res1 = finder._collectNthChild(anb, p1);
+      assert.strictEqual(res1.size, 1, 'first call size');
+      assert.deepEqual([...res1], [p2], 'first call result');
+      const res2 = finder._collectNthChild(anb, p2);
+      assert.strictEqual(res2.size, 1, 'second call size');
+      assert.deepEqual([...res2], [p2], 'second call result');
+      assert.strictEqual(res1, res2, 'must return the exact same Set instance');
+    });
+
+    it('should not hit the cache if the anb reference is different', () => {
+      const parent = document.createElement('div');
+      const p1 = document.createElement('p');
+      parent.appendChild(p1);
+      const finder = new Finder(window);
+      const anb1 = { a: 0, b: 1 };
+      // Same values, different reference
+      const anb2 = { a: 0, b: 1 };
+      const res1 = finder._collectNthChild(anb1, p1);
+      const res2 = finder._collectNthChild(anb2, p1);
+      assert.strictEqual(res1.size, 1, 'first call size');
+      assert.strictEqual(res2.size, 1, 'second call size');
+      assert.notStrictEqual(res1, res2, 'must return different Set instances');
+    });
   });
 
   describe('collect nth of type', () => {
