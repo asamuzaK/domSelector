@@ -128,6 +128,7 @@ export class Finder {
   #nthOfTypeResultCache = new WeakMap();
   #psDefaultCache = new WeakMap();
   #psIndeterminateCache = new WeakMap();
+  #psValidCache = new WeakMap();
   #pseudoElement;
   #results;
   #root;
@@ -238,6 +239,7 @@ export class Finder {
     this.#nthOfTypeResultCache = new WeakMap();
     this.#psDefaultCache = new WeakMap();
     this.#psIndeterminateCache = new WeakMap();
+    this.#psValidCache = new WeakMap();
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -1540,30 +1542,33 @@ export class Finder {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
-            const walker = this._createTreeWalker(node);
-            let refNode = traverseNode(node, walker);
-            refNode = walker.firstChild();
-            let valid;
-            if (!refNode) {
-              valid = true;
-            } else {
-              while (refNode) {
-                if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-                  if (refNode.checkValidity()) {
-                    if (refNode.maxLength >= 0) {
-                      valid = refNode.maxLength >= refNode.value.length;
+            let valid = this.#psValidCache.get(node);
+            if (valid === undefined && !this.#psValidCache.has(node)) {
+              const walker = this._createTreeWalker(node, { force: true });
+              let refNode = traverseNode(node, walker);
+              refNode = walker.firstChild();
+              if (!refNode) {
+                valid = true;
+              } else {
+                while (refNode) {
+                  if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
+                    if (refNode.checkValidity()) {
+                      if (refNode.maxLength >= 0) {
+                        valid = refNode.maxLength >= refNode.value.length;
+                      } else {
+                        valid = true;
+                      }
                     } else {
-                      valid = true;
+                      valid = false;
                     }
-                  } else {
-                    valid = false;
+                    if (!valid) {
+                      break;
+                    }
                   }
-                  if (!valid) {
-                    break;
-                  }
+                  refNode = walker.nextNode();
                 }
-                refNode = walker.nextNode();
               }
+              this.#psValidCache.set(node, valid);
             }
             if (valid) {
               if (astName === 'valid') {
