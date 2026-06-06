@@ -126,6 +126,7 @@ export class Finder {
   #nthChildResultCache;
   #nthOfTypeCache;
   #nthOfTypeResultCache;
+  #psIndeterminateCache;
   #pseudoElement;
   #results;
   #root;
@@ -234,6 +235,7 @@ export class Finder {
     this.#nthChildResultCache = new WeakMap();
     this.#nthOfTypeCache = new WeakMap();
     this.#nthOfTypeResultCache = new WeakMap();
+    this.#psIndeterminateCache = new WeakMap();
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -1415,27 +1417,36 @@ export class Finder {
             if (!parent) {
               parent = this.#document.documentElement;
             }
-            const walker = this._createTreeWalker(parent);
-            let refNode = traverseNode(parent, walker);
-            refNode = walker.firstChild();
-            let checked;
-            while (refNode) {
-              if (
-                refNode.localName === 'input' &&
-                refNode.getAttribute('type') === 'radio'
-              ) {
-                if (refNode.hasAttribute('name')) {
-                  if (refNode.getAttribute('name') === nodeName) {
+            let parentCache = this.#psIndeterminateCache.get(parent);
+            if (!parentCache) {
+              parentCache = new Map();
+              this.#psIndeterminateCache.set(parent, parentCache);
+            }
+            let checked = parentCache.get(nodeName);
+            if (checked === undefined) {
+              const walker = this._createTreeWalker(parent, { force: true });
+              let refNode = traverseNode(parent, walker);
+              refNode = walker.firstChild();
+              while (refNode) {
+                if (
+                  refNode.localName === 'input' &&
+                  refNode.getAttribute('type') === 'radio'
+                ) {
+                  if (refNode.hasAttribute('name')) {
+                    if (refNode.getAttribute('name') === nodeName) {
+                      checked = !!refNode.checked;
+                    }
+                  } else {
                     checked = !!refNode.checked;
                   }
-                } else {
-                  checked = !!refNode.checked;
+                  if (checked) {
+                    break;
+                  }
                 }
-                if (checked) {
-                  break;
-                }
+                refNode = walker.nextNode();
               }
-              refNode = walker.nextNode();
+              checked = !!checked;
+              parentCache.set(nodeName, checked);
             }
             if (!checked) {
               matched.add(node);

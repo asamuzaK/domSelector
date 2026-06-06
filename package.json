@@ -71,6 +71,7 @@
     "bench:cache": "node benchmark/bench-cache.js",
     "bench:nwsapi": "node benchmark/bench-nwsapi.js",
     "bench:nth": "node benchmark/bench-nth-child.js && node benchmark/bench-nth-of-type.js",
+    "bench:ps-state": "node benchmark/bench-indeterminate.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",
     "test": "c8 --reporter=text mocha --exit test/**/*.test.js",
