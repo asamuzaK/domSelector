@@ -9,7 +9,12 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
 import * as util from '../src/js/utility.js';
-import { SHOW_CONTAINER } from '../src/js/constant.js';
+import {
+  CLASS_SELECTOR,
+  ID_SELECTOR,
+  SHOW_CONTAINER,
+  TYPE_SELECTOR
+} from '../src/js/constant.js';
 
 describe('utility functions', () => {
   const domStr = `<!doctype html>
@@ -2808,6 +2813,188 @@ describe('utility functions', () => {
       const nodes = new Set([node2, node1, node3, node1]);
       const res = func(nodes);
       assert.deepEqual([...res], [node1, node2, node3], 'result');
+    });
+  });
+
+  describe('findBestSeed', () => {
+    const func = util.findBestSeed;
+
+    it('should return initial state when no nodes match', () => {
+      const nodes = [{ type: 999, name: 'dummy' }];
+      const res = func(nodes);
+      assert.deepEqual(res, { seed: null, priority: 0 });
+    });
+
+    it('should find TYPE_SELECTOR and ignore universal selector (*)', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: '*' }, // ignored
+        { type: TYPE_SELECTOR, name: 'div' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'tag', value: 'div' });
+      assert.strictEqual(res.priority, 1);
+    });
+
+    it('should find CLASS_SELECTOR and overwrite TYPE_SELECTOR', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: 'div' },
+        { type: CLASS_SELECTOR, name: 'active' } // overwrites priority
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'active' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should find ID_SELECTOR and overwrite CLASS_SELECTOR', () => {
+      const nodes = [
+        { type: CLASS_SELECTOR, name: 'active' },
+        { type: ID_SELECTOR, name: 'target' }, // overwrites priority
+        { type: TYPE_SELECTOR, name: 'div' } // ignored
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'id', value: 'target' });
+      assert.strictEqual(res.priority, 3);
+    });
+
+    it('should stop traversal immediately when ID_SELECTOR is found', () => {
+      const nodes = [
+        { type: ID_SELECTOR, name: 'first-id' },
+        { type: ID_SELECTOR, name: 'second-id' }
+      ];
+      const res = func(nodes);
+      // It should keep the first ID found because it returns early.
+      assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
+    });
+
+    it('should traverse nested arrays', () => {
+      const nodes = [
+        [{ type: TYPE_SELECTOR, name: 'span' }],
+        [{ type: CLASS_SELECTOR, name: 'inner' }]
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'inner' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should traverse node.children recursively', () => {
+      const nodes = [
+        {
+          type: 999,
+          children: [
+            { type: TYPE_SELECTOR, name: 'p' },
+            {
+              type: 999,
+              children: [{ type: CLASS_SELECTOR, name: 'deep' }]
+            }
+          ]
+        }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'deep' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should return immediately if initial state priority is 3', () => {
+      const nodes = [
+        { type: CLASS_SELECTOR, name: 'new-class' },
+        { type: ID_SELECTOR, name: 'new-id' }
+      ];
+      const initialState = {
+        seed: { type: 'id', value: 'existing-id' },
+        priority: 3
+      };
+      const res = func(nodes, initialState);
+      assert.deepEqual(res.seed, { type: 'id', value: 'existing-id' });
+      assert.strictEqual(res.priority, 3);
+    });
+
+    it('should break loop and skip remaining nodes once ID is found', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: 'div' },
+        { type: ID_SELECTOR, name: 'first-id' },
+        { type: ID_SELECTOR, name: 'second-id' },
+        null,
+        [{ type: ID_SELECTOR, name: 'third-id' }]
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
+      assert.strictEqual(res.priority, 3);
+    });
+  });
+
+  describe('populateHasAllowlist', () => {
+    const func = util.populateHasAllowlist;
+
+    it('should populate allowlist with the element, its siblings, and its parent', () => {
+      const parent = document.createElement('div');
+      const prevSibling = document.createElement('div');
+      const target = document.createElement('div');
+      const nextSibling = document.createElement('div');
+      parent.append(prevSibling, target, nextSibling);
+      const allowlistSet = new WeakSet();
+      const visitedAncestors = new Set();
+      func(target, allowlistSet, visitedAncestors);
+      assert.strictEqual(allowlistSet.has(target), true);
+      assert.strictEqual(allowlistSet.has(prevSibling), true);
+      assert.strictEqual(allowlistSet.has(nextSibling), true);
+      assert.strictEqual(allowlistSet.has(parent), true);
+      assert.strictEqual(visitedAncestors.has(target), true);
+      assert.strictEqual(visitedAncestors.has(parent), true);
+    });
+
+    it('should traverse upwards through multiple ancestors', () => {
+      const grandParent = document.createElement('div');
+      const parent = document.createElement('div');
+      const target = document.createElement('div');
+      grandParent.append(parent);
+      parent.append(target);
+      const allowlistSet = new WeakSet();
+      const visitedAncestors = new Set();
+      func(target, allowlistSet, visitedAncestors);
+      assert.strictEqual(allowlistSet.has(target), true);
+      assert.strictEqual(allowlistSet.has(parent), true);
+      assert.strictEqual(allowlistSet.has(grandParent), true);
+    });
+
+    it('should short-circuit and break loop if an ancestor is already visited', () => {
+      const grandParent = document.createElement('div');
+      const parent = document.createElement('div');
+      const parentSibling = document.createElement('div');
+      const target = document.createElement('div');
+      grandParent.append(parent, parentSibling);
+      parent.append(target);
+      const allowlistSet = new WeakSet();
+      const visitedAncestors = new Set();
+      visitedAncestors.add(parent);
+      func(target, allowlistSet, visitedAncestors);
+      assert.strictEqual(allowlistSet.has(target), true);
+      assert.strictEqual(allowlistSet.has(parent), true);
+      assert.strictEqual(allowlistSet.has(parentSibling), false);
+      assert.strictEqual(allowlistSet.has(grandParent), false);
+    });
+
+    it('should handle DOCUMENT_FRAGMENT_NODE correctly', () => {
+      const frag = document.createDocumentFragment(); // nodeType === 11
+      const target = document.createElement('div');
+      frag.append(target);
+      const allowlistSet = new WeakSet();
+      const visitedAncestors = new Set();
+      func(target, allowlistSet, visitedAncestors);
+      assert.strictEqual(allowlistSet.has(target), true);
+      assert.strictEqual(allowlistSet.has(frag), true);
+      assert.strictEqual(visitedAncestors.has(frag), true);
+    });
+
+    it('should safely ignore non-element nodes in the while loop', () => {
+      const parent = document.createElement('div');
+      const textNode = document.createTextNode('text');
+      parent.append(textNode);
+      const allowlistSet = new WeakSet();
+      const visitedAncestors = new Set();
+      func(textNode, allowlistSet, visitedAncestors);
+      assert.strictEqual(allowlistSet.has(textNode), true);
+      assert.strictEqual(visitedAncestors.has(textNode), false);
+      assert.strictEqual(allowlistSet.has(parent), false);
     });
   });
 });

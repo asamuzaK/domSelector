@@ -22,11 +22,13 @@ import {
 import { createHasValidator, isInvalidCombinator } from './selector.js';
 import {
   filterNodesByAnB,
+  findBestSeed,
   generateException,
   isCustomElement,
   isFocusVisible,
   isFocusableArea,
   isVisible,
+  populateHasAllowlist,
   resolveContent,
   sortNodes,
   traverseNode
@@ -40,6 +42,7 @@ import {
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   FORM_PARTS,
+  HEX,
   ID_SELECTOR,
   INPUT_CHECK,
   INPUT_DATE,
@@ -132,6 +135,7 @@ export class Finder {
   #nthOfTypeResultCache = new WeakMap();
   #psDefaultCache = new WeakMap();
   #psDirCache = new WeakMap();
+  #psHasFilterCache = null;
   #psIndeterminateCache = new WeakMap();
   #psLangCache = new WeakMap();
   #psValidCache = new WeakMap();
@@ -248,6 +252,7 @@ export class Finder {
     this.#nthOfTypeResultCache = new WeakMap();
     this.#psDefaultCache = new WeakMap();
     this.#psDirCache = new WeakMap();
+    this.#psHasFilterCache = null;
     this.#psLangCache = new WeakMap();
     this.#psIndeterminateCache = new WeakMap();
     this.#psValidCache = new WeakMap();
@@ -755,7 +760,65 @@ export class Finder {
   };
 
   /**
-   * Evaluates the :has() pseudo-class.
+   * Builds an Allowlist for the :has() branch using a sparse seed element.
+   * @private
+   * @param {Array} leaves - The AST leaves of the selector branch.
+   * @returns {object|null} The wrapper object containing the WeakSet, or null if defaulted.
+   */
+  _buildHasAllowlist = leaves => {
+    const { seed } = findBestSeed(leaves);
+    if (!seed) {
+      return null;
+    }
+    if (this.#shadow || this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+      return null;
+    }
+    let seedElements = null;
+    let isSingleNode = false;
+    if (seed.type === 'id') {
+      if (typeof this.#root.getElementById === 'function') {
+        const node = this.#root.getElementById(seed.value);
+        if (node) {
+          seedElements = node;
+          isSingleNode = true;
+        }
+      }
+    } else if (seed.type === 'class') {
+      if (typeof this.#root.getElementsByClassName === 'function') {
+        seedElements = this.#root.getElementsByClassName(seed.value);
+      }
+    } else if (seed.type === 'tag') {
+      if (typeof this.#root.getElementsByTagName === 'function') {
+        seedElements = this.#root.getElementsByTagName(seed.value);
+      }
+    }
+    if (!seedElements) {
+      return null;
+    }
+    const len = isSingleNode ? 1 : seedElements.length;
+    if (len === 0 || len > HEX * HEX) {
+      return null;
+    }
+    const filterResult = {
+      seeded: true,
+      set: new WeakSet()
+    };
+    const list = filterResult.set;
+    const visitedAncestors = new Set();
+    if (this.#node) {
+      list.add(this.#node);
+    }
+    for (let i = 0; i < len; i++) {
+      const current = isSingleNode ? seedElements : seedElements[i];
+      if (current) {
+        populateHasAllowlist(current, list, visitedAncestors);
+      }
+    }
+    return filterResult;
+  };
+
+  /**
+   * Evaluates :has() pseudo-class.
    * @private
    * @param {object} astData - The AST data.
    * @param {object} node - The Element node.
@@ -765,9 +828,28 @@ export class Finder {
   _evaluateHasPseudo = (astData, node, opt = {}) => {
     const { branches } = astData;
     let bool = false;
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const leaves = branches[i];
+    if (!this.#psHasFilterCache) {
+      this.#psHasFilterCache = new WeakMap();
+    }
+    let rootCache = this.#psHasFilterCache.get(this.#root);
+    if (!rootCache) {
+      rootCache = new WeakMap();
+      this.#psHasFilterCache.set(this.#root, rootCache);
+    }
+    for (const leaves of branches) {
+      if (!rootCache.has(leaves)) {
+        const filterResult = this._buildHasAllowlist(leaves);
+        rootCache.set(leaves, filterResult);
+      }
+      const allowlist = rootCache.get(leaves);
+      if (
+        allowlist &&
+        allowlist.seeded &&
+        node.nodeType !== DOCUMENT_FRAGMENT_NODE &&
+        !allowlist.set.has(node)
+      ) {
+        continue;
+      }
       bool = this._matchHasPseudoFunc(leaves, node, opt);
       if (bool) {
         break;
@@ -935,8 +1017,8 @@ export class Finder {
             branches,
             twigBranches
           };
-          this.#astCache.set(ast, astData);
         }
+        this.#astCache.set(ast, astData);
       }
       const res = this._matchLogicalPseudoFunc(astData, node, opt);
       if (res) {

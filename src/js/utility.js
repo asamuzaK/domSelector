@@ -8,17 +8,20 @@ import isCustomElementName from 'is-potential-custom-element-name';
 
 /* constants */
 import {
+  CLASS_SELECTOR,
   DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING,
   ELEMENT_NODE,
+  ID_SELECTOR,
   INPUT_BUTTON,
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
   TEXT_NODE,
   TYPE_FROM,
+  TYPE_SELECTOR,
   TYPE_TO
 } from './constant.js';
 const KEYS_DIR_AUTO = new Set([...INPUT_BUTTON, ...INPUT_TEXT, 'hidden']);
@@ -829,4 +832,81 @@ export const sortNodes = (nodes = []) => {
     arr.sort(compareNodes);
   }
   return arr;
+};
+
+/**
+ * Traverses AST nodes to find the most optimal seed selector
+ * (ID > Class > Tag).
+ * @param {Array} nodes - AST nodes to traverse.
+ * @param {object} [state] - The current state of the search.
+ * @returns {object} The search state containing the best seed.
+ */
+export const findBestSeed = (nodes, state = { seed: null, priority: 0 }) => {
+  for (const node of nodes) {
+    if (state.priority === 3) {
+      return state;
+    }
+    if (Array.isArray(node)) {
+      findBestSeed(node, state);
+    } else if (node && typeof node === 'object') {
+      // ID Selector (Fastest: getElementById)
+      if (node.type === ID_SELECTOR) {
+        state.seed = { type: 'id', value: node.name };
+        state.priority = 3;
+        return state;
+      } else if (node.type === CLASS_SELECTOR && state.priority < 2) {
+        // Class Selector (Faster: getElementsByClassName)
+        state.seed = { type: 'class', value: node.name };
+        state.priority = 2;
+      } else if (
+        node.type === TYPE_SELECTOR &&
+        state.priority < 1 &&
+        node.name !== '*'
+      ) {
+        // Type/Tag Selector (Excludes universal '*')
+        state.seed = { type: 'tag', value: node.name };
+        state.priority = 1;
+      }
+      if (node.children) {
+        findBestSeed(node.children, state);
+      }
+    }
+  }
+  return state;
+};
+
+/**
+ * Traces the DOM tree upwards and sideways from a seed element,
+ * populating the allowlist with safe paths for :has() evaluation.
+ * @param {object} current - The starting seed element.
+ * @param {WeakSet} list - The WeakSet to populate.
+ * @param {Set} visitedAncestors - The Set to track visited nodes.
+ * @returns {void}
+ */
+export const populateHasAllowlist = (current, list, visitedAncestors) => {
+  list.add(current);
+  while (
+    current &&
+    (current.nodeType === ELEMENT_NODE ||
+      current.nodeType === DOCUMENT_FRAGMENT_NODE)
+  ) {
+    if (visitedAncestors.has(current)) {
+      break;
+    }
+    visitedAncestors.add(current);
+    let sibling = current.previousElementSibling;
+    while (sibling) {
+      list.add(sibling);
+      sibling = sibling.previousElementSibling;
+    }
+    sibling = current.nextElementSibling;
+    while (sibling) {
+      list.add(sibling);
+      sibling = sibling.nextElementSibling;
+    }
+    current = current.parentNode;
+    if (current) {
+      list.add(current);
+    }
+  }
 };
