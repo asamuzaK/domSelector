@@ -7980,6 +7980,52 @@ describe('local wpt test cases', () => {
     });
   });
 
+  describe('to-upstream/dom/nodes/ParentNode-querySelectorAll-svg-append.html', () => {
+    it('should get matched node', () => {
+      const html = `
+        <svg></svg>
+        <div id="div">
+          <p id="p">foo</p>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const div = document.querySelector('div');
+      const ps = div.querySelectorAll('div p');
+      assert.deepEqual(ps, [document.getElementById('p')], 'result');
+    });
+
+    it('should get matched node', () => {
+      const html = `
+        <svg></svg>
+        <div id="div">
+          <p id="p">foo</p>
+        </div>
+      `;
+      document.body.innerHTML = html;
+      const svg = document.querySelector('svg');
+      const svgns = 'http://www.w3.org/2000/svg';
+      const g = document.createElementNS(svgns, 'g');
+      svg.append(g);
+      const circle = document.createElementNS(svgns, 'circle');
+      circle.id = 'circle1';
+      g.append(circle);
+      const circles1 = g.querySelectorAll('g circle');
+      assert.deepEqual(
+        circles1,
+        [document.getElementById('circle1')],
+        'descendant'
+      );
+      const circles2 = g.querySelectorAll('g>circle');
+      assert.deepEqual(circles2, [document.getElementById('circle1')], 'child');
+      const circles3 = g.querySelectorAll('circle');
+      assert.deepEqual(
+        circles3,
+        [document.getElementById('circle1')],
+        'tagname'
+      );
+    });
+  });
+
   describe('to-upstream/dom/nodes/ParentNode-querySelector-parent-context.html', () => {
     it('should get matched node', () => {
       const html = `

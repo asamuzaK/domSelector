@@ -14632,12 +14632,18 @@ describe('Finder', () => {
                   ]
                 }
               ],
-              dir: 'next',
-              filtered: false,
-              find: false
+              dir: 'prev',
+              filtered: true,
+              find: true
             }
           ],
-          [[]]
+          [
+            [
+              document.getElementById('li1'),
+              document.getElementById('li2'),
+              document.getElementById('li3')
+            ]
+          ]
         ],
         'result'
       );

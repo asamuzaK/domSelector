@@ -617,7 +617,13 @@ export class Finder {
       parentResultCache = new WeakMap();
       this.#nthOfTypeResultCache.set(parentNode, parentResultCache);
     }
-    const cachedSet = parentResultCache.get(anb);
+    let typeResultMap = parentResultCache.get(anb);
+    if (!typeResultMap) {
+      typeResultMap = new Map();
+      parentResultCache.set(anb, typeResultMap);
+    }
+    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
+    const cachedSet = typeResultMap.get(typeKey);
     if (cachedSet) {
       return cachedSet;
     }
@@ -626,7 +632,6 @@ export class Finder {
       typeMap = new Map();
       this.#nthOfTypeCache.set(parentNode, typeMap);
     }
-    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
     let typedSiblings = typeMap.get(typeKey);
     if (!typedSiblings) {
       typedSiblings = [];
@@ -645,7 +650,7 @@ export class Finder {
     }
     const matchedNodes = filterNodesByAnB(typedSiblings, anb);
     const resultSet = new Set(matchedNodes);
-    parentResultCache.set(anb, resultSet);
+    typeResultMap.set(typeKey, resultSet);
     return resultSet;
   };
 
@@ -2463,8 +2468,8 @@ export class Finder {
       this.#nodeWalker = this._createTreeWalker(this.#node);
     }
     return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
-      startNode: node,
-      ...traversalOpts
+      ...traversalOpts,
+      startNode: node
     });
   };
 
@@ -2795,31 +2800,20 @@ export class Finder {
     const {
       leaves: [{ name: lastName, type: lastType }]
     } = lastTwig;
-    const { combo: firstCombo } = firstTwig;
     if (
       this.#selector.includes(':scope') ||
       lastType === PS_ELEMENT_SELECTOR ||
       lastType === ID_SELECTOR
     ) {
       return { dir: DIR_PREV, twig: lastTwig };
-    }
-    if (firstType === ID_SELECTOR) {
+    } else if (firstType === ID_SELECTOR) {
       return { dir: DIR_NEXT, twig: firstTwig };
-    }
-    if (firstName === '*' && firstType === TYPE_SELECTOR) {
+    } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
       return { dir: DIR_PREV, twig: lastTwig };
-    }
-    if (lastName === '*' && lastType === TYPE_SELECTOR) {
+    } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
       return { dir: DIR_NEXT, twig: firstTwig };
-    }
-    if (branchLen === 2) {
-      if (targetType === TARGET_FIRST) {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
-      const { name: comboName } = firstCombo;
-      if (comboName === '+' || comboName === '~') {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
+    } else if (branchLen === 1 || branchLen === 2) {
+      return { dir: DIR_PREV, twig: lastTwig };
     } else if (branchLen > 2 && this.#scoped && targetType === TARGET_FIRST) {
       if (lastType === TYPE_SELECTOR) {
         return { dir: DIR_PREV, twig: lastTwig };
@@ -3044,7 +3038,6 @@ export class Finder {
     const matchedNodes = new Set();
     const branchLen = branch.length;
     const lastIndex = branchLen - 1;
-
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
       for (const node of entryNodes) {
