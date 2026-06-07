@@ -116,37 +116,42 @@ export const matchPseudoElementSelector = (
  * Matches the :dir() pseudo-class against an element's directionality.
  * @param {object} ast - The AST object for the pseudo-class.
  * @param {object} node - The element node to match against.
+ * @param {WeakMap} [dirCache] - Cache for directionality.
  * @throws {TypeError} If the AST does not contain a valid direction value.
  * @returns {boolean} - True if the directionality matches, otherwise false.
  */
-export const matchDirectionPseudoClass = (ast, node) => {
+export const matchDirectionPseudoClass = (
+  ast,
+  node,
+  dirCache = new WeakMap()
+) => {
   const { name } = ast;
-  // The :dir() pseudo-class requires a direction argument (e.g., "ltr").
   if (!name) {
     const type = name === '' ? '(empty String)' : getType(name);
     throw new TypeError(`Unexpected ast type ${type}`);
   }
-  // Get the computed directionality of the element.
-  const dir = getDirectionality(node);
-  // Compare the expected direction with the element's actual direction.
+  const dir = getDirectionality(node, dirCache);
   return name === dir;
 };
 
 /**
- * Matches the :lang() pseudo-class against an element's language.
- * @see https://datatracker.ietf.org/doc/html/rfc4647#section-3.3.1
- * @param {object} ast - The AST object for the pseudo-class.
+ * Matches the :lang() pseudo-class against an element's language attribute.
+ * @param {object} ast - The AST object for the pseudo-class child.
  * @param {object} node - The element node to match against.
- * @returns {boolean} - True if the language matches, otherwise false.
+ * @param {WeakMap} [langCache] - Cache for language attributes.
+ * @throws {TypeError} If the AST does not contain a valid language value.
+ * @returns {boolean} - True if the language attribute matches, otherwise false.
  */
-export const matchLanguagePseudoClass = (ast, node) => {
-  // Get the effective language attribute for the current node.
-  const elementLang = getLanguageAttribute(node);
-  // If the element has no language, it cannot match a specific pattern.
+export const matchLanguagePseudoClass = (
+  ast,
+  node,
+  langCache = new WeakMap()
+) => {
+  const elementLang = getLanguageAttribute(node, langCache);
   if (elementLang === null) {
     return false;
   }
-  // Use cached regex.
+  // Use cached regex if available
   if (ast._langRegex !== undefined) {
     if (ast._langPattern === '*') {
       return elementLang !== '';
@@ -158,30 +163,24 @@ export const matchLanguagePseudoClass = (ast, node) => {
   }
   const { name, type, value } = ast;
   let langPattern;
-  // Determine the language pattern from the AST.
   if (type === STRING && value) {
     langPattern = value;
   } else if (type === IDENT && name) {
     langPattern = unescapeSelector(name);
   }
-  // Cache lang pattern.
   ast._langPattern = langPattern;
-  // If no valid language pattern is provided, it cannot match.
   if (typeof langPattern !== 'string') {
     ast._langRegex = null;
     return false;
   }
-  // Handle the universal selector '*' for :lang.
   if (langPattern === '*') {
     ast._langRegex = null;
     return elementLang !== '';
   }
-  // Validate the provided language pattern structure.
   if (!REG_LANG_VALID.test(langPattern)) {
     ast._langRegex = null;
     return false;
   }
-  // Build a regex for extended language range matching.
   let matcherRegex;
   if (langPattern.indexOf('-') > -1) {
     const [langMain, langSub, ...langRest] = langPattern.split('-');
@@ -199,8 +198,8 @@ export const matchLanguagePseudoClass = (ast, node) => {
   } else {
     matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, 'i');
   }
+  // Store compiled regex in AST for subsequent matches
   ast._langRegex = matcherRegex;
-  // Test the element's language against the constructed regex.
   return matcherRegex.test(elementLang);
 };
 

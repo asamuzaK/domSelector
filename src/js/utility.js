@@ -297,19 +297,24 @@ export const getSlottedTextContent = node => {
  * Get directionality of a node.
  * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
  * @param {object} node - The Element node.
+ * @param {WeakMap} [dirCache] - Cache for directionality.
  * @returns {?string} - 'ltr' or 'rtl'.
  */
-export const getDirectionality = node => {
+export const getDirectionality = (node, dirCache = new WeakMap()) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   if (node.nodeType !== ELEMENT_NODE) {
     return null;
   }
+  if (dirCache.has(node)) {
+    return dirCache.get(node);
+  }
   const { dir: dirAttr, localName, parentNode } = node;
   const { getEmbeddingLevels } = bidiFactory();
+  let result = 'ltr';
   if (dirAttr === 'ltr' || dirAttr === 'rtl') {
-    return dirAttr;
+    result = dirAttr;
   } else if (dirAttr === 'auto') {
     let text = '';
     switch (localName) {
@@ -317,7 +322,8 @@ export const getDirectionality = node => {
         if (!node.type || KEYS_DIR_AUTO.has(node.type)) {
           text = node.value;
         } else if (KEYS_DIR_LTR.has(node.type)) {
-          return 'ltr';
+          result = 'ltr';
+          text = null; // Flag to skip text evaluation
         }
         break;
       }
@@ -357,21 +363,23 @@ export const getDirectionality = node => {
         }
       }
     }
-    if (text) {
-      const {
-        paragraphs: [{ level }]
-      } = getEmbeddingLevels(text);
-      if (level % 2 === 1) {
-        return 'rtl';
-      }
-    } else if (parentNode) {
-      const { nodeType: parentNodeType } = parentNode;
-      if (parentNodeType === ELEMENT_NODE) {
-        return getDirectionality(parentNode);
+    if (text !== null) {
+      if (text) {
+        const {
+          paragraphs: [{ level }]
+        } = getEmbeddingLevels(text);
+        if (level % 2 === 1) {
+          result = 'rtl';
+        }
+      } else if (parentNode) {
+        const { nodeType: parentNodeType } = parentNode;
+        if (parentNodeType === ELEMENT_NODE) {
+          result = getDirectionality(parentNode, dirCache);
+        }
       }
     }
   } else if (localName === 'input' && node.type === 'tel') {
-    return 'ltr';
+    result = 'ltr';
   } else if (localName === 'bdi') {
     const text = node.textContent.trim();
     if (text) {
@@ -379,7 +387,7 @@ export const getDirectionality = node => {
         paragraphs: [{ level }]
       } = getEmbeddingLevels(text);
       if (level % 2 === 1) {
-        return 'rtl';
+        result = 'rtl';
       }
     }
   } else if (parentNode) {
@@ -390,47 +398,67 @@ export const getDirectionality = node => {
           paragraphs: [{ level }]
         } = getEmbeddingLevels(text);
         if (level % 2 === 1) {
-          return 'rtl';
+          result = 'rtl';
+        } else {
+          result = 'ltr';
         }
-        return 'ltr';
+      } else {
+        const { nodeType: parentNodeType } = parentNode;
+        if (parentNodeType === ELEMENT_NODE) {
+          result = getDirectionality(parentNode, dirCache);
+        }
+      }
+    } else {
+      const { nodeType: parentNodeType } = parentNode;
+      if (parentNodeType === ELEMENT_NODE) {
+        result = getDirectionality(parentNode, dirCache);
       }
     }
-    const { nodeType: parentNodeType } = parentNode;
-    if (parentNodeType === ELEMENT_NODE) {
-      return getDirectionality(parentNode);
-    }
   }
-  return 'ltr';
+  dirCache.set(node, result);
+  return result;
 };
 
 /**
- * Traverses up the DOM tree to find the language attribute for a node.
- * It checks for 'lang' in HTML and 'xml:lang' in XML contexts.
- * @param {object} node - The starting element node.
- * @returns {string|null} The language attribute value, or null if not found.
+ * Get language attribute of a node.
+ * @param {object} node - The Element node.
+ * @param {WeakMap} [langCache] - Cache for language attributes.
+ * @returns {?string} - Language attribute value.
  */
-export const getLanguageAttribute = node => {
+export const getLanguageAttribute = (node, langCache = new WeakMap()) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
   if (node.nodeType !== ELEMENT_NODE) {
     return null;
   }
+  if (langCache.has(node)) {
+    return langCache.get(node);
+  }
   const { contentType } = node.ownerDocument;
   const isHtml = REG_IS_HTML.test(contentType);
   const isXml = REG_IS_XML.test(contentType);
   let isShadow = false;
+  let result;
+  const visited = [];
   // Traverse up from the current node to the root.
   let current = node;
   while (current) {
+    if (current.nodeType === ELEMENT_NODE && langCache.has(current)) {
+      result = langCache.get(current);
+      break;
+    }
+    if (current.nodeType === ELEMENT_NODE) {
+      visited.push(current);
+    }
     // Check if the current node is an element.
     switch (current.nodeType) {
       case ELEMENT_NODE: {
         // Check for and return the language attribute if present.
         if (isHtml && current.hasAttribute('lang')) {
-          return current.getAttribute('lang');
+          result = current.getAttribute('lang');
         } else if (isXml && current.hasAttribute('xml:lang')) {
-          return current.getAttribute('xml:lang');
+          result = current.getAttribute('xml:lang');
         }
         break;
       }
@@ -444,8 +472,11 @@ export const getLanguageAttribute = node => {
       case DOCUMENT_NODE:
       default: {
         // Stop if we reach the root document node.
-        return null;
+        result = null;
       }
+    }
+    if (result !== undefined) {
+      break;
     }
     if (isShadow) {
       current = current.host;
@@ -456,8 +487,13 @@ export const getLanguageAttribute = node => {
       break;
     }
   }
-  // No language attribute was found in the hierarchy.
-  return null;
+  if (result === undefined) {
+    result = null;
+  }
+  for (const visitedNode of visited) {
+    langCache.set(visitedNode, result);
+  }
+  return result;
 };
 
 /**

@@ -9736,6 +9736,134 @@ describe('Finder', () => {
     });
   });
 
+  describe(':focus-within branch coverage (Set caching)', () => {
+    afterEach(() => {
+      delete document.activeElement;
+    });
+
+    it('should traverse Light DOM', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('input');
+      parent.appendChild(child);
+      document.body.appendChild(parent);
+      Object.defineProperty(document, 'activeElement', {
+        value: child,
+        configurable: true
+      });
+      const finder = new Finder(window);
+      finder.setup(':focus-within', parent, { check: true });
+      assert.strictEqual(finder.find('self').match, true, 'parent matches');
+      document.body.removeChild(parent);
+    });
+
+    it('should traverse Shadow DOM boundary in Block 1', () => {
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const child = document.createElement('input');
+      shadow.appendChild(child);
+      document.body.appendChild(host);
+      Object.defineProperty(document, 'activeElement', {
+        value: child,
+        configurable: true
+      });
+      const finder = new Finder(window);
+      finder.setup(':focus-within', host, { check: true });
+      assert.strictEqual(
+        finder.find('self').match,
+        true,
+        'host matches via shadow root traversal'
+      );
+      document.body.removeChild(host);
+    });
+
+    it('should traverse Shadow DOM boundary in Block 2', () => {
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const innerDiv = document.createElement('div');
+      const child = document.createElement('input'); // focusable
+      innerDiv.appendChild(child);
+      shadow.appendChild(innerDiv);
+      document.body.appendChild(host);
+      Object.defineProperty(document, 'activeElement', {
+        value: host,
+        configurable: true
+      });
+      Object.defineProperty(shadow, 'activeElement', {
+        value: child,
+        configurable: true
+      });
+      const finder = new Finder(window);
+      finder.setup(':focus-within', host, { check: true });
+      assert.strictEqual(finder.find('self').match, true, 'host matches');
+      finder.setup(':focus-within', innerDiv, { check: true });
+      assert.strictEqual(
+        finder.find('self').match,
+        true,
+        'innerDiv inside shadow matches'
+      );
+      document.body.removeChild(host);
+    });
+  });
+
+  describe(':target-within branch coverage (Set caching)', () => {
+    it('should match target element and its ancestor in Light DOM', () => {
+      const parent = document.createElement('div');
+      const targetElement = document.createElement('div');
+      targetElement.id = 'foo'; // Matches JSDOM's configured hash URL (#foo)
+      parent.appendChild(targetElement);
+      document.body.appendChild(parent);
+      const finder = new Finder(window);
+      finder.setup(':target-within', targetElement, { check: true });
+      assert.strictEqual(
+        finder.find('self').match,
+        true,
+        'targetElement matches'
+      );
+      finder.setup(':target-within', parent, { check: true });
+      assert.strictEqual(
+        finder.find('self').match,
+        true,
+        'parent matches via cache hit'
+      );
+      document.body.removeChild(parent);
+    });
+
+    it('should penetrate shadow root boundary to host element', () => {
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const targetElement = document.createElement('div');
+      targetElement.id = 'foo';
+      shadow.appendChild(targetElement);
+      document.body.appendChild(host);
+      // Temporarily mock getElementById
+      const originalGetElementById = document.getElementById;
+      document.getElementById = id => {
+        if (id === 'foo') {
+          return targetElement;
+        }
+        return originalGetElementById.call(document, id);
+      };
+      const finder = new Finder(window);
+      try {
+        finder.setup(':target-within', targetElement, { check: true });
+        assert.strictEqual(
+          finder.find('self').match,
+          true,
+          'target inside shadow matches'
+        );
+        finder.setup(':target-within', host, { check: true });
+        assert.strictEqual(
+          finder.find('self').match,
+          true,
+          'host matches via shadow root penetration'
+        );
+      } finally {
+        document.getElementById = originalGetElementById;
+        document.body.removeChild(host);
+      }
+    });
+  });
+
   describe('match shadow host pseudo class', () => {
     it('should throw', () => {
       const ast = {

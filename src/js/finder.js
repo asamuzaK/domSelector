@@ -59,6 +59,8 @@ import {
   TEXT_NODE,
   TYPE_SELECTOR
 } from './constant.js';
+const ANB_FIRST = { a: 0, b: 1 };
+const ANB_LAST = { a: 0, b: 1, reverse: true };
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
@@ -104,6 +106,7 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
  */
 export class Finder {
   /* private fields */
+  #anbCache = new WeakMap();
   #ast;
   #astCache = new WeakMap();
   #check;
@@ -115,6 +118,7 @@ export class Finder {
   #eventHandlers;
   #filterLeavesCache = new WeakMap();
   #focus = null;
+  #focusWithinCache = null;
   #invalidate;
   #invalidateResults;
   #lastFocusVisible = null;
@@ -127,7 +131,9 @@ export class Finder {
   #nthOfTypeCache = new WeakMap();
   #nthOfTypeResultCache = new WeakMap();
   #psDefaultCache = new WeakMap();
+  #psDirCache = new WeakMap();
   #psIndeterminateCache = new WeakMap();
+  #psLangCache = new WeakMap();
   #psValidCache = new WeakMap();
   #pseudoElement;
   #results;
@@ -137,6 +143,7 @@ export class Finder {
   #selector;
   #selectorAST;
   #shadow;
+  #targetWithinCache = null;
   #verifyShadowHost;
   #walkers;
   #warn;
@@ -232,14 +239,19 @@ export class Finder {
    * @returns {void}
    */
   clearResults = (all = false) => {
+    this.#anbCache = new WeakMap();
+    this.#focusWithinCache = null;
     this.#invalidateResults = new WeakMap();
     this.#nthChildCache = new WeakMap();
     this.#nthChildResultCache = new WeakMap();
     this.#nthOfTypeCache = new WeakMap();
     this.#nthOfTypeResultCache = new WeakMap();
     this.#psDefaultCache = new WeakMap();
+    this.#psDirCache = new WeakMap();
+    this.#psLangCache = new WeakMap();
     this.#psIndeterminateCache = new WeakMap();
     this.#psValidCache = new WeakMap();
+    this.#targetWithinCache = null;
     if (all) {
       this.#results = new WeakMap();
       this.#filterLeavesCache = new WeakMap();
@@ -635,46 +647,51 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchAnPlusB = (ast, node, nthName, opt) => {
-    const {
-      nth: { a, b, name: nthIdentName },
-      selector
-    } = ast;
-    const anbMap = new Map();
-    if (nthIdentName) {
-      if (nthIdentName === 'even') {
-        anbMap.set('a', 2);
-        anbMap.set('b', 0);
-      } else if (nthIdentName === 'odd') {
-        anbMap.set('a', 2);
-        anbMap.set('b', 1);
-      }
-      if (nthName.indexOf('last') > -1) {
-        anbMap.set('reverse', true);
-      }
-    } else {
-      if (typeof a === 'string' && /-?\d+/.test(a)) {
-        anbMap.set('a', a * 1);
+    let anb = this.#anbCache.get(ast);
+    if (!anb) {
+      const {
+        nth: { a, b, name: nthIdentName },
+        selector
+      } = ast;
+      const anbMap = new Map();
+      if (nthIdentName) {
+        if (nthIdentName === 'even') {
+          anbMap.set('a', 2);
+          anbMap.set('b', 0);
+        } else if (nthIdentName === 'odd') {
+          anbMap.set('a', 2);
+          anbMap.set('b', 1);
+        }
+        if (nthName.indexOf('last') > -1) {
+          anbMap.set('reverse', true);
+        }
       } else {
-        anbMap.set('a', 0);
+        if (typeof a === 'string' && /-?\d+/.test(a)) {
+          anbMap.set('a', a * 1);
+        } else {
+          anbMap.set('a', 0);
+        }
+        if (typeof b === 'string' && /-?\d+/.test(b)) {
+          anbMap.set('b', b * 1);
+        } else {
+          anbMap.set('b', 0);
+        }
+        if (nthName.indexOf('last') > -1) {
+          anbMap.set('reverse', true);
+        }
       }
-      if (typeof b === 'string' && /-?\d+/.test(b)) {
-        anbMap.set('b', b * 1);
-      } else {
-        anbMap.set('b', 0);
+      if (nthName === 'nth-child' || nthName === 'nth-last-child') {
+        if (selector) {
+          anbMap.set('selector', selector);
+        }
       }
-      if (nthName.indexOf('last') > -1) {
-        anbMap.set('reverse', true);
-      }
+      anb = Object.fromEntries(anbMap);
+      this.#anbCache.set(ast, anb);
     }
     if (nthName === 'nth-child' || nthName === 'nth-last-child') {
-      if (selector) {
-        anbMap.set('selector', selector);
-      }
-      const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthChild(anb, node, opt);
       return nodes;
     } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
-      const anb = Object.fromEntries(anbMap);
       const nodes = this._collectNthOfType(anb, node);
       return nodes;
     }
@@ -956,7 +973,11 @@ export class Finder {
               );
             }
             const [astChild] = astChildren;
-            const res = matchDirectionPseudoClass(astChild, node);
+            const res = matchDirectionPseudoClass(
+              astChild,
+              node,
+              this.#psDirCache
+            );
             if (res) {
               matched.add(node);
             }
@@ -976,7 +997,11 @@ export class Finder {
             }
             let bool;
             for (const astChild of astChildren) {
-              bool = matchLanguagePseudoClass(astChild, node);
+              bool = matchLanguagePseudoClass(
+                astChild,
+                node,
+                this.#psLangCache
+              );
               if (bool) {
                 break;
               }
@@ -1060,27 +1085,14 @@ export class Finder {
       } else if (parentNode) {
         switch (astName) {
           case 'first-of-type': {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
+            const [node1] = this._collectNthOfType(ANB_FIRST, node);
             if (node1) {
               matched.add(node1);
             }
             break;
           }
           case 'last-of-type': {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1,
-                reverse: true
-              },
-              node
-            );
+            const [node1] = this._collectNthOfType(ANB_LAST, node);
             if (node1) {
               matched.add(node1);
             }
@@ -1088,22 +1100,9 @@ export class Finder {
           }
           // 'only-of-type' is handled by default.
           default: {
-            const [node1] = this._collectNthOfType(
-              {
-                a: 0,
-                b: 1
-              },
-              node
-            );
+            const [node1] = this._collectNthOfType(ANB_FIRST, node);
             if (node1 === node) {
-              const [node2] = this._collectNthOfType(
-                {
-                  a: 0,
-                  b: 1,
-                  reverse: true
-                },
-                node
-              );
+              const [node2] = this._collectNthOfType(ANB_LAST, node);
               if (node2 === node) {
                 matched.add(node);
               }
@@ -1197,20 +1196,33 @@ export class Finder {
           break;
         }
         case 'target-within': {
-          if (!this.#documentURL) {
-            this.#documentURL = new URL(this.#document.URL);
-          }
-          const { hash } = this.#documentURL;
-          if (hash) {
-            const id = hash.replace(/^#/, '');
-            let current = this.#document.getElementById(id);
-            while (current) {
-              if (current === node) {
-                matched.add(node);
-                break;
-              }
-              current = current.parentNode;
+          if (!this.#targetWithinCache) {
+            this.#targetWithinCache = new Set();
+            if (!this.#documentURL) {
+              this.#documentURL = new URL(this.#document.URL);
             }
+            const { hash } = this.#documentURL;
+            if (hash && hash.startsWith('#')) {
+              const id = unescapeSelector(hash.substring(1));
+              let currentTarget = this.#document.getElementById(id);
+              while (currentTarget) {
+                this.#targetWithinCache.add(currentTarget);
+                if (currentTarget.parentNode) {
+                  currentTarget = currentTarget.parentNode;
+                } else if (
+                  currentTarget.nodeType === DOCUMENT_FRAGMENT_NODE &&
+                  currentTarget.host
+                ) {
+                  // Penetrate Shadow DOM boundary
+                  currentTarget = currentTarget.host;
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+          if (this.#targetWithinCache.has(node)) {
+            matched.add(node);
           }
           break;
         }
@@ -1322,27 +1334,44 @@ export class Finder {
           break;
         }
         case 'focus-within': {
-          const activeElement = this.#document.activeElement;
-          if (node.contains(activeElement) && isFocusableArea(activeElement)) {
-            matched.add(node);
-          } else if (activeElement.shadowRoot) {
-            const activeShadowElement = activeElement.shadowRoot.activeElement;
-            if (node.contains(activeShadowElement)) {
-              matched.add(node);
-            } else {
-              let current = activeShadowElement;
-              while (current) {
-                if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
-                  const { host } = current;
-                  if (host === activeElement && node.contains(host)) {
-                    matched.add(node);
-                  }
-                  break;
+          if (!this.#focusWithinCache) {
+            this.#focusWithinCache = new Set();
+            let currentFocus = this.#document.activeElement;
+            if (currentFocus && isFocusableArea(currentFocus)) {
+              while (currentFocus) {
+                this.#focusWithinCache.add(currentFocus);
+                if (currentFocus.parentNode) {
+                  currentFocus = currentFocus.parentNode;
+                } else if (
+                  currentFocus.nodeType === DOCUMENT_FRAGMENT_NODE &&
+                  currentFocus.host
+                ) {
+                  currentFocus = currentFocus.host;
                 } else {
-                  current = current.parentNode;
+                  break;
+                }
+              }
+            } else if (currentFocus && currentFocus.shadowRoot) {
+              let shadowFocus = currentFocus.shadowRoot.activeElement;
+              if (shadowFocus) {
+                while (shadowFocus) {
+                  this.#focusWithinCache.add(shadowFocus);
+                  if (shadowFocus.parentNode) {
+                    shadowFocus = shadowFocus.parentNode;
+                  } else if (
+                    shadowFocus.nodeType === DOCUMENT_FRAGMENT_NODE &&
+                    shadowFocus.host
+                  ) {
+                    shadowFocus = shadowFocus.host;
+                  } else {
+                    break;
+                  }
                 }
               }
             }
+          }
+          if (this.#focusWithinCache.has(node)) {
+            matched.add(node);
           }
           break;
         }

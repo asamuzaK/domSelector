@@ -1697,6 +1697,60 @@ describe('utility functions', () => {
     });
   });
 
+  describe('getDirectionality (ascendant and slot coverage)', () => {
+    const func = util.getDirectionality;
+
+    it('should inherit directionality from parent element', () => {
+      const parent = document.createElement('div');
+      parent.dir = 'rtl';
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      document.body.appendChild(parent);
+      const res = func(child);
+      assert.strictEqual(res, 'rtl', 'inherited from parent');
+      document.body.removeChild(parent);
+    });
+
+    it('should resolve LTR directionality from assigned slot text', () => {
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const slot = document.createElement('slot');
+      shadow.appendChild(slot);
+      const child = document.createElement('span');
+      child.textContent = 'hello';
+      host.appendChild(child);
+      document.body.appendChild(host);
+      const res = func(slot);
+      assert.strictEqual(res, 'ltr', 'resolved LTR from slot text');
+      document.body.removeChild(host);
+    });
+
+    it('should resolve RTL directionality from assigned slot text', () => {
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const slot = document.createElement('slot');
+      shadow.appendChild(slot);
+      const child = document.createElement('span');
+      child.textContent = 'مرحبا';
+      host.appendChild(child);
+      document.body.appendChild(host);
+      const res = func(slot);
+      assert.strictEqual(res, 'rtl', 'resolved RTL from slot text');
+      document.body.removeChild(host);
+    });
+
+    it('should fallback to parent directionality if slot has no text', () => {
+      const parent = document.createElement('div');
+      parent.dir = 'rtl';
+      const slot = document.createElement('slot');
+      parent.appendChild(slot);
+      document.body.appendChild(parent);
+      const res = func(slot);
+      assert.strictEqual(res, 'rtl', 'slot fallback to parent');
+      document.body.removeChild(parent);
+    });
+  });
+
   describe('get language attribute', () => {
     const func = util.getLanguageAttribute;
 
@@ -1815,6 +1869,25 @@ describe('utility functions', () => {
       parent.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, 'en', 'result');
+    });
+
+    it('should hit cache during ascendant traversal', () => {
+      const parent = document.createElement('div');
+      parent.setAttribute('lang', 'fr');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      document.body.appendChild(parent);
+      const langCache = new WeakMap();
+      const res1 = func(parent, langCache);
+      assert.strictEqual(res1, 'fr', 'parent resolves to fr');
+      assert.strictEqual(langCache.has(parent), true, 'parent is cached');
+      const res2 = func(child, langCache);
+      assert.strictEqual(
+        res2,
+        'fr',
+        'child hits parent cache and resolves to fr'
+      );
+      document.body.removeChild(parent);
     });
   });
 
