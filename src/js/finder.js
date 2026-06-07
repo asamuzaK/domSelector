@@ -109,37 +109,38 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
  */
 export class Finder {
   /* private fields */
-  #anbCache = new WeakMap();
+  #anbCache;
   #ast;
   #astCache = new WeakMap();
   #check;
+  #combinatorCache;
   #descendant;
   #document;
   #documentCache = new WeakMap();
   #documentURL;
-  #event = null;
+  #event;
   #eventHandlers;
-  #filterLeavesCache = new WeakMap();
-  #focus = null;
-  #focusWithinCache = null;
+  #filterLeavesCache;
+  #focus;
+  #focusWithinCache;
   #invalidate;
   #invalidateResults;
-  #lastFocusVisible = null;
+  #lastFocusVisible;
   #node;
   #nodeWalker;
   #nodes;
   #noexcept;
-  #nthChildCache = new WeakMap();
-  #nthChildOfCache = new WeakMap();
-  #nthChildResultCache = new WeakMap();
-  #nthOfTypeCache = new WeakMap();
-  #nthOfTypeResultCache = new WeakMap();
-  #psDefaultCache = new WeakMap();
-  #psDirCache = new WeakMap();
-  #psHasFilterCache = null;
-  #psIndeterminateCache = new WeakMap();
-  #psLangCache = new WeakMap();
-  #psValidCache = new WeakMap();
+  #nthChildCache;
+  #nthChildOfCache;
+  #nthChildResultCache;
+  #nthOfTypeCache;
+  #nthOfTypeResultCache;
+  #psDefaultCache;
+  #psDirCache;
+  #psHasFilterCache;
+  #psIndeterminateCache;
+  #psLangCache;
+  #psValidCache;
   #pseudoElement;
   #results;
   #root;
@@ -148,7 +149,7 @@ export class Finder {
   #selector;
   #selectorAST;
   #shadow;
-  #targetWithinCache = null;
+  #targetWithinCache;
   #verifyShadowHost;
   #walkers;
   #warn;
@@ -240,28 +241,29 @@ export class Finder {
 
   /**
    * Clear cached results.
-   * @param {boolean} all - clear all results
+   * @param {boolean} all - Clear all results.
    * @returns {void}
    */
   clearResults = (all = false) => {
-    this.#anbCache = new WeakMap();
+    this.#anbCache = null;
+    this.#combinatorCache = null;
     this.#focusWithinCache = null;
     this.#invalidateResults = new WeakMap();
-    this.#nthChildCache = new WeakMap();
-    this.#nthChildOfCache = new WeakMap();
-    this.#nthChildResultCache = new WeakMap();
-    this.#nthOfTypeCache = new WeakMap();
-    this.#nthOfTypeResultCache = new WeakMap();
-    this.#psDefaultCache = new WeakMap();
-    this.#psDirCache = new WeakMap();
+    this.#nthChildCache = null;
+    this.#nthChildOfCache = null;
+    this.#nthChildResultCache = null;
+    this.#nthOfTypeCache = null;
+    this.#nthOfTypeResultCache = null;
+    this.#psDefaultCache = null;
+    this.#psDirCache = null;
     this.#psHasFilterCache = null;
-    this.#psLangCache = new WeakMap();
-    this.#psIndeterminateCache = new WeakMap();
-    this.#psValidCache = new WeakMap();
+    this.#psIndeterminateCache = null;
+    this.#psLangCache = null;
+    this.#psValidCache = null;
     this.#targetWithinCache = null;
     if (all) {
+      this.#filterLeavesCache = null;
       this.#results = new WeakMap();
-      this.#filterLeavesCache = new WeakMap();
     }
   };
 
@@ -326,8 +328,7 @@ export class Finder {
    * @private
    * @param {Array.<Array.<object>>} branches - The branches from walkAST.
    * @param {string} selector - The original selector for error reporting.
-   * @returns {{ast: Array, descendant: boolean}}
-   * An object with the AST, descendant flag.
+   * @returns {{ast: Array, descendant: boolean}} An object with the AST, descendant flag.
    */
   _processSelectorBranches = (branches, selector) => {
     let descendant = false;
@@ -559,6 +560,9 @@ export class Finder {
       }
       return matchedNode;
     }
+    if (!this.#nthChildResultCache) {
+      this.#nthChildResultCache = new WeakMap();
+    }
     let parentResultCache = this.#nthChildResultCache.get(parentNode);
     if (!parentResultCache) {
       parentResultCache = new WeakMap();
@@ -570,6 +574,9 @@ export class Finder {
     }
     let siblings;
     if (selector) {
+      if (!this.#nthChildOfCache) {
+        this.#nthChildOfCache = new WeakMap();
+      }
       let parentOfCacheMap = this.#nthChildOfCache.get(parentNode);
       if (!parentOfCacheMap) {
         parentOfCacheMap = new Map();
@@ -582,6 +589,9 @@ export class Finder {
         parentOfCacheMap.set(selector, siblings);
       }
     } else {
+      if (!this.#nthChildCache) {
+        this.#nthChildCache = new WeakMap();
+      }
       siblings = this.#nthChildCache.get(parentNode);
       if (!siblings) {
         siblings = this._getFilteredChildren(parentNode, null, opt);
@@ -612,6 +622,9 @@ export class Finder {
       }
       return new Set();
     }
+    if (!this.#nthOfTypeResultCache) {
+      this.#nthOfTypeResultCache = new WeakMap();
+    }
     let parentResultCache = this.#nthOfTypeResultCache.get(parentNode);
     if (!parentResultCache) {
       parentResultCache = new WeakMap();
@@ -626,6 +639,9 @@ export class Finder {
     const cachedSet = typeResultMap.get(typeKey);
     if (cachedSet) {
       return cachedSet;
+    }
+    if (!this.#nthOfTypeCache) {
+      this.#nthOfTypeCache = new WeakMap();
     }
     let typeMap = this.#nthOfTypeCache.get(parentNode);
     if (!typeMap) {
@@ -664,6 +680,9 @@ export class Finder {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _matchAnPlusB = (ast, node, nthName, opt) => {
+    if (!this.#anbCache) {
+      this.#anbCache = new WeakMap();
+    }
     let anb = this.#anbCache.get(ast);
     if (!anb) {
       const {
@@ -775,7 +794,7 @@ export class Finder {
    * Builds an Allowlist for the :has() branch using a sparse seed element.
    * @private
    * @param {Array} leaves - The AST leaves of the selector branch.
-   * @returns {object|null} The wrapper object containing the WeakSet, or null if defaulted.
+   * @returns {object|null} The wrapper object containing the WeakSet, or null.
    */
   _buildHasAllowlist = leaves => {
     const { seed } = findBestSeed(leaves);
@@ -1067,6 +1086,9 @@ export class Finder {
               );
             }
             const [astChild] = astChildren;
+            if (!this.#psDirCache) {
+              this.#psDirCache = new WeakMap();
+            }
             const res = matchDirectionPseudoClass(
               astChild,
               node,
@@ -1088,6 +1110,9 @@ export class Finder {
                   this.#window
                 )
               );
+            }
+            if (!this.#psLangCache) {
+              this.#psLangCache = new WeakMap();
             }
             let bool;
             for (const astChild of astChildren) {
@@ -1376,7 +1401,7 @@ export class Finder {
                   } = this.#event;
                   // this.#event is irrelevant if eventTarget === relatedTarget
                   if (eventTarget === relatedTarget) {
-                    if (this.#lastFocusVisible === null) {
+                    if (!this.#lastFocusVisible) {
                       bool = true;
                     } else if (focusTarget === this.#lastFocusVisible) {
                       bool = true;
@@ -1387,7 +1412,7 @@ export class Finder {
                       (eventType === 'keyup' && eventTarget === node)
                     ) {
                       if (eventTarget === focusTarget) {
-                        if (this.#lastFocusVisible === null) {
+                        if (!this.#lastFocusVisible) {
                           bool = true;
                         } else if (
                           eventTarget === this.#lastFocusVisible &&
@@ -1544,6 +1569,9 @@ export class Finder {
             if (!parent) {
               parent = this.#document.documentElement;
             }
+            if (!this.#psIndeterminateCache) {
+              this.#psIndeterminateCache = new WeakMap();
+            }
             let parentCache = this.#psIndeterminateCache.get(parent);
             if (!parentCache) {
               parentCache = new Map();
@@ -1599,8 +1627,11 @@ export class Finder {
               form = form.parentNode;
             }
             if (form) {
+              if (!this.#psDefaultCache) {
+                this.#psDefaultCache = new WeakMap();
+              }
               let defaultSubmit = this.#psDefaultCache.get(form);
-              if (defaultSubmit === undefined) {
+              if (!defaultSubmit) {
                 const walker = this._createTreeWalker(form, { force: true });
                 let refNode = traverseNode(form, walker);
                 refNode = walker.firstChild();
@@ -1665,6 +1696,9 @@ export class Finder {
               matched.add(node);
             }
           } else if (localName === 'fieldset') {
+            if (!this.#psValidCache) {
+              this.#psValidCache = new WeakMap();
+            }
             let valid = this.#psValidCache.get(node);
             if (valid === undefined && !this.#psValidCache.has(node)) {
               const walker = this._createTreeWalker(node, { force: true });
@@ -2193,6 +2227,9 @@ export class Finder {
    * @returns {Array.<object>} The filtered leaves.
    */
   _getFilterLeaves = leaves => {
+    if (!this.#filterLeavesCache) {
+      this.#filterLeavesCache = new WeakMap();
+    }
     if (this.#filterLeavesCache.has(leaves)) {
       return this.#filterLeavesCache.get(leaves);
     }
@@ -2275,7 +2312,7 @@ export class Finder {
   };
 
   /**
-   * Collects combinator matches into an array without creating intermediate sets.
+   * Collects combinator matches into an array.
    * @private
    * @param {object} twig - The twig object.
    * @param {object} node - The Element node.
@@ -2302,12 +2339,36 @@ export class Finder {
         break;
       }
       case '~': {
+        const parentNode = node.parentNode;
+        if (!parentNode) {
+          break;
+        }
+        if (!this.#combinatorCache) {
+          this.#combinatorCache = new WeakMap();
+        }
+        let cacheMap = this.#combinatorCache.get(parentNode);
+        if (!cacheMap) {
+          cacheMap = new Map();
+          this.#combinatorCache.set(parentNode, cacheMap);
+        }
+        let matchedSet = cacheMap.get(leaves);
+        if (!matchedSet) {
+          matchedSet = new Set();
+          let child = parentNode.firstElementChild;
+          while (child) {
+            if (this._matchLeaves(leaves, child, opt)) {
+              matchedSet.add(child);
+            }
+            child = child.nextElementSibling;
+          }
+          cacheMap.set(leaves, matchedSet);
+        }
         let refNode =
           dir === DIR_NEXT
             ? node.nextElementSibling
             : node.previousElementSibling;
         while (refNode) {
-          if (this._matchLeaves(leaves, refNode, opt)) {
+          if (matchedSet.has(refNode)) {
             matched.push(refNode);
           }
           refNode =
