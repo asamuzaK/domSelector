@@ -130,6 +130,7 @@ export class Finder {
   #nodes;
   #noexcept;
   #nthChildCache = new WeakMap();
+  #nthChildOfCache = new WeakMap();
   #nthChildResultCache = new WeakMap();
   #nthOfTypeCache = new WeakMap();
   #nthOfTypeResultCache = new WeakMap();
@@ -247,6 +248,7 @@ export class Finder {
     this.#focusWithinCache = null;
     this.#invalidateResults = new WeakMap();
     this.#nthChildCache = new WeakMap();
+    this.#nthChildOfCache = new WeakMap();
     this.#nthChildResultCache = new WeakMap();
     this.#nthOfTypeCache = new WeakMap();
     this.#nthOfTypeResultCache = new WeakMap();
@@ -557,16 +559,6 @@ export class Finder {
       }
       return matchedNode;
     }
-    if (selector) {
-      const selectorBranches = this._getSelectorBranches(selector);
-      const children = this._getFilteredChildren(
-        parentNode,
-        selectorBranches,
-        opt
-      );
-      const matchedNodes = filterNodesByAnB(children, anb);
-      return new Set(matchedNodes);
-    }
     let parentResultCache = this.#nthChildResultCache.get(parentNode);
     if (!parentResultCache) {
       parentResultCache = new WeakMap();
@@ -576,10 +568,25 @@ export class Finder {
     if (cachedSet) {
       return cachedSet;
     }
-    let siblings = this.#nthChildCache.get(parentNode);
-    if (!siblings) {
-      siblings = this._getFilteredChildren(parentNode, null, opt);
-      this.#nthChildCache.set(parentNode, siblings);
+    let siblings;
+    if (selector) {
+      let parentOfCacheMap = this.#nthChildOfCache.get(parentNode);
+      if (!parentOfCacheMap) {
+        parentOfCacheMap = new Map();
+        this.#nthChildOfCache.set(parentNode, parentOfCacheMap);
+      }
+      siblings = parentOfCacheMap.get(selector);
+      if (!siblings) {
+        const selectorBranches = this._getSelectorBranches(selector);
+        siblings = this._getFilteredChildren(parentNode, selectorBranches, opt);
+        parentOfCacheMap.set(selector, siblings);
+      }
+    } else {
+      siblings = this.#nthChildCache.get(parentNode);
+      if (!siblings) {
+        siblings = this._getFilteredChildren(parentNode, null, opt);
+        this.#nthChildCache.set(parentNode, siblings);
+      }
     }
     const matchedNodes = filterNodesByAnB(siblings, anb);
     const resultSet = new Set(matchedNodes);
