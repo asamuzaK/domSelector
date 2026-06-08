@@ -661,6 +661,21 @@ describe('selector static analysis and validation', () => {
         false,
         'missing last closing bracket'
       );
+      assert.strictEqual(
+        func('[data-foo="bar"]'),
+        true,
+        'valid dataset attribute selector'
+      );
+      assert.strictEqual(
+        func('[title="foo"], svg title'),
+        true,
+        'valid testing library attribute selector with decendent combinator'
+      );
+      assert.strictEqual(
+        func('[title="foo"], svg > title'),
+        true,
+        'valid testing library attribute selector with child combinator'
+      );
     });
 
     it('should evaluate :has() specific branches', () => {

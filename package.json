@@ -74,6 +74,7 @@
     "bench:ps-has": "node benchmark/bench-has.js",
     "bench:ps-nth": "node benchmark/bench-nth-child.js && node benchmark/bench-nth-of-type.js",
     "bench:ps-traverse": "node benchmark/bench-dir.js && node benchmark/bench-lang.js",
+    "bench:ts": "node benchmark/bench-testing-library.js",
     "bench:universal": "node benchmark/bench-universal.js",
     "build": "npm run tsc && npm run lint && npm test",
     "lint": "eslint --fix .",

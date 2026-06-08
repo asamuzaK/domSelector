@@ -3016,16 +3016,8 @@ describe('utility functions', () => {
 
     it('should throw TypeError if document is missing', () => {
       const node = document.createElement('div');
-      assert.throws(
-        () => func(node),
-        TypeError,
-        'Unexpected type Undefined'
-      );
-      assert.throws(
-        () => func(node, null),
-        TypeError,
-        'Unexpected type Null'
-      );
+      assert.throws(() => func(node), TypeError, 'Unexpected type Undefined');
+      assert.throws(() => func(node, null), TypeError, 'Unexpected type Null');
     });
 
     it('should collect all descendant elements from Document', () => {
