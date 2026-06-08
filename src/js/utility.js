@@ -19,6 +19,7 @@ import {
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
+  SHOW_ELEMENT,
   TEXT_NODE,
   TYPE_FROM,
   TYPE_SELECTOR,
@@ -909,4 +910,27 @@ export const populateHasAllowlist = (current, list, visitedAncestors) => {
       list.add(current);
     }
   }
+};
+
+/**
+ * Collects all descendant elements of a given node using a TreeWalker.
+ * @param {Document|DocumentFragment|Element} node - The node to start from.
+ * @param {Document} document - The Document used to create the TreeWalker.
+ * @returns {Array<Element>} An array containing all descendant elements.
+ */
+export const collectAllDescendants = (node, document) => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  if (document?.nodeType !== DOCUMENT_NODE) {
+    throw new TypeError(`Unexpected type ${getType(document)}`);
+  }
+  const walker = document.createTreeWalker(node, SHOW_ELEMENT);
+  const descendants = [];
+  let refNode = walker.nextNode();
+  while (refNode) {
+    descendants.push(refNode);
+    refNode = walker.nextNode();
+  }
+  return descendants;
 };
