@@ -19,8 +19,11 @@ import { collectAllDescendants, getType } from './js/utility.js';
 
 /* constants */
 import {
+  ATTR_TYPE,
+  DESCEND,
   DOCUMENT_NODE,
   ELEMENT_NODE,
+  TAG_TYPE_WO_UNIVERSAL,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -30,6 +33,7 @@ const CACHE_SIZE = 2048;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
+const REG_TEST_LIB = new RegExp(`^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${DESCEND}${TAG_TYPE_WO_UNIVERSAL})?)$`);
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 
 /**
@@ -290,7 +294,7 @@ export class DOMSelector {
       return node;
     }
     const document = node.ownerDocument;
-    if (this.#canUseNwsapi(document) && node.parentNode) {
+    if (node.parentNode && this.#canUseNwsapi(document)) {
       const cacheKey = `closest_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -345,7 +349,10 @@ export class DOMSelector {
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (node === this.#document && this.#canUseNwsapi(document)) {
+    if (
+      (node === this.#document || REG_TEST_LIB.test(selector)) &&
+      this.#canUseNwsapi(document)
+    ) {
       const cacheKey = `querySelector_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -394,7 +401,10 @@ export class DOMSelector {
     if (document && REG_UNIVERSAL.test(selector)) {
       return collectAllDescendants(node, document);
     }
-    if (node === this.#document && this.#canUseNwsapi(document)) {
+    if (
+      (node === this.#document || REG_TEST_LIB.test(selector)) &&
+      this.#canUseNwsapi(document)
+    ) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
