@@ -15,7 +15,7 @@ import {
   filterSelector,
   isSupportedAST
 } from './js/selector.js';
-import { getType } from './js/utility.js';
+import { collectAllDescendants, getType } from './js/utility.js';
 
 /* constants */
 import {
@@ -30,6 +30,7 @@ const CACHE_SIZE = 2048;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
+const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 
 /**
  * @typedef {object} CheckResult
@@ -178,6 +179,14 @@ export class DOMSelector {
     if (error) {
       return this.#finder.onError(error, opt);
     }
+    if (REG_UNIVERSAL.test(selector)) {
+      const ast = this.#finder.getAST(selector);
+      return {
+        ast,
+        match: true,
+        pseudoElement: null
+      };
+    }
     const document = node.ownerDocument;
     if (node.parentNode && this.#canUseNwsapi(document)) {
       const cacheKey = `check_${selector}`;
@@ -233,6 +242,9 @@ export class DOMSelector {
     if (error) {
       return this.#finder.onError(error, opt);
     }
+    if (REG_UNIVERSAL.test(selector)) {
+      return true;
+    }
     const document = node.ownerDocument;
     if (node.parentNode && this.#canUseNwsapi(document)) {
       const cacheKey = `matches_${selector}`;
@@ -273,6 +285,9 @@ export class DOMSelector {
     const error = this.#validateNodeType(node, true);
     if (error) {
       return this.#finder.onError(error, opt);
+    }
+    if (REG_UNIVERSAL.test(selector)) {
+      return node;
     }
     const document = node.ownerDocument;
     if (this.#canUseNwsapi(document) && node.parentNode) {
@@ -325,6 +340,9 @@ export class DOMSelector {
     if (error) {
       return this.#finder.onError(error, opt);
     }
+    if (REG_UNIVERSAL.test(selector)) {
+      return node.firstElementChild;
+    }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (node === this.#document && this.#canUseNwsapi(document)) {
@@ -373,6 +391,9 @@ export class DOMSelector {
     }
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+    if (document && REG_UNIVERSAL.test(selector)) {
+      return collectAllDescendants(node, document);
+    }
     if (node === this.#document && this.#canUseNwsapi(document)) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);

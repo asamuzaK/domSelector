@@ -683,6 +683,40 @@ describe('DOMSelector', () => {
         'result'
       );
     });
+
+    it('should get result for universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('*', node);
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null,
+          ast: cssTree.parse('*', {
+            context: 'selectorList'
+          })
+        },
+        'result'
+      );
+    });
+
+    it('should get result for namespaced universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('*|*', node);
+      assert.deepEqual(
+        res,
+        {
+          match: true,
+          pseudoElement: null,
+          ast: cssTree.parse('*|*', {
+            context: 'selectorList'
+          })
+        },
+        'result'
+      );
+    });
   });
 
   describe('matches', () => {
@@ -920,6 +954,20 @@ describe('DOMSelector', () => {
       });
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should get true for universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('*', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for namespaced universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('*|*', node);
+      assert.strictEqual(res, true, 'result');
+    });
   });
 
   describe('closest', () => {
@@ -1118,6 +1166,20 @@ describe('DOMSelector', () => {
       delete node._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(res, null, 'result');
+    });
+
+    it('should get closest node for universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('*', node);
+      assert.deepEqual(res, node, 'result');
+    });
+
+    it('should get closest node for namespaced universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.closest('*|*', node);
+      assert.deepEqual(res, node, 'result');
     });
   });
 
@@ -1457,6 +1519,39 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window, document);
       const res = domSelector.querySelector('[id="dt1"]', document);
       assert.deepEqual(res, target, 'result');
+    });
+
+    it('should get matched node for universal selector on document', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', document);
+      assert.deepEqual(res, document.firstElementChild, 'result');
+    });
+
+    it('should get matched node for universal selector on element', () => {
+      const node = document.createElement('div');
+      const child1 = document.createElement('span');
+      const child2 = document.createElement('p');
+      node.appendChild(child1);
+      node.appendChild(child2);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', node);
+      assert.deepEqual(res, child1, 'result');
+    });
+
+    it('should get matched node for namespaced universal selector', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('span');
+      node.appendChild(child);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*|*', node);
+      assert.deepEqual(res, child, 'result');
+    });
+
+    it('should return null for empty node with universal selector', () => {
+      const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', node);
+      assert.deepEqual(res, null, 'result');
     });
   });
 

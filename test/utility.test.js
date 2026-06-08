@@ -2997,4 +2997,109 @@ describe('utility functions', () => {
       assert.strictEqual(allowlistSet.has(parent), false);
     });
   });
+
+  describe('collectAllDescendants', () => {
+    const func = util.collectAllDescendants;
+
+    it('should throw TypeError if node is undefined or null', () => {
+      assert.throws(
+        () => func(undefined, document),
+        TypeError,
+        'Unexpected type Undefined'
+      );
+      assert.throws(
+        () => func(null, document),
+        TypeError,
+        'Unexpected type Undefined'
+      );
+    });
+
+    it('should throw TypeError if document is missing', () => {
+      const node = document.createElement('div');
+      assert.throws(
+        () => func(node),
+        TypeError,
+        'Unexpected type Undefined'
+      );
+      assert.throws(
+        () => func(node, null),
+        TypeError,
+        'Unexpected type Null'
+      );
+    });
+
+    it('should collect all descendant elements from Document', () => {
+      const html = `
+        <div id="parent">
+          <span class="child"></span>
+          <p class="child">
+            <strong class="grandchild"></strong>
+          </p>
+        </div>
+      `;
+      const doc = new window.DOMParser().parseFromString(html, 'text/html');
+      const res = func(doc, doc);
+      // html, head, body, div, span, p, strong = 7 elements
+      assert.strictEqual(res.length, 7, 'number of descendants');
+      assert.strictEqual(res[0].localName, 'html');
+      assert.strictEqual(res[res.length - 1].localName, 'strong');
+    });
+
+    it('should collect all descendant elements from an Element', () => {
+      const parent = document.createElement('div');
+      parent.innerHTML = `
+        <span class="child1"></span>
+        <p class="child2">
+          <strong class="grandchild"></strong>
+        </p>
+      `;
+      document.body.appendChild(parent);
+      const res = func(parent, document);
+      assert.strictEqual(res.length, 3, 'number of descendants');
+      assert.strictEqual(res[0].localName, 'span');
+      assert.strictEqual(res[1].localName, 'p');
+      assert.strictEqual(res[2].localName, 'strong');
+      document.body.removeChild(parent);
+    });
+
+    it('should collect all descendant elements from a DocumentFragment', () => {
+      const frag = document.createDocumentFragment();
+      const parent = document.createElement('div');
+      parent.innerHTML = `
+        <span class="child1"></span>
+        <p class="child2">
+          <strong class="grandchild"></strong>
+        </p>
+      `;
+      frag.appendChild(parent);
+      const res = func(frag, document);
+      assert.strictEqual(
+        res.length,
+        4,
+        'number of descendants including the root div'
+      );
+      assert.strictEqual(res[0].localName, 'div');
+      assert.strictEqual(res[1].localName, 'span');
+      assert.strictEqual(res[2].localName, 'p');
+      assert.strictEqual(res[3].localName, 'strong');
+    });
+
+    it('should return an empty array if the element has no descendants', () => {
+      const parent = document.createElement('div');
+      const res = func(parent, document);
+      assert.deepEqual(res, [], 'result should be an empty array');
+    });
+
+    it('should ignore text nodes and comments (only collect ELEMENT_NODE)', () => {
+      const parent = document.createElement('div');
+      parent.appendChild(document.createTextNode('Hello'));
+      parent.appendChild(document.createElement('span'));
+      parent.appendChild(document.createComment('This is a comment'));
+      parent.appendChild(document.createElement('p'));
+      const res = func(parent, document);
+      assert.strictEqual(res.length, 2, 'number of element descendants');
+      assert.strictEqual(res[0].localName, 'span');
+      assert.strictEqual(res[1].localName, 'p');
+    });
+  });
 });
