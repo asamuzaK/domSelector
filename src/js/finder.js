@@ -231,7 +231,7 @@ export class Finder {
       this.#node !== this.#root && this.#node.nodeType === ELEMENT_NODE;
     this.#selector = selector;
     this.#pseudoElement = [];
-    this.#walkers = new WeakMap();
+    this.#walkers = null;
     this.#nodeWalker = null;
     this.#rootWalker = null;
     this.#verifyShadowHost = null;
@@ -248,7 +248,7 @@ export class Finder {
     this.#anbCache = null;
     this.#combinatorCache = null;
     this.#focusWithinCache = null;
-    this.#invalidateResults = new WeakMap();
+    this.#invalidateResults = null;
     this.#nthChildCache = null;
     this.#nthChildOfCache = null;
     this.#nthChildResultCache = null;
@@ -466,7 +466,11 @@ export class Finder {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     if (force) {
       return this.#document.createTreeWalker(node, whatToShow);
-    } else if (this.#walkers.has(node)) {
+    }
+    if (!this.#walkers) {
+      this.#walkers = new WeakMap();
+    }
+    if (this.#walkers.has(node)) {
       return this.#walkers.get(node);
     }
     const walker = this.#document.createTreeWalker(node, whatToShow);
@@ -2173,6 +2177,9 @@ export class Finder {
    * @returns {boolean} The result.
    */
   _matchLeaves = (leaves, node, opt) => {
+    if (!this.#invalidateResults) {
+      this.#invalidateResults = new WeakMap();
+    }
     const results = this.#invalidate ? this.#invalidateResults : this.#results;
     let result = results.get(leaves);
     if (result && result.has(node)) {
