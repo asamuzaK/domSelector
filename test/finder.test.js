@@ -10836,8 +10836,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node', () => {
@@ -10852,8 +10851,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10868,8 +10866,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get matched node', () => {
@@ -10881,8 +10878,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10894,8 +10890,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get matched node', () => {
@@ -10910,8 +10905,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.foo', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -10929,8 +10923,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('[hidden]', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('span3')], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -10942,8 +10935,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('dt', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should get matched node(s)', () => {
@@ -10971,8 +10963,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':is(ul)', document);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should throw', () => {
@@ -11013,8 +11004,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('::before', node);
       const res = finder._matchSelector(ast, node);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get matched node', () => {
@@ -11031,8 +11021,7 @@ describe('Finder', () => {
       const res = finder._matchSelector(ast, node, {
         check: true
       });
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should warn', () => {
@@ -11053,8 +11042,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should get matched node', () => {
@@ -11101,7 +11089,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(#baz) div', node);
       const res = finder._matchSelector(ast, node);
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -11148,7 +11136,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(#foobar) div', node);
       const res = finder._matchSelector(ast, node);
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
