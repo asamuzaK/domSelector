@@ -1981,7 +1981,7 @@ export class Finder {
         this.onError(generateException(msg, SYNTAX_ERR, this.#window));
         return false;
       }
-      if (!this._matchSelector(leaf, host).has(host)) {
+      if (!this._matchSelector(leaf, host)) {
         return false;
       }
     }
@@ -2009,7 +2009,7 @@ export class Finder {
           this.onError(generateException(msg, SYNTAX_ERR, this.#window));
           return false;
         }
-        bool = this._matchSelector(leaf, parent).has(parent);
+        bool = this._matchSelector(leaf, parent);
         if (!bool) {
           break;
         }
@@ -2069,39 +2069,27 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
    * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @returns {boolean} True if matched, otherwise false.
    */
   _matchSelectorForElement = (ast, node, opt) => {
     const { type: astType } = ast;
     const astName = unescapeSelector(ast.name);
-    const matched = new Set();
     switch (astType) {
       case ATTR_SELECTOR: {
-        if (matchAttributeSelector(ast, node, opt)) {
-          matched.add(node);
-        }
-        break;
+        return matchAttributeSelector(ast, node, opt);
       }
       case ID_SELECTOR: {
-        if (node.id === astName) {
-          matched.add(node);
-        }
-        break;
+        return node.id === astName;
       }
       case CLASS_SELECTOR: {
-        if (node.classList.contains(astName)) {
-          matched.add(node);
-        }
-        break;
+        return node.classList.contains(astName);
       }
       case PS_CLASS_SELECTOR: {
-        return this._matchPseudoClassSelector(ast, node, opt);
+        const nodes = this._matchPseudoClassSelector(ast, node, opt);
+        return nodes.has(node);
       }
       case TYPE_SELECTOR: {
-        if (matchTypeSelector(ast, node, opt)) {
-          matched.add(node);
-        }
-        break;
+        return matchTypeSelector(ast, node, opt);
       }
       // PS_ELEMENT_SELECTOR is handled by default.
       default: {
@@ -2109,7 +2097,7 @@ export class Finder {
           if (this.#check) {
             const css = generateCSS(ast);
             this.#pseudoElement.push(css);
-            matched.add(node);
+            return true;
           } else {
             matchPseudoElementSelector(astName, astType, opt);
           }
@@ -2118,7 +2106,7 @@ export class Finder {
         }
       }
     }
-    return matched;
+    return false;
   };
 
   /**
@@ -2127,23 +2115,23 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The DocumentFragment node.
    * @param {object} [opt] - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @returns {boolean} True if matched, otherwise false.
    */
   _matchSelectorForShadowRoot = (ast, node, opt = {}) => {
     const { name: astName } = ast;
     if (KEYS_LOGICAL.has(astName)) {
       opt.isShadowRoot = true;
-      return this._matchPseudoClassSelector(ast, node, opt);
+      const nodes = this._matchPseudoClassSelector(ast, node, opt);
+      return nodes.has(node);
     }
-    const matched = new Set();
     if (astName === 'host' || astName === 'host-context') {
-      const res = this._matchShadowHostPseudoClass(ast, node, opt);
-      if (res) {
+      const matchedNode = this._matchShadowHostPseudoClass(ast, node, opt);
+      if (matchedNode) {
         this.#verifyShadowHost = true;
-        matched.add(res);
+        return true;
       }
     }
-    return matched;
+    return false;
   };
 
   /**
@@ -2152,7 +2140,7 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Document, DocumentFragment, or Element node.
    * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @returns {boolean} True if matched, otherwise false.
    */
   _matchSelector = (ast, node, opt) => {
     if (node.nodeType === ELEMENT_NODE) {
@@ -2165,7 +2153,7 @@ export class Finder {
     ) {
       return this._matchSelectorForShadowRoot(ast, node, opt);
     }
-    return new Set();
+    return false;
   };
 
   /**
@@ -2210,7 +2198,7 @@ export class Finder {
           // No action needed for other types.
         }
       }
-      bool = this._matchSelector(leaf, node, opt).has(node);
+      bool = this._matchSelector(leaf, node, opt);
       if (!bool) {
         break;
       }
