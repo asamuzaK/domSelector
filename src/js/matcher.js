@@ -207,7 +207,7 @@ export const matchLanguagePseudoClass = (
  * Matches the :disabled and :enabled pseudo-classes.
  * @param {string} astName - pseudo-class name
  * @param {object} node - Element node
- * @returns {boolean} - True if matched
+ * @returns {boolean} - True if the pseudo-class matches, otherwise false.
  */
 export const matchDisabledPseudoClass = (astName, node) => {
   const { localName, parentNode } = node;
@@ -264,7 +264,7 @@ export const matchDisabledPseudoClass = (astName, node) => {
  * Match the :read-only and :read-write pseudo-classes
  * @param {string} astName - pseudo-class name
  * @param {object} node - Element node
- * @returns {boolean} - True if matched
+ * @returns {boolean} - True if the pseudo-class matches, otherwise false.
  */
 export const matchReadOnlyPseudoClass = (astName, node) => {
   const { localName } = node;
@@ -545,7 +545,7 @@ export const matchAttributeSelector = (
  * @param {boolean} [opt.check] - running in internal check()
  * @param {boolean} [opt.forgive] - forgive undeclared namespace
  * @param {object} [opt.globalObject] - The global object.
- * @returns {boolean} - result
+ * @returns {boolean} - True if the type selector matches, otherwise false.
  */
 export const matchTypeSelector = (
   ast,
