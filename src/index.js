@@ -33,7 +33,9 @@ const CACHE_SIZE = 2048;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
-const REG_TEST_LIB = new RegExp(`^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${DESCEND}${TAG_TYPE_WO_UNIVERSAL})?)$`);
+const REG_TEST_LIB = new RegExp(
+  `^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${DESCEND}${TAG_TYPE_WO_UNIVERSAL})?)$`
+);
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 
 /**
