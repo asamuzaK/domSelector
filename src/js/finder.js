@@ -1969,7 +1969,7 @@ export class Finder {
    * @param {Array.<object>} leaves - The AST leaves.
    * @param {object} host - The host element.
    * @param {object} ast - The original AST for error reporting.
-   * @returns {boolean} True if matched.
+   * @returns {boolean} True if matches, otherwise false.
    */
   _evaluateHostPseudo = (leaves, host, ast) => {
     const l = leaves.length;
@@ -2023,44 +2023,48 @@ export class Finder {
   };
 
   /**
-   * Matches shadow host pseudo-classes.
+   * Evaluates shadow host pseudo-classes.
    * @private
    * @param {object} ast - The AST.
    * @param {object} node - The DocumentFragment node.
-   * @returns {?object} The matched node.
+   * @returns {boolean} True if matches, otherwise false.
    */
-  _matchShadowHostPseudoClass = (ast, node) => {
+  _evaluateShadowHost = (ast, node) => {
     const { children: astChildren, name: astName } = ast;
     // Handle simple pseudo-class (no arguments).
     if (!Array.isArray(astChildren)) {
       if (astName === 'host') {
-        return node;
+        return true;
       }
       const msg = `Invalid selector :${astName}`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      return false;
     }
     // Handle functional pseudo-class like :host(...).
     if (astName !== 'host' && astName !== 'host-context') {
       const msg = `Invalid selector :${astName}()`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      return false;
     }
     if (astChildren.length !== 1) {
       const css = generateCSS(ast);
       const msg = `Invalid selector ${css}`;
-      return this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.#window));
+      return false;
     }
     const { host } = node;
     const { branches } = walkAST(astChildren[0]);
     const [branch] = branches;
     const [...leaves] = branch;
-    let isMatch = false;
-    if (astName === 'host') {
-      isMatch = this._evaluateHostPseudo(leaves, host, ast);
-      // astName === 'host-context'.
-    } else {
-      isMatch = this._evaluateHostContextPseudo(leaves, host, ast);
+    if (astName === 'host' && this._evaluateHostPseudo(leaves, host, ast)) {
+      return true;
+    } else if (
+      astName === 'host-context' &&
+      this._evaluateHostContextPseudo(leaves, host, ast)
+    ) {
+      return true;
     }
-    return isMatch ? node : null;
+    return false;
   };
 
   /**
@@ -2069,7 +2073,7 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
    * @param {object} opt - Options.
-   * @returns {boolean} True if matched, otherwise false.
+   * @returns {boolean} True if matches, otherwise false.
    */
   _matchSelectorForElement = (ast, node, opt) => {
     const { type: astType } = ast;
@@ -2115,7 +2119,7 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The DocumentFragment node.
    * @param {object} [opt] - Options.
-   * @returns {boolean} True if matched, otherwise false.
+   * @returns {boolean} True if matches, otherwise false.
    */
   _matchSelectorForShadowRoot = (ast, node, opt = {}) => {
     const { name: astName } = ast;
@@ -2125,8 +2129,8 @@ export class Finder {
       return nodes.has(node);
     }
     if (astName === 'host' || astName === 'host-context') {
-      const matchedNode = this._matchShadowHostPseudoClass(ast, node, opt);
-      if (matchedNode) {
+      const matches = this._evaluateShadowHost(ast, node, opt);
+      if (matches) {
         this.#verifyShadowHost = true;
         return true;
       }
@@ -2140,7 +2144,7 @@ export class Finder {
    * @param {object} ast - The AST.
    * @param {object} node - The Document, DocumentFragment, or Element node.
    * @param {object} opt - Options.
-   * @returns {boolean} True if matched, otherwise false.
+   * @returns {boolean} True if matches, otherwise false.
    */
   _matchSelector = (ast, node, opt) => {
     if (node.nodeType === ELEMENT_NODE) {
@@ -2713,13 +2717,18 @@ export class Finder {
     let pending = false;
     if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
       let shadowRoot = null;
-      if (this.#shadow && this.#node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-        shadowRoot = this._matchShadowHostPseudoClass(leaf, this.#node);
-      } else if (filterLeaves.length && this.#node.nodeType === ELEMENT_NODE) {
-        shadowRoot = this._matchShadowHostPseudoClass(
-          leaf,
-          this.#node.shadowRoot
-        );
+      if (
+        this.#shadow &&
+        this.#node.nodeType === DOCUMENT_FRAGMENT_NODE &&
+        this._evaluateShadowHost(leaf, this.#node)
+      ) {
+        shadowRoot = this.#node;
+      } else if (
+        filterLeaves.length &&
+        this.#node.nodeType === ELEMENT_NODE &&
+        this._evaluateShadowHost(leaf, this.#node.shadowRoot)
+      ) {
+        shadowRoot = this.#node.shadowRoot;
       }
       if (shadowRoot) {
         let bool = true;
@@ -2729,11 +2738,7 @@ export class Finder {
           switch (filterLeaf.name) {
             case 'host':
             case 'host-context': {
-              const matchedNode = this._matchShadowHostPseudoClass(
-                filterLeaf,
-                shadowRoot
-              );
-              bool = matchedNode === shadowRoot;
+              bool = this._evaluateShadowHost(filterLeaf, shadowRoot);
               break;
             }
             case 'has': {
