@@ -9864,7 +9864,7 @@ describe('Finder', () => {
     });
   });
 
-  describe('match shadow host pseudo class', () => {
+  describe('evaluates shadow host pseudo class', () => {
     it('should throw', () => {
       const ast = {
         children: null,
@@ -9897,7 +9897,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':foobar div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9953,7 +9953,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':foobar(#baz) div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10003,7 +10003,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10053,7 +10053,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host() div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10099,7 +10099,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context() div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10117,7 +10117,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: null,
         name: 'host',
@@ -10148,8 +10148,8 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should throw', () => {
@@ -10202,7 +10202,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(#baz #foobar) div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10220,7 +10220,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -10263,8 +10263,8 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#baz) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10310,8 +10310,8 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(#foobar) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, null, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should throw', () => {
@@ -10364,7 +10364,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context(#baz #foobar) div', node);
       assert.throws(
-        () => finder._matchShadowHostPseudoClass(ast, node),
+        () => finder._evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10382,7 +10382,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -10425,11 +10425,11 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context(#baz) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -10472,8 +10472,8 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context(#div0) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10519,8 +10519,8 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host-context(#foobar) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, null, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -10598,11 +10598,11 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, null, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -10670,8 +10670,8 @@ describe('Finder', () => {
       host.click();
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -10741,11 +10741,11 @@ describe('Finder', () => {
       const node = host.shadowRoot;
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, null, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -10821,8 +10821,8 @@ describe('Finder', () => {
       host.click();
       const finder = new Finder(window);
       finder.setup(':host(:state(checked)) div', node);
-      const res = finder._matchShadowHostPseudoClass(ast, node);
-      assert.deepEqual(res, node, 'result');
+      const res = finder._evaluateShadowHost(ast, node);
+      assert.strictEqual(res, true, 'result');
     });
   });
 
