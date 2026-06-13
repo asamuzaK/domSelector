@@ -20,7 +20,7 @@ import { collectAllDescendants, getType } from './js/utility.js';
 /* constants */
 import {
   ATTR_TYPE,
-  DESCEND,
+  COMBO,
   DOCUMENT_NODE,
   ELEMENT_NODE,
   TAG_TYPE_WO_UNIVERSAL,
@@ -34,7 +34,7 @@ const CACHE_SIZE = 2048;
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_TEST_LIB = new RegExp(
-  `^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${DESCEND}${TAG_TYPE_WO_UNIVERSAL})?)$`
+  `^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${COMBO}${TAG_TYPE_WO_UNIVERSAL})?)$`
 );
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 
