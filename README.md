@@ -163,7 +163,7 @@ Clears the internal caches to free up memory.
 | `E:visited` | ✓ | Returns `false` or `null` to prevent fingerprinting. |
 | `E:local-link` | ✓ | |
 | `E:target` | ✓ | |
-| `E:target-within` | ✓ | |
+| `E:target-within` | | Removed from spec. |
 | `E:scope` | ✓ | |
 | `E:hover` | ✓ | |
 | `E:active` | ✓ | |
@@ -174,7 +174,7 @@ Clears the internal caches to free up memory.
 | `E:current(s)` | Unsupported | |
 | `E:past` | Unsupported | |
 | `E:future` | Unsupported | |
-| `E:open`<br>`E:closed` | Partially supported | Matching with `<select>`, e.g. `select:open`, is not supported. |
+| `E:open` | Partially supported | Matching with `<select>`, e.g. `select:open`, or `<input type="color">` are not supported. |
 | `E:popover-open` | Unsupported | |
 | `E:enabled`<br>`E:disabled` | ✓ | |
 | `E:read-write`<br>`E:read-only` | ✓ | |
