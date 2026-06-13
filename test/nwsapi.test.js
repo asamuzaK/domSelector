@@ -949,6 +949,61 @@ describe('nwsapi', () => {
           'Should return false when ~= search value contains spaces'
         );
       });
+
+      it('_compile() should return the cached lambda function on subsequent calls with the same selector', () => {
+        const selector = '.test-cache-selector';
+        const selectLambda1 = api._compile(selector, true);
+        const selectLambda2 = api._compile(selector, true);
+        assert.strictEqual(
+          selectLambda1,
+          selectLambda2,
+          'Should return the exact same cached lambda object for select mode (mode: true)'
+        );
+        const matchLambda1 = api._compile(selector, false);
+        const matchLambda2 = api._compile(selector, false);
+        assert.strictEqual(
+          matchLambda1,
+          matchLambda2,
+          'Should return the exact same cached lambda object for match mode (mode: false)'
+        );
+        assert.notStrictEqual(
+          selectLambda1,
+          matchLambda1,
+          'Select mode and match mode should maintain separate caches'
+        );
+      });
+
+      it('_compilePseudoLogical() should fallback to [expr] when splitGroup match returns null', () => {
+        try {
+          api.select('div:is(,)', document);
+          assert.fail(
+            'Should throw an error for invalid selector inside :is()'
+          );
+        } catch (err) {
+          assert.notStrictEqual(
+            err.name,
+            'TypeError',
+            'Should NOT crash with TypeError (Cannot read properties of null)'
+          );
+          assert.ok(
+            err.name === 'SyntaxError' || err instanceof window.DOMException,
+            'Should safely fallback and throw a proper SyntaxError'
+          );
+        }
+        try {
+          api.select('div:not()', document);
+          assert.ok(
+            true,
+            'Processed empty pseudo-class without throwing TypeError'
+          );
+        } catch (err) {
+          assert.notStrictEqual(
+            err.name,
+            'TypeError',
+            'Should NOT crash with TypeError for empty :not()'
+          );
+        }
+      });
     });
 
     describe('Internal Compiler Fallbacks', () => {

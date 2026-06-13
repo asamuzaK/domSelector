@@ -9,7 +9,7 @@ import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { isContentEditable } from './utility.js';
 
 /* constants */
-import { DOCUMENT_NODE, ELEMENT_NODE } from './constant.js';
+import { DOCUMENT_NODE, ELEMENT_NODE, KB } from './constant.js';
 const CACHE_SIZE = 2048;
 const F_INIT = '"use strict";return function resolver(c,f,x,r)';
 const S_HEAD = 'var e,n,o,j=r.length-1,k=-1';
@@ -488,8 +488,6 @@ export class Nwsapi {
         isContentEditable,
         isIndeterminate,
         isTarget,
-        match: (selectors, element, callback) =>
-          this.match(selectors, element, callback),
         nthElement: (element, dir) =>
           solveNth(element, dir, this.#nthChildState, false),
         nthOfType: (element, dir) =>
@@ -988,12 +986,27 @@ export class Nwsapi {
     const expr = match[2]
       .replace(REX.commaGroup, ',')
       .replace(REX.trimSpaces, '');
-    const escapedExpr = expr.replace(/\\/g, '\\\\').replace(/\x22/g, '\\"');
-    if (pseudoName === 'is') {
-      return `if(s.match("${escapedExpr}",e)){${source}}`;
-    } else if (pseudoName === 'not') {
-      return `if(!s.match("${escapedExpr}",e)){${source}}`;
+    if (pseudoName === 'is' || pseudoName === 'not') {
+      const subExprs = expr.match(REX.splitGroup) || [expr];
+      const uid = Math.floor(Math.random() * KB * KB);
+      const label = `l_${uid}`;
+      let code = `{ let r_${uid}=false, e_${uid}=e, n_${uid}=n, o_${uid}=o; ${label}: { `;
+      for (let i = 0; i < subExprs.length; i++) {
+        const subCode = this._compileSelector(
+          subExprs[i],
+          `r_${uid}=true; break ${label};`,
+          false
+        );
+        code += `{ ${subCode} } e=e_${uid}; n=n_${uid}; o=o_${uid}; `;
+      }
+      code += `} e=e_${uid}; n=n_${uid}; o=o_${uid}; `;
+      if (pseudoName === 'is') {
+        return `${code} if(r_${uid}){${source}} }`;
+      } else {
+        return `${code} if(!r_${uid}){${source}} }`;
+      }
     } else if (pseudoName === 'has') {
+      const escapedExpr = expr.replace(/\\/g, '\\\\').replace(/\x22/g, '\\"');
       this.#matchResolvers.clear();
       return `if(e.querySelector(":scope ${escapedExpr}")){${source}}`;
     }
