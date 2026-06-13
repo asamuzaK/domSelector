@@ -2246,7 +2246,7 @@ describe('Finder', () => {
   });
 
   describe('match An+B', () => {
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2260,19 +2260,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(even)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('dd1'),
-          document.getElementById('dd2'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2286,15 +2277,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(odd)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2324,15 +2310,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('dt:nth-child(odd)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt3')],
-        'result'
-      );
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-last-child';
       const leaf = {
         nth: {
@@ -2346,15 +2327,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-last-child(even)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2369,15 +2345,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dd2')],
-        'result'
-      );
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2391,19 +2362,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(2n)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('dd1'),
-          document.getElementById('dd2'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2417,11 +2379,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(3)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-child';
       const leaf = {
         nth: {
@@ -2435,11 +2396,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt1')], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-last-child';
       const leaf = {
         nth: {
@@ -2454,15 +2414,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-last-child(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [document.getElementById('dt2'), document.getElementById('dd3')],
-        'result'
-      );
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-of-type';
       const leaf = {
         nth: {
@@ -2476,11 +2431,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-of-type(even)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt2')], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-of-type';
       const leaf = {
         nth: {
@@ -2494,15 +2448,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-of-type(odd)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt3')],
-        'result'
-      );
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-last-of-type';
       const leaf = {
         nth: {
@@ -2516,11 +2465,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-last-of-type(even)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt2')], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-of-type';
       const leaf = {
         nth: {
@@ -2535,11 +2483,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-of-type(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-of-type';
       const leaf = {
         nth: {
@@ -2553,11 +2500,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-of-type(2n)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leafName = 'nth-of-type';
       const leaf = {
         nth: {
@@ -2571,11 +2517,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-of-type(3)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leafName = 'nth-last-of-type';
       const leaf = {
         nth: {
@@ -2590,8 +2535,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-last-of-type(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt3')], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -2609,8 +2553,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-foo(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -2698,7 +2641,7 @@ describe('Finder', () => {
   });
 
   describe('match logical pseudo-class function', () => {
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -2724,10 +2667,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -2758,7 +2701,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -2787,10 +2730,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -2811,10 +2754,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -2845,7 +2788,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -2888,10 +2831,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -2945,7 +2888,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -3002,7 +2945,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -3097,10 +3040,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3192,10 +3135,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3249,10 +3192,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3316,10 +3259,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3409,7 +3352,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -3466,10 +3409,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3523,7 +3466,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -3580,10 +3523,10 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const branches = [
         [
           {
@@ -3678,7 +3621,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, node, 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -3734,7 +3677,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -3780,7 +3723,7 @@ describe('Finder', () => {
         node,
         {}
       );
-      assert.deepEqual(res, null, 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -3835,7 +3778,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: [
           {
@@ -3875,7 +3818,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':is(ul, dl)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -3956,7 +3899,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has(:is(:has(li, dd)))', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should throw', () => {
@@ -4071,7 +4014,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: [
           {
@@ -4090,15 +4033,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(even)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('dd1'),
-          document.getElementById('dd2'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should throw', () => {
@@ -4127,7 +4062,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: [
           {
@@ -4145,7 +4080,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':dir(ltr)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should throw', () => {
@@ -4174,7 +4109,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: [
           {
@@ -4192,10 +4127,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':lang(en)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: [
           {
@@ -4221,7 +4156,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':lang(en, fr)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4243,7 +4178,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':state(checked)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4306,10 +4241,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':state(checked)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: [
           {
@@ -4370,7 +4305,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':state(checked)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4391,7 +4326,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':current(foo)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -4420,7 +4355,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4448,7 +4383,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host(.foo)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4476,7 +4411,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host-context(.foo)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should throw', () => {
@@ -4533,7 +4468,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':contains(foo)', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -4562,7 +4497,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4585,10 +4520,10 @@ describe('Finder', () => {
       const res = finder._matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -4601,7 +4536,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':any-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4621,7 +4556,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':any-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4636,10 +4571,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':any-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -4652,7 +4587,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':any-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4667,10 +4602,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':any-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'link',
@@ -4683,10 +4618,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -4699,7 +4634,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':local-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4715,10 +4650,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':local-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -4731,7 +4666,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':local-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4747,7 +4682,20 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':local-link', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'local-link',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('div0');
+      const finder = new Finder(window);
+      finder.setup(':local-link', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4763,7 +4711,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':visited', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4779,10 +4727,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':hover', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -4796,10 +4744,10 @@ describe('Finder', () => {
       finder.setup(':hover', node);
       node.dispatchEvent(new window.MouseEvent('mouseover'));
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -4814,7 +4762,7 @@ describe('Finder', () => {
       node.dispatchEvent(new window.MouseEvent('mouseover'));
       node.dispatchEvent(new window.MouseEvent('mousedown'));
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4832,7 +4780,7 @@ describe('Finder', () => {
       node.dispatchEvent(new window.MouseEvent('mouseover'));
       node.dispatchEvent(new window.MouseEvent('mouseout'));
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4850,7 +4798,7 @@ describe('Finder', () => {
       window.dispatchEvent(new window.MouseEvent('mouseover'));
       window.dispatchEvent(new window.MouseEvent('mousedown'));
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4866,10 +4814,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':active', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -4887,7 +4835,7 @@ describe('Finder', () => {
         })
       );
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4913,7 +4861,7 @@ describe('Finder', () => {
         })
       );
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4940,7 +4888,7 @@ describe('Finder', () => {
         event
       });
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -4961,10 +4909,10 @@ describe('Finder', () => {
         })
       );
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'target',
@@ -4977,7 +4925,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':target', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -4993,7 +4941,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':target', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5009,58 +4957,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':target', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'target-within',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      node.id = 'foo';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':target-within', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'target-within',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      node.id = 'foo';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':target-within', parent);
-      const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [parent], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'target-within',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('div');
-      node.id = 'bar';
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':target-within', parent);
-      const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -5073,7 +4973,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':scope', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5091,10 +4991,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':scope', refPoint);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -5104,7 +5004,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':scope', document);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5120,10 +5020,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':scope', document);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5137,10 +5037,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5154,7 +5054,7 @@ describe('Finder', () => {
       finder.setup(':focus', node);
       node.focus();
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5166,7 +5066,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', document.body);
       const res = finder._matchPseudoClassSelector(leaf, document.body, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5182,7 +5082,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5200,7 +5100,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5218,7 +5118,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5236,7 +5136,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5254,7 +5154,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5272,7 +5172,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5290,7 +5190,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5308,7 +5208,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5326,7 +5226,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5344,7 +5244,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5362,7 +5262,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5380,7 +5280,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5398,10 +5298,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5426,10 +5326,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -5454,10 +5354,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus', host);
       const res = finder._matchPseudoClassSelector(leaf, host, {});
-      assert.deepEqual([...res], [host], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5471,10 +5371,10 @@ describe('Finder', () => {
       node.focus();
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5493,10 +5393,10 @@ describe('Finder', () => {
       node.focus();
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5520,7 +5420,7 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5537,10 +5437,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5574,10 +5474,10 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5611,7 +5511,7 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5628,7 +5528,7 @@ describe('Finder', () => {
       node.focus();
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
       node.dispatchEvent(
         new window.KeyboardEvent('keydown', {
           key: 'Tab'
@@ -5636,10 +5536,10 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node);
       const res2 = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res2], [], 'result');
+      assert.strictEqual(res2, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5677,7 +5577,7 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node2);
       const res = finder._matchPseudoClassSelector(leaf, node2, {});
-      assert.deepEqual([...res], [node2], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5708,7 +5608,7 @@ describe('Finder', () => {
       );
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
       node2.dispatchEvent(
         new window.MouseEvent('mousedown', {
           buttons: 1
@@ -5723,10 +5623,10 @@ describe('Finder', () => {
       node2.click();
       finder.setup(':focus-visible', node2);
       const res2 = finder._matchPseudoClassSelector(leaf, node2, {});
-      assert.deepEqual([...res2], [], 'result');
+      assert.strictEqual(res2, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5753,10 +5653,10 @@ describe('Finder', () => {
       node2.focus();
       finder.setup(':focus-visible', node2);
       const res = finder._matchPseudoClassSelector(leaf, node2, {});
-      assert.deepEqual([...res], [node2], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -5773,14 +5673,14 @@ describe('Finder', () => {
       node.focus();
       finder.setup(':focus-visible', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
       node2.focus();
       finder.setup(':focus-visible', node2);
       const res2 = finder._matchPseudoClassSelector(leaf, node2, {});
-      assert.deepEqual([...res2], [node2], 'result');
+      assert.strictEqual(res2, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5794,7 +5694,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5810,7 +5710,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5822,7 +5722,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', document.body);
       const res = finder._matchPseudoClassSelector(leaf, document.body, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5840,7 +5740,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -5858,7 +5758,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5876,7 +5776,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5894,7 +5794,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5912,7 +5812,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5930,10 +5830,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -5947,7 +5847,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [parent], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -5963,7 +5863,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5981,7 +5881,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -5999,7 +5899,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -6017,7 +5917,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -6035,7 +5935,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -6053,7 +5953,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     xit('should not match', () => {
@@ -6071,10 +5971,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', parent);
       const res = finder._matchPseudoClassSelector(leaf, parent, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -6099,10 +5999,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -6127,10 +6027,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', host);
       const res = finder._matchPseudoClassSelector(leaf, host, {});
-      assert.deepEqual([...res], [host], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -6156,10 +6056,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':focus-within', container);
       const res = finder._matchPseudoClassSelector(leaf, container, {});
-      assert.deepEqual([...res], [container], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -6172,7 +6072,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6187,41 +6087,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'closed',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('details');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':closed', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'closed',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('details');
-      node.setAttribute('open', 'open');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':closed', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -6234,7 +6103,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6249,41 +6118,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
-      const leaf = {
-        children: null,
-        name: 'closed',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('dialog');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':closed', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const leaf = {
-        children: null,
-        name: 'closed',
-        type: PS_CLASS_SELECTOR
-      };
-      const node = document.createElement('dialog');
-      node.setAttribute('open', 'open');
-      const parent = document.getElementById('div0');
-      parent.appendChild(node);
-      const finder = new Finder(window);
-      finder.setup(':closed', node);
-      const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -6296,7 +6134,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6311,7 +6149,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6330,10 +6168,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -6352,7 +6190,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6372,10 +6210,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -6390,7 +6228,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [node1], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6410,7 +6248,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6430,10 +6268,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':disabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6445,10 +6283,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6462,10 +6300,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6483,10 +6321,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6502,7 +6340,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6518,10 +6356,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6538,7 +6376,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6560,10 +6398,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -6579,7 +6417,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6597,10 +6435,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':enabled', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6613,10 +6451,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6630,10 +6468,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6647,10 +6485,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6663,10 +6501,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6679,7 +6517,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6694,10 +6532,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6710,10 +6548,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6726,10 +6564,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6742,7 +6580,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6757,10 +6595,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6773,10 +6611,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -6788,7 +6626,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6804,10 +6642,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-only', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -6819,10 +6657,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -6835,10 +6673,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -6851,7 +6689,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6867,7 +6705,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6883,7 +6721,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6899,10 +6737,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -6914,7 +6752,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6930,7 +6768,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -6946,10 +6784,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -6962,7 +6800,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -6977,10 +6815,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':read-write', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -6994,10 +6832,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7012,7 +6850,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7030,7 +6868,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7047,10 +6885,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7064,10 +6902,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7081,10 +6919,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7098,10 +6936,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7115,7 +6953,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7132,10 +6970,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -7149,10 +6987,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':placeholder-shown', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -7166,10 +7004,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':checked', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -7183,7 +7021,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':checked', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7200,10 +7038,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':checked', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -7218,10 +7056,23 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':checked', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
+      const leaf = {
+        children: null,
+        name: 'checked',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.getElementById('div0');
+      const finder = new Finder(window);
+      finder.setup(':checked', node);
+      const res = finder._matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -7235,7 +7086,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7251,10 +7102,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -7266,7 +7117,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7282,10 +7133,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -7309,7 +7160,35 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [node1], 'result');
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PS_CLASS_SELECTOR
+      };
+      const form = document.createElement('form');
+      const node1 = document.createElement('input');
+      node1.setAttribute('type', 'radio');
+      node1.setAttribute('name', 'foo');
+      node1.checked = true;
+      const node2 = document.createElement('input');
+      node2.setAttribute('type', 'radio');
+      node2.setAttribute('name', 'foo');
+      const node3 = document.createElement('input');
+      node3.setAttribute('type', 'radio');
+      node3.setAttribute('name', 'foo');
+      form.appendChild(node1);
+      form.appendChild(node2);
+      form.appendChild(node3);
+      const parent = document.getElementById('div0');
+      parent.appendChild(form);
+      const finder = new Finder(window);
+      finder.setup(':indeterminate', node1);
+      const res = finder._matchPseudoClassSelector(leaf, node1, {});
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7337,10 +7216,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -7361,10 +7240,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [node1], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -7394,10 +7273,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':indeterminate', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [node1], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should utilize cached results for identical radio button groups', () => {
+    it('should utilize cached results for radio button groups', () => {
       const form = document.createElement('form');
       const r1 = document.createElement('input');
       r1.type = 'radio';
@@ -7412,17 +7291,29 @@ describe('Finder', () => {
       finder.setup('input:indeterminate', form);
       const ast = { name: 'indeterminate' };
       const res1 = finder._matchPseudoClassSelector(ast, r1);
-      assert.strictEqual(res1.has(r1), true, 'first radio is indeterminate');
+      assert.strictEqual(res1, true, 'first radio is indeterminate');
       const res2 = finder._matchPseudoClassSelector(ast, r2);
       assert.strictEqual(
-        res2.has(r2),
+        res2,
         true,
         'second radio is indeterminate from cache'
       );
       document.body.removeChild(form);
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'indeterminate',
+        type: PS_CLASS_SELECTOR
+      };
+      const finder = new Finder(window);
+      finder.setup(':indeterminate', document.body);
+      const res = finder._matchPseudoClassSelector(leaf, document.body, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7436,7 +7327,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7453,7 +7344,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7469,7 +7360,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7486,10 +7377,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7503,7 +7394,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7519,10 +7410,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7541,7 +7432,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7563,10 +7454,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7587,7 +7478,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7608,7 +7499,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7627,7 +7518,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7647,7 +7538,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -7667,10 +7558,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7689,10 +7580,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7709,7 +7600,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7728,10 +7619,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7747,7 +7638,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7762,10 +7653,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7780,7 +7671,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7796,10 +7687,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7814,7 +7705,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7830,10 +7721,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -7848,7 +7739,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7864,10 +7755,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':default', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -7882,7 +7773,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7900,10 +7791,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -7920,7 +7811,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7940,10 +7831,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -7960,7 +7851,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -7980,10 +7871,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -8001,7 +7892,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', input);
       const res = finder._matchPseudoClassSelector(leaf, input, {});
-      assert.deepEqual([...res], [input], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8022,10 +7913,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', input);
       const res = finder._matchPseudoClassSelector(leaf, input, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -8043,7 +7934,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8064,10 +7955,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':valid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -8082,7 +7973,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8100,10 +7991,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -8120,7 +8011,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8140,10 +8031,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -8162,7 +8053,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8184,7 +8075,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8205,10 +8096,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', input);
       const res = finder._matchPseudoClassSelector(leaf, input, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -8226,7 +8117,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', input);
       const res = finder._matchPseudoClassSelector(leaf, input, {});
-      assert.deepEqual([...res], [input], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8247,10 +8138,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -8268,7 +8159,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':invalid', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8288,7 +8179,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8308,7 +8199,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8327,7 +8218,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8346,7 +8237,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8364,10 +8255,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -8383,10 +8274,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -8402,10 +8293,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -8420,10 +8311,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -8437,7 +8328,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8456,7 +8347,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8475,7 +8366,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':in-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8491,7 +8382,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':out-of-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -8507,10 +8398,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':out-of-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -8526,10 +8417,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':out-of-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -8545,7 +8436,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':out-of-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8564,10 +8455,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':out-of-range', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8580,10 +8471,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8597,10 +8488,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8614,7 +8505,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8631,10 +8522,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8648,10 +8539,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8665,10 +8556,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8682,10 +8573,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8698,10 +8589,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -8714,7 +8605,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8729,10 +8620,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':required', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8744,10 +8635,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8760,10 +8651,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8776,10 +8667,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8792,10 +8683,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8808,10 +8699,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8824,10 +8715,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8839,10 +8730,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -8854,7 +8745,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8870,10 +8761,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':optional', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'root',
@@ -8883,7 +8774,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':root', document);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8898,10 +8789,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':root', document);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'empty',
@@ -8941,15 +8832,15 @@ describe('Finder', () => {
       const res4 = finder._matchPseudoClassSelector(leaf, p4, {});
       const res5 = finder._matchPseudoClassSelector(leaf, p5, {});
       const res6 = finder._matchPseudoClassSelector(leaf, s1, {});
-      assert.deepEqual([...res1], [p1], 'result');
-      assert.deepEqual([...res2], [p2], 'result');
-      assert.deepEqual([...res3], [], 'result');
-      assert.deepEqual([...res4], [], 'result');
-      assert.deepEqual([...res5], [], 'result');
-      assert.deepEqual([...res6], [s1], 'result');
+      assert.strictEqual(res1, true, 'result');
+      assert.strictEqual(res2, true, 'result');
+      assert.strictEqual(res3, false, 'result');
+      assert.strictEqual(res4, false, 'result');
+      assert.strictEqual(res5, false, 'result');
+      assert.strictEqual(res6, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'first-child',
@@ -8963,7 +8854,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':first-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -8980,10 +8871,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':first-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'first-child',
@@ -8993,7 +8884,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':first-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -9010,10 +8901,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':last-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'last-child',
@@ -9027,10 +8918,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':last-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'last-child',
@@ -9040,10 +8931,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':last-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'only-child',
@@ -9055,7 +8946,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':only-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should not match', () => {
@@ -9074,10 +8965,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':only-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'only-child',
@@ -9087,10 +8978,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':only-child', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
@@ -9100,10 +8991,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':first-of-type', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [document.getElementById('dt1')], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
@@ -9113,10 +9004,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':first-of-type', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should not match', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
@@ -9126,10 +9017,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':last-of-type', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [document.getElementById('dt3')], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
@@ -9139,10 +9030,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':last-of-type', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -9157,10 +9048,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':only-of-type', node1);
       const res = finder._matchPseudoClassSelector(leaf, node1, {});
-      assert.deepEqual([...res], [node1], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -9170,10 +9061,74 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':only-of-type', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
+      const leaf = {
+        children: null,
+        name: 'first-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.append(node1, node2);
+      const finder = new Finder(window);
+      finder.setup(':first-of-type', frag);
+      const res = finder._matchPseudoClassSelector(leaf, node1, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'last-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.append(node1, node2);
+      const finder = new Finder(window);
+      finder.setup(':last-of-type', frag);
+      const res = finder._matchPseudoClassSelector(leaf, node1, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'only-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.append(node1, node2);
+      const finder = new Finder(window);
+      finder.setup(':only-of-type', frag);
+      const res = finder._matchPseudoClassSelector(leaf, node1, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'only-of-type',
+        type: PS_CLASS_SELECTOR
+      };
+      const frag = document.createDocumentFragment();
+      const node1 = document.createElement('div');
+      const node2 = document.createElement('div');
+      frag.append(node1, node2);
+      const finder = new Finder(window);
+      finder.setup(':only-of-type', frag);
+      const res = finder._matchPseudoClassSelector(leaf, node2, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9184,10 +9139,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9203,10 +9158,10 @@ describe('Finder', () => {
         true,
         'instance'
       );
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9221,10 +9176,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9241,10 +9196,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9255,7 +9210,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9270,7 +9225,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9285,10 +9240,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9300,10 +9255,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9317,10 +9272,10 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -9334,7 +9289,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [node], 'result');
+      assert.strictEqual(res, true, 'result');
     });
 
     // NOTE: not implemented in jsdom
@@ -9352,7 +9307,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9366,7 +9321,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':defined', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     // NOTE: popover api is not supported in jsdom
@@ -9381,7 +9336,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':popover-open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9400,7 +9355,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':popover-open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9420,7 +9375,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':popover-open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9440,7 +9395,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':popover-open', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9454,7 +9409,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':host', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.deepEqual(res, false, 'result');
     });
 
     // legacy pseudo-element
@@ -9469,7 +9424,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':after', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -9491,7 +9446,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     // not supported
@@ -9506,7 +9461,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':autofill', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -9528,7 +9483,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9542,7 +9497,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':has-slotted', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -9564,7 +9519,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     // unknown
@@ -9606,7 +9561,7 @@ describe('Finder', () => {
       const res = finder._matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should not match', () => {
@@ -9620,7 +9575,7 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':-webkit-foo', node);
       const res = finder._matchPseudoClassSelector(leaf, node, {});
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should warn', () => {
@@ -9642,7 +9597,7 @@ describe('Finder', () => {
       const { called } = stubWarn;
       stubWarn.restore();
       assert.strictEqual(called, true, 'called');
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should throw', () => {
@@ -9687,7 +9642,7 @@ describe('Finder', () => {
       const res = finder._matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should throw', () => {
@@ -9732,7 +9687,7 @@ describe('Finder', () => {
       const res = finder._matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
-      assert.deepEqual([...res], [], 'result');
+      assert.strictEqual(res, false, 'result');
     });
   });
 
@@ -9802,65 +9757,6 @@ describe('Finder', () => {
         'innerDiv inside shadow matches'
       );
       document.body.removeChild(host);
-    });
-  });
-
-  describe(':target-within branch coverage (Set caching)', () => {
-    it('should match target element and its ancestor in Light DOM', () => {
-      const parent = document.createElement('div');
-      const targetElement = document.createElement('div');
-      targetElement.id = 'foo'; // Matches JSDOM's configured hash URL (#foo)
-      parent.appendChild(targetElement);
-      document.body.appendChild(parent);
-      const finder = new Finder(window);
-      finder.setup(':target-within', targetElement, { check: true });
-      assert.strictEqual(
-        finder.find('self').match,
-        true,
-        'targetElement matches'
-      );
-      finder.setup(':target-within', parent, { check: true });
-      assert.strictEqual(
-        finder.find('self').match,
-        true,
-        'parent matches via cache hit'
-      );
-      document.body.removeChild(parent);
-    });
-
-    it('should penetrate shadow root boundary to host element', () => {
-      const host = document.createElement('div');
-      const shadow = host.attachShadow({ mode: 'open' });
-      const targetElement = document.createElement('div');
-      targetElement.id = 'foo';
-      shadow.appendChild(targetElement);
-      document.body.appendChild(host);
-      // Temporarily mock getElementById
-      const originalGetElementById = document.getElementById;
-      document.getElementById = id => {
-        if (id === 'foo') {
-          return targetElement;
-        }
-        return originalGetElementById.call(document, id);
-      };
-      const finder = new Finder(window);
-      try {
-        finder.setup(':target-within', targetElement, { check: true });
-        assert.strictEqual(
-          finder.find('self').match,
-          true,
-          'target inside shadow matches'
-        );
-        finder.setup(':target-within', host, { check: true });
-        assert.strictEqual(
-          finder.find('self').match,
-          true,
-          'host matches via shadow root penetration'
-        );
-      } finally {
-        document.getElementById = originalGetElementById;
-        document.body.removeChild(host);
-      }
     });
   });
 
@@ -10827,7 +10723,7 @@ describe('Finder', () => {
   });
 
   describe('match selector', () => {
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -10839,7 +10735,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -10869,7 +10765,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'div0',
         type: ID_SELECTOR
@@ -10893,7 +10789,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         name: 'foo\\ bar',
         type: ID_SELECTOR
@@ -10908,7 +10804,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const ast = {
         flags: null,
         finder: null,
@@ -10926,7 +10822,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const ast = {
         name: 'dt',
         type: TYPE_SELECTOR
@@ -10938,7 +10834,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
@@ -11007,7 +10903,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -11045,7 +10941,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match', () => {
       const ast = {
         children: [
           {
