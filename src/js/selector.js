@@ -11,7 +11,6 @@ import {
   COMBINATOR,
   COMBO,
   COMPOUND_I,
-  COMPOUND_L_I,
   DESCEND,
   HAS_COMPOUND,
   KEYS_LOGICAL,
@@ -30,9 +29,11 @@ import {
 /* regexp */
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
+const REG_EXCLUDE_QSA = new RegExp(
+  `(?:^(?:[A-Z]|\\.)[\\w-]*$|${COMPOUND_I}${DESCEND}${COMPOUND_I})`,
+  'i'
+);
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
-const REG_COMPOUND = new RegExp(`^${COMPOUND_L_I}$`, 'i');
-const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_LOGIC_COMPLEX = new RegExp(
   `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
 );
@@ -264,7 +265,6 @@ export const extractSubjectsRegExp = (selector, caseSensitive) => {
  * @returns {boolean} - True if the selector is valid for nwsapi.
  */
 export const filterSelector = (selector, target) => {
-  const isQuerySelectorAll = target === TARGET_ALL;
   // Basic validation and fast-fail for null/undefined/non-string values.
   if (
     !selector ||
@@ -275,6 +275,10 @@ export const filterSelector = (selector, target) => {
   }
   // Validate syntax.
   if (REG_INVALID_SYNTAX.test(selector)) {
+    return false;
+  }
+  // Target-specific early exits.
+  if (target === TARGET_ALL && REG_EXCLUDE_QSA.test(selector)) {
     return false;
   }
   // Exclude various complex or unsupported selectors early.
@@ -289,18 +293,11 @@ export const filterSelector = (selector, target) => {
       return false;
     }
   }
-  // Target-specific early exits.
-  if (target === TARGET_ALL && !REG_COMPOUND.test(selector)) {
-    return false;
-  }
   // Logic for pseudo-classes.
   if (selector.includes(':')) {
-    // Exclude descendant combinators in logical selectors for querySelectorAll.
-    if (isQuerySelectorAll && REG_DESCEND.test(selector)) {
-      return false;
-    }
     // Determine if the selector has complex logical structures.
-    const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
+    const isComplex =
+      target === TARGET_ALL ? false : REG_COMPLEX.test(selector);
     // Handle :has() specifically.
     if (selector.includes(':has(')) {
       if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {

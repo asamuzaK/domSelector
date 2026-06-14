@@ -625,9 +625,28 @@ describe('selector static analysis and validation', () => {
 
     it('should handle target-specific filters', () => {
       assert.strictEqual(func('p', TARGET_ALL), false, 'result');
+      assert.strictEqual(func('.foo', TARGET_ALL), false, 'result');
       assert.strictEqual(func('p.foo', TARGET_ALL), true, 'result');
       assert.strictEqual(
         func('p.content[id]:is(:last-child, :only-child)', TARGET_ALL),
+        true,
+        'result'
+      );
+      assert.strictEqual(func('.box + .box', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('.box ~ .box', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('.box:first-child', TARGET_ALL), true, 'result');
+      assert.strictEqual(
+        func('.box:nth-child(2n+1)', TARGET_ALL),
+        true,
+        'result'
+      );
+      assert.strictEqual(
+        func('.box:first-of-type', TARGET_ALL),
+        true,
+        'result'
+      );
+      assert.strictEqual(
+        func('.box:nth-of-type(2n+1)', TARGET_ALL),
         true,
         'result'
       );
