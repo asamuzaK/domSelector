@@ -22,12 +22,15 @@ export class Finder {
     private _collectNthOfType;
     private _matchAnPlusB;
     private _matchHasPseudoFunc;
+    private _buildHasAllowlist;
     private _evaluateHasPseudo;
     private _matchLogicalPseudoFunc;
+    private _evaluateLogicalPseudo;
+    private _evaluatePseudoClassFunc;
     private _matchPseudoClassSelector;
     private _evaluateHostPseudo;
     private _evaluateHostContextPseudo;
-    private _matchShadowHostPseudoClass;
+    private _evaluateShadowHost;
     private _matchSelectorForElement;
     private _matchSelectorForShadowRoot;
     private _matchSelector;

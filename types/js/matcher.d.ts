@@ -3,8 +3,8 @@ export function matchPseudoElementSelector(astName: string, astType: string, { f
     globalObject?: object | undefined;
     warn?: boolean | undefined;
 }): void;
-export function matchDirectionPseudoClass(ast: object, node: object): boolean;
-export function matchLanguagePseudoClass(ast: object, node: object): boolean;
+export function matchDirectionPseudoClass(ast: object, node: object, dirCache?: WeakMap<any, any>): boolean;
+export function matchLanguagePseudoClass(ast: object, node: object, langCache?: WeakMap<any, any>): boolean;
 export function matchDisabledPseudoClass(astName: string, node: object): boolean;
 export function matchReadOnlyPseudoClass(astName: string, node: object): boolean;
 export function matchAttributeSelector(ast: object, node: object, { check, forgive, globalObject }?: {

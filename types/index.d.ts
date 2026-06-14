@@ -1,6 +1,6 @@
 export class DOMSelector {
     constructor(window: Window, document: Document, opt?: object);
-    clear: () => void;
+    clear: (clearAll?: boolean) => void;
     extractSubjects: (selector: string, caseSensitive?: boolean) => Array<{
         id: string | null;
         className: string | null;

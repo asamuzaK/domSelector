@@ -12,8 +12,8 @@ export function isCustomElement(node: object, { formAssociated }?: {
     formAssociated?: boolean | undefined;
 }): boolean;
 export function getSlottedTextContent(node: object): string | null;
-export function getDirectionality(node: object): string | null;
-export function getLanguageAttribute(node: object): string | null;
+export function getDirectionality(node: object, dirCache?: WeakMap<any, any>): string | null;
+export function getLanguageAttribute(node: object, langCache?: WeakMap<any, any>): string | null;
 export function isContentEditable(node: object): boolean;
 export function isVisible(node: object): boolean;
 export function isFocusVisible(node: object): boolean;
@@ -24,3 +24,6 @@ export function isNamespaceDeclared(ns?: string, node?: object): boolean;
 export function isPreceding(nodeA: object, nodeB: object): boolean;
 export function compareNodes(a: object, b: object): number;
 export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
+export function findBestSeed(nodes: any[], state?: object): object;
+export function populateHasAllowlist(current: object, list: WeakSet<any>, visitedAncestors: Set<any>): void;
+export function collectAllDescendants(node: Document | DocumentFragment | Element, document: Document): Array<Element>;
