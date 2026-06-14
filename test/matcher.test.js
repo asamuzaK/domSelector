@@ -3158,6 +3158,89 @@ describe('matcher', () => {
       const res = func(ast, node);
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should ignore xml:lang attribute in namespace-less [lang]', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'lang',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS(
+        'http://www.w3.org/XML/1998/namespace',
+        'xml:lang',
+        'en'
+      );
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match attribute with exact case in fallback loop', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttributeNS(null, 'Foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match attribute starting with colon using value matcher in fallback loop', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: '\\:foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute(':foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should assign rawName to checkName in XML document', () => {
+      const ast = {
+        flags: null,
+        matcher: null,
+        name: {
+          name: 'Foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const doc = new window.DOMParser().parseFromString('<root/>', 'text/xml');
+      const node = doc.createElement('div');
+      node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'bar');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
   });
 
   describe('match type selector', () => {

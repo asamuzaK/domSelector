@@ -349,6 +349,7 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return node.firstElementChild;
     }
+    /*
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
     if (
@@ -370,6 +371,7 @@ export class DOMSelector {
         }
       }
     }
+    */
     let res;
     try {
       if (this.#idlUtils) {

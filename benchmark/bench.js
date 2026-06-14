@@ -177,7 +177,8 @@ const selectors = [
   '.box:nth-child(2n+1)',
   '.box:first-of-type',
   '.box:nth-of-type(2n+1)',
-  '*'
+  '*',
+  '[id]'
 ];
 
 /* matcher tests */
@@ -639,6 +640,12 @@ bench
   })
   .add(`patched-jsdom querySelector('${selectors[17]}')`, () => {
     parentNodeQuerySelectorRandom('patched-jsdom', selectors[17], 'p');
+  })
+  .add(`jsdom querySelector('${selectors[25]}')`, () => {
+    parentNodeQuerySelector('jsdom', selectors[25], 'container');
+  })
+  .add(`patched-jsdom querySelector('${selectors[25]}')`, () => {
+    parentNodeQuerySelector('patched-jsdom', selectors[25], 'container');
   })
   .add(`jsdom querySelectorAll('${selectors[19]}')`, () => {
     parentNodeQuerySelectorAll('jsdom', selectors[19], 1000);

@@ -82,6 +82,7 @@ export const TAG_TYPE = `\\*|${TAG_TYPE_WO_UNIVERSAL}`;
 export const TAG_TYPE_I = '\\*|[A-Z][\\w-]*';
 export const COMPOUND = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE})+)`;
 export const COMPOUND_L = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE}|${LOGIC_IS})+)`;
+export const COMPOUND_L_I = `(?:(?:${TAG_TYPE_I})?(?:${SUB_TYPE}|${LOGIC_IS})+)`;
 export const COMPOUND_I = `(?:${TAG_TYPE_I}|(?:${TAG_TYPE_I})?(?:${SUB_TYPE})+)`;
 export const COMPOUND_WO_PSEUDO = `(?:${TAG_TYPE}|(?:${TAG_TYPE})?(?:${SUB_TYPE_WO_PSEUDO})+)`;
 export const COMPLEX = `${COMPOUND}(?:${COMBO}${COMPOUND})*`;

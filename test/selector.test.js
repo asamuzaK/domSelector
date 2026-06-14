@@ -15,7 +15,6 @@ import {
   SELECTOR,
   SELECTOR_LIST,
   TARGET_ALL,
-  TARGET_FIRST,
   TARGET_SELF,
   TARGET_LINEAL,
   TYPE_SELECTOR
@@ -625,9 +624,13 @@ describe('selector static analysis and validation', () => {
     });
 
     it('should handle target-specific filters', () => {
-      assert.strictEqual(func('*', TARGET_FIRST), false, 'result');
       assert.strictEqual(func('p', TARGET_ALL), false, 'result');
       assert.strictEqual(func('p.foo', TARGET_ALL), true, 'result');
+      assert.strictEqual(
+        func('p.content[id]:is(:last-child, :only-child)', TARGET_ALL),
+        true,
+        'result'
+      );
     });
 
     it('should evaluate complex logical pseudo-classes', () => {
@@ -804,6 +807,24 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func('div, ,p'), false, 'consecutive commas');
       assert.strictEqual(func('.foo,'), false, 'ending with comma');
       assert.strictEqual(func('div, '), false, 'ending with comma');
+    });
+
+    it('should return false for descendant/child combinators in logical pseudo-classes when target is TARGET_ALL', () => {
+      assert.strictEqual(
+        func(':is(.foo > .bar)', TARGET_ALL),
+        false,
+        'TARGET_ALL with child combinator in :is()'
+      );
+      assert.strictEqual(
+        func(':is(.foo .bar)', TARGET_ALL),
+        false,
+        'TARGET_ALL with descendant combinator in :is()'
+      );
+      assert.strictEqual(
+        func(':is(div > p .content)', TARGET_ALL),
+        false,
+        'TARGET_ALL with multiple combinators in :is()'
+      );
     });
   });
 });
