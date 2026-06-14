@@ -29,7 +29,6 @@ export const BIT_32: 32;
 export const BIT_FFFF: 65535;
 export const DUO: 2;
 export const HEX: 16;
-export const KB: 1024;
 export const TYPE_FROM: 8;
 export const TYPE_TO: -1;
 export const ELEMENT_NODE: 1;
