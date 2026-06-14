@@ -33,13 +33,11 @@ console.log(`=======================================`);
 
 // 2. Execute the benchmark
 group(`Finder :default Bottleneck Test`, () => {
-  
   bench(`Full traversal for button:default`, () => {
     // Evaluate :default against all buttons in the form.
     // Without a cache, evaluating each button forces a re-scan of the form from the top.
     finder.setup('button:default', form).find(TARGET_ALL);
   });
-
 });
 
 // Run the benchmark

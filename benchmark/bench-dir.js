@@ -34,7 +34,6 @@ console.log(`=======================================`);
 // 2. Execute the benchmark
 group(`Finder :dir() Bottleneck Test`, () => {
   bench(`Full traversal for :dir(ltr) on deep tree`, () => {
-    // In the baseline engine, evaluating deep nodes forces a re-scan up the parent chain
     finder.setup(':dir(ltr)', document).find(TARGET_ALL);
   });
 });

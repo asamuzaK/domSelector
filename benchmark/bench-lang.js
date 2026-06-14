@@ -34,7 +34,6 @@ console.log(`=======================================`);
 // 2. Execute the benchmark
 group(`Finder :lang() Bottleneck Test`, () => {
   bench(`Full traversal for :lang(en) on deep tree`, () => {
-    // 遡上キャッシュが効いていれば、100回分のO(1)アクセスで瞬殺されるはず
     finder.setup(':lang(en)', document).find(TARGET_ALL);
   });
 });

@@ -10,7 +10,7 @@ import { Finder } from '../src/js/finder.js';
 import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a form with many un-checked radio buttons
-const ITEM_COUNT = 1000; // 1000 radios in the same group are enough to show the O(N^2) lag
+const ITEM_COUNT = 1000;
 const { window } = new JSDOM(`<!DOCTYPE html><html><body><form id="form"></form></body></html>`);
 const { document } = window;
 const form = document.getElementById('form');
@@ -35,13 +35,9 @@ console.log(`=======================================`);
 
 // 2. Execute the benchmark
 group(`Finder :indeterminate Bottleneck Test`, () => {
-  
   bench(`Full traversal for input:indeterminate`, () => {
-    // Evaluate :indeterminate against all radio inputs in the form.
-    // Without a cache, evaluating each radio forces a re-scan of all other 999 radios.
     finder.setup('input:indeterminate', form).find(TARGET_ALL);
   });
-
 });
 
 // Run the benchmark

@@ -63,7 +63,6 @@ console.log(`Nodes     : ${nodeCount}`);
 console.log(`=======================================`);
 
 group(`nwsapi Performance (Cache: ${cacheSize})`, () => {
-  
   bench(`match() sequence - ${totalSelectors} selectors`, () => {
     for (let n = 0; n < targetNodes.length; n++) {
       const node = targetNodes[n];

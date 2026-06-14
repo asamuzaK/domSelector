@@ -34,7 +34,6 @@ console.log(`=======================================`);
 
 // 2. Execute the benchmark
 group(`Finder O(N^2) Bottleneck Test`, () => {
-  
   bench(`Full traversal for li:nth-of-type(even)`, () => {
     // Evaluate nth-of-type against all <li> elements in the list.
     // Without a cache, this should result in 3000 * 3000 = approx 9 million loop iterations.
@@ -45,7 +44,6 @@ group(`Finder O(N^2) Bottleneck Test`, () => {
     // Pinpoint search for an element located towards the end.
     finder.setup('li:nth-of-type(2999)', list).find(TARGET_ALL);
   });
-
 });
 
 // Run the benchmark

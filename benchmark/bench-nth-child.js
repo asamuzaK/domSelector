@@ -19,9 +19,6 @@ const list = document.getElementById('list');
 for (let i = 0; i < ITEM_COUNT; i++) {
   const li = document.createElement('li');
   li.className = i % 2 === 0 ? 'item foo' : 'item bar';
-  
-  // foo は空要素（:empty にマッチ）
-  // bar はテキストを持つ（:empty にマッチしない）
   if (i % 2 !== 0) {
     li.textContent = 'text';
   }
@@ -38,7 +35,6 @@ console.log(`=======================================`);
 
 // 2. Execute the benchmark
 group(`1. Finder :nth-child(anb)`, () => {
-  
   bench(`Full traversal for li:nth-child(even)`, () => {
     finder.setup('li:nth-child(even)', list).find(TARGET_ALL);
   });
@@ -46,11 +42,9 @@ group(`1. Finder :nth-child(anb)`, () => {
   bench(`Pinpoint traversal for li:nth-child(2999)`, () => {
     finder.setup('li:nth-child(2999)', list).find(TARGET_ALL);
   });
-
 });
 
 group(`2. Finder :nth-child(anb of S) [Complex + Pseudo-class]`, () => {
-  
   // S = ul > .item:empty
   // This selector contains a combinator (>) and a pseudo-class (:empty),
   // but evaluation is fast enough to avoid O(N^3) freezing.
@@ -64,7 +58,6 @@ group(`2. Finder :nth-child(anb of S) [Complex + Pseudo-class]`, () => {
   bench(`Pinpoint traversal for ${pinpointSelector}`, () => {
     finder.setup(pinpointSelector, list).find(TARGET_ALL);
   });
-
 });
 
 // Run the benchmark
