@@ -11,6 +11,7 @@ import {
   COMBINATOR,
   COMBO,
   COMPOUND_I,
+  COMPOUND_L_I,
   DESCEND,
   HAS_COMPOUND,
   KEYS_LOGICAL,
@@ -23,17 +24,14 @@ import {
   PS_ELEMENT_SELECTOR,
   SELECTOR,
   SYNTAX_ERR,
-  TAG_TYPE,
-  TARGET_ALL,
-  TARGET_FIRST
+  TARGET_ALL
 } from './constant.js';
 
 /* regexp */
-const REG_ATTR_SIMPLE = /^\[[A-Z\d-]{1,255}(?:="?[A-Z\d\s-]{1,255}"?)?\]$/i;
-const REG_TAG_SIMPLE = new RegExp(`^(?:${TAG_TYPE})$`);
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
+const REG_COMPOUND = new RegExp(`^${COMPOUND_L_I}$`, 'i');
 const REG_DESCEND = new RegExp(`${COMPOUND_I}${DESCEND}${COMPOUND_I}`, 'i');
 const REG_LOGIC_COMPLEX = new RegExp(
   `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
@@ -292,10 +290,7 @@ export const filterSelector = (selector, target) => {
     }
   }
   // Target-specific early exits.
-  if (target === TARGET_FIRST) {
-    return REG_ATTR_SIMPLE.test(selector);
-  }
-  if (target === TARGET_ALL && REG_TAG_SIMPLE.test(selector)) {
+  if (target === TARGET_ALL && !REG_COMPOUND.test(selector)) {
     return false;
   }
   // Logic for pseudo-classes.
@@ -308,9 +303,6 @@ export const filterSelector = (selector, target) => {
     const isComplex = isQuerySelectorAll ? false : REG_COMPLEX.test(selector);
     // Handle :has() specifically.
     if (selector.includes(':has(')) {
-      if (isQuerySelectorAll) {
-        return false;
-      }
       if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }

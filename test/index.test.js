@@ -1481,8 +1481,7 @@ describe('DOMSelector', () => {
 
     it('should match', () => {
       const wrapperForImpl = sinon.stub();
-      wrapperForImpl.onFirstCall().throws();
-      wrapperForImpl.onSecondCall().callsFake(node => node);
+      wrapperForImpl.callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
         wrapperForImpl
@@ -1493,7 +1492,7 @@ describe('DOMSelector', () => {
         idlUtils
       });
       const res = domSelector.querySelector('[id="li2"]', document);
-      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(res, node, 'result');
     });
 
@@ -1896,6 +1895,28 @@ describe('DOMSelector', () => {
       delete parent._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(res, [], 'result');
+    });
+
+    it('should not match', () => {
+      const wrapperForImpl = sinon.stub();
+      wrapperForImpl.onCall(0).throws();
+      wrapperForImpl.onCall(1).callsFake(node => node);
+      const i = wrapperForImpl.callCount;
+      const idlUtils = {
+        wrapperForImpl
+      };
+      const domSelector = new DOMSelector(window, null, {
+        domSymbolTree: {},
+        idlUtils
+      });
+      const selector = 'dt:is(:first-of-type, :last-of-type)';
+      const res = domSelector.querySelectorAll(selector, document);
+      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
+      assert.deepEqual(
+        res,
+        [document.getElementById('dt1'), document.getElementById('dt3')],
+        'result'
+      );
     });
   });
 });
@@ -2997,6 +3018,13 @@ describe('patched JSDOM', () => {
         }
       }
       assert.deepEqual(arr, [span, span2], 'result');
+    });
+
+    it('should not match', () => {
+      const res = document.querySelectorAll(
+        'p.content[id]:is(:last-child, :only-child)'
+      );
+      assert.deepEqual(res, [], 'result');
     });
   });
 });

@@ -327,6 +327,42 @@ export const matchAttributeSelector = (
       globalObject
     );
   }
+  if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
+    const rawName = unescapeSelector(astName.name);
+    if (rawName.indexOf('|') === -1) {
+      if (node.hasAttribute(rawName)) {
+        return true;
+      }
+      const attrs = node.attributes;
+      if (!attrs || attrs.length === 0) {
+        return false;
+      }
+      const isHTML = node.ownerDocument.contentType === 'text/html';
+      const checkName = isHTML ? rawName.toLowerCase() : rawName;
+      for (let i = 0, len = attrs.length; i < len; i++) {
+        let itemName = attrs[i].name;
+        if (isHTML) {
+          itemName = itemName.toLowerCase();
+        }
+        const colonIdx = itemName.indexOf(':');
+        if (colonIdx > -1) {
+          const itemPrefix = itemName.substring(0, colonIdx);
+          const itemLocalName = itemName
+            .substring(colonIdx + 1)
+            .replace(/^:/, '');
+          if (itemPrefix === 'xml' && itemLocalName === 'lang') {
+            continue;
+          }
+          if (checkName === itemLocalName) {
+            return true;
+          }
+        } else if (checkName === itemName) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
   const { attributes } = node;
   // An element with no attributes cannot match.
   if (!attributes || !attributes.length) {

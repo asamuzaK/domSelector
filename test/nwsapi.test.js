@@ -669,6 +669,46 @@ describe('nwsapi', () => {
         assert.strictEqual(resSpan[0].id, 'span-first');
         ul.removeChild(span1);
       });
+
+      it('select() and match() should correctly evaluate the :first-child pseudo-class', () => {
+        const ul = document.getElementById('ul1');
+        const res1 = api.select('li:first-child', ul);
+        assert.strictEqual(
+          res1.length,
+          1,
+          'Should return only the first child element'
+        );
+        assert.strictEqual(res1[0].id, 'li1', 'The first li should be li1');
+        const dl = document.getElementById('dl1');
+        const res2 = api.select(':first-child', dl);
+        assert.strictEqual(
+          res2.length,
+          2,
+          'Should return all first-child descendants within dl'
+        );
+        assert.strictEqual(
+          res2[0].id,
+          'dt1',
+          'The first match should be dt1 (first child of dl)'
+        );
+        assert.strictEqual(
+          res2[1].id,
+          'span1',
+          'The second match should be span1 (first child of dd1)'
+        );
+        const li1 = document.getElementById('li1');
+        const li2 = document.getElementById('li2');
+        assert.strictEqual(
+          api.match(':first-child', li1),
+          true,
+          'li1 is the first child'
+        );
+        assert.strictEqual(
+          api.match(':first-child', li2),
+          false,
+          'li2 is not the first child'
+        );
+      });
     });
 
     describe('Error Handling', () => {
