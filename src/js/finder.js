@@ -333,16 +333,15 @@ export class Finder {
   _processSelectorBranches = (branches, selector) => {
     let descendant = false;
     const ast = [];
-    const l = branches.length;
-    for (let i = 0; i < l; i++) {
-      const items = [...branches[i]];
+    for (const items of branches) {
       const branch = [];
       let prevType = null;
-      let item = items.shift();
-      if (item) {
+      const itemsLen = items.length;
+      if (itemsLen) {
         const leaves = new Set();
-        while (item) {
-          const isLast = items.length === 0;
+        for (let j = 0; j < itemsLen; j++) {
+          const item = items[j];
+          const isLast = j === itemsLen - 1;
           if (isInvalidCombinator(item.type, prevType, isLast)) {
             const msg = `Invalid selector ${selector}`;
             this.onError(generateException(msg, SYNTAX_ERR, this.#window));
@@ -367,12 +366,9 @@ export class Finder {
             leaves.add(item);
           }
           prevType = item.type;
-          if (!isLast) {
-            item = items.shift();
-          } else {
+          if (isLast) {
             branch.push({ combo: null, leaves: sortAST(leaves) });
             leaves.clear();
-            break;
           }
         }
       }
@@ -747,49 +743,49 @@ export class Finder {
    * @returns {boolean} The result.
    */
   _matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
-    if (Array.isArray(astLeaves) && astLeaves.length) {
-      // Prepare a copy to avoid astLeaves being consumed.
-      const leaves = [...astLeaves];
-      const [leaf] = leaves;
-      const { type: leafType } = leaf;
-      let combo;
-      if (leafType === COMBINATOR) {
-        combo = leaves.shift();
-      } else {
-        combo = {
-          name: ' ',
-          type: COMBINATOR
-        };
-      }
-      const twigLeaves = [];
-      while (leaves.length) {
-        const [item] = leaves;
-        const { type: itemType } = item;
-        if (itemType === COMBINATOR) {
-          break;
-        } else {
-          twigLeaves.push(leaves.shift());
-        }
-      }
-      const twig = {
-        combo,
-        leaves: twigLeaves
+    const l = astLeaves.length;
+    if (!l) {
+      return false;
+    }
+    let startIndex = 0;
+    let combo;
+    if (astLeaves[0].type === COMBINATOR) {
+      combo = astLeaves[0];
+      startIndex = 1;
+    } else {
+      combo = {
+        name: ' ',
+        type: COMBINATOR
       };
-      opt.dir = DIR_NEXT;
-      const nodes = this._collectCombinatorMatches(twig, node, opt, []);
-      if (nodes.length) {
-        if (leaves.length) {
-          let bool = false;
-          for (const nextNode of nodes) {
-            bool = this._matchHasPseudoFunc(leaves, nextNode, opt);
-            if (bool) {
-              break;
-            }
-          }
-          return bool;
-        }
-        return true;
+      startIndex = 0;
+    }
+    const twigLeaves = [];
+    let nextComboIndex = startIndex;
+    for (; nextComboIndex < l; nextComboIndex++) {
+      if (astLeaves[nextComboIndex].type === COMBINATOR) {
+        break;
       }
+      twigLeaves.push(astLeaves[nextComboIndex]);
+    }
+    const twig = {
+      combo,
+      leaves: twigLeaves
+    };
+    opt.dir = DIR_NEXT;
+    const nodes = this._collectCombinatorMatches(twig, node, opt, []);
+    if (nodes.length) {
+      if (nextComboIndex < l) {
+        let bool = false;
+        const remainingLeaves = astLeaves.slice(nextComboIndex);
+        for (const nextNode of nodes) {
+          bool = this._matchHasPseudoFunc(remainingLeaves, nextNode, opt);
+          if (bool) {
+            break;
+          }
+        }
+        return bool;
+      }
+      return true;
     }
     return false;
   };
@@ -1010,29 +1006,27 @@ export class Finder {
         const twigBranches = [];
         const l = branches.length;
         for (let i = 0; i < l; i++) {
-          const [...leaves] = branches[i];
+          const leaves = branches[i];
           const branch = [];
           const leavesSet = new Set();
-          let item = leaves.shift();
-          while (item) {
+          const leavesLen = leaves.length;
+          for (let j = 0; j < leavesLen; j++) {
+            const item = leaves[j];
             if (item.type === COMBINATOR) {
               branch.push({
                 combo: item,
                 leaves: [...leavesSet]
               });
               leavesSet.clear();
-            } else if (item) {
+            } else {
               leavesSet.add(item);
             }
-            if (leaves.length) {
-              item = leaves.shift();
-            } else {
+            if (j === leavesLen - 1) {
               branch.push({
                 combo: null,
                 leaves: [...leavesSet]
               });
               leavesSet.clear();
-              break;
             }
           }
           twigBranches.push(branch);
