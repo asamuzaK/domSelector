@@ -463,10 +463,14 @@ export class Nwsapi {
    */
   constructor(window, document, cacheSize = CACHE_SIZE) {
     this.#window = window;
-    this.#matchLambdas = new GenerationalCache(cacheSize);
-    this.#selectLambdas = new GenerationalCache(cacheSize);
-    this.#matchResolvers = new GenerationalCache(cacheSize);
-    this.#selectResolvers = new GenerationalCache(cacheSize);
+    const cacheOpt = {
+      cacheFunction: true,
+      strictValidate: false
+    };
+    this.#matchLambdas = new GenerationalCache(cacheSize, cacheOpt);
+    this.#selectLambdas = new GenerationalCache(cacheSize, cacheOpt);
+    this.#matchResolvers = new GenerationalCache(cacheSize, cacheOpt);
+    this.#selectResolvers = new GenerationalCache(cacheSize, cacheOpt);
     this.#nthChildState = {
       idx: 0,
       len: 0,

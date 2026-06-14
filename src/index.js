@@ -66,7 +66,9 @@ export class DOMSelector {
     this.#window = window;
     this.#document = document ?? window.document;
     this.#idlUtils = idlUtils;
-    this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE);
+    this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE, {
+      strictvalidate: false
+    });
     this.#finder = new Finder(this.#window);
     this.#nwsapi = new Nwsapi(this.#window, this.#document);
   }
