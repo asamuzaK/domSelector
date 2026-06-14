@@ -36,7 +36,6 @@ export const BIT_32 = 0x20;
 export const BIT_FFFF = 0xffff;
 export const DUO = 2;
 export const HEX = 16;
-export const KB = 1024;
 export const TYPE_FROM = 8;
 export const TYPE_TO = -1;
 

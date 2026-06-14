@@ -9,7 +9,7 @@ import { GenerationalCache } from '@asamuzakjp/generational-cache';
 import { isContentEditable } from './utility.js';
 
 /* constants */
-import { DOCUMENT_NODE, ELEMENT_NODE, KB } from './constant.js';
+import { DOCUMENT_NODE, ELEMENT_NODE } from './constant.js';
 const CACHE_SIZE = 2048;
 const F_INIT = '"use strict";return function resolver(c,f,x,r)';
 const S_HEAD = 'var e,n,o,j=r.length-1,k=-1';
@@ -413,6 +413,7 @@ export class Nwsapi {
   #selectLambdas;
   #selectResolvers;
   #snapshot;
+  #uidCounter = 0;
   #window;
 
   /* static */
@@ -992,7 +993,7 @@ export class Nwsapi {
       .replace(REX.trimSpaces, '');
     if (pseudoName === 'is' || pseudoName === 'not') {
       const subExprs = expr.match(REX.splitGroup) || [expr];
-      const uid = Math.floor(Math.random() * KB * KB);
+      const uid = ++this.#uidCounter;
       const label = `l_${uid}`;
       let code = `{ let r_${uid}=false, e_${uid}=e, n_${uid}=n, o_${uid}=o; ${label}: { `;
       for (let i = 0; i < subExprs.length; i++) {
