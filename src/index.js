@@ -102,6 +102,15 @@ export class DOMSelector {
     doc.documentElement;
 
   /**
+   * Wraps the node for IDL internal implementation if idlUtils is present.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The raw node.
+   * @returns {object} The wrapped or raw node.
+   */
+  #wrapNode = node =>
+    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+
+  /**
    * Clears the internal caches.
    * @param {boolean} [clearAll] - Whether to clear all caches. If false,
    * only cached matching results are cleared.
@@ -205,8 +214,7 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          const match = this.#nwsapi.match(selector, n);
+          const match = this.#nwsapi.match(selector, this.#wrapNode(node));
           let ast = null;
           if (match) {
             const astCacheKey = `check_ast_${selector}`;
@@ -226,16 +234,15 @@ export class DOMSelector {
         }
       }
     }
-    if (this.#idlUtils) {
-      node = this.#idlUtils.wrapperForImpl(node);
-    }
     const options = {
       ...opt,
       check: true,
       noexcept: true,
       warn: false
     };
-    return this.#finder.setup(selector, node, options).find(TARGET_SELF);
+    return this.#finder
+      .setup(selector, this.#wrapNode(node), options)
+      .find(TARGET_SELF);
   };
 
   /**
@@ -263,18 +270,16 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          return this.#nwsapi.match(selector, n);
+          return this.#nwsapi.match(selector, this.#wrapNode(node));
         } catch (e) {
           // fall through
         }
       }
     }
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_SELF);
+      const nodes = this.#finder
+        .setup(selector, this.#wrapNode(node), opt)
+        .find(TARGET_SELF);
       return nodes.size > 0;
     } catch (e) {
       this.#finder.onError(e, opt);
@@ -307,25 +312,20 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          return this.#nwsapi.closest(selector, n);
+          return this.#nwsapi.closest(selector, this.#wrapNode(node));
         } catch (e) {
           // fall through
         }
       }
     }
-    let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
+      node = this.#wrapNode(node);
       const nodes = this.#finder.setup(selector, node, opt).find(TARGET_LINEAL);
       if (nodes.size) {
         let refNode = node;
         while (refNode) {
           if (nodes.has(refNode)) {
-            res = refNode;
-            break;
+            return refNode;
           }
           refNode = refNode.parentNode;
         }
@@ -333,7 +333,7 @@ export class DOMSelector {
     } catch (e) {
       this.#finder.onError(e, opt);
     }
-    return res ?? null;
+    return null;
   };
 
   /**
@@ -374,19 +374,16 @@ export class DOMSelector {
       }
     }
     */
-    let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
+      node = this.#wrapNode(node);
       const nodes = this.#finder.setup(selector, node, opt).find(TARGET_FIRST);
       if (nodes.size) {
-        res = nodes.values().next().value;
+        return nodes.values().next().value;
       }
     } catch (e) {
       this.#finder.onError(e, opt);
     }
-    return res ?? null;
+    return null;
   };
 
   /**
@@ -407,37 +404,43 @@ export class DOMSelector {
     if (document && REG_UNIVERSAL.test(selector)) {
       return collectAllDescendants(node, document);
     }
-    if (
-      (node === this.#document || REG_TEST_LIB.test(selector)) &&
-      this.#canUseNwsapi(document)
-    ) {
-      const cacheKey = `querySelectorAll_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_ALL);
-        this.#cache.set(cacheKey, filterMatches);
+    if (this.#canUseNwsapi(document)) {
+      let routeToNwsapi = node === this.#document;
+      if (!routeToNwsapi) {
+        const testCacheKey = `testlib_${selector}`;
+        let isTestLib = this.#cache.get(testCacheKey);
+        if (isTestLib === undefined) {
+          isTestLib = REG_TEST_LIB.test(selector);
+          this.#cache.set(testCacheKey, isTestLib);
+        }
+        routeToNwsapi = isTestLib;
       }
-      if (filterMatches) {
-        try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          return this.#nwsapi.select(selector, n);
-        } catch (e) {
-          // fall through
+      if (routeToNwsapi) {
+        const cacheKey = `querySelectorAll_${selector}`;
+        let filterMatches = this.#cache.get(cacheKey);
+        if (filterMatches === undefined) {
+          filterMatches = filterSelector(selector, TARGET_ALL);
+          this.#cache.set(cacheKey, filterMatches);
+        }
+        if (filterMatches) {
+          try {
+            return this.#nwsapi.select(selector, this.#wrapNode(node));
+          } catch (e) {
+            // fall through
+          }
         }
       }
     }
-    let res;
     try {
-      if (this.#idlUtils) {
-        node = this.#idlUtils.wrapperForImpl(node);
-      }
-      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_ALL);
+      const nodes = this.#finder
+        .setup(selector, this.#wrapNode(node), opt)
+        .find(TARGET_ALL);
       if (nodes.size) {
-        res = [...nodes];
+        return [...nodes];
       }
     } catch (e) {
       this.#finder.onError(e, opt);
     }
-    return res ?? [];
+    return [];
   };
 }
