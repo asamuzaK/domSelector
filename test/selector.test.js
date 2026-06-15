@@ -632,22 +632,22 @@ describe('selector static analysis and validation', () => {
         true,
         'result'
       );
-      assert.strictEqual(func('.box + .box', TARGET_ALL), true, 'result');
-      assert.strictEqual(func('.box ~ .box', TARGET_ALL), true, 'result');
-      assert.strictEqual(func('.box:first-child', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('.box + .box', TARGET_ALL), false, 'result');
+      assert.strictEqual(func('.box ~ .box', TARGET_ALL), false, 'result');
+      assert.strictEqual(func('.box:first-child', TARGET_ALL), false, 'result');
       assert.strictEqual(
         func('.box:nth-child(2n+1)', TARGET_ALL),
-        true,
+        false,
         'result'
       );
       assert.strictEqual(
         func('.box:first-of-type', TARGET_ALL),
-        true,
+        false,
         'result'
       );
       assert.strictEqual(
         func('.box:nth-of-type(2n+1)', TARGET_ALL),
-        true,
+        false,
         'result'
       );
     });

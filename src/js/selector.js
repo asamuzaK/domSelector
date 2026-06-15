@@ -11,7 +11,6 @@ import {
   COMBINATOR,
   COMBO,
   COMPOUND_I,
-  DESCEND,
   HAS_COMPOUND,
   KEYS_LOGICAL,
   KEYS_PS_CLASS_SUPPORTED,
@@ -22,6 +21,7 @@ import {
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
   SELECTOR,
+  SUB_TYPE,
   SYNTAX_ERR,
   TARGET_ALL
 } from './constant.js';
@@ -30,7 +30,7 @@ import {
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_EXCLUDE_QSA = new RegExp(
-  `(?:^(?:[A-Z]|\\.)[\\w-]*$|${COMPOUND_I}${DESCEND}${COMPOUND_I})`,
+  `(?:^(?:[A-Z]|\\.)[\\w-]*$|^(?:${SUB_TYPE}|:${N_TH})+$|${COMPOUND_I}${COMBO}${COMPOUND_I})`,
   'i'
 );
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');

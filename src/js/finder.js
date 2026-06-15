@@ -113,7 +113,6 @@ export class Finder {
   #ast;
   #astCache = new WeakMap();
   #check;
-  #combinatorCache;
   #descendant;
   #document;
   #documentCache = new WeakMap();
@@ -246,7 +245,6 @@ export class Finder {
    */
   clearResults = (all = false) => {
     this.#anbCache = null;
-    this.#combinatorCache = null;
     this.#focusWithinCache = null;
     this.#invalidateResults = null;
     this.#nthChildCache = null;
@@ -2223,36 +2221,12 @@ export class Finder {
         break;
       }
       case '~': {
-        const parentNode = node.parentNode;
-        if (!parentNode) {
-          break;
-        }
-        if (!this.#combinatorCache) {
-          this.#combinatorCache = new WeakMap();
-        }
-        let cacheMap = this.#combinatorCache.get(parentNode);
-        if (!cacheMap) {
-          cacheMap = new Map();
-          this.#combinatorCache.set(parentNode, cacheMap);
-        }
-        let matchedSet = cacheMap.get(leaves);
-        if (!matchedSet) {
-          matchedSet = new Set();
-          let child = parentNode.firstElementChild;
-          while (child) {
-            if (this._matchLeaves(leaves, child, opt)) {
-              matchedSet.add(child);
-            }
-            child = child.nextElementSibling;
-          }
-          cacheMap.set(leaves, matchedSet);
-        }
         let refNode =
           dir === DIR_NEXT
             ? node.nextElementSibling
             : node.previousElementSibling;
         while (refNode) {
-          if (matchedSet.has(refNode)) {
+          if (this._matchLeaves(leaves, refNode, opt)) {
             matched.push(refNode);
           }
           refNode =
