@@ -1436,4 +1436,53 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#266 - https://github.com/asamuzaK/domSelector/issues/266', () => {
+    const html = `<html>
+    <body>
+      <div id="document">
+        <p id="first" class="odd">First</p>
+        <p id="second">Second</p>
+        <p id="third" class="odd">Third</p>
+      </div>
+    </body>
+  </html>`;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should return nodes in document order', () => {
+      const ctx = document.querySelector('#document');
+      const domSelector = new DOMSelector(window, document);
+      const res = domSelector.querySelectorAll('#second, #first', ctx);
+      assert.deepEqual(
+        res,
+        [document.getElementById('first'), document.getElementById('second')],
+        'result'
+      );
+    });
+
+    it('should return sorted nodes in document order', () => {
+      const ctx = document.querySelector('#document');
+      const domSelector = new DOMSelector(window, document);
+      const res = domSelector.querySelectorAll('.odd, #second', ctx);
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('first'),
+          document.getElementById('second'),
+          document.getElementById('third')
+        ],
+        'result'
+      );
+    });
+  });
 });
