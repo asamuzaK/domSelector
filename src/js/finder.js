@@ -3123,8 +3123,7 @@ export class Finder {
     }
     const [[...branches], collectedNodes] = collection;
     const l = branches.length;
-    let sort =
-      l > 1 && targetType === TARGET_ALL && this.#selector.includes(':scope');
+    let sort = l > 1 && targetType === TARGET_ALL;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
       const { branch, dir, find } = branches[i];
