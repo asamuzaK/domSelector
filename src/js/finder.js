@@ -3160,8 +3160,8 @@ export class Finder {
             nodes.add(entryNodes[0]);
           }
         }
-        // Handle complex selectors.
       } else {
+        // Handle complex selectors.
         if (targetType === TARGET_ALL) {
           const newNodes = this._processComplexBranchAll(
             branch,
