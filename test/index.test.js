@@ -1922,11 +1922,15 @@ describe('DOMSelector', () => {
     it('should get matched nodes', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('*[class~="dd"]', document);
-      assert.deepEqual(res, [
-        document.getElementById('dd1'),
-        document.getElementById('dd2'),
-        document.getElementById('dd3')
-      ], 'result');
+      assert.deepEqual(
+        res,
+        [
+          document.getElementById('dd1'),
+          document.getElementById('dd2'),
+          document.getElementById('dd3')
+        ],
+        'result'
+      );
     });
   });
 });

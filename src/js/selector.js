@@ -8,6 +8,7 @@ import { generateException } from './utility.js';
 
 /* constants */
 import {
+  ATTR_TYPE,
   COMBINATOR,
   COMBO,
   COMPOUND_I,
@@ -21,8 +22,8 @@ import {
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
   SELECTOR,
-  SUB_TYPE,
   SYNTAX_ERR,
+  TAG_TYPE_WO_UNIVERSAL,
   TARGET_ALL
 } from './constant.js';
 
@@ -30,7 +31,7 @@ import {
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)/;
 const REG_EXCLUDE_QSA = new RegExp(
-  `(?:^(?:[A-Z]|\\.)[\\w-]*$|^(?:${SUB_TYPE}|:${N_TH})+$|${COMPOUND_I}${COMBO}${COMPOUND_I})`,
+  `(?:^(?:[A-Z]|\\.)[\\w-]*$|${COMPOUND_I}${COMBO}${COMPOUND_I})`,
   'i'
 );
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
@@ -51,6 +52,9 @@ const REG_CLASS = /\.(\D[^#.*]+)/g;
 const REG_TAG = /^([^#.]+)/;
 const REG_INVALID_SYNTAX =
   /[+~>]\s*[+~>]|^\s*[+~>]|[+~>]\s*$|^\s*,|,\s*,|,\s*$/;
+const REG_TEST_LIB = new RegExp(
+  `^(?:[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${COMBO}${TAG_TYPE_WO_UNIVERSAL})?)$`
+);
 
 /**
  * Find a nested :has() pseudo-class.
@@ -278,7 +282,11 @@ export const filterSelector = (selector, target) => {
     return false;
   }
   // Target-specific early exits.
-  if (target === TARGET_ALL && REG_EXCLUDE_QSA.test(selector)) {
+  if (
+    target === TARGET_ALL &&
+    REG_EXCLUDE_QSA.test(selector) &&
+    !REG_TEST_LIB.test(selector)
+  ) {
     return false;
   }
   // Exclude various complex or unsupported selectors early.

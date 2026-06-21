@@ -634,22 +634,25 @@ describe('selector static analysis and validation', () => {
       );
       assert.strictEqual(func('.box + .box', TARGET_ALL), false, 'result');
       assert.strictEqual(func('.box ~ .box', TARGET_ALL), false, 'result');
-      assert.strictEqual(func('.box:first-child', TARGET_ALL), false, 'result');
+      assert.strictEqual(func('.box:first-child', TARGET_ALL), true, 'result');
       assert.strictEqual(
         func('.box:nth-child(2n+1)', TARGET_ALL),
-        false,
+        true,
         'result'
       );
       assert.strictEqual(
         func('.box:first-of-type', TARGET_ALL),
-        false,
+        true,
         'result'
       );
       assert.strictEqual(
         func('.box:nth-of-type(2n+1)', TARGET_ALL),
-        false,
+        true,
         'result'
       );
+      assert.strictEqual(func('[id="foo"]', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('*[role~="button"]', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('[title],svg>title', TARGET_ALL), true, 'result');
     });
 
     it('should evaluate complex logical pseudo-classes', () => {
