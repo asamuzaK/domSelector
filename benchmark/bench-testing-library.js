@@ -54,6 +54,11 @@ const targetPlaceholder = document.createElement('input');
 targetPlaceholder.setAttribute('placeholder', 'target-placeholder');
 root.appendChild(targetPlaceholder);
 
+// [data-role~="..."] 検証用のターゲット要素を追加
+const targetRole = document.createElement('div');
+targetRole.setAttribute('data-role', 'component tile active'); // スペース区切りの複数値
+root.appendChild(targetRole);
+
 const totalElements = document.querySelectorAll('*').length;
 
 const domSelector = new DOMSelector(window);
@@ -77,6 +82,10 @@ group(`Testing Library Typical Queries (document)`, () => {
     domSelector.querySelectorAll('[placeholder="target-placeholder"]', document);
   });
 
+  bench(`[data-role~="tile"]`, () => {
+    domSelector.querySelectorAll('[data-role~="tile"]', document);
+  });
+
   bench(`[title="target-title"], svg title`, () => {
     domSelector.querySelectorAll('[title="target-title"], svg title', document);
   });
@@ -93,6 +102,10 @@ group(`Testing Library Typical Queries (Element)`, () => {
 
   bench(`[placeholder="target-placeholder"]`, () => {
     domSelector.querySelectorAll('[placeholder="target-placeholder"]', root);
+  });
+
+  bench(`[data-role~="tile"]`, () => {
+    domSelector.querySelectorAll('[data-role~="tile"]', root);
   });
 
   bench(`[title="target-title"], svg title`, () => {
