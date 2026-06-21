@@ -19,11 +19,8 @@ import { collectAllDescendants, getType } from './js/utility.js';
 
 /* constants */
 import {
-  ATTR_TYPE,
-  COMBO,
   DOCUMENT_NODE,
   ELEMENT_NODE,
-  TAG_TYPE_WO_UNIVERSAL,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -33,9 +30,6 @@ const CACHE_SIZE = 2048;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
-const REG_TEST_LIB = new RegExp(
-  `^(?:${TAG_TYPE_WO_UNIVERSAL}|[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${COMBO}${TAG_TYPE_WO_UNIVERSAL})?)$`
-);
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 
 /**
@@ -351,13 +345,11 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return node.firstElementChild;
     }
+    // Only enabled when debugging.
     /*
     const document =
       node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (
-      (node === this.#document || REG_TEST_LIB.test(selector)) &&
-      this.#canUseNwsapi(document)
-    ) {
+    if (node === this.#document && this.#canUseNwsapi(document)) {
       const cacheKey = `querySelector_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -405,29 +397,17 @@ export class DOMSelector {
       return collectAllDescendants(node, document);
     }
     if (this.#canUseNwsapi(document)) {
-      let routeToNwsapi = node === this.#document;
-      if (!routeToNwsapi) {
-        const testCacheKey = `testlib_${selector}`;
-        let isTestLib = this.#cache.get(testCacheKey);
-        if (isTestLib === undefined) {
-          isTestLib = REG_TEST_LIB.test(selector);
-          this.#cache.set(testCacheKey, isTestLib);
-        }
-        routeToNwsapi = isTestLib;
+      const cacheKey = `querySelectorAll_${selector}`;
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
+        filterMatches = filterSelector(selector, TARGET_ALL);
+        this.#cache.set(cacheKey, filterMatches);
       }
-      if (routeToNwsapi) {
-        const cacheKey = `querySelectorAll_${selector}`;
-        let filterMatches = this.#cache.get(cacheKey);
-        if (filterMatches === undefined) {
-          filterMatches = filterSelector(selector, TARGET_ALL);
-          this.#cache.set(cacheKey, filterMatches);
-        }
-        if (filterMatches) {
-          try {
-            return this.#nwsapi.select(selector, this.#wrapNode(node));
-          } catch (e) {
-            // fall through
-          }
+      if (filterMatches) {
+        try {
+          return this.#nwsapi.select(selector, this.#wrapNode(node));
+        } catch (e) {
+          // fall through
         }
       }
     }
