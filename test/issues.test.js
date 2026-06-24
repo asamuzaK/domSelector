@@ -1485,4 +1485,38 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#269 - https://github.com/asamuzaK/domSelector/issues/269', () => {
+    const html = `<div>
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="clipPath-test-id">
+          <rect id="rect-1" width="100" height="100"></rect>
+          <rect id="rect-2" width="100" height="100"></rect>
+        </clipPath>
+      </defs>
+    </svg>
+  </div>`;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      window = null;
+      document = null;
+    });
+
+    it('should return array with nodes', () => {
+      const domSelector = new DOMSelector(window, document);
+      const res = domSelector.querySelectorAll('clipPath rect', document);
+      assert.deepEqual(
+        res,
+        [document.getElementById('rect-1'), document.getElementById('rect-2')],
+        'result'
+      );
+    });
+  });
 });
