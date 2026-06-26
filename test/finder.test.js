@@ -515,1736 +515,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('collect nth child', () => {
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: -1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(-1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 6,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(6)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: -1,
-        b: 0,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(-1n)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(0)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: 0,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(0)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt1')], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 1,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dd3')], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1n)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 6, 'size');
-      assert.deepEqual(
-        [...res],
-        [
-          node,
-          document.getElementById('dd1'),
-          document.getElementById('dt2'),
-          document.getElementById('dd2'),
-          document.getElementById('dt3'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: 1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1n+1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 6, 'size');
-      assert.deepEqual(
-        [...res],
-        [
-          node,
-          document.getElementById('dd1'),
-          document.getElementById('dt2'),
-          document.getElementById('dd2'),
-          document.getElementById('dt3'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2n)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('dd1'),
-          document.getElementById('dd2'),
-          document.getElementById('dd3')
-        ],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 1
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2n+1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('li3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 1,
-        reverse: true
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(2n+1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('li3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: -1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(2n-1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 0,
-        b: 2,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2 of .noted)', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [l4], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 0,
-        b: 2,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2 of .noted)', l1);
-      finder._collectNthChild(anb, l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [l4], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 0,
-        b: 2,
-        reverse: true,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-last-child(2 of .noted)', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [l7], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 0,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2n of .noted)', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual([...res], [l4, l10], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2n+1 of .noted)', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual([...res], [l2, l7], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1';
-      l2.id = 'l2';
-      l3.id = 'l3';
-      l4.id = 'l4';
-      l5.id = 'l5';
-      l6.id = 'l6';
-      l7.id = 'l7';
-      l8.id = 'l8';
-      l9.id = 'l9';
-      l10.id = 'l10';
-      l2.classList.add('noted');
-      l4.classList.add('noted');
-      l7.classList.add('noted');
-      l10.classList.add('noted');
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: -1,
-        b: 3,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(-n+3 of .noted)', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l2, l4, l7], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // hidden
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // hidden
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // hidden
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // hidden
-      l2.hidden = true;
-      l4.hidden = true;
-      l7.hidden = true;
-      l10.hidden = true;
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(odd of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l1, l5, l8], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // hidden
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // hidden
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // hidden
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // hidden
-      l2.hidden = true;
-      l4.hidden = true;
-      l7.hidden = true;
-      l10.hidden = true;
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 0,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(even of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l3, l6, l9], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // none
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // none
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // none
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // none
-      l2.style.display = 'none';
-      l4.style.display = 'none';
-      l7.style.display = 'none';
-      l10.style.display = 'none';
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(odd of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l1, l5, l8], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // none
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // none
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // none
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // none
-      l2.style.display = 'none';
-      l4.style.display = 'none';
-      l7.style.display = 'none';
-      l10.style.display = 'none';
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 0,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(even of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l3, l6, l9], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // hidden
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // hidden
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // hidden
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // hidden
-      l2.style.visibility = 'hidden';
-      l4.style.visibility = 'hidden';
-      l7.style.visibility = 'hidden';
-      l10.style.visibility = 'hidden';
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(odd of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l1, l5, l8], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const ul = document.createElement('ul');
-      const l1 = document.createElement('li');
-      const l2 = document.createElement('li');
-      const l3 = document.createElement('li');
-      const l4 = document.createElement('li');
-      const l5 = document.createElement('li');
-      const l6 = document.createElement('li');
-      const l7 = document.createElement('li');
-      const l8 = document.createElement('li');
-      const l9 = document.createElement('li');
-      const l10 = document.createElement('li');
-      l1.id = 'l1'; // odd
-      l2.id = 'l2'; // hidden
-      l3.id = 'l3'; // even
-      l4.id = 'l4'; // hidden
-      l5.id = 'l5'; // odd
-      l6.id = 'l6'; // even
-      l7.id = 'l7'; // hidden
-      l8.id = 'l8'; // odd
-      l9.id = 'l9'; // even
-      l10.id = 'l10'; // hidden
-      l2.style.visibility = 'hidden';
-      l4.style.visibility = 'hidden';
-      l7.style.visibility = 'hidden';
-      l10.style.visibility = 'hidden';
-      ul.appendChild(l1);
-      ul.appendChild(l2);
-      ul.appendChild(l3);
-      ul.appendChild(l4);
-      ul.appendChild(l5);
-      ul.appendChild(l6);
-      ul.appendChild(l7);
-      ul.appendChild(l8);
-      ul.appendChild(l9);
-      ul.appendChild(l10);
-      const parent = document.getElementById('div0');
-      parent.appendChild(ul);
-      const anb = {
-        a: 2,
-        b: 0,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  children: [
-                    {
-                      children: [
-                        {
-                          children: [
-                            {
-                              flags: null,
-                              loc: null,
-                              matcher: null,
-                              name: {
-                                loc: null,
-                                name: 'hidden',
-                                type: IDENT
-                              },
-                              type: ATTR_SELECTOR,
-                              value: null
-                            }
-                          ],
-                          loc: null,
-                          type: SELECTOR
-                        }
-                      ],
-                      loc: null,
-                      type: SELECTOR_LIST
-                    }
-                  ],
-                  loc: null,
-                  name: 'not',
-                  type: PS_CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(even of :not([hidden]))', l1);
-      const res = finder._collectNthChild(anb, l1);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual([...res], [l3, l6, l9], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      const anb = {
-        a: 0,
-        b: 1,
-        selector: null
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      const anb = {
-        a: 1,
-        b: 0,
-        selector: null
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(n)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.createElement('div');
-      const anb = {
-        a: 2,
-        b: 1,
-        selector: null
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(2n+1)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      node.classList.add('noted');
-      const anb = {
-        a: 0,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1 of .noted)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      node.classList.add('noted');
-      const anb = {
-        a: 0,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(':nth-child(1 of .noted)', node);
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const node = document.createElement('div');
-      node.classList.add('noted');
-      const anb = {
-        a: 0,
-        b: 1,
-        selector: {
-          children: [
-            {
-              children: [
-                {
-                  loc: null,
-                  name: 'noted',
-                  type: CLASS_SELECTOR
-                }
-              ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        }
-      };
-      const finder = new Finder(window);
-      finder.setup(
-        ':nth-child(1 of .noted), :nth-last-child(n of .noted',
-        node
-      );
-      const res = finder._collectNthChild(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should return the same instance for the same anb reference', () => {
-      const parent = document.createElement('div');
-      const p1 = document.createElement('p');
-      const p2 = document.createElement('p');
-      const p3 = document.createElement('p');
-      parent.appendChild(p1);
-      parent.appendChild(p2);
-      parent.appendChild(p3);
-      const finder = new Finder(window);
-      const anb = { a: 2, b: 0 }; // 2n
-      const res1 = finder._collectNthChild(anb, p1);
-      assert.strictEqual(res1.size, 1, 'first call size');
-      assert.deepEqual([...res1], [p2], 'first call result');
-      const res2 = finder._collectNthChild(anb, p2);
-      assert.strictEqual(res2.size, 1, 'second call size');
-      assert.deepEqual([...res2], [p2], 'second call result');
-      assert.strictEqual(res1, res2, 'must return the exact same Set instance');
-    });
-
-    it('should not hit the cache if the anb reference is different', () => {
-      const parent = document.createElement('div');
-      const p1 = document.createElement('p');
-      parent.appendChild(p1);
-      const finder = new Finder(window);
-      const anb1 = { a: 0, b: 1 };
-      // Same values, different reference
-      const anb2 = { a: 0, b: 1 };
-      const res1 = finder._collectNthChild(anb1, p1);
-      const res2 = finder._collectNthChild(anb2, p1);
-      assert.strictEqual(res1.size, 1, 'first call size');
-      assert.strictEqual(res2.size, 1, 'second call size');
-      assert.notStrictEqual(res1, res2, 'must return different Set instances');
-    });
-  });
-
-  describe('collect nth of type', () => {
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: -1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(-1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: 6
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-of-type(6)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: -1,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(-1n)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: 0,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(0)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 1,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-of-type(1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt3')], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 2
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(2)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt2')], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 3
-      };
-      const node = document.getElementById('dt3');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(3)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(n)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: 1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(n+1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: -1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(n-1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 3, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2'), document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 0
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(2n)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [document.getElementById('dt2')], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 1
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(2n+1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 2,
-        b: 1,
-        reverse: true
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-last-of-type(2n+1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt3')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: -1,
-        b: 2
-      };
-      const node = document.getElementById('dt1');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(-n+2)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 2, 'size');
-      assert.deepEqual(
-        [...res],
-        [node, document.getElementById('dt2')],
-        'result'
-      );
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 1,
-        b: 0
-      };
-      const node = document.createElement('div');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(n)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const anb = {
-        a: 0,
-        b: 1
-      };
-      const node = document.createElement('div');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should not match', () => {
-      const anb = {
-        a: 2,
-        b: 1
-      };
-      const node = document.createElement('div');
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(2n+1)', node);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 0, 'size');
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should use cached typedSiblings on subsequent calls', () => {
-      const parent = document.createElement('div');
-      const node1 = document.createElement('p');
-      const node2 = document.createElement('p');
-      parent.appendChild(node1);
-      parent.appendChild(node2);
-      const finder = new Finder(window);
-      finder.setup('p:nth-of-type(1), p:nth-of-type(2)', parent);
-      const anb1 = { a: 0, b: 1 };
-      const res1 = finder._collectNthOfType(anb1, node1);
-      assert.strictEqual(res1.size, 1, 'first call size');
-      assert.deepEqual([...res1], [node1], 'first call result');
-      const anb2 = { a: 0, b: 2 };
-      const res2 = finder._collectNthOfType(anb2, node2);
-      assert.strictEqual(res2.size, 1, 'second call size');
-      assert.deepEqual([...res2], [node2], 'second call result');
-    });
-
-    it('should get matched node(s) with namespaceURI and without prefix', () => {
-      const parent = document.createElement('div');
-      const node1 = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg'
-      );
-      const node2 = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg'
-      );
-      parent.appendChild(node1);
-      parent.appendChild(node2);
-      const anb = { a: 0, b: 2 };
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(2)', node2);
-      const res = finder._collectNthOfType(anb, node2);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node2], 'result');
-    });
-
-    it('should get matched node(s) with namespaceURI and prefix', () => {
-      const parent = document.createElement('div');
-      const node1 = document.createElementNS(
-        'http://example.com/ns',
-        'ex:custom'
-      );
-      const node2 = document.createElementNS(
-        'http://example.com/ns',
-        'ex:custom'
-      );
-      parent.appendChild(node1);
-      parent.appendChild(node2);
-      const anb = { a: 0, b: 1 };
-      const finder = new Finder(window);
-      finder.setup(':nth-of-type(1)', node1);
-      const res = finder._collectNthOfType(anb, node1);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node1], 'result');
-    });
-
-    it('should get matched node(s) with falsy namespaceURI and falsy prefix', () => {
-      const parent = document.createElement('div');
-      const node = document.createElementNS(null, 'foo');
-      parent.appendChild(node);
-      const anb = { a: 0, b: 1 };
-      const finder = new Finder(window);
-      const res = finder._collectNthOfType(anb, node);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [node], 'result');
-    });
-
-    it('should get matched node(s) with falsy namespaceURI and truthy prefix', () => {
-      const parentNode = { firstElementChild: null };
-      const mockNode = {
-        localName: 'foo',
-        namespaceURI: null,
-        prefix: 'bar',
-        parentNode
-      };
-      parentNode.firstElementChild = mockNode;
-      mockNode.nextElementSibling = null;
-      const anb = { a: 0, b: 1 };
-      const finder = new Finder(window);
-      const res = finder._collectNthOfType(anb, mockNode);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [mockNode], 'result');
-    });
-
-    it('should evaluate edge cases safely with empty strings', () => {
-      const parentNode = { firstElementChild: null };
-      const mockNode = {
-        localName: 'foo',
-        namespaceURI: '',
-        prefix: '',
-        parentNode
-      };
-      parentNode.firstElementChild = mockNode;
-      mockNode.nextElementSibling = null;
-      const anb = { a: 0, b: 1 };
-      const finder = new Finder(window);
-      const res = finder._collectNthOfType(anb, mockNode);
-      assert.strictEqual(res.size, 1, 'size');
-      assert.deepEqual([...res], [mockNode], 'result');
-    });
-
-    it('should return the exact same Set instance for the same anb', () => {
-      const parent = document.createElement('div');
-      const p1 = document.createElement('p');
-      const p2 = document.createElement('p');
-      const p3 = document.createElement('p');
-      parent.appendChild(p1);
-      parent.appendChild(p2);
-      parent.appendChild(p3);
-      const finder = new Finder(window);
-      const anb = { a: 2, b: 0 }; // 2n
-      const res1 = finder._collectNthOfType(anb, p1);
-      assert.strictEqual(res1.size, 1, 'first call size');
-      assert.deepEqual([...res1], [p2], 'first call result');
-      const res2 = finder._collectNthOfType(anb, p2);
-      assert.strictEqual(res2.size, 1, 'second call size');
-      assert.deepEqual([...res2], [p2], 'second call result');
-      assert.strictEqual(res1, res2, 'must return the exact same Set instance');
-    });
-
-    it('should not hit the Set cache if the anb reference is different', () => {
-      const parent = document.createElement('div');
-      const p1 = document.createElement('p');
-      parent.appendChild(p1);
-      const finder = new Finder(window);
-      const anb1 = { a: 0, b: 1 };
-      const anb2 = { a: 0, b: 1 };
-      const res1 = finder._collectNthOfType(anb1, p1);
-      const res2 = finder._collectNthOfType(anb2, p1);
-      assert.strictEqual(res1.size, 1, 'first call size');
-      assert.strictEqual(res2.size, 1, 'second call size');
-      assert.notStrictEqual(res1, res2, 'must return different Set instances');
-    });
-  });
-
   describe('match An+B', () => {
     it('should not match', () => {
       const leafName = 'nth-child';
@@ -2554,6 +824,219 @@ describe('Finder', () => {
       finder.setup(':nth-foo(3n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
       assert.strictEqual(res, false, 'result');
+    });
+
+    it('should test a > 0 with valid and invalid diff boundaries', () => {
+      const leafName = 'nth-child';
+      // 3n + 5 (n=0: 5, n=1: 8, n=2: 11...)
+      const leaf = {
+        nth: { a: '3', b: '5', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const parent = document.createElement('div');
+      for (let i = 0; i < 10; i++) {
+        parent.appendChild(document.createElement('p'));
+      }
+      document.getElementById('div0').appendChild(parent);
+      const nodeMatch = parent.children[7];
+      finder.setup(':nth-child(3n+5)', nodeMatch);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=8 matches 3n+5');
+      const nodeMinusDiff = parent.children[1];
+      finder.setup(':nth-child(3n+5)', nodeMinusDiff);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMinusDiff, leafName), false, 'pos=2 fails 3n+5 because diff < 0');
+    });
+
+    it('should test a < 0 with valid and invalid diff boundaries', () => {
+      const leafName = 'nth-child';
+      // -3n + 5 (n=0: 5, n=1: 2)
+      const leaf = {
+        nth: { a: '-3', b: '5', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const parent = document.createElement('div');
+      for (let i = 0; i < 10; i++) {
+        parent.appendChild(document.createElement('p'));
+      }
+      document.getElementById('div0').appendChild(parent);
+      const nodeMatch = parent.children[1];
+      finder.setup(':nth-child(-3n+5)', nodeMatch);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=2 matches -3n+5');
+      const nodePlusDiff = parent.children[7];
+      finder.setup(':nth-child(-3n+5)', nodePlusDiff);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodePlusDiff, leafName), false, 'pos=8 fails -3n+5 because diff > 0');
+    });
+
+    it('should branch on anb.selector caching for nth-child of sel', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li3');
+      const finder = new Finder(window);
+      finder.setup('li:nth-child(2n+1 of .li)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'matches nth-child with of selector');
+    });
+
+    it('should branch on anb.selector caching for nth-last-child of sel', () => {
+      const leafName = 'nth-last-child';
+      // :nth-last-child(2n+1 of .li)
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li3');
+      const finder = new Finder(window);
+      finder.setup('li:nth-last-child(2n+1 of .li)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'matches nth-last-child with of selector');
+    });
+
+    it('should not cache selector when nthName is nth-of-type even', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li1');
+      const finder = new Finder(window);
+      finder.setup('li:nth-of-type(2n+1)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'processes nth-of-type smoothly by bypassing selector cache');
+    });
+
+    it('should test empty array return', () => {
+      const leafName = 'nth-child';
+      // :nth-child(1n of .match-me)
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'match-me', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const isolatedNode = document.createElement('div');
+      const finder = new Finder(window);
+      finder.setup(':nth-child(1n of .match-me)', isolatedNode);
+      const res = finder._matchAnPlusB(leaf, isolatedNode, leafName);
+      assert.strictEqual(res, false, 'returns false because siblings array is empty');
+    });
+
+    it('should cover all 4 logical branches of typeKey', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const xmlDoc = new window.DOMParser().parseFromString(
+        '<root xmlns:svg="http://www.w3.org/2000/svg"><svg:svg/></root>',
+        'text/xml'
+      );
+      const svgChild = xmlDoc.documentElement.firstChild;
+      finder.setup('svg|svg:nth-of-type(1)', svgChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, svgChild, leafName), true, 'Branch 1 passed');
+      const svgParent = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svgNoPrefixChild = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      svgParent.appendChild(svgNoPrefixChild);
+      document.getElementById('div0').appendChild(svgParent);
+      finder.setup('rect:nth-of-type(1)', svgNoPrefixChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, svgNoPrefixChild, leafName), true, 'Branch 2 passed');
+      const mockParent = document.createElement('div');
+      const mockChild = document.createElement('p');
+      mockParent.appendChild(mockChild);
+      document.getElementById('div0').appendChild(mockParent);
+      Object.defineProperty(mockChild, 'namespaceURI', { value: null, configurable: true });
+      Object.defineProperty(mockChild, 'prefix', { value: 'foo', configurable: true });
+      finder.setup('p:nth-of-type(1)', mockChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, mockChild, leafName), true, 'Branch 3 passed');
+      const htmlParent = document.createElement('div');
+      const htmlChild = document.createElement('p');
+      htmlParent.appendChild(htmlChild);
+      document.getElementById('div0').appendChild(htmlParent);
+      finder.setup('p:nth-of-type(1)', htmlChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, htmlChild, leafName), true, 'Branch 4 passed');
+    });
+
+    it('should test true and false routes when parentNode is null', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const isolatedRoot = document.createElement('div');
+      finder.setup('div:nth-of-type(1n)', isolatedRoot);
+      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const notRoot = document.createElement('p');
+      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
+    });
+
+    it('should test true and false branches when parentNode is null', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const isolatedRoot = document.createElement('div');
+      finder.setup('div:nth-child(1n)', isolatedRoot);
+      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const notRoot = document.createElement('span');
+      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
     });
   });
 
@@ -11406,412 +9889,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('match combinator', () => {
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('li + li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [document.getElementById('li2')], 'result');
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li + li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li + li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [document.getElementById('li2')], 'result');
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('li + li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('li ~ li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual(
-        [...res],
-        [document.getElementById('li1'), document.getElementById('li2')],
-        'result'
-      );
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li ~ li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li ~ li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual(
-        [...res],
-        [document.getElementById('li2'), document.getElementById('li3')],
-        'result'
-      );
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('li ~ li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('ul > li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [document.getElementById('ul1')], 'result');
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'ol',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('ol > li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: CLASS_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('ul > .li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'result'
-      );
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'foobar',
-            type: CLASS_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('ul > .foobar', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'ul',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li3');
-      const finder = new Finder(window);
-      finder.setup('ul li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [document.getElementById('ul1')], 'result');
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'ol',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('ol li', node);
-      const res = finder._matchCombinator(twig, node, {});
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'li',
-            type: CLASS_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('ul1');
-      const finder = new Finder(window);
-      finder.setup('ul .li', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'result'
-      );
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'foobar',
-            type: CLASS_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('ol .foobar', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [], 'result');
-    });
-
-    it('should get matched node(s)', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'dd2',
-            type: ID_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('dl1');
-      const finder = new Finder(window);
-      finder.setup('dl #dd2 span ', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [document.getElementById('dd2')], 'result');
-    });
-
-    it('should not match', () => {
-      const twig = {
-        combo: {
-          name: ' ',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            name: 'foobar',
-            type: ID_SELECTOR
-          }
-        ]
-      };
-      const node = document.getElementById('dl1');
-      const finder = new Finder(window);
-      finder.setup('dl #foobar span', node);
-      const res = finder._matchCombinator(twig, node, {
-        dir: 'next'
-      });
-      assert.deepEqual([...res], [], 'result');
-    });
-  });
-
   describe('find matched node(s) preceding this.#node', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);
@@ -14659,30 +12736,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('match node to previous direction', () => {
-    it('should get matched node(s)', () => {
-      const node = document.getElementById('li2');
-      const finder = new Finder(window);
-      finder.setup('ul > .li ~ li', document);
-      const [[{ branch }]] = finder._correspond('ul > .li ~ li');
-      const res = finder._matchNodePrev(branch, node, {
-        index: 1
-      });
-      assert.deepEqual(res, node, 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.getElementById('li2');
-      const finder = new Finder(window);
-      finder.setup('ol > .li ~ li', document);
-      const [[{ branch }]] = finder._correspond('ol > .li ~ li');
-      const res = finder._matchNodePrev(branch, node, {
-        index: 1
-      });
-      assert.deepEqual(res, null, 'result');
-    });
-  });
-
   describe('find matched nodes', () => {
     it('should get matched node(s)', () => {
       const finder = new Finder(window);
@@ -14858,6 +12911,81 @@ describe('Finder', () => {
           })
         },
         'result'
+      );
+    });
+
+    it('should merge multiple branches and require sorting', () => {
+      const finder = new Finder(window);
+      finder.setup('p, span', document);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.size,
+        12,
+        'should merge and collect all nodes from multiple branches'
+      );
+    });
+
+    it('should use fast path for single sorted branch', () => {
+      const node = document.getElementById('div1');
+      const finder = new Finder(window);
+      finder.setup('div', node);
+      const res = finder.find('all');
+      assert.strictEqual(res.has(node), false, 'excludes context node');
+      assert.strictEqual(
+        res.has(document.getElementById('div2')),
+        true,
+        'includes descendant node'
+      );
+      assert.strictEqual(res.size, 6, 'div2, div3, div4, div5, div6, div7');
+    });
+
+    it('should use basic set conversion for single sorted branch', () => {
+      const finder = new Finder(window);
+      finder.setup('div', document);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.has(document.getElementById('div0')),
+        true,
+        'includes div0 from document root'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('div1')),
+        true,
+        'includes div1'
+      );
+    });
+
+    it('should handle single unsorted branch', () => {
+      const node = document.getElementById('dl1');
+      const finder = new Finder(window);
+      finder.setup('[hidden]', node);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.size,
+        2,
+        'matches elements using TreeWalker fallback'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('span1')),
+        true,
+        'includes span1'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('span3')),
+        true,
+        'includes span3'
+      );
+    });
+
+    it('should handle multiple branches', () => {
+      const finder = new Finder(window);
+      finder.setup('ol, ul', document);
+      const res = finder.find('all');
+      assert.strictEqual(res.size, 1, 'matches only the second branch');
+      assert.strictEqual(
+        res.has(document.getElementById('ul1')),
+        true,
+        'includes ul1'
       );
     });
   });

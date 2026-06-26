@@ -396,6 +396,8 @@ export class DOMSelector {
     if (document && REG_UNIVERSAL.test(selector)) {
       return collectAllDescendants(node, document);
     }
+    // Only enabled when debugging.
+    /*
     if (this.#canUseNwsapi(document)) {
       const cacheKey = `querySelectorAll_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
@@ -411,6 +413,7 @@ export class DOMSelector {
         }
       }
     }
+    */
     try {
       const nodes = this.#finder
         .setup(selector, this.#wrapNode(node), opt)
