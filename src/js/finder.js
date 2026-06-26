@@ -483,43 +483,6 @@ export class Finder {
   };
 
   /**
-   * Gets the children of a node, optionally filtered by a selector.
-   * @private
-   * @param {object} parentNode - The parent element.
-   * @param {Array.<Array.<object>>} selectorBranches - The selector branches.
-   * @param {object} opt - Options.
-   * @returns {Array.<object>} An array of child nodes.
-   */
-  _getFilteredChildren = (parentNode, selectorBranches, opt) => {
-    const children = [];
-    let childNode = parentNode.firstElementChild;
-    while (childNode) {
-      if (selectorBranches) {
-        let isMatch = false;
-        const l = selectorBranches.length;
-        for (let i = 0; i < l; i++) {
-          const leaves = selectorBranches[i];
-          if (this._matchLeaves(leaves, childNode, opt)) {
-            isMatch = true;
-            break;
-          }
-        }
-        if (isMatch) {
-          if (this.#node === childNode) {
-            children.push(childNode);
-          } else if (isVisible(childNode)) {
-            children.push(childNode);
-          }
-        }
-      } else {
-        children.push(childNode);
-      }
-      childNode = childNode.nextElementSibling;
-    }
-    return children;
-  };
-
-  /**
    * Gets all element siblings of a node.
    * @private
    * @param {object} node - The element node.
@@ -597,18 +560,13 @@ export class Finder {
     const selectorBranches = this._getSelectorBranches(selector);
     const { parentNode } = node;
     if (!parentNode) {
-      if (node !== this.#root) {
-        return [];
-      }
-      let isMatch = false;
       const l = selectorBranches.length;
       for (let i = 0; i < l; i++) {
         if (this._matchLeaves(selectorBranches[i], node, opt)) {
-          isMatch = true;
-          break;
+          return [node];
         }
       }
-      return isMatch ? [node] : [];
+      return [];
     }
     if (!this.#nthChildOfCache) {
       this.#nthChildOfCache = new WeakMap();
@@ -1198,9 +1156,6 @@ export class Finder {
         return node === this.#root;
       }
       const siblings = this._getTypedSiblings(node);
-      if (!siblings.length) {
-        return false;
-      }
       switch (astName) {
         case 'first-of-type': {
           return siblings[0] === node;
@@ -2511,7 +2466,7 @@ export class Finder {
           }
         }
         filtered = nodeArray.length > 0;
-        return { nodes: nodeArray, filtered, pending: false, sorted: true };
+        return { nodes: nodeArray, filtered, pending: false };
       }
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
       filtered = nodes.length > 0;
@@ -2565,7 +2520,7 @@ export class Finder {
           }
         }
         filtered = nodeArray.length > 0;
-        return { nodes: nodeArray, filtered, pending: false, sorted: true };
+        return { nodes: nodeArray, filtered, pending: false };
       }
       nodes = this._findNodeWalker(leaves, this.#node, {
         precede,
@@ -2830,8 +2785,11 @@ export class Finder {
           branch,
           targetType
         );
-        const { compound, filtered, nodes, pending, sorted } =
-          this._findEntryNodes(twig, targetType, { complex, dir });
+        const { compound, filtered, nodes, pending } = this._findEntryNodes(
+          twig,
+          targetType,
+          { complex, dir }
+        );
         if (nodes.length) {
           this.#ast[i].find = true;
           this.#nodes[i] = nodes;
@@ -2845,7 +2803,6 @@ export class Finder {
         }
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
-        this.#ast[i].sorted = !!sorted;
         i++;
       }
       this._processPendingItems(pendingItems);
@@ -3156,7 +3113,7 @@ export class Finder {
     let sort = l > 1 && targetType === TARGET_ALL;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, dir, find, sorted } = branches[i];
+      const { branch, dir, find } = branches[i];
       if (!branch.length || !find) {
         continue;
       }
@@ -3182,25 +3139,8 @@ export class Finder {
               nodes.add(node);
             }
             sort = true;
-          } else if (
-            sorted &&
-            l === 1 &&
-            this.#node.nodeType === ELEMENT_NODE
-          ) {
-            const validNodes = [];
-            for (let j = 0, len = entryNodes.length; j < len; j++) {
-              const node = entryNodes[j];
-              if (node !== this.#node && this.#node.contains(node)) {
-                validNodes.push(node);
-              }
-            }
-            nodes = new Set(validNodes);
-            sort = false;
           } else {
             nodes = new Set(entryNodes);
-            if (sorted && l === 1) {
-              sort = false;
-            }
           }
         } else {
           if (entryNodes.length) {

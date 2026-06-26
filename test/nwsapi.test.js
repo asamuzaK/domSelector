@@ -1044,6 +1044,22 @@ describe('nwsapi', () => {
           );
         }
       });
+
+      it('_compileAttribute() should fully branch all attrCheck conditions', () => {
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+        div.setAttribute('data-present', 'any-value');
+        assert.strictEqual(api.match('[data-present]', div), true, 'Route 1: hasAttribute match');
+        assert.strictEqual(api.match('[data-absent]', div), false, 'Route 1: hasAttribute unmatch');
+        div.setAttribute('data-empty', '');
+        assert.strictEqual(api.match('[data-empty=""]', div), true, 'Route 2: exact empty string match');
+        assert.strictEqual(api.match('[data-present=""]', div), false, 'Route 2: should fail if attribute is not empty');
+        div.setAttribute('data-match', 'hello-world');
+        assert.strictEqual(api.match('[data-match="hello-world"]', div), true, 'Route 3: standard exact match');
+        assert.strictEqual(api.match('[data-match^="hello"]', div), true, 'Route 3: standard prefix match');
+        assert.strictEqual(api.match('[data-match$="world"]', div), true, 'Route 3: standard suffix match');
+        document.body.removeChild(div);
+      });
     });
 
     describe('Internal Compiler Fallbacks', () => {

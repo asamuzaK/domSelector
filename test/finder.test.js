@@ -825,6 +825,219 @@ describe('Finder', () => {
       const res = finder._matchAnPlusB(leaf, node, leafName);
       assert.strictEqual(res, false, 'result');
     });
+
+    it('should test a > 0 with valid and invalid diff boundaries', () => {
+      const leafName = 'nth-child';
+      // 3n + 5 (n=0: 5, n=1: 8, n=2: 11...)
+      const leaf = {
+        nth: { a: '3', b: '5', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const parent = document.createElement('div');
+      for (let i = 0; i < 10; i++) {
+        parent.appendChild(document.createElement('p'));
+      }
+      document.getElementById('div0').appendChild(parent);
+      const nodeMatch = parent.children[7];
+      finder.setup(':nth-child(3n+5)', nodeMatch);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=8 matches 3n+5');
+      const nodeMinusDiff = parent.children[1];
+      finder.setup(':nth-child(3n+5)', nodeMinusDiff);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMinusDiff, leafName), false, 'pos=2 fails 3n+5 because diff < 0');
+    });
+
+    it('should test a < 0 with valid and invalid diff boundaries', () => {
+      const leafName = 'nth-child';
+      // -3n + 5 (n=0: 5, n=1: 2)
+      const leaf = {
+        nth: { a: '-3', b: '5', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const parent = document.createElement('div');
+      for (let i = 0; i < 10; i++) {
+        parent.appendChild(document.createElement('p'));
+      }
+      document.getElementById('div0').appendChild(parent);
+      const nodeMatch = parent.children[1];
+      finder.setup(':nth-child(-3n+5)', nodeMatch);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=2 matches -3n+5');
+      const nodePlusDiff = parent.children[7];
+      finder.setup(':nth-child(-3n+5)', nodePlusDiff);
+      assert.strictEqual(finder._matchAnPlusB(leaf, nodePlusDiff, leafName), false, 'pos=8 fails -3n+5 because diff > 0');
+    });
+
+    it('should branch on anb.selector caching for nth-child of sel', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li3');
+      const finder = new Finder(window);
+      finder.setup('li:nth-child(2n+1 of .li)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'matches nth-child with of selector');
+    });
+
+    it('should branch on anb.selector caching for nth-last-child of sel', () => {
+      const leafName = 'nth-last-child';
+      // :nth-last-child(2n+1 of .li)
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li3');
+      const finder = new Finder(window);
+      finder.setup('li:nth-last-child(2n+1 of .li)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'matches nth-last-child with of selector');
+    });
+
+    it('should not cache selector when nthName is nth-of-type even', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '2', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const node = document.getElementById('li1');
+      const finder = new Finder(window);
+      finder.setup('li:nth-of-type(2n+1)', node);
+      const res = finder._matchAnPlusB(leaf, node, leafName);
+      assert.strictEqual(res, true, 'processes nth-of-type smoothly by bypassing selector cache');
+    });
+
+    it('should test empty array return', () => {
+      const leafName = 'nth-child';
+      // :nth-child(1n of .match-me)
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: {
+          children: [
+            {
+              children: [{ loc: null, name: 'match-me', type: CLASS_SELECTOR }],
+              loc: null,
+              type: SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR_LIST
+        },
+        type: NTH
+      };
+      const isolatedNode = document.createElement('div');
+      const finder = new Finder(window);
+      finder.setup(':nth-child(1n of .match-me)', isolatedNode);
+      const res = finder._matchAnPlusB(leaf, isolatedNode, leafName);
+      assert.strictEqual(res, false, 'returns false because siblings array is empty');
+    });
+
+    it('should cover all 4 logical branches of typeKey', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const xmlDoc = new window.DOMParser().parseFromString(
+        '<root xmlns:svg="http://www.w3.org/2000/svg"><svg:svg/></root>',
+        'text/xml'
+      );
+      const svgChild = xmlDoc.documentElement.firstChild;
+      finder.setup('svg|svg:nth-of-type(1)', svgChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, svgChild, leafName), true, 'Branch 1 passed');
+      const svgParent = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svgNoPrefixChild = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      svgParent.appendChild(svgNoPrefixChild);
+      document.getElementById('div0').appendChild(svgParent);
+      finder.setup('rect:nth-of-type(1)', svgNoPrefixChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, svgNoPrefixChild, leafName), true, 'Branch 2 passed');
+      const mockParent = document.createElement('div');
+      const mockChild = document.createElement('p');
+      mockParent.appendChild(mockChild);
+      document.getElementById('div0').appendChild(mockParent);
+      Object.defineProperty(mockChild, 'namespaceURI', { value: null, configurable: true });
+      Object.defineProperty(mockChild, 'prefix', { value: 'foo', configurable: true });
+      finder.setup('p:nth-of-type(1)', mockChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, mockChild, leafName), true, 'Branch 3 passed');
+      const htmlParent = document.createElement('div');
+      const htmlChild = document.createElement('p');
+      htmlParent.appendChild(htmlChild);
+      document.getElementById('div0').appendChild(htmlParent);
+      finder.setup('p:nth-of-type(1)', htmlChild);
+      assert.strictEqual(finder._matchAnPlusB(leaf, htmlChild, leafName), true, 'Branch 4 passed');
+    });
+
+    it('should test true and false routes when parentNode is null', () => {
+      const leafName = 'nth-of-type';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const isolatedRoot = document.createElement('div');
+      finder.setup('div:nth-of-type(1n)', isolatedRoot);
+      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const notRoot = document.createElement('p');
+      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
+    });
+
+    it('should test true and false branches when parentNode is null', () => {
+      const leafName = 'nth-child';
+      const leaf = {
+        nth: { a: '1', b: '1', type: AN_PLUS_B },
+        selector: null,
+        type: NTH
+      };
+      const finder = new Finder(window);
+      const isolatedRoot = document.createElement('div');
+      finder.setup('div:nth-child(1n)', isolatedRoot);
+      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const notRoot = document.createElement('span');
+      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
+    });
   });
 
   describe('match :has() pseudo-class function', () => {
@@ -11435,8 +11648,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             },
             {
               branch: [
@@ -11473,8 +11685,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('li3')], [document.getElementById('li1')]]
@@ -11512,8 +11723,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             },
             {
               branch: [
@@ -11550,8 +11760,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [
@@ -11612,8 +11821,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             },
             {
               branch: [
@@ -11643,8 +11851,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[div2, div4], [div3]]
@@ -11700,8 +11907,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             },
             {
               branch: [
@@ -11731,8 +11937,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[div2, div4], [div3]]
@@ -11870,8 +12075,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [
@@ -11923,8 +12127,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('li1')]]
@@ -11970,8 +12173,7 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('ul1')]]
@@ -12017,8 +12219,7 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('ul1')]]
@@ -12085,8 +12286,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[ancestor, parent, child]]
@@ -12153,8 +12353,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[ancestor]]
@@ -12200,8 +12399,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('li1')]]
@@ -12247,8 +12445,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('li1')]]
@@ -12294,8 +12491,7 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [[document.getElementById('ul1')]]
@@ -12347,8 +12543,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: false,
-              find: false,
-              sorted: false
+              find: false
             }
           ],
           [[]]
@@ -12400,8 +12595,7 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true,
-              sorted: false
+              find: true
             }
           ],
           [
@@ -12717,6 +12911,81 @@ describe('Finder', () => {
           })
         },
         'result'
+      );
+    });
+
+    it('should merge multiple branches and require sorting', () => {
+      const finder = new Finder(window);
+      finder.setup('p, span', document);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.size,
+        12,
+        'should merge and collect all nodes from multiple branches'
+      );
+    });
+
+    it('should use fast path for single sorted branch', () => {
+      const node = document.getElementById('div1');
+      const finder = new Finder(window);
+      finder.setup('div', node);
+      const res = finder.find('all');
+      assert.strictEqual(res.has(node), false, 'excludes context node');
+      assert.strictEqual(
+        res.has(document.getElementById('div2')),
+        true,
+        'includes descendant node'
+      );
+      assert.strictEqual(res.size, 6, 'div2, div3, div4, div5, div6, div7');
+    });
+
+    it('should use basic set conversion for single sorted branch', () => {
+      const finder = new Finder(window);
+      finder.setup('div', document);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.has(document.getElementById('div0')),
+        true,
+        'includes div0 from document root'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('div1')),
+        true,
+        'includes div1'
+      );
+    });
+
+    it('should handle single unsorted branch', () => {
+      const node = document.getElementById('dl1');
+      const finder = new Finder(window);
+      finder.setup('[hidden]', node);
+      const res = finder.find('all');
+      assert.strictEqual(
+        res.size,
+        2,
+        'matches elements using TreeWalker fallback'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('span1')),
+        true,
+        'includes span1'
+      );
+      assert.strictEqual(
+        res.has(document.getElementById('span3')),
+        true,
+        'includes span3'
+      );
+    });
+
+    it('should handle multiple branches', () => {
+      const finder = new Finder(window);
+      finder.setup('ol, ul', document);
+      const res = finder.find('all');
+      assert.strictEqual(res.size, 1, 'matches only the second branch');
+      assert.strictEqual(
+        res.has(document.getElementById('ul1')),
+        true,
+        'includes ul1'
       );
     });
   });
