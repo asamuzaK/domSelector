@@ -91,43 +91,6 @@ export const generateException = (msg, name, globalObject = globalThis) => {
 };
 
 /**
- * Filter a list of nodes based on An+B logic
- * @param {Array.<object>} nodes - array of nodes to filter
- * @param {object} anb - An+B options
- * @param {number} anb.a - a
- * @param {number} anb.b - b
- * @param {boolean} [anb.reverse] - reverse order
- * @returns {Array.<object>} - array of matched nodes
- */
-export const filterNodesByAnB = (nodes, anb) => {
-  const { a, b, reverse } = anb;
-  const processedNodes = reverse ? [...nodes].reverse() : nodes;
-  const l = nodes.length;
-  const matched = [];
-  if (a === 0) {
-    if (b > 0 && b <= l) {
-      matched.push(processedNodes[b - 1]);
-    }
-    return matched;
-  }
-  let startIndex = b - 1;
-  if (a > 0) {
-    while (startIndex < 0) {
-      startIndex += a;
-    }
-    for (let i = startIndex; i < l; i += a) {
-      matched.push(processedNodes[i]);
-    }
-  } else if (startIndex >= 0) {
-    for (let i = startIndex; i >= 0; i += a) {
-      matched.push(processedNodes[i]);
-    }
-    return matched.reverse();
-  }
-  return matched;
-};
-
-/**
  * Resolve content document, root node, and check if it's in a shadow DOM.
  * @param {object} node - Document, DocumentFragment, or Element node.
  * @returns {Array.<object|boolean>} - [document, root, isInShadow].

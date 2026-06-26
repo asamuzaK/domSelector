@@ -21,7 +21,6 @@ import {
 } from './parser.js';
 import { createHasValidator, isInvalidCombinator } from './selector.js';
 import {
-  filterNodesByAnB,
   findBestSeed,
   generateException,
   isCustomElement,
@@ -62,8 +61,6 @@ import {
   TEXT_NODE,
   TYPE_SELECTOR
 } from './constant.js';
-const ANB_FIRST = { a: 0, b: 1 };
-const ANB_LAST = { a: 0, b: 1, reverse: true };
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
@@ -249,9 +246,7 @@ export class Finder {
     this.#invalidateResults = null;
     this.#nthChildCache = null;
     this.#nthChildOfCache = null;
-    this.#nthChildResultCache = null;
     this.#nthOfTypeCache = null;
-    this.#nthOfTypeResultCache = null;
     this.#psDefaultCache = null;
     this.#psDirCache = null;
     this.#psHasFilterCache = null;
@@ -525,118 +520,42 @@ export class Finder {
   };
 
   /**
-   * Collects nth-child nodes.
+   * Gets all element siblings of a node.
    * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} [anb.selector] - The selector for 'of S'.
-   * @param {object} node - The Element node.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} node - The element node.
+   * @returns {Array.<object>} An array of sibling elements.
    */
-  _collectNthChild = (anb, node, opt) => {
-    const { a, b, selector } = anb;
+  _getSiblings = node => {
     const { parentNode } = node;
     if (!parentNode) {
-      const matchedNode = new Set();
-      if (node === this.#root && a * 1 + b * 1 === 1) {
-        if (selector) {
-          const selectorBranches = this._getSelectorBranches(selector);
-          const l = selectorBranches.length;
-          for (let i = 0; i < l; i++) {
-            const leaves = selectorBranches[i];
-            if (this._matchLeaves(leaves, node, opt)) {
-              matchedNode.add(node);
-              break;
-            }
-          }
-        } else {
-          matchedNode.add(node);
-        }
-      }
-      return matchedNode;
+      return node === this.#root ? [node] : [];
     }
-    if (!this.#nthChildResultCache) {
-      this.#nthChildResultCache = new WeakMap();
+    if (!this.#nthChildCache) {
+      this.#nthChildCache = new WeakMap();
     }
-    let parentResultCache = this.#nthChildResultCache.get(parentNode);
-    if (!parentResultCache) {
-      parentResultCache = new WeakMap();
-      this.#nthChildResultCache.set(parentNode, parentResultCache);
+    let siblings = this.#nthChildCache.get(parentNode);
+    if (!siblings) {
+      siblings = [];
+      let child = parentNode.firstElementChild;
+      while (child) {
+        siblings.push(child);
+        child = child.nextElementSibling;
+      }
+      this.#nthChildCache.set(parentNode, siblings);
     }
-    const cachedSet = parentResultCache.get(anb);
-    if (cachedSet) {
-      return cachedSet;
-    }
-    let siblings;
-    if (selector) {
-      if (!this.#nthChildOfCache) {
-        this.#nthChildOfCache = new WeakMap();
-      }
-      let parentOfCacheMap = this.#nthChildOfCache.get(parentNode);
-      if (!parentOfCacheMap) {
-        parentOfCacheMap = new Map();
-        this.#nthChildOfCache.set(parentNode, parentOfCacheMap);
-      }
-      siblings = parentOfCacheMap.get(selector);
-      if (!siblings) {
-        const selectorBranches = this._getSelectorBranches(selector);
-        siblings = this._getFilteredChildren(parentNode, selectorBranches, opt);
-        parentOfCacheMap.set(selector, siblings);
-      }
-    } else {
-      if (!this.#nthChildCache) {
-        this.#nthChildCache = new WeakMap();
-      }
-      siblings = this.#nthChildCache.get(parentNode);
-      if (!siblings) {
-        siblings = this._getFilteredChildren(parentNode, null, opt);
-        this.#nthChildCache.set(parentNode, siblings);
-      }
-    }
-    const matchedNodes = filterNodesByAnB(siblings, anb);
-    const resultSet = new Set(matchedNodes);
-    parentResultCache.set(anb, resultSet);
-    return resultSet;
+    return siblings;
   };
 
   /**
-   * Collects nth-of-type nodes.
+   * Gets all typed element siblings of a node.
    * @private
-   * @param {object} anb - An+B options.
-   * @param {number} anb.a - The 'a' value.
-   * @param {number} anb.b - The 'b' value.
-   * @param {boolean} [anb.reverse] - If true, reverses the order.
-   * @param {object} node - The Element node.
-   * @returns {Set.<object>} A collection of matched nodes.
+   * @param {object} node - The element node.
+   * @returns {Array.<object>} An array of typed sibling elements.
    */
-  _collectNthOfType = (anb, node) => {
+  _getTypedSiblings = node => {
     const { localName, namespaceURI, parentNode, prefix } = node;
     if (!parentNode) {
-      if (node === this.#root && anb.a * 1 + anb.b * 1 === 1) {
-        return new Set([node]);
-      }
-      return new Set();
-    }
-    if (!this.#nthOfTypeResultCache) {
-      this.#nthOfTypeResultCache = new WeakMap();
-    }
-    let parentResultCache = this.#nthOfTypeResultCache.get(parentNode);
-    if (!parentResultCache) {
-      parentResultCache = new WeakMap();
-      this.#nthOfTypeResultCache.set(parentNode, parentResultCache);
-    }
-    let typeResultMap = parentResultCache.get(anb);
-    if (!typeResultMap) {
-      typeResultMap = new Map();
-      parentResultCache.set(anb, typeResultMap);
-    }
-    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
-    const cachedSet = typeResultMap.get(typeKey);
-    if (cachedSet) {
-      return cachedSet;
+      return node === this.#root ? [node] : [];
     }
     if (!this.#nthOfTypeCache) {
       this.#nthOfTypeCache = new WeakMap();
@@ -646,30 +565,88 @@ export class Finder {
       typeMap = new Map();
       this.#nthOfTypeCache.set(parentNode, typeMap);
     }
-    let typedSiblings = typeMap.get(typeKey);
-    if (!typedSiblings) {
-      typedSiblings = [];
-      let sibling = parentNode.firstElementChild;
-      while (sibling) {
+    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
+    let siblings = typeMap.get(typeKey);
+    if (!siblings) {
+      siblings = [];
+      let child = parentNode.firstElementChild;
+      while (child) {
         if (
-          sibling.localName === localName &&
-          sibling.namespaceURI === namespaceURI &&
-          sibling.prefix === prefix
+          child.localName === localName &&
+          child.namespaceURI === namespaceURI &&
+          child.prefix === prefix
         ) {
-          typedSiblings.push(sibling);
+          siblings.push(child);
         }
-        sibling = sibling.nextElementSibling;
+        child = child.nextElementSibling;
       }
-      typeMap.set(typeKey, typedSiblings);
+      typeMap.set(typeKey, siblings);
     }
-    const matchedNodes = filterNodesByAnB(typedSiblings, anb);
-    const resultSet = new Set(matchedNodes);
-    typeResultMap.set(typeKey, resultSet);
-    return resultSet;
+    return siblings;
   };
 
   /**
-   * Matches An+B.
+   * Gets all filtered element siblings of a node.
+   * @private
+   * @param {object} node - The element node.
+   * @param {object} selector - The selector AST.
+   * @param {object} opt - Options.
+   * @returns {Array.<object>} An array of filtered sibling elements.
+   */
+  _getFilteredSiblings = (node, selector, opt) => {
+    const selectorBranches = this._getSelectorBranches(selector);
+    const { parentNode } = node;
+    if (!parentNode) {
+      if (node !== this.#root) {
+        return [];
+      }
+      let isMatch = false;
+      const l = selectorBranches.length;
+      for (let i = 0; i < l; i++) {
+        if (this._matchLeaves(selectorBranches[i], node, opt)) {
+          isMatch = true;
+          break;
+        }
+      }
+      return isMatch ? [node] : [];
+    }
+    if (!this.#nthChildOfCache) {
+      this.#nthChildOfCache = new WeakMap();
+    }
+    let parentOfCacheMap = this.#nthChildOfCache.get(parentNode);
+    if (!parentOfCacheMap) {
+      parentOfCacheMap = new Map();
+      this.#nthChildOfCache.set(parentNode, parentOfCacheMap);
+    }
+    let siblings = parentOfCacheMap.get(selector);
+    if (!siblings) {
+      siblings = [];
+      let child = parentNode.firstElementChild;
+      while (child) {
+        let isMatch = false;
+        const l = selectorBranches.length;
+        for (let i = 0; i < l; i++) {
+          if (this._matchLeaves(selectorBranches[i], child, opt)) {
+            isMatch = true;
+            break;
+          }
+        }
+        if (isMatch) {
+          if (this.#node === child) {
+            siblings.push(child);
+          } else if (isVisible(child)) {
+            siblings.push(child);
+          }
+        }
+        child = child.nextElementSibling;
+      }
+      parentOfCacheMap.set(selector, siblings);
+    }
+    return siblings;
+  };
+
+  /**
+   * Evaluates An+B mathematically (O(1) without generating new arrays/sets).
    * @private
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
@@ -687,49 +664,56 @@ export class Finder {
         nth: { a, b, name: nthIdentName },
         selector
       } = ast;
-      const anbMap = new Map();
+      anb = { a: 0, b: 0, selector: null };
       if (nthIdentName) {
         if (nthIdentName === 'even') {
-          anbMap.set('a', 2);
-          anbMap.set('b', 0);
+          anb.a = 2;
+          anb.b = 0;
         } else if (nthIdentName === 'odd') {
-          anbMap.set('a', 2);
-          anbMap.set('b', 1);
-        }
-        if (nthName.indexOf('last') > -1) {
-          anbMap.set('reverse', true);
+          anb.a = 2;
+          anb.b = 1;
         }
       } else {
-        if (typeof a === 'string' && /-?\d+/.test(a)) {
-          anbMap.set('a', a * 1);
-        } else {
-          anbMap.set('a', 0);
-        }
-        if (typeof b === 'string' && /-?\d+/.test(b)) {
-          anbMap.set('b', b * 1);
-        } else {
-          anbMap.set('b', 0);
-        }
-        if (nthName.indexOf('last') > -1) {
-          anbMap.set('reverse', true);
-        }
+        anb.a = typeof a === 'string' && /-?\d+/.test(a) ? a * 1 : 0;
+        anb.b = typeof b === 'string' && /-?\d+/.test(b) ? b * 1 : 0;
       }
-      if (nthName === 'nth-child' || nthName === 'nth-last-child') {
-        if (selector) {
-          anbMap.set('selector', selector);
-        }
+      if (
+        selector &&
+        (nthName === 'nth-child' || nthName === 'nth-last-child')
+      ) {
+        anb.selector = selector;
       }
-      anb = Object.fromEntries(anbMap);
       this.#anbCache.set(ast, anb);
     }
+    let siblings;
     if (nthName === 'nth-child' || nthName === 'nth-last-child') {
-      const nodes = this._collectNthChild(anb, node, opt);
-      return nodes.has(node);
+      if (anb.selector) {
+        siblings = this._getFilteredSiblings(node, anb.selector, opt);
+      } else {
+        siblings = this._getSiblings(node);
+      }
     } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
-      const nodes = this._collectNthOfType(anb, node);
-      return nodes.has(node);
+      siblings = this._getTypedSiblings(node);
+    } else {
+      return false;
     }
-    return false;
+    const index = siblings.indexOf(node);
+    if (index === -1) {
+      return false;
+    }
+    // 1-based index calculation
+    const isLast = nthName.includes('last');
+    const pos = isLast ? siblings.length - index : index + 1;
+    const { a, b } = anb;
+    if (a === 0) {
+      return pos === b;
+    }
+    const diff = pos - b;
+    if (diff % a !== 0) {
+      return false;
+    }
+    // Equation: diff / a >= 0
+    return a > 0 ? diff >= 0 : diff <= 0;
   };
 
   /**
@@ -1188,14 +1172,6 @@ export class Finder {
   }
 
   /**
-   * Evaluates *-of-type pseudo-class selector.
-   * @private
-   * @param {string} astName - The AST name.
-   * @param {object} node - The Element node.
-   * @returns {boolean} True if matches, otherwise false.
-   */
-
-  /**
    * Matches pseudo-class selector.
    * @private
    * @see https://html.spec.whatwg.org/#pseudo-classes
@@ -1221,25 +1197,22 @@ export class Finder {
       if (!parentNode) {
         return node === this.#root;
       }
+      const siblings = this._getTypedSiblings(node);
+      if (!siblings.length) {
+        return false;
+      }
       switch (astName) {
         case 'first-of-type': {
-          const [node1] = this._collectNthOfType(ANB_FIRST, node);
-          return node1 === node;
+          return siblings[0] === node;
         }
         case 'last-of-type': {
-          const [node1] = this._collectNthOfType(ANB_LAST, node);
-          return node1 === node;
+          return siblings[siblings.length - 1] === node;
         }
-        // 'only-of-type' is handled by default.
+        case 'only-of-type':
         default: {
-          const [node1] = this._collectNthOfType(ANB_FIRST, node);
-          if (node1 === node) {
-            const [node2] = this._collectNthOfType(ANB_LAST, node);
-            return node2 === node;
-          }
+          return siblings.length === 1 && siblings[0] === node;
         }
       }
-      return false;
     }
     switch (astName) {
       /* Elemental pseudo-classes */
@@ -2278,17 +2251,6 @@ export class Finder {
   };
 
   /**
-   * Matches a combinator.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _matchCombinator = (twig, node, opt) =>
-    new Set(this._collectCombinatorMatches(twig, node, opt));
-
-  /**
    * Traverses with a TreeWalker and collects nodes matching the leaves.
    * @private
    * @param {TreeWalker} walker - The TreeWalker instance to use.
@@ -2966,36 +2928,59 @@ export class Finder {
   };
 
   /**
-   * Matches a node in the 'previous' direction.
+   * Recursively checks if a valid path exists backward (DIR_PREV).
+   * Short-circuits and allocates zero arrays.
    * @private
-   * @param {Array} branch - The branch.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {number} [opt.index] - The index.
-   * @returns {?object} The node.
+   * @param {object} node - The current element node.
+   * @param {Array.<object>} branch - The selector branch.
+   * @param {number} index - The current index in the branch.
+   * @param {object} opt - Match options.
+   * @returns {boolean} True if a valid path exists.
    */
-  _matchNodePrev = (branch, node, opt = {}) => {
-    const { index } = opt;
+  _hasValidPathPrev = (node, branch, index, opt) => {
+    if (index < 0) {
+      return true;
+    }
     const twig = branch[index];
-    const nextNodes = this._getCombinedNodes(twig, [node], DIR_PREV);
-    if (nextNodes.length) {
-      if (index === 0) {
-        return node;
-      }
-      let matched;
-      for (const nextNode of nextNodes) {
-        matched = this._matchNodePrev(branch, nextNode, {
-          index: index - 1
-        });
-        if (matched) {
-          break;
+    const { combo, leaves } = twig;
+    const comboName = combo.name;
+    if (comboName === '+') {
+      const refNode = node.previousElementSibling;
+      if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+        if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+          return true;
         }
       }
-      if (matched) {
-        return node;
+    } else if (comboName === '~') {
+      let refNode = node.previousElementSibling;
+      while (refNode) {
+        if (this._matchLeaves(leaves, refNode, opt)) {
+          if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+            return true;
+          }
+        }
+        refNode = refNode.previousElementSibling;
+      }
+    } else if (comboName === '>') {
+      const parentNode = node.parentNode;
+      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+        if (this._hasValidPathPrev(parentNode, branch, index - 1, opt)) {
+          return true;
+        }
+      }
+    } else {
+      // Descendant combinator ' '
+      let refNode = node.parentNode;
+      while (refNode) {
+        if (this._matchLeaves(leaves, refNode, opt)) {
+          if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+            return true;
+          }
+        }
+        refNode = refNode.parentNode;
       }
     }
-    return null;
+    return false;
   };
 
   /**
@@ -3032,22 +3017,13 @@ export class Finder {
           }
         }
       }
-      // DIR_PREV
     } else {
-      for (const node of entryNodes) {
-        let nextNodes = [node];
-        for (let j = lastIndex - 1; j >= 0; j--) {
-          const twig = branch[j];
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            // The entry node is the final match
-            if (j === 0) {
-              matchedNodes.add(node);
-            }
-            nextNodes = nodesArr;
-          } else {
-            break;
-          }
+      // DIR_PREV
+      const matchOpt = { warn: this.#warn };
+      for (let i = 0, len = entryNodes.length; i < len; i++) {
+        const node = entryNodes[i];
+        if (this._hasValidPathPrev(node, branch, lastIndex - 1, matchOpt)) {
+          matchedNodes.add(node);
         }
       }
     }
@@ -3117,28 +3093,26 @@ export class Finder {
           });
         }
       }
-      // DIR_PREV logic for finding the first match.
     } else {
-      for (const node of entryNodes) {
-        const matchedNode = this._matchNodePrev(branch, node, {
-          index: lastIndex - 1
-        });
-        if (matchedNode) {
-          return matchedNode;
+      // DIR_PREV logic for finding the first match.
+      const matchOpt = { warn: this.#warn };
+      for (let i = 0, len = entryNodes.length; i < len; i++) {
+        const node = entryNodes[i];
+        if (this._hasValidPathPrev(node, branch, lastIndex - 1, matchOpt)) {
+          return node;
         }
       }
       // Fallback for TARGET_FIRST.
       if (targetType === TARGET_FIRST) {
         const { leaves: entryLeaves } = branch[lastIndex];
-        const [entryNode] = entryNodes;
+        const entryNode = entryNodes[0];
         let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
           targetType
         });
         while (refNode) {
-          const matchedNode = this._matchNodePrev(branch, refNode, {
-            index: lastIndex - 1
-          });
-          if (matchedNode) {
+          if (
+            this._hasValidPathPrev(refNode, branch, lastIndex - 1, matchOpt)
+          ) {
             return refNode;
           }
           [refNode] = this._findNodeWalker(entryLeaves, refNode, {
