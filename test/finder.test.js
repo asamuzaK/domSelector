@@ -13571,7 +13571,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             },
             {
               branch: [
@@ -13608,7 +13609,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('li3')], [document.getElementById('li1')]]
@@ -13646,7 +13648,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             },
             {
               branch: [
@@ -13683,7 +13686,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [
@@ -13744,7 +13748,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             },
             {
               branch: [
@@ -13774,7 +13779,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[div2, div4], [div3]]
@@ -13830,7 +13836,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             },
             {
               branch: [
@@ -13860,7 +13867,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[div2, div4], [div3]]
@@ -13998,7 +14006,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [
@@ -14050,7 +14059,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('li1')]]
@@ -14096,7 +14106,8 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('ul1')]]
@@ -14142,7 +14153,8 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('ul1')]]
@@ -14209,7 +14221,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[ancestor, parent, child]]
@@ -14276,7 +14289,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[ancestor]]
@@ -14322,7 +14336,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('li1')]]
@@ -14368,7 +14383,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('li1')]]
@@ -14414,7 +14430,8 @@ describe('Finder', () => {
               ],
               dir: 'next',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [[document.getElementById('ul1')]]
@@ -14466,7 +14483,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: false,
-              find: false
+              find: false,
+              sorted: false
             }
           ],
           [[]]
@@ -14518,7 +14536,8 @@ describe('Finder', () => {
               ],
               dir: 'prev',
               filtered: true,
-              find: true
+              find: true,
+              sorted: false
             }
           ],
           [

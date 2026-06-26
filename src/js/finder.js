@@ -2525,6 +2525,32 @@ export class Finder {
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
+      const [leaf] = leaves;
+      if (
+        targetType !== TARGET_FIRST &&
+        !precede &&
+        typeof this.#node.getElementsByClassName === 'function'
+      ) {
+        const matchOpt = { warn: this.#warn };
+        this._matchLeaves(leaves, this.#node, matchOpt);
+        const className = unescapeSelector(leaf.name);
+        const collection = this.#node.getElementsByClassName(className);
+        const len = collection.length;
+        const filterLeaves = this._getFilterLeaves(leaves);
+        const hasFilter = filterLeaves.length > 0;
+        const nodeArray = [];
+        for (let i = 0; i < len; i++) {
+          const currentNode = collection[i];
+          if (
+            !hasFilter ||
+            this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          ) {
+            nodeArray.push(currentNode);
+          }
+        }
+        filtered = nodeArray.length > 0;
+        return { nodes: nodeArray, filtered, pending: false, sorted: true };
+      }
       nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
       filtered = nodes.length > 0;
     }
@@ -2550,7 +2576,39 @@ export class Finder {
     } else if (targetType === TARGET_LINEAL) {
       [nodes, filtered] = this._findLineal(leaves, { complex });
     } else {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
+      const [leaf] = leaves;
+      const tagName = unescapeSelector(leaf.name);
+      const isHTML = this.#document.contentType === 'text/html';
+      if (
+        targetType !== TARGET_FIRST &&
+        !precede &&
+        isHTML &&
+        typeof this.#node.getElementsByTagName === 'function' &&
+        tagName.indexOf('|') === -1
+      ) {
+        const matchOpt = { warn: this.#warn };
+        this._matchLeaves(leaves, this.#node, matchOpt);
+        const collection = this.#node.getElementsByTagName(tagName);
+        const len = collection.length;
+        const filterLeaves = this._getFilterLeaves(leaves);
+        const hasFilter = filterLeaves.length > 0;
+        const nodeArray = [];
+        for (let i = 0; i < len; i++) {
+          const currentNode = collection[i];
+          if (
+            !hasFilter ||
+            this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          ) {
+            nodeArray.push(currentNode);
+          }
+        }
+        filtered = nodeArray.length > 0;
+        return { nodes: nodeArray, filtered, pending: false, sorted: true };
+      }
+      nodes = this._findNodeWalker(leaves, this.#node, {
+        precede,
+        targetType
+      });
       filtered = nodes.length > 0;
     }
     return { nodes, filtered, pending: false };
@@ -2810,11 +2868,8 @@ export class Finder {
           branch,
           targetType
         );
-        const { compound, filtered, nodes, pending } = this._findEntryNodes(
-          twig,
-          targetType,
-          { complex, dir }
-        );
+        const { compound, filtered, nodes, pending, sorted } =
+          this._findEntryNodes(twig, targetType, { complex, dir });
         if (nodes.length) {
           this.#ast[i].find = true;
           this.#nodes[i] = nodes;
@@ -2828,6 +2883,7 @@ export class Finder {
         }
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
+        this.#ast[i].sorted = !!sorted;
         i++;
       }
       this._processPendingItems(pendingItems);
@@ -3126,7 +3182,7 @@ export class Finder {
     let sort = l > 1 && targetType === TARGET_ALL;
     let nodes = new Set();
     for (let i = 0; i < l; i++) {
-      const { branch, dir, find } = branches[i];
+      const { branch, dir, find, sorted } = branches[i];
       if (!branch.length || !find) {
         continue;
       }
@@ -3152,40 +3208,50 @@ export class Finder {
               nodes.add(node);
             }
             sort = true;
+          } else if (
+            sorted &&
+            l === 1 &&
+            this.#node.nodeType === ELEMENT_NODE
+          ) {
+            const validNodes = [];
+            for (let j = 0, len = entryNodes.length; j < len; j++) {
+              const node = entryNodes[j];
+              if (node !== this.#node && this.#node.contains(node)) {
+                validNodes.push(node);
+              }
+            }
+            nodes = new Set(validNodes);
+            sort = false;
           } else {
             nodes = new Set(entryNodes);
+            if (sorted && l === 1) {
+              sort = false;
+            }
           }
         } else {
           if (entryNodes.length) {
             nodes.add(entryNodes[0]);
           }
         }
-      } else {
-        // Handle complex selectors.
-        if (targetType === TARGET_ALL) {
-          const newNodes = this._processComplexBranchAll(
-            branch,
-            entryNodes,
-            dir
-          );
-          if (nodes.size) {
-            for (const newNode of newNodes) {
-              nodes.add(newNode);
-            }
-            sort = true;
-          } else {
-            nodes = newNodes;
+      } else if (targetType === TARGET_ALL) {
+        const newNodes = this._processComplexBranchAll(branch, entryNodes, dir);
+        if (nodes.size) {
+          for (const newNode of newNodes) {
+            nodes.add(newNode);
           }
+          sort = true;
         } else {
-          const matchedNode = this._processComplexBranchFirst(
-            branch,
-            entryNodes,
-            dir,
-            targetType
-          );
-          if (matchedNode) {
-            nodes.add(matchedNode);
-          }
+          nodes = newNodes;
+        }
+      } else {
+        const matchedNode = this._processComplexBranchFirst(
+          branch,
+          entryNodes,
+          dir,
+          targetType
+        );
+        if (matchedNode) {
+          nodes.add(matchedNode);
         }
       }
     }

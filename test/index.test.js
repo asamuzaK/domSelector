@@ -1899,8 +1899,7 @@ describe('DOMSelector', () => {
 
     it('should not match', () => {
       const wrapperForImpl = sinon.stub();
-      wrapperForImpl.onCall(0).throws();
-      wrapperForImpl.onCall(1).callsFake(node => node);
+      wrapperForImpl.callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
         wrapperForImpl
@@ -1911,7 +1910,7 @@ describe('DOMSelector', () => {
       });
       const selector = 'dt:is(:first-of-type, :last-of-type)';
       const res = domSelector.querySelectorAll(selector, document);
-      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
+      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(
         res,
         [document.getElementById('dt1'), document.getElementById('dt3')],
