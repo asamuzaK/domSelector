@@ -1158,10 +1158,12 @@ export class Finder extends Evaluator {
           this._node.nodeType === ELEMENT_NODE
         ) {
           for (const node of entryNodes) {
-            if (node !== this._node && this._node.contains(node)) {
-              nodes.add(node);
-              if (targetType === TARGET_FIRST) {
-                break;
+            if (node !== this._node) {
+              if (targetType === TARGET_ALL || this._node.contains(node)) {
+                nodes.add(node);
+                if (targetType === TARGET_FIRST) {
+                  break;
+                }
               }
             }
           }
