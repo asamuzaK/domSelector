@@ -1012,6 +1012,89 @@ export class Evaluator {
   };
 
   /**
+   * Collects combinator matches into an array.
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @param {string} [opt.dir] - The find direction.
+   * @param {Array.<object>} matched - The collector array.
+   * @returns {Array.<object>} The collector array.
+   */
+  collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
+    const {
+      combo: { name: comboName },
+      leaves
+    } = twig;
+    const { dir } = opt;
+    switch (comboName) {
+      case '+': {
+        const refNode =
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
+        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+          matched.push(refNode);
+        }
+        break;
+      }
+      case '~': {
+        let refNode =
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
+        while (refNode) {
+          if (this._matchLeaves(leaves, refNode, opt)) {
+            matched.push(refNode);
+          }
+          refNode =
+            dir === DIR_NEXT
+              ? refNode.nextElementSibling
+              : refNode.previousElementSibling;
+        }
+        break;
+      }
+      case '>': {
+        if (dir === DIR_NEXT) {
+          let refNode = node.firstElementChild;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              matched.push(refNode);
+            }
+            refNode = refNode.nextElementSibling;
+          }
+        } else {
+          const { parentNode } = node;
+          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+            matched.push(parentNode);
+          }
+        }
+        break;
+      }
+      case ' ':
+      default: {
+        if (dir === DIR_NEXT) {
+          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
+            matched.push(refNode);
+          }
+        } else {
+          const ancestors = [];
+          let refNode = node.parentNode;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              ancestors.push(refNode);
+            }
+            refNode = refNode.parentNode;
+          }
+          if (ancestors.length) {
+            matched.push(...ancestors.reverse());
+          }
+        }
+      }
+    }
+    return matched;
+  };
+
+  /**
    * Handles focus events.
    * @private
    * @param {Event} evt - The event object.
@@ -1536,7 +1619,7 @@ export class Evaluator {
           const arr = [];
           opt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
-            this._collectCombinatorMatches(twig, nextNode, opt, arr);
+            this.collectCombinatorMatches(twig, nextNode, opt, arr);
           }
           if (arr.length) {
             if (j === 0) {
@@ -2067,89 +2150,5 @@ export class Evaluator {
       }
     }
     return this._traverseAllDescendants(baseNode, leaves, opt);
-  };
-
-  /**
-   * Collects combinator matches into an array.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
-   * @param {Array.<object>} matched - The collector array.
-   * @returns {Array.<object>} The collector array.
-   */
-  _collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
-    const {
-      combo: { name: comboName },
-      leaves
-    } = twig;
-    const { dir } = opt;
-    switch (comboName) {
-      case '+': {
-        const refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-          matched.push(refNode);
-        }
-        break;
-      }
-      case '~': {
-        let refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        while (refNode) {
-          if (this._matchLeaves(leaves, refNode, opt)) {
-            matched.push(refNode);
-          }
-          refNode =
-            dir === DIR_NEXT
-              ? refNode.nextElementSibling
-              : refNode.previousElementSibling;
-        }
-        break;
-      }
-      case '>': {
-        if (dir === DIR_NEXT) {
-          let refNode = node.firstElementChild;
-          while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
-              matched.push(refNode);
-            }
-            refNode = refNode.nextElementSibling;
-          }
-        } else {
-          const { parentNode } = node;
-          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
-            matched.push(parentNode);
-          }
-        }
-        break;
-      }
-      case ' ':
-      default: {
-        if (dir === DIR_NEXT) {
-          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
-            matched.push(refNode);
-          }
-        } else {
-          const ancestors = [];
-          let refNode = node.parentNode;
-          while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
-              ancestors.push(refNode);
-            }
-            refNode = refNode.parentNode;
-          }
-          if (ancestors.length) {
-            matched.push(...ancestors.reverse());
-          }
-        }
-      }
-    }
-    return matched;
   };
 }

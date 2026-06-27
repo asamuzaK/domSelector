@@ -11052,7 +11052,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matched = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'next'
       });
       assert.deepEqual(
@@ -11079,7 +11079,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matched = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'prev'
       });
       assert.deepEqual(
@@ -11106,11 +11106,11 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matchedNext = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'next'
       });
       assert.deepEqual(matchedNext, [], 'no next siblings match');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matchedPrev = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'prev'
       });
       assert.deepEqual(matchedPrev, [], 'no previous siblings match');
@@ -11133,7 +11133,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matched = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'next'
       });
       assert.deepEqual(matched, [nextDiv1], 'matches next sibling');
@@ -11156,7 +11156,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matched = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'prev'
       });
       assert.deepEqual(matched, [prevSpan1], 'matches previous sibling');
@@ -11179,11 +11179,11 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matchedNext = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'next'
       });
       assert.deepEqual(matchedNext, [], 'next sibling does not match');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, {
+      const matchedPrev = evaluator.collectCombinatorMatches(twig, targetP, {
         dir: 'prev'
       });
       assert.deepEqual(matchedPrev, [], 'previous sibling does not match');
@@ -11206,11 +11206,11 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, nextDiv2, {
+      const matchedNext = evaluator.collectCombinatorMatches(twig, nextDiv2, {
         dir: 'next'
       });
       assert.deepEqual(matchedNext, [], 'no next sibling exists');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, prevSpan2, {
+      const matchedPrev = evaluator.collectCombinatorMatches(twig, prevSpan2, {
         dir: 'prev'
       });
       assert.deepEqual(matchedPrev, [], 'no previous sibling exists');
@@ -11237,7 +11237,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
+      const matched = evaluator.collectCombinatorMatches(twig, node, {
         dir: 'prev'
       });
       assert.deepEqual(matched, [parent], 'matches parent node');
@@ -11264,7 +11264,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
+      const matched = evaluator.collectCombinatorMatches(twig, node, {
         dir: 'prev'
       });
       assert.deepEqual(
@@ -11292,7 +11292,7 @@ describe('Evaluator', () => {
       const node = document.createElement('span');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
+      const matched = evaluator.collectCombinatorMatches(twig, node, {
         dir: 'prev'
       });
       assert.deepEqual(matched, [], 'returns empty array without throwing');

@@ -886,12 +886,7 @@ export class Finder extends Evaluator {
   _getCombinedNodes = (twig, nodes, dir) => {
     const arr = [];
     for (const node of nodes) {
-      this._collectCombinatorMatches(
-        twig,
-        node,
-        { dir, warn: this._warn },
-        arr
-      );
+      this.collectCombinatorMatches(twig, node, { dir, warn: this._warn }, arr);
     }
     return arr;
   };
