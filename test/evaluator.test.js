@@ -300,170 +300,6 @@ describe('Evaluator', () => {
     });
   });
 
-  describe('get siblings', () => {
-    it('should utilize cache and return the exact same array reference', () => {
-      const parent = document.createElement('div');
-      const c1 = document.createElement('div');
-      c1.id = 'c1';
-      const c2 = document.createElement('span');
-      c2.id = 'c2';
-      parent.appendChild(c1);
-      parent.appendChild(c2);
-      document.getElementById('div0').appendChild(parent);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const res1 = evaluator._getSiblings(c1);
-      assert.deepEqual(
-        res1,
-        [c1, c2],
-        'correctly collects all siblings on first call'
-      );
-      const res2 = evaluator._getSiblings(c1);
-      assert.strictEqual(
-        res1,
-        res2,
-        'returns the exact same cached array reference'
-      );
-    });
-  });
-
-  describe('get typed siblings', () => {
-    it('should utilize cache and return the exact same array reference', () => {
-      const parent = document.createElement('div');
-      const p1 = document.createElement('p');
-      p1.id = 'p1';
-      const s1 = document.createElement('span');
-      s1.id = 's1';
-      const p2 = document.createElement('p');
-      p2.id = 'p2';
-      parent.appendChild(p1);
-      parent.appendChild(s1);
-      parent.appendChild(p2);
-      document.getElementById('div0').appendChild(parent);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const res1 = evaluator._getTypedSiblings(p1);
-      assert.deepEqual(
-        res1,
-        [p1, p2],
-        'correctly filters typed siblings on first call'
-      );
-      const res2 = evaluator._getTypedSiblings(p1);
-      assert.strictEqual(
-        res1,
-        res2,
-        'returns the exact same cached array reference'
-      );
-    });
-  });
-
-  describe('get filtered siblings', () => {
-    it('should return [node] if the node matches the selector branches and has no parent', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: 'foo',
-                type: CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      };
-      const node = document.createElement('div');
-      node.classList.add('foo');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const res = evaluator._getFilteredSiblings(node, ast, {});
-      assert.deepEqual(
-        res,
-        [node],
-        'returns an array containing the node itself when it matches'
-      );
-    });
-
-    it('should return an empty array if the node does not match', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: 'foo',
-                type: CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      };
-      const node = document.createElement('div');
-      node.classList.add('bar'); // .foo ではない
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const res = evaluator._getFilteredSiblings(node, ast, {});
-      assert.deepEqual(
-        res,
-        [],
-        'returns an empty array when the node does not match'
-      );
-    });
-
-    it('should utilize cache and return the exact same array reference', () => {
-      const ast = {
-        children: [
-          {
-            children: [
-              {
-                loc: null,
-                name: 'foo',
-                type: CLASS_SELECTOR
-              }
-            ],
-            loc: null,
-            type: SELECTOR
-          }
-        ],
-        loc: null,
-        type: SELECTOR_LIST
-      };
-      const parent = document.createElement('div');
-      const child1 = document.createElement('div');
-      child1.classList.add('foo');
-      const child2 = document.createElement('span');
-      child2.classList.add('bar'); // .foo ではない
-      const child3 = document.createElement('p');
-      child3.classList.add('foo');
-      parent.appendChild(child1);
-      parent.appendChild(child2);
-      parent.appendChild(child3);
-      document.getElementById('div0').appendChild(parent);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const res1 = evaluator._getFilteredSiblings(child1, ast, {});
-      assert.deepEqual(
-        res1,
-        [child1, child3],
-        'correctly filters siblings on first call'
-      );
-      const res2 = evaluator._getFilteredSiblings(child1, ast, {});
-      assert.strictEqual(
-        res1,
-        res2,
-        'returns the exact same cached array reference'
-      );
-    });
-  });
-
   describe('match An+B', () => {
     it('should not match', () => {
       const leafName = 'nth-child';
@@ -11182,10 +11018,12 @@ describe('Evaluator', () => {
     });
   });
 
-  describe('collect combinator matches', () => {
+  describe('yield combinator matches (generator)', () => {
     let parent, prevSpan2, prevSpan1, targetP, nextDiv1, nextDiv2;
+
     beforeEach(() => {
       parent = document.createElement('div');
+      parent.id = 'test-parent';
       prevSpan2 = document.createElement('span');
       prevSpan1 = document.createElement('span');
       targetP = document.createElement('p');
@@ -11199,267 +11037,154 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
     });
 
-    it('should traverse all next siblings when dir === DIR_NEXT', () => {
+    it('should yield all next siblings for ~ combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '~', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'div', type: TYPE_SELECTOR }]
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'next'
-      });
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'next' })
+      ];
       assert.deepEqual(
         matched,
         [nextDiv1, nextDiv2],
-        'collects all subsequent matching siblings'
+        'yields all subsequent matching siblings'
       );
     });
 
-    it('should traverse all previous siblings when dir !== DIR_NEXT (DIR_PREV)', () => {
+    it('should yield all previous siblings for ~ combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '~', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'span', type: TYPE_SELECTOR }]
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'prev'
-      });
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'prev' })
+      ];
       assert.deepEqual(
         matched,
         [prevSpan1, prevSpan2],
-        'collects all preceding matching siblings'
+        'yields all preceding matching siblings'
       );
     });
 
-    it('should return empty array if no subsequent or preceding siblings match', () => {
+    it('should yield nextElementSibling for + combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '~',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'section',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '+', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'div', type: TYPE_SELECTOR }]
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'next'
-      });
-      assert.deepEqual(matchedNext, [], 'no next siblings match');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matchedPrev, [], 'no previous siblings match');
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'next' })
+      ];
+      assert.deepEqual(matched, [nextDiv1], 'yields next sibling');
     });
 
-    it('should match nextElementSibling in forward direction', () => {
+    it('should yield previousElementSibling for + combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '+', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'span', type: TYPE_SELECTOR }]
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'next'
-      });
-      assert.deepEqual(matched, [nextDiv1], 'matches next sibling');
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'prev' })
+      ];
+      assert.deepEqual(matched, [prevSpan1], 'yields previous sibling');
     });
 
-    it('should match previousElementSibling in reverse direction', () => {
+    it('should yield children for > combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'span',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '>', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'span', type: TYPE_SELECTOR }]
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matched, [prevSpan1], 'matches previous sibling');
-    });
-
-    it('should return empty array if sibling does not match the leaves', () => {
-      const twig = {
-        combo: {
-          loc: null,
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'next'
-      });
-      assert.deepEqual(matchedNext, [], 'next sibling does not match');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matchedPrev, [], 'previous sibling does not match');
-    });
-
-    it('should safely return empty array if sibling is null', () => {
-      const twig = {
-        combo: {
-          loc: null,
-          name: '+',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, nextDiv2, {
-        dir: 'next'
-      });
-      assert.deepEqual(matchedNext, [], 'no next sibling exists');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, prevSpan2, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matchedPrev, [], 'no previous sibling exists');
-    });
-
-    it('should match parent node for > combinator in reverse direction', () => {
-      const twig = {
-        combo: {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const parent = document.createElement('div');
-      const node = document.createElement('span');
-      parent.appendChild(node);
-      document.getElementById('div0').appendChild(parent);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matched, [parent], 'matches parent node');
-    });
-
-    it('should not match if parent node does not match the leaves', () => {
-      const twig = {
-        combo: {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'p',
-            type: TYPE_SELECTOR
-          }
-        ]
-      };
-      const parent = document.createElement('div');
-      const node = document.createElement('span');
-      parent.appendChild(node);
-      document.getElementById('div0').appendChild(parent);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
-        dir: 'prev'
-      });
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, parent, { dir: 'next' })
+      ];
       assert.deepEqual(
         matched,
-        [],
-        'returns empty array because parent is not <p>'
+        [prevSpan2, prevSpan1],
+        'yields direct children matching the selector'
       );
     });
 
-    it('should safely return empty array if parentNode is null', () => {
+    it('should yield parent node for > combinator', () => {
       const twig = {
-        combo: {
-          loc: null,
-          name: '>',
-          type: COMBINATOR
-        },
-        leaves: [
-          {
-            loc: null,
-            name: 'div',
-            type: TYPE_SELECTOR
-          }
-        ]
+        combo: { loc: null, name: '>', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'div', type: TYPE_SELECTOR }]
       };
-      const node = document.createElement('span');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, node, {
-        dir: 'prev'
-      });
-      assert.deepEqual(matched, [], 'returns empty array without throwing');
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'prev' })
+      ];
+      assert.deepEqual(matched, [parent], 'yields parent node');
+    });
+
+    it('should yield descendants for descendant combinator', () => {
+      const twig = {
+        combo: { loc: null, name: ' ', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'p', type: TYPE_SELECTOR }]
+      };
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, parent, { dir: 'next' })
+      ];
+      assert.deepEqual(
+        matched,
+        [targetP],
+        'yields descendants matching the selector'
+      );
+    });
+
+    it('should yield ancestors for descendant combinator', () => {
+      const twig = {
+        combo: { loc: null, name: ' ', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'div', type: TYPE_SELECTOR }]
+      };
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      const matched = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'prev' })
+      ];
+      const div0 = document.getElementById('div0');
+      assert.deepEqual(
+        matched,
+        [parent, div0],
+        'yields ancestors matching the selector from closest to furthest'
+      );
+    });
+
+    it('should safely return empty generator without throwing', () => {
+      const twig = {
+        combo: { loc: null, name: '+', type: COMBINATOR },
+        leaves: [{ loc: null, name: 'section', type: TYPE_SELECTOR }]
+      };
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      const matchedNext = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'next' })
+      ];
+      assert.deepEqual(
+        matchedNext,
+        [],
+        'empty when next sibling does not match'
+      );
+      const matchedPrev = [
+        ...evaluator.yieldCombinatorMatches(twig, targetP, { dir: 'prev' })
+      ];
+      assert.deepEqual(
+        matchedPrev,
+        [],
+        'empty when previous sibling does not match'
+      );
     });
   });
 });

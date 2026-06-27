@@ -340,17 +340,43 @@ export class Evaluator {
       if (!parentNode) {
         return node === this._root;
       }
-      const siblings = this._getTypedSiblings(node);
+      const { localName, namespaceURI } = node;
+      let hasPrev = false;
+      let hasNext = false;
+      let current = node.previousElementSibling;
+      while (current) {
+        if (
+          current.localName === localName &&
+          current.namespaceURI === namespaceURI
+        ) {
+          hasPrev = true;
+          break;
+        }
+        current = current.previousElementSibling;
+      }
+      if (astName !== 'first-of-type') {
+        current = node.nextElementSibling;
+        while (current) {
+          if (
+            current.localName === localName &&
+            current.namespaceURI === namespaceURI
+          ) {
+            hasNext = true;
+            break;
+          }
+          current = current.nextElementSibling;
+        }
+      }
       switch (astName) {
         case 'first-of-type': {
-          return siblings[0] === node;
+          return !hasPrev;
         }
         case 'last-of-type': {
-          return siblings[siblings.length - 1] === node;
+          return !hasNext;
         }
         case 'only-of-type':
         default: {
-          return siblings.length === 1 && siblings[0] === node;
+          return !hasPrev && !hasNext;
         }
       }
     }
@@ -986,6 +1012,89 @@ export class Evaluator {
   };
 
   /**
+   * Yields combinator matches (Lazy evaluation, O(1) memory).
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @param {string} [opt.dir] - The find direction.
+   * @yields {object} The matched node.
+   */
+  *yieldCombinatorMatches(twig, node, opt = {}) {
+    const {
+      combo: { name: comboName },
+      leaves
+    } = twig;
+    const { dir } = opt;
+    switch (comboName) {
+      case '+': {
+        const refNode =
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
+        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+          yield refNode;
+        }
+        break;
+      }
+      case '~': {
+        let refNode =
+          dir === DIR_NEXT
+            ? node.nextElementSibling
+            : node.previousElementSibling;
+        while (refNode) {
+          if (this._matchLeaves(leaves, refNode, opt)) {
+            yield refNode;
+          }
+          refNode =
+            dir === DIR_NEXT
+              ? refNode.nextElementSibling
+              : refNode.previousElementSibling;
+        }
+        break;
+      }
+      case '>': {
+        if (dir === DIR_NEXT) {
+          let refNode = node.firstElementChild;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              yield refNode;
+            }
+            refNode = refNode.nextElementSibling;
+          }
+        } else {
+          const { parentNode } = node;
+          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+            yield parentNode;
+          }
+        }
+        break;
+      }
+      case ' ':
+      default: {
+        if (dir === DIR_NEXT) {
+          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
+            yield refNode;
+          }
+        } else {
+          const ancestors = [];
+          let refNode = node.parentNode;
+          while (refNode) {
+            if (this._matchLeaves(leaves, refNode, opt)) {
+              ancestors.push(refNode);
+            }
+            refNode = refNode.parentNode;
+          }
+          if (ancestors.length) {
+            for (let i = ancestors.length - 1; i >= 0; i--) {
+              yield ancestors[i];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Handles focus events.
    * @private
    * @param {Event} evt - The event object.
@@ -1057,130 +1166,6 @@ export class Evaluator {
   };
 
   /**
-   * Gets all element siblings of a node.
-   * @private
-   * @param {object} node - The element node.
-   * @returns {Array.<object>} An array of sibling elements.
-   */
-  _getSiblings = node => {
-    const { parentNode } = node;
-    if (!parentNode) {
-      return node === this._root ? [node] : [];
-    }
-    if (!this._nthChildCache) {
-      this._nthChildCache = new WeakMap();
-    }
-    let siblings = this._nthChildCache.get(parentNode);
-    if (siblings) {
-      return siblings;
-    }
-    siblings = [];
-    let child = parentNode.firstElementChild;
-    while (child) {
-      siblings.push(child);
-      child = child.nextElementSibling;
-    }
-    this._nthChildCache.set(parentNode, siblings);
-    return siblings;
-  };
-
-  /**
-   * Gets all typed element siblings of a node.
-   * @private
-   * @param {object} node - The element node.
-   * @returns {Array.<object>} An array of typed sibling elements.
-   */
-  _getTypedSiblings = node => {
-    const { localName, namespaceURI, parentNode, prefix } = node;
-    if (!parentNode) {
-      return node === this._root ? [node] : [];
-    }
-    if (!this._nthOfTypeCache) {
-      this._nthOfTypeCache = new WeakMap();
-    }
-    let typeMap = this._nthOfTypeCache.get(parentNode);
-    if (!typeMap) {
-      typeMap = new Map();
-      this._nthOfTypeCache.set(parentNode, typeMap);
-    }
-    const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
-    let siblings = typeMap.get(typeKey);
-    if (siblings) {
-      return siblings;
-    }
-    siblings = [];
-    let child = parentNode.firstElementChild;
-    while (child) {
-      if (
-        child.localName === localName &&
-        child.namespaceURI === namespaceURI &&
-        child.prefix === prefix
-      ) {
-        siblings.push(child);
-      }
-      child = child.nextElementSibling;
-    }
-    typeMap.set(typeKey, siblings);
-    return siblings;
-  };
-
-  /**
-   * Gets all filtered element siblings of a node.
-   * @private
-   * @param {object} node - The element node.
-   * @param {object} selector - The selector AST.
-   * @param {object} opt - Options.
-   * @returns {Array.<object>} An array of filtered sibling elements.
-   */
-  _getFilteredSiblings = (node, selector, opt) => {
-    const selectorBranches = this._getSelectorBranches(selector);
-    const { parentNode } = node;
-    if (!parentNode) {
-      const l = selectorBranches.length;
-      for (let i = 0; i < l; i++) {
-        if (this._matchLeaves(selectorBranches[i], node, opt)) {
-          return [node];
-        }
-      }
-      return [];
-    }
-    if (!this._nthChildOfCache) {
-      this._nthChildOfCache = new WeakMap();
-    }
-    let parentOfCacheMap = this._nthChildOfCache.get(parentNode);
-    if (!parentOfCacheMap) {
-      parentOfCacheMap = new Map();
-      this._nthChildOfCache.set(parentNode, parentOfCacheMap);
-    }
-    let siblings = parentOfCacheMap.get(selector);
-    if (siblings) {
-      return siblings;
-    }
-    siblings = [];
-    let child = parentNode.firstElementChild;
-    while (child) {
-      let isMatch = false;
-      const l = selectorBranches.length;
-      for (let i = 0; i < l; i++) {
-        if (this._matchLeaves(selectorBranches[i], child, opt)) {
-          isMatch = true;
-          break;
-        }
-      }
-      if (isMatch) {
-        if (this._node === child) {
-          siblings.push(child);
-        } else if (isVisible(child)) {
-          siblings.push(child);
-        }
-      }
-      child = child.nextElementSibling;
-    }
-    parentOfCacheMap.set(selector, siblings);
-    return siblings;
-  };
-
-  /**
    * Evaluates An+B mathematically (O(1) without generating new arrays/sets).
    * @private
    * @param {object} ast - The AST.
@@ -1220,25 +1205,66 @@ export class Evaluator {
       }
       this._anbCache.set(ast, anb);
     }
-    let siblings;
-    if (nthName === 'nth-child' || nthName === 'nth-last-child') {
-      if (anb.selector) {
-        siblings = this._getFilteredSiblings(node, anb.selector, opt);
-      } else {
-        siblings = this._getSiblings(node);
-      }
-    } else if (nthName === 'nth-of-type' || nthName === 'nth-last-of-type') {
-      siblings = this._getTypedSiblings(node);
-    } else {
+    if (
+      nthName !== 'nth-child' &&
+      nthName !== 'nth-last-child' &&
+      nthName !== 'nth-of-type' &&
+      nthName !== 'nth-last-of-type'
+    ) {
       return false;
     }
-    const index = siblings.indexOf(node);
-    if (index === -1) {
-      return false;
-    }
-    // 1-based index calculation
     const isLast = nthName.includes('last');
-    const pos = isLast ? siblings.length - index : index + 1;
+    const isOfType = nthName.includes('of-type');
+    const hasFilter = !!anb.selector;
+    if (hasFilter) {
+      const selectorBranches = this._getSelectorBranches(anb.selector);
+      let filterMatch = false;
+      for (let i = 0; i < selectorBranches.length; i++) {
+        if (this._matchLeaves(selectorBranches[i], node, opt)) {
+          filterMatch = true;
+          break;
+        }
+      }
+      if (!filterMatch) {
+        return false;
+      }
+    }
+    const { parentNode } = node;
+    if (!parentNode && node !== this._root) {
+      return false;
+    }
+    let pos = 1;
+    let current = isLast
+      ? node.nextElementSibling
+      : node.previousElementSibling;
+    while (current) {
+      let match = true;
+      if (isOfType) {
+        match =
+          current.localName === node.localName &&
+          current.namespaceURI === node.namespaceURI;
+      } else if (hasFilter) {
+        const selectorBranches = this._getSelectorBranches(anb.selector);
+        let filterMatch = false;
+        for (let i = 0; i < selectorBranches.length; i++) {
+          if (this._matchLeaves(selectorBranches[i], current, opt)) {
+            filterMatch = true;
+            break;
+          }
+        }
+        if (filterMatch && (this._node === current || isVisible(current))) {
+          match = true;
+        } else {
+          match = false;
+        }
+      }
+      if (match) {
+        pos++;
+      }
+      current = isLast
+        ? current.nextElementSibling
+        : current.previousElementSibling;
+    }
     const { a, b } = anb;
     if (a === 0) {
       return pos === b;
@@ -1593,7 +1619,13 @@ export class Evaluator {
           const arr = [];
           opt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
-            this._collectCombinatorMatches(twig, nextNode, opt, arr);
+            for (const matchedNode of this.yieldCombinatorMatches(
+              twig,
+              nextNode,
+              opt
+            )) {
+              arr.push(matchedNode);
+            }
           }
           if (arr.length) {
             if (j === 0) {
@@ -2124,89 +2156,5 @@ export class Evaluator {
       }
     }
     return this._traverseAllDescendants(baseNode, leaves, opt);
-  };
-
-  /**
-   * Collects combinator matches into an array.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
-   * @param {Array.<object>} matched - The collector array.
-   * @returns {Array.<object>} The collector array.
-   */
-  _collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
-    const {
-      combo: { name: comboName },
-      leaves
-    } = twig;
-    const { dir } = opt;
-    switch (comboName) {
-      case '+': {
-        const refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-          matched.push(refNode);
-        }
-        break;
-      }
-      case '~': {
-        let refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        while (refNode) {
-          if (this._matchLeaves(leaves, refNode, opt)) {
-            matched.push(refNode);
-          }
-          refNode =
-            dir === DIR_NEXT
-              ? refNode.nextElementSibling
-              : refNode.previousElementSibling;
-        }
-        break;
-      }
-      case '>': {
-        if (dir === DIR_NEXT) {
-          let refNode = node.firstElementChild;
-          while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
-              matched.push(refNode);
-            }
-            refNode = refNode.nextElementSibling;
-          }
-        } else {
-          const { parentNode } = node;
-          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
-            matched.push(parentNode);
-          }
-        }
-        break;
-      }
-      case ' ':
-      default: {
-        if (dir === DIR_NEXT) {
-          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
-            matched.push(refNode);
-          }
-        } else {
-          const ancestors = [];
-          let refNode = node.parentNode;
-          while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
-              ancestors.push(refNode);
-            }
-            refNode = refNode.parentNode;
-          }
-          if (ancestors.length) {
-            matched.push(...ancestors.reverse());
-          }
-        }
-      }
-    }
-    return matched;
   };
 }
