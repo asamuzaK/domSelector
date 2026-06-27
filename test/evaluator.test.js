@@ -1388,6 +1388,273 @@ describe('Evaluator', () => {
       const res = evaluator._matchHasPseudoFunc(leaves, node, {});
       assert.strictEqual(res, true, 'result');
     });
+
+    it('should match remaining leaves in Fast path 1 (ID)', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('div');
+      child.id = 'fp1-id';
+      const grandChild = document.createElement('span');
+      child.appendChild(grandChild);
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+
+      const leaves = [
+        {
+          name: 'fp1-id',
+          type: ID_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(#fp1-id span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match remaining leaves in Fast path 2 (Class)', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('div');
+      child.classList.add('fp2-class');
+      const grandChild = document.createElement('span');
+      child.appendChild(grandChild);
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+
+      const leaves = [
+        {
+          name: 'fp2-class',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(.fp2-class span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match remaining leaves in Fast path 3 (Type)', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('section');
+      const grandChild = document.createElement('span');
+      child.appendChild(grandChild);
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+
+      const leaves = [
+        {
+          name: 'section',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(section span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match remaining leaves in Fallback (TreeWalker)', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('div');
+      child.setAttribute('data-fp4', 'true');
+      const grandChild = document.createElement('span');
+      child.appendChild(grandChild);
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+      const leaves = [
+        {
+          name: {
+            name: 'data-fp4',
+            type: IDENT
+          },
+          type: ATTR_SELECTOR,
+          value: null,
+          flags: null,
+          evaluator: null
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has([data-fp4] span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match compound selector and return true when isLast is true', () => {
+      // 構成: div.parent > (div.fp-class.no-match, div.fp-class.match)
+      const parent = document.createElement('div');
+      const child1 = document.createElement('div');
+      child1.className = 'fp-class no-match';
+      const child2 = document.createElement('div');
+      child2.className = 'fp-class match';
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+      document.getElementById('div0').appendChild(parent);
+
+      // :has(.fp-class.match)
+      const leaves = [
+        {
+          name: 'fp-class',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'match',
+          type: CLASS_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(.fp-class.match)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(
+        res,
+        true,
+        'matches second child and returns true via isLast'
+      );
+    });
+
+    it('should match compound selector and proceed to _matchHasPseudoFunc when isLast is false', () => {
+      // 構成: div.parent > (div.fp-class.no-match, div.fp-class.match > span)
+      const parent = document.createElement('div');
+      const child1 = document.createElement('div');
+      child1.className = 'fp-class no-match';
+      const child2 = document.createElement('div');
+      child2.className = 'fp-class match';
+      const grandChild = document.createElement('span');
+      child2.appendChild(grandChild);
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+      document.getElementById('div0').appendChild(parent);
+
+      // :has(.fp-class.match span)
+      const leaves = [
+        {
+          name: 'fp-class',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'match',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(.fp-class.match span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(
+        res,
+        true,
+        'passes filter and correctly evaluates remaining leaves'
+      );
+    });
+
+    it('should return false when filterLeaves do not match any candidate', () => {
+      // 構成: div.parent > div.fp-class.no-match
+      const parent = document.createElement('div');
+      const child = document.createElement('div');
+      child.className = 'fp-class no-match';
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+
+      // :has(.fp-class.match span)
+      const leaves = [
+        {
+          name: 'fp-class',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: 'match', // このクラスがないため filterLeaves で弾かれる
+          type: CLASS_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'span',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(.fp-class.match span)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(res, false, 'fails cleanly at filterLeaves check');
+    });
+
+    it('should apply filterLeaves correctly in Type selector fast path', () => {
+      const parent = document.createElement('div');
+      const child1 = document.createElement('section');
+      child1.className = 'no-match';
+      const child2 = document.createElement('section');
+      child2.className = 'match';
+      const grandChild = document.createElement('p');
+      child2.appendChild(grandChild);
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+      document.getElementById('div0').appendChild(parent);
+      // :has(section.match p)
+      const leaves = [
+        {
+          name: 'section',
+          type: TYPE_SELECTOR
+        },
+        {
+          name: 'match',
+          type: CLASS_SELECTOR
+        },
+        {
+          name: ' ',
+          type: COMBINATOR
+        },
+        {
+          name: 'p',
+          type: TYPE_SELECTOR
+        }
+      ];
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':has(section.match p)', parent);
+      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      assert.strictEqual(
+        res,
+        true,
+        'evaluates filterLeaves properly in TYPE_SELECTOR fast path'
+      );
+    });
   });
 
   describe('match logical pseudo-class function', () => {
@@ -10489,7 +10756,11 @@ describe('Evaluator', () => {
       node.classList.remove('test-invalidate-true');
       evaluator.clearResults(true);
       const res2 = evaluator._matchLeaves(leaves, node, {});
-      assert.strictEqual(res2, false, 're-evaluates and returns false after explicit cache clear');
+      assert.strictEqual(
+        res2,
+        false,
+        're-evaluates and returns false after explicit cache clear'
+      );
     });
   });
 
@@ -10734,6 +11005,26 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
+    it('should fallback if getElementsByClassName is missing', () => {
+      const leaves = [
+        {
+          name: 'fallback-class',
+          type: CLASS_SELECTOR
+        }
+      ];
+      const baseNode = document.createDocumentFragment();
+      const child = document.createElement('div');
+      child.className = 'fallback-class';
+      const grandChild = document.createElement('span');
+      grandChild.className = 'fallback-class';
+      child.appendChild(grandChild);
+      baseNode.appendChild(child);
+      const evaluator = new Evaluator(window);
+      evaluator.setup('.fallback-class', baseNode);
+      const res = evaluator._findDescendantNodes(leaves, baseNode, {});
+      assert.deepEqual([...res], [child, grandChild], 'nodes');
+    });
+
     it('should get matched node(s)', () => {
       const leaves = [
         {
@@ -10925,8 +11216,14 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, { dir: 'next' });
-      assert.deepEqual(matched, [nextDiv1, nextDiv2], 'collects all subsequent matching siblings');
+      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+        dir: 'next'
+      });
+      assert.deepEqual(
+        matched,
+        [nextDiv1, nextDiv2],
+        'collects all subsequent matching siblings'
+      );
     });
 
     it('should traverse all previous siblings when dir !== DIR_NEXT (DIR_PREV)', () => {
@@ -10946,8 +11243,14 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matched = evaluator._collectCombinatorMatches(twig, targetP, { dir: 'prev' });
-      assert.deepEqual(matched, [prevSpan1, prevSpan2], 'collects all preceding matching siblings');
+      const matched = evaluator._collectCombinatorMatches(twig, targetP, {
+        dir: 'prev'
+      });
+      assert.deepEqual(
+        matched,
+        [prevSpan1, prevSpan2],
+        'collects all preceding matching siblings'
+      );
     });
 
     it('should return empty array if no subsequent or preceding siblings match', () => {
@@ -10967,9 +11270,13 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, { dir: 'next' });
+      const matchedNext = evaluator._collectCombinatorMatches(twig, targetP, {
+        dir: 'next'
+      });
       assert.deepEqual(matchedNext, [], 'no next siblings match');
-      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, { dir: 'prev' });
+      const matchedPrev = evaluator._collectCombinatorMatches(twig, targetP, {
+        dir: 'prev'
+      });
       assert.deepEqual(matchedPrev, [], 'no previous siblings match');
     });
 
