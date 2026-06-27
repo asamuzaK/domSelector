@@ -17,14 +17,11 @@ import { generateException, sortNodes, traverseNode } from './utility.js';
 
 /* constants */
 import {
-  ATTR_SELECTOR,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
-  FORM_PARTS,
   ID_SELECTOR,
-  PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
   SYNTAX_ERR,
   TARGET_ALL,
@@ -33,17 +30,8 @@ import {
   TARGET_SELF,
   TYPE_SELECTOR
 } from './constant.js';
-
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_PS_UNCACHE = new Set([
-  'any-link',
-  'defined',
-  'dir',
-  'link',
-  'scope'
-]);
 
 /**
  * Finder
@@ -51,8 +39,6 @@ const KEYS_PS_UNCACHE = new Set([
  */
 export class Finder extends Evaluator {
   /* private fields */
-  _invalidate;
-  _invalidateResults;
   _nodeWalker;
   _rootWalker;
   _scoped;
@@ -76,7 +62,6 @@ export class Finder extends Evaluator {
     this._selector = selector;
     this._nodeWalker = null;
     this._rootWalker = null;
-    this._invalidate = false;
     return this;
   }
 
@@ -87,7 +72,6 @@ export class Finder extends Evaluator {
    */
   clearResults(all = false) {
     super.clearResults(all);
-    this._invalidateResults = null;
   }
 
   /**
@@ -216,65 +200,6 @@ export class Finder extends Evaluator {
   };
 
   /**
-   * Matches leaves against a node with cache check.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves to match.
-   * @param {object} node - The DOM node.
-   * @param {object} opt - The match options.
-   * @returns {boolean} True if matched, otherwise false.
-   */
-  _matchLeaves = (leaves, node, opt) => {
-    if (!this._invalidateResults) {
-      this._invalidateResults = new WeakMap();
-    }
-    const results = this._invalidate ? this._invalidateResults : this._results;
-    let result = results.get(leaves);
-    if (result && result.has(node)) {
-      const { matched } = result.get(node);
-      return matched;
-    }
-    let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-      cacheable = false;
-    }
-    let bool;
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      switch (leaf.type) {
-        case ATTR_SELECTOR:
-        case ID_SELECTOR: {
-          cacheable = false;
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
-            cacheable = false;
-          }
-          break;
-        }
-        default: {
-          // No action needed for other types.
-        }
-      }
-      bool = this.matchSelector(leaf, node, opt);
-      if (!bool) {
-        break;
-      }
-    }
-    if (cacheable) {
-      if (!result) {
-        result = new WeakMap();
-      }
-      result.set(node, {
-        matched: bool
-      });
-      results.set(leaves, result);
-    }
-    return bool;
-  };
-
-  /**
    * Traverses and collects nodes matching leaves.
    * @private
    * @param {object} walker - The TreeWalker instance.
@@ -310,7 +235,7 @@ export class Finder extends Evaluator {
         }
       }
       if (
-        this._matchLeaves(leaves, currentNode, matchOpt) &&
+        this.matchLeaves(leaves, currentNode, matchOpt) &&
         currentNode !== this._node
       ) {
         collectedNodes.push(currentNode);
@@ -376,7 +301,7 @@ export class Finder extends Evaluator {
    * @returns {Array} Array with nodes, match boolean, and pseudo-elements.
    */
   _matchSelf = leaves => {
-    const matched = this._matchLeaves(leaves, this._node, {
+    const matched = this.matchLeaves(leaves, this._node, {
       check: this._check,
       warn: this._warn
     });
@@ -395,14 +320,14 @@ export class Finder extends Evaluator {
     const { complex } = opt;
     const nodes = [];
     const matchOpts = { warn: this._warn };
-    const selfMatched = this._matchLeaves(leaves, this._node, matchOpts);
+    const selfMatched = this.matchLeaves(leaves, this._node, matchOpts);
     if (selfMatched) {
       nodes.push(this._node);
     }
     if (!selfMatched || complex) {
       let currentNode = this._node.parentNode;
       while (currentNode) {
-        if (this._matchLeaves(leaves, currentNode, matchOpts)) {
+        if (this.matchLeaves(leaves, currentNode, matchOpts)) {
           nodes.push(currentNode);
         }
         currentNode = currentNode.parentNode;
@@ -461,7 +386,7 @@ export class Finder extends Evaluator {
       const nodes = [];
       if (node) {
         if (filterLeaves.length) {
-          if (this._matchLeaves(filterLeaves, node, { warn: this._warn })) {
+          if (this.matchLeaves(filterLeaves, node, { warn: this._warn })) {
             nodes.push(node);
           }
         } else {
@@ -499,7 +424,7 @@ export class Finder extends Evaluator {
       typeof this._node.getElementsByClassName === 'function'
     ) {
       const matchOpt = { warn: this._warn };
-      this._matchLeaves(leaves, this._node, matchOpt);
+      this.matchLeaves(leaves, this._node, matchOpt);
       const [leaf] = leaves;
       const className = unescapeSelector(leaf.name);
       const collection = this._node.getElementsByClassName(className);
@@ -511,7 +436,7 @@ export class Finder extends Evaluator {
         const currentNode = collection[i];
         if (
           !hasFilter ||
-          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          this.matchLeaves(filterLeaves, currentNode, matchOpt)
         ) {
           nodeArray.push(currentNode);
         }
@@ -556,7 +481,7 @@ export class Finder extends Evaluator {
       tagName.indexOf('|') === -1
     ) {
       const matchOpt = { warn: this._warn };
-      this._matchLeaves(leaves, this._node, matchOpt);
+      this.matchLeaves(leaves, this._node, matchOpt);
       const collection = this._node.getElementsByTagName(tagName);
       const len = collection.length;
       const filterLeaves = this.getFilterLeaves(leaves);
@@ -566,7 +491,7 @@ export class Finder extends Evaluator {
         const currentNode = collection[i];
         if (
           !hasFilter ||
-          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          this.matchLeaves(filterLeaves, currentNode, matchOpt)
         ) {
           nodeArray.push(currentNode);
         }
@@ -799,7 +724,7 @@ export class Finder extends Evaluator {
       if (isWithinScope) {
         for (const pendingItem of pendingItems) {
           const { leaves } = pendingItem.get('twig');
-          if (this._matchLeaves(leaves, nextNode, { warn: this._warn })) {
+          if (this.matchLeaves(leaves, nextNode, { warn: this._warn })) {
             const index = pendingItem.get('index');
             this._ast[index].filtered = true;
             this._ast[index].find = true;
@@ -927,7 +852,7 @@ export class Finder extends Evaluator {
     const comboName = combo.name;
     if (comboName === '+') {
       const refNode = node.previousElementSibling;
-      if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+      if (refNode && this.matchLeaves(leaves, refNode, opt)) {
         if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
           return true;
         }
@@ -935,7 +860,7 @@ export class Finder extends Evaluator {
     } else if (comboName === '~') {
       let refNode = node.previousElementSibling;
       while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
+        if (this.matchLeaves(leaves, refNode, opt)) {
           if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }
@@ -944,7 +869,7 @@ export class Finder extends Evaluator {
       }
     } else if (comboName === '>') {
       const parentNode = node.parentNode;
-      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+      if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
         if (this._hasValidPathPrev(parentNode, branch, index - 1, opt)) {
           return true;
         }
@@ -952,7 +877,7 @@ export class Finder extends Evaluator {
     } else {
       let refNode = node.parentNode;
       while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
+        if (this.matchLeaves(leaves, refNode, opt)) {
           if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }

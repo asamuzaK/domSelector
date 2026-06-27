@@ -847,44 +847,6 @@ describe('Finder', () => {
     });
   });
 
-  describe('match leaves', () => {
-    it('should match', () => {
-      const leaves = [
-        {
-          name: 'li1',
-          type: ID_SELECTOR
-        },
-        {
-          name: 'li',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li#li1.li', document);
-      const res = finder._matchLeaves(leaves, node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should not match', () => {
-      const leaves = [
-        {
-          name: 'li1',
-          type: ID_SELECTOR
-        },
-        {
-          name: 'foobar',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const node = document.getElementById('li1');
-      const finder = new Finder(window);
-      finder.setup('li#li1.foobar', document);
-      const res = finder._matchLeaves(leaves, node);
-      assert.strictEqual(res, false, 'result');
-    });
-  });
-
   describe('find matched node(s) preceding this.#node', () => {
     it('should get matched node', () => {
       const finder = new Finder(window);

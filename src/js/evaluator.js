@@ -106,6 +106,8 @@ export class Evaluator {
   _filterLeavesCache;
   _focus;
   _focusWithinCache;
+  _invalidate;
+  _invalidateResults;
   _lastFocusVisible;
   _node;
   _nodes;
@@ -206,6 +208,7 @@ export class Evaluator {
     this._pseudoElement = [];
     this._walkers = null;
     this._verifyShadowHost = null;
+    this._invalidate = false;
     this.clearResults();
     return this;
   }
@@ -218,6 +221,7 @@ export class Evaluator {
   clearResults(all = false) {
     this._anbCache = null;
     this._focusWithinCache = null;
+    this._invalidateResults = null;
     this._nthChildCache = null;
     this._nthChildOfCache = null;
     this._nthOfTypeCache = null;
@@ -252,6 +256,64 @@ export class Evaluator {
       return this._matchSelectorForShadowRoot(ast, node, opt);
     }
     return false;
+  };
+
+  /**
+   * Matches leaves against a node with cache check.
+   * @param {Array.<object>} leaves - The AST leaves to match.
+   * @param {object} node - The DOM node.
+   * @param {object} opt - The match options.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  matchLeaves = (leaves, node, opt) => {
+    if (!this._invalidateResults) {
+      this._invalidateResults = new WeakMap();
+    }
+    const results = this._invalidate ? this._invalidateResults : this._results;
+    let result = results.get(leaves);
+    if (result && result.has(node)) {
+      const { matched } = result.get(node);
+      return matched;
+    }
+    let cacheable = true;
+    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
+      cacheable = false;
+    }
+    let bool;
+    const l = leaves.length;
+    for (let i = 0; i < l; i++) {
+      const leaf = leaves[i];
+      switch (leaf.type) {
+        case ATTR_SELECTOR:
+        case ID_SELECTOR: {
+          cacheable = false;
+          break;
+        }
+        case PS_CLASS_SELECTOR: {
+          if (KEYS_PS_UNCACHE.has(leaf.name)) {
+            cacheable = false;
+          }
+          break;
+        }
+        default: {
+          // No action needed for other types.
+        }
+      }
+      bool = this.matchSelector(leaf, node, opt);
+      if (!bool) {
+        break;
+      }
+    }
+    if (cacheable) {
+      if (!result) {
+        result = new WeakMap();
+      }
+      result.set(node, {
+        matched: bool
+      });
+      results.set(leaves, result);
+    }
+    return bool;
   };
 
   /**
@@ -1031,7 +1093,7 @@ export class Evaluator {
           dir === DIR_NEXT
             ? node.nextElementSibling
             : node.previousElementSibling;
-        if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+        if (refNode && this.matchLeaves(leaves, refNode, opt)) {
           yield refNode;
         }
         break;
@@ -1042,7 +1104,7 @@ export class Evaluator {
             ? node.nextElementSibling
             : node.previousElementSibling;
         while (refNode) {
-          if (this._matchLeaves(leaves, refNode, opt)) {
+          if (this.matchLeaves(leaves, refNode, opt)) {
             yield refNode;
           }
           refNode =
@@ -1056,14 +1118,14 @@ export class Evaluator {
         if (dir === DIR_NEXT) {
           let refNode = node.firstElementChild;
           while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
+            if (this.matchLeaves(leaves, refNode, opt)) {
               yield refNode;
             }
             refNode = refNode.nextElementSibling;
           }
         } else {
           const { parentNode } = node;
-          if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+          if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
             yield parentNode;
           }
         }
@@ -1079,7 +1141,7 @@ export class Evaluator {
           const ancestors = [];
           let refNode = node.parentNode;
           while (refNode) {
-            if (this._matchLeaves(leaves, refNode, opt)) {
+            if (this.matchLeaves(leaves, refNode, opt)) {
               ancestors.push(refNode);
             }
             refNode = refNode.parentNode;
@@ -1220,7 +1282,7 @@ export class Evaluator {
       const selectorBranches = this._getSelectorBranches(anb.selector);
       let filterMatch = false;
       for (let i = 0; i < selectorBranches.length; i++) {
-        if (this._matchLeaves(selectorBranches[i], node, opt)) {
+        if (this.matchLeaves(selectorBranches[i], node, opt)) {
           filterMatch = true;
           break;
         }
@@ -1247,7 +1309,7 @@ export class Evaluator {
         const selectorBranches = this._getSelectorBranches(anb.selector);
         let filterMatch = false;
         for (let i = 0; i < selectorBranches.length; i++) {
-          if (this._matchLeaves(selectorBranches[i], current, opt)) {
+          if (this.matchLeaves(selectorBranches[i], current, opt)) {
             filterMatch = true;
             break;
           }
@@ -1294,7 +1356,7 @@ export class Evaluator {
     const isLast = remainingLeaves.length === 0;
     // Check if the target node satisfies the leaves and remaining conditions.
     const checkNode = refNode => {
-      if (this._matchLeaves(leaves, refNode, opt)) {
+      if (this.matchLeaves(leaves, refNode, opt)) {
         if (isLast) {
           return true;
         }
@@ -1347,7 +1409,7 @@ export class Evaluator {
             // Only check filter leaves if it's a compound selector
             if (
               filterLeaves.length === 0 ||
-              this._matchLeaves(filterLeaves, foundNode, opt)
+              this.matchLeaves(filterLeaves, foundNode, opt)
             ) {
               if (isLast) {
                 return true;
@@ -1371,7 +1433,7 @@ export class Evaluator {
             // Apply filter before calling the expensive checkNode
             if (
               filterLeaves.length === 0 ||
-              this._matchLeaves(filterLeaves, refNode, opt)
+              this.matchLeaves(filterLeaves, refNode, opt)
             ) {
               if (isLast) {
                 return true;
@@ -1396,7 +1458,7 @@ export class Evaluator {
             // Apply filter before calling the expensive checkNode
             if (
               filterLeaves.length === 0 ||
-              this._matchLeaves(filterLeaves, refNode, opt)
+              this.matchLeaves(filterLeaves, refNode, opt)
             ) {
               if (isLast) {
                 return true;
@@ -1611,7 +1673,7 @@ export class Evaluator {
       const branch = twigBranches[i];
       const lastIndex = branch.length - 1;
       const { leaves } = branch[lastIndex];
-      bool = this._matchLeaves(leaves, node, opt);
+      bool = this.matchLeaves(leaves, node, opt);
       if (bool && lastIndex > 0) {
         let nextNodes = new Set([node]);
         for (let j = lastIndex - 1; j >= 0; j--) {
@@ -1990,61 +2052,6 @@ export class Evaluator {
   };
 
   /**
-   * Matches leaves.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} node - The node.
-   * @param {object} opt - Options.
-   * @returns {boolean} The result.
-   */
-  _matchLeaves = (leaves, node, opt) => {
-    let result = this._results.get(leaves);
-    if (result && result.has(node)) {
-      const { matched } = result.get(node);
-      return matched;
-    }
-    let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-      cacheable = false;
-    }
-    let bool;
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      switch (leaf.type) {
-        case ATTR_SELECTOR:
-        case ID_SELECTOR: {
-          cacheable = false;
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
-            cacheable = false;
-          }
-          break;
-        }
-        default: {
-          // No action needed for other types.
-        }
-      }
-      bool = this.matchSelector(leaf, node, opt);
-      if (!bool) {
-        break;
-      }
-    }
-    if (cacheable) {
-      if (!result) {
-        result = new WeakMap();
-      }
-      result.set(node, {
-        matched: bool
-      });
-      this._results.set(leaves, result);
-    }
-    return bool;
-  };
-
-  /**
    * Traverses all descendant nodes and collects matches.
    * @private
    * @param {object} baseNode - The base Element node or Element.shadowRoot.
@@ -2058,7 +2065,7 @@ export class Evaluator {
     let currentNode = walker.firstChild();
     const nodes = new Set();
     while (currentNode) {
-      if (this._matchLeaves(leaves, currentNode, opt)) {
+      if (this.matchLeaves(leaves, currentNode, opt)) {
         nodes.add(currentNode);
       }
       currentNode = walker.nextNode();
@@ -2096,7 +2103,7 @@ export class Evaluator {
             const isCompoundSelector = filterLeaves.length > 0;
             if (
               !isCompoundSelector ||
-              this._matchLeaves(filterLeaves, foundNode, opt)
+              this.matchLeaves(filterLeaves, foundNode, opt)
             ) {
               nodes.add(foundNode);
             }
@@ -2115,7 +2122,7 @@ export class Evaluator {
             const foundNode = collection[i];
             if (
               !isCompoundSelector ||
-              this._matchLeaves(filterLeaves, foundNode, opt)
+              this.matchLeaves(filterLeaves, foundNode, opt)
             ) {
               nodes.add(foundNode);
             }
@@ -2137,7 +2144,7 @@ export class Evaluator {
             const foundNode = collection[i];
             if (
               !isCompoundSelector ||
-              this._matchLeaves(filterLeaves, foundNode, opt)
+              this.matchLeaves(filterLeaves, foundNode, opt)
             ) {
               nodes.add(foundNode);
             }
