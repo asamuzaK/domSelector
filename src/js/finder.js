@@ -257,7 +257,7 @@ export class Finder extends Evaluator {
           // No action needed for other types.
         }
       }
-      bool = this._matchSelector(leaf, node, opt);
+      bool = this.matchSelector(leaf, node, opt);
       if (!bool) {
         break;
       }
@@ -334,7 +334,7 @@ export class Finder extends Evaluator {
   _findPrecede = (leaves, node, opt = {}) => {
     const { force, targetType } = opt;
     if (!this._rootWalker) {
-      this._rootWalker = this._createTreeWalker(this._root);
+      this._rootWalker = this.createTreeWalker(this._root);
     }
     return this._traverseAndCollectNodes(this._rootWalker, leaves, {
       force,
@@ -361,7 +361,7 @@ export class Finder extends Evaluator {
       }
     }
     if (!this._nodeWalker) {
-      this._nodeWalker = this._createTreeWalker(this._node);
+      this._nodeWalker = this.createTreeWalker(this._node);
     }
     return this._traverseAndCollectNodes(this._nodeWalker, leaves, {
       ...traversalOpts,
@@ -444,7 +444,7 @@ export class Finder extends Evaluator {
    */
   _findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const filterLeaves = this._getFilterLeaves(leaves);
+    const filterLeaves = this.getFilterLeaves(leaves);
     const { complex, precede } = opt;
     if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this._matchSelf(leaves);
@@ -504,7 +504,7 @@ export class Finder extends Evaluator {
       const className = unescapeSelector(leaf.name);
       const collection = this._node.getElementsByClassName(className);
       const len = collection.length;
-      const filterLeaves = this._getFilterLeaves(leaves);
+      const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
       const nodeArray = [];
       for (let i = 0; i < len; i++) {
@@ -559,7 +559,7 @@ export class Finder extends Evaluator {
       this._matchLeaves(leaves, this._node, matchOpt);
       const collection = this._node.getElementsByTagName(tagName);
       const len = collection.length;
-      const filterLeaves = this._getFilterLeaves(leaves);
+      const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
       const nodeArray = [];
       for (let i = 0; i < len; i++) {
@@ -595,20 +595,20 @@ export class Finder extends Evaluator {
   _findEntryNodesForOther = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
-    const filterLeaves = this._getFilterLeaves(leaves);
+    const filterLeaves = this.getFilterLeaves(leaves);
     const { complex, precede } = opt;
     if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
       let shadowRoot = null;
       if (
         this._shadow &&
         this._node.nodeType === DOCUMENT_FRAGMENT_NODE &&
-        this._evaluateShadowHost(leaf, this._node)
+        this.evaluateShadowHost(leaf, this._node)
       ) {
         shadowRoot = this._node;
       } else if (
         filterLeaves.length &&
         this._node.nodeType === ELEMENT_NODE &&
-        this._evaluateShadowHost(leaf, this._node.shadowRoot)
+        this.evaluateShadowHost(leaf, this._node.shadowRoot)
       ) {
         shadowRoot = this._node.shadowRoot;
       }
@@ -620,11 +620,11 @@ export class Finder extends Evaluator {
           switch (filterLeaf.name) {
             case 'host':
             case 'host-context': {
-              bool = this._evaluateShadowHost(filterLeaf, shadowRoot);
+              bool = this.evaluateShadowHost(filterLeaf, shadowRoot);
               break;
             }
             case 'has': {
-              bool = this._matchPseudoClassSelector(filterLeaf, shadowRoot, {});
+              bool = this.matchPseudoClassSelector(filterLeaf, shadowRoot, {});
               break;
             }
             default: {
@@ -668,7 +668,7 @@ export class Finder extends Evaluator {
   _findEntryNodes = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
-    const filterLeaves = this._getFilterLeaves(leaves);
+    const filterLeaves = this.getFilterLeaves(leaves);
     const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&
@@ -786,7 +786,7 @@ export class Finder extends Evaluator {
       return;
     }
     if (!this._rootWalker) {
-      this._rootWalker = this._createTreeWalker(this._root);
+      this._rootWalker = this.createTreeWalker(this._root);
     }
     const node = this._scoped ? this._node : this._root;
     const walker = this._rootWalker;

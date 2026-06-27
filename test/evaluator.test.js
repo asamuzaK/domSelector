@@ -263,7 +263,7 @@ describe('Evaluator', () => {
     it('should get tree walker', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res = evaluator._createTreeWalker(document);
+      const res = evaluator.createTreeWalker(document);
       assert.deepEqual(res.root, document, 'root');
     });
 
@@ -271,7 +271,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
-      const res = evaluator._createTreeWalker(node);
+      const res = evaluator.createTreeWalker(node);
       assert.deepEqual(res.root, node, 'root');
     });
 
@@ -279,7 +279,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
-      const res = evaluator._createTreeWalker(node, {
+      const res = evaluator.createTreeWalker(node, {
         whatToShow: 0xffffffff
       });
       assert.deepEqual(res.root, node, 'root');
@@ -289,9 +289,9 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
-      const walker1 = evaluator._createTreeWalker(node);
+      const walker1 = evaluator.createTreeWalker(node);
       assert.strictEqual(walker1.root, node, 'walker1 root is correct');
-      const walker2 = evaluator._createTreeWalker(node);
+      const walker2 = evaluator.createTreeWalker(node);
       assert.strictEqual(
         walker1,
         walker2,
@@ -1263,13 +1263,13 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup(':host:has(.child)', shadowRoot);
-      const resHost = evaluator._matchSelector(leafHost, shadowRoot, {});
+      const resHost = evaluator.matchSelector(leafHost, shadowRoot, {});
       assert.strictEqual(
         resHost,
         true,
         'matches :host and sets #verifyShadowHost to true'
       );
-      const resHas = evaluator._matchSelector(leafHas, shadowRoot, {});
+      const resHas = evaluator.matchSelector(leafHas, shadowRoot, {});
       assert.strictEqual(
         resHas,
         true,
@@ -1298,7 +1298,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup(':has(.child)', shadowRoot);
-      const res = evaluator._matchSelector(leafHas, shadowRoot, {});
+      const res = evaluator.matchSelector(leafHas, shadowRoot, {});
       assert.strictEqual(
         res,
         false,
@@ -2787,7 +2787,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, cNode, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, cNode, {});
       assert.strictEqual(res, true, 'matches full chain successfully');
     });
 
@@ -2818,7 +2818,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, cNode, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, cNode, {});
       assert.strictEqual(
         res,
         false,
@@ -2839,7 +2839,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':has()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -2864,7 +2864,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':not()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -2917,7 +2917,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup(':is(ul, dl)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -2954,7 +2954,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parentNode);
       const evaluator = new Evaluator(window);
       evaluator.setup(':is(div.parent > span.child)', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, childNode, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, childNode, {});
       assert.strictEqual(
         res,
         true,
@@ -3039,7 +3039,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1').parentNode;
       const evaluator = new Evaluator(window);
       evaluator.setup(':has(:is(:has(li, dd)))', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3053,7 +3053,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':nth-child()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3081,7 +3081,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':nth-last-child()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3109,7 +3109,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':nth-of-type()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3137,7 +3137,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':nth-last-of-type()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3173,7 +3173,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('dt1');
       const evaluator = new Evaluator(window);
       evaluator.setup(':nth-child(even)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3189,7 +3189,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':dir()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3220,7 +3220,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':dir(ltr)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3241,7 +3241,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':dir(ltr)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         res,
         false,
@@ -3261,7 +3261,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':lang()', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3292,7 +3292,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':lang(en)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3321,7 +3321,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':lang(en, fr)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3350,7 +3350,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':lang(fr, de)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         res,
         false,
@@ -3376,7 +3376,7 @@ describe('Evaluator', () => {
       node.click();
       const evaluator = new Evaluator(window);
       evaluator.setup(':state(checked)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3439,7 +3439,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':state(checked)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3503,7 +3503,7 @@ describe('Evaluator', () => {
       node.click();
       const evaluator = new Evaluator(window);
       evaluator.setup(':state(checked)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3524,7 +3524,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':current(foo)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3548,7 +3548,7 @@ describe('Evaluator', () => {
       evaluator.setup(':current(foo)', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -3581,7 +3581,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(.foo)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3609,7 +3609,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context(.foo)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3631,7 +3631,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':foobar(foo)', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -3666,7 +3666,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':contains(foo)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3690,7 +3690,7 @@ describe('Evaluator', () => {
       evaluator.setup(':contains(foo)', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -3716,7 +3716,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':foobar(foo)', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -3734,7 +3734,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':any-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3754,7 +3754,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':any-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3769,7 +3769,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':any-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3785,7 +3785,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':any-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3800,7 +3800,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':any-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3816,7 +3816,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3832,7 +3832,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':local-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3848,7 +3848,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':local-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3864,7 +3864,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':local-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3880,7 +3880,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':local-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3893,7 +3893,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div0');
       const evaluator = new Evaluator(window);
       evaluator.setup(':local-link', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3909,7 +3909,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':visited', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3925,7 +3925,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':hover', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3942,7 +3942,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':hover', node);
       node.dispatchEvent(new window.MouseEvent('mouseover'));
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3960,7 +3960,7 @@ describe('Evaluator', () => {
       evaluator.setup(':hover', node);
       node.dispatchEvent(new window.MouseEvent('mouseover'));
       node.dispatchEvent(new window.MouseEvent('mousedown'));
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -3978,7 +3978,7 @@ describe('Evaluator', () => {
       evaluator.setup(':hover', node);
       node.dispatchEvent(new window.MouseEvent('mouseover'));
       node.dispatchEvent(new window.MouseEvent('mouseout'));
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -3996,7 +3996,7 @@ describe('Evaluator', () => {
       evaluator.setup(':hover', node);
       window.dispatchEvent(new window.MouseEvent('mouseover'));
       window.dispatchEvent(new window.MouseEvent('mousedown'));
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4012,7 +4012,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':active', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4033,7 +4033,7 @@ describe('Evaluator', () => {
           buttons: 1
         })
       );
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4059,7 +4059,7 @@ describe('Evaluator', () => {
           buttons: 1
         })
       );
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4086,7 +4086,7 @@ describe('Evaluator', () => {
       evaluator.setup(':active', node, {
         event
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4107,7 +4107,7 @@ describe('Evaluator', () => {
           buttons: 1
         })
       );
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4123,7 +4123,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':target', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4139,7 +4139,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':target', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4155,7 +4155,7 @@ describe('Evaluator', () => {
       frag.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':target', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4171,7 +4171,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':scope', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4189,7 +4189,7 @@ describe('Evaluator', () => {
       parent.appendChild(refPoint);
       const evaluator = new Evaluator(window);
       evaluator.setup(':scope', refPoint);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4202,7 +4202,7 @@ describe('Evaluator', () => {
       const node = document.documentElement;
       const evaluator = new Evaluator(window);
       evaluator.setup(':scope', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4218,7 +4218,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':scope', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4235,7 +4235,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4252,7 +4252,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
       node.focus();
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4264,7 +4264,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', document.body);
-      const res = evaluator._matchPseudoClassSelector(leaf, document.body, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, document.body, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4280,7 +4280,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4298,7 +4298,7 @@ describe('Evaluator', () => {
       node.disabled = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4316,7 +4316,7 @@ describe('Evaluator', () => {
       node.setAttribute('disabled', 'disabled');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4334,7 +4334,7 @@ describe('Evaluator', () => {
       node.hidden = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4352,7 +4352,7 @@ describe('Evaluator', () => {
       node.setAttribute('hidden', 'hidden');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4370,7 +4370,7 @@ describe('Evaluator', () => {
       node.style.display = 'none';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4388,7 +4388,7 @@ describe('Evaluator', () => {
       node.style.visibility = 'hidden';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4406,7 +4406,7 @@ describe('Evaluator', () => {
       parent.disabled = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4424,7 +4424,7 @@ describe('Evaluator', () => {
       parent.setAttribute('disabled', 'disabled');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4442,7 +4442,7 @@ describe('Evaluator', () => {
       parent.hidden = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4460,7 +4460,7 @@ describe('Evaluator', () => {
       parent.setAttribute('hidden', 'hidden');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4478,7 +4478,7 @@ describe('Evaluator', () => {
       parent.style.display = 'none';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4496,7 +4496,7 @@ describe('Evaluator', () => {
       parent.style.visibility = 'hidden';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4524,7 +4524,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4552,7 +4552,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus', host);
-      const res = evaluator._matchPseudoClassSelector(leaf, host, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, host, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4569,7 +4569,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4591,7 +4591,7 @@ describe('Evaluator', () => {
       );
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4618,7 +4618,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4635,7 +4635,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -4672,7 +4672,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4709,7 +4709,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4726,7 +4726,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
       node.dispatchEvent(
         new window.KeyboardEvent('keydown', {
@@ -4734,7 +4734,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node);
-      const res2 = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res2 = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res2, false, 'result');
     });
 
@@ -4775,7 +4775,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node2);
-      const res = evaluator._matchPseudoClassSelector(leaf, node2, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node2, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4806,7 +4806,7 @@ describe('Evaluator', () => {
         })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
       node2.dispatchEvent(
         new window.MouseEvent('mousedown', {
@@ -4821,7 +4821,7 @@ describe('Evaluator', () => {
       );
       node2.click();
       evaluator.setup(':focus-visible', node2);
-      const res2 = evaluator._matchPseudoClassSelector(leaf, node2, {});
+      const res2 = evaluator.matchPseudoClassSelector(leaf, node2, {});
       assert.strictEqual(res2, false, 'result');
     });
 
@@ -4851,7 +4851,7 @@ describe('Evaluator', () => {
       );
       node2.focus();
       evaluator.setup(':focus-visible', node2);
-      const res = evaluator._matchPseudoClassSelector(leaf, node2, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node2, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -4871,11 +4871,11 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
       node2.focus();
       evaluator.setup(':focus-visible', node2);
-      const res2 = evaluator._matchPseudoClassSelector(leaf, node2, {});
+      const res2 = evaluator.matchPseudoClassSelector(leaf, node2, {});
       assert.strictEqual(res2, true, 'result');
     });
 
@@ -4895,7 +4895,7 @@ describe('Evaluator', () => {
       );
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const initialRes = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const initialRes = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         initialRes,
         true,
@@ -4903,7 +4903,7 @@ describe('Evaluator', () => {
       );
       node.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'Tab' }));
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         res,
         true,
@@ -4929,7 +4929,7 @@ describe('Evaluator', () => {
       );
       node.focus();
       evaluator.setup(':focus-visible', node);
-      const initialRes = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const initialRes = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         initialRes,
         true,
@@ -4943,7 +4943,7 @@ describe('Evaluator', () => {
         new window.FocusEvent('focus', { relatedTarget: relatedNode })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         res,
         true,
@@ -4970,7 +4970,7 @@ describe('Evaluator', () => {
         new window.FocusEvent('focus', { relatedTarget: input })
       );
       evaluator.setup(':focus-visible', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         res,
         true,
@@ -4991,7 +4991,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5007,7 +5007,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5019,7 +5019,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', document.body);
-      const res = evaluator._matchPseudoClassSelector(leaf, document.body, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, document.body, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5037,7 +5037,7 @@ describe('Evaluator', () => {
       node.disabled = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5055,7 +5055,7 @@ describe('Evaluator', () => {
       node.setAttribute('disabled', 'disabled');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5073,7 +5073,7 @@ describe('Evaluator', () => {
       node.hidden = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5091,7 +5091,7 @@ describe('Evaluator', () => {
       node.setAttribute('hidden', 'hidden');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5109,7 +5109,7 @@ describe('Evaluator', () => {
       node.style.display = 'none';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5127,7 +5127,7 @@ describe('Evaluator', () => {
       node.style.visibility = 'hidden';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5144,7 +5144,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5160,7 +5160,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5178,7 +5178,7 @@ describe('Evaluator', () => {
       parent.disabled = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5196,7 +5196,7 @@ describe('Evaluator', () => {
       parent.setAttribute('disabled', 'disabled');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5214,7 +5214,7 @@ describe('Evaluator', () => {
       parent.hidden = true;
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5232,7 +5232,7 @@ describe('Evaluator', () => {
       parent.setAttribute('hidden', 'hidden');
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5250,7 +5250,7 @@ describe('Evaluator', () => {
       parent.style.display = 'none';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5268,7 +5268,7 @@ describe('Evaluator', () => {
       parent.style.visibility = 'hidden';
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', parent);
-      const res = evaluator._matchPseudoClassSelector(leaf, parent, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, parent, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5296,7 +5296,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5324,7 +5324,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', host);
-      const res = evaluator._matchPseudoClassSelector(leaf, host, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, host, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5353,7 +5353,7 @@ describe('Evaluator', () => {
       node.focus();
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', container);
-      const res = evaluator._matchPseudoClassSelector(leaf, container, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, container, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5379,7 +5379,7 @@ describe('Evaluator', () => {
       });
       const evaluator = new Evaluator(window);
       evaluator.setup(':focus-within', host);
-      const res = evaluator._matchPseudoClassSelector(leaf, host, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, host, {});
       if (originalActiveElement) {
         Object.defineProperty(document, 'activeElement', originalActiveElement);
       } else {
@@ -5404,7 +5404,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5419,7 +5419,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5435,7 +5435,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5450,7 +5450,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5466,7 +5466,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5481,7 +5481,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5500,7 +5500,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5522,7 +5522,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5542,7 +5542,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5560,7 +5560,7 @@ describe('Evaluator', () => {
       parent.appendChild(node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5580,7 +5580,7 @@ describe('Evaluator', () => {
       parent.appendChild(node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5600,7 +5600,7 @@ describe('Evaluator', () => {
       parent.appendChild(field);
       const evaluator = new Evaluator(window);
       evaluator.setup(':disabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5615,7 +5615,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5632,7 +5632,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5653,7 +5653,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5672,7 +5672,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5688,7 +5688,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5708,7 +5708,7 @@ describe('Evaluator', () => {
       parent.appendChild(field);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5730,7 +5730,7 @@ describe('Evaluator', () => {
       parent.appendChild(field);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5749,7 +5749,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5767,7 +5767,7 @@ describe('Evaluator', () => {
       parent.appendChild(field);
       const evaluator = new Evaluator(window);
       evaluator.setup(':enabled', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5783,7 +5783,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5800,7 +5800,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5817,7 +5817,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5833,7 +5833,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5849,7 +5849,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5864,7 +5864,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5880,7 +5880,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5896,7 +5896,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5912,7 +5912,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5927,7 +5927,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5943,7 +5943,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5958,7 +5958,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -5974,7 +5974,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-only', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -5989,7 +5989,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6005,7 +6005,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6021,7 +6021,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6037,7 +6037,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6053,7 +6053,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6069,7 +6069,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6084,7 +6084,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6100,7 +6100,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6116,7 +6116,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6132,7 +6132,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6147,7 +6147,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':read-write', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6164,7 +6164,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6182,7 +6182,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6200,7 +6200,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6217,7 +6217,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6234,7 +6234,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6251,7 +6251,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6268,7 +6268,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6285,7 +6285,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6302,7 +6302,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6319,7 +6319,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':placeholder-shown', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6336,7 +6336,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':checked', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6353,7 +6353,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':checked', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6370,7 +6370,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':checked', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6388,7 +6388,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':checked', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6401,7 +6401,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div0');
       const evaluator = new Evaluator(window);
       evaluator.setup(':checked', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6418,7 +6418,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6434,7 +6434,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6449,7 +6449,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6465,7 +6465,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6492,7 +6492,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6520,7 +6520,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6548,7 +6548,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6572,7 +6572,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6605,7 +6605,7 @@ describe('Evaluator', () => {
       parent.appendChild(div);
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6623,9 +6623,9 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup('input:indeterminate', form);
       const ast = { name: 'indeterminate' };
-      const res1 = evaluator._matchPseudoClassSelector(ast, r1);
+      const res1 = evaluator.matchPseudoClassSelector(ast, r1);
       assert.strictEqual(res1, true, 'first radio is indeterminate');
-      const res2 = evaluator._matchPseudoClassSelector(ast, r2);
+      const res2 = evaluator.matchPseudoClassSelector(ast, r2);
       assert.strictEqual(
         res2,
         true,
@@ -6642,7 +6642,7 @@ describe('Evaluator', () => {
       };
       const evaluator = new Evaluator(window);
       evaluator.setup(':indeterminate', document.body);
-      const res = evaluator._matchPseudoClassSelector(leaf, document.body, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, document.body, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6659,7 +6659,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6676,7 +6676,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6692,7 +6692,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6709,7 +6709,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6726,7 +6726,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6742,7 +6742,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6764,7 +6764,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6786,7 +6786,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6810,7 +6810,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6831,7 +6831,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6850,7 +6850,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6870,7 +6870,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6890,7 +6890,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6912,7 +6912,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6932,7 +6932,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6951,7 +6951,7 @@ describe('Evaluator', () => {
       parent.appendChild(container);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -6970,7 +6970,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -6985,7 +6985,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7003,7 +7003,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7019,7 +7019,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7037,7 +7037,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7053,7 +7053,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7071,7 +7071,7 @@ describe('Evaluator', () => {
       parent.appendChild(form);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7087,7 +7087,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':default', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7105,7 +7105,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7123,7 +7123,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7143,7 +7143,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7163,7 +7163,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7183,7 +7183,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7203,7 +7203,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7224,7 +7224,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', input);
-      const res = evaluator._matchPseudoClassSelector(leaf, input, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7245,7 +7245,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', input);
-      const res = evaluator._matchPseudoClassSelector(leaf, input, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7266,7 +7266,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7287,7 +7287,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7305,7 +7305,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7323,7 +7323,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7343,7 +7343,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7363,7 +7363,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7385,7 +7385,7 @@ describe('Evaluator', () => {
       parent.appendChild(p);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7407,7 +7407,7 @@ describe('Evaluator', () => {
       parent.appendChild(p);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7428,7 +7428,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', input);
-      const res = evaluator._matchPseudoClassSelector(leaf, input, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7449,7 +7449,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', input);
-      const res = evaluator._matchPseudoClassSelector(leaf, input, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7470,7 +7470,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7491,7 +7491,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7510,7 +7510,7 @@ describe('Evaluator', () => {
       evaluator.setup(':valid', node);
 
       // KEYS_FORM_PS_VALID にも fieldset にも該当せず break され、false が返る
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result is false for div');
     });
 
@@ -7525,7 +7525,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result is false for div');
     });
 
@@ -7544,7 +7544,7 @@ describe('Evaluator', () => {
       evaluator.setup(':valid', node);
 
       // walker.firstChild() が null となるため、!refNode の分岐に入り valid = true となる
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result is true for empty fieldset');
     });
 
@@ -7559,7 +7559,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':invalid', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result is false for empty fieldset');
     });
 
@@ -7579,7 +7579,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7599,7 +7599,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7618,7 +7618,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7637,7 +7637,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7655,7 +7655,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7674,7 +7674,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7693,7 +7693,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7711,7 +7711,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7728,7 +7728,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7747,7 +7747,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7766,7 +7766,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':in-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7782,7 +7782,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':out-of-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7798,7 +7798,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':out-of-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7817,7 +7817,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':out-of-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7836,7 +7836,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':out-of-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7855,7 +7855,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':out-of-range', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7871,7 +7871,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7888,7 +7888,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7905,7 +7905,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7922,7 +7922,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -7939,7 +7939,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7956,7 +7956,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7973,7 +7973,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -7989,7 +7989,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8005,7 +8005,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8020,7 +8020,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':required', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8035,7 +8035,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8051,7 +8051,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8067,7 +8067,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8083,7 +8083,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8099,7 +8099,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8115,7 +8115,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8130,7 +8130,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8145,7 +8145,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8161,7 +8161,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':optional', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8174,7 +8174,7 @@ describe('Evaluator', () => {
       const node = document.documentElement;
       const evaluator = new Evaluator(window);
       evaluator.setup(':root', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8189,7 +8189,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':root', document);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8227,12 +8227,12 @@ describe('Evaluator', () => {
       parent.appendChild(d1);
       const evaluator = new Evaluator(window);
       evaluator.setup(':empty', document);
-      const res1 = evaluator._matchPseudoClassSelector(leaf, p1, {});
-      const res2 = evaluator._matchPseudoClassSelector(leaf, p2, {});
-      const res3 = evaluator._matchPseudoClassSelector(leaf, p3, {});
-      const res4 = evaluator._matchPseudoClassSelector(leaf, p4, {});
-      const res5 = evaluator._matchPseudoClassSelector(leaf, p5, {});
-      const res6 = evaluator._matchPseudoClassSelector(leaf, s1, {});
+      const res1 = evaluator.matchPseudoClassSelector(leaf, p1, {});
+      const res2 = evaluator.matchPseudoClassSelector(leaf, p2, {});
+      const res3 = evaluator.matchPseudoClassSelector(leaf, p3, {});
+      const res4 = evaluator.matchPseudoClassSelector(leaf, p4, {});
+      const res5 = evaluator.matchPseudoClassSelector(leaf, p5, {});
+      const res6 = evaluator.matchPseudoClassSelector(leaf, s1, {});
       assert.strictEqual(res1, true, 'result');
       assert.strictEqual(res2, true, 'result');
       assert.strictEqual(res3, false, 'result');
@@ -8254,7 +8254,7 @@ describe('Evaluator', () => {
       parent.appendChild(next);
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8271,7 +8271,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8284,7 +8284,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8301,7 +8301,7 @@ describe('Evaluator', () => {
       parent.appendChild(next);
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8318,7 +8318,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8331,7 +8331,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8346,7 +8346,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8365,7 +8365,7 @@ describe('Evaluator', () => {
       parent.appendChild(next);
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8378,7 +8378,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-child', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8391,7 +8391,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('dt2');
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-of-type', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8404,7 +8404,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-of-type', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8417,7 +8417,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('dt2');
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-of-type', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8430,7 +8430,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-of-type', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8448,7 +8448,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-of-type', node1);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8461,7 +8461,7 @@ describe('Evaluator', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-of-type', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8477,7 +8477,7 @@ describe('Evaluator', () => {
       frag.append(node1, node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':first-of-type', frag);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8493,7 +8493,7 @@ describe('Evaluator', () => {
       frag.append(node1, node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':last-of-type', frag);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8509,7 +8509,7 @@ describe('Evaluator', () => {
       frag.append(node1, node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-of-type', frag);
-      const res = evaluator._matchPseudoClassSelector(leaf, node1, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node1, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8525,7 +8525,7 @@ describe('Evaluator', () => {
       frag.append(node1, node2);
       const evaluator = new Evaluator(window);
       evaluator.setup(':only-of-type', frag);
-      const res = evaluator._matchPseudoClassSelector(leaf, node2, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node2, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8539,7 +8539,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8553,7 +8553,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(
         node instanceof window.HTMLUnknownElement,
         true,
@@ -8576,7 +8576,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8596,7 +8596,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8610,7 +8610,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8625,7 +8625,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8640,7 +8640,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8655,7 +8655,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8672,7 +8672,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8689,7 +8689,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result');
     });
 
@@ -8707,7 +8707,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8721,7 +8721,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':defined', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8736,7 +8736,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':popover-open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8755,7 +8755,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':popover-open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8775,7 +8775,7 @@ describe('Evaluator', () => {
       node.showPopover();
       const evaluator = new Evaluator(window);
       evaluator.setup(':popover-open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8795,7 +8795,7 @@ describe('Evaluator', () => {
       node.hidePopover();
       const evaluator = new Evaluator(window);
       evaluator.setup(':popover-open', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8809,7 +8809,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':host', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.deepEqual(res, false, 'result');
     });
 
@@ -8824,7 +8824,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':after', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8841,7 +8841,7 @@ describe('Evaluator', () => {
       evaluator.setup(':after', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -8861,7 +8861,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':autofill', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8878,7 +8878,7 @@ describe('Evaluator', () => {
       evaluator.setup(':autofill', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -8897,7 +8897,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':has-slotted', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8914,7 +8914,7 @@ describe('Evaluator', () => {
       evaluator.setup(':has-slotted', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -8935,7 +8935,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':foo', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -8959,7 +8959,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':foo', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -8975,7 +8975,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':-webkit-foo', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {});
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result');
     });
 
@@ -8992,7 +8992,7 @@ describe('Evaluator', () => {
       evaluator.setup(':-webkit-foo', node, {
         warn: true
       });
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -9012,7 +9012,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':webkit-foo', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9040,7 +9040,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':webkit-foo', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -9057,7 +9057,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':-webkitfoo', node);
       assert.throws(
-        () => evaluator._matchPseudoClassSelector(leaf, node, {}),
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9085,7 +9085,7 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup(':-webkitfoo', node);
-      const res = evaluator._matchPseudoClassSelector(leaf, node, {
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
@@ -9125,7 +9125,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':foobar div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9181,7 +9181,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':foobar(#baz) div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9231,7 +9231,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9281,7 +9281,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host() div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9327,7 +9327,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context() div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9376,7 +9376,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -9430,7 +9430,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#baz #foobar) div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9491,7 +9491,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#baz) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -9538,7 +9538,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#foobar) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -9592,7 +9592,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context(#baz #foobar) div', node);
       assert.throws(
-        () => evaluator._evaluateShadowHost(ast, node),
+        () => evaluator.evaluateShadowHost(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -9653,7 +9653,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context(#baz) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -9700,7 +9700,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context(#div0) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -9747,7 +9747,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host-context(#foobar) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -9826,7 +9826,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(:state(checked)) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -9898,7 +9898,7 @@ describe('Evaluator', () => {
       host.click();
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(:state(checked)) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -9969,7 +9969,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(:state(checked)) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -10049,7 +10049,7 @@ describe('Evaluator', () => {
       host.click();
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(:state(checked)) div', node);
-      const res = evaluator._evaluateShadowHost(ast, node);
+      const res = evaluator.evaluateShadowHost(ast, node);
       assert.strictEqual(res, true, 'result');
     });
   });
@@ -10210,7 +10210,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div5');
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10225,7 +10225,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10240,7 +10240,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -10252,7 +10252,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div0');
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10264,7 +10264,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div0');
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -10279,7 +10279,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('.foo', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10297,7 +10297,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('span3');
       const evaluator = new Evaluator(window);
       evaluator.setup('[hidden]', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10309,7 +10309,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('dt1');
       const evaluator = new Evaluator(window);
       evaluator.setup('dt', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10337,7 +10337,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup(':is(ul)', document);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10351,7 +10351,7 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup('::foo', node);
       assert.throws(
-        () => evaluator._matchSelector(ast, node),
+        () => evaluator.matchSelector(ast, node),
         e => {
           assert.strictEqual(
             e instanceof window.DOMException,
@@ -10378,7 +10378,7 @@ describe('Evaluator', () => {
       const node = document.documentElement;
       const evaluator = new Evaluator(window);
       evaluator.setup('::before', node);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -10393,7 +10393,7 @@ describe('Evaluator', () => {
       evaluator.setup('::before', node, {
         check: true
       });
-      const res = evaluator._matchSelector(ast, node, {
+      const res = evaluator.matchSelector(ast, node, {
         check: true
       });
       assert.strictEqual(res, true, 'result');
@@ -10411,7 +10411,7 @@ describe('Evaluator', () => {
       evaluator.setup('::before', node, {
         warn: true
       });
-      const res = evaluator._matchSelector(ast, node, {
+      const res = evaluator.matchSelector(ast, node, {
         warn: true
       });
       const { called } = stubWarn;
@@ -10463,7 +10463,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#baz) div', node);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10510,7 +10510,7 @@ describe('Evaluator', () => {
       const node = host.shadowRoot;
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#foobar) div', node);
-      const res = evaluator._matchSelector(ast, node);
+      const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, false, 'result');
     });
   });
@@ -10772,7 +10772,7 @@ describe('Evaluator', () => {
         { name: 'bar', type: CLASS_SELECTOR }
       ];
       const evaluator = new Evaluator(window);
-      const res = evaluator._getFilterLeaves(leaves);
+      const res = evaluator.getFilterLeaves(leaves);
       assert.deepEqual(
         res,
         [
@@ -10789,8 +10789,8 @@ describe('Evaluator', () => {
         { name: 'foo', type: CLASS_SELECTOR }
       ];
       const evaluator = new Evaluator(window);
-      const res1 = evaluator._getFilterLeaves(leaves);
-      const res2 = evaluator._getFilterLeaves(leaves);
+      const res1 = evaluator.getFilterLeaves(leaves);
+      const res2 = evaluator.getFilterLeaves(leaves);
       assert.deepEqual(
         res1,
         [{ name: 'foo', type: CLASS_SELECTOR }],
@@ -10809,8 +10809,8 @@ describe('Evaluator', () => {
         { name: 'foo', type: CLASS_SELECTOR }
       ];
       const evaluator = new Evaluator(window);
-      const res1 = evaluator._getFilterLeaves(leaves1);
-      const res2 = evaluator._getFilterLeaves(leaves2);
+      const res1 = evaluator.getFilterLeaves(leaves1);
+      const res2 = evaluator.getFilterLeaves(leaves2);
       assert.notStrictEqual(
         res1,
         res2,
@@ -10823,8 +10823,8 @@ describe('Evaluator', () => {
       const singleElementLeaves = [{ name: 'div', type: TYPE_SELECTOR }];
       const emptyLeaves = [];
       const evaluator = new Evaluator(window);
-      const resSingle = evaluator._getFilterLeaves(singleElementLeaves);
-      const resEmpty = evaluator._getFilterLeaves(emptyLeaves);
+      const resSingle = evaluator.getFilterLeaves(singleElementLeaves);
+      const resEmpty = evaluator.getFilterLeaves(emptyLeaves);
       assert.deepEqual(resSingle, [], 'returns empty array for 1 element');
       assert.deepEqual(resEmpty, [], 'returns empty array for 0 elements');
     });
