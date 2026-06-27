@@ -497,15 +497,16 @@ export class Finder {
       this.#nthChildCache = new WeakMap();
     }
     let siblings = this.#nthChildCache.get(parentNode);
-    if (!siblings) {
-      siblings = [];
-      let child = parentNode.firstElementChild;
-      while (child) {
-        siblings.push(child);
-        child = child.nextElementSibling;
-      }
-      this.#nthChildCache.set(parentNode, siblings);
+    if (siblings) {
+      return siblings;
     }
+    siblings = [];
+    let child = parentNode.firstElementChild;
+    while (child) {
+      siblings.push(child);
+      child = child.nextElementSibling;
+    }
+    this.#nthChildCache.set(parentNode, siblings);
     return siblings;
   };
 
@@ -530,21 +531,22 @@ export class Finder {
     }
     const typeKey = `${namespaceURI || ''}|${prefix || ''}|${localName}`;
     let siblings = typeMap.get(typeKey);
-    if (!siblings) {
-      siblings = [];
-      let child = parentNode.firstElementChild;
-      while (child) {
-        if (
-          child.localName === localName &&
-          child.namespaceURI === namespaceURI &&
-          child.prefix === prefix
-        ) {
-          siblings.push(child);
-        }
-        child = child.nextElementSibling;
-      }
-      typeMap.set(typeKey, siblings);
+    if (siblings) {
+      return siblings;
     }
+    siblings = [];
+    let child = parentNode.firstElementChild;
+    while (child) {
+      if (
+        child.localName === localName &&
+        child.namespaceURI === namespaceURI &&
+        child.prefix === prefix
+      ) {
+        siblings.push(child);
+      }
+      child = child.nextElementSibling;
+    }
+    typeMap.set(typeKey, siblings);
     return siblings;
   };
 
@@ -577,29 +579,30 @@ export class Finder {
       this.#nthChildOfCache.set(parentNode, parentOfCacheMap);
     }
     let siblings = parentOfCacheMap.get(selector);
-    if (!siblings) {
-      siblings = [];
-      let child = parentNode.firstElementChild;
-      while (child) {
-        let isMatch = false;
-        const l = selectorBranches.length;
-        for (let i = 0; i < l; i++) {
-          if (this._matchLeaves(selectorBranches[i], child, opt)) {
-            isMatch = true;
-            break;
-          }
-        }
-        if (isMatch) {
-          if (this.#node === child) {
-            siblings.push(child);
-          } else if (isVisible(child)) {
-            siblings.push(child);
-          }
-        }
-        child = child.nextElementSibling;
-      }
-      parentOfCacheMap.set(selector, siblings);
+    if (siblings) {
+      return siblings;
     }
+    siblings = [];
+    let child = parentNode.firstElementChild;
+    while (child) {
+      let isMatch = false;
+      const l = selectorBranches.length;
+      for (let i = 0; i < l; i++) {
+        if (this._matchLeaves(selectorBranches[i], child, opt)) {
+          isMatch = true;
+          break;
+        }
+      }
+      if (isMatch) {
+        if (this.#node === child) {
+          siblings.push(child);
+        } else if (isVisible(child)) {
+          siblings.push(child);
+        }
+      }
+      child = child.nextElementSibling;
+    }
+    parentOfCacheMap.set(selector, siblings);
     return siblings;
   };
 
@@ -687,8 +690,8 @@ export class Finder {
     if (!l) {
       return false;
     }
-    let startIndex = 0;
     let combo;
+    let startIndex = 0;
     if (astLeaves[0].type === COMBINATOR) {
       combo = astLeaves[0];
       startIndex = 1;
@@ -932,53 +935,55 @@ export class Finder {
       this.onError(generateException(msg, SYNTAX_ERR, this.#window));
       return false;
     }
-    let astData;
-    if (this.#astCache.has(ast)) {
-      astData = this.#astCache.get(ast);
-    } else {
-      const { branches } = walkAST(ast);
-      if (astName === 'has') {
-        astData = {
+    const cachedAstData = this.#astCache.get(ast);
+    if (cachedAstData) {
+      return this._matchLogicalPseudoFunc(cachedAstData, node, opt);
+    }
+    const { branches } = walkAST(ast);
+    if (astName === 'has') {
+      return this._matchLogicalPseudoFunc(
+        {
           astName,
           branches
-        };
-      } else {
-        const twigBranches = [];
-        const l = branches.length;
-        for (let i = 0; i < l; i++) {
-          const leaves = branches[i];
-          const branch = [];
-          const leavesSet = new Set();
-          const leavesLen = leaves.length;
-          for (let j = 0; j < leavesLen; j++) {
-            const item = leaves[j];
-            if (item.type === COMBINATOR) {
-              branch.push({
-                combo: item,
-                leaves: [...leavesSet]
-              });
-              leavesSet.clear();
-            } else {
-              leavesSet.add(item);
-            }
-            if (j === leavesLen - 1) {
-              branch.push({
-                combo: null,
-                leaves: [...leavesSet]
-              });
-              leavesSet.clear();
-            }
-          }
-          twigBranches.push(branch);
-        }
-        astData = {
-          astName,
-          branches,
-          twigBranches
-        };
-      }
-      this.#astCache.set(ast, astData);
+        },
+        node,
+        opt
+      );
     }
+    const twigBranches = [];
+    const l = branches.length;
+    for (let i = 0; i < l; i++) {
+      const leaves = branches[i];
+      const branch = [];
+      const leavesSet = new Set();
+      const leavesLen = leaves.length;
+      for (let j = 0; j < leavesLen; j++) {
+        const item = leaves[j];
+        if (item.type === COMBINATOR) {
+          branch.push({
+            combo: item,
+            leaves: [...leavesSet]
+          });
+          leavesSet.clear();
+        } else {
+          leavesSet.add(item);
+        }
+        if (j === leavesLen - 1) {
+          branch.push({
+            combo: null,
+            leaves: [...leavesSet]
+          });
+          leavesSet.clear();
+        }
+      }
+      twigBranches.push(branch);
+    }
+    const astData = {
+      astName,
+      branches,
+      twigBranches
+    };
+    this.#astCache.set(ast, astData);
     return this._matchLogicalPseudoFunc(astData, node, opt);
   }
 
@@ -2362,21 +2367,17 @@ export class Finder {
    * @returns {object} The result { nodes, filtered, pending }.
    */
   _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
-    let nodes = [];
-    let filtered = false;
     if (targetType === TARGET_SELF && this.#check) {
       const css = generateCSS(leaf);
       this.#pseudoElement.push(css);
       if (filterLeaves.length) {
-        [nodes, filtered] = this._matchSelf(filterLeaves);
-      } else {
-        nodes.push(this.#node);
-        filtered = true;
+        const [nodes, filtered] = this._matchSelf(filterLeaves);
+        return { nodes, filtered, pending: false };
       }
-    } else {
-      matchPseudoElementSelector(leaf.name, leaf.type, { warn: this.#warn });
+      return { nodes: [this.#node], filtered: true, pending: false };
     }
-    return { nodes, filtered, pending: false };
+    matchPseudoElementSelector(leaf.name, leaf.type, { warn: this.#warn });
+    return { nodes: [], filtered: false, pending: false };
   };
 
   /**
@@ -2391,36 +2392,37 @@ export class Finder {
    */
   _findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const [leaf] = leaves;
     const filterLeaves = this._getFilterLeaves(leaves);
     const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this._matchSelf(leaves);
+      return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      return { nodes, filtered, pending: false };
     } else if (
       targetType === TARGET_FIRST &&
       this.#root.nodeType !== ELEMENT_NODE
     ) {
+      const [leaf] = leaves;
       const node = this.#root.getElementById(leaf.name);
+      const nodes = [];
       if (node) {
         if (filterLeaves.length) {
           if (this._matchLeaves(filterLeaves, node, { warn: this.#warn })) {
             nodes.push(node);
-            filtered = true;
           }
         } else {
           nodes.push(node);
-          filtered = true;
         }
       }
-    } else {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
+      return { nodes, filtered: nodes.length > 0, pending: false };
     }
-    return { nodes, filtered, pending: false };
+    const nodes = this._findNodeWalker(leaves, this.#node, {
+      precede,
+      targetType
+    });
+    return { nodes, filtered: nodes.length > 0, pending: false };
   };
 
   /**
@@ -2435,43 +2437,46 @@ export class Finder {
    */
   _findEntryNodesForClass = (leaves, targetType, opt = {}) => {
     const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this._matchSelf(leaves);
+      return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else {
+      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      return { nodes, filtered, pending: false };
+    } else if (
+      targetType !== TARGET_FIRST &&
+      !precede &&
+      typeof this.#node.getElementsByClassName === 'function'
+    ) {
+      const matchOpt = { warn: this.#warn };
+      this._matchLeaves(leaves, this.#node, matchOpt);
       const [leaf] = leaves;
-      if (
-        targetType !== TARGET_FIRST &&
-        !precede &&
-        typeof this.#node.getElementsByClassName === 'function'
-      ) {
-        const matchOpt = { warn: this.#warn };
-        this._matchLeaves(leaves, this.#node, matchOpt);
-        const className = unescapeSelector(leaf.name);
-        const collection = this.#node.getElementsByClassName(className);
-        const len = collection.length;
-        const filterLeaves = this._getFilterLeaves(leaves);
-        const hasFilter = filterLeaves.length > 0;
-        const nodeArray = [];
-        for (let i = 0; i < len; i++) {
-          const currentNode = collection[i];
-          if (
-            !hasFilter ||
-            this._matchLeaves(filterLeaves, currentNode, matchOpt)
-          ) {
-            nodeArray.push(currentNode);
-          }
+      const className = unescapeSelector(leaf.name);
+      const collection = this.#node.getElementsByClassName(className);
+      const len = collection.length;
+      const filterLeaves = this._getFilterLeaves(leaves);
+      const hasFilter = filterLeaves.length > 0;
+      const nodeArray = [];
+      for (let i = 0; i < len; i++) {
+        const currentNode = collection[i];
+        if (
+          !hasFilter ||
+          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+        ) {
+          nodeArray.push(currentNode);
         }
-        filtered = nodeArray.length > 0;
-        return { nodes: nodeArray, filtered, pending: false };
       }
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
+      return {
+        nodes: nodeArray,
+        filtered: nodeArray.length > 0,
+        pending: false
+      };
     }
-    return { nodes, filtered, pending: false };
+    const nodes = this._findNodeWalker(leaves, this.#node, {
+      precede,
+      targetType
+    });
+    return { nodes, filtered: nodes.length > 0, pending: false };
   };
 
   /**
@@ -2486,49 +2491,49 @@ export class Finder {
    */
   _findEntryNodesForType = (leaves, targetType, opt = {}) => {
     const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
     if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this._matchSelf(leaves);
+      return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
-    } else {
-      const [leaf] = leaves;
-      const tagName = unescapeSelector(leaf.name);
-      const isHTML = this.#document.contentType === 'text/html';
-      if (
-        targetType !== TARGET_FIRST &&
-        !precede &&
-        isHTML &&
-        typeof this.#node.getElementsByTagName === 'function' &&
-        tagName.indexOf('|') === -1
-      ) {
-        const matchOpt = { warn: this.#warn };
-        this._matchLeaves(leaves, this.#node, matchOpt);
-        const collection = this.#node.getElementsByTagName(tagName);
-        const len = collection.length;
-        const filterLeaves = this._getFilterLeaves(leaves);
-        const hasFilter = filterLeaves.length > 0;
-        const nodeArray = [];
-        for (let i = 0; i < len; i++) {
-          const currentNode = collection[i];
-          if (
-            !hasFilter ||
-            this._matchLeaves(filterLeaves, currentNode, matchOpt)
-          ) {
-            nodeArray.push(currentNode);
-          }
-        }
-        filtered = nodeArray.length > 0;
-        return { nodes: nodeArray, filtered, pending: false };
-      }
-      nodes = this._findNodeWalker(leaves, this.#node, {
-        precede,
-        targetType
-      });
-      filtered = nodes.length > 0;
+      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      return { nodes, filtered, pending: false };
     }
-    return { nodes, filtered, pending: false };
+    const [leaf] = leaves;
+    const tagName = unescapeSelector(leaf.name);
+    if (
+      targetType !== TARGET_FIRST &&
+      !precede &&
+      this.#document.contentType === 'text/html' &&
+      typeof this.#node.getElementsByTagName === 'function' &&
+      tagName.indexOf('|') === -1
+    ) {
+      const matchOpt = { warn: this.#warn };
+      this._matchLeaves(leaves, this.#node, matchOpt);
+      const collection = this.#node.getElementsByTagName(tagName);
+      const len = collection.length;
+      const filterLeaves = this._getFilterLeaves(leaves);
+      const hasFilter = filterLeaves.length > 0;
+      const nodeArray = [];
+      for (let i = 0; i < len; i++) {
+        const currentNode = collection[i];
+        if (
+          !hasFilter ||
+          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+        ) {
+          nodeArray.push(currentNode);
+        }
+      }
+      return {
+        nodes: nodeArray,
+        filtered: nodeArray.length > 0,
+        pending: false
+      };
+    }
+    const nodes = this._findNodeWalker(leaves, this.#node, {
+      precede,
+      targetType
+    });
+    return { nodes, filtered: nodes.length > 0, pending: false };
   };
 
   /**
@@ -2546,9 +2551,6 @@ export class Finder {
     const [leaf] = leaves;
     const filterLeaves = this._getFilterLeaves(leaves);
     const { complex, precede } = opt;
-    let nodes = [];
-    let filtered = false;
-    let pending = false;
     if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
       let shadowRoot = null;
       if (
@@ -2587,22 +2589,26 @@ export class Finder {
             break;
           }
         }
+        const nodes = [];
         if (bool) {
           nodes.push(shadowRoot);
-          filtered = true;
         }
+        return { nodes, filtered: nodes.length > 0, pending: false };
       }
     } else if (targetType === TARGET_SELF) {
-      [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this._matchSelf(leaves);
+      return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_FIRST) {
-      nodes = this._findNodeWalker(leaves, this.#node, { precede, targetType });
-      filtered = nodes.length > 0;
-    } else {
-      pending = true;
+      const nodes = this._findNodeWalker(leaves, this.#node, {
+        precede,
+        targetType
+      });
+      return { nodes, filtered: nodes.length > 0, pending: false };
     }
-    return { nodes, filtered, pending };
+    return { nodes: [], filtered: false, pending: true };
   };
 
   /**
@@ -2739,11 +2745,8 @@ export class Finder {
     if (!this.#rootWalker) {
       this.#rootWalker = this._createTreeWalker(this.#root);
     }
+    const node = this.#scoped ? this.#node : this.#root;
     const walker = this.#rootWalker;
-    let node = this.#root;
-    if (this.#scoped) {
-      node = this.#node;
-    }
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
       const isWithinScope =
@@ -2957,12 +2960,12 @@ export class Finder {
       for (const node of entryNodes) {
         let combo = firstCombo;
         let nextNodes = [node];
-        for (let j = 1; j < branchLen; j++) {
-          const { combo: nextCombo, leaves } = branch[j];
+        for (let i = 1; i < branchLen; i++) {
+          const { combo: nextCombo, leaves } = branch[i];
           const twig = { combo, leaves };
           const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
           if (nodesArr.length) {
-            if (j === lastIndex) {
+            if (i === lastIndex) {
               for (const nextNode of nodesArr) {
                 matchedNodes.add(nextNode);
               }
@@ -3093,16 +3096,12 @@ export class Finder {
       collection = this._collectNodes(targetType);
     } catch (e) {
       if (this.#check) {
-        let pseudoElement;
-        if (this.#pseudoElement.length) {
-          pseudoElement = this.#pseudoElement.join('');
-        } else {
-          pseudoElement = null;
-        }
         return {
-          pseudoElement,
+          ast: this.#selectorAST ?? null,
           match: false,
-          ast: this.#selectorAST ?? null
+          pseudoElement: this.#pseudoElement.length
+            ? this.#pseudoElement.join('')
+            : null
         };
       } else {
         throw e;
@@ -3170,17 +3169,12 @@ export class Finder {
       }
     }
     if (this.#check) {
-      const match = !!nodes.size;
-      let pseudoElement;
-      if (this.#pseudoElement.length) {
-        pseudoElement = this.#pseudoElement.join('');
-      } else {
-        pseudoElement = null;
-      }
       return {
-        match,
-        pseudoElement,
-        ast: this.#selectorAST
+        ast: this.#selectorAST,
+        match: nodes.size > 0,
+        pseudoElement: this.#pseudoElement.length
+          ? this.#pseudoElement.join('')
+          : null
       };
     }
     if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {

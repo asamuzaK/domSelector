@@ -842,10 +842,18 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(parent);
       const nodeMatch = parent.children[7];
       finder.setup(':nth-child(3n+5)', nodeMatch);
-      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=8 matches 3n+5');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, nodeMatch, leafName),
+        true,
+        'pos=8 matches 3n+5'
+      );
       const nodeMinusDiff = parent.children[1];
       finder.setup(':nth-child(3n+5)', nodeMinusDiff);
-      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMinusDiff, leafName), false, 'pos=2 fails 3n+5 because diff < 0');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, nodeMinusDiff, leafName),
+        false,
+        'pos=2 fails 3n+5 because diff < 0'
+      );
     });
 
     it('should test a < 0 with valid and invalid diff boundaries', () => {
@@ -864,10 +872,18 @@ describe('Finder', () => {
       document.getElementById('div0').appendChild(parent);
       const nodeMatch = parent.children[1];
       finder.setup(':nth-child(-3n+5)', nodeMatch);
-      assert.strictEqual(finder._matchAnPlusB(leaf, nodeMatch, leafName), true, 'pos=2 matches -3n+5');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, nodeMatch, leafName),
+        true,
+        'pos=2 matches -3n+5'
+      );
       const nodePlusDiff = parent.children[7];
       finder.setup(':nth-child(-3n+5)', nodePlusDiff);
-      assert.strictEqual(finder._matchAnPlusB(leaf, nodePlusDiff, leafName), false, 'pos=8 fails -3n+5 because diff > 0');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, nodePlusDiff, leafName),
+        false,
+        'pos=8 fails -3n+5 because diff > 0'
+      );
     });
 
     it('should branch on anb.selector caching for nth-child of sel', () => {
@@ -940,7 +956,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('li:nth-of-type(2n+1)', node);
       const res = finder._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'processes nth-of-type smoothly by bypassing selector cache');
+      assert.strictEqual(
+        res,
+        true,
+        'processes nth-of-type smoothly by bypassing selector cache'
+      );
     });
 
     it('should test empty array return', () => {
@@ -965,7 +985,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup(':nth-child(1n of .match-me)', isolatedNode);
       const res = finder._matchAnPlusB(leaf, isolatedNode, leafName);
-      assert.strictEqual(res, false, 'returns false because siblings array is empty');
+      assert.strictEqual(
+        res,
+        false,
+        'returns false because siblings array is empty'
+      );
     });
 
     it('should cover all 4 logical branches of typeKey', () => {
@@ -982,27 +1006,55 @@ describe('Finder', () => {
       );
       const svgChild = xmlDoc.documentElement.firstChild;
       finder.setup('svg|svg:nth-of-type(1)', svgChild);
-      assert.strictEqual(finder._matchAnPlusB(leaf, svgChild, leafName), true, 'Branch 1 passed');
-      const svgParent = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const svgNoPrefixChild = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, svgChild, leafName),
+        true,
+        'Branch 1 passed'
+      );
+      const svgParent = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const svgNoPrefixChild = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'rect'
+      );
       svgParent.appendChild(svgNoPrefixChild);
       document.getElementById('div0').appendChild(svgParent);
       finder.setup('rect:nth-of-type(1)', svgNoPrefixChild);
-      assert.strictEqual(finder._matchAnPlusB(leaf, svgNoPrefixChild, leafName), true, 'Branch 2 passed');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, svgNoPrefixChild, leafName),
+        true,
+        'Branch 2 passed'
+      );
       const mockParent = document.createElement('div');
       const mockChild = document.createElement('p');
       mockParent.appendChild(mockChild);
       document.getElementById('div0').appendChild(mockParent);
-      Object.defineProperty(mockChild, 'namespaceURI', { value: null, configurable: true });
-      Object.defineProperty(mockChild, 'prefix', { value: 'foo', configurable: true });
+      Object.defineProperty(mockChild, 'namespaceURI', {
+        value: null,
+        configurable: true
+      });
+      Object.defineProperty(mockChild, 'prefix', {
+        value: 'foo',
+        configurable: true
+      });
       finder.setup('p:nth-of-type(1)', mockChild);
-      assert.strictEqual(finder._matchAnPlusB(leaf, mockChild, leafName), true, 'Branch 3 passed');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, mockChild, leafName),
+        true,
+        'Branch 3 passed'
+      );
       const htmlParent = document.createElement('div');
       const htmlChild = document.createElement('p');
       htmlParent.appendChild(htmlChild);
       document.getElementById('div0').appendChild(htmlParent);
       finder.setup('p:nth-of-type(1)', htmlChild);
-      assert.strictEqual(finder._matchAnPlusB(leaf, htmlChild, leafName), true, 'Branch 4 passed');
+      assert.strictEqual(
+        finder._matchAnPlusB(leaf, htmlChild, leafName),
+        true,
+        'Branch 4 passed'
+      );
     });
 
     it('should test true and false routes when parentNode is null', () => {
@@ -1015,11 +1067,19 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const isolatedRoot = document.createElement('div');
       finder.setup('div:nth-of-type(1n)', isolatedRoot);
-      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
-      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(
+        resTrue,
+        true,
+        'returns [node] and passes because node is this.#root'
+      );
       const notRoot = document.createElement('p');
-      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
-      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
+      const resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(
+        resFalse,
+        false,
+        'returns [] and fails because node is not this.#root'
+      );
     });
 
     it('should test true and false branches when parentNode is null', () => {
@@ -1032,11 +1092,19 @@ describe('Finder', () => {
       const finder = new Finder(window);
       const isolatedRoot = document.createElement('div');
       finder.setup('div:nth-child(1n)', isolatedRoot);
-      let resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
-      assert.strictEqual(resTrue, true, 'returns [node] and passes because node is this.#root');
+      const resTrue = finder._matchAnPlusB(leaf, isolatedRoot, leafName);
+      assert.strictEqual(
+        resTrue,
+        true,
+        'returns [node] and passes because node is this.#root'
+      );
       const notRoot = document.createElement('span');
-      let resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
-      assert.strictEqual(resFalse, false, 'returns [] and fails because node is not this.#root');
+      const resFalse = finder._matchAnPlusB(leaf, notRoot, leafName);
+      assert.strictEqual(
+        resFalse,
+        false,
+        'returns [] and fails because node is not this.#root'
+      );
     });
   });
 
