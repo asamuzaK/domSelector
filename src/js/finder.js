@@ -876,22 +876,6 @@ export class Finder extends Evaluator {
   };
 
   /**
-   * Gets nodes matching the combinator and twig.
-   * @private
-   * @param {object} twig - The twig object.
-   * @param {Array.<object>|Set.<object>} nodes - The nodes to check.
-   * @param {string} dir - The traversal direction.
-   * @returns {Array.<object>} An array of combined nodes.
-   */
-  _getCombinedNodes = (twig, nodes, dir) => {
-    const arr = [];
-    for (const node of nodes) {
-      this.collectCombinatorMatches(twig, node, { dir, warn: this._warn }, arr);
-    }
-    return arr;
-  };
-
-  /**
    * Matches a node in the next direction.
    * @private
    * @param {Array.<object>} branch - The selector branch.
@@ -906,19 +890,21 @@ export class Finder extends Evaluator {
       combo,
       leaves
     };
-    const nextNodes = this._getCombinedNodes(twig, nodes, DIR_NEXT);
-    if (nextNodes.length) {
-      if (index === branch.length - 1) {
-        if (nextNodes.length === 1) {
-          return nextNodes[0];
+    for (const node of nodes) {
+      for (const nextNode of this.yieldCombinatorMatches(twig, node, {
+        dir: DIR_NEXT
+      })) {
+        if (index === branch.length - 1) {
+          return nextNode;
         }
-        const [nextNode] = sortNodes(nextNodes);
-        return nextNode;
+        const result = this._matchNodeNext(branch, new Set([nextNode]), {
+          combo: nextCombo,
+          index: index + 1
+        });
+        if (result) {
+          return result;
+        }
       }
-      return this._matchNodeNext(branch, nextNodes, {
-        combo: nextCombo,
-        index: index + 1
-      });
     }
     return null;
   };
@@ -991,25 +977,21 @@ export class Finder extends Evaluator {
     const lastIndex = branchLen - 1;
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
-      for (const node of entryNodes) {
-        let combo = firstCombo;
-        let nextNodes = [node];
-        for (let i = 1; i < branchLen; i++) {
-          const { combo: nextCombo, leaves } = branch[i];
-          const twig = { combo, leaves };
-          const nodesArr = this._getCombinedNodes(twig, nextNodes, dir);
-          if (nodesArr.length) {
-            if (i === lastIndex) {
-              for (const nextNode of nodesArr) {
-                matchedNodes.add(nextNode);
-              }
-            }
-            combo = nextCombo;
-            nextNodes = nodesArr;
+      const dfs = (node, index, currentCombo) => {
+        const { combo: nextCombo, leaves } = branch[index];
+        const twig = { combo: currentCombo, leaves };
+        for (const nextNode of this.yieldCombinatorMatches(twig, node, {
+          dir
+        })) {
+          if (index === lastIndex) {
+            matchedNodes.add(nextNode);
           } else {
-            break;
+            dfs(nextNode, index + 1, nextCombo);
           }
         }
+      };
+      for (const node of entryNodes) {
+        dfs(node, 1, firstCombo);
       }
     } else {
       const matchOpt = { warn: this._warn };

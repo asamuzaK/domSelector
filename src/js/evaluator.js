@@ -1012,15 +1012,14 @@ export class Evaluator {
   };
 
   /**
-   * Collects combinator matches into an array.
+   * Yields combinator matches (Lazy evaluation, O(1) memory).
    * @param {object} twig - The twig object.
    * @param {object} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {string} [opt.dir] - The find direction.
-   * @param {Array.<object>} matched - The collector array.
-   * @returns {Array.<object>} The collector array.
+   * @yields {object} The matched node.
    */
-  collectCombinatorMatches = (twig, node, opt = {}, matched = []) => {
+  *yieldCombinatorMatches(twig, node, opt = {}) {
     const {
       combo: { name: comboName },
       leaves
@@ -1033,7 +1032,7 @@ export class Evaluator {
             ? node.nextElementSibling
             : node.previousElementSibling;
         if (refNode && this._matchLeaves(leaves, refNode, opt)) {
-          matched.push(refNode);
+          yield refNode;
         }
         break;
       }
@@ -1044,7 +1043,7 @@ export class Evaluator {
             : node.previousElementSibling;
         while (refNode) {
           if (this._matchLeaves(leaves, refNode, opt)) {
-            matched.push(refNode);
+            yield refNode;
           }
           refNode =
             dir === DIR_NEXT
@@ -1058,14 +1057,14 @@ export class Evaluator {
           let refNode = node.firstElementChild;
           while (refNode) {
             if (this._matchLeaves(leaves, refNode, opt)) {
-              matched.push(refNode);
+              yield refNode;
             }
             refNode = refNode.nextElementSibling;
           }
         } else {
           const { parentNode } = node;
           if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
-            matched.push(parentNode);
+            yield parentNode;
           }
         }
         break;
@@ -1074,7 +1073,7 @@ export class Evaluator {
       default: {
         if (dir === DIR_NEXT) {
           for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
-            matched.push(refNode);
+            yield refNode;
           }
         } else {
           const ancestors = [];
@@ -1086,13 +1085,14 @@ export class Evaluator {
             refNode = refNode.parentNode;
           }
           if (ancestors.length) {
-            matched.push(...ancestors.reverse());
+            for (let i = ancestors.length - 1; i >= 0; i--) {
+              yield ancestors[i];
+            }
           }
         }
       }
     }
-    return matched;
-  };
+  }
 
   /**
    * Handles focus events.
@@ -1619,7 +1619,13 @@ export class Evaluator {
           const arr = [];
           opt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
-            this.collectCombinatorMatches(twig, nextNode, opt, arr);
+            for (const matchedNode of this.yieldCombinatorMatches(
+              twig,
+              nextNode,
+              opt
+            )) {
+              arr.push(matchedNode);
+            }
           }
           if (arr.length) {
             if (j === 0) {
