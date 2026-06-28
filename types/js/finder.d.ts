@@ -1,45 +1,6 @@
-export class Finder {
-    constructor(window: object);
-    onError: (e: Error, opt?: {
-        noexcept?: boolean | undefined;
-    }) => void;
-    setup: (selector: string, node: object, opt?: {
-        check?: boolean | undefined;
-        noexcept?: boolean | undefined;
-        warn?: boolean | undefined;
-    }) => object;
-    clearResults: (all?: boolean) => void;
-    private _handleFocusEvent;
-    private _handleKeyboardEvent;
-    private _handleMouseEvent;
-    private _registerEventListeners;
+export class Finder extends Evaluator {
     private _processSelectorBranches;
     private _correspond;
-    private _createTreeWalker;
-    private _getSelectorBranches;
-    private _getFilteredChildren;
-    private _collectNthChild;
-    private _collectNthOfType;
-    private _matchAnPlusB;
-    private _matchHasPseudoFunc;
-    private _buildHasAllowlist;
-    private _evaluateHasPseudo;
-    private _matchLogicalPseudoFunc;
-    private _evaluateLogicalPseudo;
-    private _evaluatePseudoClassFunc;
-    private _matchPseudoClassSelector;
-    private _evaluateHostPseudo;
-    private _evaluateHostContextPseudo;
-    private _evaluateShadowHost;
-    private _matchSelectorForElement;
-    private _matchSelectorForShadowRoot;
-    private _matchSelector;
-    private _matchLeaves;
-    private _getFilterLeaves;
-    private _traverseAllDescendants;
-    private _findDescendantNodes;
-    private _collectCombinatorMatches;
-    private _matchCombinator;
     private _traverseAndCollectNodes;
     private _findPrecede;
     private _findNodeWalker;
@@ -54,12 +15,12 @@ export class Finder {
     private _determineTraversalStrategy;
     private _processPendingItems;
     private _collectNodes;
-    private _getCombinedNodes;
     private _matchNodeNext;
-    private _matchNodePrev;
+    private _hasValidPathPrev;
     private _processComplexBranchAll;
     private _processComplexBranchFirst;
-    find: (targetType: string) => Set<object>;
+    find: (targetType: string) => Set<object> | object;
     getAST: (selector: string) => object;
     #private;
 }
+import { Evaluator } from './evaluator.js';

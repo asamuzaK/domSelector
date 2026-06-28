@@ -32,22 +32,22 @@
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "c8": "^11.0.0",
     "chai": "^6.2.2",
     "commander": "^15.0.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^63.0.6",
+    "eslint-plugin-jsdoc": "^63.0.10",
     "eslint-plugin-prettier": "^5.5.6",
-    "eslint-plugin-regexp": "^3.1.0",
+    "eslint-plugin-regexp": "^3.1.1",
     "eslint-plugin-unicorn": "^65.0.1",
-    "globals": "^17.6.0",
+    "globals": "^17.7.0",
     "jsdom": "^29.1.1",
     "mitata": "^1.0.34",
     "mocha": "^11.7.6",
     "neostandard": "^0.13.0",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.1",
     "sinon": "^22.0.0",
     "tinybench": "^6.0.2",
     "typescript": "^6.0.3",
@@ -88,5 +88,5 @@
   "engines": {
     "node": "^22.13.0 || >=24.0.0"
   },
-  "version": "8.1.5"
+  "version": "8.2.0"
 }

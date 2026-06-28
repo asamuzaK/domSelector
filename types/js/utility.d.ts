@@ -1,11 +1,6 @@
 export function getType(o: object): string;
 export function verifyArray(arr: any[], type: string): any[];
 export function generateException(msg: string, name: string, globalObject?: object): DOMException;
-export function filterNodesByAnB(nodes: Array<object>, anb: {
-    a: number;
-    b: number;
-    reverse?: boolean | undefined;
-}): Array<object>;
 export function resolveContent(node: object): Array<object | boolean>;
 export function traverseNode(node: object, walker: object, force?: boolean): object | null;
 export function isCustomElement(node: object, { formAssociated }?: {
