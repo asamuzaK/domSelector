@@ -45,6 +45,8 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
+
+/* regexp */
 const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;

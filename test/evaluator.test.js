@@ -593,24 +593,6 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-foo';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-foo(3n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
-    });
-
     it('should test a > 0 with valid and invalid diff boundaries', () => {
       const leafName = 'nth-child';
       // 3n + 5 (n=0: 5, n=1: 8, n=2: 11...)
@@ -8925,6 +8907,39 @@ describe('Evaluator', () => {
         forgive: true
       });
       assert.strictEqual(res, false, 'result');
+    });
+
+    it('should throw', () => {
+      const leaf = {
+        name: 'nth-foo',
+        nth: {
+          a: '3',
+          b: '1',
+          type: AN_PLUS_B
+        },
+        selector: null,
+        type: NTH
+      };
+      const node = document.getElementById('dt1');
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':nth-foo(3n+1)', node);
+      assert.throws(
+        () => evaluator.matchPseudoClassSelector(leaf, node, {}),
+        e => {
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
+          assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+          assert.strictEqual(
+            e.message,
+            'Unknown pseudo-class :nth-foo',
+            'message'
+          );
+          return true;
+        }
+      );
     });
   });
 

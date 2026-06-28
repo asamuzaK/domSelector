@@ -33,6 +33,8 @@ const KEYS_FORM_PS_DISABLED = new Set([
   'option'
 ]);
 const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
+
+/* regexp */
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /**

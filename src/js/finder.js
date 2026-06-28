@@ -19,6 +19,8 @@ import { generateException, sortNodes, traverseNode } from './utility.js';
 import {
   CLASS_SELECTOR,
   COMBINATOR,
+  DIR_NEXT,
+  DIR_PREV,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   ID_SELECTOR,
@@ -30,8 +32,6 @@ import {
   TARGET_SELF,
   TYPE_SELECTOR
 } from './constant.js';
-const DIR_NEXT = 'next';
-const DIR_PREV = 'prev';
 
 /**
  * Finder
@@ -69,6 +69,117 @@ export class Finder extends Evaluator {
     this.#rootWalker = null;
     return this;
   }
+
+  /**
+   * Finds matched nodes.
+   * @param {string} targetType - The target type.
+   * @returns {Set.<object>|object} A collection of matched nodes.
+   */
+  find = targetType => {
+    let collection;
+    try {
+      collection = this._collectNodes(targetType);
+    } catch (e) {
+      if (this.check) {
+        return {
+          ast: this.#selectorAST,
+          match: false,
+          pseudoElement: this.pseudoElements.length
+            ? this.pseudoElements.join('')
+            : null
+        };
+      } else {
+        throw e;
+      }
+    }
+    const [[...branches], collectedNodes] = collection;
+    const l = branches.length;
+    let sort = l > 1 && targetType === TARGET_ALL;
+    let nodes = new Set();
+    for (let i = 0; i < l; i++) {
+      const { branch, dir, find } = branches[i];
+      if (!branch.length || !find) {
+        continue;
+      }
+      const entryNodes = collectedNodes[i];
+      const lastIndex = branch.length - 1;
+      if (lastIndex === 0) {
+        if (
+          (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
+          this.node.nodeType === ELEMENT_NODE
+        ) {
+          for (const node of entryNodes) {
+            if (node !== this.node) {
+              if (targetType === TARGET_ALL || this.node.contains(node)) {
+                nodes.add(node);
+                if (targetType === TARGET_FIRST) {
+                  break;
+                }
+              }
+            }
+          }
+        } else if (targetType === TARGET_ALL) {
+          if (nodes.size) {
+            for (const node of entryNodes) {
+              nodes.add(node);
+            }
+            sort = true;
+          } else {
+            nodes = new Set(entryNodes);
+          }
+        } else {
+          if (entryNodes.length) {
+            nodes.add(entryNodes[0]);
+          }
+        }
+      } else if (targetType === TARGET_ALL) {
+        const newNodes = this._processComplexBranchAll(branch, entryNodes, dir);
+        if (nodes.size) {
+          for (const newNode of newNodes) {
+            nodes.add(newNode);
+          }
+          sort = true;
+        } else {
+          nodes = newNodes;
+        }
+      } else {
+        const matchedNode = this._processComplexBranchFirst(
+          branch,
+          entryNodes,
+          dir,
+          targetType
+        );
+        if (matchedNode) {
+          nodes.add(matchedNode);
+        }
+      }
+    }
+    if (this.check) {
+      return {
+        ast: this.#selectorAST,
+        match: nodes.size > 0,
+        pseudoElement: this.pseudoElements.length
+          ? this.pseudoElements.join('')
+          : null
+      };
+    }
+    if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
+      nodes.delete(this.node);
+    }
+    if ((sort || targetType === TARGET_FIRST) && nodes.size > 1) {
+      return new Set(sortNodes(nodes));
+    }
+    return nodes;
+  };
+
+  /**
+   * Gets AST for selector.
+   * @param {string} selector - The selector text.
+   * @returns {object} The AST for the selector.
+   */
+  getAST = selector => {
+    return parseSelector(selector);
+  };
 
   /**
    * Processes selector branches into the internal AST structure.
@@ -1013,116 +1124,5 @@ export class Finder extends Evaluator {
       }
     }
     return null;
-  };
-
-  /**
-   * Finds matched nodes.
-   * @param {string} targetType - The target type.
-   * @returns {Set.<object>|object} A collection of matched nodes.
-   */
-  find = targetType => {
-    let collection;
-    try {
-      collection = this._collectNodes(targetType);
-    } catch (e) {
-      if (this.check) {
-        return {
-          ast: this.#selectorAST,
-          match: false,
-          pseudoElement: this.pseudoElements.length
-            ? this.pseudoElements.join('')
-            : null
-        };
-      } else {
-        throw e;
-      }
-    }
-    const [[...branches], collectedNodes] = collection;
-    const l = branches.length;
-    let sort = l > 1 && targetType === TARGET_ALL;
-    let nodes = new Set();
-    for (let i = 0; i < l; i++) {
-      const { branch, dir, find } = branches[i];
-      if (!branch.length || !find) {
-        continue;
-      }
-      const entryNodes = collectedNodes[i];
-      const lastIndex = branch.length - 1;
-      if (lastIndex === 0) {
-        if (
-          (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
-          this.node.nodeType === ELEMENT_NODE
-        ) {
-          for (const node of entryNodes) {
-            if (node !== this.node) {
-              if (targetType === TARGET_ALL || this.node.contains(node)) {
-                nodes.add(node);
-                if (targetType === TARGET_FIRST) {
-                  break;
-                }
-              }
-            }
-          }
-        } else if (targetType === TARGET_ALL) {
-          if (nodes.size) {
-            for (const node of entryNodes) {
-              nodes.add(node);
-            }
-            sort = true;
-          } else {
-            nodes = new Set(entryNodes);
-          }
-        } else {
-          if (entryNodes.length) {
-            nodes.add(entryNodes[0]);
-          }
-        }
-      } else if (targetType === TARGET_ALL) {
-        const newNodes = this._processComplexBranchAll(branch, entryNodes, dir);
-        if (nodes.size) {
-          for (const newNode of newNodes) {
-            nodes.add(newNode);
-          }
-          sort = true;
-        } else {
-          nodes = newNodes;
-        }
-      } else {
-        const matchedNode = this._processComplexBranchFirst(
-          branch,
-          entryNodes,
-          dir,
-          targetType
-        );
-        if (matchedNode) {
-          nodes.add(matchedNode);
-        }
-      }
-    }
-    if (this.check) {
-      return {
-        ast: this.#selectorAST,
-        match: nodes.size > 0,
-        pseudoElement: this.pseudoElements.length
-          ? this.pseudoElements.join('')
-          : null
-      };
-    }
-    if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
-      nodes.delete(this.node);
-    }
-    if ((sort || targetType === TARGET_FIRST) && nodes.size > 1) {
-      return new Set(sortNodes(nodes));
-    }
-    return nodes;
-  };
-
-  /**
-   * Gets AST for selector.
-   * @param {string} selector - The selector text.
-   * @returns {object} The AST for the selector.
-   */
-  getAST = selector => {
-    return parseSelector(selector);
   };
 }

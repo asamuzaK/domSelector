@@ -6080,17 +6080,20 @@ describe('local wpt test cases', () => {
 
   describe('css/selectors/invalidation/nth-child-whole-subtree.html', () => {
     it('should get matched node', () => {
-      const html = `
+      const head = `
         <style>
           div:nth-child(odd of :not(.c)) {
             background-color: silver;
           }
           .c * {}
         </style>
+      `;
+      const html = `
         <div id="d1">Silver</div>
         <div id="d2" class="c">White</div>
         <div id="d3">Silver</div>
       `;
+      document.head.innerHTML = head;
       document.body.innerHTML = html;
       const selector = 'div:nth-child(odd of :not(.c))';
       const resBefore = document.querySelectorAll(selector);

@@ -19,7 +19,6 @@ import {
   isCustomElement,
   isFocusVisible,
   isFocusableArea,
-  isVisible,
   populateHasAllowlist,
   resolveContent,
   traverseNode
@@ -30,6 +29,8 @@ import {
   ATTR_SELECTOR,
   CLASS_SELECTOR,
   COMBINATOR,
+  DIR_NEXT,
+  DIR_PREV,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   FORM_PARTS,
@@ -49,8 +50,6 @@ import {
   TEXT_NODE,
   TYPE_SELECTOR
 } from './constant.js';
-const DIR_NEXT = 'next';
-const DIR_PREV = 'prev';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
 const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
 const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
@@ -142,6 +141,33 @@ export class Evaluator {
   }
 
   /**
+   * Sets up the evaluator.
+   * @param {string} selector - The CSS selector.
+   * @param {object} node - Document, DocumentFragment, or Element.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.check] - Indicates if running in internal check().
+   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
+   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @returns {object} The evaluator instance.
+   */
+  setup(selector, node, opt = {}) {
+    const { check, noexcept, warn } = opt;
+    this.check = !!check;
+    this.noexcept = !!noexcept;
+    this.warn = !!warn;
+    this.matchOpts = { warn: this.warn };
+    [this.document, this.root, this.shadow] = resolveContent(node);
+    this.node = node;
+    this.pseudoElements = [];
+    this.invalidate = false;
+    this.clearResults();
+    this.#documentURL = null;
+    this.#verifyShadowHost = false;
+    this.#walkers = null;
+    return this;
+  }
+
+  /**
    * Handles errors.
    * @param {Error} e - The error object.
    * @param {object} [opt] - Options.
@@ -172,38 +198,11 @@ export class Evaluator {
   };
 
   /**
-   * Sets up the evaluator.
-   * @param {string} selector - The CSS selector.
-   * @param {object} node - Document, DocumentFragment, or Element.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.check] - Indicates if running in internal check().
-   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
-   * @returns {object} The matcher instance.
-   */
-  setup(selector, node, opt = {}) {
-    const { check, noexcept, warn } = opt;
-    this.check = !!check;
-    this.noexcept = !!noexcept;
-    this.warn = !!warn;
-    this.matchOpts = { warn: this.warn };
-    [this.document, this.root, this.shadow] = resolveContent(node);
-    this.node = node;
-    this.pseudoElements = [];
-    this.invalidate = false;
-    this.clearResults();
-    this.#documentURL = null;
-    this.#verifyShadowHost = false;
-    this.#walkers = null;
-    return this;
-  }
-
-  /**
    * Clear cached results.
    * @param {boolean} all - Clear all results.
    * @returns {void}
    */
-  clearResults(all = false) {
+  clearResults = (all = false) => {
     this.#anbCache = null;
     this.#focusWithinCache = null;
     this.#invalidateResults = null;
@@ -217,7 +216,7 @@ export class Evaluator {
       this.#filterLeavesCache = null;
       this.#results = new WeakMap();
     }
-  }
+  };
 
   /**
    * Matches a selector.
@@ -253,9 +252,11 @@ export class Evaluator {
     }
     const results = this.invalidate ? this.#invalidateResults : this.#results;
     let result = results.get(leaves);
-    if (result && result.has(node)) {
-      const { matched } = result.get(node);
-      return matched;
+    if (result) {
+      const nodeResult = result.get(node);
+      if (nodeResult) {
+        return nodeResult.matched;
+      }
     }
     let cacheable = true;
     if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
@@ -307,10 +308,11 @@ export class Evaluator {
     if (!this.#filterLeavesCache) {
       this.#filterLeavesCache = new WeakMap();
     }
-    if (this.#filterLeavesCache.has(leaves)) {
-      return this.#filterLeavesCache.get(leaves);
+    let filterLeaves = this.#filterLeavesCache.get(leaves);
+    if (filterLeaves) {
+      return filterLeaves;
     }
-    const filterLeaves = leaves.slice(1);
+    filterLeaves = leaves.slice(1);
     this.#filterLeavesCache.set(leaves, filterLeaves);
     return filterLeaves;
   };
@@ -518,7 +520,7 @@ export class Evaluator {
               this.#psDefaultCache = new WeakMap();
             }
             let defaultSubmit = this.#psDefaultCache.get(form);
-            if (!defaultSubmit) {
+            if (defaultSubmit === undefined) {
               const walker = this.createTreeWalker(form, { force: true });
               let refNode = traverseNode(form, walker);
               refNode = walker.firstChild();
@@ -587,7 +589,7 @@ export class Evaluator {
             this.#psIndeterminateCache = new WeakMap();
           }
           let parentCache = this.#psIndeterminateCache.get(parent);
-          if (!parentCache) {
+          if (parentCache === undefined) {
             parentCache = new Map();
             this.#psIndeterminateCache.set(parent, parentCache);
           }
@@ -644,7 +646,7 @@ export class Evaluator {
             this.#psValidCache = new WeakMap();
           }
           let valid = this.#psValidCache.get(node);
-          if (valid === undefined && !this.#psValidCache.has(node)) {
+          if (valid === undefined) {
             const walker = this.createTreeWalker(node, { force: true });
             let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
@@ -1047,10 +1049,11 @@ export class Evaluator {
     if (!this.#walkers) {
       this.#walkers = new WeakMap();
     }
-    if (this.#walkers.has(node)) {
-      return this.#walkers.get(node);
+    let walker = this.#walkers.get(node);
+    if (walker) {
+      return walker;
     }
-    const walker = this.document.createTreeWalker(node, whatToShow);
+    walker = this.document.createTreeWalker(node, whatToShow);
     this.#walkers.set(node, walker);
     return walker;
   };
@@ -1201,16 +1204,37 @@ export class Evaluator {
    * @returns {Array.<Array.<object>>} The selector branches.
    */
   _getSelectorBranches = selector => {
-    if (this.#astCache.has(selector)) {
-      return this.#astCache.get(selector);
+    let branches = this.#astCache.get(selector);
+    if (branches) {
+      return branches;
     }
-    const { branches } = walkAST(selector);
+    const walkedResult = walkAST(selector);
+    branches = walkedResult.branches;
     this.#astCache.set(selector, branches);
     return branches;
   };
 
   /**
-   * Evaluates An+B mathematically (O(1) without generating new arrays/sets).
+   * Checks if a node matches any of the given selector branches.
+   * @private
+   * @param {Array.<Array.<object>>} branches - The selector branches to test.
+   * @param {object} node - The element node to match against.
+   * @param {object} [opt] - Optional parameters.
+   * @returns {boolean} True if any branch matches, otherwise false.
+   */
+  _filterNthChildOfSelectorBranches = (branches, node, opt) => {
+    let filterMatch = false;
+    for (const branch of branches) {
+      if (this.matchLeaves(branch, node, opt)) {
+        filterMatch = true;
+        break;
+      }
+    }
+    return filterMatch;
+  };
+
+  /**
+   * Evaluates An+B mathematically.
    * @private
    * @param {object} ast - The AST.
    * @param {object} node - The Element node.
@@ -1219,16 +1243,32 @@ export class Evaluator {
    * @returns {boolean} True if matches, otherwise false.
    */
   _matchAnPlusB = (ast, node, nthName, opt) => {
+    const {
+      localName,
+      namespaceURI,
+      nextElementSibling,
+      parentNode,
+      previousElementSibling
+    } = node;
+    if (!parentNode && node !== this.root) {
+      return false;
+    }
     if (!this.#anbCache) {
       this.#anbCache = new WeakMap();
     }
     let anb = this.#anbCache.get(ast);
-    if (!anb) {
+    if (anb === undefined) {
       const {
         nth: { a, b, name: nthIdentName },
         selector
       } = ast;
-      anb = { a: 0, b: 0, selector: null };
+      anb = {
+        a: 0,
+        b: 0,
+        isLast: nthName.includes('last'),
+        isOfType: nthName.includes('of-type'),
+        selector: null
+      };
       if (nthIdentName) {
         if (nthIdentName === 'even') {
           anb.a = 2;
@@ -1238,78 +1278,62 @@ export class Evaluator {
           anb.b = 1;
         }
       } else {
-        anb.a = typeof a === 'string' && /-?\d+/.test(a) ? a * 1 : 0;
-        anb.b = typeof b === 'string' && /-?\d+/.test(b) ? b * 1 : 0;
+        const intA = parseInt(a);
+        if (Number.isInteger(intA)) {
+          anb.a = intA;
+        }
+        const intB = parseInt(b);
+        if (Number.isInteger(intB)) {
+          anb.b = intB;
+        }
       }
-      if (
-        selector &&
-        (nthName === 'nth-child' || nthName === 'nth-last-child')
-      ) {
+      if (selector && /^nth-(?:last-)?child$/.test(nthName)) {
         anb.selector = selector;
       }
       this.#anbCache.set(ast, anb);
     }
-    if (
-      nthName !== 'nth-child' &&
-      nthName !== 'nth-last-child' &&
-      nthName !== 'nth-of-type' &&
-      nthName !== 'nth-last-of-type'
-    ) {
-      return false;
-    }
-    const isLast = nthName.includes('last');
-    const isOfType = nthName.includes('of-type');
-    const hasFilter = !!anb.selector;
-    if (hasFilter) {
-      const selectorBranches = this._getSelectorBranches(anb.selector);
-      let filterMatch = false;
-      for (let i = 0; i < selectorBranches.length; i++) {
-        if (this.matchLeaves(selectorBranches[i], node, opt)) {
-          filterMatch = true;
-          break;
-        }
-      }
+    const { a, b, isLast, isOfType, selector: anbSelector } = anb;
+    const startNode = isLast ? nextElementSibling : previousElementSibling;
+    let pos = 1;
+    if (anbSelector) {
+      const selectorBranches = this._getSelectorBranches(anbSelector);
+      const filterMatch = this._filterNthChildOfSelectorBranches(
+        selectorBranches,
+        node,
+        opt
+      );
       if (!filterMatch) {
         return false;
       }
-    }
-    const { parentNode } = node;
-    if (!parentNode && node !== this.root) {
-      return false;
-    }
-    let pos = 1;
-    let current = isLast
-      ? node.nextElementSibling
-      : node.previousElementSibling;
-    while (current) {
-      let match = true;
-      if (isOfType) {
-        match =
-          current.localName === node.localName &&
-          current.namespaceURI === node.namespaceURI;
-      } else if (hasFilter) {
-        const selectorBranches = this._getSelectorBranches(anb.selector);
-        let filterMatch = false;
-        for (let i = 0; i < selectorBranches.length; i++) {
-          if (this.matchLeaves(selectorBranches[i], current, opt)) {
-            filterMatch = true;
-            break;
+      let current = startNode;
+      while (current) {
+        if (
+          this._filterNthChildOfSelectorBranches(selectorBranches, current, opt)
+        ) {
+          pos++;
+        }
+        current = isLast
+          ? current.nextElementSibling
+          : current.previousElementSibling;
+      }
+    } else {
+      let current = startNode;
+      while (current) {
+        if (isOfType) {
+          if (
+            current.localName === localName &&
+            current.namespaceURI === namespaceURI
+          ) {
+            pos++;
           }
-        }
-        if (filterMatch && (this.node === current || isVisible(current))) {
-          match = true;
         } else {
-          match = false;
+          pos++;
         }
+        current = isLast
+          ? current.nextElementSibling
+          : current.previousElementSibling;
       }
-      if (match) {
-        pos++;
-      }
-      current = isLast
-        ? current.nextElementSibling
-        : current.previousElementSibling;
     }
-    const { a, b } = anb;
     if (a === 0) {
       return pos === b;
     }
@@ -1576,7 +1600,7 @@ export class Evaluator {
       this.#psHasFilterCache = new WeakMap();
     }
     let rootCache = this.#psHasFilterCache.get(this.root);
-    if (!rootCache) {
+    if (rootCache === undefined) {
       rootCache = new WeakMap();
       this.#psHasFilterCache.set(this.root, rootCache);
     }
@@ -2064,17 +2088,17 @@ export class Evaluator {
    * @returns {Set.<object>} A collection of matched nodes.
    */
   _findDescendantNodes = (leaves, baseNode, opt) => {
-    const [leaf] = leaves;
+    const [{ name, type: leafType }] = leaves;
+    const leafName = unescapeSelector(name);
     const filterLeaves = this.getFilterLeaves(leaves);
-    const { type: leafType } = leaf;
+    const isSimple = filterLeaves.length === 0;
     switch (leafType) {
       case ID_SELECTOR: {
-        const canUseGetElementById =
+        if (
           !this.shadow &&
           baseNode.nodeType === ELEMENT_NODE &&
-          this.root.nodeType !== ELEMENT_NODE;
-        if (canUseGetElementById) {
-          const leafName = unescapeSelector(leaf.name);
+          this.root.nodeType !== ELEMENT_NODE
+        ) {
           const nodes = new Set();
           const foundNode = this.root.getElementById(leafName);
           if (
@@ -2082,11 +2106,7 @@ export class Evaluator {
             foundNode !== baseNode &&
             baseNode.contains(foundNode)
           ) {
-            const isCompoundSelector = filterLeaves.length > 0;
-            if (
-              !isCompoundSelector ||
-              this.matchLeaves(filterLeaves, foundNode, opt)
-            ) {
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
               nodes.add(foundNode);
             }
           }
@@ -2096,16 +2116,11 @@ export class Evaluator {
       }
       case CLASS_SELECTOR: {
         if (typeof baseNode.getElementsByClassName === 'function') {
-          const leafName = unescapeSelector(leaf.name);
           const collection = baseNode.getElementsByClassName(leafName);
           const nodes = new Set();
-          const isCompoundSelector = filterLeaves.length > 0;
           for (let i = 0, len = collection.length; i < len; i++) {
             const foundNode = collection[i];
-            if (
-              !isCompoundSelector ||
-              this.matchLeaves(filterLeaves, foundNode, opt)
-            ) {
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
               nodes.add(foundNode);
             }
           }
@@ -2114,20 +2129,15 @@ export class Evaluator {
         break;
       }
       case TYPE_SELECTOR: {
-        const leafName = unescapeSelector(leaf.name);
         if (
           typeof baseNode.getElementsByTagName === 'function' &&
           !leafName.includes('|')
         ) {
           const collection = baseNode.getElementsByTagName(leafName);
           const nodes = new Set();
-          const isCompoundSelector = filterLeaves.length > 0;
           for (let i = 0, len = collection.length; i < len; i++) {
             const foundNode = collection[i];
-            if (
-              !isCompoundSelector ||
-              this.matchLeaves(filterLeaves, foundNode, opt)
-            ) {
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
               nodes.add(foundNode);
             }
           }
@@ -2136,7 +2146,6 @@ export class Evaluator {
         break;
       }
       case PS_ELEMENT_SELECTOR: {
-        const leafName = unescapeSelector(leaf.name);
         matchPseudoElementSelector(leafName, leafType, opt);
         return new Set();
       }

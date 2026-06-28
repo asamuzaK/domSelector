@@ -55,10 +55,12 @@ const KEYS_PS_CLASS_STATE = new Set([
   'valid'
 ]);
 const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
+const U_FFFD = '\uFFFD';
+
+/* regexp */
 const REG_EMPTY_PS_FUNC =
   /(?<=:(?:dir|has|host(?:-context)?|is|lang|not|nth-(?:last-)?(?:child|of-type)|where))\(\s+\)/g;
 const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
-const U_FFFD = '\uFFFD';
 
 /**
  * Unescapes a CSS selector string.
