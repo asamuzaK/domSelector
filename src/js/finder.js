@@ -17,14 +17,11 @@ import { generateException, sortNodes, traverseNode } from './utility.js';
 
 /* constants */
 import {
-  ATTR_SELECTOR,
   CLASS_SELECTOR,
   COMBINATOR,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
-  FORM_PARTS,
   ID_SELECTOR,
-  PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
   SYNTAX_ERR,
   TARGET_ALL,
@@ -33,30 +30,22 @@ import {
   TARGET_SELF,
   TYPE_SELECTOR
 } from './constant.js';
-
 const DIR_NEXT = 'next';
 const DIR_PREV = 'prev';
-const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_PS_UNCACHE = new Set([
-  'any-link',
-  'defined',
-  'dir',
-  'link',
-  'scope'
-]);
 
 /**
  * Finder
- * NOTE: _ast[i] corresponds to _nodes[i]
+ * NOTE: #ast[i] corresponds to #nodes[i]
  */
 export class Finder extends Evaluator {
   /* private fields */
-  _invalidate;
-  _invalidateResults;
-  _nodeWalker;
-  _rootWalker;
-  _scoped;
-  _selector;
+  #ast;
+  #nodeWalker;
+  #nodes;
+  #rootWalker;
+  #scoped;
+  #selector;
+  #selectorAST;
 
   /**
    * Sets up the finder.
@@ -70,24 +59,15 @@ export class Finder extends Evaluator {
    */
   setup(selector, node, opt = {}) {
     super.setup(selector, node, opt);
-    this._check = !!opt.check;
-    this._scoped =
-      this._node !== this._root && this._node.nodeType === ELEMENT_NODE;
-    this._selector = selector;
-    this._nodeWalker = null;
-    this._rootWalker = null;
-    this._invalidate = false;
+    this.#ast = null;
+    this.#nodes = null;
+    this.#scoped =
+      this.node !== this.root && this.node.nodeType === ELEMENT_NODE;
+    this.#selector = selector;
+    this.#selectorAST = null;
+    this.#nodeWalker = null;
+    this.#rootWalker = null;
     return this;
-  }
-
-  /**
-   * Clear cached results.
-   * @param {boolean} all - Clear all results.
-   * @returns {void}
-   */
-  clearResults(all = false) {
-    super.clearResults(all);
-    this._invalidateResults = null;
   }
 
   /**
@@ -111,7 +91,7 @@ export class Finder extends Evaluator {
           const isLast = j === itemsLen - 1;
           if (isInvalidCombinator(item.type, prevType, isLast)) {
             const msg = `Invalid selector ${selector}`;
-            this.onError(generateException(msg, SYNTAX_ERR, this._window));
+            this.onError(generateException(msg, SYNTAX_ERR, this.window));
             return { ast: [], descendant: false, invalidate: false };
           }
           if (item.type === COMBINATOR) {
@@ -152,17 +132,17 @@ export class Finder extends Evaluator {
    */
   _correspond = selector => {
     const nodes = [];
-    this._descendant = false;
-    this._invalidate = false;
+    let descendant = false;
+    this.invalidate = false;
     let ast;
-    if (this._documentCache.has(this._document)) {
-      const cachedItem = this._documentCache.get(this._document);
+    if (this.documentCache.has(this.document)) {
+      const cachedItem = this.documentCache.get(this.document);
       if (cachedItem && cachedItem.has(`${selector}`)) {
         const item = cachedItem.get(`${selector}`);
         ast = item.ast;
-        this._descendant = item.descendant;
-        this._invalidate = item.invalidate;
-        this._selectorAST = item.selectorAST;
+        descendant = item.descendant;
+        this.invalidate = item.invalidate;
+        this.#selectorAST = item.selectorAST;
       }
     }
     if (ast) {
@@ -174,11 +154,11 @@ export class Finder extends Evaluator {
         nodes[i] = [];
       }
     } else {
-      this._selectorAST = parseSelector(selector);
+      this.#selectorAST = parseSelector(selector);
       const { branches, info } = walkAST(
-        this._selectorAST,
+        this.#selectorAST,
         true,
-        createHasValidator(this._window)
+        createHasValidator(this.window)
       );
       const {
         hasHasPseudoFunc,
@@ -187,91 +167,32 @@ export class Finder extends Evaluator {
         hasStatePseudoClass,
         hasUnsupportedPseudoClass
       } = info;
-      this._invalidate =
+      this.invalidate =
         hasHasPseudoFunc ||
         hasStatePseudoClass ||
         hasUnsupportedPseudoClass ||
         !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
       const processed = this._processSelectorBranches(branches, selector);
       ast = processed.ast;
-      this._descendant = processed.descendant;
+      descendant = processed.descendant;
       let cachedItem;
-      if (this._documentCache.has(this._document)) {
-        cachedItem = this._documentCache.get(this._document);
+      if (this.documentCache.has(this.document)) {
+        cachedItem = this.documentCache.get(this.document);
       } else {
         cachedItem = new Map();
       }
       cachedItem.set(`${selector}`, {
         ast,
-        descendant: this._descendant,
-        invalidate: this._invalidate,
-        selectorAST: this._selectorAST
+        descendant,
+        invalidate: this.invalidate,
+        selectorAST: this.#selectorAST
       });
-      this._documentCache.set(this._document, cachedItem);
+      this.documentCache.set(this.document, cachedItem);
       for (let i = 0; i < ast.length; i++) {
         nodes[i] = [];
       }
     }
     return [ast, nodes];
-  };
-
-  /**
-   * Matches leaves against a node with cache check.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves to match.
-   * @param {object} node - The DOM node.
-   * @param {object} opt - The match options.
-   * @returns {boolean} True if matched, otherwise false.
-   */
-  _matchLeaves = (leaves, node, opt) => {
-    if (!this._invalidateResults) {
-      this._invalidateResults = new WeakMap();
-    }
-    const results = this._invalidate ? this._invalidateResults : this._results;
-    let result = results.get(leaves);
-    if (result && result.has(node)) {
-      const { matched } = result.get(node);
-      return matched;
-    }
-    let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-      cacheable = false;
-    }
-    let bool;
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      switch (leaf.type) {
-        case ATTR_SELECTOR:
-        case ID_SELECTOR: {
-          cacheable = false;
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
-            cacheable = false;
-          }
-          break;
-        }
-        default: {
-          // No action needed for other types.
-        }
-      }
-      bool = this.matchSelector(leaf, node, opt);
-      if (!bool) {
-        break;
-      }
-    }
-    if (cacheable) {
-      if (!result) {
-        result = new WeakMap();
-      }
-      result.set(node, {
-        matched: bool
-      });
-      results.set(leaves, result);
-    }
-    return bool;
   };
 
   /**
@@ -292,12 +213,9 @@ export class Finder extends Evaluator {
     // Adjust starting node.
     if (currentNode.nodeType !== ELEMENT_NODE) {
       currentNode = walker.nextNode();
-    } else if (currentNode === startNode && currentNode !== this._root) {
+    } else if (currentNode === startNode && currentNode !== this.root) {
       currentNode = walker.nextNode();
     }
-    const matchOpt = {
-      warn: this._warn
-    };
     while (currentNode) {
       if (boundaryNode) {
         if (currentNode === boundaryNode) {
@@ -310,8 +228,8 @@ export class Finder extends Evaluator {
         }
       }
       if (
-        this._matchLeaves(leaves, currentNode, matchOpt) &&
-        currentNode !== this._node
+        this.matchLeaves(leaves, currentNode, this.matchOpts) &&
+        currentNode !== this.node
       ) {
         collectedNodes.push(currentNode);
         if (targetType !== TARGET_ALL) {
@@ -333,13 +251,13 @@ export class Finder extends Evaluator {
    */
   _findPrecede = (leaves, node, opt = {}) => {
     const { force, targetType } = opt;
-    if (!this._rootWalker) {
-      this._rootWalker = this.createTreeWalker(this._root);
+    if (!this.#rootWalker) {
+      this.#rootWalker = this.createTreeWalker(this.root);
     }
-    return this._traverseAndCollectNodes(this._rootWalker, leaves, {
+    return this._traverseAndCollectNodes(this.#rootWalker, leaves, {
       force,
       targetType,
-      boundaryNode: this._node,
+      boundaryNode: this.node,
       startNode: node
     });
   };
@@ -355,15 +273,15 @@ export class Finder extends Evaluator {
   _findNodeWalker = (leaves, node, opt = {}) => {
     const { precede, ...traversalOpts } = opt;
     if (precede) {
-      const precedeNodes = this._findPrecede(leaves, this._root, opt);
+      const precedeNodes = this._findPrecede(leaves, this.root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
     }
-    if (!this._nodeWalker) {
-      this._nodeWalker = this.createTreeWalker(this._node);
+    if (!this.#nodeWalker) {
+      this.#nodeWalker = this.createTreeWalker(this.node);
     }
-    return this._traverseAndCollectNodes(this._nodeWalker, leaves, {
+    return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
       ...traversalOpts,
       startNode: node
     });
@@ -376,12 +294,12 @@ export class Finder extends Evaluator {
    * @returns {Array} Array with nodes, match boolean, and pseudo-elements.
    */
   _matchSelf = leaves => {
-    const matched = this._matchLeaves(leaves, this._node, {
-      check: this._check,
-      warn: this._warn
+    const matched = this.matchLeaves(leaves, this.node, {
+      check: this.check,
+      warn: this.warn
     });
-    const nodes = matched ? [this._node] : [];
-    return [nodes, matched, this._pseudoElement];
+    const nodes = matched ? [this.node] : [];
+    return [nodes, matched, this.pseudoElements];
   };
 
   /**
@@ -394,15 +312,14 @@ export class Finder extends Evaluator {
   _findLineal = (leaves, opt = {}) => {
     const { complex } = opt;
     const nodes = [];
-    const matchOpts = { warn: this._warn };
-    const selfMatched = this._matchLeaves(leaves, this._node, matchOpts);
+    const selfMatched = this.matchLeaves(leaves, this.node, this.matchOpts);
     if (selfMatched) {
-      nodes.push(this._node);
+      nodes.push(this.node);
     }
     if (!selfMatched || complex) {
-      let currentNode = this._node.parentNode;
+      let currentNode = this.node.parentNode;
       while (currentNode) {
-        if (this._matchLeaves(leaves, currentNode, matchOpts)) {
+        if (this.matchLeaves(leaves, currentNode, this.matchOpts)) {
           nodes.push(currentNode);
         }
         currentNode = currentNode.parentNode;
@@ -421,16 +338,16 @@ export class Finder extends Evaluator {
    * @returns {object} Object with nodes, filtered, and pending flags.
    */
   _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
-    if (targetType === TARGET_SELF && this._check) {
+    if (targetType === TARGET_SELF && this.check) {
       const css = generateCSS(leaf);
-      this._pseudoElement.push(css);
+      this.pseudoElements.push(css);
       if (filterLeaves.length) {
         const [nodes, filtered] = this._matchSelf(filterLeaves);
         return { nodes, filtered, pending: false };
       }
-      return { nodes: [this._node], filtered: true, pending: false };
+      return { nodes: [this.node], filtered: true, pending: false };
     }
-    matchPseudoElementSelector(leaf.name, leaf.type, { warn: this._warn });
+    matchPseudoElementSelector(leaf.name, leaf.type, this.matchOpts);
     return { nodes: [], filtered: false, pending: false };
   };
 
@@ -454,14 +371,14 @@ export class Finder extends Evaluator {
       return { nodes, filtered, pending: false };
     } else if (
       targetType === TARGET_FIRST &&
-      this._root.nodeType !== ELEMENT_NODE
+      this.root.nodeType !== ELEMENT_NODE
     ) {
       const [leaf] = leaves;
-      const node = this._root.getElementById(leaf.name);
+      const node = this.root.getElementById(leaf.name);
       const nodes = [];
       if (node) {
         if (filterLeaves.length) {
-          if (this._matchLeaves(filterLeaves, node, { warn: this._warn })) {
+          if (this.matchLeaves(filterLeaves, node, this.matchOpts)) {
             nodes.push(node);
           }
         } else {
@@ -470,7 +387,7 @@ export class Finder extends Evaluator {
       }
       return { nodes, filtered: nodes.length > 0, pending: false };
     }
-    const nodes = this._findNodeWalker(leaves, this._node, {
+    const nodes = this._findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -496,13 +413,12 @@ export class Finder extends Evaluator {
     } else if (
       targetType !== TARGET_FIRST &&
       !precede &&
-      typeof this._node.getElementsByClassName === 'function'
+      typeof this.node.getElementsByClassName === 'function'
     ) {
-      const matchOpt = { warn: this._warn };
-      this._matchLeaves(leaves, this._node, matchOpt);
+      this.matchLeaves(leaves, this.node, this.matchOpts);
       const [leaf] = leaves;
       const className = unescapeSelector(leaf.name);
-      const collection = this._node.getElementsByClassName(className);
+      const collection = this.node.getElementsByClassName(className);
       const len = collection.length;
       const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
@@ -511,7 +427,7 @@ export class Finder extends Evaluator {
         const currentNode = collection[i];
         if (
           !hasFilter ||
-          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
         ) {
           nodeArray.push(currentNode);
         }
@@ -522,7 +438,7 @@ export class Finder extends Evaluator {
         pending: false
       };
     }
-    const nodes = this._findNodeWalker(leaves, this._node, {
+    const nodes = this._findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -551,13 +467,12 @@ export class Finder extends Evaluator {
     if (
       targetType !== TARGET_FIRST &&
       !precede &&
-      this._document.contentType === 'text/html' &&
-      typeof this._node.getElementsByTagName === 'function' &&
+      this.document.contentType === 'text/html' &&
+      typeof this.node.getElementsByTagName === 'function' &&
       tagName.indexOf('|') === -1
     ) {
-      const matchOpt = { warn: this._warn };
-      this._matchLeaves(leaves, this._node, matchOpt);
-      const collection = this._node.getElementsByTagName(tagName);
+      this.matchLeaves(leaves, this.node, this.matchOpts);
+      const collection = this.node.getElementsByTagName(tagName);
       const len = collection.length;
       const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
@@ -566,7 +481,7 @@ export class Finder extends Evaluator {
         const currentNode = collection[i];
         if (
           !hasFilter ||
-          this._matchLeaves(filterLeaves, currentNode, matchOpt)
+          this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
         ) {
           nodeArray.push(currentNode);
         }
@@ -577,7 +492,7 @@ export class Finder extends Evaluator {
         pending: false
       };
     }
-    const nodes = this._findNodeWalker(leaves, this._node, {
+    const nodes = this._findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -600,17 +515,17 @@ export class Finder extends Evaluator {
     if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
       let shadowRoot = null;
       if (
-        this._shadow &&
-        this._node.nodeType === DOCUMENT_FRAGMENT_NODE &&
-        this.evaluateShadowHost(leaf, this._node)
+        this.shadow &&
+        this.node.nodeType === DOCUMENT_FRAGMENT_NODE &&
+        this.evaluateShadowHost(leaf, this.node)
       ) {
-        shadowRoot = this._node;
+        shadowRoot = this.node;
       } else if (
         filterLeaves.length &&
-        this._node.nodeType === ELEMENT_NODE &&
-        this.evaluateShadowHost(leaf, this._node.shadowRoot)
+        this.node.nodeType === ELEMENT_NODE &&
+        this.evaluateShadowHost(leaf, this.node.shadowRoot)
       ) {
-        shadowRoot = this._node.shadowRoot;
+        shadowRoot = this.node.shadowRoot;
       }
       if (shadowRoot) {
         let bool = true;
@@ -648,7 +563,7 @@ export class Finder extends Evaluator {
       const [nodes, filtered] = this._findLineal(leaves, { complex });
       return { nodes, filtered, pending: false };
     } else if (targetType === TARGET_FIRST) {
-      const nodes = this._findNodeWalker(leaves, this._node, {
+      const nodes = this._findNodeWalker(leaves, this.node, {
         precede,
         targetType
       });
@@ -672,8 +587,8 @@ export class Finder extends Evaluator {
     const { complex = false, dir = DIR_PREV } = opt;
     const precede =
       dir === DIR_NEXT &&
-      this._node.nodeType === ELEMENT_NODE &&
-      this._node !== this._root;
+      this.node.nodeType === ELEMENT_NODE &&
+      this.node !== this.root;
     let result;
     switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
@@ -741,7 +656,7 @@ export class Finder extends Evaluator {
       leaves: [{ name: lastName, type: lastType }]
     } = lastTwig;
     if (
-      this._selector.includes(':scope') ||
+      this.#selector.includes(':scope') ||
       lastType === PS_ELEMENT_SELECTOR ||
       lastType === ID_SELECTOR
     ) {
@@ -754,7 +669,7 @@ export class Finder extends Evaluator {
       return { dir: DIR_NEXT, twig: firstTwig };
     } else if (branchLen === 1 || branchLen === 2) {
       return { dir: DIR_PREV, twig: lastTwig };
-    } else if (branchLen > 2 && this._scoped && targetType === TARGET_FIRST) {
+    } else if (branchLen > 2 && this.#scoped && targetType === TARGET_FIRST) {
       if (lastType === TYPE_SELECTOR) {
         return { dir: DIR_PREV, twig: lastTwig };
       }
@@ -785,28 +700,28 @@ export class Finder extends Evaluator {
     if (!pendingItems.size) {
       return;
     }
-    if (!this._rootWalker) {
-      this._rootWalker = this.createTreeWalker(this._root);
+    if (!this.#rootWalker) {
+      this.#rootWalker = this.createTreeWalker(this.root);
     }
-    const node = this._scoped ? this._node : this._root;
-    const walker = this._rootWalker;
+    const node = this.#scoped ? this.node : this.root;
+    const walker = this.#rootWalker;
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
       const isWithinScope =
-        this._node.nodeType !== ELEMENT_NODE ||
-        nextNode === this._node ||
-        this._node.contains(nextNode);
+        this.node.nodeType !== ELEMENT_NODE ||
+        nextNode === this.node ||
+        this.node.contains(nextNode);
       if (isWithinScope) {
         for (const pendingItem of pendingItems) {
           const { leaves } = pendingItem.get('twig');
-          if (this._matchLeaves(leaves, nextNode, { warn: this._warn })) {
+          if (this.matchLeaves(leaves, nextNode, this.matchOpts)) {
             const index = pendingItem.get('index');
-            this._ast[index].filtered = true;
-            this._ast[index].find = true;
-            this._nodes[index].push(nextNode);
+            this.#ast[index].filtered = true;
+            this.#ast[index].find = true;
+            this.#nodes[index].push(nextNode);
           }
         }
-      } else if (this._scoped) {
+      } else if (this.#scoped) {
         break;
       }
       nextNode = walker.nextNode();
@@ -820,8 +735,8 @@ export class Finder extends Evaluator {
    * @returns {Array} Array containing the AST and nodes arrays.
    */
   _collectNodes = targetType => {
-    [this._ast, this._nodes] = this._correspond(this._selector);
-    const ast = this._ast.values();
+    [this.#ast, this.#nodes] = this._correspond(this.#selector);
+    const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
       let i = 0;
@@ -837,8 +752,8 @@ export class Finder extends Evaluator {
           { complex, dir }
         );
         if (nodes.length) {
-          this._ast[i].find = true;
-          this._nodes[i] = nodes;
+          this.#ast[i].find = true;
+          this.#nodes[i] = nodes;
         } else if (pending) {
           pendingItems.add(
             new Map([
@@ -847,8 +762,8 @@ export class Finder extends Evaluator {
             ])
           );
         }
-        this._ast[i].dir = dir;
-        this._ast[i].filtered = filtered || !compound;
+        this.#ast[i].dir = dir;
+        this.#ast[i].filtered = filtered || !compound;
         i++;
       }
       this._processPendingItems(pendingItems);
@@ -864,15 +779,15 @@ export class Finder extends Evaluator {
           { complex, dir }
         );
         if (nodes.length) {
-          this._ast[i].find = true;
-          this._nodes[i] = nodes;
+          this.#ast[i].find = true;
+          this.#nodes[i] = nodes;
         }
-        this._ast[i].dir = dir;
-        this._ast[i].filtered = filtered || !compound;
+        this.#ast[i].dir = dir;
+        this.#ast[i].filtered = filtered || !compound;
         i++;
       }
     }
-    return [this._ast, this._nodes];
+    return [this.#ast, this.#nodes];
   };
 
   /**
@@ -927,7 +842,7 @@ export class Finder extends Evaluator {
     const comboName = combo.name;
     if (comboName === '+') {
       const refNode = node.previousElementSibling;
-      if (refNode && this._matchLeaves(leaves, refNode, opt)) {
+      if (refNode && this.matchLeaves(leaves, refNode, opt)) {
         if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
           return true;
         }
@@ -935,7 +850,7 @@ export class Finder extends Evaluator {
     } else if (comboName === '~') {
       let refNode = node.previousElementSibling;
       while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
+        if (this.matchLeaves(leaves, refNode, opt)) {
           if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }
@@ -944,7 +859,7 @@ export class Finder extends Evaluator {
       }
     } else if (comboName === '>') {
       const parentNode = node.parentNode;
-      if (parentNode && this._matchLeaves(leaves, parentNode, opt)) {
+      if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
         if (this._hasValidPathPrev(parentNode, branch, index - 1, opt)) {
           return true;
         }
@@ -952,7 +867,7 @@ export class Finder extends Evaluator {
     } else {
       let refNode = node.parentNode;
       while (refNode) {
-        if (this._matchLeaves(leaves, refNode, opt)) {
+        if (this.matchLeaves(leaves, refNode, opt)) {
           if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }
@@ -994,10 +909,11 @@ export class Finder extends Evaluator {
         dfs(node, 1, firstCombo);
       }
     } else {
-      const matchOpt = { warn: this._warn };
       for (let i = 0, len = entryNodes.length; i < len; i++) {
         const node = entryNodes[i];
-        if (this._hasValidPathPrev(node, branch, lastIndex - 1, matchOpt)) {
+        if (
+          this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
+        ) {
           matchedNodes.add(node);
         }
       }
@@ -1025,11 +941,8 @@ export class Finder extends Evaluator {
           index: 1
         });
         if (matchedNode) {
-          if (this._node.nodeType === ELEMENT_NODE) {
-            if (
-              matchedNode !== this._node &&
-              this._node.contains(matchedNode)
-            ) {
+          if (this.node.nodeType === ELEMENT_NODE) {
+            if (matchedNode !== this.node && this.node.contains(matchedNode)) {
               return matchedNode;
             }
           } else {
@@ -1039,7 +952,7 @@ export class Finder extends Evaluator {
       }
       const { leaves: entryLeaves } = branch[0];
       const [entryNode] = entryNodes;
-      if (this._node.contains(entryNode)) {
+      if (this.node.contains(entryNode)) {
         let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
           targetType
         });
@@ -1049,10 +962,10 @@ export class Finder extends Evaluator {
             index: 1
           });
           if (matchedNode) {
-            if (this._node.nodeType === ELEMENT_NODE) {
+            if (this.node.nodeType === ELEMENT_NODE) {
               if (
-                matchedNode !== this._node &&
-                this._node.contains(matchedNode)
+                matchedNode !== this.node &&
+                this.node.contains(matchedNode)
               ) {
                 return matchedNode;
               }
@@ -1067,10 +980,11 @@ export class Finder extends Evaluator {
         }
       }
     } else {
-      const matchOpt = { warn: this._warn };
       for (let i = 0, len = entryNodes.length; i < len; i++) {
         const node = entryNodes[i];
-        if (this._hasValidPathPrev(node, branch, lastIndex - 1, matchOpt)) {
+        if (
+          this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
+        ) {
           return node;
         }
       }
@@ -1082,7 +996,12 @@ export class Finder extends Evaluator {
         });
         while (refNode) {
           if (
-            this._hasValidPathPrev(refNode, branch, lastIndex - 1, matchOpt)
+            this._hasValidPathPrev(
+              refNode,
+              branch,
+              lastIndex - 1,
+              this.matchOpts
+            )
           ) {
             return refNode;
           }
@@ -1106,12 +1025,12 @@ export class Finder extends Evaluator {
     try {
       collection = this._collectNodes(targetType);
     } catch (e) {
-      if (this._check) {
+      if (this.check) {
         return {
-          ast: this._selectorAST ?? null,
+          ast: this.#selectorAST,
           match: false,
-          pseudoElement: this._pseudoElement.length
-            ? this._pseudoElement.join('')
+          pseudoElement: this.pseudoElements.length
+            ? this.pseudoElements.join('')
             : null
         };
       } else {
@@ -1132,11 +1051,11 @@ export class Finder extends Evaluator {
       if (lastIndex === 0) {
         if (
           (targetType === TARGET_ALL || targetType === TARGET_FIRST) &&
-          this._node.nodeType === ELEMENT_NODE
+          this.node.nodeType === ELEMENT_NODE
         ) {
           for (const node of entryNodes) {
-            if (node !== this._node) {
-              if (targetType === TARGET_ALL || this._node.contains(node)) {
+            if (node !== this.node) {
+              if (targetType === TARGET_ALL || this.node.contains(node)) {
                 nodes.add(node);
                 if (targetType === TARGET_FIRST) {
                   break;
@@ -1180,17 +1099,17 @@ export class Finder extends Evaluator {
         }
       }
     }
-    if (this._check) {
+    if (this.check) {
       return {
-        ast: this._selectorAST,
+        ast: this.#selectorAST,
         match: nodes.size > 0,
-        pseudoElement: this._pseudoElement.length
-          ? this._pseudoElement.join('')
+        pseudoElement: this.pseudoElements.length
+          ? this.pseudoElements.join('')
           : null
       };
     }
     if (targetType === TARGET_FIRST || targetType === TARGET_ALL) {
-      nodes.delete(this._node);
+      nodes.delete(this.node);
     }
     if ((sort || targetType === TARGET_FIRST) && nodes.size > 1) {
       return new Set(sortNodes(nodes));

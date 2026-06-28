@@ -10366,7 +10366,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('li1');
       const evaluator = new Evaluator(window);
       evaluator.setup('li#li1.li', document);
-      const res = evaluator._matchLeaves(leaves, node);
+      const res = evaluator.matchLeaves(leaves, node);
       assert.strictEqual(res, true, 'result');
     });
 
@@ -10384,7 +10384,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('li1');
       const evaluator = new Evaluator(window);
       evaluator.setup('li#li1.foobar', document);
-      const res = evaluator._matchLeaves(leaves, node);
+      const res = evaluator.matchLeaves(leaves, node);
       assert.strictEqual(res, false, 'result');
     });
 
@@ -10401,10 +10401,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         true,
@@ -10425,10 +10425,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches form');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         false,
@@ -10449,10 +10449,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches input');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         false,
@@ -10478,10 +10478,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         true,
@@ -10508,10 +10508,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         false,
@@ -10543,10 +10543,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-cache');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         false,
@@ -10567,10 +10567,10 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-invalidate-false');
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res2, true, 'returns cached true from #results');
     });
 
@@ -10587,11 +10587,11 @@ describe('Evaluator', () => {
       document.getElementById('div0').appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
-      const res1 = evaluator._matchLeaves(leaves, node, {});
+      const res1 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(res1, true, 'initially matches');
       node.classList.remove('test-invalidate-true');
       evaluator.clearResults(true);
-      const res2 = evaluator._matchLeaves(leaves, node, {});
+      const res2 = evaluator.matchLeaves(leaves, node, {});
       assert.strictEqual(
         res2,
         false,
