@@ -93,53 +93,38 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
  */
 export class Evaluator {
   /* private fields */
-  _anbCache;
-  _ast;
-  _astCache = new WeakMap();
-  _check;
-  _descendant;
-  _document;
-  _documentCache = new WeakMap();
-  _documentURL;
-  _event;
-  _eventHandlers;
-  _filterLeavesCache;
-  _focus;
-  _focusWithinCache;
-  _invalidate;
-  _invalidateResults;
-  _lastFocusVisible;
-  _node;
-  _nodes;
-  _noexcept;
-  _nthChildCache;
-  _nthChildOfCache;
-  _nthChildResultCache;
-  _nthOfTypeCache;
-  _nthOfTypeResultCache;
-  _psDefaultCache;
-  _psDirCache;
-  _psHasFilterCache;
-  _psIndeterminateCache;
-  _psLangCache;
-  _psValidCache;
-  _pseudoElement;
-  _results;
-  _root;
-  _selectorAST;
-  _shadow;
-  _verifyShadowHost;
-  _walkers;
-  _warn;
-  _window;
+  #anbCache;
+  #astCache = new WeakMap();
+  #documentURL;
+  #event;
+  #eventHandlers;
+  #filterLeavesCache;
+  #focus;
+  #focusWithinCache;
+  #invalidateResults;
+  #lastFocusVisible;
+  #psDefaultCache;
+  #psDirCache;
+  #psHasFilterCache;
+  #psIndeterminateCache;
+  #psLangCache;
+  #psValidCache;
+  #results;
+  #verifyShadowHost;
+  #walkers;
 
   /**
    * constructor
    * @param {object} window - The window object.
    */
   constructor(window) {
-    this._window = window;
-    this._eventHandlers = new Set([
+    this.window = window;
+    this.documentCache = new WeakMap();
+    this.clearResults(true);
+    this.#event = null;
+    this.#focus = null;
+    this.#lastFocusVisible = null;
+    this.#eventHandlers = new Set([
       {
         keys: ['focus', 'focusin'],
         handler: this._handleFocusEvent
@@ -154,7 +139,6 @@ export class Evaluator {
       }
     ]);
     this._registerEventListeners();
-    this.clearResults(true);
   }
 
   /**
@@ -166,23 +150,23 @@ export class Evaluator {
    * @returns {void}
    */
   onError = (e, opt = {}) => {
-    const noexcept = opt.noexcept ?? this._noexcept;
+    const noexcept = opt.noexcept ?? this.noexcept;
     if (noexcept) {
       return;
     }
     const isDOMException =
-      e instanceof DOMException || e instanceof this._window.DOMException;
+      e instanceof DOMException || e instanceof this.window.DOMException;
     if (isDOMException) {
       if (e.name === NOT_SUPPORTED_ERR) {
-        if (this._warn) {
+        if (this.warn) {
           console.warn(e.message);
         }
         return;
       }
-      throw new this._window.DOMException(e.message, e.name);
+      throw new this.window.DOMException(e.message, e.name);
     }
-    if (e.name in this._window) {
-      throw new this._window[e.name](e.message, { cause: e });
+    if (e.name in this.window) {
+      throw new this.window[e.name](e.message, { cause: e });
     }
     throw e;
   };
@@ -199,17 +183,18 @@ export class Evaluator {
    */
   setup(selector, node, opt = {}) {
     const { check, noexcept, warn } = opt;
-    this._check = !!check;
-    this._noexcept = !!noexcept;
-    this._warn = !!warn;
-    [this._document, this._root, this._shadow] = resolveContent(node);
-    this._documentURL = null;
-    this._node = node;
-    this._pseudoElement = [];
-    this._walkers = null;
-    this._verifyShadowHost = null;
-    this._invalidate = false;
+    this.check = !!check;
+    this.noexcept = !!noexcept;
+    this.warn = !!warn;
+    this.matchOpts = { warn: this.warn };
+    [this.document, this.root, this.shadow] = resolveContent(node);
+    this.node = node;
+    this.pseudoElements = [];
+    this.invalidate = false;
     this.clearResults();
+    this.#documentURL = null;
+    this.#verifyShadowHost = false;
+    this.#walkers = null;
     return this;
   }
 
@@ -219,21 +204,18 @@ export class Evaluator {
    * @returns {void}
    */
   clearResults(all = false) {
-    this._anbCache = null;
-    this._focusWithinCache = null;
-    this._invalidateResults = null;
-    this._nthChildCache = null;
-    this._nthChildOfCache = null;
-    this._nthOfTypeCache = null;
-    this._psDefaultCache = null;
-    this._psDirCache = null;
-    this._psHasFilterCache = null;
-    this._psIndeterminateCache = null;
-    this._psLangCache = null;
-    this._psValidCache = null;
+    this.#anbCache = null;
+    this.#focusWithinCache = null;
+    this.#invalidateResults = null;
+    this.#psDefaultCache = null;
+    this.#psDirCache = null;
+    this.#psHasFilterCache = null;
+    this.#psIndeterminateCache = null;
+    this.#psLangCache = null;
+    this.#psValidCache = null;
     if (all) {
-      this._filterLeavesCache = null;
-      this._results = new WeakMap();
+      this.#filterLeavesCache = null;
+      this.#results = new WeakMap();
     }
   }
 
@@ -249,7 +231,7 @@ export class Evaluator {
       return this._matchSelectorForElement(ast, node, opt);
     }
     if (
-      this._shadow &&
+      this.shadow &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE &&
       ast.type === PS_CLASS_SELECTOR
     ) {
@@ -266,10 +248,10 @@ export class Evaluator {
    * @returns {boolean} True if matched, otherwise false.
    */
   matchLeaves = (leaves, node, opt) => {
-    if (!this._invalidateResults) {
-      this._invalidateResults = new WeakMap();
+    if (!this.#invalidateResults) {
+      this.#invalidateResults = new WeakMap();
     }
-    const results = this._invalidate ? this._invalidateResults : this._results;
+    const results = this.invalidate ? this.#invalidateResults : this.#results;
     let result = results.get(leaves);
     if (result && result.has(node)) {
       const { matched } = result.get(node);
@@ -322,14 +304,14 @@ export class Evaluator {
    * @returns {Array.<object>} The filtered leaves.
    */
   getFilterLeaves = leaves => {
-    if (!this._filterLeavesCache) {
-      this._filterLeavesCache = new WeakMap();
+    if (!this.#filterLeavesCache) {
+      this.#filterLeavesCache = new WeakMap();
     }
-    if (this._filterLeavesCache.has(leaves)) {
-      return this._filterLeavesCache.get(leaves);
+    if (this.#filterLeavesCache.has(leaves)) {
+      return this.#filterLeavesCache.get(leaves);
     }
     const filterLeaves = leaves.slice(1);
-    this._filterLeavesCache.set(leaves, filterLeaves);
+    this.#filterLeavesCache.set(leaves, filterLeaves);
     return filterLeaves;
   };
 
@@ -347,19 +329,19 @@ export class Evaluator {
         return true;
       }
       const msg = `Invalid selector :${astName}`;
-      this.onError(generateException(msg, SYNTAX_ERR, this._window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.window));
       return false;
     }
     // Handle functional pseudo-class like :host(...).
     if (astName !== 'host' && astName !== 'host-context') {
       const msg = `Invalid selector :${astName}()`;
-      this.onError(generateException(msg, SYNTAX_ERR, this._window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.window));
       return false;
     }
     if (astChildren.length !== 1) {
       const css = generateCSS(ast);
       const msg = `Invalid selector ${css}`;
-      this.onError(generateException(msg, SYNTAX_ERR, this._window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.window));
       return false;
     }
     const { host } = node;
@@ -390,7 +372,7 @@ export class Evaluator {
   matchPseudoClassSelector = (ast, node, opt = {}) => {
     const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
-    const { forgive, warn = this._warn } = opt;
+    const { forgive, warn = this.warn } = opt;
     if (Array.isArray(astChildren)) {
       // :has(), :is(), :not(), :where()
       if (KEYS_LOGICAL.has(astName)) {
@@ -400,7 +382,7 @@ export class Evaluator {
     }
     if (KEYS_PS_NTH_OF_TYPE.has(astName)) {
       if (!parentNode) {
-        return node === this._root;
+        return node === this.root;
       }
       const { localName, namespaceURI } = node;
       let hasPrev = false;
@@ -449,8 +431,8 @@ export class Evaluator {
           return isCustomElement(node);
         }
         return (
-          node instanceof this._window.HTMLElement ||
-          node instanceof this._window.SVGElement
+          node instanceof this.window.HTMLElement ||
+          node instanceof this.window.SVGElement
         );
       }
       /* Element display state pseudo-classes */
@@ -532,10 +514,10 @@ export class Evaluator {
             form = form.parentNode;
           }
           if (form) {
-            if (!this._psDefaultCache) {
-              this._psDefaultCache = new WeakMap();
+            if (!this.#psDefaultCache) {
+              this.#psDefaultCache = new WeakMap();
             }
-            let defaultSubmit = this._psDefaultCache.get(form);
+            let defaultSubmit = this.#psDefaultCache.get(form);
             if (!defaultSubmit) {
               const walker = this.createTreeWalker(form, { force: true });
               let refNode = traverseNode(form, walker);
@@ -560,7 +542,7 @@ export class Evaluator {
                 }
                 refNode = walker.nextNode();
               }
-              this._psDefaultCache.set(form, defaultSubmit);
+              this.#psDefaultCache.set(form, defaultSubmit);
             }
             return defaultSubmit === node;
           }
@@ -599,15 +581,15 @@ export class Evaluator {
             parent = parent.parentNode;
           }
           if (!parent) {
-            parent = this._document.documentElement;
+            parent = this.document.documentElement;
           }
-          if (!this._psIndeterminateCache) {
-            this._psIndeterminateCache = new WeakMap();
+          if (!this.#psIndeterminateCache) {
+            this.#psIndeterminateCache = new WeakMap();
           }
-          let parentCache = this._psIndeterminateCache.get(parent);
+          let parentCache = this.#psIndeterminateCache.get(parent);
           if (!parentCache) {
             parentCache = new Map();
-            this._psIndeterminateCache.set(parent, parentCache);
+            this.#psIndeterminateCache.set(parent, parentCache);
           }
           let checked = parentCache.get(nodeName);
           if (checked === undefined) {
@@ -658,11 +640,11 @@ export class Evaluator {
           return valid;
         }
         if (localName === 'fieldset') {
-          if (!this._psValidCache) {
-            this._psValidCache = new WeakMap();
+          if (!this.#psValidCache) {
+            this.#psValidCache = new WeakMap();
           }
-          let valid = this._psValidCache.get(node);
-          if (valid === undefined && !this._psValidCache.has(node)) {
+          let valid = this.#psValidCache.get(node);
+          if (valid === undefined && !this.#psValidCache.has(node)) {
             const walker = this.createTreeWalker(node, { force: true });
             let refNode = traverseNode(node, walker);
             refNode = walker.firstChild();
@@ -687,7 +669,7 @@ export class Evaluator {
                 refNode = walker.nextNode();
               }
             }
-            this._psValidCache.set(node, valid);
+            this.#psValidCache.set(node, valid);
           }
           if (astName === 'invalid') {
             return !valid;
@@ -755,10 +737,10 @@ export class Evaluator {
           (localName === 'a' || localName === 'area') &&
           node.hasAttribute('href')
         ) {
-          if (!this._documentURL) {
-            this._documentURL = new URL(this._document.URL);
+          if (!this.#documentURL) {
+            this.#documentURL = new URL(this.document.URL);
           }
-          const { href, origin, pathname } = this._documentURL;
+          const { href, origin, pathname } = this.#documentURL;
           const attrURL = new URL(node.getAttribute('href'), href);
           return attrURL.origin === origin && attrURL.pathname === pathname;
         }
@@ -769,21 +751,21 @@ export class Evaluator {
         break;
       }
       case 'target': {
-        if (!this._documentURL) {
-          this._documentURL = new URL(this._document.URL);
+        if (!this.#documentURL) {
+          this.#documentURL = new URL(this.document.URL);
         }
-        const { hash } = this._documentURL;
-        return hash && hash === `#${node.id}` && this._document.contains(node);
+        const { hash } = this.#documentURL;
+        return hash && hash === `#${node.id}` && this.document.contains(node);
       }
       case 'scope': {
-        if (this._node.nodeType === ELEMENT_NODE) {
-          return !this._shadow && node === this._node;
+        if (this.node.nodeType === ELEMENT_NODE) {
+          return !this.shadow && node === this.node;
         }
-        return node === this._document.documentElement;
+        return node === this.document.documentElement;
       }
       /* Tree-structural pseudo-classes */
       case 'root': {
-        return node === this._document.documentElement;
+        return node === this.document.documentElement;
       }
       case 'empty': {
         if (!node.hasChildNodes()) {
@@ -809,7 +791,7 @@ export class Evaluator {
       case 'last-child':
       case 'only-child': {
         if (!parentNode) {
-          return node === this._root;
+          return node === this.root;
         }
         if (astName === 'first-child') {
           return node === parentNode.firstElementChild;
@@ -824,7 +806,7 @@ export class Evaluator {
       }
       /* User action pseudo-classes */
       case 'hover': {
-        const { target, type } = this._event ?? {};
+        const { target, type } = this.#event ?? {};
         return (
           /^(?:click|mouse(?:down|over|up))$/.test(type) &&
           target?.nodeType === ELEMENT_NODE &&
@@ -832,7 +814,7 @@ export class Evaluator {
         );
       }
       case 'active': {
-        const { buttons, target, type } = this._event ?? {};
+        const { buttons, target, type } = this.#event ?? {};
         return (
           type === 'mousedown' &&
           buttons & 1 &&
@@ -841,7 +823,7 @@ export class Evaluator {
         );
       }
       case 'focus': {
-        const activeElement = this._document.activeElement;
+        const activeElement = this.document.activeElement;
         if (activeElement.shadowRoot) {
           const activeShadowElement = activeElement.shadowRoot.activeElement;
           let current = activeShadowElement;
@@ -861,16 +843,16 @@ export class Evaluator {
         return node === activeElement && isFocusableArea(node);
       }
       case 'focus-visible': {
-        if (node === this._document.activeElement && isFocusableArea(node)) {
+        if (node === this.document.activeElement && isFocusableArea(node)) {
           let bool;
           if (isFocusVisible(node)) {
             bool = true;
-          } else if (this._focus) {
-            const { relatedTarget, target: focusTarget } = this._focus;
+          } else if (this.#focus) {
+            const { relatedTarget, target: focusTarget } = this.#focus;
             if (focusTarget === node) {
               if (isFocusVisible(relatedTarget)) {
                 bool = true;
-              } else if (this._event) {
+              } else if (this.#event) {
                 const {
                   altKey: eventAltKey,
                   ctrlKey: eventCtrlKey,
@@ -878,12 +860,12 @@ export class Evaluator {
                   metaKey: eventMetaKey,
                   target: eventTarget,
                   type: eventType
-                } = this._event;
-                // this._event is irrelevant if eventTarget === relatedTarget
+                } = this.#event;
+                // this.#event is irrelevant if eventTarget === relatedTarget
                 if (eventTarget === relatedTarget) {
-                  if (!this._lastFocusVisible) {
+                  if (!this.#lastFocusVisible) {
                     bool = true;
-                  } else if (focusTarget === this._lastFocusVisible) {
+                  } else if (focusTarget === this.#lastFocusVisible) {
                     bool = true;
                   }
                 } else if (eventKey === 'Tab') {
@@ -892,10 +874,10 @@ export class Evaluator {
                     (eventType === 'keyup' && eventTarget === node)
                   ) {
                     if (eventTarget === focusTarget) {
-                      if (!this._lastFocusVisible) {
+                      if (!this.#lastFocusVisible) {
                         bool = true;
                       } else if (
-                        eventTarget === this._lastFocusVisible &&
+                        eventTarget === this.#lastFocusVisible &&
                         relatedTarget === null
                       ) {
                         bool = true;
@@ -917,29 +899,29 @@ export class Evaluator {
                 }
               } else if (
                 relatedTarget === null ||
-                relatedTarget === this._lastFocusVisible
+                relatedTarget === this.#lastFocusVisible
               ) {
                 bool = true;
               }
             }
           }
           if (bool) {
-            this._lastFocusVisible = node;
+            this.#lastFocusVisible = node;
             return bool;
           }
-          if (this._lastFocusVisible === node) {
-            this._lastFocusVisible = null;
+          if (this.#lastFocusVisible === node) {
+            this.#lastFocusVisible = null;
           }
         }
         break;
       }
       case 'focus-within': {
-        if (!this._focusWithinCache) {
-          this._focusWithinCache = new Set();
-          let currentFocus = this._document.activeElement;
+        if (!this.#focusWithinCache) {
+          this.#focusWithinCache = new Set();
+          let currentFocus = this.document.activeElement;
           if (currentFocus && isFocusableArea(currentFocus)) {
             while (currentFocus) {
-              this._focusWithinCache.add(currentFocus);
+              this.#focusWithinCache.add(currentFocus);
               if (currentFocus.parentNode) {
                 currentFocus = currentFocus.parentNode;
               } else if (
@@ -955,7 +937,7 @@ export class Evaluator {
             let shadowFocus = currentFocus.shadowRoot.activeElement;
             if (shadowFocus) {
               while (shadowFocus) {
-                this._focusWithinCache.add(shadowFocus);
+                this.#focusWithinCache.add(shadowFocus);
                 if (shadowFocus.parentNode) {
                   shadowFocus = shadowFocus.parentNode;
                 } else if (
@@ -970,7 +952,7 @@ export class Evaluator {
             }
           }
         }
-        return this._focusWithinCache.has(node);
+        return this.#focusWithinCache.has(node);
       }
       // Ignore :host.
       case 'host': {
@@ -986,7 +968,7 @@ export class Evaluator {
             generateException(
               `Unsupported pseudo-element ::${astName}`,
               NOT_SUPPORTED_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1018,7 +1000,7 @@ export class Evaluator {
             generateException(
               `Unsupported pseudo-class :${astName}`,
               NOT_SUPPORTED_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1031,7 +1013,7 @@ export class Evaluator {
               generateException(
                 `Unsupported pseudo-class :${astName}`,
                 NOT_SUPPORTED_ERR,
-                this._window
+                this.window
               )
             );
           }
@@ -1040,7 +1022,7 @@ export class Evaluator {
             generateException(
               `Unknown pseudo-class :${astName}`,
               SYNTAX_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1060,16 +1042,16 @@ export class Evaluator {
   createTreeWalker = (node, opt = {}) => {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     if (force) {
-      return this._document.createTreeWalker(node, whatToShow);
+      return this.document.createTreeWalker(node, whatToShow);
     }
-    if (!this._walkers) {
-      this._walkers = new WeakMap();
+    if (!this.#walkers) {
+      this.#walkers = new WeakMap();
     }
-    if (this._walkers.has(node)) {
-      return this._walkers.get(node);
+    if (this.#walkers.has(node)) {
+      return this.#walkers.get(node);
     }
-    const walker = this._document.createTreeWalker(node, whatToShow);
-    this._walkers.set(node, walker);
+    const walker = this.document.createTreeWalker(node, whatToShow);
+    this.#walkers.set(node, walker);
     return walker;
   };
 
@@ -1163,7 +1145,7 @@ export class Evaluator {
    * @returns {void}
    */
   _handleFocusEvent = evt => {
-    this._focus = evt;
+    this.#focus = evt;
   };
 
   /**
@@ -1175,7 +1157,7 @@ export class Evaluator {
   _handleKeyboardEvent = evt => {
     const { key } = evt;
     if (!KEYS_MODIFIER.has(key)) {
-      this._event = evt;
+      this.#event = evt;
     }
   };
 
@@ -1186,7 +1168,7 @@ export class Evaluator {
    * @returns {void}
    */
   _handleMouseEvent = evt => {
-    this._event = evt;
+    this.#event = evt;
   };
 
   /**
@@ -1196,13 +1178,13 @@ export class Evaluator {
    */
   _registerEventListeners = () => {
     const func = [];
-    for (const eventHandler of this._eventHandlers) {
+    for (const eventHandler of this.#eventHandlers) {
       const { keys, handler } = eventHandler;
       const l = keys.length;
       for (let i = 0; i < l; i++) {
         const key = keys[i];
         func.push(
-          this._window.addEventListener(key, handler, {
+          this.window.addEventListener(key, handler, {
             capture: true,
             passive: true
           })
@@ -1219,11 +1201,11 @@ export class Evaluator {
    * @returns {Array.<Array.<object>>} The selector branches.
    */
   _getSelectorBranches = selector => {
-    if (this._astCache.has(selector)) {
-      return this._astCache.get(selector);
+    if (this.#astCache.has(selector)) {
+      return this.#astCache.get(selector);
     }
     const { branches } = walkAST(selector);
-    this._astCache.set(selector, branches);
+    this.#astCache.set(selector, branches);
     return branches;
   };
 
@@ -1237,10 +1219,10 @@ export class Evaluator {
    * @returns {boolean} True if matches, otherwise false.
    */
   _matchAnPlusB = (ast, node, nthName, opt) => {
-    if (!this._anbCache) {
-      this._anbCache = new WeakMap();
+    if (!this.#anbCache) {
+      this.#anbCache = new WeakMap();
     }
-    let anb = this._anbCache.get(ast);
+    let anb = this.#anbCache.get(ast);
     if (!anb) {
       const {
         nth: { a, b, name: nthIdentName },
@@ -1265,7 +1247,7 @@ export class Evaluator {
       ) {
         anb.selector = selector;
       }
-      this._anbCache.set(ast, anb);
+      this.#anbCache.set(ast, anb);
     }
     if (
       nthName !== 'nth-child' &&
@@ -1292,7 +1274,7 @@ export class Evaluator {
       }
     }
     const { parentNode } = node;
-    if (!parentNode && node !== this._root) {
+    if (!parentNode && node !== this.root) {
       return false;
     }
     let pos = 1;
@@ -1314,7 +1296,7 @@ export class Evaluator {
             break;
           }
         }
-        if (filterMatch && (this._node === current || isVisible(current))) {
+        if (filterMatch && (this.node === current || isVisible(current))) {
           match = true;
         } else {
           match = false;
@@ -1399,12 +1381,12 @@ export class Evaluator {
         // Fast path 1: ID
         if (
           leaf.type === ID_SELECTOR &&
-          !this._shadow &&
+          !this.shadow &&
           node.nodeType === ELEMENT_NODE &&
-          this._root.nodeType !== ELEMENT_NODE
+          this.root.nodeType !== ELEMENT_NODE
         ) {
           const leafName = unescapeSelector(leaf.name);
-          const foundNode = this._root.getElementById(leafName);
+          const foundNode = this.root.getElementById(leafName);
           if (foundNode && foundNode !== node && node.contains(foundNode)) {
             // Only check filter leaves if it's a compound selector
             if (
@@ -1532,26 +1514,26 @@ export class Evaluator {
     if (!seed) {
       return null;
     }
-    if (this._shadow || this._node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+    if (this.shadow || this.node.nodeType === DOCUMENT_FRAGMENT_NODE) {
       return null;
     }
     let seedElements = null;
     let isSingleNode = false;
     if (seed.type === 'id') {
-      if (typeof this._root.getElementById === 'function') {
-        const node = this._root.getElementById(seed.value);
+      if (typeof this.root.getElementById === 'function') {
+        const node = this.root.getElementById(seed.value);
         if (node) {
           seedElements = node;
           isSingleNode = true;
         }
       }
     } else if (seed.type === 'class') {
-      if (typeof this._root.getElementsByClassName === 'function') {
-        seedElements = this._root.getElementsByClassName(seed.value);
+      if (typeof this.root.getElementsByClassName === 'function') {
+        seedElements = this.root.getElementsByClassName(seed.value);
       }
     } else if (seed.type === 'tag') {
-      if (typeof this._root.getElementsByTagName === 'function') {
-        seedElements = this._root.getElementsByTagName(seed.value);
+      if (typeof this.root.getElementsByTagName === 'function') {
+        seedElements = this.root.getElementsByTagName(seed.value);
       }
     }
     if (!seedElements) {
@@ -1567,8 +1549,8 @@ export class Evaluator {
     };
     const list = filterResult.set;
     const visitedAncestors = new Set();
-    if (this._node) {
-      list.add(this._node);
+    if (this.node) {
+      list.add(this.node);
     }
     for (let i = 0; i < len; i++) {
       const current = isSingleNode ? seedElements : seedElements[i];
@@ -1590,13 +1572,13 @@ export class Evaluator {
   _evaluateHasPseudo = (astData, node, opt = {}) => {
     const { branches } = astData;
     let bool = false;
-    if (!this._psHasFilterCache) {
-      this._psHasFilterCache = new WeakMap();
+    if (!this.#psHasFilterCache) {
+      this.#psHasFilterCache = new WeakMap();
     }
-    let rootCache = this._psHasFilterCache.get(this._root);
+    let rootCache = this.#psHasFilterCache.get(this.root);
     if (!rootCache) {
       rootCache = new WeakMap();
-      this._psHasFilterCache.set(this._root, rootCache);
+      this.#psHasFilterCache.set(this.root, rootCache);
     }
     for (const leaves of branches) {
       if (!rootCache.has(leaves)) {
@@ -1621,10 +1603,10 @@ export class Evaluator {
       return null;
     }
     if (
-      (opt.isShadowRoot || this._shadow) &&
+      (opt.isShadowRoot || this.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE
     ) {
-      return this._verifyShadowHost ? node : null;
+      return this.#verifyShadowHost ? node : null;
     }
     return node;
   };
@@ -1645,7 +1627,7 @@ export class Evaluator {
     }
     // Handle :is(), :not(), :where().
     const isShadowRoot =
-      (opt.isShadowRoot || this._shadow) &&
+      (opt.isShadowRoot || this.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
     // Check for invalid shadow root.
     if (isShadowRoot) {
@@ -1726,17 +1708,17 @@ export class Evaluator {
     if (!astChildren.length && astName !== 'is' && astName !== 'where') {
       const css = generateCSS(ast);
       const msg = `Invalid selector ${css}`;
-      this.onError(generateException(msg, SYNTAX_ERR, this._window));
+      this.onError(generateException(msg, SYNTAX_ERR, this.window));
       return false;
     }
-    const cachedAstData = this._astCache.get(ast);
+    const cachedAstData = this.#astCache.get(ast);
     if (cachedAstData) {
       return this._matchLogicalPseudoFunc(cachedAstData, node, opt);
     }
     const { branches } = walkAST(ast);
     if (astName === 'has') {
       const astData = { astName, branches };
-      this._astCache.set(ast, astData);
+      this.#astCache.set(ast, astData);
       return this._matchLogicalPseudoFunc(astData, node, opt);
     }
     const twigBranches = [];
@@ -1772,7 +1754,7 @@ export class Evaluator {
       branches,
       twigBranches
     };
-    this._astCache.set(ast, astData);
+    this.#astCache.set(ast, astData);
     return this._matchLogicalPseudoFunc(astData, node, opt);
   };
 
@@ -1789,13 +1771,13 @@ export class Evaluator {
    */
   _evaluatePseudoClassFunc = (ast, node, opt = {}) => {
     const { children: astChildren, name: astName } = ast;
-    const { forgive, warn = this._warn } = opt;
+    const { forgive, warn = this.warn } = opt;
     // :nth-child(), :nth-last-child(), nth-of-type(), :nth-last-of-type()
     if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
       if (astChildren.length !== 1) {
         const css = generateCSS(ast);
         this.onError(
-          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this._window)
+          generateException(`Invalid selector ${css}`, SYNTAX_ERR, this.window)
         );
         return false;
       }
@@ -1811,16 +1793,16 @@ export class Evaluator {
             generateException(
               `Invalid selector ${css}`,
               SYNTAX_ERR,
-              this._window
+              this.window
             )
           );
           return false;
         }
         const [astChild] = astChildren;
-        if (!this._psDirCache) {
-          this._psDirCache = new WeakMap();
+        if (!this.#psDirCache) {
+          this.#psDirCache = new WeakMap();
         }
-        const res = matchDirectionPseudoClass(astChild, node, this._psDirCache);
+        const res = matchDirectionPseudoClass(astChild, node, this.#psDirCache);
         if (res) {
           return true;
         }
@@ -1834,17 +1816,17 @@ export class Evaluator {
             generateException(
               `Invalid selector ${css}`,
               SYNTAX_ERR,
-              this._window
+              this.window
             )
           );
           return false;
         }
-        if (!this._psLangCache) {
-          this._psLangCache = new WeakMap();
+        if (!this.#psLangCache) {
+          this.#psLangCache = new WeakMap();
         }
         let bool;
         for (const astChild of astChildren) {
-          bool = matchLanguagePseudoClass(astChild, node, this._psLangCache);
+          bool = matchLanguagePseudoClass(astChild, node, this.#psLangCache);
           if (bool) {
             break;
           }
@@ -1864,7 +1846,7 @@ export class Evaluator {
             }
             for (const i in node) {
               const prop = node[i];
-              if (prop instanceof this._window.ElementInternals) {
+              if (prop instanceof this.window.ElementInternals) {
                 if (prop?.states?.has(stateValue)) {
                   return true;
                 }
@@ -1884,7 +1866,7 @@ export class Evaluator {
             generateException(
               `Unsupported pseudo-class :${astName}()`,
               NOT_SUPPORTED_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1902,7 +1884,7 @@ export class Evaluator {
             generateException(
               `Unknown pseudo-class :${astName}()`,
               NOT_SUPPORTED_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1914,7 +1896,7 @@ export class Evaluator {
             generateException(
               `Unknown pseudo-class :${astName}()`,
               SYNTAX_ERR,
-              this._window
+              this.window
             )
           );
         }
@@ -1938,7 +1920,7 @@ export class Evaluator {
       if (leaf.type === COMBINATOR) {
         const css = generateCSS(ast);
         const msg = `Invalid selector ${css}`;
-        this.onError(generateException(msg, SYNTAX_ERR, this._window));
+        this.onError(generateException(msg, SYNTAX_ERR, this.window));
         return false;
       }
       if (!this.matchSelector(leaf, host)) {
@@ -1966,7 +1948,7 @@ export class Evaluator {
         if (leaf.type === COMBINATOR) {
           const css = generateCSS(ast);
           const msg = `Invalid selector ${css}`;
-          this.onError(generateException(msg, SYNTAX_ERR, this._window));
+          this.onError(generateException(msg, SYNTAX_ERR, this.window));
           return false;
         }
         bool = this.matchSelector(leaf, parent);
@@ -2012,9 +1994,9 @@ export class Evaluator {
       // PS_ELEMENT_SELECTOR is handled by default.
       default: {
         try {
-          if (this._check) {
+          if (this.check) {
             const css = generateCSS(ast);
-            this._pseudoElement.push(css);
+            this.pseudoElements.push(css);
             return true;
           } else {
             matchPseudoElementSelector(astName, astType, opt);
@@ -2044,7 +2026,7 @@ export class Evaluator {
     if (astName === 'host' || astName === 'host-context') {
       const matches = this.evaluateShadowHost(ast, node, opt);
       if (matches) {
-        this._verifyShadowHost = true;
+        this.#verifyShadowHost = true;
         return true;
       }
     }
@@ -2088,13 +2070,13 @@ export class Evaluator {
     switch (leafType) {
       case ID_SELECTOR: {
         const canUseGetElementById =
-          !this._shadow &&
+          !this.shadow &&
           baseNode.nodeType === ELEMENT_NODE &&
-          this._root.nodeType !== ELEMENT_NODE;
+          this.root.nodeType !== ELEMENT_NODE;
         if (canUseGetElementById) {
           const leafName = unescapeSelector(leaf.name);
           const nodes = new Set();
-          const foundNode = this._root.getElementById(leafName);
+          const foundNode = this.root.getElementById(leafName);
           if (
             foundNode &&
             foundNode !== baseNode &&
