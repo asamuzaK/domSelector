@@ -1119,7 +1119,11 @@ export class Evaluator {
       case ' ':
       default: {
         if (dir === DIR_NEXT) {
-          for (const refNode of this._findDescendantNodes(leaves, node, opt)) {
+          for (const refNode of this.yieldFindDescendantNodes(
+            leaves,
+            node,
+            opt
+          )) {
             yield refNode;
           }
         } else {
@@ -1139,6 +1143,99 @@ export class Evaluator {
         }
       }
     }
+  }
+
+  /**
+   * Traverses all descendant nodes and yields matches.
+   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} opt - Options.
+   * @yields {object} The matched node.
+   */
+  *yieldTraverseAllDescendants(baseNode, leaves, opt) {
+    const walker = this.createTreeWalker(baseNode);
+    traverseNode(baseNode, walker);
+    let currentNode = walker.firstChild();
+    while (currentNode) {
+      if (this.matchLeaves(leaves, currentNode, opt)) {
+        yield currentNode;
+      }
+      currentNode = walker.nextNode();
+    }
+  }
+
+  /**
+   * Finds descendant nodes and yields matches.
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {object} opt - Options.
+   * @yields {object} The matched node.
+   */
+  *yieldFindDescendantNodes(leaves, baseNode, opt) {
+    const [{ name, type: leafType }] = leaves;
+    const leafName = unescapeSelector(name);
+    const filterLeaves = this.getFilterLeaves(leaves);
+    const isSimple = filterLeaves.length === 0;
+
+    switch (leafType) {
+      case ID_SELECTOR: {
+        if (
+          !this.shadow &&
+          baseNode.nodeType === ELEMENT_NODE &&
+          this.root.nodeType !== ELEMENT_NODE
+        ) {
+          const foundNode = this.root.getElementById(leafName);
+          if (
+            foundNode &&
+            foundNode !== baseNode &&
+            baseNode.contains(foundNode)
+          ) {
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
+              yield foundNode;
+            }
+          }
+          return;
+        }
+        break;
+      }
+      case CLASS_SELECTOR: {
+        if (typeof baseNode.getElementsByClassName === 'function') {
+          const collection = baseNode.getElementsByClassName(leafName);
+          for (let i = 0, len = collection.length; i < len; i++) {
+            const foundNode = collection[i];
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
+              yield foundNode;
+            }
+          }
+          return;
+        }
+        break;
+      }
+      case TYPE_SELECTOR: {
+        if (
+          typeof baseNode.getElementsByTagName === 'function' &&
+          !leafName.includes('|')
+        ) {
+          const collection = baseNode.getElementsByTagName(leafName);
+          for (let i = 0, len = collection.length; i < len; i++) {
+            const foundNode = collection[i];
+            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
+              yield foundNode;
+            }
+          }
+          return;
+        }
+        break;
+      }
+      case PS_ELEMENT_SELECTOR: {
+        matchPseudoElementSelector(leafName, leafType, opt);
+        return;
+      }
+      default: {
+        // no-op
+      }
+    }
+    yield* this.yieldTraverseAllDescendants(baseNode, leaves, opt);
   }
 
   /**
@@ -2055,104 +2152,5 @@ export class Evaluator {
       }
     }
     return false;
-  };
-
-  /**
-   * Traverses all descendant nodes and collects matches.
-   * @private
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _traverseAllDescendants = (baseNode, leaves, opt) => {
-    const walker = this.createTreeWalker(baseNode);
-    traverseNode(baseNode, walker);
-    let currentNode = walker.firstChild();
-    const nodes = new Set();
-    while (currentNode) {
-      if (this.matchLeaves(leaves, currentNode, opt)) {
-        nodes.add(currentNode);
-      }
-      currentNode = walker.nextNode();
-    }
-    return nodes;
-  };
-
-  /**
-   * Finds descendant nodes.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} opt - Options.
-   * @returns {Set.<object>} A collection of matched nodes.
-   */
-  _findDescendantNodes = (leaves, baseNode, opt) => {
-    const [{ name, type: leafType }] = leaves;
-    const leafName = unescapeSelector(name);
-    const filterLeaves = this.getFilterLeaves(leaves);
-    const isSimple = filterLeaves.length === 0;
-    switch (leafType) {
-      case ID_SELECTOR: {
-        if (
-          !this.shadow &&
-          baseNode.nodeType === ELEMENT_NODE &&
-          this.root.nodeType !== ELEMENT_NODE
-        ) {
-          const nodes = new Set();
-          const foundNode = this.root.getElementById(leafName);
-          if (
-            foundNode &&
-            foundNode !== baseNode &&
-            baseNode.contains(foundNode)
-          ) {
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              nodes.add(foundNode);
-            }
-          }
-          return nodes;
-        }
-        break;
-      }
-      case CLASS_SELECTOR: {
-        if (typeof baseNode.getElementsByClassName === 'function') {
-          const collection = baseNode.getElementsByClassName(leafName);
-          const nodes = new Set();
-          for (let i = 0, len = collection.length; i < len; i++) {
-            const foundNode = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              nodes.add(foundNode);
-            }
-          }
-          return nodes;
-        }
-        break;
-      }
-      case TYPE_SELECTOR: {
-        if (
-          typeof baseNode.getElementsByTagName === 'function' &&
-          !leafName.includes('|')
-        ) {
-          const collection = baseNode.getElementsByTagName(leafName);
-          const nodes = new Set();
-          for (let i = 0, len = collection.length; i < len; i++) {
-            const foundNode = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              nodes.add(foundNode);
-            }
-          }
-          return nodes;
-        }
-        break;
-      }
-      case PS_ELEMENT_SELECTOR: {
-        matchPseudoElementSelector(leafName, leafType, opt);
-        return new Set();
-      }
-      default: {
-        // no-op
-      }
-    }
-    return this._traverseAllDescendants(baseNode, leaves, opt);
   };
 }
