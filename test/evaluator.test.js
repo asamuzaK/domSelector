@@ -10695,7 +10695,7 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       const evaluator = new Evaluator(window);
       evaluator.setup('div #foobar', parent);
-      const res = evaluator._findDescendantNodes(leaves, parent);
+      const res = evaluator.yieldFindDescendantNodes(leaves, parent);
       assert.deepEqual([...res], [node], 'nodes');
     });
 
@@ -10709,7 +10709,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul *', document);
-      const res = evaluator._findDescendantNodes(leaves, node);
+      const res = evaluator.yieldFindDescendantNodes(leaves, node);
       assert.deepEqual(
         [...res],
         [
@@ -10732,7 +10732,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('li3');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul #li3', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [node], 'nodes');
     });
 
@@ -10746,7 +10746,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul #foobar', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -10760,7 +10760,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('div #ul1', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -10779,7 +10779,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('li3');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul li#li3', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [node], 'nodes');
     });
 
@@ -10797,7 +10797,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul #li3.foobar', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -10811,7 +10811,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul .li', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual(
         [...res],
         [
@@ -10838,7 +10838,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul .li:first-child', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
@@ -10852,7 +10852,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul .foobar', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -10872,7 +10872,7 @@ describe('Evaluator', () => {
       baseNode.appendChild(child);
       const evaluator = new Evaluator(window);
       evaluator.setup('.fallback-class', baseNode);
-      const res = evaluator._findDescendantNodes(leaves, baseNode, {});
+      const res = evaluator.yieldFindDescendantNodes(leaves, baseNode, {});
       assert.deepEqual([...res], [child, grandChild], 'nodes');
     });
 
@@ -10899,7 +10899,7 @@ describe('Evaluator', () => {
       doc.documentElement.appendChild(root);
       const evaluator = new Evaluator(window);
       evaluator.setup('root div', root);
-      const res = evaluator._findDescendantNodes(leaves, root);
+      const res = evaluator.yieldFindDescendantNodes(leaves, root);
       assert.deepEqual([...res], [div1, div2, div3, div4], 'nodes');
     });
 
@@ -10913,7 +10913,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul *|li', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual(
         [...res],
         [
@@ -10935,7 +10935,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul li', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual(
         [...res],
         [
@@ -10962,7 +10962,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul li:first-child', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
@@ -10976,7 +10976,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('div1');
       const evaluator = new Evaluator(window);
       evaluator.setup('div ol', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -10991,7 +10991,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul ::before', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [], 'nodes');
     });
 
@@ -11013,7 +11013,7 @@ describe('Evaluator', () => {
       const span3 = document.getElementById('span3');
       const evaluator = new Evaluator(window);
       evaluator.setup('dl [hidden]', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [span1, span3], 'nodes');
     });
 
@@ -11028,7 +11028,7 @@ describe('Evaluator', () => {
       const refNode = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('ul :first-child', document);
-      const res = evaluator._findDescendantNodes(leaves, refNode);
+      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
       assert.deepEqual([...res], [refNode.firstElementChild], 'nodes');
     });
   });
