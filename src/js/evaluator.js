@@ -921,6 +921,9 @@ export class Evaluator {
         if (!this.#focusWithinCache) {
           this.#focusWithinCache = new Set();
           let currentFocus = this.document.activeElement;
+          while (currentFocus?.shadowRoot?.activeElement) {
+            currentFocus = currentFocus.shadowRoot.activeElement;
+          }
           if (currentFocus && isFocusableArea(currentFocus)) {
             while (currentFocus) {
               this.#focusWithinCache.add(currentFocus);
@@ -933,23 +936,6 @@ export class Evaluator {
                 currentFocus = currentFocus.host;
               } else {
                 break;
-              }
-            }
-          } else if (currentFocus && currentFocus.shadowRoot) {
-            let shadowFocus = currentFocus.shadowRoot.activeElement;
-            if (shadowFocus) {
-              while (shadowFocus) {
-                this.#focusWithinCache.add(shadowFocus);
-                if (shadowFocus.parentNode) {
-                  shadowFocus = shadowFocus.parentNode;
-                } else if (
-                  shadowFocus.nodeType === DOCUMENT_FRAGMENT_NODE &&
-                  shadowFocus.host
-                ) {
-                  shadowFocus = shadowFocus.host;
-                } else {
-                  break;
-                }
               }
             }
           }
