@@ -787,6 +787,16 @@ describe('selector static analysis and validation', () => {
         false,
         'invalid deeply nested logic'
       );
+      assert.strictEqual(
+        func('p:not(:is(:not(.content))):not(.foo)', TARGET_ALL),
+        false,
+        'invalid deeply nested logic'
+      );
+      assert.strictEqual(
+        func('p:not(:is(:not(.content))):not(.foo)', TARGET_SELF),
+        false,
+        'invalid deeply nested logic'
+      );
     });
 
     it('should get false for unsupported pseudo-classes in fast-path', () => {

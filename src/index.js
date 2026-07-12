@@ -6,7 +6,7 @@
  */
 
 /* import */
-import { GenerationalCache } from '@asamuzakjp/generational-cache';
+import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst } from './js/parser.js';
@@ -26,7 +26,7 @@ import {
   TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
-const CACHE_SIZE = 2048;
+const CACHE_SIZE = 4096;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
@@ -60,11 +60,11 @@ export class DOMSelector {
     this.#window = window;
     this.#document = document ?? window.document;
     this.#idlUtils = idlUtils;
-    this.#cache = new GenerationalCache(cacheSize ?? CACHE_SIZE, {
-      strictvalidate: false
+    this.#cache = new LRUCache({
+      max: cacheSize ?? CACHE_SIZE
     });
     this.#finder = new Finder(this.#window);
-    this.#nwsapi = new Nwsapi(this.#window, this.#document);
+    this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
   }
 
   /**
