@@ -2,9 +2,6 @@ export class Evaluator {
     constructor(window: object);
     window: object;
     documentCache: WeakMap<WeakKey, any>;
-    onError: (e: Error, opt?: {
-        noexcept?: boolean | undefined;
-    }) => void;
     setup(selector: string, node: object, opt?: {
         check?: boolean | undefined;
         noexcept?: boolean | undefined;
@@ -19,7 +16,10 @@ export class Evaluator {
     node: object | undefined;
     pseudoElements: any[] | undefined;
     invalidate: boolean | undefined;
-    clearResults(all?: boolean): void;
+    onError: (e: Error, opt?: {
+        noexcept?: boolean | undefined;
+    }) => void;
+    clearResults: (all?: boolean) => void;
     matchSelector: (ast: object, node: object, opt: object) => boolean;
     matchLeaves: (leaves: Array<object>, node: object, opt: object) => boolean;
     getFilterLeaves: (leaves: Array<object>) => Array<object>;
@@ -35,11 +35,14 @@ export class Evaluator {
     yieldCombinatorMatches(twig: object, node: object, opt?: {
         dir?: string | undefined;
     }): Generator<any, void, unknown>;
+    yieldTraverseAllDescendants(baseNode: object, leaves: Array<object>, opt: object): Generator<any, void, unknown>;
+    yieldFindDescendantNodes(leaves: Array<object>, baseNode: object, opt: object): Generator<any, void, unknown>;
     private _handleFocusEvent;
     private _handleKeyboardEvent;
     private _handleMouseEvent;
     private _registerEventListeners;
     private _getSelectorBranches;
+    private _filterNthChildOfSelectorBranches;
     private _matchAnPlusB;
     private _hasCombinatorMatch;
     private _matchHasPseudoFunc;
@@ -52,7 +55,5 @@ export class Evaluator {
     private _evaluateHostContextPseudo;
     private _matchSelectorForElement;
     private _matchSelectorForShadowRoot;
-    private _traverseAllDescendants;
-    private _findDescendantNodes;
     #private;
 }

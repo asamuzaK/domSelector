@@ -1,4 +1,6 @@
 export class Finder extends Evaluator {
+    find: (targetType: string) => Set<object> | object;
+    getAST: (selector: string) => object;
     private _processSelectorBranches;
     private _correspond;
     private _traverseAndCollectNodes;
@@ -19,8 +21,6 @@ export class Finder extends Evaluator {
     private _hasValidPathPrev;
     private _processComplexBranchAll;
     private _processComplexBranchFirst;
-    find: (targetType: string) => Set<object> | object;
-    getAST: (selector: string) => object;
     #private;
 }
 import { Evaluator } from './evaluator.js';
