@@ -5,7 +5,7 @@
  */
 
 /* import */
-import { GenerationalCache } from '@asamuzakjp/generational-cache';
+import { LRUCache } from 'lru-cache';
 import { isContentEditable } from './utility.js';
 
 /* constants */
@@ -465,13 +465,12 @@ export class Nwsapi {
   constructor(window, document, cacheSize = CACHE_SIZE) {
     this.#window = window;
     const cacheOpt = {
-      cacheFunction: true,
-      strictValidate: false
+      max: cacheSize
     };
-    this.#matchLambdas = new GenerationalCache(cacheSize, cacheOpt);
-    this.#selectLambdas = new GenerationalCache(cacheSize, cacheOpt);
-    this.#matchResolvers = new GenerationalCache(cacheSize, cacheOpt);
-    this.#selectResolvers = new GenerationalCache(cacheSize, cacheOpt);
+    this.#matchLambdas = new LRUCache(cacheOpt);
+    this.#selectLambdas = new LRUCache(cacheOpt);
+    this.#matchResolvers = new LRUCache(cacheOpt);
+    this.#selectResolvers = new LRUCache(cacheOpt);
     this.#nthChildState = {
       idx: 0,
       len: 0,
