@@ -3,16 +3,16 @@
  */
 
 /* import */
+import { CacheManager } from './cache-manager.js';
 import { Evaluator } from './evaluator.js';
 import { matchPseudoElementSelector } from './matcher.js';
 import {
   generateCSS,
   parseSelector,
   sortAST,
-  unescapeSelector,
-  walkAST
+  unescapeSelector
 } from './parser.js';
-import { createHasValidator, isInvalidCombinator } from './selector.js';
+import { isInvalidCombinator } from './selector.js';
 import { generateException, sortNodes, traverseNode } from './utility.js';
 
 /* constants */
@@ -40,6 +40,7 @@ import {
 export class Finder extends Evaluator {
   /* private fields */
   #ast;
+  #cacheManager;
   #nodeWalker;
   #nodes;
   #rootWalker;
@@ -60,6 +61,7 @@ export class Finder extends Evaluator {
   setup(selector, node, opt = {}) {
     super.setup(selector, node, opt);
     this.#ast = null;
+    this.#cacheManager = new CacheManager(this);
     this.#nodes = null;
     this.#scoped =
       this.node !== this.root && this.node.nodeType === ELEMENT_NODE;
@@ -242,67 +244,11 @@ export class Finder extends Evaluator {
    * @returns {Array} An array containing the AST and empty nodes array.
    */
   _correspond = selector => {
-    const nodes = [];
-    let descendant = false;
-    this.invalidate = false;
-    let ast;
-    if (this.documentCache.has(this.document)) {
-      const cachedItem = this.documentCache.get(this.document);
-      if (cachedItem && cachedItem.has(`${selector}`)) {
-        const item = cachedItem.get(`${selector}`);
-        ast = item.ast;
-        descendant = item.descendant;
-        this.invalidate = item.invalidate;
-        this.#selectorAST = item.selectorAST;
-      }
-    }
-    if (ast) {
-      const l = ast.length;
-      for (let i = 0; i < l; i++) {
-        ast[i].dir = null;
-        ast[i].filtered = false;
-        ast[i].find = false;
-        nodes[i] = [];
-      }
-    } else {
-      this.#selectorAST = parseSelector(selector);
-      const { branches, info } = walkAST(
-        this.#selectorAST,
-        true,
-        createHasValidator(this.window)
-      );
-      const {
-        hasHasPseudoFunc,
-        hasLogicalPseudoFunc,
-        hasNthChildOfSelector,
-        hasStatePseudoClass,
-        hasUnsupportedPseudoClass
-      } = info;
-      this.invalidate =
-        hasHasPseudoFunc ||
-        hasStatePseudoClass ||
-        hasUnsupportedPseudoClass ||
-        !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
-      const processed = this._processSelectorBranches(branches, selector);
-      ast = processed.ast;
-      descendant = processed.descendant;
-      let cachedItem;
-      if (this.documentCache.has(this.document)) {
-        cachedItem = this.documentCache.get(this.document);
-      } else {
-        cachedItem = new Map();
-      }
-      cachedItem.set(`${selector}`, {
-        ast,
-        descendant,
-        invalidate: this.invalidate,
-        selectorAST: this.#selectorAST
-      });
-      this.documentCache.set(this.document, cachedItem);
-      for (let i = 0; i < ast.length; i++) {
-        nodes[i] = [];
-      }
-    }
+    const [ast, nodes, selectorAST] = this.#cacheManager.getOrCreate(
+      selector,
+      this._processSelectorBranches
+    );
+    this.#selectorAST = selectorAST;
     return [ast, nodes];
   };
 
