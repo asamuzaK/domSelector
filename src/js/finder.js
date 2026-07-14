@@ -3,29 +3,21 @@
  */
 
 /* import */
-import { Mapper } from './mapper.js';
 import { Evaluator } from './evaluator.js';
+import { Mapper } from './mapper.js';
 import { matchPseudoElementSelector } from './matcher.js';
-import {
-  generateCSS,
-  parseSelector,
-  sortAST,
-  unescapeSelector
-} from './parser.js';
-import { isInvalidCombinator } from './selector.js';
-import { generateException, sortNodes, traverseNode } from './utility.js';
+import { generateCSS, unescapeSelector } from './parser.js';
+import { sortNodes, traverseNode } from './utility.js';
 
 /* constants */
 import {
   CLASS_SELECTOR,
-  COMBINATOR,
   DIR_NEXT,
   DIR_PREV,
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   ID_SELECTOR,
   PS_ELEMENT_SELECTOR,
-  SYNTAX_ERR,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -56,19 +48,19 @@ export class Finder extends Evaluator {
    * @param {boolean} [opt.check] - True if running in internal check.
    * @param {boolean} [opt.noexcept] - True to suppress exceptions.
    * @param {boolean} [opt.warn] - True to enable console warnings.
-   * @returns {object} The finder instance.
+   * @returns {object} The Finder instance.
    */
   setup(selector, node, opt = {}) {
     super.setup(selector, node, opt);
     this.#ast = null;
     this.#mapper = new Mapper(this);
+    this.#nodeWalker = null;
     this.#nodes = null;
     this.#scoped =
       this.node !== this.root && this.node.nodeType === ELEMENT_NODE;
+    this.#rootWalker = null;
     this.#selector = selector;
     this.#selectorAST = null;
-    this.#nodeWalker = null;
-    this.#rootWalker = null;
     return this;
   }
 
@@ -175,79 +167,13 @@ export class Finder extends Evaluator {
   };
 
   /**
-   * Gets AST for selector.
-   * @param {string} selector - The selector text.
-   * @returns {object} The AST for the selector.
-   */
-  getAST = selector => {
-    return parseSelector(selector);
-  };
-
-  /**
-   * Processes selector branches into the internal AST structure.
+   * Corresponds the selector and nodes.
    * @private
-   * @param {Array.<object>} branches - The selector branches to process.
-   * @param {string} selector - The CSS selector string.
-   * @returns {object} Object containing ast and descendant flags.
-   */
-  _processSelectorBranches = (branches, selector) => {
-    let descendant = false;
-    const ast = [];
-    for (const items of branches) {
-      const branch = [];
-      let prevType = null;
-      const itemsLen = items.length;
-      if (itemsLen) {
-        const leaves = new Set();
-        for (let j = 0; j < itemsLen; j++) {
-          const item = items[j];
-          const isLast = j === itemsLen - 1;
-          if (isInvalidCombinator(item.type, prevType, isLast)) {
-            const msg = `Invalid selector ${selector}`;
-            this.onError(generateException(msg, SYNTAX_ERR, this.window));
-            return { ast: [], descendant: false, invalidate: false };
-          }
-          if (item.type === COMBINATOR) {
-            if (item.name === ' ' || item.name === '>') {
-              descendant = true;
-            }
-            branch.push({ combo: item, leaves: sortAST(leaves) });
-            leaves.clear();
-          } else {
-            if (item.name && typeof item.name === 'string') {
-              const unescapedName = unescapeSelector(item.name);
-              if (unescapedName !== item.name) {
-                item.name = unescapedName;
-              }
-              if (/[|:]/.test(unescapedName)) {
-                item.namespace = true;
-              }
-            }
-            leaves.add(item);
-          }
-          prevType = item.type;
-          if (isLast) {
-            branch.push({ combo: null, leaves: sortAST(leaves) });
-            leaves.clear();
-          }
-        }
-      }
-      ast.push({ branch, dir: null, filtered: false, find: false });
-    }
-    return { ast, descendant };
-  };
-
-  /**
-   * Corresponds AST and DOM nodes for the given selector.
-   * @private
-   * @param {string} selector - The CSS selector string.
-   * @returns {Array} An array containing the AST and empty nodes array.
+   * @param {string} selector - The CSS selector.
+   * @returns {Array} Array containing mapped AST and nodes.
    */
   _correspond = selector => {
-    const [ast, nodes, selectorAST] = this.#mapper.correspond(
-      selector,
-      this._processSelectorBranches
-    );
+    const [ast, nodes, selectorAST] = this.#mapper.correspond(selector);
     this.#selectorAST = selectorAST;
     return [ast, nodes];
   };

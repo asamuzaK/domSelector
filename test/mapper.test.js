@@ -5,17 +5,18 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
-import { beforeEach, describe, it } from 'mocha';
+import { beforeEach, afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
 import { Mapper } from '../src/js/mapper.js';
+import { SelectorProcessor } from '../src/js/processor.js';
 
 describe('Mapper', () => {
   let window;
   let document;
   let mockContext;
-  let dummyProcessBranches;
+  let processorStub;
 
   beforeEach(() => {
     const dom = new JSDOM(
@@ -23,8 +24,7 @@ describe('Mapper', () => {
     );
     window = dom.window;
     document = window.document;
-
-    // Mock the Finder/Evaluator context that Mapper expects
+    // Mock Finder context
     mockContext = {
       window,
       document,
@@ -32,27 +32,26 @@ describe('Mapper', () => {
       invalidate: false,
       selectorAST: null
     };
+    // Stub processor
+    processorStub = sinon
+      .stub(SelectorProcessor.prototype, 'process')
+      .callsFake((branches, selector) => {
+        return {
+          ast: [{ id: 1, dir: null, filtered: false, find: false }],
+          descendant: false
+        };
+      });
+  });
 
-    // Dummy callback representing Finder's _processSelectorBranches
-    dummyProcessBranches = sinon.stub().callsFake((branches, selector) => {
-      return {
-        ast: [{ id: 1, dir: null, filtered: false, find: false }],
-        descendant: false
-      };
-    });
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe('correspond()', () => {
     it('should create and cache new AST on cache miss', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div';
-
-      const [ast, nodes, selectorAST] = mapper.correspond(
-        selector,
-        dummyProcessBranches
-      );
-
-      // Verify structure of the return values
+      const [ast, nodes, selectorAST] = mapper.correspond(selector);
       assert.strictEqual(Array.isArray(ast), true, 'ast should be an array');
       assert.strictEqual(
         Array.isArray(nodes),
@@ -69,15 +68,11 @@ describe('Mapper', () => {
         ast.length,
         'nodes length should match ast length'
       );
-
-      // Verify processBranches was called
       assert.strictEqual(
-        dummyProcessBranches.calledOnce,
+        processorStub.calledOnce,
         true,
-        'processBranches should be called on cache miss'
+        'SelectorProcessor.process should be called on cache miss'
       );
-
-      // Verify internal cache state
       assert.strictEqual(
         mockContext.documentCache.has(document),
         true,
@@ -94,28 +89,18 @@ describe('Mapper', () => {
     it('should return cached data on cache hit and reset flags for reuse', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.test-class';
-
-      // First call (Cache Miss)
-      const [ast1, nodes1] = mapper.correspond(selector, dummyProcessBranches);
-
-      // Simulate modifying flags during traversal
+      const [ast1, nodes1] = mapper.correspond(selector);
       ast1[0].dir = 'next';
       ast1[0].filtered = true;
       ast1[0].find = true;
       nodes1[0].push(document.getElementById('test'));
-
-      // Second call (Cache Hit)
-      dummyProcessBranches.resetHistory();
-      const [ast2, nodes2] = mapper.correspond(selector, dummyProcessBranches);
-
-      // Verify processBranches was not called again
+      processorStub.resetHistory();
+      const [ast2, nodes2] = mapper.correspond(selector);
       assert.strictEqual(
-        dummyProcessBranches.notCalled,
+        processorStub.notCalled,
         true,
-        'processBranches should not be called on cache hit'
+        'SelectorProcessor.process should not be called on cache hit'
       );
-
-      // Verify flags are reset to original state for reuse
       assert.strictEqual(ast2[0].dir, null, 'dir flag should be reset to null');
       assert.strictEqual(
         ast2[0].filtered,
@@ -133,10 +118,7 @@ describe('Mapper', () => {
     it('should set invalidate flag to true for state-dependent pseudo-classes like :has()', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div:has(p)';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
-      // Verify that the context's invalidate state becomes true
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         true,
@@ -147,9 +129,7 @@ describe('Mapper', () => {
     it('should maintain invalidate flag as false for simple selectors', () => {
       const mapper = new Mapper(mockContext);
       const selector = '#test';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         false,
@@ -160,14 +140,9 @@ describe('Mapper', () => {
     it('should create a new Map for documentCache if the document is not already present', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.new-selector';
-
-      // Ensure documentCache is entirely empty initially
       mockContext.documentCache.clear();
       assert.strictEqual(mockContext.documentCache.has(document), false);
-
-      mapper.correspond(selector, dummyProcessBranches);
-
-      // Verify that a new Map was created and stored for the document
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.documentCache.has(document),
         true,
@@ -190,23 +165,15 @@ describe('Mapper', () => {
       const mapper = new Mapper(mockContext);
       const selector1 = '.first-selector';
       const selector2 = '.second-selector';
-
-      // 1. First call to initialize the Map for the document
-      mapper.correspond(selector1, dummyProcessBranches);
+      mapper.correspond(selector1);
       const initialMap = mockContext.documentCache.get(document);
-
-      // 2. Second call with a different selector for the same document
-      mapper.correspond(selector2, dummyProcessBranches);
+      mapper.correspond(selector2);
       const reusedMap = mockContext.documentCache.get(document);
-
-      // Verify it is the exact same Map instance object reference
       assert.strictEqual(
         initialMap,
         reusedMap,
         'Should reuse the exact same Map reference'
       );
-
-      // Verify both selectors now coexist in the same Map
       assert.strictEqual(
         reusedMap.has(selector1),
         true,
@@ -221,13 +188,8 @@ describe('Mapper', () => {
 
     it('should set invalidate to true when both hasLogicalPseudoFunc and hasNthChildOfSelector are true', () => {
       const mapper = new Mapper(mockContext);
-      // e.g., :is(p):nth-child(2 of .foo)
-      // This triggers both hasLogicalPseudoFunc (:is) and
-      // hasNthChildOfSelector (:nth-child with 'of' syntax)
       const selector = ':is(p):nth-child(2 of .foo)';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         true,
@@ -237,12 +199,8 @@ describe('Mapper', () => {
 
     it('should set invalidate to false when hasLogicalPseudoFunc is true but hasNthChildOfSelector is false', () => {
       const mapper = new Mapper(mockContext);
-      // e.g., :is(p)
-      // This triggers hasLogicalPseudoFunc but NOT hasNthChildOfSelector
       const selector = ':is(p)';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         false,
@@ -252,14 +210,8 @@ describe('Mapper', () => {
 
     it('should set invalidate to false when hasLogicalPseudoFunc is false but hasNthChildOfSelector is true', () => {
       const mapper = new Mapper(mockContext);
-      // e.g., :nth-child(2 of .foo)
-      // This triggers hasNthChildOfSelector but NOT hasLogicalPseudoFunc
-      // Note: We avoid using selectors that trigger hasStatePseudoClass etc.
-      // to isolate the test.
       const selector = ':nth-child(2 of .foo)';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         false,
@@ -269,11 +221,8 @@ describe('Mapper', () => {
 
     it('should set invalidate to false when both hasLogicalPseudoFunc and hasNthChildOfSelector are false', () => {
       const mapper = new Mapper(mockContext);
-      // A simple class selector that triggers neither flag
       const selector = '.simple-class';
-
-      mapper.correspond(selector, dummyProcessBranches);
-
+      mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
         false,

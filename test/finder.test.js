@@ -238,7 +238,7 @@ describe('Finder', () => {
   describe('correspond ast and nodes', () => {
     it('should throw', () => {
       const finder = new Finder(window);
-      finder.setup('*', document);
+      finder.setup('[foo==bar]', document);
       assert.throws(
         () => finder._correspond('[foo==bar]'),
         e => {
@@ -256,7 +256,7 @@ describe('Finder', () => {
 
     it('should throw', () => {
       const finder = new Finder(window);
-      finder.setup('*', document);
+      finder.setup('li ++ li', document);
       assert.throws(
         () => finder._correspond('li ++ li'),
         e => {
@@ -3727,34 +3727,6 @@ describe('Finder', () => {
         res.has(document.getElementById('ul1')),
         true,
         'includes ul1'
-      );
-    });
-  });
-
-  describe('get AST for selector', () => {
-    it('should get AST', () => {
-      const finder = new Finder(window);
-      finder.setup('ul', document);
-      const res = finder.getAST('ol');
-      assert.deepEqual(
-        res,
-        cssTree.parse('ol', {
-          context: 'selectorList'
-        }),
-        'result'
-      );
-    });
-
-    it('should get AST', () => {
-      const finder = new Finder(window);
-      finder.setup('ul', document);
-      const res = finder.getAST('ul');
-      assert.deepEqual(
-        res,
-        cssTree.parse('ul', {
-          context: 'selectorList'
-        }),
-        'result'
       );
     });
   });

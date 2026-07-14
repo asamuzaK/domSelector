@@ -9,7 +9,7 @@
 import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
-import { extractSubjectsAst } from './js/parser.js';
+import { extractSubjectsAst, parseSelector } from './js/parser.js';
 import {
   extractSubjectsRegExp,
   filterSelector,
@@ -187,7 +187,7 @@ export class DOMSelector {
       subjects = extractSubjectsRegExp(selector, caseSensitive);
     } else {
       try {
-        const ast = this.#finder.getAST(selector);
+        const ast = parseSelector(selector);
         subjects = extractSubjectsAst(ast);
       } catch {
         // fall through
@@ -218,7 +218,7 @@ export class DOMSelector {
       isSupported = true;
     } else {
       try {
-        const ast = this.#finder.getAST(selector);
+        const ast = parseSelector(selector);
         isSupported = isSupportedAST(ast);
       } catch {
         isSupported = false;
@@ -242,7 +242,7 @@ export class DOMSelector {
     }
     if (REG_UNIVERSAL.test(selector)) {
       return {
-        ast: this.#finder.getAST(selector),
+        ast: parseSelector(selector),
         match: true,
         pseudoElement: null
       };
@@ -260,7 +260,7 @@ export class DOMSelector {
         const astCacheKey = `check_ast_${selector}`;
         ast = this.#cache.get(astCacheKey);
         if (ast === undefined) {
-          ast = this.#finder.getAST(selector);
+          ast = parseSelector(selector);
           this.#cache.set(astCacheKey, ast);
         }
       }
