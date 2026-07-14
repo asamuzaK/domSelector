@@ -3,7 +3,7 @@
  */
 
 /* import */
-import { CacheManager } from './cache-manager.js';
+import { Mapper } from './mapper.js';
 import { Evaluator } from './evaluator.js';
 import { matchPseudoElementSelector } from './matcher.js';
 import {
@@ -40,7 +40,7 @@ import {
 export class Finder extends Evaluator {
   /* private fields */
   #ast;
-  #cacheManager;
+  #mapper;
   #nodeWalker;
   #nodes;
   #rootWalker;
@@ -61,7 +61,7 @@ export class Finder extends Evaluator {
   setup(selector, node, opt = {}) {
     super.setup(selector, node, opt);
     this.#ast = null;
-    this.#cacheManager = new CacheManager(this);
+    this.#mapper = new Mapper(this);
     this.#nodes = null;
     this.#scoped =
       this.node !== this.root && this.node.nodeType === ELEMENT_NODE;
@@ -244,7 +244,7 @@ export class Finder extends Evaluator {
    * @returns {Array} An array containing the AST and empty nodes array.
    */
   _correspond = selector => {
-    const [ast, nodes, selectorAST] = this.#cacheManager.getOrCreate(
+    const [ast, nodes, selectorAST] = this.#mapper.correspond(
       selector,
       this._processSelectorBranches
     );
