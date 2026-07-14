@@ -6,7 +6,7 @@
 import { Evaluator } from './evaluator.js';
 import { Mapper } from './mapper.js';
 import { matchPseudoElementSelector } from './matcher.js';
-import { generateCSS, parseSelector, unescapeSelector } from './parser.js';
+import { generateCSS, unescapeSelector } from './parser.js';
 import { sortNodes, traverseNode } from './utility.js';
 
 /* constants */
@@ -165,13 +165,6 @@ export class Finder extends Evaluator {
     }
     return nodes;
   };
-
-  /**
-   * Gets parsed AST for the selector.
-   * @param {string} selector - The CSS selector.
-   * @returns {object} The parsed AST.
-   */
-  getAST = selector => parseSelector(selector);
 
   /**
    * Corresponds the selector and nodes.

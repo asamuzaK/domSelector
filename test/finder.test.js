@@ -3730,32 +3730,4 @@ describe('Finder', () => {
       );
     });
   });
-
-  describe('get AST for selector', () => {
-    it('should get AST', () => {
-      const finder = new Finder(window);
-      finder.setup('ul', document);
-      const res = finder.getAST('ol');
-      assert.deepEqual(
-        res,
-        cssTree.parse('ol', {
-          context: 'selectorList'
-        }),
-        'result'
-      );
-    });
-
-    it('should get AST', () => {
-      const finder = new Finder(window);
-      finder.setup('ul', document);
-      const res = finder.getAST('ul');
-      assert.deepEqual(
-        res,
-        cssTree.parse('ul', {
-          context: 'selectorList'
-        }),
-        'result'
-      );
-    });
-  });
 });
