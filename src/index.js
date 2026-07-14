@@ -105,6 +105,56 @@ export class DOMSelector {
     this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
 
   /**
+   * Executes Nwsapi matching logic with caching and error wrapping.
+   * @private
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Document|Element} node - The target node to check.
+   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_SELF).
+   * @param {function(object): (Array<Element>|Element|boolean|null)} callback - The callback function that executes the specific nwsapi method.
+   * @param {boolean} [isCheck] - True if is check method.
+   * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
+   */
+  #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
+    const document = node.ownerDocument;
+    const canExecute = node.parentNode && this.#canUseNwsapi(document);
+    if (canExecute) {
+      const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
+        filterMatches = filterSelector(selector, targetType);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
+        try {
+          return { success: true, result: callback(this.#wrapNode(node)) };
+        } catch {
+          // fall through
+        }
+      }
+    }
+    return { success: false, result: null };
+  };
+
+  /**
+   * Encapsulates Finder traversal logic and error handling.
+   * @private
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Document|DocumentFragment|Element} node - The node from which to start searching.
+   * @param {object} opt - Optional parameters.
+   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
+   * @returns {Set<Element>|Array<Element>|Element|boolean|null} The search results from Finder, or the error handling return value.
+   */
+  #findNodes = (selector, node, opt, targetType) => {
+    try {
+      return this.#finder
+        .setup(selector, this.#wrapNode(node), opt)
+        .find(targetType);
+    } catch (e) {
+      return this.#finder.onError(e, opt);
+    }
+  };
+
+  /**
    * Clears the internal caches.
    * @param {boolean} [clearAll] - Whether to clear all caches. If false,
    * only cached matching results are cleared.
@@ -191,49 +241,36 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      const ast = this.#finder.getAST(selector);
       return {
-        ast,
+        ast: this.#finder.getAST(selector),
         match: true,
         pseudoElement: null
       };
     }
-    const document = node.ownerDocument;
-    if (node.parentNode && this.#canUseNwsapi(document)) {
-      const cacheKey = `check_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_SELF);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          const match = this.#nwsapi.match(selector, this.#wrapNode(node));
-          let ast = null;
-          if (match) {
-            const astCacheKey = `check_ast_${selector}`;
-            ast = this.#cache.get(astCacheKey);
-            if (ast === undefined) {
-              ast = this.#finder.getAST(selector);
-              this.#cache.set(astCacheKey, ast);
-            }
-          }
-          return {
-            match,
-            ast,
-            pseudoElement: null
-          };
-        } catch (e) {
-          // fall through
+    const nwsapiRes = this.#tryNwsapi(
+      selector,
+      node,
+      TARGET_SELF,
+      wrapped => this.#nwsapi.match(selector, wrapped),
+      true
+    );
+    if (nwsapiRes.success) {
+      let ast = null;
+      if (nwsapiRes.result) {
+        const astCacheKey = `check_ast_${selector}`;
+        ast = this.#cache.get(astCacheKey);
+        if (ast === undefined) {
+          ast = this.#finder.getAST(selector);
+          this.#cache.set(astCacheKey, ast);
         }
       }
+      return {
+        match: nwsapiRes.result,
+        ast,
+        pseudoElement: null
+      };
     }
-    const options = {
-      ...opt,
-      check: true,
-      noexcept: true,
-      warn: false
-    };
+    const options = { ...opt, check: true, noexcept: true, warn: false };
     return this.#finder
       .setup(selector, this.#wrapNode(node), options)
       .find(TARGET_SELF);
@@ -254,31 +291,14 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return true;
     }
-    const document = node.ownerDocument;
-    if (node.parentNode && this.#canUseNwsapi(document)) {
-      const cacheKey = `matches_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_SELF);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          return this.#nwsapi.match(selector, this.#wrapNode(node));
-        } catch (e) {
-          // fall through
-        }
-      }
+    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_SELF, wrapped =>
+      this.#nwsapi.match(selector, wrapped)
+    );
+    if (nwsapiRes.success) {
+      return nwsapiRes.result;
     }
-    try {
-      const nodes = this.#finder
-        .setup(selector, this.#wrapNode(node), opt)
-        .find(TARGET_SELF);
-      return nodes.size > 0;
-    } catch (e) {
-      this.#finder.onError(e, opt);
-    }
-    return false;
+    const nodes = this.#findNodes(selector, node, opt, TARGET_SELF);
+    return !!(nodes && nodes.size > 0);
   };
 
   /**
@@ -296,36 +316,21 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return node;
     }
-    const document = node.ownerDocument;
-    if (node.parentNode && this.#canUseNwsapi(document)) {
-      const cacheKey = `closest_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_LINEAL);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          return this.#nwsapi.closest(selector, this.#wrapNode(node));
-        } catch (e) {
-          // fall through
-        }
-      }
+    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_LINEAL, wrapped =>
+      this.#nwsapi.closest(selector, wrapped)
+    );
+    if (nwsapiRes.success) {
+      return nwsapiRes.result;
     }
-    try {
-      node = this.#wrapNode(node);
-      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_LINEAL);
-      if (nodes.size) {
-        let refNode = node;
-        while (refNode) {
-          if (nodes.has(refNode)) {
-            return refNode;
-          }
-          refNode = refNode.parentNode;
+    const nodes = this.#findNodes(selector, node, opt, TARGET_LINEAL);
+    if (nodes && nodes.size) {
+      let refNode = this.#wrapNode(node);
+      while (refNode) {
+        if (nodes.has(refNode)) {
+          return refNode;
         }
+        refNode = refNode.parentNode;
       }
-    } catch (e) {
-      this.#finder.onError(e, opt);
     }
     return null;
   };
@@ -345,35 +350,9 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return node.firstElementChild;
     }
-    // Only enabled when debugging.
-    /*
-    const document =
-      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (node === this.#document && this.#canUseNwsapi(document)) {
-      const cacheKey = `querySelector_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_FIRST);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          const n = this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-          return this.#nwsapi.first(selector, n);
-        } catch (e) {
-          // fall through
-        }
-      }
-    }
-    */
-    try {
-      node = this.#wrapNode(node);
-      const nodes = this.#finder.setup(selector, node, opt).find(TARGET_FIRST);
-      if (nodes.size) {
-        return nodes.values().next().value;
-      }
-    } catch (e) {
-      this.#finder.onError(e, opt);
+    const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
+    if (nodes && nodes.size) {
+      return nodes.values().next().value;
     }
     return null;
   };
@@ -391,38 +370,14 @@ export class DOMSelector {
     if (error) {
       return this.#finder.onError(error, opt);
     }
-    const document =
-      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (document && REG_UNIVERSAL.test(selector)) {
+    if (REG_UNIVERSAL.test(selector)) {
+      const document =
+        node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
     }
-    // Only enabled when debugging.
-    /*
-    if (this.#canUseNwsapi(document)) {
-      const cacheKey = `querySelectorAll_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, TARGET_ALL);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          return this.#nwsapi.select(selector, this.#wrapNode(node));
-        } catch (e) {
-          // fall through
-        }
-      }
-    }
-    */
-    try {
-      const nodes = this.#finder
-        .setup(selector, this.#wrapNode(node), opt)
-        .find(TARGET_ALL);
-      if (nodes.size) {
-        return [...nodes];
-      }
-    } catch (e) {
-      this.#finder.onError(e, opt);
+    const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
+    if (nodes && nodes.size) {
+      return [...nodes];
     }
     return [];
   };

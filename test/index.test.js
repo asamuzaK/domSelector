@@ -1708,6 +1708,19 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [], 'result');
     });
 
+    it('should get all nodes', () => {
+      const walker = document.createTreeWalker(document, 1);
+      let nodeCount = 0;
+      let refNode = walker.nextNode();
+      while (refNode) {
+        nodeCount++;
+        refNode = walker.nextNode();
+      }
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('*', document);
+      assert.deepEqual(res.length, nodeCount, 'result');
+    });
+
     it('should get matched node(s)', () => {
       const refPoint = document.getElementById('dl1');
       const domSelector = new DOMSelector(window);
