@@ -1,10 +1,10 @@
 /**
- * cache-manager.js
+ * mapper.js
  */
 import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
 
-export class CacheManager {
+export class Mapper {
   #context;
 
   /**
@@ -21,7 +21,7 @@ export class CacheManager {
    * @param {function(Array, string): {ast: Array, descendant: boolean}} processBranches - The callback function to process selector branches.
    * @returns {Array} An array containing the AST, empty nodes array, and selector AST.
    */
-  getOrCreate(selector, processBranches) {
+  correspond(selector, processBranches) {
     const ctx = this.#context;
     const nodes = [];
     let ast = null;

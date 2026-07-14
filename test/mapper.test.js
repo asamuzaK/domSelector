@@ -1,5 +1,5 @@
 /**
- * cache-manager.test.js
+ * mapper.test.js
  */
 
 /* api */
@@ -9,9 +9,9 @@ import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
-import { CacheManager } from '../src/js/cache-manager.js';
+import { Mapper } from '../src/js/mapper.js';
 
-describe('CacheManager', () => {
+describe('Mapper', () => {
   let window;
   let document;
   let mockContext;
@@ -24,7 +24,7 @@ describe('CacheManager', () => {
     window = dom.window;
     document = window.document;
 
-    // Mock the Finder/Evaluator context that CacheManager expects
+    // Mock the Finder/Evaluator context that Mapper expects
     mockContext = {
       window,
       document,
@@ -42,12 +42,12 @@ describe('CacheManager', () => {
     });
   });
 
-  describe('getOrCreate()', () => {
+  describe('correspond()', () => {
     it('should create and cache new AST on cache miss', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector = 'div';
 
-      const [ast, nodes, selectorAST] = cacheManager.getOrCreate(
+      const [ast, nodes, selectorAST] = mapper.correspond(
         selector,
         dummyProcessBranches
       );
@@ -92,14 +92,11 @@ describe('CacheManager', () => {
     });
 
     it('should return cached data on cache hit and reset flags for reuse', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector = '.test-class';
 
       // First call (Cache Miss)
-      const [ast1, nodes1] = cacheManager.getOrCreate(
-        selector,
-        dummyProcessBranches
-      );
+      const [ast1, nodes1] = mapper.correspond(selector, dummyProcessBranches);
 
       // Simulate modifying flags during traversal
       ast1[0].dir = 'next';
@@ -109,10 +106,7 @@ describe('CacheManager', () => {
 
       // Second call (Cache Hit)
       dummyProcessBranches.resetHistory();
-      const [ast2, nodes2] = cacheManager.getOrCreate(
-        selector,
-        dummyProcessBranches
-      );
+      const [ast2, nodes2] = mapper.correspond(selector, dummyProcessBranches);
 
       // Verify processBranches was not called again
       assert.strictEqual(
@@ -137,10 +131,10 @@ describe('CacheManager', () => {
     });
 
     it('should set invalidate flag to true for state-dependent pseudo-classes like :has()', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector = 'div:has(p)';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       // Verify that the context's invalidate state becomes true
       assert.strictEqual(
@@ -151,10 +145,10 @@ describe('CacheManager', () => {
     });
 
     it('should maintain invalidate flag as false for simple selectors', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector = '#test';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       assert.strictEqual(
         mockContext.invalidate,
@@ -164,14 +158,14 @@ describe('CacheManager', () => {
     });
 
     it('should create a new Map for documentCache if the document is not already present', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector = '.new-selector';
 
       // Ensure documentCache is entirely empty initially
       mockContext.documentCache.clear();
       assert.strictEqual(mockContext.documentCache.has(document), false);
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       // Verify that a new Map was created and stored for the document
       assert.strictEqual(
@@ -193,16 +187,16 @@ describe('CacheManager', () => {
     });
 
     it('should reuse the existing Map in documentCache if the document is already present', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       const selector1 = '.first-selector';
       const selector2 = '.second-selector';
 
       // 1. First call to initialize the Map for the document
-      cacheManager.getOrCreate(selector1, dummyProcessBranches);
+      mapper.correspond(selector1, dummyProcessBranches);
       const initialMap = mockContext.documentCache.get(document);
 
       // 2. Second call with a different selector for the same document
-      cacheManager.getOrCreate(selector2, dummyProcessBranches);
+      mapper.correspond(selector2, dummyProcessBranches);
       const reusedMap = mockContext.documentCache.get(document);
 
       // Verify it is the exact same Map instance object reference
@@ -226,13 +220,13 @@ describe('CacheManager', () => {
     });
 
     it('should set invalidate to true when both hasLogicalPseudoFunc and hasNthChildOfSelector are true', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       // e.g., :is(p):nth-child(2 of .foo)
       // This triggers both hasLogicalPseudoFunc (:is) and
       // hasNthChildOfSelector (:nth-child with 'of' syntax)
       const selector = ':is(p):nth-child(2 of .foo)';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       assert.strictEqual(
         mockContext.invalidate,
@@ -242,12 +236,12 @@ describe('CacheManager', () => {
     });
 
     it('should set invalidate to false when hasLogicalPseudoFunc is true but hasNthChildOfSelector is false', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       // e.g., :is(p)
       // This triggers hasLogicalPseudoFunc but NOT hasNthChildOfSelector
       const selector = ':is(p)';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       assert.strictEqual(
         mockContext.invalidate,
@@ -257,14 +251,14 @@ describe('CacheManager', () => {
     });
 
     it('should set invalidate to false when hasLogicalPseudoFunc is false but hasNthChildOfSelector is true', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       // e.g., :nth-child(2 of .foo)
       // This triggers hasNthChildOfSelector but NOT hasLogicalPseudoFunc
       // Note: We avoid using selectors that trigger hasStatePseudoClass etc.
       // to isolate the test.
       const selector = ':nth-child(2 of .foo)';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       assert.strictEqual(
         mockContext.invalidate,
@@ -274,11 +268,11 @@ describe('CacheManager', () => {
     });
 
     it('should set invalidate to false when both hasLogicalPseudoFunc and hasNthChildOfSelector are false', () => {
-      const cacheManager = new CacheManager(mockContext);
+      const mapper = new Mapper(mockContext);
       // A simple class selector that triggers neither flag
       const selector = '.simple-class';
 
-      cacheManager.getOrCreate(selector, dummyProcessBranches);
+      mapper.correspond(selector, dummyProcessBranches);
 
       assert.strictEqual(
         mockContext.invalidate,
