@@ -238,7 +238,7 @@ describe('Finder', () => {
   describe('correspond ast and nodes', () => {
     it('should throw', () => {
       const finder = new Finder(window);
-      finder.setup('*', document);
+      finder.setup('[foo==bar]', document);
       assert.throws(
         () => finder._correspond('[foo==bar]'),
         e => {
@@ -256,7 +256,7 @@ describe('Finder', () => {
 
     it('should throw', () => {
       const finder = new Finder(window);
-      finder.setup('*', document);
+      finder.setup('li ++ li', document);
       assert.throws(
         () => finder._correspond('li ++ li'),
         e => {
