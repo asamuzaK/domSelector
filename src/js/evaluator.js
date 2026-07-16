@@ -603,11 +603,7 @@ export class Evaluator {
                 refNode.localName === 'input' &&
                 refNode.getAttribute('type') === 'radio'
               ) {
-                if (refNode.hasAttribute('name')) {
-                  if (refNode.getAttribute('name') === nodeName) {
-                    checked = !!refNode.checked;
-                  }
-                } else {
+                if (nodeName && refNode.getAttribute('name') === nodeName) {
                   checked = !!refNode.checked;
                 }
                 if (checked) {
@@ -720,6 +716,8 @@ export class Evaluator {
           } else if (node.required || node.hasAttribute('required')) {
             required = true;
           }
+        } else {
+          return false;
         }
         if (astName === 'optional') {
           return !required;

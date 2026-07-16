@@ -1519,4 +1519,49 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#280 - https://github.com/asamuzaK/domSelector/issues/280', () => {
+    it('should get array with node local name', () => {
+      const { document } = jsdom('<input>').window;
+      const res = document
+        .querySelectorAll(':optional')
+        .map(element => element.localName);
+      assert.deepEqual(res, ['input']);
+    });
+
+    it('should get array with node IDs', () => {
+      const { document } = jsdom(`
+        <input type=radio checked>
+        <input id=radio1 type=radio name=group>
+        <input id=radio2 type=radio name=group>
+      `).window;
+      const res = document
+        .querySelectorAll(':indeterminate')
+        .map(element => element.id);
+      assert.deepEqual(res, ['radio1', 'radio2']);
+    });
+
+    it('should get node ID', () => {
+      const { document } = jsdom(`
+        <div dir=rtl>
+          <div></div>
+          <div id=expected dir=ltr></div>
+        </div>
+        <div id=actual dir=ltr></div>
+      `).window;
+      const res = document.querySelector(":dir(ltr) :dir(rtl) + :dir(ltr)").id;
+      assert.strictEqual(res, 'expected');
+    });
+
+    it('should not match', () => {
+      const { document } = jsdom().window;
+      const fragment = document.createDocumentFragment();
+      const div = document.createElement("div");
+      fragment.append(div);
+      // Populate/reuse the selector cache against a different tree.
+      document.documentElement.matches(":nth-child(2)");
+      document.querySelectorAll(":nth-child(2)");
+      assert.strictEqual(div.matches(":nth-child(2)"), false);
+    });
+  });
 });
