@@ -1,7 +1,5 @@
 export class Finder extends Evaluator {
     find: (targetType: string) => Set<object> | object;
-    getAST: (selector: string) => object;
-    private _processSelectorBranches;
     private _correspond;
     private _traverseAndCollectNodes;
     private _findPrecede;
@@ -14,7 +12,6 @@ export class Finder extends Evaluator {
     private _findEntryNodesForType;
     private _findEntryNodesForOther;
     private _findEntryNodes;
-    private _determineTraversalStrategy;
     private _processPendingItems;
     private _collectNodes;
     private _matchNodeNext;

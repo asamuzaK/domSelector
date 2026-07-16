@@ -22,3 +22,4 @@ export function sortNodes(nodes?: Array<object> | Set<object>): Array<object>;
 export function findBestSeed(nodes: any[], state?: object): object;
 export function populateHasAllowlist(current: object, list: WeakSet<any>, visitedAncestors: Set<any>): void;
 export function collectAllDescendants(node: Document | DocumentFragment | Element, document: Document): Array<Element>;
+export function getTraversalStrategy(branch: Array<object>, targetType: string, hasScope: boolean, scoped: boolean): object;
