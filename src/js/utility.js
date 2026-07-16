@@ -919,6 +919,14 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   if (branchLen === 1) {
     return { dir: DIR_PREV, twig: firstTwig };
   }
+  let hasSiblingCombinator = false;
+  for (let i = 0; i < branchLen; i++) {
+    const comboName = branch[i].combo?.name;
+    if (comboName === '+' || comboName === '~') {
+      hasSiblingCombinator = true;
+      break;
+    }
+  }
   const {
     leaves: [{ name: firstName, type: firstType }]
   } = firstTwig;
@@ -927,6 +935,7 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   } = lastTwig;
   if (
     hasScope ||
+    hasSiblingCombinator ||
     lastType === PS_ELEMENT_SELECTOR ||
     lastType === ID_SELECTOR
   ) {
@@ -940,22 +949,7 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   } else if (branchLen === 1 || branchLen === 2) {
     return { dir: DIR_PREV, twig: lastTwig };
   } else if (branchLen > 2 && scoped && targetType === TARGET_FIRST) {
-    if (lastType === TYPE_SELECTOR) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    }
-    let isChildOrDescendant = false;
-    for (const { combo } of branch) {
-      if (combo) {
-        const { name: comboName } = combo;
-        isChildOrDescendant = comboName === '>' || comboName === ' ';
-        if (!isChildOrDescendant) {
-          break;
-        }
-      }
-    }
-    if (isChildOrDescendant) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    }
+    return { dir: DIR_PREV, twig: lastTwig };
   }
   return { dir: DIR_NEXT, twig: firstTwig };
 };

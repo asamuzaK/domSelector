@@ -2533,7 +2533,7 @@ describe('utility functions', () => {
     it('should get DIR_NEXT and first twig for > 2 branch length as default fallback', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
-        combo: { name: '+' },
+        combo: { name: '>' },
         leaves: [{ name: 'span', type: TYPE_SELECTOR }]
       };
       const lastTwig = { leaves: [{ name: 'foo', type: CLASS_SELECTOR }] };
@@ -2555,7 +2555,6 @@ describe('utility functions', () => {
         leaves: [{ name: 'p', type: TYPE_SELECTOR }]
       };
       const branch = [firstTwig, midTwig, lastTwig];
-
       const res = func(branch, TARGET_FIRST, true);
       assert.strictEqual(res.dir, DIR_PREV, 'direction');
       assert.deepEqual(res.twig, lastTwig, 'twig');
@@ -2573,7 +2572,6 @@ describe('utility functions', () => {
         leaves: [{ name: 'foo', type: CLASS_SELECTOR }]
       };
       const branch = [firstTwig, midTwig, lastTwig];
-
       const res = func(branch, TARGET_FIRST, true);
       assert.strictEqual(res.dir, DIR_PREV, 'direction');
       assert.deepEqual(res.twig, lastTwig, 'twig');
@@ -2611,7 +2609,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_NEXT and first twig when > 2 branch length, scoped, TARGET_FIRST, and a combinator is not child or descendant', () => {
+it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and a sibling combinator is present', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },
@@ -2623,8 +2621,8 @@ describe('utility functions', () => {
       };
       const branch = [firstTwig, midTwig, lastTwig];
       const res = func(branch, TARGET_FIRST, false, true);
-      assert.strictEqual(res.dir, DIR_NEXT, 'direction');
-      assert.deepEqual(res.twig, firstTwig, 'twig');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
     });
   });
 });

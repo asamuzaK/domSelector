@@ -895,16 +895,7 @@ export class Finder extends Evaluator {
             index: 1
           });
           if (matchedNode) {
-            if (this.node.nodeType === ELEMENT_NODE) {
-              if (
-                matchedNode !== this.node &&
-                this.node.contains(matchedNode)
-              ) {
-                return matchedNode;
-              }
-            } else {
-              return matchedNode;
-            }
+            return matchedNode;
           }
           [refNode] = this._findNodeWalker(entryLeaves, refNode, {
             targetType,

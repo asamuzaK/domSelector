@@ -3729,5 +3729,30 @@ describe('Finder', () => {
         'includes ul1'
       );
     });
+
+    it('should advance refNode using force:true when multiple nodes fail the complex branch condition without duplicate IDs', () => {
+      const container = document.createElement('div');
+      container.innerHTML = `
+        <div class="parent">
+          <div>
+            <div class="parent">
+              <div>
+                <div class="parent">
+                  <div class="child">
+                    <span class="target"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+      const finder = new Finder(window);
+      finder.setup('.parent > .child > .target', document);
+      const res = finder.find('first');
+      assert.deepEqual([...res], [container.querySelector('.target')], 'result');
+      document.body.removeChild(container);
+    });
   });
 });

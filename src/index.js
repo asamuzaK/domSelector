@@ -116,7 +116,7 @@ export class DOMSelector {
    */
   #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
     const document = node.ownerDocument;
-    const canExecute = node.parentNode && this.#canUseNwsapi(document);
+    const canExecute = node.isConnected && this.#canUseNwsapi(document);
     if (canExecute) {
       const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
