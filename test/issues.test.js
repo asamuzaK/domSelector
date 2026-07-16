@@ -1549,19 +1549,19 @@ describe('domSelector regression tests', () => {
         </div>
         <div id=actual dir=ltr></div>
       `).window;
-      const res = document.querySelector(":dir(ltr) :dir(rtl) + :dir(ltr)").id;
+      const res = document.querySelector(':dir(ltr) :dir(rtl) + :dir(ltr)').id;
       assert.strictEqual(res, 'expected');
     });
 
     it('should not match', () => {
       const { document } = jsdom().window;
       const fragment = document.createDocumentFragment();
-      const div = document.createElement("div");
+      const div = document.createElement('div');
       fragment.append(div);
       // Populate/reuse the selector cache against a different tree.
-      document.documentElement.matches(":nth-child(2)");
-      document.querySelectorAll(":nth-child(2)");
-      assert.strictEqual(div.matches(":nth-child(2)"), false);
+      document.documentElement.matches(':nth-child(2)');
+      document.querySelectorAll(':nth-child(2)');
+      assert.strictEqual(div.matches(':nth-child(2)'), false);
     });
   });
 });

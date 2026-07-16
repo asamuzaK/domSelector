@@ -3751,7 +3751,11 @@ describe('Finder', () => {
       const finder = new Finder(window);
       finder.setup('.parent > .child > .target', document);
       const res = finder.find('first');
-      assert.deepEqual([...res], [container.querySelector('.target')], 'result');
+      assert.deepEqual(
+        [...res],
+        [container.querySelector('.target')],
+        'result'
+      );
       document.body.removeChild(container);
     });
   });

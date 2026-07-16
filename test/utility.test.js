@@ -2609,7 +2609,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and a sibling combinator is present', () => {
+    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and a sibling combinator is present', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },

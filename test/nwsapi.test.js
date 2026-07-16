@@ -713,32 +713,84 @@ describe('nwsapi', () => {
       it('match() and select() should correctly evaluate :read-only and :read-write pseudo-classes', () => {
         const textarea = document.createElement('textarea');
         document.body.appendChild(textarea);
-        assert.strictEqual(api.match(':read-write', textarea), true, 'Normal textarea is read-write');
-        assert.strictEqual(api.match(':read-only', textarea), false, 'Normal textarea is not read-only');
+        assert.strictEqual(
+          api.match(':read-write', textarea),
+          true,
+          'Normal textarea is read-write'
+        );
+        assert.strictEqual(
+          api.match(':read-only', textarea),
+          false,
+          'Normal textarea is not read-only'
+        );
         textarea.readOnly = true;
-        assert.strictEqual(api.match(':read-only', textarea), true, 'Readonly textarea is read-only');
-        assert.strictEqual(api.match(':read-write', textarea), false, 'Readonly textarea is not read-write');
+        assert.strictEqual(
+          api.match(':read-only', textarea),
+          true,
+          'Readonly textarea is read-only'
+        );
+        assert.strictEqual(
+          api.match(':read-write', textarea),
+          false,
+          'Readonly textarea is not read-write'
+        );
         textarea.readOnly = false;
         textarea.disabled = true;
-        assert.strictEqual(api.match(':read-only', textarea), true, 'Disabled textarea is read-only');
+        assert.strictEqual(
+          api.match(':read-only', textarea),
+          true,
+          'Disabled textarea is read-only'
+        );
         const inputText = document.createElement('input');
         inputText.type = 'text';
         document.body.appendChild(inputText);
-        assert.strictEqual(api.match(':read-write', inputText), true, 'Normal text input is read-write');
+        assert.strictEqual(
+          api.match(':read-write', inputText),
+          true,
+          'Normal text input is read-write'
+        );
         inputText.readOnly = true;
-        assert.strictEqual(api.match(':read-only', inputText), true, 'Readonly text input is read-only');
+        assert.strictEqual(
+          api.match(':read-only', inputText),
+          true,
+          'Readonly text input is read-only'
+        );
         const inputCheckbox = document.createElement('input');
         inputCheckbox.type = 'checkbox';
         document.body.appendChild(inputCheckbox);
-        assert.strictEqual(api.match(':read-only', inputCheckbox), true, 'Checkbox is always read-only');
-        assert.strictEqual(api.match(':read-write', inputCheckbox), false, 'Checkbox is never read-write');
+        assert.strictEqual(
+          api.match(':read-only', inputCheckbox),
+          true,
+          'Checkbox is always read-only'
+        );
+        assert.strictEqual(
+          api.match(':read-write', inputCheckbox),
+          false,
+          'Checkbox is never read-write'
+        );
         const div = document.createElement('div');
         document.body.appendChild(div);
-        assert.strictEqual(api.match(':read-only', div), true, 'Normal div is read-only');
-        assert.strictEqual(api.match(':read-write', div), false, 'Normal div is not read-write');
+        assert.strictEqual(
+          api.match(':read-only', div),
+          true,
+          'Normal div is read-only'
+        );
+        assert.strictEqual(
+          api.match(':read-write', div),
+          false,
+          'Normal div is not read-write'
+        );
         div.setAttribute('contenteditable', 'true');
-        assert.strictEqual(api.match(':read-write', div), true, 'Contenteditable div is read-write');
-        assert.strictEqual(api.match(':read-only', div), false, 'Contenteditable div is not read-only');
+        assert.strictEqual(
+          api.match(':read-write', div),
+          true,
+          'Contenteditable div is read-write'
+        );
+        assert.strictEqual(
+          api.match(':read-only', div),
+          false,
+          'Contenteditable div is not read-only'
+        );
         document.body.removeChild(textarea);
         document.body.removeChild(inputText);
         document.body.removeChild(inputCheckbox);
