@@ -9,6 +9,8 @@ import isCustomElementName from 'is-potential-custom-element-name';
 /* constants */
 import {
   CLASS_SELECTOR,
+  DIR_NEXT,
+  DIR_PREV,
   DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE,
   DOCUMENT_POSITION_CONTAINS,
@@ -19,7 +21,9 @@ import {
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
+  PS_ELEMENT_SELECTOR,
   SHOW_ELEMENT,
+  TARGET_FIRST,
   TEXT_NODE,
   TYPE_FROM,
   TYPE_SELECTOR,
@@ -898,4 +902,60 @@ export const collectAllDescendants = (node, document) => {
     refNode = walker.nextNode();
   }
   return descendants;
+};
+
+/**
+ * Gets the traversal direction and starting twig.
+ * @param {Array.<object>} branch - The selector branch.
+ * @param {string} targetType - The target type.
+ * @param {boolean} hasScope - True if selector includes ':scope'.
+ * @param {boolean} scoped - True if traversal is scoped within target node.
+ * @returns {object} Object containing dir and twig properties.
+ */
+export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
+  const branchLen = branch.length;
+  const firstTwig = branch[0];
+  const lastTwig = branch[branchLen - 1];
+  if (branchLen === 1) {
+    return { dir: DIR_PREV, twig: firstTwig };
+  }
+  const {
+    leaves: [{ name: firstName, type: firstType }]
+  } = firstTwig;
+  const {
+    leaves: [{ name: lastName, type: lastType }]
+  } = lastTwig;
+  if (
+    hasScope ||
+    lastType === PS_ELEMENT_SELECTOR ||
+    lastType === ID_SELECTOR
+  ) {
+    return { dir: DIR_PREV, twig: lastTwig };
+  } else if (firstType === ID_SELECTOR) {
+    return { dir: DIR_NEXT, twig: firstTwig };
+  } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
+    return { dir: DIR_PREV, twig: lastTwig };
+  } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
+    return { dir: DIR_NEXT, twig: firstTwig };
+  } else if (branchLen === 1 || branchLen === 2) {
+    return { dir: DIR_PREV, twig: lastTwig };
+  } else if (branchLen > 2 && scoped && targetType === TARGET_FIRST) {
+    if (lastType === TYPE_SELECTOR) {
+      return { dir: DIR_PREV, twig: lastTwig };
+    }
+    let isChildOrDescendant = false;
+    for (const { combo } of branch) {
+      if (combo) {
+        const { name: comboName } = combo;
+        isChildOrDescendant = comboName === '>' || comboName === ' ';
+        if (!isChildOrDescendant) {
+          break;
+        }
+      }
+    }
+    if (isChildOrDescendant) {
+      return { dir: DIR_PREV, twig: lastTwig };
+    }
+  }
+  return { dir: DIR_NEXT, twig: firstTwig };
 };
