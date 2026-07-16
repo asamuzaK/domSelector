@@ -7,7 +7,7 @@ import { Evaluator } from './evaluator.js';
 import { Mapper } from './mapper.js';
 import { matchPseudoElementSelector } from './matcher.js';
 import { generateCSS, unescapeSelector } from './parser.js';
-import { sortNodes, traverseNode } from './utility.js';
+import { getTraversalStrategy, sortNodes, traverseNode } from './utility.js';
 
 /* constants */
 import {
@@ -619,61 +619,6 @@ export class Finder extends Evaluator {
   };
 
   /**
-   * Determines the traversal direction and starting twig.
-   * @private
-   * @param {Array.<object>} branch - The selector branch.
-   * @param {string} targetType - The target type.
-   * @returns {object} Object containing dir and twig properties.
-   */
-  _determineTraversalStrategy = (branch, targetType) => {
-    const branchLen = branch.length;
-    const firstTwig = branch[0];
-    const lastTwig = branch[branchLen - 1];
-    if (branchLen === 1) {
-      return { dir: DIR_PREV, twig: firstTwig };
-    }
-    const {
-      leaves: [{ name: firstName, type: firstType }]
-    } = firstTwig;
-    const {
-      leaves: [{ name: lastName, type: lastType }]
-    } = lastTwig;
-    if (
-      this.#selector.includes(':scope') ||
-      lastType === PS_ELEMENT_SELECTOR ||
-      lastType === ID_SELECTOR
-    ) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    } else if (firstType === ID_SELECTOR) {
-      return { dir: DIR_NEXT, twig: firstTwig };
-    } else if (firstName === '*' && firstType === TYPE_SELECTOR) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
-      return { dir: DIR_NEXT, twig: firstTwig };
-    } else if (branchLen === 1 || branchLen === 2) {
-      return { dir: DIR_PREV, twig: lastTwig };
-    } else if (branchLen > 2 && this.#scoped && targetType === TARGET_FIRST) {
-      if (lastType === TYPE_SELECTOR) {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
-      let isChildOrDescendant = false;
-      for (const { combo } of branch) {
-        if (combo) {
-          const { name: comboName } = combo;
-          isChildOrDescendant = comboName === '>' || comboName === ' ';
-          if (!isChildOrDescendant) {
-            break;
-          }
-        }
-      }
-      if (isChildOrDescendant) {
-        return { dir: DIR_PREV, twig: lastTwig };
-      }
-    }
-    return { dir: DIR_NEXT, twig: firstTwig };
-  };
-
-  /**
    * Processes pending items to find matches.
    * @private
    * @param {Set.<Map>} pendingItems - Set of pending items to process.
@@ -722,12 +667,17 @@ export class Finder extends Evaluator {
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
+      const hasScope =
+        typeof this.#selector === 'string' && this.#selector.includes(':scope');
+      const scoped = this.#scoped;
       let i = 0;
       for (const { branch } of ast) {
         const complex = branch.length > 1;
-        const { dir, twig } = this._determineTraversalStrategy(
+        const { dir, twig } = getTraversalStrategy(
           branch,
-          targetType
+          targetType,
+          hasScope,
+          scoped
         );
         const { compound, filtered, nodes, pending } = this._findEntryNodes(
           twig,

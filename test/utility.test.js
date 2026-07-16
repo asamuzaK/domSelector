@@ -11,8 +11,12 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 import * as util from '../src/js/utility.js';
 import {
   CLASS_SELECTOR,
+  DIR_NEXT,
+  DIR_PREV,
   ID_SELECTOR,
+  PS_ELEMENT_SELECTOR,
   SHOW_CONTAINER,
+  TARGET_FIRST,
   TYPE_SELECTOR
 } from '../src/js/constant.js';
 
@@ -2434,6 +2438,193 @@ describe('utility functions', () => {
       assert.strictEqual(res.length, 2, 'number of element descendants');
       assert.strictEqual(res[0].localName, 'span');
       assert.strictEqual(res[1].localName, 'p');
+    });
+  });
+
+  describe('get traversal strategy', () => {
+    const func = util.getTraversalStrategy;
+
+    it('should get DIR_PREV and first twig when branch length is 1', () => {
+      const twig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const branch = [twig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, twig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when hasScope is true', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all', true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when last type is PS_ELEMENT_SELECTOR', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const lastTwig = {
+        leaves: [{ name: 'before', type: PS_ELEMENT_SELECTOR }]
+      };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when last type is ID_SELECTOR', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: 'foo', type: ID_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_NEXT and first twig when first type is ID_SELECTOR', () => {
+      const firstTwig = { leaves: [{ name: 'foo', type: ID_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_NEXT, 'direction');
+      assert.deepEqual(res.twig, firstTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when first twig is universal selector', () => {
+      const firstTwig = { leaves: [{ name: '*', type: TYPE_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_NEXT and first twig when last twig is universal selector', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: '*', type: TYPE_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_NEXT, 'direction');
+      assert.deepEqual(res.twig, firstTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when branch length is 2', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const lastTwig = { leaves: [{ name: 'foo', type: CLASS_SELECTOR }] };
+      const branch = [firstTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig for > 2 branch length, scoped, TARGET_FIRST and descendant combinator', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '>' },
+        leaves: [{ name: 'span', type: TYPE_SELECTOR }]
+      };
+      const lastTwig = { leaves: [{ name: 'foo', type: CLASS_SELECTOR }] };
+      const branch = [firstTwig, midTwig, lastTwig];
+      const res = func(branch, TARGET_FIRST, true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_NEXT and first twig for > 2 branch length as default fallback', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '+' },
+        leaves: [{ name: 'span', type: TYPE_SELECTOR }]
+      };
+      const lastTwig = { leaves: [{ name: 'foo', type: CLASS_SELECTOR }] };
+      const branch = [firstTwig, midTwig, lastTwig];
+      const res = func(branch, 'all');
+      assert.strictEqual(res.dir, DIR_NEXT, 'direction');
+      assert.deepEqual(res.twig, firstTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and lastType is TYPE_SELECTOR', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '+' },
+        leaves: [{ name: 'span', type: CLASS_SELECTOR }]
+      };
+      // lastType is TYPE_SELECTOR, which should return early with DIR_PREV
+      const lastTwig = {
+        combo: { name: '~' },
+        leaves: [{ name: 'p', type: TYPE_SELECTOR }]
+      };
+      const branch = [firstTwig, midTwig, lastTwig];
+
+      const res = func(branch, TARGET_FIRST, true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and all combinators are child or descendant', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '>' },
+        leaves: [{ name: 'span', type: TYPE_SELECTOR }]
+      };
+      // lastType is NOT TYPE_SELECTOR, but all combos are '>' or ' '
+      const lastTwig = {
+        combo: { name: ' ' },
+        leaves: [{ name: 'foo', type: CLASS_SELECTOR }]
+      };
+      const branch = [firstTwig, midTwig, lastTwig];
+
+      const res = func(branch, TARGET_FIRST, true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and lastType is TYPE_SELECTOR', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '+' },
+        leaves: [{ name: 'span', type: CLASS_SELECTOR }]
+      };
+      const lastTwig = {
+        combo: { name: '~' },
+        leaves: [{ name: 'p', type: TYPE_SELECTOR }]
+      };
+      const branch = [firstTwig, midTwig, lastTwig];
+      const res = func(branch, TARGET_FIRST, false, true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and all combinators are child or descendant', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '>' },
+        leaves: [{ name: 'span', type: TYPE_SELECTOR }]
+      };
+      const lastTwig = {
+        combo: { name: ' ' },
+        leaves: [{ name: 'foo', type: CLASS_SELECTOR }]
+      };
+      const branch = [firstTwig, midTwig, lastTwig];
+      const res = func(branch, TARGET_FIRST, false, true);
+      assert.strictEqual(res.dir, DIR_PREV, 'direction');
+      assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+
+    it('should get DIR_NEXT and first twig when > 2 branch length, scoped, TARGET_FIRST, and a combinator is not child or descendant', () => {
+      const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
+      const midTwig = {
+        combo: { name: '>' },
+        leaves: [{ name: 'span', type: TYPE_SELECTOR }]
+      };
+      const lastTwig = {
+        combo: { name: '+' },
+        leaves: [{ name: 'foo', type: CLASS_SELECTOR }]
+      };
+      const branch = [firstTwig, midTwig, lastTwig];
+      const res = func(branch, TARGET_FIRST, false, true);
+      assert.strictEqual(res.dir, DIR_NEXT, 'direction');
+      assert.deepEqual(res.twig, firstTwig, 'twig');
     });
   });
 });
