@@ -1160,7 +1160,6 @@ export class Evaluator {
     const leafName = unescapeSelector(name);
     const filterLeaves = this.getFilterLeaves(leaves);
     const isSimple = filterLeaves.length === 0;
-
     switch (leafType) {
       case ID_SELECTOR: {
         if (
