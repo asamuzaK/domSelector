@@ -5,6 +5,9 @@ import { SelectorProcessor } from './processor.js';
 import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
 
+/**
+ * Mapper
+ */
 export class Mapper {
   #context;
   #processor;
