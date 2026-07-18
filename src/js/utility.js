@@ -16,6 +16,7 @@ import {
   DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING,
   ELEMENT_NODE,
+  FILTER_ACCEPT,
   ID_SELECTOR,
   INPUT_BUTTON,
   INPUT_EDIT,
@@ -894,7 +895,11 @@ export const collectAllDescendants = (node, document) => {
   if (document?.nodeType !== DOCUMENT_NODE) {
     throw new TypeError(`Unexpected type ${getType(document)}`);
   }
-  const walker = document.createTreeWalker(node, SHOW_ELEMENT);
+  const walker = document.createTreeWalker(
+    node,
+    SHOW_ELEMENT,
+    () => FILTER_ACCEPT
+  );
   const descendants = [];
   let refNode = walker.nextNode();
   while (refNode) {
