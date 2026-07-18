@@ -321,17 +321,18 @@ export class Finder extends Evaluator {
    * @returns {object} Object with nodes, filtered, and pending flags.
    */
   _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
+    const compound = filterLeaves.length > 0;
     if (targetType === TARGET_SELF && this.check) {
       const css = generateCSS(leaf);
       this.pseudoElements.push(css);
       if (filterLeaves.length) {
         const [nodes, filtered] = this._matchSelf(filterLeaves);
-        return { nodes, filtered, pending: false };
+        return { compound, filtered, nodes, pending: false };
       }
-      return { nodes: [this.node], filtered: true, pending: false };
+      return { compound, filtered: true, nodes: [this.node], pending: false };
     }
     matchPseudoElementSelector(leaf.name, leaf.type, this.matchOpts);
-    return { nodes: [], filtered: false, pending: false };
+    return { compound, filtered: false, nodes: [], pending: false };
   };
 
   /**
@@ -344,14 +345,15 @@ export class Finder extends Evaluator {
    */
   _findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
-    const filterLeaves = this.getFilterLeaves(leaves);
-    const { complex, precede } = opt;
+    const { complex, precede, filterLeaves = [] } = opt;
+    const compound = filterLeaves.length > 0;
+
     if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this._matchSelf(leaves);
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
       const [nodes, filtered] = this._findLineal(leaves, { complex });
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (
       targetType === TARGET_FIRST &&
       this.root.nodeType !== ELEMENT_NODE
@@ -368,13 +370,13 @@ export class Finder extends Evaluator {
           nodes.push(node);
         }
       }
-      return { nodes, filtered: nodes.length > 0, pending: false };
+      return { compound, filtered: nodes.length > 0, nodes, pending: false };
     }
     const nodes = this._findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
-    return { nodes, filtered: nodes.length > 0, pending: false };
+    return { compound, filtered: nodes.length > 0, nodes, pending: false };
   };
 
   /**
@@ -386,13 +388,15 @@ export class Finder extends Evaluator {
    * @returns {object} Result object with nodes and flags.
    */
   _findEntryNodesForClass = (leaves, targetType, opt = {}) => {
-    const { complex, precede } = opt;
+    const { complex, precede, filterLeaves = [] } = opt;
+    const compound = filterLeaves.length > 0;
+
     if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this._matchSelf(leaves);
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
       const [nodes, filtered] = this._findLineal(leaves, { complex });
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (
       targetType !== TARGET_FIRST &&
       !precede &&
@@ -403,7 +407,6 @@ export class Finder extends Evaluator {
       const className = unescapeSelector(leaf.name);
       const collection = this.node.getElementsByClassName(className);
       const len = collection.length;
-      const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
       const nodeArray = [];
       for (let i = 0; i < len; i++) {
@@ -416,8 +419,9 @@ export class Finder extends Evaluator {
         }
       }
       return {
-        nodes: nodeArray,
+        compound,
         filtered: nodeArray.length > 0,
+        nodes: nodeArray,
         pending: false
       };
     }
@@ -425,7 +429,7 @@ export class Finder extends Evaluator {
       precede,
       targetType
     });
-    return { nodes, filtered: nodes.length > 0, pending: false };
+    return { compound, filtered: nodes.length > 0, nodes, pending: false };
   };
 
   /**
@@ -437,13 +441,14 @@ export class Finder extends Evaluator {
    * @returns {object} Result object with nodes and flags.
    */
   _findEntryNodesForType = (leaves, targetType, opt = {}) => {
-    const { complex, precede } = opt;
+    const { complex, precede, filterLeaves = [] } = opt;
+    const compound = filterLeaves.length > 0;
     if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this._matchSelf(leaves);
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
       const [nodes, filtered] = this._findLineal(leaves, { complex });
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     }
     const [leaf] = leaves;
     const tagName = unescapeSelector(leaf.name);
@@ -457,7 +462,6 @@ export class Finder extends Evaluator {
       this.matchLeaves(leaves, this.node, this.matchOpts);
       const collection = this.node.getElementsByTagName(tagName);
       const len = collection.length;
-      const filterLeaves = this.getFilterLeaves(leaves);
       const hasFilter = filterLeaves.length > 0;
       const nodeArray = [];
       for (let i = 0; i < len; i++) {
@@ -470,8 +474,9 @@ export class Finder extends Evaluator {
         }
       }
       return {
-        nodes: nodeArray,
+        compound,
         filtered: nodeArray.length > 0,
+        nodes: nodeArray,
         pending: false
       };
     }
@@ -479,7 +484,7 @@ export class Finder extends Evaluator {
       precede,
       targetType
     });
-    return { nodes, filtered: nodes.length > 0, pending: false };
+    return { compound, filtered: nodes.length > 0, nodes, pending: false };
   };
 
   /**
@@ -493,8 +498,8 @@ export class Finder extends Evaluator {
   _findEntryNodesForOther = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
-    const filterLeaves = this.getFilterLeaves(leaves);
-    const { complex, precede } = opt;
+    const { complex, precede, filterLeaves = [] } = opt;
+    const compound = filterLeaves.length > 0;
     if (targetType !== TARGET_LINEAL && /host(?:-context)?/.test(leaf.name)) {
       let shadowRoot = null;
       if (
@@ -537,22 +542,22 @@ export class Finder extends Evaluator {
         if (bool) {
           nodes.push(shadowRoot);
         }
-        return { nodes, filtered: nodes.length > 0, pending: false };
+        return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
     } else if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this._matchSelf(leaves);
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
       const [nodes, filtered] = this._findLineal(leaves, { complex });
-      return { nodes, filtered, pending: false };
+      return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_FIRST) {
       const nodes = this._findNodeWalker(leaves, this.node, {
         precede,
         targetType
       });
-      return { nodes, filtered: nodes.length > 0, pending: false };
+      return { compound, filtered: nodes.length > 0, nodes, pending: false };
     }
-    return { nodes: [], filtered: false, pending: true };
+    return { compound, filtered: false, nodes: [], pending: true };
   };
 
   /**
@@ -572,50 +577,43 @@ export class Finder extends Evaluator {
       dir === DIR_NEXT &&
       this.node.nodeType === ELEMENT_NODE &&
       this.node !== this.root;
-    let result;
     switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
-        result = this._findEntryNodesForPseudoElement(
+        return this._findEntryNodesForPseudoElement(
           leaf,
           filterLeaves,
           targetType
         );
-        break;
       }
       case ID_SELECTOR: {
-        result = this._findEntryNodesForId(twig, targetType, {
+        return this._findEntryNodesForId(twig, targetType, {
           complex,
-          precede
+          precede,
+          filterLeaves
         });
-        break;
       }
       case CLASS_SELECTOR: {
-        result = this._findEntryNodesForClass(leaves, targetType, {
+        return this._findEntryNodesForClass(leaves, targetType, {
           complex,
-          precede
+          precede,
+          filterLeaves
         });
-        break;
       }
       case TYPE_SELECTOR: {
-        result = this._findEntryNodesForType(leaves, targetType, {
+        return this._findEntryNodesForType(leaves, targetType, {
           complex,
-          precede
+          precede,
+          filterLeaves
         });
-        break;
       }
       default: {
-        result = this._findEntryNodesForOther(twig, targetType, {
+        return this._findEntryNodesForOther(twig, targetType, {
           complex,
-          precede
+          precede,
+          filterLeaves
         });
       }
     }
-    return {
-      compound: filterLeaves.length > 0,
-      filtered: result.filtered,
-      nodes: result.nodes,
-      pending: result.pending
-    };
   };
 
   /**
@@ -812,6 +810,46 @@ export class Finder extends Evaluator {
   };
 
   /**
+   * Depth-first search for tracking complex combinator branches forward.
+   * @private
+   * @param {object} node - The current DOM node.
+   * @param {number} index - The current index in the selector branch.
+   * @param {object} currentCombo - The current combinator AST node.
+   * @param {Array.<object>} branch - The selector branch array.
+   * @param {number} lastIndex - The last index of the branch.
+   * @param {Set.<object>} matchedNodes - The set accumulating matched nodes.
+   * @param {string} dir - The traversal direction.
+   * @returns {void}
+   */
+  _dfsComplexBranchNext = (
+    node,
+    index,
+    currentCombo,
+    branch,
+    lastIndex,
+    matchedNodes,
+    dir
+  ) => {
+    const { combo: nextCombo, leaves } = branch[index];
+    const twig = { combo: currentCombo, leaves };
+    for (const nextNode of this.yieldCombinatorMatches(twig, node, { dir })) {
+      if (index === lastIndex) {
+        matchedNodes.add(nextNode);
+      } else {
+        this._dfsComplexBranchNext(
+          nextNode,
+          index + 1,
+          nextCombo,
+          branch,
+          lastIndex,
+          matchedNodes,
+          dir
+        );
+      }
+    }
+  };
+
+  /**
    * Processes complex branch for all matches.
    * @private
    * @param {Array.<object>} branch - The selector branch.
@@ -825,21 +863,16 @@ export class Finder extends Evaluator {
     const lastIndex = branchLen - 1;
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
-      const dfs = (node, index, currentCombo) => {
-        const { combo: nextCombo, leaves } = branch[index];
-        const twig = { combo: currentCombo, leaves };
-        for (const nextNode of this.yieldCombinatorMatches(twig, node, {
-          dir
-        })) {
-          if (index === lastIndex) {
-            matchedNodes.add(nextNode);
-          } else {
-            dfs(nextNode, index + 1, nextCombo);
-          }
-        }
-      };
       for (const node of entryNodes) {
-        dfs(node, 1, firstCombo);
+        this._dfsComplexBranchNext(
+          node,
+          1,
+          firstCombo,
+          branch,
+          lastIndex,
+          matchedNodes,
+          dir
+        );
       }
     } else {
       for (let i = 0, len = entryNodes.length; i < len; i++) {
@@ -855,6 +888,102 @@ export class Finder extends Evaluator {
   };
 
   /**
+   * Processes complex branch first match in the forward direction.
+   * @private
+   * @param {Array.<object>} branch - The selector branch.
+   * @param {Array.<object>} entryNodes - The entry nodes.
+   * @param {number} lastIndex - The last index of the branch.
+   * @param {string} targetType - The target type.
+   * @returns {object|null} The matched node or null if not found.
+   */
+  _processComplexBranchFirstNext = (
+    branch,
+    entryNodes,
+    lastIndex,
+    targetType
+  ) => {
+    const { combo: entryCombo } = branch[0];
+    for (const node of entryNodes) {
+      const matchedNode = this._matchNodeNext(branch, new Set([node]), {
+        combo: entryCombo,
+        index: 1
+      });
+      if (matchedNode) {
+        if (this.node.nodeType === ELEMENT_NODE) {
+          if (matchedNode !== this.node && this.node.contains(matchedNode)) {
+            return matchedNode;
+          }
+        } else {
+          return matchedNode;
+        }
+      }
+    }
+    const { leaves: entryLeaves } = branch[0];
+    const [entryNode] = entryNodes;
+    if (this.node.contains(entryNode)) {
+      let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+        targetType
+      });
+      while (refNode) {
+        const matchedNode = this._matchNodeNext(branch, new Set([refNode]), {
+          combo: entryCombo,
+          index: 1
+        });
+        if (matchedNode) {
+          return matchedNode;
+        }
+        [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+          targetType,
+          force: true
+        });
+      }
+    }
+    return null;
+  };
+
+  /**
+   * Processes complex branch first match in the backward direction.
+   * @private
+   * @param {Array.<object>} branch - The selector branch.
+   * @param {Array.<object>} entryNodes - The entry nodes.
+   * @param {number} lastIndex - The last index of the branch.
+   * @param {string} targetType - The target type.
+   * @returns {object|null} The matched node or null if not found.
+   */
+  _processComplexBranchFirstPrev = (
+    branch,
+    entryNodes,
+    lastIndex,
+    targetType
+  ) => {
+    for (let i = 0, len = entryNodes.length; i < len; i++) {
+      const node = entryNodes[i];
+      if (this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
+        return node;
+      }
+    }
+    if (targetType === TARGET_FIRST) {
+      const { leaves: entryLeaves } = branch[lastIndex];
+      const entryNode = entryNodes[0];
+      let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+        targetType
+      });
+      while (refNode) {
+        if (
+          this._hasValidPathPrev(refNode, branch, lastIndex - 1, this.matchOpts)
+        ) {
+          return refNode;
+        }
+        [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+          targetType,
+          force: true
+        });
+      }
+    }
+    return null;
+  };
+
+  /**
    * Processes complex branch for the first match.
    * @private
    * @param {Array.<object>} branch - The selector branch.
@@ -867,75 +996,19 @@ export class Finder extends Evaluator {
     const branchLen = branch.length;
     const lastIndex = branchLen - 1;
     if (dir === DIR_NEXT) {
-      const { combo: entryCombo } = branch[0];
-      for (const node of entryNodes) {
-        const matchedNode = this._matchNodeNext(branch, new Set([node]), {
-          combo: entryCombo,
-          index: 1
-        });
-        if (matchedNode) {
-          if (this.node.nodeType === ELEMENT_NODE) {
-            if (matchedNode !== this.node && this.node.contains(matchedNode)) {
-              return matchedNode;
-            }
-          } else {
-            return matchedNode;
-          }
-        }
-      }
-      const { leaves: entryLeaves } = branch[0];
-      const [entryNode] = entryNodes;
-      if (this.node.contains(entryNode)) {
-        let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
-          targetType
-        });
-        while (refNode) {
-          const matchedNode = this._matchNodeNext(branch, new Set([refNode]), {
-            combo: entryCombo,
-            index: 1
-          });
-          if (matchedNode) {
-            return matchedNode;
-          }
-          [refNode] = this._findNodeWalker(entryLeaves, refNode, {
-            targetType,
-            force: true
-          });
-        }
-      }
+      return this._processComplexBranchFirstNext(
+        branch,
+        entryNodes,
+        lastIndex,
+        targetType
+      );
     } else {
-      for (let i = 0, len = entryNodes.length; i < len; i++) {
-        const node = entryNodes[i];
-        if (
-          this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
-        ) {
-          return node;
-        }
-      }
-      if (targetType === TARGET_FIRST) {
-        const { leaves: entryLeaves } = branch[lastIndex];
-        const entryNode = entryNodes[0];
-        let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
-          targetType
-        });
-        while (refNode) {
-          if (
-            this._hasValidPathPrev(
-              refNode,
-              branch,
-              lastIndex - 1,
-              this.matchOpts
-            )
-          ) {
-            return refNode;
-          }
-          [refNode] = this._findNodeWalker(entryLeaves, refNode, {
-            targetType,
-            force: true
-          });
-        }
-      }
+      return this._processComplexBranchFirstPrev(
+        branch,
+        entryNodes,
+        lastIndex,
+        targetType
+      );
     }
-    return null;
   };
 }
