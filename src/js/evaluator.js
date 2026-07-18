@@ -1763,66 +1763,63 @@ export class Evaluator {
    * @returns {boolean} True if matches, otherwise false.
    */
   _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
-    const { astName, branches, twigBranches } = astData;
+    const { astName, isInvalidShadow, twigBranches } = astData;
     // Handle :has().
     if (astName === 'has') {
       return this._evaluateHasPseudo(astData, node, opt) === node;
     }
-    // Handle :is(), :not(), :where().
+    // Check for shadow root
     const isShadowRoot =
       (opt.isShadowRoot || this.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
-    // Check for invalid shadow root.
-    if (isShadowRoot) {
-      let invalid = false;
-      for (const branch of branches) {
-        if (branch.length > 1) {
-          invalid = true;
-          break;
-        } else if (astName === 'not') {
-          const [{ type: childAstType }] = branch;
-          if (childAstType !== PS_CLASS_SELECTOR) {
-            invalid = true;
-            break;
-          }
-        }
-      }
-      if (invalid) {
-        return false;
-      }
+    if (isShadowRoot && isInvalidShadow) {
+      return false;
     }
-    opt.forgive = astName === 'is' || astName === 'where';
+    // Handle :is(), :not(), :where().
+    const localOpt = {
+      ...opt,
+      forgive: astName === 'is' || astName === 'where',
+      dir: undefined
+    };
     const l = twigBranches.length;
-    let bool;
+    let bool = false;
     for (let i = 0; i < l; i++) {
       const branch = twigBranches[i];
       const lastIndex = branch.length - 1;
       const { leaves } = branch[lastIndex];
-      bool = this.matchLeaves(leaves, node, opt);
+      bool = this.matchLeaves(leaves, node, localOpt);
       if (bool && lastIndex > 0) {
         let nextNodes = new Set([node]);
         for (let j = lastIndex - 1; j >= 0; j--) {
           const twig = branch[j];
-          const arr = [];
-          opt.dir = DIR_PREV;
+          const isLastStep = j === 0;
+          const arr = isLastStep ? null : [];
+          let hasMatch = false;
+          localOpt.dir = DIR_PREV;
           for (const nextNode of nextNodes) {
             for (const matchedNode of this.yieldCombinatorMatches(
               twig,
               nextNode,
-              opt
+              localOpt
             )) {
+              hasMatch = true;
+              if (isLastStep) {
+                break;
+              }
               arr.push(matchedNode);
             }
-          }
-          if (arr.length) {
-            if (j === 0) {
-              bool = true;
-            } else {
-              nextNodes = new Set(arr);
+            if (isLastStep && hasMatch) {
+              break;
             }
-          } else {
+          }
+          if (!hasMatch) {
             bool = false;
             break;
+          }
+          if (isLastStep) {
+            bool = true;
+          } else {
+            nextNodes = new Set(arr);
           }
         }
       }
@@ -1864,6 +1861,7 @@ export class Evaluator {
       this.#astCache.set(ast, astData);
       return this._matchLogicalPseudoFunc(astData, node, opt);
     }
+    let isInvalidShadow = false;
     const twigBranches = [];
     const l = branches.length;
     for (let i = 0; i < l; i++) {
@@ -1871,6 +1869,16 @@ export class Evaluator {
       const branch = [];
       const leavesSet = new Set();
       const leavesLen = leaves.length;
+      if (!isInvalidShadow && astName !== 'has') {
+        if (leavesLen > 1) {
+          isInvalidShadow = true;
+        } else if (astName === 'not') {
+          const [{ type: childAstType }] = leaves;
+          if (childAstType !== PS_CLASS_SELECTOR) {
+            isInvalidShadow = true;
+          }
+        }
+      }
       for (let j = 0; j < leavesLen; j++) {
         const item = leaves[j];
         if (item.type === COMBINATOR) {
@@ -1894,7 +1902,7 @@ export class Evaluator {
     }
     const astData = {
       astName,
-      branches,
+      isInvalidShadow,
       twigBranches
     };
     this.#astCache.set(ast, astData);
