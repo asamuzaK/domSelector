@@ -29,6 +29,18 @@ export declare class Evaluator {
         forgive?: boolean;
         warn?: boolean;
     }) => Set<object> | boolean;
+    private _matchDefaultPseudoClass;
+    private _matchDisabledPseudoClass;
+    private _matchIndeterminatePseudoClass;
+    private _matchValidityPseudoClass;
+    private _matchLocalLinkPseudoClass;
+    private _matchTargetPseudoClass;
+    private _matchEmptyPseudoClass;
+    private _matchHoverPseudoClass;
+    private _matchActivePseudoClass;
+    private _matchFocusPseudoClass;
+    private _matchFocusVisiblePseudoClass;
+    private _matchFocusWithinPseudoClass;
     createTreeWalker: (node: object, opt?: {
         force?: boolean;
         whatToShow?: number;
@@ -38,10 +50,6 @@ export declare class Evaluator {
     }): Generator<any, void, unknown>;
     yieldTraverseAllDescendants(baseNode: object, leaves: Array<object>, opt: object): Generator<any, void, unknown>;
     yieldFindDescendantNodes(leaves: Array<object>, baseNode: object, opt: object): Generator<any, void, unknown>;
-    private _handleFocusEvent;
-    private _handleKeyboardEvent;
-    private _handleMouseEvent;
-    private _registerEventListeners;
     private _getSelectorBranches;
     private _filterNthChildOfSelectorBranches;
     private _matchAnPlusB;

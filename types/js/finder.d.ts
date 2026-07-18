@@ -23,6 +23,9 @@ export declare class Finder extends Evaluator {
     private _collectNodes;
     private _matchNodeNext;
     private _hasValidPathPrev;
+    private _dfsComplexBranchNext;
     private _processComplexBranchAll;
+    private _processComplexBranchFirstNext;
+    private _processComplexBranchFirstPrev;
     private _processComplexBranchFirst;
 }
