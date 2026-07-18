@@ -1,19 +1,19 @@
-export function matchPseudoElementSelector(astName: string, astType: string, { forgive, globalObject, warn }?: {
-    forgive?: boolean | undefined;
-    globalObject?: object | undefined;
-    warn?: boolean | undefined;
-}): void;
-export function matchDirectionPseudoClass(ast: object, node: object, dirCache?: WeakMap<any, any>): boolean;
-export function matchLanguagePseudoClass(ast: object, node: object, langCache?: WeakMap<any, any>): boolean;
-export function matchDisabledPseudoClass(astName: string, node: object): boolean;
-export function matchReadOnlyPseudoClass(astName: string, node: object): boolean;
-export function matchAttributeSelector(ast: object, node: object, { check, forgive, globalObject }?: {
-    check?: boolean | undefined;
-    forgive?: boolean | undefined;
-    globalObject?: object | undefined;
-}): boolean;
-export function matchTypeSelector(ast: object, node: object, { check, forgive, globalObject }?: {
-    check?: boolean | undefined;
-    forgive?: boolean | undefined;
-    globalObject?: object | undefined;
-}): boolean;
+export declare const matchPseudoElementSelector: (astName: string, astType: string, { forgive, globalObject, warn }?: {
+    forgive?: boolean;
+    globalObject?: object;
+    warn?: boolean;
+}) => void;
+export declare const matchDirectionPseudoClass: (ast: object, node: object, dirCache?: WeakMap<any, any>) => boolean;
+export declare const matchLanguagePseudoClass: (ast: object, node: object, langCache?: WeakMap<any, any>) => boolean;
+export declare const matchDisabledPseudoClass: (astName: string, node: object) => boolean;
+export declare const matchReadOnlyPseudoClass: (astName: string, node: object) => boolean;
+export declare const matchAttributeSelector: (ast: object, node: object, { check, forgive, globalObject }?: {
+    check?: boolean;
+    forgive?: boolean;
+    globalObject?: object;
+}) => boolean;
+export declare const matchTypeSelector: (ast: object, node: object, { check, forgive, globalObject }?: {
+    check?: boolean;
+    forgive?: boolean;
+    globalObject?: object;
+}) => boolean;

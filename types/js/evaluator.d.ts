@@ -1,12 +1,7 @@
-export class Evaluator {
-    constructor(window: object);
+export declare class Evaluator {
+    #private;
     window: object;
     documentCache: WeakMap<WeakKey, any>;
-    setup(selector: string, node: object, opt?: {
-        check?: boolean | undefined;
-        noexcept?: boolean | undefined;
-        warn?: boolean | undefined;
-    }): object;
     check: boolean | undefined;
     noexcept: boolean | undefined;
     warn: boolean | undefined;
@@ -16,8 +11,14 @@ export class Evaluator {
     node: object | undefined;
     pseudoElements: any[] | undefined;
     invalidate: boolean | undefined;
+    constructor(window: object);
+    setup(selector: string, node: object, opt?: {
+        check?: boolean;
+        noexcept?: boolean;
+        warn?: boolean;
+    }): object;
     onError: (e: Error, opt?: {
-        noexcept?: boolean | undefined;
+        noexcept?: boolean;
     }) => void;
     clearResults: (all?: boolean) => void;
     matchSelector: (ast: object, node: object, opt: object) => boolean;
@@ -25,15 +26,15 @@ export class Evaluator {
     getFilterLeaves: (leaves: Array<object>) => Array<object>;
     evaluateShadowHost: (ast: object, node: object) => boolean;
     matchPseudoClassSelector: (ast: object, node: object, opt?: {
-        forgive?: boolean | undefined;
-        warn?: boolean | undefined;
+        forgive?: boolean;
+        warn?: boolean;
     }) => Set<object> | boolean;
     createTreeWalker: (node: object, opt?: {
-        force?: boolean | undefined;
-        whatToShow?: number | undefined;
+        force?: boolean;
+        whatToShow?: number;
     }) => object;
     yieldCombinatorMatches(twig: object, node: object, opt?: {
-        dir?: string | undefined;
+        dir?: string;
     }): Generator<any, void, unknown>;
     yieldTraverseAllDescendants(baseNode: object, leaves: Array<object>, opt: object): Generator<any, void, unknown>;
     yieldFindDescendantNodes(leaves: Array<object>, baseNode: object, opt: object): Generator<any, void, unknown>;
@@ -55,5 +56,4 @@ export class Evaluator {
     private _evaluateHostContextPseudo;
     private _matchSelectorForElement;
     private _matchSelectorForShadowRoot;
-    #private;
 }
