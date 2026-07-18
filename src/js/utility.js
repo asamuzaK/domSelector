@@ -16,7 +16,6 @@ import {
   DOCUMENT_POSITION_CONTAINS,
   DOCUMENT_POSITION_PRECEDING,
   ELEMENT_NODE,
-  FILTER_ACCEPT,
   ID_SELECTOR,
   INPUT_BUTTON,
   INPUT_EDIT,
@@ -895,11 +894,7 @@ export const collectAllDescendants = (node, document) => {
   if (document?.nodeType !== DOCUMENT_NODE) {
     throw new TypeError(`Unexpected type ${getType(document)}`);
   }
-  const walker = document.createTreeWalker(
-    node,
-    SHOW_ELEMENT,
-    () => FILTER_ACCEPT
-  );
+  const walker = document.createTreeWalker(node, SHOW_ELEMENT, null);
   const descendants = [];
   let refNode = walker.nextNode();
   while (refNode) {
@@ -920,29 +915,23 @@ export const collectAllDescendants = (node, document) => {
 export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   const branchLen = branch.length;
   const firstTwig = branch[0];
-  const lastTwig = branch[branchLen - 1];
   if (branchLen === 1) {
     return { dir: DIR_PREV, twig: firstTwig };
   }
-  let hasSiblingCombinator = false;
-  for (let i = 0; i < branchLen; i++) {
-    const comboName = branch[i].combo?.name;
-    if (comboName === '+' || comboName === '~') {
-      hasSiblingCombinator = true;
-      break;
-    }
-  }
+  const lastTwig = branch[branchLen - 1];
   const {
     leaves: [{ name: firstName, type: firstType }]
   } = firstTwig;
   const {
     leaves: [{ name: lastName, type: lastType }]
   } = lastTwig;
+  const lastCombo = branch[branchLen - 2].combo?.name;
   if (
     hasScope ||
-    hasSiblingCombinator ||
     lastType === PS_ELEMENT_SELECTOR ||
-    lastType === ID_SELECTOR
+    lastType === ID_SELECTOR ||
+    lastCombo === '+' ||
+    lastCombo === '~'
   ) {
     return { dir: DIR_PREV, twig: lastTwig };
   } else if (firstType === ID_SELECTOR) {
