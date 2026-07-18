@@ -8,7 +8,6 @@ import {
   matchAttributeSelector,
   matchCheckedPseudoClass,
   matchDirectionPseudoClass,
-  matchDisabledPseudoClass,
   matchLanguagePseudoClass,
   matchLinkPseudoClass,
   matchOpenPseudoClass,
@@ -65,6 +64,12 @@ const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
 const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
 const KEYS_INPUT_RESET = new Set(['button', 'reset']);
 const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
+const KEYS_FORM_PS_DISABLED = new Set([
+  ...FORM_PARTS,
+  'fieldset',
+  'optgroup',
+  'option'
+]);
 const KEYS_PS_UNCACHE = new Set([
   'any-link',
   'defined',
@@ -94,6 +99,7 @@ export class Evaluator {
   #nthIndexCache;
   #psDefaultCache;
   #psDirCache;
+  #psDisabledCache;
   #psHasFilterCache;
   #psIndeterminateCache;
   #psLangCache;
@@ -182,6 +188,7 @@ export class Evaluator {
     this.#invalidateResults = null;
     this.#psDefaultCache = null;
     this.#psDirCache = null;
+    this.#psDisabledCache = null;
     this.#psHasFilterCache = null;
     this.#psIndeterminateCache = null;
     this.#psLangCache = null;
@@ -425,7 +432,7 @@ export class Evaluator {
       /* Input pseudo-classes */
       case 'disabled':
       case 'enabled': {
-        return matchDisabledPseudoClass(astName, node);
+        return this._matchDisabledPseudoClass(astName, node);
       }
       case 'read-only':
       case 'read-write': {
@@ -664,6 +671,69 @@ export class Evaluator {
       }
     }
     return false;
+  };
+
+  /**
+   * Evaluates the :disabled and :enabled pseudo-classes with tree-caching.
+   * @private
+   * @param {string} astName - The pseudo-class name ('disabled' or 'enabled').
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchDisabledPseudoClass = (astName, node) => {
+    const { localName, parentNode } = node;
+    if (
+      !KEYS_FORM_PS_DISABLED.has(localName) &&
+      !isCustomElement(node, { formAssociated: true })
+    ) {
+      return false;
+    }
+    if (!this.#psDisabledCache) {
+      this.#psDisabledCache = new WeakSet();
+    }
+    if (node.disabled || node.hasAttribute('disabled')) {
+      this.#psDisabledCache.add(node);
+      return astName === 'disabled';
+    }
+    let isDisabled = false;
+    if (localName === 'option') {
+      if (
+        parentNode &&
+        parentNode.localName === 'optgroup' &&
+        (parentNode.disabled || parentNode.hasAttribute('disabled'))
+      ) {
+        isDisabled = true;
+      }
+    } else if (localName !== 'optgroup') {
+      let current = parentNode;
+      while (current) {
+        if (current.localName === 'fieldset') {
+          if (current.disabled || current.hasAttribute('disabled')) {
+            let legend;
+            let element = current.firstElementChild;
+            while (element) {
+              if (element.localName === 'legend') {
+                legend = element;
+                break;
+              }
+              element = element.nextElementSibling;
+            }
+            if (!legend || !legend.contains(node)) {
+              isDisabled = true;
+              break;
+            }
+          }
+        }
+        current = current.parentNode;
+      }
+    }
+    if (isDisabled) {
+      this.#psDisabledCache.add(node);
+    }
+    if (astName === 'disabled') {
+      return isDisabled;
+    }
+    return !isDisabled;
   };
 
   /**

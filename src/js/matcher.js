@@ -10,15 +10,12 @@ import {
   getLanguageAttribute,
   getType,
   isContentEditable,
-  isCustomElement,
   isNamespaceDeclared
 } from './utility.js';
 
 /* constants */
 import {
   ALPHA_NUM,
-  FORM_PARTS,
-  IDENT,
   INPUT_EDIT,
   LANG_PART,
   NOT_SUPPORTED_ERR,
@@ -26,12 +23,6 @@ import {
   STRING,
   SYNTAX_ERR
 } from './constant.js';
-const KEYS_FORM_PS_DISABLED = new Set([
-  ...FORM_PARTS,
-  'fieldset',
-  'optgroup',
-  'option'
-]);
 const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 
 /* regexp */
@@ -153,7 +144,6 @@ export const matchLanguagePseudoClass = (
   if (elementLang === null) {
     return false;
   }
-  // Use cached regex if available
   if (ast._langRegex !== undefined) {
     if (ast._langPattern === '*') {
       return elementLang !== '';
@@ -164,12 +154,8 @@ export const matchLanguagePseudoClass = (
     return ast._langRegex.test(elementLang);
   }
   const { name, type, value } = ast;
-  let langPattern;
-  if (type === STRING && value) {
-    langPattern = value;
-  } else if (type === IDENT && name) {
-    langPattern = unescapeSelector(name);
-  }
+  const langPattern =
+    type === STRING && value !== undefined ? value : unescapeSelector(name);
   ast._langPattern = langPattern;
   if (typeof langPattern !== 'string') {
     ast._langRegex = null;
@@ -183,24 +169,14 @@ export const matchLanguagePseudoClass = (
     ast._langRegex = null;
     return false;
   }
-  let matcherRegex;
-  if (langPattern.indexOf('-') > -1) {
-    const [langMain, langSub, ...langRest] = langPattern.split('-');
-    const extendedMain =
-      langMain === '*' ? `${ALPHA_NUM}${LANG_PART}` : `${langMain}${LANG_PART}`;
-    const extendedSub = `-${langSub}${LANG_PART}`;
-    let extendedRest = '';
-    for (let i = 0; i < langRest.length; i++) {
-      extendedRest += `-${langRest[i]}${LANG_PART}`;
-    }
-    matcherRegex = new RegExp(
-      `^${extendedMain}${extendedSub}${extendedRest}$`,
-      'i'
-    );
-  } else {
-    matcherRegex = new RegExp(`^${langPattern}${LANG_PART}$`, 'i');
-  }
-  // Store compiled regex in AST for subsequent matches
+  const regexStr = langPattern
+    .split('-')
+    .map((part, index) => {
+      const core = part === '*' ? ALPHA_NUM : part;
+      return (index === 0 ? core : `-${core}`) + LANG_PART;
+    })
+    .join('');
+  const matcherRegex = new RegExp(`^${regexStr}$`, 'i');
   ast._langRegex = matcherRegex;
   return matcherRegex.test(elementLang);
 };
@@ -220,63 +196,6 @@ export const matchCheckedPseudoClass = node => {
     return node.checked && (attrType === 'checkbox' || attrType === 'radio');
   }
   return false;
-};
-
-/**
- * Matches the :disabled and :enabled pseudo-classes.
- * @param {string} astName - pseudo-class name
- * @param {object} node - Element node
- * @returns {boolean} - True if matches, otherwise false.
- */
-export const matchDisabledPseudoClass = (astName, node) => {
-  const { localName, parentNode } = node;
-  if (
-    !KEYS_FORM_PS_DISABLED.has(localName) &&
-    !isCustomElement(node, { formAssociated: true })
-  ) {
-    return false;
-  }
-  let isDisabled = false;
-  if (node.disabled || node.hasAttribute('disabled')) {
-    isDisabled = true;
-  } else if (localName === 'option') {
-    if (
-      parentNode &&
-      parentNode.localName === 'optgroup' &&
-      (parentNode.disabled || parentNode.hasAttribute('disabled'))
-    ) {
-      isDisabled = true;
-    }
-  } else if (localName !== 'optgroup') {
-    let current = parentNode;
-    while (current) {
-      if (
-        current.localName === 'fieldset' &&
-        (current.disabled || current.hasAttribute('disabled'))
-      ) {
-        // The first <legend> in a disabled <fieldset> is not disabled.
-        let legend;
-        let element = current.firstElementChild;
-        while (element) {
-          if (element.localName === 'legend') {
-            legend = element;
-            break;
-          }
-          element = element.nextElementSibling;
-        }
-        if (!legend || !legend.contains(node)) {
-          isDisabled = true;
-        }
-        // Found the containing fieldset, stop searching up.
-        break;
-      }
-      current = current.parentNode;
-    }
-  }
-  if (astName === 'disabled') {
-    return isDisabled;
-  }
-  return !isDisabled;
 };
 
 /**
@@ -438,8 +357,6 @@ export const matchRequiredPseudoClass = (astName, node, keys) => {
 
 /**
  * Matches an attribute selector against an element.
- * This function handles various attribute matchers like '=', '~=', '^=', etc.,
- * and considers namespaces and case sensitivity based on document type.
  * @param {object} ast - The AST for the attribute selector.
  * @param {object} node - The element node to match against.
  * @param {object} [opt] - Optional parameters.
@@ -459,7 +376,6 @@ export const matchAttributeSelector = (
     name: astName,
     value: astValue
   } = ast;
-  // Validate selector flags ('i' or 's').
   if (typeof astFlags === 'string' && !/^[is]$/i.test(astFlags) && !forgive) {
     const css = generateCSS(ast);
     throw generateException(
@@ -468,18 +384,27 @@ export const matchAttributeSelector = (
       globalObject
     );
   }
+  const isHTML = node.ownerDocument.contentType === 'text/html';
   if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
-    const rawName = unescapeSelector(astName.name);
-    if (rawName.indexOf('|') === -1) {
-      if (node.hasAttribute(rawName)) {
+    if (ast._rawName === undefined) {
+      ast._rawName = unescapeSelector(astName.name);
+      ast._hasPipe = ast._rawName.indexOf('|') > -1;
+    }
+    if (!ast._hasPipe) {
+      if (
+        ast._rawName === 'lang' &&
+        node.hasAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')
+      ) {
+        return false;
+      }
+      if (node.hasAttribute(ast._rawName)) {
         return true;
       }
       const attrs = node.attributes;
       if (!attrs || attrs.length === 0) {
         return false;
       }
-      const isHTML = node.ownerDocument.contentType === 'text/html';
-      const checkName = isHTML ? rawName.toLowerCase() : rawName;
+      const checkName = isHTML ? ast._rawName.toLowerCase() : ast._rawName;
       for (let i = 0, len = attrs.length; i < len; i++) {
         let itemName = attrs[i].name;
         if (isHTML) {
@@ -487,13 +412,9 @@ export const matchAttributeSelector = (
         }
         const colonIdx = itemName.indexOf(':');
         if (colonIdx > -1) {
-          const itemPrefix = itemName.substring(0, colonIdx);
           const itemLocalName = itemName
             .substring(colonIdx + 1)
             .replace(/^:/, '');
-          if (itemPrefix === 'xml' && itemLocalName === 'lang') {
-            continue;
-          }
           if (checkName === itemLocalName) {
             return true;
           }
@@ -505,36 +426,56 @@ export const matchAttributeSelector = (
     }
   }
   const { attributes } = node;
-  // An element with no attributes cannot match.
   if (!attributes || !attributes.length) {
     return false;
   }
-  // Determine case sensitivity based on document type and flags.
-  let caseInsensitive;
-  if (node.ownerDocument.contentType === 'text/html') {
-    if (typeof astFlags === 'string' && /^s$/i.test(astFlags)) {
-      caseInsensitive = false;
+  if (ast._caseInsensitive === undefined) {
+    let caseInsensitive = false;
+    if (isHTML) {
+      caseInsensitive = !(
+        typeof astFlags === 'string' && /^s$/i.test(astFlags)
+      );
     } else {
-      caseInsensitive = true;
+      caseInsensitive = typeof astFlags === 'string' && /^i$/i.test(astFlags);
     }
-  } else if (typeof astFlags === 'string' && /^i$/i.test(astFlags)) {
-    caseInsensitive = true;
-  } else {
-    caseInsensitive = false;
+    ast._caseInsensitive = caseInsensitive;
+    let astAttrName = unescapeSelector(astName.name);
+    if (caseInsensitive) {
+      astAttrName = astAttrName.toLowerCase();
+    }
+    ast._astAttrName = astAttrName;
+    ast._hasPipeInName = astAttrName.indexOf('|') > -1;
+    if (ast._hasPipeInName) {
+      const { prefix, localName } = parseAstName(astAttrName);
+      ast._astPrefix = prefix;
+      ast._astLocalName = localName;
+    }
+    const { name: astIdentValue, value: astStringValue } = astValue ?? {};
+    let attrValue;
+    if (astIdentValue) {
+      attrValue = unescapeSelector(astIdentValue);
+    } else if (astStringValue !== undefined) {
+      attrValue = astStringValue;
+    }
+    if (caseInsensitive && typeof attrValue === 'string') {
+      attrValue = attrValue.toLowerCase();
+    }
+    ast._cachedAttrValue = attrValue;
+    if (astMatcher === '~=' && attrValue && typeof attrValue === 'string') {
+      ast._tildeTarget = /\s/.test(attrValue) ? null : ` ${attrValue} `;
+    }
   }
-  // Prepare the attribute name from the selector for matching.
-  let astAttrName = unescapeSelector(astName.name);
-  if (caseInsensitive) {
-    astAttrName = astAttrName.toLowerCase();
-  }
-  // A set to store the values of attributes whose names match.
+  const caseInsensitive = ast._caseInsensitive;
+  const astAttrName = ast._astAttrName;
+  const attrValue = ast._cachedAttrValue;
   const attrValues = new Set();
-  // Handle namespaced attribute names (e.g., [*|attr], [ns|attr]).
-  if (astAttrName.indexOf('|') > -1) {
-    const { prefix: astPrefix, localName: astLocalName } =
-      parseAstName(astAttrName);
-    for (const item of attributes) {
-      let { name: itemName, value: itemValue } = item;
+  if (ast._hasPipeInName) {
+    const astPrefix = ast._astPrefix;
+    const astLocalName = ast._astLocalName;
+    for (let i = 0, len = attributes.length; i < len; i++) {
+      const item = attributes[i];
+      let itemName = item.name;
+      let itemValue = item.value;
       if (caseInsensitive) {
         itemName = itemName.toLowerCase();
         itemValue = itemValue.toLowerCase();
@@ -577,15 +518,11 @@ export const matchAttributeSelector = (
             const itemLocalName = itemName
               .substring(colonIdx + 1)
               .replace(/^:/, '');
-            // Ignore the 'xml:lang' attribute.
             if (itemPrefix === 'xml' && itemLocalName === 'lang') {
               continue;
-            } else if (
-              astPrefix === itemPrefix &&
-              astLocalName === itemLocalName
-            ) {
-              const namespaceDeclared = isNamespaceDeclared(astPrefix, node);
-              if (namespaceDeclared) {
+            }
+            if (astPrefix === itemPrefix && astLocalName === itemLocalName) {
+              if (isNamespaceDeclared(astPrefix, node)) {
                 attrValues.add(itemValue);
               }
             }
@@ -594,133 +531,132 @@ export const matchAttributeSelector = (
       }
     }
   } else {
-    // Handle non-namespaced attribute names.
-    for (let { name: itemName, value: itemValue } of attributes) {
-      if (caseInsensitive) {
-        itemName = itemName.toLowerCase();
-        itemValue = itemValue.toLowerCase();
+    for (let i = 0, len = attributes.length; i < len; i++) {
+      const item = attributes[i];
+      const origName = item.name;
+      if (
+        item.namespaceURI === 'http://www.w3.org/XML/1998/namespace' &&
+        item.localName === 'lang'
+      ) {
+        continue;
       }
-      const colonIdx = itemName.indexOf(':');
+      const colonIdx = origName.indexOf(':');
       if (colonIdx > -1) {
-        const itemPrefix = itemName.substring(0, colonIdx);
-        const itemLocalName = itemName
+        const itemPrefix = origName.substring(0, colonIdx);
+        const itemLocalName = origName
           .substring(colonIdx + 1)
           .replace(/^:/, '');
-        // The attribute is starting with ':'.
-        if (!itemPrefix && astAttrName === `:${itemLocalName}`) {
-          attrValues.add(itemValue);
-        } else if (itemPrefix === 'xml' && itemLocalName === 'lang') {
-          // Ignore the 'xml:lang' attribute.
+        if (itemPrefix === 'xml' && itemLocalName === 'lang') {
           continue;
-        } else if (astAttrName === itemLocalName) {
-          attrValues.add(itemValue);
         }
-      } else if (astAttrName === itemName) {
-        attrValues.add(itemValue);
+      }
+      let isMatch = false;
+      if (origName === astAttrName) {
+        isMatch = true;
+      } else if (caseInsensitive && origName.toLowerCase() === astAttrName) {
+        isMatch = true;
+      }
+      if (isMatch) {
+        attrValues.add(caseInsensitive ? item.value.toLowerCase() : item.value);
+      } else if (colonIdx > -1) {
+        const itemLocalName = origName
+          .substring(colonIdx + 1)
+          .replace(/^:/, '');
+        let isLocalMatch = false;
+        if (itemLocalName === astAttrName) {
+          isLocalMatch = true;
+        } else if (
+          caseInsensitive &&
+          itemLocalName.toLowerCase() === astAttrName
+        ) {
+          isLocalMatch = true;
+        }
+        if (isLocalMatch) {
+          attrValues.add(
+            caseInsensitive ? item.value.toLowerCase() : item.value
+          );
+        }
       }
     }
   }
   if (!attrValues.size) {
     return false;
   }
-  // Prepare the value from the selector's RHS for comparison.
-  const { name: astIdentValue, value: astStringValue } = astValue ?? {};
-  let attrValue;
-  if (astIdentValue) {
-    // Ident values are not unescaped by css-tree, so we must unescape them
-    // (e.g. `\5c` hex escapes, `\n` character escapes).
-    if (caseInsensitive) {
-      attrValue = unescapeSelector(astIdentValue).toLowerCase();
-    } else {
-      attrValue = unescapeSelector(astIdentValue);
-    }
-  } else if (astStringValue) {
-    // String values (quoted) are already unescaped by css-tree, so use as-is.
-    if (caseInsensitive) {
-      attrValue = astStringValue.toLowerCase();
-    } else {
-      attrValue = astStringValue;
-    }
-  } else if (astStringValue === '') {
-    attrValue = astStringValue;
-  }
-  // Perform the final match based on the specified matcher.
   switch (astMatcher) {
     case '=': {
       return typeof attrValue === 'string' && attrValues.has(attrValue);
     }
     case '~=': {
-      if (attrValue && typeof attrValue === 'string') {
-        if (/\s/.test(attrValue)) {
-          return false;
-        }
-        if (ast._tildeTarget === undefined) {
-          ast._tildeTarget = ` ${attrValue} `;
-        }
-        const target = ast._tildeTarget;
-        for (const value of attrValues) {
-          if (` ${value.replace(/[\t\r\n\f]/g, ' ')} `.includes(target)) {
-            return true;
-          }
+      if (ast._tildeTarget === null || !attrValue) {
+        return false;
+      }
+      const target = ast._tildeTarget;
+      for (const value of attrValues) {
+        if (` ${value.replace(/[\t\r\n\f]/g, ' ')} `.includes(target)) {
+          return true;
         }
       }
       return false;
     }
     case '|=': {
-      if (attrValue && typeof attrValue === 'string') {
-        for (const value of attrValues) {
-          if (value === attrValue || value.startsWith(`${attrValue}-`)) {
-            return true;
-          }
+      if (!attrValue || typeof attrValue !== 'string') {
+        return false;
+      }
+      const prefix = `${attrValue}-`;
+      for (const value of attrValues) {
+        if (value === attrValue || value.startsWith(prefix)) {
+          return true;
         }
       }
       return false;
     }
     case '^=': {
-      if (attrValue && typeof attrValue === 'string') {
-        for (const value of attrValues) {
-          if (value.startsWith(`${attrValue}`)) {
-            return true;
-          }
+      if (!attrValue || typeof attrValue !== 'string') {
+        return false;
+      }
+      for (const value of attrValues) {
+        if (value.startsWith(attrValue)) {
+          return true;
         }
       }
       return false;
     }
     case '$=': {
-      if (attrValue && typeof attrValue === 'string') {
-        for (const value of attrValues) {
-          if (value.endsWith(`${attrValue}`)) {
-            return true;
-          }
+      if (!attrValue || typeof attrValue !== 'string') {
+        return false;
+      }
+      for (const value of attrValues) {
+        if (value.endsWith(attrValue)) {
+          return true;
         }
       }
       return false;
     }
     case '*=': {
-      if (attrValue && typeof attrValue === 'string') {
-        for (const value of attrValues) {
-          if (value.includes(`${attrValue}`)) {
-            return true;
-          }
+      if (!attrValue || typeof attrValue !== 'string') {
+        return false;
+      }
+      for (const value of attrValues) {
+        if (value.includes(attrValue)) {
+          return true;
         }
       }
       return false;
     }
     case null:
     default: {
-      // This case handles attribute existence checks (e.g., '[disabled]').
       return true;
     }
   }
 };
 
 /**
- * match type selector
- * @param {object} ast - AST
- * @param {object} node - Element node
- * @param {object} [opt] - options
- * @param {boolean} [opt.check] - running in internal check()
- * @param {boolean} [opt.forgive] - forgive undeclared namespace
+ * Matches a type selector against an element.
+ * @param {object} ast - The AST for the type selector.
+ * @param {object} node - The element node to match against.
+ * @param {object} [opt] - Optional parameters.
+ * @param {boolean} [opt.check] - True if running in an internal check.
+ * @param {boolean} [opt.forgive] - True to forgive undeclared namespace.
  * @param {object} [opt.globalObject] - The global object.
  * @returns {boolean} - True if the type selector matches, otherwise false.
  */

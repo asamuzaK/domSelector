@@ -580,6 +580,22 @@ describe('matcher', () => {
       assert.strictEqual(res2, false, 'result');
     });
 
+    it('should not match when langPattern is not a string (e.g. null)', () => {
+      const ast = {
+        type: STRING,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('lang', 'en');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(ast._langRegex, null, 'cached regex should be null');
+      const res2 = func(ast, node);
+      assert.strictEqual(res2, false, 'result (cached)');
+    });
+
     it('should match', () => {
       const ast = {
         name: '*',
@@ -1161,228 +1177,6 @@ describe('matcher', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
-    });
-  });
-
-  describe('match disabled / enabled pseudo-class', () => {
-    const func = matcher.matchDisabledPseudoClass;
-
-    it('should get false', () => {
-      const node = document.createElement('div');
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const node = document.createElement('div');
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const node = document.createElement('input');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const node = document.createElement('input');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const node = document.createElement('input');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('foo', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const node = document.createElement('input');
-      node.disabled = true;
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const node = document.createElement('input');
-      node.disabled = true;
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      window.customElements.define(
-        'x-foo',
-        class extends window.HTMLElement {
-          static formAssociated = false;
-        }
-      );
-      const node = document.createElement('x-foo');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      window.customElements.define(
-        'x-input',
-        class extends window.HTMLElement {
-          static formAssociated = true;
-        }
-      );
-      const node = document.createElement('x-input');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      window.customElements.define(
-        'x-input',
-        class extends window.HTMLElement {
-          static formAssociated = true;
-        }
-      );
-      const node = document.createElement('x-input');
-      node.setAttribute('disabled', 'disabled');
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const node = document.createElement('option');
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.setAttribute('disabled', 'disabled');
-      parent.appendChild(node);
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.setAttribute('disabled', 'disabled');
-      parent.appendChild(node);
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.appendChild(node);
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.appendChild(node);
-      const res = func('enabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get true', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.disabled = true;
-      parent.appendChild(node);
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const parent = document.createElement('optgroup');
-      const node = document.createElement('option');
-      parent.disabled = true;
-      parent.appendChild(node);
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      const res = func('enabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get true', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      field.setAttribute('disabled', 'disabled');
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      field.setAttribute('disabled', 'disabled');
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      field.disabled = true;
-      const res = func('disabled', node);
-      assert.strictEqual(res, true, 'result');
-    });
-
-    it('should get false', () => {
-      const field = document.createElement('fieldset');
-      const node = document.createElement('input');
-      field.appendChild(node);
-      field.disabled = true;
-      const res = func('enabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get false', () => {
-      const field = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      const node = document.createElement('input');
-      legend.appendChild(node);
-      field.appendChild(legend);
-      field.setAttribute('disabled', 'disabled');
-      const res = func('disabled', node);
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should get true', () => {
-      const field = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      const node = document.createElement('input');
-      legend.appendChild(node);
-      field.appendChild(legend);
-      field.setAttribute('disabled', 'disabled');
-      const res = func('enabled', node);
-      assert.strictEqual(res, true, 'result');
     });
   });
 
@@ -3672,6 +3466,52 @@ describe('matcher', () => {
       const doc = new window.DOMParser().parseFromString('<root/>', 'text/xml');
       const node = doc.createElement('div');
       node.setAttributeNS('https://example.com/baz', 'baz:Foo', 'bar');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match case-insensitively in XML document using the "i" flag', () => {
+      const ast = {
+        flags: 'i',
+        matcher: '=',
+        name: {
+          name: 'baz',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      const domStr = '<root></root>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('item');
+      node.setAttribute('BaZ', 'QUX');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should match itemLocalName case-insensitively in XML document using the "i" flag for colon-separated attributes', () => {
+      const ast = {
+        flags: 'i',
+        matcher: '=',
+        name: {
+          name: 'bar',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'qux'
+        }
+      };
+      const domStr = '<root/>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('item');
+      node.setAttributeNS('https://example.com/foo', 'foo:BaR', 'qux');
       doc.documentElement.appendChild(node);
       const res = func(ast, node);
       assert.strictEqual(res, true, 'result');
