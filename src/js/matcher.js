@@ -120,7 +120,7 @@ export const matchPseudoElementSelector = (
  * @param {object} node - The element node to match against.
  * @param {WeakMap} [dirCache] - Cache for directionality.
  * @throws {TypeError} If the AST does not contain a valid direction value.
- * @returns {boolean} - True if the directionality matches, otherwise false.
+ * @returns {boolean} - True if matches, otherwise false.
  */
 export const matchDirectionPseudoClass = (
   ast,
@@ -142,7 +142,7 @@ export const matchDirectionPseudoClass = (
  * @param {object} node - The element node to match against.
  * @param {WeakMap} [langCache] - Cache for language attributes.
  * @throws {TypeError} If the AST does not contain a valid language value.
- * @returns {boolean} - True if the language attribute matches, otherwise false.
+ * @returns {boolean} - True if matches, otherwise false.
  */
 export const matchLanguagePseudoClass = (
   ast,
@@ -206,10 +206,27 @@ export const matchLanguagePseudoClass = (
 };
 
 /**
+ * Matches the :checked pseudo-class.
+ * @param {object} node - The Element node.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchCheckedPseudoClass = node => {
+  const { localName } = node;
+  if (localName === 'option') {
+    return node.selected;
+  }
+  if (localName === 'input') {
+    const attrType = node.getAttribute('type');
+    return node.checked && (attrType === 'checkbox' || attrType === 'radio');
+  }
+  return false;
+};
+
+/**
  * Matches the :disabled and :enabled pseudo-classes.
  * @param {string} astName - pseudo-class name
  * @param {object} node - Element node
- * @returns {boolean} - True if the pseudo-class matches, otherwise false.
+ * @returns {boolean} - True if matches, otherwise false.
  */
 export const matchDisabledPseudoClass = (astName, node) => {
   const { localName, parentNode } = node;
@@ -263,10 +280,98 @@ export const matchDisabledPseudoClass = (astName, node) => {
 };
 
 /**
+ * Matches the :any-link and :link pseudo-classes.
+ * @param {object} node - The Element node.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchLinkPseudoClass = node => {
+  const { localName } = node;
+  return (
+    (localName === 'a' || localName === 'area') && node.hasAttribute('href')
+  );
+};
+
+/**
+ * Matches the :open pseudo-class.
+ * @param {object} node - The Element node.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchOpenPseudoClass = node => {
+  const { localName } = node;
+  return (
+    (localName === 'details' || localName === 'dialog') &&
+    node.hasAttribute('open')
+  );
+};
+
+/**
+ * Matches the :placeholder-shown pseudo-class.
+ * @param {object} node - The Element node.
+ * @param {Set.<string>} keys - A set of input type keys.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchPlaceholderShownPseudoClass = (node, keys) => {
+  let placeholder;
+  if (node.placeholder) {
+    placeholder = node.placeholder;
+  } else if (node.hasAttribute('placeholder')) {
+    placeholder = node.getAttribute('placeholder');
+  }
+  if (typeof placeholder === 'string' && !/[\r\n]/.test(placeholder)) {
+    let targetNode;
+    const { localName } = node;
+    if (localName === 'textarea') {
+      targetNode = node;
+    } else if (localName === 'input') {
+      if (node.hasAttribute('type')) {
+        if (keys.has(node.getAttribute('type'))) {
+          targetNode = node;
+        }
+      } else {
+        targetNode = node;
+      }
+    }
+    if (targetNode) {
+      return node.value === '';
+    }
+  }
+  return false;
+};
+
+/**
+ * Matches the :in-range and :out-of-range pseudo-classes.
+ * @param {string} astName - The name of the pseudo-class.
+ * @param {object} node - The Element node.
+ * @param {Set.<string>} keys - A set of input type keys.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchRangePseudoClass = (astName, node, keys) => {
+  const { localName } = node;
+  const attrType = node.getAttribute('type');
+  if (
+    localName === 'input' &&
+    !(node.readOnly || node.hasAttribute('readonly')) &&
+    !(node.disabled || node.hasAttribute('disabled')) &&
+    keys.has(attrType)
+  ) {
+    const flowed = node.validity.rangeUnderflow || node.validity.rangeOverflow;
+    if (astName === 'out-of-range') {
+      return flowed;
+    }
+    return flowed
+      ? false
+      : node.hasAttribute('min') ||
+          node.hasAttribute('max') ||
+          attrType === 'range';
+  }
+  return false;
+};
+
+/**
  * Match the :read-only and :read-write pseudo-classes
  * @param {string} astName - pseudo-class name
  * @param {object} node - Element node
- * @returns {boolean} - True if the pseudo-class matches, otherwise false.
+ * @returns {boolean} - True if matches, otherwise false.
  */
 export const matchReadOnlyPseudoClass = (astName, node) => {
   const { localName } = node;
@@ -295,6 +400,40 @@ export const matchReadOnlyPseudoClass = (astName, node) => {
     return isReadOnly;
   }
   return !isReadOnly;
+};
+
+/**
+ * Matches the :required and :optional pseudo-classes.
+ * @param {string} astName - The name of the pseudo-class.
+ * @param {object} node - The Element node.
+ * @param {Set.<string>} keys - A set of input type keys.
+ * @returns {boolean} True if matches, otherwise false.
+ */
+export const matchRequiredPseudoClass = (astName, node, keys) => {
+  const { localName } = node;
+  let required = false;
+  if (localName === 'select' || localName === 'textarea') {
+    if (node.required || node.hasAttribute('required')) {
+      required = true;
+    }
+  } else if (localName === 'input') {
+    if (node.hasAttribute('type')) {
+      const attrType = node.getAttribute('type');
+      if (keys.has(attrType)) {
+        if (node.required || node.hasAttribute('required')) {
+          required = true;
+        }
+      }
+    } else if (node.required || node.hasAttribute('required')) {
+      required = true;
+    }
+  } else {
+    return false;
+  }
+  if (astName === 'optional') {
+    return !required;
+  }
+  return required;
 };
 
 /**

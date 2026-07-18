@@ -1103,6 +1103,67 @@ describe('matcher', () => {
     });
   });
 
+  describe('match checked pseudo-class', () => {
+    const func = matcher.matchCheckedPseudoClass;
+
+    it('should get true for selected option', () => {
+      const node = document.createElement('option');
+      node.selected = true;
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for unselected option', () => {
+      const node = document.createElement('option');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for checked checkbox input', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      node.checked = true;
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for unchecked checkbox input', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'checkbox');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for checked radio input', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
+      node.checked = true;
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for unchecked radio input', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'radio');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for checked text input', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.checked = true;
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for div element', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
   describe('match disabled / enabled pseudo-class', () => {
     const func = matcher.matchDisabledPseudoClass;
 
@@ -1325,6 +1386,264 @@ describe('matcher', () => {
     });
   });
 
+  describe('match link pseudo-class', () => {
+    const func = matcher.matchLinkPseudoClass;
+
+    it('should get true for a element with href', () => {
+      const node = document.createElement('a');
+      node.setAttribute('href', 'https://example.com');
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for a element without href', () => {
+      const node = document.createElement('a');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for area element with href', () => {
+      const node = document.createElement('area');
+      node.setAttribute('href', '#foo');
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for area element without href', () => {
+      const node = document.createElement('area');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for div element with href', () => {
+      const node = document.createElement('div');
+      node.setAttribute('href', 'https://example.com');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('match open pseudo-class', () => {
+    const func = matcher.matchOpenPseudoClass;
+
+    it('should get true for details element with open attribute', () => {
+      const node = document.createElement('details');
+      node.setAttribute('open', '');
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for details element without open attribute', () => {
+      const node = document.createElement('details');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for dialog element with open attribute', () => {
+      const node = document.createElement('dialog');
+      node.setAttribute('open', '');
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for dialog element without open attribute', () => {
+      const node = document.createElement('dialog');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for div element with open attribute', () => {
+      const node = document.createElement('div');
+      node.setAttribute('open', '');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('match placeholder-shown pseudo-class', () => {
+    const func = matcher.matchPlaceholderShownPseudoClass;
+    const keys = new Set(['text', 'number']);
+
+    it('should get true for textarea with placeholder and empty value', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for textarea with placeholder and non-empty value', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('placeholder', 'foo');
+      node.value = 'bar';
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for textarea with multiline placeholder', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('placeholder', 'foo\nbar');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for textarea without placeholder', () => {
+      const node = document.createElement('textarea');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for input without type attribute (defaults to text)', () => {
+      const node = document.createElement('input');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for input with allowed type, placeholder and empty value', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for input with allowed type, placeholder and non-empty value', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('placeholder', 'foo');
+      node.value = 'bar';
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for input with disallowed type, even with placeholder and empty value', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'button');
+      node.setAttribute('placeholder', 'foo');
+      node.value = '';
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for div element with placeholder attribute', () => {
+      const node = document.createElement('div');
+      node.setAttribute('placeholder', 'foo');
+      const res = func(node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('match in-range / out-of-range pseudo-class', () => {
+    const func = matcher.matchRangePseudoClass;
+    const keys = new Set(['number', 'range', 'date']);
+
+    it('should get true for out-of-range (underflow)', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '5');
+      node.value = '1';
+      const res = func('out-of-range', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for out-of-range (overflow)', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('max', '5');
+      node.value = '10';
+      const res = func('out-of-range', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for out-of-range when within range', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '5';
+      const res = func('out-of-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for in-range when within range', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '5';
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for in-range (underflow)', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '5');
+      node.value = '1';
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for in-range when type is range even without min/max', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'range');
+      node.value = '50';
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for in-range when type is number without min/max', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.value = '50';
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false when input is readonly', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '5';
+      node.readOnly = true;
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false when input is disabled', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'number');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '5';
+      node.disabled = true;
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false when type is not in keys', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.setAttribute('min', '1');
+      node.setAttribute('max', '10');
+      node.value = '5';
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for non-input element', () => {
+      const node = document.createElement('div');
+      const res = func('in-range', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
   describe('match read-only / read-write pseudo-class', () => {
     const func = matcher.matchReadOnlyPseudoClass;
 
@@ -1431,6 +1750,122 @@ describe('matcher', () => {
       const node = document.createElement('input');
       node.type = 'button';
       const res = func('read-write', node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
+  describe('match required / optional pseudo-class', () => {
+    const func = matcher.matchRequiredPseudoClass;
+    const keys = new Set(['text', 'checkbox', 'radio', 'file']);
+
+    it('should get true for required select', () => {
+      const node = document.createElement('select');
+      node.required = true;
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for optional select when it is required', () => {
+      const node = document.createElement('select');
+      node.required = true;
+      const res = func('optional', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for required select without required attribute', () => {
+      const node = document.createElement('select');
+      const res = func('required', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for optional select without required attribute', () => {
+      const node = document.createElement('select');
+      const res = func('optional', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for required textarea', () => {
+      const node = document.createElement('textarea');
+      node.setAttribute('required', '');
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for required input with allowed type', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      node.required = true;
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for required input with allowed type but no required attribute', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      const res = func('required', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for optional input with allowed type and no required attribute', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'text');
+      const res = func('optional', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for required input with disallowed type', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'button');
+      node.required = true;
+      const res = func('required', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for optional input with disallowed type even if it has required attribute', () => {
+      const node = document.createElement('input');
+      node.setAttribute('type', 'button');
+      node.required = true;
+      const res = func('optional', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for required input without type attribute (defaults to text)', () => {
+      const node = document.createElement('input');
+      node.required = true;
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for required div element', () => {
+      const node = document.createElement('div');
+      node.setAttribute('required', '');
+      const res = func('required', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get false for optional div element', () => {
+      const node = document.createElement('div');
+      const res = func('optional', node, keys);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should get true for input without type attribute but with required property', () => {
+      const node = document.createElement('input');
+      node.required = true;
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get true for input without type attribute but with required attribute', () => {
+      const node = document.createElement('input');
+      node.setAttribute('required', 'required');
+      const res = func('required', node, keys);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should get false for input without type attribute and without required state', () => {
+      const node = document.createElement('input');
+      const res = func('required', node, keys);
       assert.strictEqual(res, false, 'result');
     });
   });
