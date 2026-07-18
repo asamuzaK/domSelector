@@ -237,28 +237,6 @@ describe('Evaluator', () => {
     });
   });
 
-  describe('register event listeners', () => {
-    it('should register listeners', () => {
-      const evaluator = new Evaluator(window);
-      const res = evaluator._registerEventListeners();
-      assert.deepEqual(
-        res,
-        [
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined
-        ],
-        'result'
-      );
-    });
-  });
-
   describe('create tree walker', () => {
     it('should get tree walker', () => {
       const evaluator = new Evaluator(window);

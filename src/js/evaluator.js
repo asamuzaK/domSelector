@@ -3,6 +3,7 @@
  */
 
 /* import */
+import { EventHandler } from './event.js';
 import {
   matchAttributeSelector,
   matchDirectionPseudoClass,
@@ -58,22 +59,6 @@ const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
 const KEYS_INPUT_REQUIRED = new Set([...INPUT_CHECK, ...INPUT_EDIT, 'file']);
 const KEYS_INPUT_RESET = new Set(['button', 'reset']);
 const KEYS_INPUT_SUBMIT = new Set(['image', 'submit']);
-const KEYS_MODIFIER = new Set([
-  'Alt',
-  'AltGraph',
-  'CapsLock',
-  'Control',
-  'Fn',
-  'FnLock',
-  'Hyper',
-  'Meta',
-  'NumLock',
-  'ScrollLock',
-  'Shift',
-  'Super',
-  'Symbol',
-  'SymbolLock'
-]);
 const KEYS_PS_UNCACHE = new Set([
   'any-link',
   'defined',
@@ -95,10 +80,8 @@ export class Evaluator {
   #anbCache;
   #astCache = new WeakMap();
   #documentURL;
-  #event;
-  #eventHandlers;
+  #eventHandler;
   #filterLeavesCache;
-  #focus;
   #focusWithinCache;
   #invalidateResults;
   #lastFocusVisible;
@@ -121,24 +104,7 @@ export class Evaluator {
     this.window = window;
     this.documentCache = new WeakMap();
     this.clearResults(true);
-    this.#event = null;
-    this.#focus = null;
-    this.#lastFocusVisible = null;
-    this.#eventHandlers = new Set([
-      {
-        keys: ['focus', 'focusin'],
-        handler: this._handleFocusEvent
-      },
-      {
-        keys: ['keydown', 'keyup'],
-        handler: this._handleKeyboardEvent
-      },
-      {
-        keys: ['mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'],
-        handler: this._handleMouseEvent
-      }
-    ]);
-    this._registerEventListeners();
+    this.#eventHandler = new EventHandler(window);
   }
 
   /**
@@ -803,7 +769,7 @@ export class Evaluator {
       }
       /* User action pseudo-classes */
       case 'hover': {
-        const { target, type } = this.#event ?? {};
+        const { target, type } = this.#eventHandler.currentEvent ?? {};
         return (
           /^(?:click|mouse(?:down|over|up))$/.test(type) &&
           target?.nodeType === ELEMENT_NODE &&
@@ -811,7 +777,7 @@ export class Evaluator {
         );
       }
       case 'active': {
-        const { buttons, target, type } = this.#event ?? {};
+        const { buttons, target, type } = this.#eventHandler.currentEvent ?? {};
         return (
           type === 'mousedown' &&
           buttons & 1 &&
@@ -844,12 +810,13 @@ export class Evaluator {
           let bool;
           if (isFocusVisible(node)) {
             bool = true;
-          } else if (this.#focus) {
-            const { relatedTarget, target: focusTarget } = this.#focus;
+          } else if (this.#eventHandler.currentFocus) {
+            const { relatedTarget, target: focusTarget } =
+              this.#eventHandler.currentFocus;
             if (focusTarget === node) {
               if (isFocusVisible(relatedTarget)) {
                 bool = true;
-              } else if (this.#event) {
+              } else if (this.#eventHandler.currentEvent) {
                 const {
                   altKey: eventAltKey,
                   ctrlKey: eventCtrlKey,
@@ -857,8 +824,8 @@ export class Evaluator {
                   metaKey: eventMetaKey,
                   target: eventTarget,
                   type: eventType
-                } = this.#event;
-                // this.#event is irrelevant if eventTarget === relatedTarget
+                } = this.#eventHandler.currentEvent;
+                // Irrelevant if eventTarget === relatedTarget
                 if (eventTarget === relatedTarget) {
                   if (!this.#lastFocusVisible) {
                     bool = true;
@@ -1219,62 +1186,6 @@ export class Evaluator {
   }
 
   /**
-   * Handles focus events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleFocusEvent = evt => {
-    this.#focus = evt;
-  };
-
-  /**
-   * Handles keyboard events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleKeyboardEvent = evt => {
-    const { key } = evt;
-    if (!KEYS_MODIFIER.has(key)) {
-      this.#event = evt;
-    }
-  };
-
-  /**
-   * Handles mouse events.
-   * @private
-   * @param {Event} evt - The event object.
-   * @returns {void}
-   */
-  _handleMouseEvent = evt => {
-    this.#event = evt;
-  };
-
-  /**
-   * Registers event listeners.
-   * @private
-   * @returns {Array.<void>} An array of return values from addEventListener.
-   */
-  _registerEventListeners = () => {
-    const func = [];
-    for (const eventHandler of this.#eventHandlers) {
-      const { keys, handler } = eventHandler;
-      const l = keys.length;
-      for (let i = 0; i < l; i++) {
-        const key = keys[i];
-        func.push(
-          this.window.addEventListener(key, handler, {
-            capture: true,
-            passive: true
-          })
-        );
-      }
-    }
-    return func;
-  };
-
-  /**
    * Gets selector branches from cache or parses them.
    * @private
    * @param {object} selector - The AST.
@@ -1385,7 +1296,7 @@ export class Evaluator {
         this.#nthIndexCache.set(parentNode, parentCache);
       }
       let indexMap = parentCache.get(ast);
-      if (!indexMap) {
+      if (indexMap === undefined) {
         indexMap = new Map();
         parentCache.set(ast, indexMap);
         let currentPos = 1;
