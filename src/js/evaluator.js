@@ -102,6 +102,7 @@ export class Evaluator {
   #focusWithinCache;
   #invalidateResults;
   #lastFocusVisible;
+  #nthIndexCache;
   #psDefaultCache;
   #psDirCache;
   #psHasFilterCache;
@@ -162,6 +163,7 @@ export class Evaluator {
     this.invalidate = false;
     this.clearResults();
     this.#documentURL = null;
+    this.#nthIndexCache = null;
     this.#verifyShadowHost = false;
     this.#walkers = null;
     return this;
@@ -1318,13 +1320,7 @@ export class Evaluator {
    * @returns {boolean} True if matches, otherwise false.
    */
   _matchAnPlusB = (ast, node, nthName, opt) => {
-    const {
-      localName,
-      namespaceURI,
-      nextElementSibling,
-      parentNode,
-      previousElementSibling
-    } = node;
+    const { parentNode } = node;
     if (!parentNode && node !== this.root) {
       return false;
     }
@@ -1368,45 +1364,70 @@ export class Evaluator {
       this.#anbCache.set(ast, anb);
     }
     const { a, b, isLast, isOfType, selector: anbSelector } = anb;
-    const startNode = isLast ? nextElementSibling : previousElementSibling;
-    let pos = 1;
-    if (anbSelector) {
-      const selectorBranches = this._getSelectorBranches(anbSelector);
-      const filterMatch = this._filterNthChildOfSelectorBranches(
-        selectorBranches,
-        node,
-        opt
-      );
-      if (!filterMatch) {
-        return false;
-      }
-      let current = startNode;
-      while (current) {
+    let pos;
+    if (!parentNode) {
+      if (anbSelector) {
+        const selectorBranches = this._getSelectorBranches(anbSelector);
         if (
-          this._filterNthChildOfSelectorBranches(selectorBranches, current, opt)
+          !this._filterNthChildOfSelectorBranches(selectorBranches, node, opt)
         ) {
-          pos++;
+          return false;
         }
-        current = isLast
-          ? current.nextElementSibling
-          : current.previousElementSibling;
       }
+      pos = 1;
     } else {
-      let current = startNode;
-      while (current) {
-        if (isOfType) {
-          if (
-            current.localName === localName &&
-            current.namespaceURI === namespaceURI
-          ) {
-            pos++;
+      if (!this.#nthIndexCache) {
+        this.#nthIndexCache = new WeakMap();
+      }
+      let parentCache = this.#nthIndexCache.get(parentNode);
+      if (parentCache === undefined) {
+        parentCache = new Map();
+        this.#nthIndexCache.set(parentNode, parentCache);
+      }
+      let indexMap = parentCache.get(ast);
+      if (!indexMap) {
+        indexMap = new Map();
+        parentCache.set(ast, indexMap);
+        let currentPos = 1;
+        let current = isLast
+          ? parentNode.lastElementChild
+          : parentNode.firstElementChild;
+        if (anbSelector) {
+          const selectorBranches = this._getSelectorBranches(anbSelector);
+          while (current) {
+            if (
+              this._filterNthChildOfSelectorBranches(
+                selectorBranches,
+                current,
+                opt
+              )
+            ) {
+              indexMap.set(current, currentPos++);
+            }
+            current = isLast
+              ? current.previousElementSibling
+              : current.nextElementSibling;
           }
         } else {
-          pos++;
+          const typeCounts = new Map();
+          while (current) {
+            if (isOfType) {
+              const typeKey = `${current.localName}|${current.namespaceURI}`;
+              const tPos = (typeCounts.get(typeKey) || 0) + 1;
+              typeCounts.set(typeKey, tPos);
+              indexMap.set(current, tPos);
+            } else {
+              indexMap.set(current, currentPos++);
+            }
+            current = isLast
+              ? current.previousElementSibling
+              : current.nextElementSibling;
+          }
         }
-        current = isLast
-          ? current.nextElementSibling
-          : current.previousElementSibling;
+      }
+      pos = indexMap.get(node);
+      if (pos === undefined) {
+        return false;
       }
     }
     if (a === 0) {
@@ -1416,7 +1437,6 @@ export class Evaluator {
     if (diff % a !== 0) {
       return false;
     }
-    // Equation: diff / a >= 0
     return a > 0 ? diff >= 0 : diff <= 0;
   };
 
