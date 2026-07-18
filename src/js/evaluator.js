@@ -435,180 +435,17 @@ export class Evaluator {
         return matchPlaceholderShownPseudoClass(node, KEYS_INPUT_PLACEHOLDER);
       }
       case 'default': {
-        // option
-        if (localName === 'option') {
-          return node.hasAttribute('selected');
-        }
-        const attrType = node.getAttribute('type');
-        // input[type="checkbox"], input[type="radio"]
-        if (
-          localName === 'input' &&
-          node.hasAttribute('type') &&
-          node.hasAttribute('checked')
-        ) {
-          return KEYS_INPUT_CHECK.has(attrType);
-        }
-        // button[type="submit"], input[type="submit"], input[type="image"]
-        if (
-          (localName === 'button' &&
-            !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
-          (localName === 'input' &&
-            node.hasAttribute('type') &&
-            KEYS_INPUT_SUBMIT.has(attrType))
-        ) {
-          let form = node.parentNode;
-          while (form) {
-            if (form.localName === 'form') {
-              break;
-            }
-            form = form.parentNode;
-          }
-          if (form) {
-            if (!this.#psDefaultCache) {
-              this.#psDefaultCache = new WeakMap();
-            }
-            let defaultSubmit = this.#psDefaultCache.get(form);
-            if (defaultSubmit === undefined) {
-              const walker = this.createTreeWalker(form, { force: true });
-              let refNode = traverseNode(form, walker);
-              refNode = walker.firstChild();
-              while (refNode) {
-                const nodeName = refNode.localName;
-                const nodeAttrType = refNode.getAttribute('type');
-                let m;
-                if (nodeName === 'button') {
-                  m = !(
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_RESET.has(nodeAttrType)
-                  );
-                } else if (nodeName === 'input') {
-                  m =
-                    refNode.hasAttribute('type') &&
-                    KEYS_INPUT_SUBMIT.has(nodeAttrType);
-                }
-                if (m) {
-                  defaultSubmit = refNode;
-                  break;
-                }
-                refNode = walker.nextNode();
-              }
-              this.#psDefaultCache.set(form, defaultSubmit);
-            }
-            return defaultSubmit === node;
-          }
-        }
-        break;
+        return this._matchDefaultPseudoClass(node);
       }
       case 'checked': {
         return matchCheckedPseudoClass(node);
       }
       case 'indeterminate': {
-        if (localName === 'progress') {
-          return !node.hasAttribute('value');
-        }
-        if (localName === 'input' && node.type === 'checkbox') {
-          return node.indeterminate;
-        }
-        if (localName === 'input' && node.type === 'radio') {
-          if (node.checked || node.hasAttribute('checked')) {
-            return false;
-          }
-          const nodeName = node.name;
-          let parent = node.parentNode;
-          while (parent) {
-            if (parent.localName === 'form') {
-              break;
-            }
-            parent = parent.parentNode;
-          }
-          if (!parent) {
-            parent = this.document.documentElement;
-          }
-          if (!this.#psIndeterminateCache) {
-            this.#psIndeterminateCache = new WeakMap();
-          }
-          let parentCache = this.#psIndeterminateCache.get(parent);
-          if (parentCache === undefined) {
-            parentCache = new Map();
-            this.#psIndeterminateCache.set(parent, parentCache);
-          }
-          let checked = parentCache.get(nodeName);
-          if (checked === undefined) {
-            const walker = this.createTreeWalker(parent, { force: true });
-            let refNode = traverseNode(parent, walker);
-            refNode = walker.firstChild();
-            while (refNode) {
-              if (
-                refNode.localName === 'input' &&
-                refNode.getAttribute('type') === 'radio'
-              ) {
-                if (nodeName && refNode.getAttribute('name') === nodeName) {
-                  checked = !!refNode.checked;
-                }
-                if (checked) {
-                  break;
-                }
-              }
-              refNode = walker.nextNode();
-            }
-            checked = !!checked;
-            parentCache.set(nodeName, checked);
-          }
-          return !checked;
-        }
-        break;
+        return this._matchIndeterminatePseudoClass(node);
       }
       case 'valid':
       case 'invalid': {
-        if (KEYS_FORM_PS_VALID.has(localName)) {
-          let { valid } = node.validity;
-          if (node.maxLength >= 0) {
-            valid = node.maxLength >= node.value.length;
-          }
-          if (valid && node.minLength >= 0) {
-            valid = node.minLength <= node.value.length;
-          }
-          if (astName === 'invalid') {
-            return !valid;
-          }
-          return valid;
-        }
-        if (localName === 'form' || localName === 'fieldset') {
-          if (!this.#psValidCache) {
-            this.#psValidCache = new WeakMap();
-          }
-          let valid = this.#psValidCache.get(node);
-          if (valid === undefined) {
-            const walker = this.createTreeWalker(node, { force: true });
-            let refNode = traverseNode(node, walker);
-            refNode = walker.firstChild();
-            if (!refNode) {
-              valid = true;
-            } else {
-              while (refNode) {
-                if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-                  valid = refNode.validity.valid;
-                  if (refNode.maxLength >= 0) {
-                    valid = refNode.maxLength >= refNode.value.length;
-                  }
-                  if (valid && refNode.minLength >= 0) {
-                    valid = refNode.minLength <= refNode.value.length;
-                  }
-                  if (!valid) {
-                    break;
-                  }
-                }
-                refNode = walker.nextNode();
-              }
-            }
-            this.#psValidCache.set(node, valid);
-          }
-          if (astName === 'invalid') {
-            return !valid;
-          }
-          return valid;
-        }
-        break;
+        return this._matchValidityPseudoClass(astName, node);
       }
       case 'in-range':
       case 'out-of-range': {
@@ -624,29 +461,14 @@ export class Evaluator {
         return matchLinkPseudoClass(node);
       }
       case 'local-link': {
-        if (
-          (localName === 'a' || localName === 'area') &&
-          node.hasAttribute('href')
-        ) {
-          if (!this.#documentURL) {
-            this.#documentURL = new URL(this.document.URL);
-          }
-          const { href, origin, pathname } = this.#documentURL;
-          const attrURL = new URL(node.getAttribute('href'), href);
-          return attrURL.origin === origin && attrURL.pathname === pathname;
-        }
-        break;
+        return this._matchLocalLinkPseudoClass(node);
       }
       case 'visited': {
         // prevent fingerprinting
         break;
       }
       case 'target': {
-        if (!this.#documentURL) {
-          this.#documentURL = new URL(this.document.URL);
-        }
-        const { hash } = this.#documentURL;
-        return hash && hash === `#${node.id}` && this.document.contains(node);
+        return this._matchTargetPseudoClass(node);
       }
       case 'scope': {
         if (this.node.nodeType === ELEMENT_NODE) {
@@ -659,24 +481,7 @@ export class Evaluator {
         return node === this.document.documentElement;
       }
       case 'empty': {
-        if (!node.hasChildNodes()) {
-          return true;
-        }
-        const walker = this.createTreeWalker(node, {
-          force: true,
-          whatToShow: SHOW_ALL
-        });
-        let refNode = walker.firstChild();
-        let bool;
-        while (refNode) {
-          bool =
-            refNode.nodeType !== ELEMENT_NODE && refNode.nodeType !== TEXT_NODE;
-          if (!bool) {
-            break;
-          }
-          refNode = walker.nextSibling();
-        }
-        return bool;
+        return this._matchEmptyPseudoClass(node);
       }
       case 'first-child':
       case 'last-child':
@@ -697,140 +502,19 @@ export class Evaluator {
       }
       /* User action pseudo-classes */
       case 'hover': {
-        const { target, type } = this.#eventHandler.currentEvent ?? {};
-        return (
-          /^(?:click|mouse(?:down|over|up))$/.test(type) &&
-          target?.nodeType === ELEMENT_NODE &&
-          node.contains(target)
-        );
+        return this._matchHoverPseudoClass(node);
       }
       case 'active': {
-        const { buttons, target, type } = this.#eventHandler.currentEvent ?? {};
-        return (
-          type === 'mousedown' &&
-          buttons & 1 &&
-          target?.nodeType === ELEMENT_NODE &&
-          node.contains(target)
-        );
+        return this._matchActivePseudoClass(node);
       }
       case 'focus': {
-        const activeElement = this.document.activeElement;
-        if (activeElement.shadowRoot) {
-          const activeShadowElement = activeElement.shadowRoot.activeElement;
-          let current = activeShadowElement;
-          while (current) {
-            if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
-              const { host } = current;
-              if (host === activeElement) {
-                if (isFocusableArea(node)) {
-                  return true;
-                }
-                return host === node;
-              }
-            }
-            current = current.parentNode;
-          }
-        }
-        return node === activeElement && isFocusableArea(node);
+        return this._matchFocusPseudoClass(node);
       }
       case 'focus-visible': {
-        if (node === this.document.activeElement && isFocusableArea(node)) {
-          let bool;
-          if (isFocusVisible(node)) {
-            bool = true;
-          } else if (this.#eventHandler.currentFocus) {
-            const { relatedTarget, target: focusTarget } =
-              this.#eventHandler.currentFocus;
-            if (focusTarget === node) {
-              if (isFocusVisible(relatedTarget)) {
-                bool = true;
-              } else if (this.#eventHandler.currentEvent) {
-                const {
-                  altKey: eventAltKey,
-                  ctrlKey: eventCtrlKey,
-                  key: eventKey,
-                  metaKey: eventMetaKey,
-                  target: eventTarget,
-                  type: eventType
-                } = this.#eventHandler.currentEvent;
-                // Irrelevant if eventTarget === relatedTarget
-                if (eventTarget === relatedTarget) {
-                  if (!this.#lastFocusVisible) {
-                    bool = true;
-                  } else if (focusTarget === this.#lastFocusVisible) {
-                    bool = true;
-                  }
-                } else if (eventKey === 'Tab') {
-                  if (
-                    (eventType === 'keydown' && eventTarget !== node) ||
-                    (eventType === 'keyup' && eventTarget === node)
-                  ) {
-                    if (eventTarget === focusTarget) {
-                      if (!this.#lastFocusVisible) {
-                        bool = true;
-                      } else if (
-                        eventTarget === this.#lastFocusVisible &&
-                        relatedTarget === null
-                      ) {
-                        bool = true;
-                      }
-                    } else {
-                      bool = true;
-                    }
-                  }
-                } else if (eventKey) {
-                  if (
-                    (eventType === 'keydown' || eventType === 'keyup') &&
-                    !eventAltKey &&
-                    !eventCtrlKey &&
-                    !eventMetaKey &&
-                    eventTarget === node
-                  ) {
-                    bool = true;
-                  }
-                }
-              } else if (
-                relatedTarget === null ||
-                relatedTarget === this.#lastFocusVisible
-              ) {
-                bool = true;
-              }
-            }
-          }
-          if (bool) {
-            this.#lastFocusVisible = node;
-            return bool;
-          }
-          if (this.#lastFocusVisible === node) {
-            this.#lastFocusVisible = null;
-          }
-        }
-        break;
+        return this._matchFocusVisiblePseudoClass(node);
       }
       case 'focus-within': {
-        if (!this.#focusWithinCache) {
-          this.#focusWithinCache = new Set();
-          let currentFocus = this.document.activeElement;
-          while (currentFocus?.shadowRoot?.activeElement) {
-            currentFocus = currentFocus.shadowRoot.activeElement;
-          }
-          if (currentFocus && isFocusableArea(currentFocus)) {
-            while (currentFocus) {
-              this.#focusWithinCache.add(currentFocus);
-              if (currentFocus.parentNode) {
-                currentFocus = currentFocus.parentNode;
-              } else if (
-                currentFocus.nodeType === DOCUMENT_FRAGMENT_NODE &&
-                currentFocus.host
-              ) {
-                currentFocus = currentFocus.host;
-              } else {
-                break;
-              }
-            }
-          }
-        }
-        return this.#focusWithinCache.has(node);
+        return this._matchFocusWithinPseudoClass(node);
       }
       // Ignore :host.
       case 'host': {
@@ -907,6 +591,437 @@ export class Evaluator {
       }
     }
     return false;
+  };
+
+  /**
+   * Evaluates the :default pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchDefaultPseudoClass = node => {
+    const { localName } = node;
+    // option
+    if (localName === 'option') {
+      return node.hasAttribute('selected');
+    }
+    const attrType = node.getAttribute('type');
+    // input[type="checkbox"], input[type="radio"]
+    if (
+      localName === 'input' &&
+      node.hasAttribute('type') &&
+      node.hasAttribute('checked')
+    ) {
+      return KEYS_INPUT_CHECK.has(attrType);
+    }
+    // button[type="submit"], input[type="submit"], input[type="image"]
+    if (
+      (localName === 'button' &&
+        !(node.hasAttribute('type') && KEYS_INPUT_RESET.has(attrType))) ||
+      (localName === 'input' &&
+        node.hasAttribute('type') &&
+        KEYS_INPUT_SUBMIT.has(attrType))
+    ) {
+      let form = node.parentNode;
+      while (form) {
+        if (form.localName === 'form') {
+          break;
+        }
+        form = form.parentNode;
+      }
+      if (form) {
+        if (!this.#psDefaultCache) {
+          this.#psDefaultCache = new WeakMap();
+        }
+        let defaultSubmit = this.#psDefaultCache.get(form);
+        if (defaultSubmit === undefined) {
+          const walker = this.createTreeWalker(form, { force: true });
+          let refNode = traverseNode(form, walker);
+          refNode = walker.firstChild();
+          while (refNode) {
+            const nodeName = refNode.localName;
+            const nodeAttrType = refNode.getAttribute('type');
+            let m;
+            if (nodeName === 'button') {
+              m = !(
+                refNode.hasAttribute('type') &&
+                KEYS_INPUT_RESET.has(nodeAttrType)
+              );
+            } else if (nodeName === 'input') {
+              m =
+                refNode.hasAttribute('type') &&
+                KEYS_INPUT_SUBMIT.has(nodeAttrType);
+            }
+            if (m) {
+              defaultSubmit = refNode;
+              break;
+            }
+            refNode = walker.nextNode();
+          }
+          this.#psDefaultCache.set(form, defaultSubmit);
+        }
+        return defaultSubmit === node;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Evaluates the :indeterminate pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchIndeterminatePseudoClass = node => {
+    const { localName } = node;
+    if (localName === 'progress') {
+      return !node.hasAttribute('value');
+    }
+    if (localName === 'input' && node.type === 'checkbox') {
+      return node.indeterminate;
+    }
+    if (localName === 'input' && node.type === 'radio') {
+      if (node.checked || node.hasAttribute('checked')) {
+        return false;
+      }
+      const nodeName = node.name;
+      let parent = node.parentNode;
+      while (parent) {
+        if (parent.localName === 'form') {
+          break;
+        }
+        parent = parent.parentNode;
+      }
+      if (!parent) {
+        parent = this.document.documentElement;
+      }
+      if (!this.#psIndeterminateCache) {
+        this.#psIndeterminateCache = new WeakMap();
+      }
+      let parentCache = this.#psIndeterminateCache.get(parent);
+      if (parentCache === undefined) {
+        parentCache = new Map();
+        this.#psIndeterminateCache.set(parent, parentCache);
+      }
+      let checked = parentCache.get(nodeName);
+      if (checked === undefined) {
+        const walker = this.createTreeWalker(parent, { force: true });
+        let refNode = traverseNode(parent, walker);
+        refNode = walker.firstChild();
+        while (refNode) {
+          if (
+            refNode.localName === 'input' &&
+            refNode.getAttribute('type') === 'radio'
+          ) {
+            if (nodeName && refNode.getAttribute('name') === nodeName) {
+              checked = !!refNode.checked;
+            }
+            if (checked) {
+              break;
+            }
+          }
+          refNode = walker.nextNode();
+        }
+        checked = !!checked;
+        parentCache.set(nodeName, checked);
+      }
+      return !checked;
+    }
+    return false;
+  };
+
+  /**
+   * Evaluates the :valid and :invalid pseudo-classes.
+   * @private
+   * @param {string} astName - The name of the pseudo-class.
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchValidityPseudoClass = (astName, node) => {
+    const { localName } = node;
+    if (KEYS_FORM_PS_VALID.has(localName)) {
+      let { valid } = node.validity;
+      if (node.maxLength >= 0) {
+        valid = node.maxLength >= node.value.length;
+      }
+      if (valid && node.minLength >= 0) {
+        valid = node.minLength <= node.value.length;
+      }
+      if (astName === 'invalid') {
+        return !valid;
+      }
+      return valid;
+    }
+    if (localName === 'form' || localName === 'fieldset') {
+      if (!this.#psValidCache) {
+        this.#psValidCache = new WeakMap();
+      }
+      let valid = this.#psValidCache.get(node);
+      if (valid === undefined) {
+        const walker = this.createTreeWalker(node, { force: true });
+        let refNode = traverseNode(node, walker);
+        refNode = walker.firstChild();
+        if (!refNode) {
+          valid = true;
+        } else {
+          while (refNode) {
+            if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
+              valid = refNode.validity.valid;
+              if (refNode.maxLength >= 0) {
+                valid = refNode.maxLength >= refNode.value.length;
+              }
+              if (valid && refNode.minLength >= 0) {
+                valid = refNode.minLength <= refNode.value.length;
+              }
+              if (!valid) {
+                break;
+              }
+            }
+            refNode = walker.nextNode();
+          }
+        }
+        this.#psValidCache.set(node, valid);
+      }
+      if (astName === 'invalid') {
+        return !valid;
+      }
+      return valid;
+    }
+    return false;
+  };
+
+  /**
+   * Evaluates the :local-link pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchLocalLinkPseudoClass = node => {
+    const { localName } = node;
+    if (
+      (localName === 'a' || localName === 'area') &&
+      node.hasAttribute('href')
+    ) {
+      if (!this.#documentURL) {
+        this.#documentURL = new URL(this.document.URL);
+      }
+      const { href, origin, pathname } = this.#documentURL;
+      const attrURL = new URL(node.getAttribute('href'), href);
+      return attrURL.origin === origin && attrURL.pathname === pathname;
+    }
+    return false;
+  };
+
+  /**
+   * Evaluates the :target pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchTargetPseudoClass = node => {
+    if (!this.#documentURL) {
+      this.#documentURL = new URL(this.document.URL);
+    }
+    const { hash } = this.#documentURL;
+    return hash && hash === `#${node.id}` && this.document.contains(node);
+  };
+
+  /**
+   * Evaluates the :empty pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchEmptyPseudoClass = node => {
+    if (!node.hasChildNodes()) {
+      return true;
+    }
+    const walker = this.createTreeWalker(node, {
+      force: true,
+      whatToShow: SHOW_ALL
+    });
+    let refNode = walker.firstChild();
+    let bool;
+    while (refNode) {
+      bool =
+        refNode.nodeType !== ELEMENT_NODE && refNode.nodeType !== TEXT_NODE;
+      if (!bool) {
+        break;
+      }
+      refNode = walker.nextSibling();
+    }
+    return bool;
+  };
+
+  /**
+   * Evaluates the :hover pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchHoverPseudoClass = node => {
+    const { target, type } = this.#eventHandler.currentEvent ?? {};
+    return (
+      /^(?:click|mouse(?:down|over|up))$/.test(type) &&
+      target?.nodeType === ELEMENT_NODE &&
+      node.contains(target)
+    );
+  };
+
+  /**
+   * Evaluates the :active pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchActivePseudoClass = node => {
+    const { buttons, target, type } = this.#eventHandler.currentEvent ?? {};
+    return (
+      type === 'mousedown' &&
+      buttons & 1 &&
+      target?.nodeType === ELEMENT_NODE &&
+      node.contains(target)
+    );
+  };
+
+  /**
+   * Evaluates the :focus pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchFocusPseudoClass = node => {
+    const activeElement = this.document.activeElement;
+    if (activeElement.shadowRoot) {
+      const activeShadowElement = activeElement.shadowRoot.activeElement;
+      let current = activeShadowElement;
+      while (current) {
+        if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
+          const { host } = current;
+          if (host === activeElement) {
+            if (isFocusableArea(node)) {
+              return true;
+            }
+            return host === node;
+          }
+        }
+        current = current.parentNode;
+      }
+    }
+    return node === activeElement && isFocusableArea(node);
+  };
+
+  /**
+   * Evaluates the :focus-visible pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchFocusVisiblePseudoClass = node => {
+    if (node === this.document.activeElement && isFocusableArea(node)) {
+      let bool;
+      if (isFocusVisible(node)) {
+        bool = true;
+      } else if (this.#eventHandler.currentFocus) {
+        const { relatedTarget, target: focusTarget } =
+          this.#eventHandler.currentFocus;
+        if (focusTarget === node) {
+          if (isFocusVisible(relatedTarget)) {
+            bool = true;
+          } else if (this.#eventHandler.currentEvent) {
+            const {
+              altKey: eventAltKey,
+              ctrlKey: eventCtrlKey,
+              key: eventKey,
+              metaKey: eventMetaKey,
+              target: eventTarget,
+              type: eventType
+            } = this.#eventHandler.currentEvent;
+            // Irrelevant if eventTarget === relatedTarget
+            if (eventTarget === relatedTarget) {
+              if (!this.#lastFocusVisible) {
+                bool = true;
+              } else if (focusTarget === this.#lastFocusVisible) {
+                bool = true;
+              }
+            } else if (eventKey === 'Tab') {
+              if (
+                (eventType === 'keydown' && eventTarget !== node) ||
+                (eventType === 'keyup' && eventTarget === node)
+              ) {
+                if (eventTarget === focusTarget) {
+                  if (!this.#lastFocusVisible) {
+                    bool = true;
+                  } else if (
+                    eventTarget === this.#lastFocusVisible &&
+                    relatedTarget === null
+                  ) {
+                    bool = true;
+                  }
+                } else {
+                  bool = true;
+                }
+              }
+            } else if (eventKey) {
+              if (
+                (eventType === 'keydown' || eventType === 'keyup') &&
+                !eventAltKey &&
+                !eventCtrlKey &&
+                !eventMetaKey &&
+                eventTarget === node
+              ) {
+                bool = true;
+              }
+            }
+          } else if (
+            relatedTarget === null ||
+            relatedTarget === this.#lastFocusVisible
+          ) {
+            bool = true;
+          }
+        }
+      }
+      if (bool) {
+        this.#lastFocusVisible = node;
+        return bool;
+      }
+      if (this.#lastFocusVisible === node) {
+        this.#lastFocusVisible = null;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Evaluates the :focus-within pseudo-class.
+   * @private
+   * @param {object} node - The Element node.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  _matchFocusWithinPseudoClass = node => {
+    if (!this.#focusWithinCache) {
+      this.#focusWithinCache = new Set();
+      let currentFocus = this.document.activeElement;
+      while (currentFocus?.shadowRoot?.activeElement) {
+        currentFocus = currentFocus.shadowRoot.activeElement;
+      }
+      if (currentFocus && isFocusableArea(currentFocus)) {
+        while (currentFocus) {
+          this.#focusWithinCache.add(currentFocus);
+          if (currentFocus.parentNode) {
+            currentFocus = currentFocus.parentNode;
+          } else if (
+            currentFocus.nodeType === DOCUMENT_FRAGMENT_NODE &&
+            currentFocus.host
+          ) {
+            currentFocus = currentFocus.host;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return this.#focusWithinCache.has(node);
   };
 
   /**
@@ -1575,7 +1690,7 @@ export class Evaluator {
    * @param {object} astData - The AST data.
    * @param {object} node - The Element node.
    * @param {object} [opt] - Options.
-   * @returns {boolean} Tru if matches, otherwise false.
+   * @returns {boolean} True if matches, otherwise false.
    */
   _matchLogicalPseudoFunc = (astData, node, opt = {}) => {
     const { astName, branches, twigBranches } = astData;
