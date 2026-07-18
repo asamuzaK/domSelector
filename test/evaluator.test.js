@@ -7073,6 +7073,132 @@ describe('Evaluator', () => {
         name: 'valid',
         type: PS_CLASS_SELECTOR
       };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.minLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', input);
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.minLength = 4;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', input);
+      const res = evaluator.matchPseudoClassSelector(leaf, input, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.maxLength = 2;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.minLength = 3;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.setAttribute('required', 'required');
+      input.minLength = 4;
+      input.value = 'foo';
+      node.appendChild(input);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
       const node = document.createElement('fieldset');
       const input = document.createElement('input');
       input.setAttribute('type', 'text');

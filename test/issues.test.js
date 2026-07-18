@@ -6,6 +6,7 @@
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as cssTree from 'css-tree';
 
 /* test */
@@ -1562,6 +1563,90 @@ describe('domSelector regression tests', () => {
       document.documentElement.matches(':nth-child(2)');
       document.querySelectorAll(':nth-child(2)');
       assert.strictEqual(div.matches(':nth-child(2)'), false);
+    });
+  });
+
+  describe('#283 - https://github.com/asamuzaK/domSelector/issues/283', () => {
+    it('should not fire event when querying valid input', () => {
+      const { document } = jsdom(
+        '<input id="input" type="number" min="0">'
+      ).window;
+      const stubEvent = sinon.stub();
+      const input = document.getElementById('input');
+      input.addEventListener('invalid', stubEvent);
+      input.value = '1';
+      assert.strictEqual(
+        input.validity.valid,
+        true,
+        'sanity: validity is true'
+      );
+      assert.strictEqual(stubEvent.callCount, 0, 'sanity: event is not called');
+      const res = document.querySelectorAll('input:valid');
+      assert.deepEqual(res, [input], 'has matching node');
+      assert.strictEqual(stubEvent.callCount, 0, 'event is not called');
+    });
+
+    it('should not fire event when querying invalid input', () => {
+      const { document } = jsdom(
+        '<input id="input" type="number" min="0">'
+      ).window;
+      const stubEvent = sinon.stub();
+      const input = document.getElementById('input');
+      input.addEventListener('invalid', stubEvent);
+      input.value = '-1';
+      assert.strictEqual(
+        input.validity.valid,
+        false,
+        'sanity: validity is false'
+      );
+      assert.strictEqual(stubEvent.callCount, 0, 'sanity: event is not called');
+      const res = document.querySelectorAll('input:invalid');
+      assert.deepEqual(res, [input], 'has matching node');
+      assert.strictEqual(stubEvent.callCount, 0, 'event is not called');
+    });
+
+    it('should not fire event when querying valid form', () => {
+      const { document } = jsdom(`
+        <form id="form">
+          <input id="input" type="number" min="0">
+        </form>
+      `).window;
+      const stubEvent = sinon.stub();
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      input.addEventListener('invalid', stubEvent);
+      input.value = '1';
+      assert.strictEqual(
+        input.validity.valid,
+        true,
+        'sanity: validity is true'
+      );
+      assert.strictEqual(stubEvent.callCount, 0, 'sanity: event is not called');
+      const res = document.querySelectorAll('form:valid');
+      assert.deepEqual(res, [form], 'has matching node');
+      assert.strictEqual(stubEvent.callCount, 0, 'event is not called');
+    });
+
+    it('should not fire event when querying invalid form', () => {
+      const { document } = jsdom(`
+        <form id="form">
+          <input id="input" type="number" min="0">
+        </form>
+      `).window;
+      const stubEvent = sinon.stub();
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      input.addEventListener('invalid', stubEvent);
+      input.value = '-1';
+      assert.strictEqual(
+        input.validity.valid,
+        false,
+        'sanity: validity is false'
+      );
+      assert.strictEqual(stubEvent.callCount, 0, 'sanity: event is not called');
+      const res = document.querySelectorAll('form:invalid');
+      assert.deepEqual(res, [form], 'has matching node');
+      assert.strictEqual(stubEvent.callCount, 0, 'event is not called');
     });
   });
 });

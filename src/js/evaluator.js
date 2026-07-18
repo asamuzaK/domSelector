@@ -51,7 +51,7 @@ import {
   TYPE_SELECTOR
 } from './constant.js';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_FORM_PS_VALID = new Set([...FORM_PARTS, 'form']);
+const KEYS_FORM_PS_VALID = new Set(FORM_PARTS);
 const KEYS_INPUT_CHECK = new Set(INPUT_CHECK);
 const KEYS_INPUT_PLACEHOLDER = new Set([...INPUT_TEXT, 'number']);
 const KEYS_INPUT_RANGE = new Set([...INPUT_DATE, 'number', 'range']);
@@ -622,22 +622,19 @@ export class Evaluator {
       case 'valid':
       case 'invalid': {
         if (KEYS_FORM_PS_VALID.has(localName)) {
-          let valid = false;
-          if (node.checkValidity()) {
-            if (node.maxLength >= 0) {
-              if (node.maxLength >= node.value.length) {
-                valid = true;
-              }
-            } else {
-              valid = true;
-            }
+          let { valid } = node.validity;
+          if (node.maxLength >= 0) {
+            valid = node.maxLength >= node.value.length;
+          }
+          if (valid && node.minLength >= 0) {
+            valid = node.minLength <= node.value.length;
           }
           if (astName === 'invalid') {
             return !valid;
           }
           return valid;
         }
-        if (localName === 'fieldset') {
+        if (localName === 'form' || localName === 'fieldset') {
           if (!this.#psValidCache) {
             this.#psValidCache = new WeakMap();
           }
@@ -651,14 +648,12 @@ export class Evaluator {
             } else {
               while (refNode) {
                 if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-                  if (refNode.checkValidity()) {
-                    if (refNode.maxLength >= 0) {
-                      valid = refNode.maxLength >= refNode.value.length;
-                    } else {
-                      valid = true;
-                    }
-                  } else {
-                    valid = false;
+                  valid = refNode.validity.valid;
+                  if (refNode.maxLength >= 0) {
+                    valid = refNode.maxLength >= refNode.value.length;
+                  }
+                  if (valid && refNode.minLength >= 0) {
+                    valid = refNode.minLength <= refNode.value.length;
                   }
                   if (!valid) {
                     break;
