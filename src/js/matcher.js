@@ -446,8 +446,7 @@ export const matchAttributeSelector = (
   if (meta.caseInsensitive === undefined) {
     let caseInsensitive = false;
     if (isHTML) {
-      caseInsensitive = 
-        typeof astFlags !== 'string' || !/^s$/i.test(astFlags);
+      caseInsensitive = typeof astFlags !== 'string' || !/^s$/i.test(astFlags);
     } else {
       caseInsensitive = typeof astFlags === 'string' && /^i$/i.test(astFlags);
     }
