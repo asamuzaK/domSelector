@@ -617,6 +617,12 @@ bench
   .add(`patched-jsdom querySelector('${selectors[3]}')`, () => {
     parentNodeQuerySelectorRandom('patched-jsdom', selectors[3], 'p');
   })
+  .add(`jsdom querySelector('${selectors[4]}')`, () => {
+    parentNodeQuerySelectorRandom('jsdom', selectors[4], 'p');
+  })
+  .add(`patched-jsdom querySelector('${selectors[4]}')`, () => {
+    parentNodeQuerySelectorRandom('patched-jsdom', selectors[4], 'p');
+  })
   .add(`jsdom querySelector('${selectors[9]}')`, () => {
     parentNodeQuerySelectorRandom2('jsdom', selectors[9], 'p5-0-0');
   })
@@ -664,6 +670,12 @@ bench
   })
   .add(`patched-jsdom querySelectorAll('${selectors[3]}')`, () => {
     parentNodeQuerySelectorAll('patched-jsdom', selectors[3], 1000);
+  })
+  .add(`jsdom querySelectorAll('${selectors[4]}')`, () => {
+    parentNodeQuerySelectorAll('jsdom', selectors[4], 1000);
+  })
+  .add(`patched-jsdom querySelectorAll('${selectors[4]}')`, () => {
+    parentNodeQuerySelectorAll('patched-jsdom', selectors[4], 1000);
   })
   .add(`jsdom querySelectorAll('${selectors[9]}')`, () => {
     parentNodeQuerySelectorAll('jsdom', selectors[9], 200);
