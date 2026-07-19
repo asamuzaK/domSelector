@@ -623,9 +623,9 @@ export class Finder extends Evaluator {
         this.node.contains(nextNode);
       if (isWithinScope) {
         for (const pendingItem of pendingItems) {
-          const { leaves } = pendingItem.get('twig');
+          const { leaves } = pendingItem.twig;
           if (this.matchLeaves(leaves, nextNode, this.matchOpts)) {
-            const index = pendingItem.get('index');
+            const { index } = pendingItem;
             this.#ast[index].filtered = true;
             this.#ast[index].find = true;
             this.#nodes[index].push(nextNode);
@@ -672,12 +672,10 @@ export class Finder extends Evaluator {
           this.#ast[i].find = true;
           this.#nodes[i] = nodes;
         } else if (pending) {
-          pendingItems.add(
-            new Map([
-              ['index', i],
-              ['twig', twig]
-            ])
-          );
+          pendingItems.add({
+            index: i,
+            twig
+          });
         }
         this.#ast[i].dir = dir;
         this.#ast[i].filtered = filtered || !compound;
@@ -710,32 +708,27 @@ export class Finder extends Evaluator {
   /**
    * Matches a node in the next direction.
    * @private
+   * @param {object} node - The starting node.
    * @param {Array.<object>} branch - The selector branch.
-   * @param {Array.<object>|Set.<object>} nodes - The starting nodes.
-   * @param {object} [opt] - Options containing combo and index.
+   * @param {number} index - The branch index.
+   * @param {object} combo - The combinator AST.
    * @returns {object|null} The matched node or null.
    */
-  #matchNodeNext = (branch, nodes, opt = {}) => {
-    const { combo, index } = opt;
+  #matchNodeNext = (node, branch, index, combo) => {
     const { combo: nextCombo, leaves } = branch[index];
     const twig = {
       combo,
       leaves
     };
-    for (const node of nodes) {
-      for (const nextNode of this.yieldCombinatorMatches(twig, node, {
-        dir: DIR_NEXT
-      })) {
-        if (index === branch.length - 1) {
-          return nextNode;
-        }
-        const result = this.#matchNodeNext(branch, new Set([nextNode]), {
-          combo: nextCombo,
-          index: index + 1
-        });
-        if (result) {
-          return result;
-        }
+    for (const nextNode of this.yieldCombinatorMatches(twig, node, {
+      dir: DIR_NEXT
+    })) {
+      if (index === branch.length - 1) {
+        return nextNode;
+      }
+      const result = this.#matchNodeNext(nextNode, branch, ++index, nextCombo);
+      if (result) {
+        return result;
       }
     }
     return null;
@@ -890,10 +883,7 @@ export class Finder extends Evaluator {
   ) => {
     const { combo: entryCombo } = branch[0];
     for (const node of entryNodes) {
-      const matchedNode = this.#matchNodeNext(branch, new Set([node]), {
-        combo: entryCombo,
-        index: 1
-      });
+      const matchedNode = this.#matchNodeNext(node, branch, 1, entryCombo);
       if (matchedNode) {
         if (this.node.nodeType === ELEMENT_NODE) {
           if (matchedNode !== this.node && this.node.contains(matchedNode)) {
@@ -911,10 +901,7 @@ export class Finder extends Evaluator {
         targetType
       });
       while (refNode) {
-        const matchedNode = this.#matchNodeNext(branch, new Set([refNode]), {
-          combo: entryCombo,
-          index: 1
-        });
+        const matchedNode = this.#matchNodeNext(refNode, branch, 1, entryCombo);
         if (matchedNode) {
           return matchedNode;
         }
