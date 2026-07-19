@@ -87,7 +87,7 @@ export const matchPseudoElementSelector = (
       break;
     }
     default: {
-      // Handle vendor-prefixed or unknown pseudo-elements.
+      // Handle vendor-prefixed unknown pseudo-elements.
       if (astName.startsWith('-webkit-')) {
         if (warn) {
           throw generateException(
@@ -201,7 +201,9 @@ export const matchCheckedPseudoClass = node => {
   }
   if (localName === 'input') {
     const attrType = node.getAttribute('type');
-    return node.checked && (attrType === 'checkbox' || attrType === 'radio');
+    if (node.checked) {
+      return attrType === 'checkbox' || attrType === 'radio';
+    }
   }
   return false;
 };
@@ -213,9 +215,10 @@ export const matchCheckedPseudoClass = node => {
  */
 export const matchLinkPseudoClass = node => {
   const { localName } = node;
-  return (
-    (localName === 'a' || localName === 'area') && node.hasAttribute('href')
-  );
+  if (localName === 'a' || localName === 'area') {
+    return node.hasAttribute('href');
+  }
+  return false;
 };
 
 /**
@@ -225,10 +228,10 @@ export const matchLinkPseudoClass = node => {
  */
 export const matchOpenPseudoClass = node => {
   const { localName } = node;
-  return (
-    (localName === 'details' || localName === 'dialog') &&
-    node.hasAttribute('open')
-  );
+  if (localName === 'details' || localName === 'dialog') {
+    return node.hasAttribute('open');
+  }
+  return false;
 };
 
 /**
@@ -285,11 +288,14 @@ export const matchRangePseudoClass = (astName, node, keys) => {
     if (astName === 'out-of-range') {
       return flowed;
     }
-    return flowed
-      ? false
-      : node.hasAttribute('min') ||
-          node.hasAttribute('max') ||
-          attrType === 'range';
+    if (flowed) {
+      return false;
+    }
+    return (
+      node.hasAttribute('min') ||
+      node.hasAttribute('max') ||
+      attrType === 'range'
+    );
   }
   return false;
 };
@@ -395,7 +401,9 @@ export const matchAttributeSelector = (
   const isHTML = node.ownerDocument.contentType === 'text/html';
   let meta = astMetaCache.get(ast);
   if (meta === undefined) {
-    meta = {};
+    meta = {
+      attrValues: new Set()
+    };
     astMetaCache.set(ast, meta);
   }
   if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
@@ -480,7 +488,10 @@ export const matchAttributeSelector = (
   const caseInsensitive = meta.caseInsensitive;
   const astAttrName = meta.astAttrName;
   const attrValue = meta.cachedAttrValue;
-  const attrValues = new Set();
+  const attrValues = meta.attrValues;
+  if (attrValues.size) {
+    attrValues.clear();
+  }
   if (meta.hasPipeInName) {
     const astPrefix = meta.astPrefix;
     const astLocalName = meta.astLocalName;
