@@ -105,6 +105,8 @@ export class Evaluator {
   #psLangCache;
   #psValidCache;
   #results;
+  #setPool;
+  #setPoolIndex;
   #verifyShadowHost;
   #walkers;
 
@@ -142,6 +144,8 @@ export class Evaluator {
     this.clearResults();
     this.#documentURL = null;
     this.#nthIndexCache = null;
+    this.#setPool = [];
+    this.#setPoolIndex = 0;
     this.#verifyShadowHost = false;
     this.#walkers = null;
     return this;
@@ -235,8 +239,8 @@ export class Evaluator {
     let result = results.get(leaves);
     if (result) {
       const nodeResult = result.get(node);
-      if (nodeResult) {
-        return nodeResult.matched;
+      if (nodeResult !== undefined) {
+        return nodeResult;
       }
     }
     let cacheable = true;
@@ -272,9 +276,7 @@ export class Evaluator {
       if (!result) {
         result = new WeakMap();
       }
-      result.set(node, {
-        matched: bool
-      });
+      result.set(node, bool);
       results.set(leaves, result);
     }
     return bool;
@@ -1752,6 +1754,20 @@ export class Evaluator {
   };
 
   /**
+   * Retrieves a cleared Set from the pool.
+   * @private
+   * @returns {Set.<object>} A cleared Set instance.
+   */
+  #acquireSet = () => {
+    if (this.#setPoolIndex === this.#setPool.length) {
+      this.#setPool.push(new Set());
+    }
+    const set = this.#setPool[this.#setPoolIndex++];
+    set.clear();
+    return set;
+  };
+
+  /**
    * Matches logical pseudo-class functions.
    * @private
    * @param {object} astData - The AST data.
@@ -1765,45 +1781,46 @@ export class Evaluator {
     if (astName === 'has') {
       return this.#evaluateHasPseudo(astData, node, opt) === node;
     }
-    // Check for shadow root
+    // Check for shadow root.
     const isShadowRoot =
       (opt.isShadowRoot || this.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE;
     if (isShadowRoot && isInvalidShadow) {
       return false;
     }
-    // Handle :is(), :not(), :where().
-    const localOpt = {
-      ...opt,
-      forgive: astName === 'is' || astName === 'where',
-      dir: undefined
-    };
+    // Handle :is(), :not(), and :where().
+    const prevForgive = opt.forgive;
+    const prevDir = opt.dir;
+    opt.forgive = astName === 'is' || astName === 'where';
+    opt.dir = undefined;
     const l = twigBranches.length;
     let bool = false;
     for (let i = 0; i < l; i++) {
       const branch = twigBranches[i];
       const lastIndex = branch.length - 1;
       const { leaves } = branch[lastIndex];
-      bool = this.matchLeaves(leaves, node, localOpt);
+      bool = this.matchLeaves(leaves, node, opt);
       if (bool && lastIndex > 0) {
-        let nextNodes = new Set([node]);
+        const initialPoolIndex = this.#setPoolIndex;
+        let currentNodes = this.#acquireSet();
+        currentNodes.add(node);
         for (let j = lastIndex - 1; j >= 0; j--) {
           const twig = branch[j];
           const isLastStep = j === 0;
-          const arr = isLastStep ? null : [];
+          const nextNodes = isLastStep ? null : this.#acquireSet();
           let hasMatch = false;
-          localOpt.dir = DIR_PREV;
-          for (const nextNode of nextNodes) {
+          opt.dir = DIR_PREV;
+          for (const nextNode of currentNodes) {
             for (const matchedNode of this.yieldCombinatorMatches(
               twig,
               nextNode,
-              localOpt
+              opt
             )) {
               hasMatch = true;
               if (isLastStep) {
                 break;
               }
-              arr.push(matchedNode);
+              nextNodes.add(matchedNode);
             }
             if (isLastStep && hasMatch) {
               break;
@@ -1816,14 +1833,17 @@ export class Evaluator {
           if (isLastStep) {
             bool = true;
           } else {
-            nextNodes = new Set(arr);
+            currentNodes = nextNodes;
           }
         }
+        this.#setPoolIndex = initialPoolIndex;
       }
       if (bool) {
         break;
       }
     }
+    opt.forgive = prevForgive;
+    opt.dir = prevDir;
     if (astName === 'not') {
       return !bool;
     }
@@ -2122,15 +2142,15 @@ export class Evaluator {
    */
   #matchSelectorForElement = (ast, node, opt) => {
     const { type: astType } = ast;
-    const astName = unescapeSelector(ast.name);
     switch (astType) {
       case ATTR_SELECTOR: {
         return matchAttributeSelector(ast, node, opt);
       }
       case ID_SELECTOR: {
-        return node.id === astName;
+        return node.id === unescapeSelector(ast.name);
       }
       case CLASS_SELECTOR: {
+        const astName = unescapeSelector(ast.name);
         return node.classList.contains(astName);
       }
       case PS_CLASS_SELECTOR: {
@@ -2147,6 +2167,7 @@ export class Evaluator {
             this.pseudoElements.push(css);
             return true;
           } else {
+            const astName = unescapeSelector(ast.name);
             matchPseudoElementSelector(astName, astType, opt);
           }
         } catch (e) {
