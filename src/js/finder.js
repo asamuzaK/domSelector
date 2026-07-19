@@ -167,18 +167,6 @@ export class Finder extends Evaluator {
   };
 
   /**
-   * Corresponds the selector and nodes.
-   * @private
-   * @param {string} selector - The CSS selector.
-   * @returns {Array} Array containing mapped AST and nodes.
-   */
-  _correspond = selector => {
-    const [ast, nodes, selectorAST] = this.#mapper.correspond(selector);
-    this.#selectorAST = selectorAST;
-    return [ast, nodes];
-  };
-
-  /**
    * Traverses and collects nodes matching leaves.
    * @private
    * @param {object} walker - The TreeWalker instance.
@@ -190,10 +178,6 @@ export class Finder extends Evaluator {
     const { boundaryNode, force, startNode, targetType } = opt;
     const collectedNodes = [];
     let currentNode = traverseNode(startNode, walker, !!force);
-    if (!currentNode) {
-      return [];
-    }
-    // Adjust starting node.
     if (currentNode.nodeType !== ELEMENT_NODE) {
       currentNode = walker.nextNode();
     } else if (currentNode === startNode && currentNode !== this.root) {
@@ -661,7 +645,9 @@ export class Finder extends Evaluator {
    * @returns {Array} Array containing the AST and nodes arrays.
    */
   _collectNodes = targetType => {
-    [this.#ast, this.#nodes] = this._correspond(this.#selector);
+    [this.#ast, this.#nodes, this.#selectorAST] = this.#mapper.correspond(
+      this.#selector
+    );
     const ast = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
