@@ -72,7 +72,7 @@ export class Finder extends Evaluator {
   find = targetType => {
     let collection;
     try {
-      collection = this._collectNodes(targetType);
+      collection = this.#collectNodes(targetType);
     } catch (e) {
       if (this.check) {
         return {
@@ -127,7 +127,7 @@ export class Finder extends Evaluator {
           }
         }
       } else if (targetType === TARGET_ALL) {
-        const newNodes = this._processComplexBranchAll(branch, entryNodes, dir);
+        const newNodes = this.#processComplexBranchAll(branch, entryNodes, dir);
         if (nodes.size) {
           for (const newNode of newNodes) {
             nodes.add(newNode);
@@ -137,7 +137,7 @@ export class Finder extends Evaluator {
           nodes = newNodes;
         }
       } else {
-        const matchedNode = this._processComplexBranchFirst(
+        const matchedNode = this.#processComplexBranchFirst(
           branch,
           entryNodes,
           dir,
@@ -174,7 +174,7 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Options for traversal.
    * @returns {Array.<object>} An array of collected nodes.
    */
-  _traverseAndCollectNodes = (walker, leaves, opt = {}) => {
+  #traverseAndCollectNodes = (walker, leaves, opt = {}) => {
     const { boundaryNode, force, startNode, targetType } = opt;
     const collectedNodes = [];
     let currentNode = traverseNode(startNode, walker, !!force);
@@ -216,12 +216,12 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Options for finding.
    * @returns {Array.<object>} An array of matched nodes.
    */
-  _findPrecede = (leaves, node, opt = {}) => {
+  #findPrecede = (leaves, node, opt = {}) => {
     const { force, targetType } = opt;
     if (!this.#rootWalker) {
       this.#rootWalker = this.createTreeWalker(this.root);
     }
-    return this._traverseAndCollectNodes(this.#rootWalker, leaves, {
+    return this.#traverseAndCollectNodes(this.#rootWalker, leaves, {
       force,
       targetType,
       boundaryNode: this.node,
@@ -237,10 +237,10 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Traversal options.
    * @returns {Array.<object>} An array of matched nodes.
    */
-  _findNodeWalker = (leaves, node, opt = {}) => {
+  #findNodeWalker = (leaves, node, opt = {}) => {
     const { precede, ...traversalOpts } = opt;
     if (precede) {
-      const precedeNodes = this._findPrecede(leaves, this.root, opt);
+      const precedeNodes = this.#findPrecede(leaves, this.root, opt);
       if (precedeNodes.length) {
         return precedeNodes;
       }
@@ -248,7 +248,7 @@ export class Finder extends Evaluator {
     if (!this.#nodeWalker) {
       this.#nodeWalker = this.createTreeWalker(this.node);
     }
-    return this._traverseAndCollectNodes(this.#nodeWalker, leaves, {
+    return this.#traverseAndCollectNodes(this.#nodeWalker, leaves, {
       ...traversalOpts,
       startNode: node
     });
@@ -260,7 +260,7 @@ export class Finder extends Evaluator {
    * @param {Array.<object>} leaves - The AST leaves.
    * @returns {Array} Array with nodes, match boolean, and pseudo-elements.
    */
-  _matchSelf = leaves => {
+  #matchSelf = leaves => {
     const matched = this.matchLeaves(leaves, this.node, {
       check: this.check,
       warn: this.warn
@@ -276,7 +276,7 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Options like complex flag.
    * @returns {Array} Array containing nodes and filtered boolean.
    */
-  _findLineal = (leaves, opt = {}) => {
+  #findLineal = (leaves, opt = {}) => {
     const { complex } = opt;
     const nodes = [];
     const selfMatched = this.matchLeaves(leaves, this.node, this.matchOpts);
@@ -304,13 +304,13 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {object} Object with nodes, filtered, and pending flags.
    */
-  _findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
+  #findEntryNodesForPseudoElement = (leaf, filterLeaves, targetType) => {
     const compound = filterLeaves.length > 0;
     if (targetType === TARGET_SELF && this.check) {
       const css = generateCSS(leaf);
       this.pseudoElements.push(css);
       if (filterLeaves.length) {
-        const [nodes, filtered] = this._matchSelf(filterLeaves);
+        const [nodes, filtered] = this.#matchSelf(filterLeaves);
         return { compound, filtered, nodes, pending: false };
       }
       return { compound, filtered: true, nodes: [this.node], pending: false };
@@ -327,16 +327,16 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Strategy options.
    * @returns {object} Result object with nodes and flags.
    */
-  _findEntryNodesForId = (twig, targetType, opt = {}) => {
+  #findEntryNodesForId = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
 
     if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this.#matchSelf(leaves);
       return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this.#findLineal(leaves, { complex });
       return { compound, filtered, nodes, pending: false };
     } else if (
       targetType === TARGET_FIRST &&
@@ -356,7 +356,7 @@ export class Finder extends Evaluator {
       }
       return { compound, filtered: nodes.length > 0, nodes, pending: false };
     }
-    const nodes = this._findNodeWalker(leaves, this.node, {
+    const nodes = this.#findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -371,15 +371,15 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Strategy options.
    * @returns {object} Result object with nodes and flags.
    */
-  _findEntryNodesForClass = (leaves, targetType, opt = {}) => {
+  #findEntryNodesForClass = (leaves, targetType, opt = {}) => {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
 
     if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this.#matchSelf(leaves);
       return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this.#findLineal(leaves, { complex });
       return { compound, filtered, nodes, pending: false };
     } else if (
       targetType !== TARGET_FIRST &&
@@ -409,7 +409,7 @@ export class Finder extends Evaluator {
         pending: false
       };
     }
-    const nodes = this._findNodeWalker(leaves, this.node, {
+    const nodes = this.#findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -424,14 +424,14 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Strategy options.
    * @returns {object} Result object with nodes and flags.
    */
-  _findEntryNodesForType = (leaves, targetType, opt = {}) => {
+  #findEntryNodesForType = (leaves, targetType, opt = {}) => {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
     if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this.#matchSelf(leaves);
       return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this.#findLineal(leaves, { complex });
       return { compound, filtered, nodes, pending: false };
     }
     const [leaf] = leaves;
@@ -464,7 +464,7 @@ export class Finder extends Evaluator {
         pending: false
       };
     }
-    const nodes = this._findNodeWalker(leaves, this.node, {
+    const nodes = this.#findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
@@ -479,7 +479,7 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Strategy options.
    * @returns {object} Result object with nodes and flags.
    */
-  _findEntryNodesForOther = (twig, targetType, opt = {}) => {
+  #findEntryNodesForOther = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
     const { complex, precede, filterLeaves = [] } = opt;
@@ -529,13 +529,13 @@ export class Finder extends Evaluator {
         return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
     } else if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this._matchSelf(leaves);
+      const [nodes, filtered] = this.#matchSelf(leaves);
       return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this._findLineal(leaves, { complex });
+      const [nodes, filtered] = this.#findLineal(leaves, { complex });
       return { compound, filtered, nodes, pending: false };
     } else if (targetType === TARGET_FIRST) {
-      const nodes = this._findNodeWalker(leaves, this.node, {
+      const nodes = this.#findNodeWalker(leaves, this.node, {
         precede,
         targetType
       });
@@ -552,7 +552,7 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Strategy options.
    * @returns {object} Result object with nodes and flags.
    */
-  _findEntryNodes = (twig, targetType, opt = {}) => {
+  #findEntryNodes = (twig, targetType, opt = {}) => {
     const { leaves } = twig;
     const [leaf] = leaves;
     const filterLeaves = this.getFilterLeaves(leaves);
@@ -563,35 +563,35 @@ export class Finder extends Evaluator {
       this.node !== this.root;
     switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
-        return this._findEntryNodesForPseudoElement(
+        return this.#findEntryNodesForPseudoElement(
           leaf,
           filterLeaves,
           targetType
         );
       }
       case ID_SELECTOR: {
-        return this._findEntryNodesForId(twig, targetType, {
+        return this.#findEntryNodesForId(twig, targetType, {
           complex,
           precede,
           filterLeaves
         });
       }
       case CLASS_SELECTOR: {
-        return this._findEntryNodesForClass(leaves, targetType, {
+        return this.#findEntryNodesForClass(leaves, targetType, {
           complex,
           precede,
           filterLeaves
         });
       }
       case TYPE_SELECTOR: {
-        return this._findEntryNodesForType(leaves, targetType, {
+        return this.#findEntryNodesForType(leaves, targetType, {
           complex,
           precede,
           filterLeaves
         });
       }
       default: {
-        return this._findEntryNodesForOther(twig, targetType, {
+        return this.#findEntryNodesForOther(twig, targetType, {
           complex,
           precede,
           filterLeaves
@@ -606,7 +606,7 @@ export class Finder extends Evaluator {
    * @param {Set.<Map>} pendingItems - Set of pending items to process.
    * @returns {void}
    */
-  _processPendingItems = pendingItems => {
+  #processPendingItems = pendingItems => {
     if (!pendingItems.size) {
       return;
     }
@@ -644,7 +644,7 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {Array} Array containing the AST and nodes arrays.
    */
-  _collectNodes = targetType => {
+  #collectNodes = targetType => {
     [this.#ast, this.#nodes, this.#selectorAST] = this.#mapper.correspond(
       this.#selector
     );
@@ -663,7 +663,7 @@ export class Finder extends Evaluator {
           hasScope,
           scoped
         );
-        const { compound, filtered, nodes, pending } = this._findEntryNodes(
+        const { compound, filtered, nodes, pending } = this.#findEntryNodes(
           twig,
           targetType,
           { complex, dir }
@@ -683,14 +683,14 @@ export class Finder extends Evaluator {
         this.#ast[i].filtered = filtered || !compound;
         i++;
       }
-      this._processPendingItems(pendingItems);
+      this.#processPendingItems(pendingItems);
     } else {
       let i = 0;
       for (const { branch } of ast) {
         const twig = branch[branch.length - 1];
         const complex = branch.length > 1;
         const dir = DIR_PREV;
-        const { compound, filtered, nodes } = this._findEntryNodes(
+        const { compound, filtered, nodes } = this.#findEntryNodes(
           twig,
           targetType,
           { complex, dir }
@@ -715,7 +715,7 @@ export class Finder extends Evaluator {
    * @param {object} [opt] - Options containing combo and index.
    * @returns {object|null} The matched node or null.
    */
-  _matchNodeNext = (branch, nodes, opt = {}) => {
+  #matchNodeNext = (branch, nodes, opt = {}) => {
     const { combo, index } = opt;
     const { combo: nextCombo, leaves } = branch[index];
     const twig = {
@@ -729,7 +729,7 @@ export class Finder extends Evaluator {
         if (index === branch.length - 1) {
           return nextNode;
         }
-        const result = this._matchNodeNext(branch, new Set([nextNode]), {
+        const result = this.#matchNodeNext(branch, new Set([nextNode]), {
           combo: nextCombo,
           index: index + 1
         });
@@ -750,7 +750,7 @@ export class Finder extends Evaluator {
    * @param {object} opt - The match options.
    * @returns {boolean} True if a valid path exists, otherwise false.
    */
-  _hasValidPathPrev = (node, branch, index, opt) => {
+  #hasValidPathPrev = (node, branch, index, opt) => {
     if (index < 0) {
       return true;
     }
@@ -760,7 +760,7 @@ export class Finder extends Evaluator {
     if (comboName === '+') {
       const refNode = node.previousElementSibling;
       if (refNode && this.matchLeaves(leaves, refNode, opt)) {
-        if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+        if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
           return true;
         }
       }
@@ -768,7 +768,7 @@ export class Finder extends Evaluator {
       let refNode = node.previousElementSibling;
       while (refNode) {
         if (this.matchLeaves(leaves, refNode, opt)) {
-          if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+          if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }
         }
@@ -777,7 +777,7 @@ export class Finder extends Evaluator {
     } else if (comboName === '>') {
       const parentNode = node.parentNode;
       if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
-        if (this._hasValidPathPrev(parentNode, branch, index - 1, opt)) {
+        if (this.#hasValidPathPrev(parentNode, branch, index - 1, opt)) {
           return true;
         }
       }
@@ -785,7 +785,7 @@ export class Finder extends Evaluator {
       let refNode = node.parentNode;
       while (refNode) {
         if (this.matchLeaves(leaves, refNode, opt)) {
-          if (this._hasValidPathPrev(refNode, branch, index - 1, opt)) {
+          if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
             return true;
           }
         }
@@ -807,7 +807,7 @@ export class Finder extends Evaluator {
    * @param {string} dir - The traversal direction.
    * @returns {void}
    */
-  _dfsComplexBranchNext = (
+  #dfsComplexBranchNext = (
     node,
     index,
     currentCombo,
@@ -822,7 +822,7 @@ export class Finder extends Evaluator {
       if (index === lastIndex) {
         matchedNodes.add(nextNode);
       } else {
-        this._dfsComplexBranchNext(
+        this.#dfsComplexBranchNext(
           nextNode,
           index + 1,
           nextCombo,
@@ -843,14 +843,14 @@ export class Finder extends Evaluator {
    * @param {string} dir - The traversal direction.
    * @returns {Set.<object>} Set of matched nodes.
    */
-  _processComplexBranchAll = (branch, entryNodes, dir) => {
+  #processComplexBranchAll = (branch, entryNodes, dir) => {
     const matchedNodes = new Set();
     const branchLen = branch.length;
     const lastIndex = branchLen - 1;
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
       for (const node of entryNodes) {
-        this._dfsComplexBranchNext(
+        this.#dfsComplexBranchNext(
           node,
           1,
           firstCombo,
@@ -864,7 +864,7 @@ export class Finder extends Evaluator {
       for (let i = 0, len = entryNodes.length; i < len; i++) {
         const node = entryNodes[i];
         if (
-          this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
+          this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
         ) {
           matchedNodes.add(node);
         }
@@ -882,7 +882,7 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {object|null} The matched node or null if not found.
    */
-  _processComplexBranchFirstNext = (
+  #processComplexBranchFirstNext = (
     branch,
     entryNodes,
     lastIndex,
@@ -890,7 +890,7 @@ export class Finder extends Evaluator {
   ) => {
     const { combo: entryCombo } = branch[0];
     for (const node of entryNodes) {
-      const matchedNode = this._matchNodeNext(branch, new Set([node]), {
+      const matchedNode = this.#matchNodeNext(branch, new Set([node]), {
         combo: entryCombo,
         index: 1
       });
@@ -907,18 +907,18 @@ export class Finder extends Evaluator {
     const { leaves: entryLeaves } = branch[0];
     const [entryNode] = entryNodes;
     if (this.node.contains(entryNode)) {
-      let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+      let [refNode] = this.#findNodeWalker(entryLeaves, entryNode, {
         targetType
       });
       while (refNode) {
-        const matchedNode = this._matchNodeNext(branch, new Set([refNode]), {
+        const matchedNode = this.#matchNodeNext(branch, new Set([refNode]), {
           combo: entryCombo,
           index: 1
         });
         if (matchedNode) {
           return matchedNode;
         }
-        [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+        [refNode] = this.#findNodeWalker(entryLeaves, refNode, {
           targetType,
           force: true
         });
@@ -936,7 +936,7 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {object|null} The matched node or null if not found.
    */
-  _processComplexBranchFirstPrev = (
+  #processComplexBranchFirstPrev = (
     branch,
     entryNodes,
     lastIndex,
@@ -944,23 +944,23 @@ export class Finder extends Evaluator {
   ) => {
     for (let i = 0, len = entryNodes.length; i < len; i++) {
       const node = entryNodes[i];
-      if (this._hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
+      if (this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
         return node;
       }
     }
     if (targetType === TARGET_FIRST) {
       const { leaves: entryLeaves } = branch[lastIndex];
       const entryNode = entryNodes[0];
-      let [refNode] = this._findNodeWalker(entryLeaves, entryNode, {
+      let [refNode] = this.#findNodeWalker(entryLeaves, entryNode, {
         targetType
       });
       while (refNode) {
         if (
-          this._hasValidPathPrev(refNode, branch, lastIndex - 1, this.matchOpts)
+          this.#hasValidPathPrev(refNode, branch, lastIndex - 1, this.matchOpts)
         ) {
           return refNode;
         }
-        [refNode] = this._findNodeWalker(entryLeaves, refNode, {
+        [refNode] = this.#findNodeWalker(entryLeaves, refNode, {
           targetType,
           force: true
         });
@@ -978,18 +978,18 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {object|null} The matched node or null.
    */
-  _processComplexBranchFirst = (branch, entryNodes, dir, targetType) => {
+  #processComplexBranchFirst = (branch, entryNodes, dir, targetType) => {
     const branchLen = branch.length;
     const lastIndex = branchLen - 1;
     if (dir === DIR_NEXT) {
-      return this._processComplexBranchFirstNext(
+      return this.#processComplexBranchFirstNext(
         branch,
         entryNodes,
         lastIndex,
         targetType
       );
     } else {
-      return this._processComplexBranchFirstPrev(
+      return this.#processComplexBranchFirstPrev(
         branch,
         entryNodes,
         lastIndex,

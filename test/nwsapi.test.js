@@ -386,38 +386,38 @@ describe('nwsapi', () => {
     });
 
     describe('Fast-path finders', () => {
-      it('_byId() should retrieve nodes by ID', () => {
-        const res = api._byId('ul1', document);
+      it('byId() should retrieve nodes by ID', () => {
+        const res = api.byId('ul1', document);
         assert.strictEqual(res.length, 1);
         assert.strictEqual(res[0].id, 'ul1');
       });
 
-      it('_byTag() should retrieve nodes by tag name', () => {
-        const res = api._byTag('li', document);
+      it('byTag() should retrieve nodes by tag name', () => {
+        const res = api.byTag('li', document);
         assert.strictEqual(res.length, 3);
         assert.strictEqual(res[0].id, 'li1');
       });
 
-      it('_byClass() should retrieve nodes by class name', () => {
-        const res = api._byClass('item', document);
+      it('byClass() should retrieve nodes by class name', () => {
+        const res = api.byClass('item', document);
         assert.strictEqual(res.length, 2);
         assert.strictEqual(res[0].id, 'li1');
         assert.strictEqual(res[1].id, 'li2');
       });
 
-      it('_byClass() fallback should return empty array if context lacks getElementsByClassName', () => {
+      it('byClass() fallback should return empty array if context lacks getElementsByClassName', () => {
         const mockContext = {
           localName: 'div',
           id: 'dummy'
         };
-        const res = api._byClass('item', mockContext);
+        const res = api.byClass('item', mockContext);
         assert.ok(Array.isArray(res), 'Result should be an array');
         assert.strictEqual(res.length, 0, 'Should return an empty array');
       });
     });
 
     describe('DOM Matchers & Selectors', () => {
-      it('_collect() should sort results in document order and remove duplicates on first run', () => {
+      it('collect() should sort results in document order and remove duplicates on first run', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('.empty, .li', ul);
         assert.strictEqual(res.length, 3);
@@ -799,7 +799,7 @@ describe('nwsapi', () => {
     });
 
     describe('Error Handling', () => {
-      it('_compileSelector() should throw on invalid start characters', () => {
+      it('compileSelector() should throw on invalid start characters', () => {
         assert.throws(
           () => api.select('!invalid', document),
           err =>
@@ -901,7 +901,7 @@ describe('nwsapi', () => {
     });
 
     describe('Internal Compilers', () => {
-      it('_compileAttribute() should handle empty value with ~= operator', () => {
+      it('compileAttribute() should handle empty value with ~= operator', () => {
         const div = document.createElement('div');
         div.setAttribute('data-test', ' ');
         const res = api.match('[data-test~=""]', div);
@@ -1048,7 +1048,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compileAttribute() should use expr[0] when no namespace prefix is present', () => {
+      it('compileAttribute() should use expr[0] when no namespace prefix is present', () => {
         const div = document.createElement('div');
         div.setAttribute('testattr', 'value');
         assert.ok(
@@ -1057,7 +1057,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compileAttribute() should use expr[1] when a namespace prefix is present', () => {
+      it('compileAttribute() should use expr[1] when a namespace prefix is present', () => {
         const div = document.createElement('div');
         div.setAttribute('xlink:href', 'https://example.com');
         assert.ok(
@@ -1066,7 +1066,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compileAttribute() should compile to if(false) when ~= value contains a space', () => {
+      it('compileAttribute() should compile to if(false) when ~= value contains a space', () => {
         const div = document.createElement('div');
         div.setAttribute('data-test', 'foo bar');
         const res = api.match('[data-test~="foo bar"]', div);
@@ -1077,17 +1077,17 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compile() should return the cached lambda function on subsequent calls with the same selector', () => {
+      it('compile() should return the cached lambda function on subsequent calls with the same selector', () => {
         const selector = '.test-cache-selector';
-        const selectLambda1 = api._compile(selector, true);
-        const selectLambda2 = api._compile(selector, true);
+        const selectLambda1 = api.compile(selector, true);
+        const selectLambda2 = api.compile(selector, true);
         assert.strictEqual(
           selectLambda1,
           selectLambda2,
           'Should return the exact same cached lambda object for select mode (mode: true)'
         );
-        const matchLambda1 = api._compile(selector, false);
-        const matchLambda2 = api._compile(selector, false);
+        const matchLambda1 = api.compile(selector, false);
+        const matchLambda2 = api.compile(selector, false);
         assert.strictEqual(
           matchLambda1,
           matchLambda2,
@@ -1100,7 +1100,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compilePseudoLogical() should fallback to [expr] when splitGroup match returns null', () => {
+      it('compilePseudoLogical() should fallback to [expr] when splitGroup match returns null', () => {
         try {
           api.select('div:is(,)', document);
           assert.fail(
@@ -1132,7 +1132,7 @@ describe('nwsapi', () => {
         }
       });
 
-      it('_compileAttribute() should fully branch all attrCheck conditions', () => {
+      it('compileAttribute() should fully branch all attrCheck conditions', () => {
         const div = document.createElement('div');
         document.body.appendChild(div);
         div.setAttribute('data-present', 'any-value');
@@ -1178,7 +1178,7 @@ describe('nwsapi', () => {
     });
 
     describe('Internal Compiler Fallbacks', () => {
-      it('_byTag() fallback should handle wildcard and specific tags', () => {
+      it('byTag() fallback should handle wildcard and specific tags', () => {
         const mockContext = {
           firstElementChild: {
             localName: 'div',
@@ -1190,14 +1190,14 @@ describe('nwsapi', () => {
             getElementsByTagName: () => []
           }
         };
-        const resWildcard = api._byTag('*', mockContext);
+        const resWildcard = api.byTag('*', mockContext);
         assert.strictEqual(resWildcard.length, 2, 'Wildcard matches all tags');
-        const resDiv = api._byTag('DIV', mockContext);
+        const resDiv = api.byTag('DIV', mockContext);
         assert.strictEqual(resDiv.length, 1, 'Specific tag matches div');
         assert.strictEqual(resDiv[0].localName, 'div');
       });
 
-      it('_byTag() fallback should iterate and collect children elements', () => {
+      it('byTag() fallback should iterate and collect children elements', () => {
         const mockChild1 = { localName: 'span' };
         const mockChild2 = { localName: 'span' };
         const mockContext = {
@@ -1212,7 +1212,7 @@ describe('nwsapi', () => {
             }
           }
         };
-        const resSpan = api._byTag('span', mockContext);
+        const resSpan = api.byTag('span', mockContext);
         assert.strictEqual(
           resSpan.length,
           2,
@@ -1220,7 +1220,7 @@ describe('nwsapi', () => {
         );
         assert.strictEqual(resSpan[0].localName, 'span');
         assert.strictEqual(resSpan[1].localName, 'span');
-        const resWildcard = api._byTag('*', mockContext);
+        const resWildcard = api.byTag('*', mockContext);
         assert.strictEqual(
           resWildcard.length,
           3,
@@ -1231,10 +1231,10 @@ describe('nwsapi', () => {
         assert.strictEqual(resWildcard[2].localName, 'span');
       });
 
-      it('_compileSelector() should throw on unexpected characters via direct call', () => {
+      it('compileSelector() should throw on unexpected characters via direct call', () => {
         const mockSource = 'r=true;';
         assert.throws(
-          () => api._compileSelector('!invalid', mockSource, false),
+          () => api.compileSelector('!invalid', mockSource, false),
           err => {
             return (
               (err.name === 'SyntaxError' ||
@@ -1245,49 +1245,49 @@ describe('nwsapi', () => {
         );
       });
 
-      it('_compilePseudoStructural() should return unmodified source for unknown pseudo-classes', () => {
+      it('compilePseudoStructural() should return unmodified source for unknown pseudo-classes', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test5");';
-        const result = api._compilePseudoStructural(mockMatch, mockSource);
+        const result = api.compilePseudoStructural(mockMatch, mockSource);
         assert.strictEqual(result, mockSource);
       });
 
-      it('_compilePseudoLogical() should return unmodified source for unknown pseudo-classes', () => {
+      it('compilePseudoLogical() should return unmodified source for unknown pseudo-classes', () => {
         const mockMatch = [':unknown(.foo)', 'unknown', '.foo'];
         const mockSource = 'console.log("test4");';
-        const result = api._compilePseudoLogical(mockMatch, mockSource);
+        const result = api.compilePseudoLogical(mockMatch, mockSource);
         assert.strictEqual(result, mockSource);
       });
 
-      it('_compilePseudoLocation() should return unmodified source for unknown pseudo-classes', () => {
+      it('compilePseudoLocation() should return unmodified source for unknown pseudo-classes', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test3");';
-        const result = api._compilePseudoLocation(mockMatch, mockSource);
+        const result = api.compilePseudoLocation(mockMatch, mockSource);
         assert.strictEqual(result, mockSource);
       });
 
-      it('_compilePseudoInputState() should return unmodified source for unknown pseudo-classes', () => {
+      it('compilePseudoInputState() should return unmodified source for unknown pseudo-classes', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test2");';
-        const result = api._compilePseudoInputState(mockMatch, mockSource);
+        const result = api.compilePseudoInputState(mockMatch, mockSource);
         assert.strictEqual(result, mockSource);
       });
 
-      it('_compilePseudoInputValue() should return unmodified source for unknown pseudo-classes', () => {
+      it('compilePseudoInputValue() should return unmodified source for unknown pseudo-classes', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test");';
-        const result = api._compilePseudoInputValue(mockMatch, mockSource);
+        const result = api.compilePseudoInputValue(mockMatch, mockSource);
         assert.strictEqual(result, mockSource);
       });
 
-      it('_compilePseudoTreeStruct() should set pseudoName to a lowercased string when match[1] exists', () => {
+      it('compilePseudoTreeStruct() should set pseudoName to a lowercased string when match[1] exists', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:NTH-CHILD(1)', ul);
         assert.strictEqual(res.length, 1);
         assert.strictEqual(res[0].id, 'li1');
       });
 
-      it('_compilePseudoTreeStruct() should set pseudoName to empty string and throw when match[1] is missing', () => {
+      it('compilePseudoTreeStruct() should set pseudoName to empty string and throw when match[1] is missing', () => {
         assert.throws(
           () => api.select('li:(1)', document),
           err =>
@@ -1297,7 +1297,7 @@ describe('nwsapi', () => {
       });
     });
 
-    describe('_compilePseudoTreeStruct() internal direct calls', () => {
+    describe('compilePseudoTreeStruct() internal direct calls', () => {
       it('should return source and emit error when match[1] is undefined (else branch of pseudoName)', () => {
         const api = new nw.Nwsapi(window, document);
         const mockMatch = [':(even)', undefined, 'even'];
@@ -1305,7 +1305,7 @@ describe('nwsapi', () => {
         const selectorString = ':(even)';
         assert.throws(
           () =>
-            api._compilePseudoTreeStruct(mockMatch, mockSource, selectorString),
+            api.compilePseudoTreeStruct(mockMatch, mockSource, selectorString),
           err => {
             return (
               (err.name === 'SyntaxError' ||
@@ -1323,7 +1323,7 @@ describe('nwsapi', () => {
         const mockSource = 'r=true;';
         assert.throws(
           () =>
-            api._compilePseudoTreeStruct(mockMatch, mockSource, ':nth-child()'),
+            api.compilePseudoTreeStruct(mockMatch, mockSource, ':nth-child()'),
           err =>
             err.name === 'SyntaxError' || err instanceof window.DOMException
         );

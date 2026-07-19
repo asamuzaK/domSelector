@@ -500,13 +500,13 @@ export class Nwsapi {
     );
     this.#compat = Object.freeze(
       Object.assign(Object.create(null), {
-        '#': (c, n) => () => this._byId(n, c),
-        '*': (c, n) => () => this._byTag(n, c),
-        '.': (c, n) => () => this._byClass(n, c)
+        '#': (c, n) => () => this.byId(n, c),
+        '*': (c, n) => () => this.byTag(n, c),
+        '.': (c, n) => () => this.byClass(n, c)
       })
     );
-    this.#lastContext = this._switchContext(document, true);
-    this.#boundDocumentOrder = this._documentOrder.bind(this);
+    this.#lastContext = this.#switchContext(document, true);
+    this.#boundDocumentOrder = this.#documentOrder.bind(this);
   }
 
   /**
@@ -516,7 +516,7 @@ export class Nwsapi {
    * @param {Element} b - The second node.
    * @returns {number} Sort indication (-1, 0, or 1).
    */
-  _documentOrder(a, b) {
+  #documentOrder(a, b) {
     if (a === b) {
       this.hasDupes = true;
       return 0;
@@ -533,7 +533,7 @@ export class Nwsapi {
    * @param {Array<Element>} nodes - The array of nodes.
    * @returns {Array<Element>} A new array containing unique nodes.
    */
-  _unique(nodes) {
+  #unique(nodes) {
     let i = 0;
     let j = -1;
     let l = nodes.length + 1;
@@ -551,12 +551,11 @@ export class Nwsapi {
   /**
    * Retrieve elements by ID through an iterative tree walk.
    * Ensures all elements with duplicate IDs are found.
-   * @private
    * @param {string} id - The ID to search for.
    * @param {Element|Document} context - The base element or document.
    * @returns {Array<Element>} The list of matching elements.
    */
-  _byId(id, context) {
+  byId(id, context) {
     const nodes = [];
     const all = context.getElementsByTagName('*');
     for (let i = 0, len = all.length; i < len; i++) {
@@ -569,12 +568,11 @@ export class Nwsapi {
 
   /**
    * Context-agnostic implementation of `getElementsByTagName`.
-   * @private
    * @param {string} tag - The tag name to search for.
    * @param {Element|Document|DocumentFragment} context - The scope.
    * @returns {Array<Element>} An array of matched elements.
    */
-  _byTag(tag, context) {
+  byTag(tag, context) {
     const api = METHOD['*'];
     if (api in context) {
       const collection = context[api](tag);
@@ -603,12 +601,11 @@ export class Nwsapi {
 
   /**
    * Context-agnostic implementation of `getElementsByClassName`.
-   * @private
    * @param {string} cls - The class name to search for.
    * @param {Element|Document|DocumentFragment} context - The scope context.
    * @returns {Array<Element>} An array of matched elements.
    */
-  _byClass(cls, context) {
+  byClass(cls, context) {
     const api = METHOD['.'];
     if (api in context) {
       const collection = context[api](cls);
@@ -629,7 +626,7 @@ export class Nwsapi {
    * @param {string} proto - The exception prototype type name.
    * @throws {Error|DOMException} Will always throw to guarantee fallback routing.
    */
-  _emit(message, proto) {
+  #emit(message, proto) {
     if (proto === 'TypeError') {
       throw new this.#window.TypeError(message);
     } else {
@@ -644,7 +641,7 @@ export class Nwsapi {
    * @param {boolean} [force] - Forces re-initialization of contextual flags.
    * @returns {Element|Document} The applied context object.
    */
-  _switchContext(context, force) {
+  #switchContext(context, force) {
     const oldDoc = this.#document;
     this.#document = context.ownerDocument || context;
     if (force || oldDoc !== this.#document) {
@@ -657,32 +654,31 @@ export class Nwsapi {
 
   /**
    * Transforms a selector string sequence into a javascript string.
-   * @private
    * @param {string} expression - The unparsed selector sequence expression.
    * @param {string} source - The initial source string macro logic to compound.
    * @param {boolean} mode - Selectively evaluates caching string derivations between matched and selected calls.
    * @returns {string} The final compiled block of javascript mapping logic string.
    */
-  _compileSelector(expression, source, mode) {
+  compileSelector(expression, source, mode) {
     let selector = expression.replace(REX.combinator, '$1');
     const selectorString = mode ? this.#lastSelected : this.#lastMatched;
     while (selector) {
       const symbol = selector[0];
       switch (symbol) {
         case '*': {
-          ({ source, selector } = this._compileUniversal(selector, source));
+          ({ source, selector } = this.compileUniversal(selector, source));
           break;
         }
         case '#': {
-          ({ source, selector } = this._compileId(selector, source));
+          ({ source, selector } = this.compileId(selector, source));
           break;
         }
         case '.': {
-          ({ source, selector } = this._compileClass(selector, source));
+          ({ source, selector } = this.compileClass(selector, source));
           break;
         }
         case '[': {
-          ({ source, selector } = this._compileAttribute(selector, source));
+          ({ source, selector } = this.compileAttribute(selector, source));
           break;
         }
         case '~':
@@ -690,7 +686,7 @@ export class Nwsapi {
         case '\x09':
         case '\x20':
         case '>': {
-          ({ source, selector } = this._compileCombinator(
+          ({ source, selector } = this.compileCombinator(
             symbol,
             selector,
             source
@@ -698,7 +694,7 @@ export class Nwsapi {
           break;
         }
         case ':': {
-          ({ source, selector } = this._compilePseudo(
+          ({ source, selector } = this.compilePseudo(
             selector,
             source,
             selectorString
@@ -707,9 +703,9 @@ export class Nwsapi {
         }
         default: {
           if (/[_a-z]/i.test(symbol)) {
-            ({ source, selector } = this._compileTag(selector, source));
+            ({ source, selector } = this.compileTag(selector, source));
           } else {
-            this._emit(`'${selectorString}'${SEL_INVALID}`);
+            this.#emit(`'${selectorString}'${SEL_INVALID}`);
           }
           break;
         }
@@ -724,7 +720,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileUniversal(selector, source) {
+  compileUniversal(selector, source) {
     const match = selector.match(Nwsapi.#patterns.universal);
     return { source, selector: match.pop() };
   }
@@ -735,7 +731,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileId(selector, source) {
+  compileId(selector, source) {
     const match = selector.match(Nwsapi.#patterns.id);
     return {
       source: `if(/^${match[1]}$/.test(e.getAttribute("id"))){${source}}`,
@@ -749,7 +745,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileClass(selector, source) {
+  compileClass(selector, source) {
     const match = selector.match(Nwsapi.#patterns.className);
     const compatLocal = this.#quirksMode ? 'i' : '';
     return {
@@ -764,7 +760,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileTag(selector, source) {
+  compileTag(selector, source) {
     const match = selector.match(Nwsapi.#patterns.tagName);
     const tagCompare = match[1].toLowerCase();
     return {
@@ -779,7 +775,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileAttribute(selector, source) {
+  compileAttribute(selector, source) {
     const match = selector.match(Nwsapi.#patterns.attribute);
     const name = match[1];
     let expr = name.split(':');
@@ -826,7 +822,7 @@ export class Nwsapi {
    * @param {string} source - The compiled source string wrapper.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compileCombinator(symbol, selector, source) {
+  compileCombinator(symbol, selector, source) {
     let match;
     if (symbol === '~') {
       match = selector.match(Nwsapi.#patterns.relative);
@@ -851,22 +847,22 @@ export class Nwsapi {
    * @param {string} selectorString - Original string block utilized within error output.
    * @returns {{source: string, selector: string}} The new modified sequence object representation.
    */
-  _compilePseudo(selector, source, selectorString) {
+  compilePseudo(selector, source, selectorString) {
     let match;
     if ((match = selector.match(Nwsapi.#patterns.structural))) {
-      source = this._compilePseudoStructural(match, source);
+      source = this.compilePseudoStructural(match, source);
     } else if ((match = selector.match(Nwsapi.#patterns.treestruct))) {
-      source = this._compilePseudoTreeStruct(match, source, selectorString);
+      source = this.compilePseudoTreeStruct(match, source, selectorString);
     } else if ((match = selector.match(Nwsapi.#patterns.logicalsel))) {
-      source = this._compilePseudoLogical(match, source);
+      source = this.compilePseudoLogical(match, source);
     } else if ((match = selector.match(Nwsapi.#patterns.locationpc))) {
-      source = this._compilePseudoLocation(match, source);
+      source = this.compilePseudoLocation(match, source);
     } else if ((match = selector.match(Nwsapi.#patterns.inputstate))) {
-      source = this._compilePseudoInputState(match, source);
+      source = this.compilePseudoInputState(match, source);
     } else if ((match = selector.match(Nwsapi.#patterns.inputvalue))) {
-      source = this._compilePseudoInputValue(match, source);
+      source = this.compilePseudoInputValue(match, source);
     } else {
-      this._emit(`unknown pseudo-class selector '${selector}'`);
+      this.#emit(`unknown pseudo-class selector '${selector}'`);
     }
     return { source, selector: match.pop() };
   }
@@ -877,7 +873,7 @@ export class Nwsapi {
    * @param {string} source - The parent compiled mapping logic sequence base to interlock with.
    * @returns {string} The executed source output constraint.
    */
-  _compilePseudoStructural(match, source) {
+  compilePseudoStructural(match, source) {
     const pseudoName = match[1].toLowerCase();
     switch (pseudoName) {
       case 'empty': {
@@ -914,11 +910,11 @@ export class Nwsapi {
    * @param {string} selectorString - Original string block utilized within error output.
    * @returns {string} The computed logic operation function snippet string.
    */
-  _compilePseudoTreeStruct(match, source, selectorString) {
+  compilePseudoTreeStruct(match, source, selectorString) {
     const pseudoName = match[1] ? match[1].toLowerCase() : '';
     const formula = match[2];
     if (!pseudoName || !formula) {
-      this._emit(`'${selectorString}'${SEL_INVALID}`);
+      this.#emit(`'${selectorString}'${SEL_INVALID}`);
       return source;
     }
     const exprBool = /-of-type/i.test(pseudoName);
@@ -985,7 +981,7 @@ export class Nwsapi {
    * @param {string} source - The parent compiled mapping logic sequence base to interlock with.
    * @returns {string} String wrapper resolving the specified matched logic loop blocks.
    */
-  _compilePseudoLogical(match, source) {
+  compilePseudoLogical(match, source) {
     const pseudoName = match[1].toLowerCase();
     const expr = match[2]
       .replace(REX.commaGroup, ',')
@@ -996,7 +992,7 @@ export class Nwsapi {
       const label = `l_${uid}`;
       let code = `{ let r_${uid}=false, e_${uid}=e, n_${uid}=n, o_${uid}=o; ${label}: { `;
       for (let i = 0; i < subExprs.length; i++) {
-        const subCode = this._compileSelector(
+        const subCode = this.compileSelector(
           subExprs[i],
           `r_${uid}=true; break ${label};`,
           false
@@ -1023,7 +1019,7 @@ export class Nwsapi {
    * @param {string} source - The parent compiled mapping logic sequence base to interlock with.
    * @returns {string} Processed function execution evaluation snippet structure string.
    */
-  _compilePseudoLocation(match, source) {
+  compilePseudoLocation(match, source) {
     const pseudoName = match[1].toLowerCase();
     if (pseudoName === 'any-link' || pseudoName === 'link') {
       return `if(/^a|area$/i.test(e.localName)&&e.hasAttribute("href")){${source}}`;
@@ -1039,7 +1035,7 @@ export class Nwsapi {
    * @param {string} source - The parent compiled mapping logic sequence base to interlock with.
    * @returns {string} Evaluated conditional logic block processing sequence input evaluation constraints string.
    */
-  _compilePseudoInputState(match, source) {
+  compilePseudoInputState(match, source) {
     const pseudoName = match[1].toLowerCase();
     if (pseudoName === 'read-only') {
       return `if((/^textarea$/i.test(e.localName)&&(e.readOnly||e.disabled))||(/^input$/i.test(e.localName)&&("|date|datetime-local|email|month|number|password|search|tel|text|time|url|week|".includes("|"+e.type+"|")?(e.readOnly||e.disabled):true))||(!/^(?:input|textarea)$/i.test(e.localName) && !s.isContentEditable(e))){${source}}`;
@@ -1055,7 +1051,7 @@ export class Nwsapi {
    * @param {string} source - The parent compiled mapping logic sequence base to interlock with.
    * @returns {string} Function context execution constraint wrapper processing mapping condition validations.
    */
-  _compilePseudoInputValue(match, source) {
+  compilePseudoInputValue(match, source) {
     const pseudoName = match[1].toLowerCase();
     if (pseudoName === 'checked') {
       return `if((/^input$/i.test(e.localName)&&("|radio|checkbox|".includes("|"+e.type+"|")&&e.checked)||(/^option$/i.test(e.localName)&&(e.selected||e.checked)))){${source}}`;
@@ -1071,7 +1067,7 @@ export class Nwsapi {
    * @param {boolean} mode - Mode specifying lambda output behavior (true: select, false: match).
    * @returns {(c: Element|Element[]|NodeList, f?: ((element: Element) => boolean|void), x?: Element|Document|null, r?: boolean|Element[]) => boolean|Element[]} The generated executable selector processing function.
    */
-  _compile(selector, mode) {
+  compile(selector, mode) {
     let head = '';
     let loop = '';
     let macro = '';
@@ -1094,7 +1090,7 @@ export class Nwsapi {
       macro = M_BODY + M_TAIL;
       loop = M_LOOP;
     }
-    source = this._compileSelector(selector, macro, mode);
+    source = this.compileSelector(selector, macro, mode);
     if (mode) {
       loop += '{' + source + '}';
     } else {
@@ -1127,7 +1123,7 @@ export class Nwsapi {
    * @param {((element: Element) => boolean | void)=} callback - Function to be applied over returned nodes.
    * @returns {object} An object containing the mapped arrays of resolvers and results.
    */
-  _collect(selectors, context, callback) {
+  collect(selectors, context, callback) {
     let i, l, type;
     const seen = Object.create(null);
     let token = ['', '*', '*'];
@@ -1152,13 +1148,13 @@ export class Nwsapi {
       }
       nodeset[i] = token[1] + token[2];
       htmlset[i] = this.#compat[token[1]](context, token[2]);
-      factory[i] = this._compile(optimized[i], true);
+      factory[i] = this.compile(optimized[i], true);
       factory[i](htmlset[i](), callback, context, results);
     }
     if (l > 1) {
       results.sort(this.#boundDocumentOrder);
       if (this.hasDupes) {
-        results = this._unique(results);
+        results = this.#unique(results);
       }
     }
     return { callback, context, factory, htmlset, nodeset, results };
@@ -1166,23 +1162,25 @@ export class Nwsapi {
 
   /**
    * Creates mapping pipelines directly collecting matching lambdas.
+   * @private
    * @param {Array<string>} selectors - The comma-split groups of selector patterns.
    * @returns {object} Object encapsulating generated lambda constraints.
    */
-  _matchCollect(selectors) {
+  #matchCollect(selectors) {
     return {
       factory: selectors.map(selector => {
-        return this._compile(selector, false);
+        return this.compile(selector, false);
       })
     };
   }
 
   /**
    * Normalizes the selector string and returns an array of expressions.
+   * @private
    * @param {string} selectors - The target CSS selector string to process.
    * @returns {Array<string>} An array of selector expressions split by commas.
    */
-  _parseSelector(selectors) {
+  #parseSelector(selectors) {
     const rawSelectors =
       typeof selectors !== 'string' ? String(selectors) : selectors;
     const parsed = rawSelectors
@@ -1194,11 +1192,11 @@ export class Nwsapi {
       .replace(REX.trimSpaces, '');
     let expressions = parsed.match(Nwsapi.#reValidator);
     if (!expressions || expressions.join('') !== parsed) {
-      this._emit(`'${rawSelectors}'${SEL_INVALID}`);
+      this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
     } else {
       expressions = parsed.match(REX.splitGroup);
       if (parsed[parsed.length - 1] === ',') {
-        this._emit(`'${rawSelectors}'${SEL_INVALID}`);
+        this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
       }
     }
     return expressions;
@@ -1213,18 +1211,18 @@ export class Nwsapi {
    */
   match(selectors, element, callback) {
     if (selectors === undefined) {
-      this._emit(NOT_ENOUGH_ARGS, 'TypeError');
+      this.#emit(NOT_ENOUGH_ARGS, 'TypeError');
     }
     if (selectors === '') {
-      this._emit(`''${SEL_INVALID}`);
+      this.#emit(`''${SEL_INVALID}`);
     }
     const cachedResolver = this.#matchResolvers.get(selectors);
     if (element && !/:has\(/.test(selectors) && cachedResolver !== undefined) {
       return matchAssert(cachedResolver.factory, element, callback);
     }
     this.#lastMatched = selectors;
-    const expressions = this._parseSelector(selectors);
-    const newResolver = this._matchCollect(expressions);
+    const expressions = this.#parseSelector(selectors);
+    const newResolver = this.#matchCollect(expressions);
     this.#matchResolvers.set(selectors, newResolver);
     return matchAssert(newResolver.factory, element, callback);
   }
@@ -1255,16 +1253,16 @@ export class Nwsapi {
    */
   select(selectors, context, callback) {
     if (selectors === undefined) {
-      this._emit(NOT_ENOUGH_ARGS, 'TypeError');
+      this.#emit(NOT_ENOUGH_ARGS, 'TypeError');
     }
     if (selectors === '') {
-      this._emit(`''${SEL_INVALID}`);
+      this.#emit(`''${SEL_INVALID}`);
     }
     if (!context) {
       context = this.#document;
     }
     if (this.#lastContext !== context) {
-      this.#lastContext = this._switchContext(context);
+      this.#lastContext = this.#switchContext(context);
     }
     let nodes = [];
     const resolver = this.#selectResolvers.get(selectors);
@@ -1282,7 +1280,7 @@ export class Nwsapi {
           if (l > 1 && nodes.length > 1) {
             nodes.sort(this.#boundDocumentOrder);
             if (this.hasDupes) {
-              nodes = this._unique(nodes);
+              nodes = this.#unique(nodes);
             }
           }
         } else {
@@ -1295,8 +1293,8 @@ export class Nwsapi {
       }
     }
     this.#lastSelected = selectors;
-    const expressions = this._parseSelector(selectors);
-    const newResolver = this._collect(expressions, context, callback);
+    const expressions = this.#parseSelector(selectors);
+    const newResolver = this.collect(expressions, context, callback);
     this.#selectResolvers.set(selectors, newResolver);
     nodes = newResolver.results;
     if (typeof callback === 'function') {
@@ -1314,7 +1312,7 @@ export class Nwsapi {
    */
   first(selectors, context, callback) {
     if (selectors === '') {
-      this._emit(`''${SEL_INVALID}`);
+      this.#emit(`''${SEL_INVALID}`);
     }
     if (!context) {
       context = this.#document;
