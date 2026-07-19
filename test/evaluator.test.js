@@ -278,576 +278,454 @@ describe('Evaluator', () => {
   });
 
   describe('match An+B', () => {
-    it('should not match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
-      };
-      const node = document.getElementById('dt1');
+    const runNthTest = (selector, ast, node) => {
       const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(even)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      return evaluator
+        .setup(selector, node)
+        .matchPseudoClassSelector(ast, node);
+    };
+
+    it('should test true and false routes when parentNode is null', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '1', b: '1', type: AN_PLUS_B },
+            selector: null,
+            type: NTH
+          }
+        ]
+      };
+      const evaluator = new Evaluator(window);
+      const isolatedRoot = document.createElement('div');
+      evaluator.setup(':nth-child(1n)', isolatedRoot);
+      const resTrue = evaluator.matchPseudoClassSelector(ast, isolatedRoot);
+      assert.strictEqual(
+        resTrue,
+        true,
+        'passes early return and matches because node is this.root'
+      );
+      const notRoot = document.createElement('span');
+      const resFalse = evaluator.matchPseudoClassSelector(ast, notRoot);
+      assert.strictEqual(
+        resFalse,
+        false,
+        'returns false because node is not this.root and has no parentNode'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          name: 'odd',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-child(even)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'even', type: IDENT }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(odd)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-child(even)', ast, node),
+        false,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          name: 'odd',
-          type: IDENT
-        },
-        selector: {
-          children: [
-            {
+    it('should match :nth-child(odd)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'odd', type: IDENT }, selector: null, type: NTH }
+        ]
+      };
+      const node = document.getElementById('dt1');
+      assert.strictEqual(
+        runNthTest(':nth-child(odd)', ast, node),
+        true,
+        'result'
+      );
+    });
+
+    it('should match :nth-child(odd) with selector', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { name: 'odd', type: IDENT },
+            selector: {
               children: [
                 {
-                  loc: null,
-                  name: 'dt',
-                  type: TYPE_SELECTOR
+                  children: [{ name: 'dt', type: TYPE_SELECTOR }],
+                  type: SELECTOR
                 }
               ],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        },
-        type: NTH
+              type: SELECTOR_LIST
+            },
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('dt:nth-child(odd)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest('dt:nth-child(odd)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-last-child';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-last-child(even)', () => {
+      const ast = {
+        name: 'nth-last-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'even', type: IDENT }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-last-child(even)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-last-child(even)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-child(3n+1)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '3', b: '1', type: AN_PLUS_B },
+            selector: null,
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(3n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-child(3n+1)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          a: '2',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-child(2n)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { a: '2', type: AN_PLUS_B }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(2n)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-child(2n)', ast, node),
+        false,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          b: '3',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-child(3)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { b: '3', type: AN_PLUS_B }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt2');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(3)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-child(3)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: {
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-child(1)', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { b: '1', type: AN_PLUS_B }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-child(1)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-last-child';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-last-child(3n+1)', () => {
+      const ast = {
+        name: 'nth-last-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '3', b: '1', type: AN_PLUS_B },
+            selector: null,
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-last-child(3n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-last-child(3n+1)', ast, node),
+        false,
+        'result'
+      );
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-of-type(even)', () => {
+      const ast = {
+        name: 'nth-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'even', type: IDENT }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-of-type(even)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-of-type(even)', ast, node),
+        false,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          name: 'odd',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-of-type(odd)', () => {
+      const ast = {
+        name: 'nth-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'odd', type: IDENT }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-of-type(odd)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-of-type(odd)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-last-of-type';
-      const leaf = {
-        nth: {
-          name: 'even',
-          type: IDENT
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-last-of-type(even)', () => {
+      const ast = {
+        name: 'nth-last-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { name: 'even', type: IDENT }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-last-of-type(even)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-last-of-type(even)', ast, node),
+        false,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-of-type(3n+1)', () => {
+      const ast = {
+        name: 'nth-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '3', b: '1', type: AN_PLUS_B },
+            selector: null,
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-of-type(3n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-of-type(3n+1)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          a: '2',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-of-type(2n)', () => {
+      const ast = {
+        name: 'nth-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { a: '2', type: AN_PLUS_B }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt2');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-of-type(2n)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-of-type(2n)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should match', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: {
-          b: '3',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should match :nth-of-type(3)', () => {
+      const ast = {
+        name: 'nth-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          { nth: { b: '3', type: AN_PLUS_B }, selector: null, type: NTH }
+        ]
       };
       const node = document.getElementById('dt3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-of-type(3)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-of-type(3)', ast, node),
+        true,
+        'result'
+      );
     });
 
-    it('should not match', () => {
-      const leafName = 'nth-last-of-type';
-      const leaf = {
-        nth: {
-          a: '3',
-          b: '1',
-          type: AN_PLUS_B
-        },
-        selector: null,
-        type: NTH
+    it('should not match :nth-last-of-type(3n+1)', () => {
+      const ast = {
+        name: 'nth-last-of-type',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '3', b: '1', type: AN_PLUS_B },
+            selector: null,
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('dt1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-last-of-type(3n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(
+        runNthTest(':nth-last-of-type(3n+1)', ast, node),
+        false,
+        'result'
+      );
     });
 
     it('should test a > 0 with valid and invalid diff boundaries', () => {
-      const leafName = 'nth-child';
-      // 3n + 5 (n=0: 5, n=1: 8, n=2: 11...)
       const leaf = {
         nth: { a: '3', b: '5', type: AN_PLUS_B },
         selector: null,
         type: NTH
       };
-      const evaluator = new Evaluator(window);
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [leaf]
+      };
       const parent = document.createElement('div');
       for (let i = 0; i < 10; i++) {
         parent.appendChild(document.createElement('p'));
       }
       document.getElementById('div0').appendChild(parent);
-      const nodeMatch = parent.children[7];
-      evaluator.setup(':nth-child(3n+5)', nodeMatch);
       assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, nodeMatch, leafName),
+        runNthTest(':nth-child(3n+5)', ast, parent.children[7]),
         true,
         'pos=8 matches 3n+5'
       );
-      const nodeMinusDiff = parent.children[1];
-      evaluator.setup(':nth-child(3n+5)', nodeMinusDiff);
       assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, nodeMinusDiff, leafName),
+        runNthTest(':nth-child(3n+5)', ast, parent.children[1]),
         false,
-        'pos=2 fails 3n+5 because diff < 0'
+        'pos=2 fails 3n+5'
       );
     });
 
     it('should test a < 0 with valid and invalid diff boundaries', () => {
-      const leafName = 'nth-child';
-      // -3n + 5 (n=0: 5, n=1: 2)
       const leaf = {
         nth: { a: '-3', b: '5', type: AN_PLUS_B },
         selector: null,
         type: NTH
       };
-      const evaluator = new Evaluator(window);
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [leaf]
+      };
       const parent = document.createElement('div');
       for (let i = 0; i < 10; i++) {
         parent.appendChild(document.createElement('p'));
       }
       document.getElementById('div0').appendChild(parent);
-      const nodeMatch = parent.children[1];
-      evaluator.setup(':nth-child(-3n+5)', nodeMatch);
       assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, nodeMatch, leafName),
+        runNthTest(':nth-child(-3n+5)', ast, parent.children[1]),
         true,
         'pos=2 matches -3n+5'
       );
-      const nodePlusDiff = parent.children[7];
-      evaluator.setup(':nth-child(-3n+5)', nodePlusDiff);
       assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, nodePlusDiff, leafName),
+        runNthTest(':nth-child(-3n+5)', ast, parent.children[7]),
         false,
-        'pos=8 fails -3n+5 because diff > 0'
+        'pos=8 fails -3n+5'
       );
     });
 
     it('should branch on anb.selector caching for nth-child of sel', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: { a: '2', b: '1', type: AN_PLUS_B },
-        selector: {
-          children: [
-            {
-              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        },
-        type: NTH
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '2', b: '1', type: AN_PLUS_B },
+            selector: {
+              children: [
+                {
+                  children: [{ name: 'li', type: CLASS_SELECTOR }],
+                  type: SELECTOR
+                }
+              ],
+              type: SELECTOR_LIST
+            },
+            type: NTH
+          }
+        ]
       };
       const node = document.getElementById('li3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('li:nth-child(2n+1 of .li)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'matches nth-child with of selector');
+      assert.strictEqual(
+        runNthTest('li:nth-child(2n+1 of .li)', ast, node),
+        true,
+        'matches nth-child with of selector'
+      );
     });
 
-    it('should branch on anb.selector caching for nth-last-child of sel', () => {
-      const leafName = 'nth-last-child';
-      // :nth-last-child(2n+1 of .li)
-      const leaf = {
-        nth: { a: '2', b: '1', type: AN_PLUS_B },
-        selector: {
-          children: [
-            {
-              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
+    it('should test anb.selector without parentNode', () => {
+      const ast = {
+        name: 'nth-child',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            nth: { a: '1', b: '1', type: AN_PLUS_B },
+            selector: {
+              children: [
+                {
+                  children: [
+                    { loc: null, name: 'match-me', type: CLASS_SELECTOR }
+                  ],
+                  loc: null,
+                  type: SELECTOR
+                }
+              ],
               loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        },
-        type: NTH
-      };
-      const node = document.getElementById('li3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('li:nth-last-child(2n+1 of .li)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(res, true, 'matches nth-last-child with of selector');
-    });
-
-    it('should not cache selector when nthName is nth-of-type even', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: { a: '2', b: '1', type: AN_PLUS_B },
-        selector: {
-          children: [
-            {
-              children: [{ loc: null, name: 'li', type: CLASS_SELECTOR }],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        },
-        type: NTH
-      };
-      const node = document.getElementById('li1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('li:nth-of-type(2n+1)', node);
-      const res = evaluator._matchAnPlusB(leaf, node, leafName);
-      assert.strictEqual(
-        res,
-        true,
-        'processes nth-of-type smoothly by bypassing selector cache'
-      );
-    });
-
-    it('should test empty array return', () => {
-      const leafName = 'nth-child';
-      // :nth-child(1n of .match-me)
-      const leaf = {
-        nth: { a: '1', b: '1', type: AN_PLUS_B },
-        selector: {
-          children: [
-            {
-              children: [{ loc: null, name: 'match-me', type: CLASS_SELECTOR }],
-              loc: null,
-              type: SELECTOR
-            }
-          ],
-          loc: null,
-          type: SELECTOR_LIST
-        },
-        type: NTH
-      };
-      const isolatedNode = document.createElement('div');
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':nth-child(1n of .match-me)', isolatedNode);
-      const res = evaluator._matchAnPlusB(leaf, isolatedNode, leafName);
-      assert.strictEqual(
-        res,
-        false,
-        'returns false because siblings array is empty'
-      );
-    });
-
-    it('should cover all 4 logical branches of typeKey', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: { a: '1', b: '1', type: AN_PLUS_B },
-        selector: null,
-        type: NTH
+              type: SELECTOR_LIST
+            },
+            type: NTH
+          }
+        ]
       };
       const evaluator = new Evaluator(window);
-      const xmlDoc = new window.DOMParser().parseFromString(
-        '<root xmlns:svg="http://www.w3.org/2000/svg"><svg:svg/></root>',
-        'text/xml'
-      );
-      const svgChild = xmlDoc.documentElement.firstChild;
-      evaluator.setup('svg|svg:nth-of-type(1)', svgChild);
-      assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, svgChild, leafName),
-        true,
-        'Branch 1 passed'
-      );
-      const svgParent = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg'
-      );
-      const svgNoPrefixChild = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'rect'
-      );
-      svgParent.appendChild(svgNoPrefixChild);
-      document.getElementById('div0').appendChild(svgParent);
-      evaluator.setup('rect:nth-of-type(1)', svgNoPrefixChild);
-      assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, svgNoPrefixChild, leafName),
-        true,
-        'Branch 2 passed'
-      );
-      const mockParent = document.createElement('div');
-      const mockChild = document.createElement('p');
-      mockParent.appendChild(mockChild);
-      document.getElementById('div0').appendChild(mockParent);
-      Object.defineProperty(mockChild, 'namespaceURI', {
-        value: null,
-        configurable: true
-      });
-      Object.defineProperty(mockChild, 'prefix', {
-        value: 'foo',
-        configurable: true
-      });
-      evaluator.setup('p:nth-of-type(1)', mockChild);
-      assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, mockChild, leafName),
-        true,
-        'Branch 3 passed'
-      );
-      const htmlParent = document.createElement('div');
-      const htmlChild = document.createElement('p');
-      htmlParent.appendChild(htmlChild);
-      document.getElementById('div0').appendChild(htmlParent);
-      evaluator.setup('p:nth-of-type(1)', htmlChild);
-      assert.strictEqual(
-        evaluator._matchAnPlusB(leaf, htmlChild, leafName),
-        true,
-        'Branch 4 passed'
-      );
-    });
-
-    it('should test true and false routes when parentNode is null', () => {
-      const leafName = 'nth-of-type';
-      const leaf = {
-        nth: { a: '1', b: '1', type: AN_PLUS_B },
-        selector: null,
-        type: NTH
-      };
-      const evaluator = new Evaluator(window);
-      const isolatedRoot = document.createElement('div');
-      evaluator.setup('div:nth-of-type(1n)', isolatedRoot);
-      const resTrue = evaluator._matchAnPlusB(leaf, isolatedRoot, leafName);
+      const isolatedRootMatch = document.createElement('div');
+      isolatedRootMatch.classList.add('match-me');
+      const resTrue = evaluator
+        .setup(':nth-child(1n of .match-me)', isolatedRootMatch)
+        .matchPseudoClassSelector(ast, isolatedRootMatch, {});
       assert.strictEqual(
         resTrue,
         true,
-        'returns [node] and passes because node is this.#root'
+        'matches because the isolated root satisfies the selector branch'
       );
-      const notRoot = document.createElement('p');
-      const resFalse = evaluator._matchAnPlusB(leaf, notRoot, leafName);
+      const isolatedRootNoMatch = document.createElement('div');
+      const resFalse = evaluator
+        .setup(':nth-child(1n of .match-me)', isolatedRootNoMatch)
+        .matchPseudoClassSelector(ast, isolatedRootNoMatch, {});
       assert.strictEqual(
         resFalse,
         false,
-        'returns [] and fails because node is not this.#root'
-      );
-    });
-
-    it('should test true and false branches when parentNode is null', () => {
-      const leafName = 'nth-child';
-      const leaf = {
-        nth: { a: '1', b: '1', type: AN_PLUS_B },
-        selector: null,
-        type: NTH
-      };
-      const evaluator = new Evaluator(window);
-      const isolatedRoot = document.createElement('div');
-      evaluator.setup('div:nth-child(1n)', isolatedRoot);
-      const resTrue = evaluator._matchAnPlusB(leaf, isolatedRoot, leafName);
-      assert.strictEqual(
-        resTrue,
-        true,
-        'returns [node] and passes because node is this.#root'
-      );
-      const notRoot = document.createElement('span');
-      const resFalse = evaluator._matchAnPlusB(leaf, notRoot, leafName);
-      assert.strictEqual(
-        resFalse,
-        false,
-        'returns [] and fails because node is not this.#root'
+        'returns false because the isolated root does not have the class'
       );
     });
   });
@@ -935,88 +813,128 @@ describe('Evaluator', () => {
   });
 
   describe('match :has() pseudo-class function', () => {
-    it('should not match', () => {
+    const runHasTest = (selector, ast, node) => {
+      const evaluator = new Evaluator(window);
+      return evaluator
+        .setup(selector, node)
+        .matchPseudoClassSelector(ast, node, {});
+    };
+
+    it('should throw a SyntaxError for empty :has()', () => {
       const node = document.getElementById('ul1');
-      const leaves = [];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has()', node);
-      const res = evaluator._matchHasPseudoFunc(leaves, node, {});
-      assert.strictEqual(res, false, 'result');
-    });
-
-    it('should not match', () => {
-      const node = document.getElementById('dl1');
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: []
+      };
+      assert.throws(
+        () => runHasTest(':has()', ast, node),
+        e => {
+          assert.strictEqual(
+            e instanceof window.DOMException,
+            true,
+            'instance'
+          );
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector :has()', 'message');
+          return true;
         }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(li)', node);
-      const res = evaluator._matchHasPseudoFunc(leaves, node, {});
-      assert.strictEqual(res, false, 'result');
+      );
     });
 
-    it('should match', () => {
+    it('should not match when element is missing', () => {
       const node = document.getElementById('dl1');
-      const leaves = [
-        {
-          name: 'dd',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(dd)', node);
-      const res = evaluator._matchHasPseudoFunc(leaves, node, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [{ name: 'li', type: TYPE_SELECTOR }],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(runHasTest(':has(li)', ast, node), false, 'result');
     });
 
-    it('should not match', () => {
+    it('should match when element exists', () => {
       const node = document.getElementById('dl1');
-      const leaves = [
-        {
-          name: 'dd',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'p',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(dd p)', node);
-      const res = evaluator._matchHasPseudoFunc(leaves, node, {});
-      assert.strictEqual(res, false, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [{ name: 'dd', type: TYPE_SELECTOR }],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(runHasTest(':has(dd)', ast, node), true, 'result');
     });
 
-    it('should match', () => {
+    it('should not match deep unmatching descendant path', () => {
       const node = document.getElementById('dl1');
-      const leaves = [
-        {
-          name: 'dd',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(dd span)', node);
-      const res = evaluator._matchHasPseudoFunc(leaves, node, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'dd', type: TYPE_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'p', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(runHasTest(':has(dd p)', ast, node), false, 'result');
     });
 
-    it('should match remaining leaves in Fast path 1 (ID)', () => {
+    it('should match deep matching descendant path', () => {
+      const node = document.getElementById('dl1');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'dd', type: TYPE_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has(dd span)', ast, node),
+        true,
+        'result'
+      );
+    });
+
+    it('should match remaining leaves in fast path (ID)', () => {
       const parent = document.createElement('div');
       const child = document.createElement('div');
       child.id = 'fp1-id';
@@ -1024,28 +942,33 @@ describe('Evaluator', () => {
       child.appendChild(grandChild);
       parent.appendChild(child);
       document.getElementById('div0').appendChild(parent);
-
-      const leaves = [
-        {
-          name: 'fp1-id',
-          type: ID_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(#fp1-id span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'fp1-id', type: ID_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has(#fp1-id span)', ast, parent),
+        true,
+        'result'
+      );
     });
 
-    it('should match remaining leaves in Fast path 2 (Class)', () => {
+    it('should match remaining leaves in fast path (Class)', () => {
       const parent = document.createElement('div');
       const child = document.createElement('div');
       child.classList.add('fp2-class');
@@ -1053,53 +976,63 @@ describe('Evaluator', () => {
       child.appendChild(grandChild);
       parent.appendChild(child);
       document.getElementById('div0').appendChild(parent);
-
-      const leaves = [
-        {
-          name: 'fp2-class',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(.fp2-class span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'fp2-class', type: CLASS_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has(.fp2-class span)', ast, parent),
+        true,
+        'result'
+      );
     });
 
-    it('should match remaining leaves in Fast path 3 (Type)', () => {
+    it('should match remaining leaves in fast path (Type)', () => {
       const parent = document.createElement('div');
       const child = document.createElement('section');
       const grandChild = document.createElement('span');
       child.appendChild(grandChild);
       parent.appendChild(child);
       document.getElementById('div0').appendChild(parent);
-
-      const leaves = [
-        {
-          name: 'section',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(section span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'section', type: TYPE_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has(section span)', ast, parent),
+        true,
+        'result'
+      );
     });
 
     it('should match remaining leaves in Fallback (TreeWalker)', () => {
@@ -1110,33 +1043,39 @@ describe('Evaluator', () => {
       child.appendChild(grandChild);
       parent.appendChild(child);
       document.getElementById('div0').appendChild(parent);
-      const leaves = [
-        {
-          name: {
-            name: 'data-fp4',
-            type: IDENT
-          },
-          type: ATTR_SELECTOR,
-          value: null,
-          flags: null,
-          evaluator: null
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has([data-fp4] span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
-      assert.strictEqual(res, true, 'result');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    name: { name: 'data-fp4', type: IDENT },
+                    type: ATTR_SELECTOR,
+                    value: null,
+                    flags: null,
+                    evaluator: null
+                  },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has([data-fp4] span)', ast, parent),
+        true,
+        'result'
+      );
     });
 
-    it('should match compound selector and return true when isLast is true', () => {
+    it('should match selector and return true when isLast is true', () => {
       const parent = document.createElement('div');
       const child1 = document.createElement('div');
       child1.className = 'fp-class no-match';
@@ -1145,29 +1084,32 @@ describe('Evaluator', () => {
       parent.appendChild(child1);
       parent.appendChild(child2);
       document.getElementById('div0').appendChild(parent);
-
-      // :has(.fp-class.match)
-      const leaves = [
-        {
-          name: 'fp-class',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'match',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(.fp-class.match)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'fp-class', type: CLASS_SELECTOR },
+                  { name: 'match', type: CLASS_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
       assert.strictEqual(
-        res,
+        runHasTest(':has(.fp-class.match)', ast, parent),
         true,
-        'matches second child and returns true via isLast'
+        'result'
       );
     });
 
-    it('should match compound selector and proceed to _matchHasPseudoFunc when isLast is false', () => {
+    it('should match selector and proceed when isLast is false', () => {
       const parent = document.createElement('div');
       const child1 = document.createElement('div');
       child1.className = 'fp-class no-match';
@@ -1178,66 +1120,64 @@ describe('Evaluator', () => {
       parent.appendChild(child1);
       parent.appendChild(child2);
       document.getElementById('div0').appendChild(parent);
-
-      // :has(.fp-class.match span)
-      const leaves = [
-        {
-          name: 'fp-class',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'match',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(.fp-class.match span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'fp-class', type: CLASS_SELECTOR },
+                  { name: 'match', type: CLASS_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
       assert.strictEqual(
-        res,
+        runHasTest(':has(.fp-class.match span)', ast, parent),
         true,
-        'passes filter and correctly evaluates remaining leaves'
+        'result'
       );
     });
 
-    it('should return false when filterLeaves do not match any candidate', () => {
+    it('should return false when filterLeaves do not match', () => {
       const parent = document.createElement('div');
       const child = document.createElement('div');
       child.className = 'fp-class no-match';
       parent.appendChild(child);
       document.getElementById('div0').appendChild(parent);
-
-      // :has(.fp-class.match span)
-      const leaves = [
-        {
-          name: 'fp-class',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: 'match',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'span',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(.fp-class.match span)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
-      assert.strictEqual(res, false, 'fails cleanly at filterLeaves check');
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'fp-class', type: CLASS_SELECTOR },
+                  { name: 'match', type: CLASS_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
+      assert.strictEqual(
+        runHasTest(':has(.fp-class.match span)', ast, parent),
+        false,
+        'result'
+      );
     });
 
     it('should apply filterLeaves correctly in Type selector fast path', () => {
@@ -1251,32 +1191,30 @@ describe('Evaluator', () => {
       parent.appendChild(child1);
       parent.appendChild(child2);
       document.getElementById('div0').appendChild(parent);
-      // :has(section.match p)
-      const leaves = [
-        {
-          name: 'section',
-          type: TYPE_SELECTOR
-        },
-        {
-          name: 'match',
-          type: CLASS_SELECTOR
-        },
-        {
-          name: ' ',
-          type: COMBINATOR
-        },
-        {
-          name: 'p',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const evaluator = new Evaluator(window);
-      evaluator.setup(':has(section.match p)', parent);
-      const res = evaluator._matchHasPseudoFunc(leaves, parent, {});
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  { name: 'section', type: TYPE_SELECTOR },
+                  { name: 'match', type: CLASS_SELECTOR },
+                  { name: ' ', type: COMBINATOR },
+                  { name: 'p', type: TYPE_SELECTOR }
+                ],
+                type: SELECTOR
+              }
+            ],
+            type: SELECTOR_LIST
+          }
+        ]
+      };
       assert.strictEqual(
-        res,
+        runHasTest(':has(section.match p)', ast, parent),
         true,
-        'evaluates filterLeaves properly in TYPE_SELECTOR fast path'
+        'result'
       );
     });
   });
@@ -8804,10 +8742,10 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const evaluator = new Evaluator(window);
-      evaluator.setup(':is(:host)', shadowRoot);
-      evaluator._shadow = true;
       const opt = {};
-      const res = evaluator._matchSelectorForShadowRoot(ast, shadowRoot, opt);
+      const res = evaluator
+        .setup(':is(:host)', shadowRoot)
+        .matchSelector(ast, shadowRoot, opt);
       assert.strictEqual(
         opt.isShadowRoot,
         true,
@@ -8827,8 +8765,9 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const evaluator = new Evaluator(window);
-      evaluator.setup(':host', shadowRoot);
-      const res = evaluator._matchSelectorForShadowRoot(ast, shadowRoot, {});
+      const res = evaluator
+        .setup(':host', shadowRoot)
+        .matchSelector(ast, shadowRoot, {});
       assert.strictEqual(res, true, 'matches :host');
     });
 
@@ -8851,8 +8790,9 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const evaluator = new Evaluator(window);
-      evaluator.setup(':host-context(#div0)', shadowRoot);
-      const res = evaluator._matchSelectorForShadowRoot(ast, shadowRoot, {});
+      const res = evaluator
+        .setup(':host-context(#div0)', shadowRoot)
+        .matchSelector(ast, shadowRoot, {});
       assert.strictEqual(res, true, 'matches :host-context');
     });
 
@@ -8875,8 +8815,9 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const evaluator = new Evaluator(window);
-      evaluator.setup(':host(#nomatch)', shadowRoot);
-      const res = evaluator._matchSelectorForShadowRoot(ast, shadowRoot, {});
+      const res = evaluator
+        .setup(':host(#nomatch)', shadowRoot)
+        .matchSelector(ast, shadowRoot, {});
       assert.strictEqual(res, false, 'does not match :host with invalid id');
     });
 
@@ -8887,8 +8828,9 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const evaluator = new Evaluator(window);
-      evaluator.setup(':hover', shadowRoot);
-      const res = evaluator._matchSelectorForShadowRoot(ast, shadowRoot, {});
+      const res = evaluator
+        .setup(':hover', shadowRoot)
+        .matchSelector(ast, shadowRoot, {});
       assert.strictEqual(
         res,
         false,

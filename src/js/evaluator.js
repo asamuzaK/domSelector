@@ -1619,10 +1619,6 @@ export class Evaluator {
    * @returns {boolean} True if matched, otherwise false.
    */
   _matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
-    const l = astLeaves.length;
-    if (!l) {
-      return false;
-    }
     let combo;
     let startIndex = 0;
     if (astLeaves[0].type === COMBINATOR) {
@@ -1633,6 +1629,7 @@ export class Evaluator {
       startIndex = 0;
     }
     const twigLeaves = [];
+    const l = astLeaves.length;
     let nextComboIndex = startIndex;
     for (; nextComboIndex < l; nextComboIndex++) {
       if (astLeaves[nextComboIndex].type === COMBINATOR) {
