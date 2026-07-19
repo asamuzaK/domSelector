@@ -28,6 +28,9 @@ const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 /* regexp */
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
+/* cache */
+const astMetaCache = new WeakMap();
+
 /**
  * Validates a pseudo-element selector.
  * @param {string} astName - The name of the pseudo-element from the AST.
@@ -144,29 +147,34 @@ export const matchLanguagePseudoClass = (
   if (elementLang === null) {
     return false;
   }
-  if (ast._langRegex !== undefined) {
-    if (ast._langPattern === '*') {
+  let meta = astMetaCache.get(ast);
+  if (meta === undefined) {
+    meta = {};
+    astMetaCache.set(ast, meta);
+  }
+  if (meta.langRegex !== undefined) {
+    if (meta.langPattern === '*') {
       return elementLang !== '';
     }
-    if (ast._langRegex === null) {
+    if (meta.langRegex === null) {
       return false;
     }
-    return ast._langRegex.test(elementLang);
+    return meta.langRegex.test(elementLang);
   }
   const { name, type, value } = ast;
   const langPattern =
     type === STRING && value !== undefined ? value : unescapeSelector(name);
-  ast._langPattern = langPattern;
+  meta.langPattern = langPattern;
   if (typeof langPattern !== 'string') {
-    ast._langRegex = null;
+    meta.langRegex = null;
     return false;
   }
   if (langPattern === '*') {
-    ast._langRegex = null;
+    meta.langRegex = null;
     return elementLang !== '';
   }
   if (!REG_LANG_VALID.test(langPattern)) {
-    ast._langRegex = null;
+    meta.langRegex = null;
     return false;
   }
   const regexStr = langPattern
@@ -177,7 +185,7 @@ export const matchLanguagePseudoClass = (
     })
     .join('');
   const matcherRegex = new RegExp(`^${regexStr}$`, 'i');
-  ast._langRegex = matcherRegex;
+  meta.langRegex = matcherRegex;
   return matcherRegex.test(elementLang);
 };
 
@@ -385,26 +393,32 @@ export const matchAttributeSelector = (
     );
   }
   const isHTML = node.ownerDocument.contentType === 'text/html';
+  let meta = astMetaCache.get(ast);
+  if (meta === undefined) {
+    meta = {};
+    astMetaCache.set(ast, meta);
+  }
   if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
-    if (ast._rawName === undefined) {
-      ast._rawName = unescapeSelector(astName.name);
-      ast._hasPipe = ast._rawName.indexOf('|') > -1;
+    if (meta.astName === undefined) {
+      const rawName = unescapeSelector(astName.name);
+      meta.astName = rawName;
+      meta.hasPipe = rawName.indexOf('|') > -1;
     }
-    if (!ast._hasPipe) {
+    if (!meta.hasPipe) {
       if (
-        ast._rawName === 'lang' &&
+        meta.astName === 'lang' &&
         node.hasAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')
       ) {
         return false;
       }
-      if (node.hasAttribute(ast._rawName)) {
+      if (node.hasAttribute(meta.astName)) {
         return true;
       }
       const attrs = node.attributes;
       if (!attrs || attrs.length === 0) {
         return false;
       }
-      const checkName = isHTML ? ast._rawName.toLowerCase() : ast._rawName;
+      const checkName = isHTML ? meta.astName.toLowerCase() : meta.astName;
       for (let i = 0, len = attrs.length; i < len; i++) {
         let itemName = attrs[i].name;
         if (isHTML) {
@@ -429,26 +443,25 @@ export const matchAttributeSelector = (
   if (!attributes || !attributes.length) {
     return false;
   }
-  if (ast._caseInsensitive === undefined) {
+  if (meta.caseInsensitive === undefined) {
     let caseInsensitive = false;
     if (isHTML) {
-      caseInsensitive = !(
-        typeof astFlags === 'string' && /^s$/i.test(astFlags)
-      );
+      caseInsensitive = 
+        typeof astFlags !== 'string' || !/^s$/i.test(astFlags);
     } else {
       caseInsensitive = typeof astFlags === 'string' && /^i$/i.test(astFlags);
     }
-    ast._caseInsensitive = caseInsensitive;
+    meta.caseInsensitive = caseInsensitive;
     let astAttrName = unescapeSelector(astName.name);
     if (caseInsensitive) {
       astAttrName = astAttrName.toLowerCase();
     }
-    ast._astAttrName = astAttrName;
-    ast._hasPipeInName = astAttrName.indexOf('|') > -1;
-    if (ast._hasPipeInName) {
+    meta.astAttrName = astAttrName;
+    meta.hasPipeInName = astAttrName.indexOf('|') > -1;
+    if (meta.hasPipeInName) {
       const { prefix, localName } = parseAstName(astAttrName);
-      ast._astPrefix = prefix;
-      ast._astLocalName = localName;
+      meta.astPrefix = prefix;
+      meta.astLocalName = localName;
     }
     const { name: astIdentValue, value: astStringValue } = astValue ?? {};
     let attrValue;
@@ -460,18 +473,18 @@ export const matchAttributeSelector = (
     if (caseInsensitive && typeof attrValue === 'string') {
       attrValue = attrValue.toLowerCase();
     }
-    ast._cachedAttrValue = attrValue;
+    meta.cachedAttrValue = attrValue;
     if (astMatcher === '~=' && attrValue && typeof attrValue === 'string') {
-      ast._tildeTarget = /\s/.test(attrValue) ? null : ` ${attrValue} `;
+      meta.tildeTarget = /\s/.test(attrValue) ? null : ` ${attrValue} `;
     }
   }
-  const caseInsensitive = ast._caseInsensitive;
-  const astAttrName = ast._astAttrName;
-  const attrValue = ast._cachedAttrValue;
+  const caseInsensitive = meta.caseInsensitive;
+  const astAttrName = meta.astAttrName;
+  const attrValue = meta.cachedAttrValue;
   const attrValues = new Set();
-  if (ast._hasPipeInName) {
-    const astPrefix = ast._astPrefix;
-    const astLocalName = ast._astLocalName;
+  if (meta.hasPipeInName) {
+    const astPrefix = meta.astPrefix;
+    const astLocalName = meta.astLocalName;
     for (let i = 0, len = attributes.length; i < len; i++) {
       const item = attributes[i];
       let itemName = item.name;
@@ -587,10 +600,10 @@ export const matchAttributeSelector = (
       return typeof attrValue === 'string' && attrValues.has(attrValue);
     }
     case '~=': {
-      if (ast._tildeTarget === null || !attrValue) {
+      if (meta.tildeTarget === null || !attrValue) {
         return false;
       }
-      const target = ast._tildeTarget;
+      const target = meta.tildeTarget;
       for (const value of attrValues) {
         if (` ${value.replace(/[\t\r\n\f]/g, ' ')} `.includes(target)) {
           return true;
@@ -665,25 +678,30 @@ export const matchTypeSelector = (
   node,
   { check, forgive, globalObject } = {}
 ) => {
-  const astName = unescapeSelector(ast.name);
   const { localName, namespaceURI, prefix } = node;
-  let { prefix: astPrefix, localName: astLocalName } = parseAstName(
-    astName,
-    node
-  );
+  let meta = astMetaCache.get(ast);
+  if (meta === undefined) {
+    meta = {};
+    astMetaCache.set(ast, meta);
+  }
+  if (meta.astName === undefined) {
+    const astName = unescapeSelector(ast.name);
+    const { prefix: parsedPrefix, localName: parsedLocalName } = parseAstName(
+      astName,
+      node
+    );
+    meta.astName = astName;
+    meta.astPrefix = parsedPrefix;
+    meta.astPrefixLowerCased = parsedPrefix.toLowerCase();
+    meta.astLocalName = parsedLocalName;
+    meta.astLocalNameLowerCased = parsedLocalName.toLowerCase();
+    meta.hasPipe = astName.includes('|');
+  }
   const isHTML =
     node.ownerDocument.contentType === 'text/html' &&
     (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml');
-  if (isHTML && localName === astLocalName && !astName.includes('|')) {
+  if (isHTML && localName === meta.astLocalName && !meta.hasPipe) {
     return true;
-  }
-  const firstChar = localName.charCodeAt(0);
-  const isAlphabet =
-    (firstChar >= 65 && firstChar <= 90) ||
-    (firstChar >= 97 && firstChar <= 122);
-  if (isHTML && isAlphabet) {
-    astPrefix = astPrefix.toLowerCase();
-    astLocalName = astLocalName.toLowerCase();
   }
   let nodePrefix;
   let nodeLocalName;
@@ -695,6 +713,8 @@ export const matchTypeSelector = (
     nodePrefix = prefix || '';
     nodeLocalName = localName;
   }
+  const astPrefix = isHTML ? meta.astPrefixLowerCased : meta.astPrefix;
+  const astLocalName = isHTML ? meta.astLocalNameLowerCased : meta.astLocalName;
   const isUniversal = astLocalName === '*';
   switch (astPrefix) {
     case '': {
