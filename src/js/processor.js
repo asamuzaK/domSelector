@@ -12,7 +12,7 @@ import { COMBINATOR, SYNTAX_ERR } from './constant.js';
 
 /**
  * SelectorProcessor
- * Handles selector parsing and structuring AST branches.
+ * Processes raw selector branches into an internal AST format.
  */
 export class SelectorProcessor {
   #context;

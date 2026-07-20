@@ -27,6 +27,7 @@ import {
 
 /**
  * Finder
+ * Evaluates CSS selectors to find and collect matched nodes.
  * NOTE: #ast[i] corresponds to #nodes[i]
  */
 export class Finder extends Evaluator {

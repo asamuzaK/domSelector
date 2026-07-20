@@ -85,6 +85,7 @@ const KEYS_PS_NTH_OF_TYPE = new Set([
 
 /**
  * Evaluator
+ * Determines if DOM elements match provided CSS selectors.
  */
 export class Evaluator {
   /* private fields */
@@ -111,7 +112,6 @@ export class Evaluator {
   #walkers;
 
   /**
-   * constructor
    * @param {object} window - The window object.
    */
   constructor(window) {

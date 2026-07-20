@@ -7,6 +7,7 @@ import { createHasValidator } from './selector.js';
 
 /**
  * Mapper
+ * Maps CSS selectors to parsed ASTs and sets up node arrays.
  */
 export class Mapper {
   #context;

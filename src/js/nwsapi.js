@@ -393,9 +393,10 @@ export const solveNth = (element, dir, state, isOfType) => {
 };
 
 /**
- * Class wrapping fast-path module routing configurations for CSS Selection.
+ * Nwsapi
+ * Compiles CSS selectors to efficiently match and query nodes.
  */
-export class Nwsapi {
+ export class Nwsapi {
   /* private */
   #boundDocumentOrder;
   #compat;
