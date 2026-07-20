@@ -1523,7 +1523,7 @@ export class Evaluator {
       default: {
         const [leaf] = leaves;
         const filterLeaves = this.getFilterLeaves(leaves);
-        // Fast path 1: ID
+        // ID
         if (
           leaf.type === ID_SELECTOR &&
           !this.shadow &&
@@ -1548,7 +1548,7 @@ export class Evaluator {
           }
           return false;
         }
-        // Fast path 2: Class
+        // Class
         if (
           leaf.type === CLASS_SELECTOR &&
           typeof node.getElementsByClassName === 'function'
@@ -1572,7 +1572,7 @@ export class Evaluator {
           }
           return false;
         }
-        // Fast path 3: Type
+        // Type
         if (
           leaf.type === TYPE_SELECTOR &&
           typeof node.getElementsByTagName === 'function' &&
@@ -1597,7 +1597,7 @@ export class Evaluator {
           }
           return false;
         }
-        // Fallback: TreeWalker (for pseudo-elements, attributes, etc.)
+        // TreeWalker (for pseudo-elements, attributes, etc.)
         const walker = this.createTreeWalker(node);
         traverseNode(node, walker);
         let currentNode = walker.firstChild();
