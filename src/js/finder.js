@@ -297,6 +297,72 @@ export class Finder extends Evaluator {
   };
 
   /**
+   * Performs early evaluation for TARGET_SELF and TARGET_LINEAL.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {string} targetType - The target type.
+   * @param {boolean} complex - Indicates if the branch is complex.
+   * @param {boolean} compound - Indicates if there are filter leaves.
+   * @returns {object|null} The result object if matched, or null otherwise.
+   */
+  #checkSelfOrLinealTarget = (leaves, targetType, complex, compound) => {
+    if (targetType === TARGET_SELF) {
+      const [nodes, filtered] = this.#matchSelf(leaves);
+      return { compound, filtered, nodes, pending: false };
+    } else if (targetType === TARGET_LINEAL) {
+      const [nodes, filtered] = this.#findLineal(leaves, { complex });
+      return { compound, filtered, nodes, pending: false };
+    }
+    return null;
+  };
+
+  /**
+   * Standardizes the loop processing and filtering of a collection.
+   * @private
+   * @param {object} collection - The HTMLCollection or NodeList to process.
+   * @param {Array.<object>} filterLeaves - Leaves for filtering.
+   * @param {boolean} compound - Indicates if there are filter leaves.
+   * @returns {object} Result object with nodes and flags.
+   */
+  #filterAndFormatCollection = (collection, filterLeaves, compound) => {
+    const len = collection.length;
+    const hasFilter = filterLeaves.length > 0;
+    const nodeArray = [];
+    for (let i = 0; i < len; i++) {
+      const currentNode = collection[i];
+      if (
+        !hasFilter ||
+        this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
+      ) {
+        nodeArray.push(currentNode);
+      }
+    }
+    return {
+      compound,
+      filtered: nodeArray.length > 0,
+      nodes: nodeArray,
+      pending: false
+    };
+  };
+
+  /**
+   * Returns the fallback search result using NodeWalker.
+   * @private
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {string} targetType - The target type.
+   * @param {boolean} precede - Indicates if searching preceding nodes.
+   * @param {boolean} compound - Indicates if there are filter leaves.
+   * @returns {object} Result object with nodes and flags.
+   */
+  #fallbackToWalkerResult = (leaves, targetType, precede, compound) => {
+    const nodes = this.#findNodeWalker(leaves, this.node, {
+      precede,
+      targetType
+    });
+    return { compound, filtered: nodes.length > 0, nodes, pending: false };
+  };
+
+  /**
    * Finds entry nodes for pseudo-elements.
    * @private
    * @param {object} leaf - The AST leaf.
@@ -331,17 +397,16 @@ export class Finder extends Evaluator {
     const { leaves } = twig;
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-
-    if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this.#matchSelf(leaves);
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this.#findLineal(leaves, { complex });
-      return { compound, filtered, nodes, pending: false };
-    } else if (
-      targetType === TARGET_FIRST &&
-      this.root.nodeType !== ELEMENT_NODE
-    ) {
+    const earlyResult = this.#checkSelfOrLinealTarget(
+      leaves,
+      targetType,
+      complex,
+      compound
+    );
+    if (earlyResult) {
+      return earlyResult;
+    }
+    if (targetType === TARGET_FIRST && this.root.nodeType !== ELEMENT_NODE) {
       const [leaf] = leaves;
       const node = this.root.getElementById(leaf.name);
       const nodes = [];
@@ -356,11 +421,7 @@ export class Finder extends Evaluator {
       }
       return { compound, filtered: nodes.length > 0, nodes, pending: false };
     }
-    const nodes = this.#findNodeWalker(leaves, this.node, {
-      precede,
-      targetType
-    });
-    return { compound, filtered: nodes.length > 0, nodes, pending: false };
+    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
   };
 
   /**
@@ -374,14 +435,16 @@ export class Finder extends Evaluator {
   #findEntryNodesForClass = (leaves, targetType, opt = {}) => {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-
-    if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this.#matchSelf(leaves);
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this.#findLineal(leaves, { complex });
-      return { compound, filtered, nodes, pending: false };
-    } else if (
+    const earlyResult = this.#checkSelfOrLinealTarget(
+      leaves,
+      targetType,
+      complex,
+      compound
+    );
+    if (earlyResult) {
+      return earlyResult;
+    }
+    if (
       targetType !== TARGET_FIRST &&
       !precede &&
       typeof this.node.getElementsByClassName === 'function'
@@ -390,30 +453,13 @@ export class Finder extends Evaluator {
       const [leaf] = leaves;
       const className = unescapeSelector(leaf.name);
       const collection = this.node.getElementsByClassName(className);
-      const len = collection.length;
-      const hasFilter = filterLeaves.length > 0;
-      const nodeArray = [];
-      for (let i = 0; i < len; i++) {
-        const currentNode = collection[i];
-        if (
-          !hasFilter ||
-          this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
-        ) {
-          nodeArray.push(currentNode);
-        }
-      }
-      return {
-        compound,
-        filtered: nodeArray.length > 0,
-        nodes: nodeArray,
-        pending: false
-      };
+      return this.#filterAndFormatCollection(
+        collection,
+        filterLeaves,
+        compound
+      );
     }
-    const nodes = this.#findNodeWalker(leaves, this.node, {
-      precede,
-      targetType
-    });
-    return { compound, filtered: nodes.length > 0, nodes, pending: false };
+    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
   };
 
   /**
@@ -427,12 +473,14 @@ export class Finder extends Evaluator {
   #findEntryNodesForType = (leaves, targetType, opt = {}) => {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this.#matchSelf(leaves);
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this.#findLineal(leaves, { complex });
-      return { compound, filtered, nodes, pending: false };
+    const earlyResult = this.#checkSelfOrLinealTarget(
+      leaves,
+      targetType,
+      complex,
+      compound
+    );
+    if (earlyResult) {
+      return earlyResult;
     }
     const [leaf] = leaves;
     const tagName = unescapeSelector(leaf.name);
@@ -445,30 +493,13 @@ export class Finder extends Evaluator {
     ) {
       this.matchLeaves(leaves, this.node, this.matchOpts);
       const collection = this.node.getElementsByTagName(tagName);
-      const len = collection.length;
-      const hasFilter = filterLeaves.length > 0;
-      const nodeArray = [];
-      for (let i = 0; i < len; i++) {
-        const currentNode = collection[i];
-        if (
-          !hasFilter ||
-          this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
-        ) {
-          nodeArray.push(currentNode);
-        }
-      }
-      return {
-        compound,
-        filtered: nodeArray.length > 0,
-        nodes: nodeArray,
-        pending: false
-      };
+      return this.#filterAndFormatCollection(
+        collection,
+        filterLeaves,
+        compound
+      );
     }
-    const nodes = this.#findNodeWalker(leaves, this.node, {
-      precede,
-      targetType
-    });
-    return { compound, filtered: nodes.length > 0, nodes, pending: false };
+    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
   };
 
   /**
@@ -528,18 +559,23 @@ export class Finder extends Evaluator {
         }
         return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
-    } else if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this.#matchSelf(leaves);
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this.#findLineal(leaves, { complex });
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_FIRST) {
-      const nodes = this.#findNodeWalker(leaves, this.node, {
+    }
+    const earlyResult = this.#checkSelfOrLinealTarget(
+      leaves,
+      targetType,
+      complex,
+      compound
+    );
+    if (earlyResult) {
+      return earlyResult;
+    }
+    if (targetType === TARGET_FIRST) {
+      return this.#fallbackToWalkerResult(
+        leaves,
+        targetType,
         precede,
-        targetType
-      });
-      return { compound, filtered: nodes.length > 0, nodes, pending: false };
+        compound
+      );
     }
     return { compound, filtered: false, nodes: [], pending: true };
   };
