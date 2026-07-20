@@ -1380,6 +1380,7 @@ describe('domSelector regression tests', () => {
     });
   });
 
+  // https://github.com/asamuzaK/domSelector/pull/229
   describe('attribute selector with hex-escaped backslash in value', () => {
     let window;
     beforeEach(() => {

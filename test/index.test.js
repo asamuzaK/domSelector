@@ -84,11 +84,11 @@ describe('DOMSelector', () => {
   });
 
   describe('DOMSelector', () => {
-    it('should throw', () => {
+    it('should throw TypeError when window argument is missing', () => {
       assert.throws(() => new DOMSelector());
     });
 
-    it('should create instance', () => {
+    it('should initialize instance methods with window context', () => {
       const res = new DOMSelector(window);
       assert.strictEqual(res.onError, undefined, 'onError is undefined');
       assert.strictEqual(res.setup, undefined, 'setup is undefined');
@@ -105,7 +105,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should create instance', () => {
+    it('should initialize instance with custom jsdom options', () => {
       const res = new DOMSelector(window, null, {
         domSymbolTree: {},
         idlUtils: {}
@@ -127,7 +127,7 @@ describe('DOMSelector', () => {
   });
 
   describe('clear', () => {
-    it('should get result', () => {
+    it('should purge selector cache when clear is executed', () => {
       const domSelector = new DOMSelector(window);
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -139,7 +139,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(domSelector.querySelector('.foo', parent), null);
     });
 
-    it('should clear all caches when true is passed', () => {
+    it('should purge all internal caches when force clear is true', () => {
       const domSelector = new DOMSelector(window);
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
@@ -155,7 +155,7 @@ describe('DOMSelector', () => {
   });
 
   describe('extractSubjects', () => {
-    it('should return universal fallback for empty/invalid inputs', () => {
+    it('should return universal subject for empty or null input', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects(),
@@ -174,7 +174,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should extract single type selector', () => {
+    it('should extract tag name subject from simple type selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div'), [
         { id: null, className: null, tag: 'div' }
@@ -184,28 +184,28 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should extract single id selector', () => {
+    it('should extract id subject from single id selector string', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('#foo'), [
         { id: 'foo', className: null, tag: null }
       ]);
     });
 
-    it('should extract single class selector', () => {
+    it('should extract class subject from single class selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.bar'), [
         { id: null, className: 'bar', tag: null }
       ]);
     });
 
-    it('should extract compound selector', () => {
+    it('should extract tag, id, and class from compound selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div#foo.bar'), [
         { id: 'foo', className: 'bar', tag: 'div' }
       ]);
     });
 
-    it('should extract rightmost subject of complex selector', () => {
+    it('should extract rightmost subject from complex combinator', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('ul > li.item'), [
         { id: null, className: 'item', tag: 'li' }
@@ -219,7 +219,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should extract selector list', () => {
+    it('should extract multiple subjects from selector list', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo, div#bar'), [
         { id: null, className: 'foo', tag: null },
@@ -227,7 +227,7 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should ignore attributes and pseudo-classes/elements', () => {
+    it('should strip attribute and pseudo modifiers from subject', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('a[href]:hover::before'), [
         { id: null, className: null, tag: 'a' }
@@ -238,14 +238,14 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should handle escaped characters properly', () => {
+    it('should unescape special characters in subject identifiers', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo\\!bar'), [
         { id: null, className: 'foo!bar', tag: null }
       ]);
     });
 
-    it('should fallback to universal for unparseable selectors', () => {
+    it('should fallback to universal subject on parse failure', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo + .123'), [
         { id: null, className: null, tag: null }
@@ -255,14 +255,14 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should utilize cache for same selectors', () => {
+    it('should return cached subject array on identical queries', () => {
       const domSelector = new DOMSelector(window);
       const res1 = domSelector.extractSubjects('div.foo');
       const res2 = domSelector.extractSubjects('div.foo');
       assert.strictEqual(res1, res2);
     });
 
-    it('should respect caseSensitive parameter for tag names (fast path)', () => {
+    it('should handle tag case sensitivity according to option', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('SECTION', true), [
         { id: null, className: null, tag: 'SECTION' }
@@ -272,14 +272,14 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should handle universal selector combined with pseudo-classes (AST path)', () => {
+    it('should extract universal subject when combined with pseudo', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('*:hover'), [
         { id: null, className: null, tag: null }
       ]);
     });
 
-    it('should extract the last class/id when multiple exist in the rightmost compound', () => {
+    it('should extract last class or id from rightmost compound', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div.foo.bar'), [
         { id: null, className: 'bar', tag: 'div' }
@@ -292,7 +292,7 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should handle mixed selector lists via AST path correctly', () => {
+    it('should parse mixed selector list via AST fallback path', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects('a[href]:focus, div.container'),
@@ -303,7 +303,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should ignore empty groups in selector lists (fast path)', () => {
+    it('should skip empty groups in comma-separated selectors', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div, , span'), [
         { id: null, className: null, tag: 'div' },
@@ -314,7 +314,7 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should return universal fallback when all groups are empty (fast path)', () => {
+    it('should fallback to universal when all groups are empty', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects(','), [
         { id: null, className: null, tag: null }
@@ -324,14 +324,14 @@ describe('DOMSelector', () => {
       ]);
     });
 
-    it('should return universal fallback when AST parsing fails or yields no subjects (AST path)', () => {
+    it('should fallback to universal subject when AST yields none', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('()'), [
         { id: null, className: null, tag: null }
       ]);
     });
 
-    it('should break on combinator when extracting rightmost subject (AST path)', () => {
+    it('should stop subject extraction at combinator boundary', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects('div[data-foo="bar"] > p.baz'),
@@ -350,21 +350,21 @@ describe('DOMSelector', () => {
   });
 
   describe('supports', () => {
-    it('should return false for non-string inputs', () => {
+    it('should return false for non-string input parameters', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(domSelector.supports(null), false, 'null');
       assert.strictEqual(domSelector.supports(123), false, 'number');
       assert.strictEqual(domSelector.supports({}), false, 'object');
     });
 
-    it('should return true for simple selectors (hits filterSelector fast path)', () => {
+    it('should return true for supported simple selector strings', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(domSelector.supports('.foo'), true, 'class selector');
       assert.strictEqual(domSelector.supports('#bar'), true, 'id selector');
       assert.strictEqual(domSelector.supports('div > p'), true, 'combinator');
     });
 
-    it('should evaluate supported complex selectors via AST (hits fallback path)', () => {
+    it('should evaluate complex selectors via AST fallback path', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(
         domSelector.supports(':has(.foo)'),
@@ -378,7 +378,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should return false for unsupported selectors via AST', () => {
+    it('should return false for unsupported pseudo-class via AST', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(
         domSelector.supports(':unknown-pseudo'),
@@ -392,7 +392,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should return false for invalid selectors (hits catch block)', () => {
+    it('should return false on syntax error during AST parsing', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(
         domSelector.supports('div:('),
@@ -402,7 +402,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(domSelector.supports('++'), false, 'syntax error 2');
     });
 
-    it('should return cached result for repeated queries (hits cache block)', () => {
+    it('should return cached support validation result on retry', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(
         domSelector.supports(':has(.foo)'),
@@ -428,7 +428,7 @@ describe('DOMSelector', () => {
   });
 
   describe('check', () => {
-    it('should throw', () => {
+    it('should throw TypeError when arguments are undefined', () => {
       assert.throws(
         () => new DOMSelector(window).check(),
         window.TypeError,
@@ -436,7 +436,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when target node is #document', () => {
       assert.throws(
         () => new DOMSelector(window).check(null, document),
         window.TypeError,
@@ -444,7 +444,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should match simple tag selector and cache parse AST', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('li', node);
@@ -474,7 +474,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should match selector with pseudo-element ::before', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('li::before', node);
@@ -491,7 +491,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should handle null selector string as literal tag name', () => {
       const node = document.createElement(null);
       const res = new DOMSelector(window).check(null, node);
       assert.deepEqual(
@@ -507,7 +507,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not throw and get result', () => {
+    it('should safely handle invalid selector without throwing', () => {
       const res = new DOMSelector(window).check('[foo=bar baz]', document.body);
       assert.deepEqual(
         res,
@@ -522,7 +522,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not throw and get result', () => {
+    it('should handle invalid selector with pseudo-element', () => {
       const res = new DOMSelector(window).check(
         '[foo=bar baz]::before',
         document.body
@@ -540,7 +540,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should match complex negation selector on target node', () => {
       const div = document.createElement('div');
       div.id = 'main';
       const p1 = document.createElement('p');
@@ -569,7 +569,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should match complex nested :is() structural selector', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
       const res = domSelector.check(
@@ -592,7 +592,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should return false match when structural parent fails', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
       const res = domSelector.check(
@@ -610,7 +610,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should invoke custom idlUtils wrapperForImpl during check', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -638,7 +638,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result', () => {
+    it('should invoke idlUtils wrapper with pseudo-element', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -666,7 +666,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not throw and get result', () => {
+    it('should return false match for unknown pseudo-class', () => {
       const res = new DOMSelector(window).check(
         ':unknown-pseudo',
         document.body
@@ -684,7 +684,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result for universal selector', () => {
+    it('should match universal selector * on element node', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('*', node);
@@ -701,7 +701,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get result for namespaced universal selector', () => {
+    it('should match wildcard namespaced universal selector *|*', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.check('*|*', node);
@@ -720,7 +720,7 @@ describe('DOMSelector', () => {
   });
 
   describe('matches', () => {
-    it('should throw', () => {
+    it('should throw TypeError when selector argument is omitted', () => {
       assert.throws(
         () => new DOMSelector(window).matches(),
         window.TypeError,
@@ -728,7 +728,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when target node is document', () => {
       assert.throws(
         () => new DOMSelector(window).matches(null, document),
         window.TypeError,
@@ -736,31 +736,31 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get true', () => {
+    it('should return true matching null selector with null tag', () => {
       const node = document.createElement(null);
       const res = new DOMSelector(window).matches(null, node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false matching null selector against div', () => {
       const node = document.createElement('div');
       const res = new DOMSelector(window).matches(null, node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for undefined selector on undefined tag', () => {
       const node = document.createElement(undefined);
       const res = new DOMSelector(window).matches(undefined, node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for undefined selector on div element', () => {
       const node = document.createElement('div');
       const res = new DOMSelector(window).matches(undefined, node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError for matches on document node', () => {
       assert.throws(
         () => new DOMSelector(window).matches('body', document),
         window.TypeError,
@@ -768,7 +768,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for empty string selector', () => {
       assert.throws(
         () => new DOMSelector(window).matches('', document.body),
         e => {
@@ -784,7 +784,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid attribute selector', () => {
       assert.throws(
         () => new DOMSelector(window).matches('[foo=bar baz]', document.body),
         e => {
@@ -804,7 +804,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should warn', () => {
+    it('should output console warning for unsupported selector', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
@@ -817,7 +817,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching simple tag selector', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('li', node);
@@ -827,35 +827,35 @@ describe('DOMSelector', () => {
       assert.strictEqual(res2, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching direct child combinator', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('ul > li', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching ID selector string', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('#li2', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true when nth-child calculation matches', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('ul > li:nth-child(2n)', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when nth-child calculation fails', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('ul > li:nth-child(2n+1)', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching descendant selector', () => {
       const div = document.createElement('div');
       div.id = 'main';
       const p1 = document.createElement('p');
@@ -874,7 +874,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching negation pseudo-class', () => {
       const div = document.createElement('div');
       div.id = 'main';
       const p1 = document.createElement('p');
@@ -893,7 +893,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for matching complex nested :is()', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
       const res = domSelector.matches(
@@ -903,7 +903,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should wrap node using idlUtils when matches succeeds', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -921,7 +921,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for pseudo-element via matches()', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -939,7 +939,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should return false when an invalid selector is passed', () => {
+    it('should return false for invalid selector with noexcept', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('[foo=bar baz]', document.body, {
         noexcept: true
@@ -947,7 +947,7 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should return false when an empty selector is passed', () => {
+    it('should return false for empty selector with noexcept', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('', document.body, {
         noexcept: true
@@ -955,14 +955,14 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for universal selector', () => {
+    it('should return true for universal selector matching node', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('*', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for namespaced universal selector', () => {
+    it('should return true for wildcard namespaced universal', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('*|*', node);
@@ -971,7 +971,7 @@ describe('DOMSelector', () => {
   });
 
   describe('closest', () => {
-    it('should throw', () => {
+    it('should throw TypeError when arguments are omitted', () => {
       assert.throws(
         () => new DOMSelector(window).closest(null),
         window.TypeError,
@@ -979,7 +979,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when closest target is document', () => {
       assert.throws(
         () => new DOMSelector(window).closest('body', document),
         window.TypeError,
@@ -987,7 +987,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid closest selector', () => {
       assert.throws(
         () =>
           new DOMSelector(window).closest(
@@ -1011,7 +1011,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should warn', () => {
+    it('should output console warning for unsupported closest', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
@@ -1024,7 +1024,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find closest ancestor element matching tag', () => {
       const node = document.getElementById('li2');
       const target = document.getElementById('div2');
       const domSelector = new DOMSelector(window);
@@ -1035,7 +1035,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res2, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find closest ancestor matching child combinator', () => {
       const node = document.getElementById('li2');
       const target = document.getElementById('div1');
       const domSelector = new DOMSelector(window);
@@ -1043,21 +1043,21 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null when no ancestor matches selector', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.closest('dl', node);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find closest ancestor matching :has(:scope)', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.closest(':has(:scope)', node);
       assert.deepEqual(res, document.getElementById('ul1'), 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find closest ancestor matching nth-child of', () => {
       const ul = document.createElement('ul');
       const l1 = document.createElement('li');
       const l2 = document.createElement('li');
@@ -1122,7 +1122,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, l7, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find closest ancestor for nth-last-child of', () => {
       const ul = document.createElement('ul');
       const l1 = document.createElement('li');
       const l2 = document.createElement('li');
@@ -1187,7 +1187,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, l4, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match current node if it fits closest :is()', () => {
       const domSelector = new DOMSelector(window);
       const node = document.getElementById('li3');
       const res = domSelector.closest(
@@ -1197,7 +1197,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should wrap closest result node using idlUtils', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1215,7 +1215,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null for pseudo-element in closest()', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1233,14 +1233,14 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get closest node for universal selector', () => {
+    it('should return current node for universal selector *', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.closest('*', node);
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get closest node for namespaced universal selector', () => {
+    it('should return current node for wildcard universal *|*', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.closest('*|*', node);
@@ -1249,7 +1249,7 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelector', () => {
-    it('should throw', () => {
+    it('should throw TypeError when querySelector args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelector(),
         window.TypeError,
@@ -1257,7 +1257,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid querySelector', () => {
       assert.throws(
         () => new DOMSelector(window).querySelector('[foo=bar baz]', document),
         e => {
@@ -1277,7 +1277,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should warn', () => {
+    it('should output console warning for unsupported query', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const node = document.getElementById('div1');
       const domSelector = new DOMSelector(window);
@@ -1290,7 +1290,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query single descendant matching ID selector', () => {
       const node = document.getElementById('div1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1298,7 +1298,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query single element matching attribute selector', () => {
       const node = document.getElementById('div1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1307,7 +1307,7 @@ describe('DOMSelector', () => {
     });
 
     // FIXME
-    it('should get matched node', () => {
+    it('should wrap querySelector result node with idlUtils', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1325,7 +1325,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first descendant element matching tag', () => {
       const node = document.getElementById('div1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1333,20 +1333,20 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first matching element from document root', () => {
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('dt', document);
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null when no element matches selector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('ol', document);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first child element for universal *', () => {
       const refPoint = document.getElementById('dl1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1354,7 +1354,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching ancestor body chain', () => {
       const refPoint = document.getElementById('dl1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1362,14 +1362,14 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first element matching class selector', () => {
       const target = document.getElementById('li1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('.li', document);
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query shadow DOM child matching :host div', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1380,7 +1380,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, root.firstElementChild, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query shadow child matching :host div + div', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1391,7 +1391,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, root.lastElementChild, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching adjacent + last-child', () => {
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
       const node3 = document.createElement('div');
@@ -1421,7 +1421,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node5, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching adjacent + nth-child of', () => {
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
       const node3 = document.createElement('div');
@@ -1451,14 +1451,14 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node5, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching general sibling ~', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('li ~ li', document);
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching case-insensitive attr', () => {
       const node = document.createElement('div');
       const child = document.createElement('div');
       child.classList.add('foo');
@@ -1469,14 +1469,14 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, child, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first element matching :nth-child(even)', () => {
       const node = document.getElementById('ul1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector(':nth-child(even)', node);
       assert.deepEqual(res, document.getElementById('li2'), 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query element matching complex :is() list', () => {
       const domSelector = new DOMSelector(window);
       const parent = document.getElementById('div1');
       const node = document.getElementById('ul1');
@@ -1487,7 +1487,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query element matching adjacent sibling + ID', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1506,7 +1506,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query element with CSS comment in combinator', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1525,7 +1525,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null for pseudo-element in querySelector', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1544,7 +1544,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should match', () => {
+    it('should query element using Fast Path with idlUtils', () => {
       const wrapperForImpl = sinon.stub();
       wrapperForImpl.callsFake(node => node);
       const i = wrapperForImpl.callCount;
@@ -1561,7 +1561,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should query via fast path with wrapped node when idlUtils is present', () => {
+    it('should query via Fast Path with wrapped idlUtils node', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const idlUtils = { wrapperForImpl };
       const target = document.getElementById('dt1');
@@ -1578,20 +1578,20 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should query via fast path with raw node when idlUtils is absent', () => {
+    it('should query via Fast Path with raw node without idlUtils', () => {
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window, document);
       const res = domSelector.querySelector('[id="dt1"]', document);
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should get matched node for universal selector on document', () => {
+    it('should query first document child for universal selector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('*', document);
       assert.deepEqual(res, document.firstElementChild, 'result');
     });
 
-    it('should get matched node for universal selector on element', () => {
+    it('should query first element child for universal selector', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('span');
       const child2 = document.createElement('p');
@@ -1602,7 +1602,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, child1, 'result');
     });
 
-    it('should get matched node for namespaced universal selector', () => {
+    it('should query first child for wildcard namespaced *|*', () => {
       const node = document.createElement('div');
       const child = document.createElement('span');
       node.appendChild(child);
@@ -1611,7 +1611,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, child, 'result');
     });
 
-    it('should return null for empty node with universal selector', () => {
+    it('should return null for universal query on empty element', () => {
       const node = document.createElement('div');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('*', node);
@@ -1620,7 +1620,7 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
-    it('should throw', () => {
+    it('should throw TypeError when querySelectorAll args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelectorAll(),
         window.TypeError,
@@ -1628,7 +1628,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid querySelectorAll', () => {
       assert.throws(
         () =>
           new DOMSelector(window).querySelectorAll('[foo=bar baz]', document),
@@ -1649,7 +1649,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should warn', () => {
+    it('should output console warning for unsupported queryAll', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const node = document.getElementById('div1');
       const domSelector = new DOMSelector(window);
@@ -1662,7 +1662,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query all matching elements under container node', () => {
       const node = document.getElementById('div1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('dt', node);
@@ -1688,7 +1688,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should query all matching elements under document root', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('dt', document);
       assert.deepEqual(
@@ -1702,13 +1702,13 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return empty array when no elements match', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('ol', document);
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get all nodes', () => {
+    it('should query all elements matching universal selector *', () => {
       const walker = document.createTreeWalker(document, 1);
       let nodeCount = 0;
       let refNode = walker.nextNode();
@@ -1721,7 +1721,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res.length, nodeCount, 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query all descendant elements under reference node', () => {
       const refPoint = document.getElementById('dl1');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('*', refPoint);
@@ -1742,7 +1742,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should query descendants matching ancestor body chain', () => {
       const refPoint = document.getElementById('dl1');
       const target = document.getElementById('dt1');
       const domSelector = new DOMSelector(window);
@@ -1750,7 +1750,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [target], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query all elements matching class selector .li', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('.li', document);
       assert.deepEqual(
@@ -1764,25 +1764,25 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return empty array when complex sibling fails', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('ul.li + .li', document);
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for pseudo-element ::slotted', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('::slotted(foo)', document);
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for unclosed ::slotted(foo', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('::slotted(foo', document);
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query elements matching :nth-child(n of .div)', () => {
       const root = document.createElement('div');
       const node = document.createElement('div');
       root.id = 'root';
@@ -1841,7 +1841,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [span1, span3], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query all shadow children matching :host div', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1856,7 +1856,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should query elements matching complex nested :is()', () => {
       const domSelector = new DOMSelector(window);
       const parent = document.getElementById('div1');
       const node = document.getElementById('ul1');
@@ -1867,7 +1867,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should wrap querySelectorAll result array with idlUtils', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1886,7 +1886,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query element matching compound class and ID', () => {
       const node = document.getElementById('li2');
       document._ownerDocument = document;
       const domSelector = new DOMSelector(window, document);
@@ -1894,7 +1894,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should wrap querySelectorAll results for compound selector', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1912,7 +1912,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [node], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for pseudo-element in queryAll', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1931,7 +1931,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query elements matching :is() with of-type', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1955,7 +1955,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return empty array for pseudo-element on :is()', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
       const idlUtils = {
@@ -1975,7 +1975,7 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should not match', () => {
+    it('should query matching elements from document using :is()', () => {
       const wrapperForImpl = sinon.stub();
       wrapperForImpl.callsFake(node => node);
       const i = wrapperForImpl.callCount;
@@ -1996,7 +1996,7 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should get matched nodes', () => {
+    it('should query elements using word attribute matcher ~=', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('*[class~="dd"]', document);
       assert.deepEqual(
@@ -2115,7 +2115,7 @@ describe('patched JSDOM', () => {
   });
 
   describe('Element.matches()', () => {
-    it('should throw', () => {
+    it('should throw DOMException for trailing pipe selector *|', () => {
       assert.throws(
         () => document.body.matches('*|'),
         e => {
@@ -2131,7 +2131,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match complex ancestor descendant class chain', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2159,7 +2159,7 @@ describe('patched JSDOM', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when target class mismatch occurs', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2187,7 +2187,7 @@ describe('patched JSDOM', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should return true for matching :nth-child(+n) formula', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2215,7 +2215,7 @@ describe('patched JSDOM', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for negative :nth-child(-n) formula', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2243,28 +2243,28 @@ describe('patched JSDOM', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match element via negated class in nested :is()', () => {
       const node = document.createElement('div');
       node.classList.add('qux');
       const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element via secondary branch in nested :is()', () => {
       const node = document.createElement('div');
       node.classList.add('baz');
       const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when element matches excluded class', () => {
       const node = document.createElement('div');
       node.classList.add('bar');
       const res = node.matches(':is(:not(:is(.foo, .bar)), .baz)');
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get results', () => {
+    it('should evaluate :read-write state on contenteditable', () => {
       const div = document.createElement('div');
       div.setAttribute('contenteditable', 'true');
       const p = document.createElement('p');
@@ -2295,7 +2295,7 @@ describe('patched JSDOM', () => {
   });
 
   describe('Element.closest()', () => {
-    it('should throw', () => {
+    it('should throw DOMException for invalid closest selector', () => {
       assert.throws(
         () => document.body.closest('*|'),
         e => {
@@ -2311,7 +2311,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should return closest ancestor matching class selector', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2339,7 +2339,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, div1, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null when no ancestor matches class name', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2367,7 +2367,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should not match, should not throw', () => {
+    it('should return null safely for unmatched live DOM node', () => {
       const domstr = '<div><button id="test"></button></div>';
       document.body.innerHTML = domstr;
       const node = document.getElementById('test');
@@ -2382,7 +2382,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(document.defaultView, window, 'window');
     });
 
-    it('should not match, should not throw', () => {
+    it('should return null for unmatched node in parsed document', () => {
       const domstr =
         '<html><body><div><button id="test"></button></div></body></html>';
       const doc = new window.DOMParser().parseFromString(domstr, 'text/html');
@@ -2395,7 +2395,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(document.defaultView, window, 'window');
     });
 
-    it('should not match, should not throw', () => {
+    it('should return null for unmatched detached element tree', () => {
       const html = document.createElement('html');
       const body = document.createElement('body');
       const div = document.createElement('div');
@@ -2417,7 +2417,7 @@ describe('patched JSDOM', () => {
   });
 
   describe('Document.querySelector(), Element.querySelector()', () => {
-    it('should throw', () => {
+    it('should throw DOMException for invalid document query', () => {
       assert.throws(
         () => document.querySelector('*|'),
         e => {
@@ -2433,7 +2433,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid element query', () => {
       assert.throws(
         () => document.body.querySelector('*|'),
         e => {
@@ -2449,7 +2449,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid fragment query', () => {
       const frag = document.createDocumentFragment();
       assert.throws(
         () => frag.querySelector('*|'),
@@ -2466,7 +2466,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid digit class name', () => {
       assert.throws(
         () => document.querySelector('.foo + .123'),
         e => {
@@ -2486,7 +2486,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for digit class in fragment', () => {
       const frag = document.createDocumentFragment();
       assert.throws(
         () => frag.querySelector('.foo + .123'),
@@ -2507,7 +2507,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for digit class on element', () => {
       assert.throws(
         () => document.body.querySelector('.foo + .123'),
         e => {
@@ -2527,7 +2527,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should query first matching element from document root', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2555,7 +2555,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, ul1, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null when no element matches document query', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2583,7 +2583,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query first matching descendant within element', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2611,7 +2611,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, li3, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null when descendant query has no match', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2639,7 +2639,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should query matching element within DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -2668,7 +2668,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, li3, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null for unmatched DocumentFragment query', () => {
       const frag = document.createDocumentFragment();
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -2699,7 +2699,7 @@ describe('patched JSDOM', () => {
   });
 
   describe('Document.querySelectorAll(), Element.querySelectorAll()', () => {
-    it('should throw', () => {
+    it('should throw DOMException for invalid document queryAll', () => {
       assert.throws(
         () => document.querySelectorAll('*|'),
         e => {
@@ -2715,7 +2715,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid element queryAll', () => {
       assert.throws(
         () => document.body.querySelectorAll('*|'),
         e => {
@@ -2731,7 +2731,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid fragment queryAll', () => {
       const frag = document.createDocumentFragment();
       assert.throws(
         () => frag.querySelectorAll('*|'),
@@ -2748,7 +2748,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for digit class in queryAll', () => {
       assert.throws(
         () => document.querySelectorAll('.foo + .123'),
         e => {
@@ -2768,7 +2768,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for fragment queryAll digit', () => {
       const frag = document.createDocumentFragment();
       assert.throws(
         () => frag.querySelectorAll('.foo + .123'),
@@ -2789,7 +2789,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for element queryAll digit', () => {
       assert.throws(
         () => document.body.querySelectorAll('.foo + .123'),
         e => {
@@ -2809,7 +2809,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should queryAll odd child elements from document root', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2837,7 +2837,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should queryAll elements matching formula in :is()', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2867,7 +2867,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li1, li2, li3, li5], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should queryAll elements matching negated :is() formula', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2897,7 +2897,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li3, li5], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should queryAll elements matching comma-separated list', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2927,7 +2927,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li2, li5], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for unmatched document query', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2955,7 +2955,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node', () => {
+    it('should queryAll odd children within scoped element', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -2983,7 +2983,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for unmatched element query', () => {
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
       const ul1 = document.createElement('ul');
@@ -3011,7 +3011,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for invalid fragment queryAll', () => {
       const frag = document.createDocumentFragment();
       assert.throws(
         () => frag.querySelectorAll('*|'),
@@ -3028,7 +3028,7 @@ describe('patched JSDOM', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should queryAll odd children within DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -3057,7 +3057,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [li1, li3, li5], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for unmatched fragment query', () => {
       const frag = document.createDocumentFragment();
       const div1 = document.createElement('div');
       const div2 = document.createElement('div');
@@ -3086,7 +3086,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(res, [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should query child elements iteratively across node list', () => {
       const span = document.createElement('span');
       const span2 = document.createElement('span');
       const elm = document.createElement('p');
@@ -3111,7 +3111,7 @@ describe('patched JSDOM', () => {
       assert.deepEqual(arr, [span, span2], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for unmatched complex :is()', () => {
       const res = document.querySelectorAll(
         'p.content[id]:is(:last-child, :only-child)'
       );

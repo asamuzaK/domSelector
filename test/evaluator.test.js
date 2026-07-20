@@ -112,7 +112,7 @@ describe('Evaluator', () => {
   });
 
   describe('handle error', () => {
-    it('should not throw', () => {
+    it('should suppress DOMException errors when noexcept is set', () => {
       const err = new DOMException('error', SYNTAX_ERR);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document, {
@@ -121,20 +121,20 @@ describe('Evaluator', () => {
       assert.doesNotThrow(() => evaluator.onError(err));
     });
 
-    it('should throw', () => {
+    it('should rethrow TypeError when handling errors', () => {
       const err = new TypeError('error');
       const evaluator = new Evaluator(window);
       assert.throws(() => evaluator.onError(err), window.TypeError, 'error');
     });
 
-    it('should throw', () => {
+    it('should rethrow generic or unknown errors', () => {
       const err = new Error('error');
       err.name = 'UnknownError';
       const evaluator = new Evaluator(window);
       assert.throws(() => evaluator.onError(err), Error, 'error');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException with correct properties by default', () => {
       const err = new DOMException('error', SYNTAX_ERR);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
@@ -153,7 +153,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not throw', () => {
+    it('should ignore NOT_SUPPORTED_ERR and return undefined', () => {
       const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
@@ -161,7 +161,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should not throw', () => {
+    it('should suppress TypeError when noexcept is passed to onError', () => {
       const err = new TypeError('Unexpected type');
       const evaluator = new Evaluator(window);
       const res = evaluator.onError(err, {
@@ -170,7 +170,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should warn', () => {
+    it('should log a warning via console.warn when warn option is true', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
       const evaluator = new Evaluator(window);
@@ -186,7 +186,7 @@ describe('Evaluator', () => {
   });
 
   describe('setup evaluator', () => {
-    it('should get value', () => {
+    it('should return self when setting up with a Document node', () => {
       const evaluator = new Evaluator(window);
       const res = evaluator.setup('*', document, {
         warn: true
@@ -194,7 +194,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res, evaluator, 'result');
     });
 
-    it('should get value', () => {
+    it('should return self when setting up with a DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const evaluator = new Evaluator(window);
       const res = evaluator.setup('*', frag, {
@@ -203,7 +203,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res, evaluator, 'result');
     });
 
-    it('should get value', () => {
+    it('should return self when setting up with an Element node', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       const res = evaluator.setup('*', node, {
@@ -212,7 +212,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res, evaluator, 'result');
     });
 
-    it('should get value', () => {
+    it('should return self when setting up with custom options', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window);
       const res = evaluator.setup('*', node, {
@@ -223,7 +223,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res, evaluator, 'result');
     });
 
-    it('should get value', () => {
+    it('should return self when setting up with domSymbolTree option', () => {
       const node = document.createElement('div');
       const evaluator = new Evaluator(window, {
         domSymbolTree: {},
@@ -237,14 +237,14 @@ describe('Evaluator', () => {
   });
 
   describe('create tree walker', () => {
-    it('should get tree walker', () => {
+    it('should create a TreeWalker with document as root', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup('*', document);
       const res = evaluator.createTreeWalker(document);
       assert.deepEqual(res.root, document, 'root');
     });
 
-    it('should get tree walker', () => {
+    it('should create a TreeWalker with an Element node as root', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
@@ -252,7 +252,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res.root, node, 'root');
     });
 
-    it('should get tree walker', () => {
+    it('should create a TreeWalker with custom filter options', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
@@ -262,7 +262,7 @@ describe('Evaluator', () => {
       assert.deepEqual(res.root, node, 'root');
     });
 
-    it('should utilize cache and return the same TreeWalker instance', () => {
+    it('should return cached TreeWalker instance on repeated calls', () => {
       const node = document.getElementById('ul1');
       const evaluator = new Evaluator(window);
       evaluator.setup('*', node);
@@ -1303,7 +1303,7 @@ describe('Evaluator', () => {
   });
 
   describe('match pseudo class selector', () => {
-    it('should throw', () => {
+    it('should throw DOMException when :has() pseudo-class is empty', () => {
       const leaf = {
         children: [],
         loc: null,
@@ -1328,7 +1328,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :not() pseudo-class is empty', () => {
       const leaf = {
         children: [],
         loc: null,
@@ -1353,7 +1353,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match element against :is() pseudo-class selector', () => {
       const leaf = {
         children: [
           {
@@ -1396,7 +1396,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should properly group leaves and combinators into branches', () => {
+    it('should match :is() selector with child combinator branch', () => {
       const leaf = {
         children: [
           {
@@ -1437,7 +1437,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should match deeply nested :has() and :is() pseudo-classes', () => {
       const leaf = {
         children: [
           {
@@ -1518,7 +1518,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :nth-child() is empty', () => {
       const leaf = {
         children: [],
         name: 'nth-child',
@@ -1546,7 +1546,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :nth-last-child() is empty', () => {
       const leaf = {
         children: [],
         name: 'nth-last-child',
@@ -1574,7 +1574,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :nth-of-type() is empty', () => {
       const leaf = {
         children: [],
         name: 'nth-of-type',
@@ -1602,7 +1602,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :nth-last-of-type() is empty', () => {
       const leaf = {
         children: [],
         name: 'nth-last-of-type',
@@ -1630,7 +1630,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false when :nth-child(even) fails to match', () => {
       const leaf = {
         children: [
           {
@@ -1652,7 +1652,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :dir() pseudo-class is empty', () => {
       const leaf = {
         children: [],
         name: 'dir',
@@ -1678,7 +1678,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match element when text direction matches :dir()', () => {
       const leaf = {
         children: [
           {
@@ -1699,7 +1699,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match and hit the final break', () => {
+    it('should return false when text direction differs from :dir()', () => {
       const leaf = {
         children: [
           {
@@ -1724,7 +1724,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :lang() pseudo-class is empty', () => {
       const leaf = {
         children: [],
         name: 'lang',
@@ -1750,7 +1750,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match element when language attribute matches :lang()', () => {
       const leaf = {
         children: [
           {
@@ -1771,7 +1771,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element when language matches any in :lang(...)', () => {
       const leaf = {
         children: [
           {
@@ -1800,7 +1800,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match and hit the final break', () => {
+    it('should return false when element language is not in :lang()', () => {
       const leaf = {
         children: [
           {
@@ -1833,7 +1833,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for :state() on standard custom element', () => {
       const leaf = {
         children: [
           {
@@ -1855,7 +1855,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when custom element state is not active', () => {
       const leaf = {
         children: [
           {
@@ -1871,24 +1871,23 @@ describe('Evaluator', () => {
         constructor() {
           super();
           this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
           if (!this._internals.states) {
             this._internals.states = new Set();
           }
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'closed' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <slot>Label</slot>
+          <style>
+            :host::before {
+              content: '[ ]';
+              white-space: pre;
+              font-family: monospace;
+            }
+            :host(:state(checked))::before {
+              content: '[x]'
+            }
+          </style>
+          <slot>Label</slot>
           `;
         }
 
@@ -1918,7 +1917,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match custom element when custom state is active', () => {
       const leaf = {
         children: [
           {
@@ -1934,24 +1933,23 @@ describe('Evaluator', () => {
         constructor() {
           super();
           this._internals = this.attachInternals();
-          // ElementInternals.states is not implemented in jsdom
           if (!this._internals.states) {
             this._internals.states = new Set();
           }
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'closed' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <slot>Label</slot>
+          <style>
+            :host::before {
+              content: '[ ]';
+              white-space: pre;
+              font-family: monospace;
+            }
+            :host(:state(checked))::before {
+              content: '[x]'
+            }
+          </style>
+          <slot>Label</slot>
           `;
         }
 
@@ -1982,7 +1980,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when evaluating unsupported :current()', () => {
       const leaf = {
         children: [
           {
@@ -2003,7 +2001,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for unsupported :current() when warn is true', () => {
       const leaf = {
         children: [
           {
@@ -2032,7 +2030,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host() on regular element', () => {
       const leaf = {
         children: [
           {
@@ -2060,7 +2058,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host-context() on regular element', () => {
       const leaf = {
         children: [
           {
@@ -2088,7 +2086,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown pseudo-class selector', () => {
       const leaf = {
         children: [
           {
@@ -2124,7 +2122,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false when evaluating unsupported :contains()', () => {
       const leaf = {
         children: [
           {
@@ -2145,7 +2143,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for unsupported :contains() when warn is true', () => {
       const leaf = {
         children: [
           {
@@ -2174,7 +2172,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for unknown pseudo-class with forgive option', () => {
       const leaf = {
         children: [
           {
@@ -2197,7 +2195,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match <a> element with href attribute against :any-link', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -2213,7 +2211,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :any-link when <a> uses xlink:href', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -2233,7 +2231,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :any-link when <a> lacks href attribute', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -2248,7 +2246,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match <area> element with href attribute against :any-link', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -2264,7 +2262,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :any-link when <area> lacks href', () => {
       const leaf = {
         children: null,
         name: 'any-link',
@@ -2279,7 +2277,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match unvisited <a> element with href against :link', () => {
       const leaf = {
         children: null,
         name: 'link',
@@ -2295,7 +2293,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match <a> element with relative URL against :local-link', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -2311,7 +2309,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :local-link when <a> has external URL', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -2327,7 +2325,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match <area> with relative URL against :local-link', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -2343,7 +2341,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :local-link when <area> has external URL', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -2359,7 +2357,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :local-link on non-link element', () => {
       const leaf = {
         children: null,
         name: 'local-link',
@@ -2372,7 +2370,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :visited on unvisited link element', () => {
       const leaf = {
         children: null,
         name: 'visited',
@@ -2388,7 +2386,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :hover when element is not hovered', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -2404,7 +2402,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :hover when mouseover event is dispatched', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -2421,7 +2419,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should maintain :hover state after mousedown event', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -2439,7 +2437,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :hover after mouseout event', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -2457,7 +2455,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :hover when event occurs elsewhere', () => {
       const leaf = {
         children: null,
         name: 'hover',
@@ -2475,7 +2473,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :active when element is not pressed', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -2491,7 +2489,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :active when primary mouse button is pressed', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -2512,7 +2510,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :active after mouseup event', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -2538,7 +2536,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :active with non-primary mouse buttons', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -2565,7 +2563,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :active when press occurs elsewhere', () => {
       const leaf = {
         children: null,
         name: 'active',
@@ -2586,7 +2584,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match element whose ID matches the target fragment', () => {
       const leaf = {
         children: null,
         name: 'target',
@@ -2602,7 +2600,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :target when element ID differs', () => {
       const leaf = {
         children: null,
         name: 'target',
@@ -2618,7 +2616,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :target on DocumentFragment node', () => {
       const leaf = {
         children: null,
         name: 'target',
@@ -2634,7 +2632,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match element when evaluating :scope on itself', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -2650,7 +2648,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :scope on descendant elements', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -2668,7 +2666,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match documentElement when scoping root is document', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -2681,7 +2679,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :scope on non-root document nodes', () => {
       const leaf = {
         children: null,
         name: 'scope',
@@ -2697,7 +2695,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match element that currently has document focus', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2714,7 +2712,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element focused after setup initialization', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2731,7 +2729,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus on unfocused document body', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2743,7 +2741,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus when element lacks focus', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2759,7 +2757,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus when element is disabled', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2777,7 +2775,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus when disabled attribute is set', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2795,7 +2793,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when element is hidden', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2813,7 +2811,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when hidden attribute is set', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2831,7 +2829,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when display is set to none', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2849,7 +2847,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when visibility is hidden', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2867,7 +2865,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent container disabled', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2885,7 +2883,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent attribute disabled', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2903,7 +2901,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent element is hidden', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2921,7 +2919,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent hidden attr set', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2939,7 +2937,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent display is none', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2957,7 +2955,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus when parent visibility hidden', () => {
       const leaf = {
         children: null,
         name: 'focus',
@@ -2975,19 +2973,19 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match focused element located within a Shadow DOM', () => {
       const leaf = {
         children: null,
         name: 'focus',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-        <template id="template">
-          <button id="button">Click Me</button>
-        </template>
-        <div id="container">
-          <div id="host"></div>
-        </div>
+      <template id="template">
+        <button id="button">Click Me</button>
+      </template>
+      <div id="container">
+        <div id="host"></div>
+      </div>
       `;
       const div = document.getElementById('div0');
       div.innerHTML = html;
@@ -3003,19 +3001,19 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match shadow host when inner shadow element focused', () => {
       const leaf = {
         children: null,
         name: 'focus',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-        <template id="template">
-          <button id="button">Click Me</button>
-        </template>
-        <div id="container">
-          <div id="host"></div>
-        </div>
+      <template id="template">
+        <button id="button">Click Me</button>
+      </template>
+      <div id="container">
+        <div id="host"></div>
+      </div>
       `;
       const div = document.getElementById('div0');
       div.innerHTML = html;
@@ -3031,7 +3029,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match focused <input> element against :focus-visible', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3048,7 +3046,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match button focused via Tab key for :focus-visible', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3070,7 +3068,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match button after completing Tab keypress sequence', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3097,7 +3095,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-visible on programmatic focus', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3114,7 +3112,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should maintain :focus-visible when pressing modifier keys', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3151,7 +3149,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should maintain :focus-visible when pressing navigation keys', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3188,7 +3186,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-visible after Tab keydown', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3213,7 +3211,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res2, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-visible when tabbing between buttons', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3254,7 +3252,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should lose :focus-visible when focus switches via mouse click', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3300,7 +3298,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res2, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-visible when focus moves in key mode', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3330,7 +3328,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-visible for element with tabindex=-1', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3354,7 +3352,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res2, true, 'result');
     });
 
-    it('should match when eventTarget equals lastFocusVisible', () => {
+    it('should match :focus-visible when target is lastFocusVisible', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3386,7 +3384,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match when eventTarget equals relatedTarget', () => {
+    it('should match :focus-visible when focus relates to target', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3426,7 +3424,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match if the relatedTarget is also focus-visible', () => {
+    it('should match :focus-visible if relatedTarget was visible', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
@@ -3453,7 +3451,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match :focus-within on the currently focused element', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3470,7 +3468,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-within when element unfocused', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3486,7 +3484,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-within on unfocused body', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3498,7 +3496,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-within when element disabled', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3516,7 +3514,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-within when disabled attr set', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3534,7 +3532,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus-within when element hidden', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3552,7 +3550,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus-within when hidden attr set', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3570,7 +3568,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus-within when display is none', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3588,7 +3586,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false for :focus-within when visibility hidden', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3606,7 +3604,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-within on parent of focused element', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3623,7 +3621,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :focus-within when no child focused', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3639,7 +3637,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent disabled', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3657,7 +3655,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent disabled attr', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3675,7 +3673,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent is hidden', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3693,7 +3691,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent hidden attr', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3711,7 +3709,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent display is none', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3729,7 +3727,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    xit('should not match', () => {
+    xit('should return false when parent visibility hidden', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3747,19 +3745,19 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-within on focused element in shadow root', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-        <template id="template">
-          <button id="button">Click Me</button>
-        </template>
-        <div id="container">
-          <div id="host"></div>
-        </div>
+      <template id="template">
+        <button id="button">Click Me</button>
+      </template>
+      <div id="container">
+        <div id="host"></div>
+      </div>
       `;
       const div = document.getElementById('div0');
       div.innerHTML = html;
@@ -3775,19 +3773,19 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-within on shadow host when child focused', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-        <template id="template">
-          <button id="button">Click Me</button>
-        </template>
-        <div id="container">
-          <div id="host"></div>
-        </div>
+      <template id="template">
+        <button id="button">Click Me</button>
+      </template>
+      <div id="container">
+        <div id="host"></div>
+      </div>
       `;
       const div = document.getElementById('div0');
       div.innerHTML = html;
@@ -3803,19 +3801,19 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :focus-within on container ancestor of host', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-        <template id="template">
-          <button id="button">Click Me</button>
-        </template>
-        <div id="container">
-          <div id="host"></div>
-        </div>
+      <template id="template">
+        <button id="button">Click Me</button>
+      </template>
+      <div id="container">
+        <div id="host"></div>
+      </div>
       `;
       const div = document.getElementById('div0');
       div.innerHTML = html;
@@ -3832,7 +3830,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should traverse from a shadow root to its host', () => {
+    it('should traverse shadow boundary to host for :focus-within', () => {
       const leaf = {
         children: null,
         name: 'focus-within',
@@ -3867,7 +3865,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match :open for <details> with open attribute', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -3883,7 +3881,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :open on closed <details> element', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -3898,7 +3896,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :open for <dialog> with open attribute', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -3914,7 +3912,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :open on closed <dialog> element', () => {
       const leaf = {
         children: null,
         name: 'open',
@@ -3929,7 +3927,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :disabled for <input> with disabled attribute', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -3945,7 +3943,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :disabled on enabled <input>', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -3960,7 +3958,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :disabled on input in standard form', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -3979,7 +3977,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :disabled on form-associated custom element', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -4001,7 +3999,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :disabled on non-form custom element', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -4021,7 +4019,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :disabled for <input> inside disabled fieldset', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -4039,7 +4037,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :disabled on input inside legend', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -4059,7 +4057,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :disabled on input in first legend', () => {
       const leaf = {
         children: null,
         name: 'disabled',
@@ -4079,7 +4077,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :enabled for standard active <input> element', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4094,7 +4092,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :enabled for input inside standard form', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4111,7 +4109,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :enabled on form-associated custom element', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4132,7 +4130,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :enabled on non-form custom element', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4151,7 +4149,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :enabled on disabled <input>', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4167,7 +4165,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :enabled for input inside first fieldset legend', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4187,7 +4185,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :enabled on non-first legend input', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4209,7 +4207,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :enabled for input inside enabled fieldset', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4228,7 +4226,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :enabled in disabled fieldset', () => {
       const leaf = {
         children: null,
         name: 'enabled',
@@ -4246,7 +4244,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for <input> with readonly attribute', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4262,7 +4260,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for text input with readonly attribute', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4279,7 +4277,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for number input with readonly attr', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4296,7 +4294,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for non-editable range input', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4312,7 +4310,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for disabled <input> element', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4328,7 +4326,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-only on normal editable input', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4343,7 +4341,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only when input readOnly property is true', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4359,7 +4357,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for textarea with readonly attribute', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4375,7 +4373,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for disabled <textarea> element', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4391,7 +4389,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-only on standard textarea', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4406,7 +4404,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only when textarea readOnly prop is true', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4422,7 +4420,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-only for standard non-editable <div>', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4437,7 +4435,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-only on contenteditable <div>', () => {
       const leaf = {
         children: null,
         name: 'read-only',
@@ -4453,7 +4451,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-write for standard editable <input>', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4468,7 +4466,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-write for text input element', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4484,7 +4482,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-write for number input element', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4500,7 +4498,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on range input', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4516,7 +4514,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on readonly input', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4532,7 +4530,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on disabled input', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4548,7 +4546,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-write for standard <textarea> element', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4563,7 +4561,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on readonly textarea', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4579,7 +4577,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on disabled textarea', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4595,7 +4593,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :read-write for contenteditable <div> element', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4611,7 +4609,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :read-write on non-editable <div>', () => {
       const leaf = {
         children: null,
         name: 'read-write',
@@ -4626,7 +4624,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown when input value is empty', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4643,7 +4641,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown for empty text input', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4661,7 +4659,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :placeholder-shown on hidden input', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4679,7 +4677,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :placeholder-shown when value set', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4696,7 +4694,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown with single space placeholder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4713,7 +4711,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown with empty string placeholder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4730,7 +4728,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown set via DOM property', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4747,7 +4745,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown with empty DOM placeholder', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4764,7 +4762,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :placeholder-shown with newlines', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4781,7 +4779,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :placeholder-shown for empty <textarea>', () => {
       const leaf = {
         children: null,
         name: 'placeholder-shown',
@@ -4798,7 +4796,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :checked for checkbox with checked attribute', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -4815,7 +4813,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :checked for radio with checked attribute', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -4832,7 +4830,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :checked on text input elements', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -4849,7 +4847,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :checked for option with selected attribute', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -4867,7 +4865,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should return false for :checked on non-checkable elements', () => {
       const leaf = {
         children: null,
         name: 'checked',
@@ -4880,7 +4878,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :indeterminate for checkbox when indeterminate', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4897,7 +4895,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :indeterminate on normal checkbox', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4913,7 +4911,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :indeterminate for progress without value', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4928,7 +4926,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :indeterminate on valued progress', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4944,7 +4942,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :indeterminate for unselected radio group', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4971,7 +4969,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :indeterminate if radio is selected', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -4999,7 +4997,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :indeterminate if sibling radio checked', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -5027,7 +5025,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :indeterminate for unnamed radio without selection', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -5051,7 +5049,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :indeterminate for radio associated via form attr', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -5109,7 +5107,7 @@ describe('Evaluator', () => {
       document.body.removeChild(form);
     });
 
-    it('should not match', () => {
+    it('should return false for :indeterminate on non-form element', () => {
       const leaf = {
         children: null,
         name: 'indeterminate',
@@ -5121,7 +5119,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for checkbox with checked attribute', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5138,7 +5136,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default when checked programmatically', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5155,7 +5153,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on standard unchecked checkbox', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5171,7 +5169,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on dynamically checked radio', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5188,7 +5186,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for radio button with checked attribute', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5205,7 +5203,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on unchecked radio button', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5221,7 +5219,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for option with selected attribute', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5243,7 +5241,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on dynamically chosen option', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5265,7 +5263,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for option in multiple select element', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5289,7 +5287,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on unselected option element', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5310,7 +5308,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on first unselected option', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5329,7 +5327,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default when sibling option selected', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5349,7 +5347,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on unselected option in multi-select', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5369,7 +5367,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for selected options in multiple select', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5391,7 +5389,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for selected option inside a datalist', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5411,7 +5409,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on unselected datalist option', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5430,7 +5428,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for default button inside a form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5449,7 +5447,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on button outside a form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5464,7 +5462,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for submit button inside a form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5482,7 +5480,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on submit button without form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5498,7 +5496,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for submit input inside a form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5516,7 +5514,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on submit input without form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5532,7 +5530,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :default for image input inside a form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5550,7 +5548,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :default on image input without form', () => {
       const leaf = {
         children: null,
         name: 'default',
@@ -5566,7 +5564,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid for required input with non-empty value', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5584,7 +5582,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on required input with empty value', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5602,7 +5600,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid on fieldset containing valid inputs', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5622,7 +5620,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on fieldset with invalid input', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5642,7 +5640,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid on form containing valid input elements', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5662,7 +5660,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on form containing invalid input', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5682,7 +5680,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid when input value length equals maxLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5703,7 +5701,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid when value exceeds maxLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5724,7 +5722,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid when input value satisfies minLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5745,7 +5743,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid when value fails minLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5766,7 +5764,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid on form when child input meets maxLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5787,7 +5785,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on form with invalid maxLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5808,7 +5806,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid on form when child input meets minLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5829,7 +5827,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on form when input fails minLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5850,7 +5848,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :valid on fieldset when input satisfies maxLength', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5871,7 +5869,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :valid on fieldset with invalid input', () => {
       const leaf = {
         children: null,
         name: 'valid',
@@ -5892,7 +5890,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :invalid for required input with empty value', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -5910,7 +5908,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :invalid on valid required input', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -5928,7 +5926,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :invalid on fieldset containing invalid input', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -5948,7 +5946,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :invalid on fieldset with valid inputs', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -5968,7 +5966,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :invalid on form containing invalid input element', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -5990,7 +5988,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :invalid on form with valid inputs', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6012,7 +6010,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :invalid when input meets maxLength', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6033,7 +6031,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :invalid when input value exceeds maxLength', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6054,7 +6052,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :invalid on fieldset with valid input', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6075,7 +6073,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :invalid on fieldset containing invalid child', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6096,26 +6094,22 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match :valid on non-form elements (hits the final break)', () => {
+    it('should return false for :valid when applied to <div> element', () => {
       const leaf = {
         children: null,
         name: 'valid',
         type: PS_CLASS_SELECTOR
       };
-      // フォーム関連ではない一般的な要素
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-
-      // KEYS_FORM_PS_VALID にも fieldset にも該当せず break され、false が返る
       const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, false, 'result is false for div');
     });
 
-    it('should not match on non-form elements', () => {
+    it('should return false for :invalid on <div> non-form element', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6130,26 +6124,22 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result is false for div');
     });
 
-    it('should match :valid on an empty fieldset (!refNode branch)', () => {
+    it('should match :valid for empty fieldset containing no inputs', () => {
       const leaf = {
         children: null,
         name: 'valid',
         type: PS_CLASS_SELECTOR
       };
-      // 子要素を持たない空の fieldset を作成
       const node = document.createElement('fieldset');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
-
       const evaluator = new Evaluator(window);
       evaluator.setup(':valid', node);
-
-      // walker.firstChild() が null となるため、!refNode の分岐に入り valid = true となる
       const res = evaluator.matchPseudoClassSelector(leaf, node, {});
       assert.strictEqual(res, true, 'result is true for empty fieldset');
     });
 
-    it('should not match on an empty fieldset', () => {
+    it('should return false for :invalid on empty fieldset element', () => {
       const leaf = {
         children: null,
         name: 'invalid',
@@ -6164,7 +6154,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result is false for empty fieldset');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range on readonly input element', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6184,7 +6174,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range on disabled input element', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6204,7 +6194,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range on hidden input element', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6223,7 +6213,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range on text input element', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6242,7 +6232,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range on input without range type', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6260,7 +6250,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :in-range for number input with value in range', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6279,7 +6269,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :in-range for range input with value in range', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6298,7 +6288,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :in-range for range input with max attribute', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6316,7 +6306,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :in-range for standard range input with value', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6333,7 +6323,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range when value is below min', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6352,7 +6342,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :in-range when value exceeds max', () => {
       const leaf = {
         children: null,
         name: 'in-range',
@@ -6371,7 +6361,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :out-of-range on readonly input', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -6387,7 +6377,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :out-of-range on hidden input', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -6403,7 +6393,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :out-of-range when input value is below min', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -6422,7 +6412,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :out-of-range when input value exceeds max', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -6441,7 +6431,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :out-of-range when value is in range', () => {
       const leaf = {
         children: null,
         name: 'out-of-range',
@@ -6460,7 +6450,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for standard input with required attr', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6476,7 +6466,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for text input with required attribute', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6493,7 +6483,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for number input with required attr', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6510,7 +6500,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :required on range input element', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6527,7 +6517,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for checkbox with required attribute', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6544,7 +6534,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for radio button with required attribute', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6561,7 +6551,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for file input with required attribute', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6578,7 +6568,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for textarea with required attribute', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6594,7 +6584,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :required for select element with required attr', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6610,7 +6600,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :required on optional input', () => {
       const leaf = {
         children: null,
         name: 'required',
@@ -6625,7 +6615,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for input without required attribute', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6640,7 +6630,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for standard text input element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6656,7 +6646,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for number input element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6672,7 +6662,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for range input element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6688,7 +6678,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for checkbox input element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6704,7 +6694,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for radio button input element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6720,7 +6710,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for standard select element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6735,7 +6725,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :optional for standard textarea element', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6750,7 +6740,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :optional on required input', () => {
       const leaf = {
         children: null,
         name: 'optional',
@@ -6766,7 +6756,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :root when evaluating documentElement', () => {
       const leaf = {
         children: null,
         name: 'root',
@@ -6779,7 +6769,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :root on non-root element', () => {
       const leaf = {
         children: null,
         name: 'root',
@@ -6794,7 +6784,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should evaluate :empty based on text and element children', () => {
       const leaf = {
         children: null,
         name: 'empty',
@@ -6842,7 +6832,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res6, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :first-child for the first sibling element', () => {
       const leaf = {
         children: null,
         name: 'first-child',
@@ -6859,7 +6849,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :first-child on subsequent sibling', () => {
       const leaf = {
         children: null,
         name: 'first-child',
@@ -6876,7 +6866,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :first-child for element without parent', () => {
       const leaf = {
         children: null,
         name: 'first-child',
@@ -6889,7 +6879,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :last-child on non-final sibling', () => {
       const leaf = {
         children: null,
         name: 'last-child',
@@ -6906,7 +6896,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :last-child for the final sibling element', () => {
       const leaf = {
         children: null,
         name: 'last-child',
@@ -6923,7 +6913,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :last-child for element without parent', () => {
       const leaf = {
         children: null,
         name: 'last-child',
@@ -6936,7 +6926,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :only-child for element with no siblings', () => {
       const leaf = {
         children: null,
         name: 'only-child',
@@ -6951,7 +6941,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :only-child when siblings exist', () => {
       const leaf = {
         children: null,
         name: 'only-child',
@@ -6970,7 +6960,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :only-child for element without parent', () => {
       const leaf = {
         children: null,
         name: 'only-child',
@@ -6983,7 +6973,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :first-of-type on non-first type', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
@@ -6996,7 +6986,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :first-of-type for orphan element', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
@@ -7009,7 +6999,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :last-of-type on non-last type', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
@@ -7022,7 +7012,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :last-of-type for orphan element', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
@@ -7035,7 +7025,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :only-of-type when no same-type siblings exist', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -7053,7 +7043,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :only-of-type for orphan element', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -7066,7 +7056,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :first-of-type inside a DocumentFragment', () => {
       const leaf = {
         children: null,
         name: 'first-of-type',
@@ -7082,7 +7072,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :last-of-type on non-last in fragment', () => {
       const leaf = {
         children: null,
         name: 'last-of-type',
@@ -7098,7 +7088,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :only-of-type on multi-node fragment', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -7114,7 +7104,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :only-of-type on second node in fragment', () => {
       const leaf = {
         children: null,
         name: 'only-of-type',
@@ -7130,7 +7120,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for standard HTML element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7144,7 +7134,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for HTMLUnknownElement tags', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7163,7 +7153,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for registered custom element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7181,7 +7171,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for defined customized built-in element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7201,7 +7191,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should return false for :defined on undefined custom element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7215,7 +7205,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :defined on undefined built-in element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7230,7 +7220,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :defined on element with unknown is attr', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7245,7 +7235,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for valid registered custom element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7260,7 +7250,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for SVG element in SVG namespace', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7277,7 +7267,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :defined for arbitrary tag in SVG namespace', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7295,7 +7285,7 @@ describe('Evaluator', () => {
     });
 
     // NOTE: not implemented in jsdom
-    it('should not match', () => {
+    it('should return false for :defined on MathML element in jsdom', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7312,7 +7302,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :defined on custom namespace element', () => {
       const leaf = {
         children: null,
         name: 'defined',
@@ -7327,7 +7317,7 @@ describe('Evaluator', () => {
     });
 
     // NOTE: popover api is not supported in jsdom
-    it('should not match', () => {
+    it('should return false for :popover-open on plain element', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
@@ -7341,7 +7331,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :popover-open on closed popover', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
@@ -7360,7 +7350,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :popover-open after calling showPopover', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
@@ -7380,7 +7370,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :popover-open after calling hidePopover', () => {
       const leaf = {
         children: null,
         name: 'popover-open',
@@ -7400,7 +7390,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host on non-shadow host element', () => {
       const leaf = {
         children: null,
         name: 'host',
@@ -7415,7 +7405,7 @@ describe('Evaluator', () => {
     });
 
     // legacy pseudo-element
-    it('should not match', () => {
+    it('should return false for legacy pseudo-element :after', () => {
       const leaf = {
         children: null,
         name: 'after',
@@ -7429,7 +7419,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for legacy :after selector when warn is true', () => {
       const leaf = {
         children: null,
         name: 'after',
@@ -7452,7 +7442,7 @@ describe('Evaluator', () => {
     });
 
     // not supported
-    it('should not match', () => {
+    it('should return false for unsupported :autofill pseudo-class', () => {
       const leaf = {
         children: null,
         name: 'autofill',
@@ -7466,7 +7456,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for unsupported :autofill when warn is true', () => {
       const leaf = {
         children: null,
         name: 'autofill',
@@ -7488,7 +7478,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for unsupported :has-slotted pseudo-class', () => {
       const leaf = {
         children: null,
         name: 'has-slotted',
@@ -7502,7 +7492,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for :has-slotted selector when warn is true', () => {
       const leaf = {
         children: null,
         name: 'has-slotted',
@@ -7525,7 +7515,7 @@ describe('Evaluator', () => {
     });
 
     // unknown
-    it('should throw', () => {
+    it('should throw DOMException for unknown pseudo-class :foo', () => {
       const leaf = {
         children: null,
         name: 'foo',
@@ -7550,7 +7540,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for unknown :foo with forgive option', () => {
       const leaf = {
         children: null,
         name: 'foo',
@@ -7566,7 +7556,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for vendor-prefixed :-webkit-foo selector', () => {
       const leaf = {
         children: null,
         name: '-webkit-foo',
@@ -7580,7 +7570,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for :-webkit-foo selector when warn is true', () => {
       const leaf = {
         children: null,
         name: '-webkit-foo',
@@ -7602,7 +7592,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown :webkit-foo selector', () => {
       const leaf = {
         children: null,
         name: 'webkit-foo',
@@ -7631,7 +7621,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for :webkit-foo with forgive option', () => {
       const leaf = {
         children: null,
         name: 'webkit-foo',
@@ -7647,7 +7637,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown :-webkitfoo selector', () => {
       const leaf = {
         children: null,
         name: '-webkitfoo',
@@ -7676,7 +7666,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for :-webkitfoo with forgive option', () => {
       const leaf = {
         children: null,
         name: '-webkitfoo',
@@ -7692,7 +7682,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown :nth-foo pseudo-class', () => {
       const leaf = {
         name: 'nth-foo',
         nth: {
@@ -7727,22 +7717,22 @@ describe('Evaluator', () => {
   });
 
   describe('evaluates shadow host pseudo class', () => {
-    it('should throw', () => {
+    it('should throw DOMException for invalid pseudo-class :foobar', () => {
       const ast = {
         children: null,
         name: 'foobar',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -7773,7 +7763,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown pseudo-class function', () => {
       const ast = {
         children: [
           {
@@ -7790,15 +7780,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -7833,22 +7823,22 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :host-context lacks arguments', () => {
       const ast = {
         children: null,
         name: 'host-context',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -7883,22 +7873,22 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :host() selector is empty', () => {
       const ast = {
         children: [],
         name: 'host',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -7929,22 +7919,22 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw DOMException when :host-context() is empty', () => {
       const ast = {
         children: [],
         name: 'host-context',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -7979,22 +7969,22 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match shadow host when evaluating parameterless :host', () => {
       const ast = {
         children: null,
         name: 'host',
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8014,7 +8004,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for :host() containing combinators', () => {
       const ast = {
         children: [
           {
@@ -8039,15 +8029,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8082,7 +8072,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match shadow host when :host() selector matches ID', () => {
       const ast = {
         children: [
           {
@@ -8101,15 +8091,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8129,7 +8119,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host() when host ID does not match', () => {
       const ast = {
         children: [
           {
@@ -8148,15 +8138,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8176,7 +8166,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for :host-context() with combinator', () => {
       const ast = {
         children: [
           {
@@ -8201,15 +8191,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8244,7 +8234,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match :host-context() when matching shadow host ID', () => {
       const ast = {
         children: [
           {
@@ -8263,15 +8253,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8291,7 +8281,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :host-context() when matching ancestor element', () => {
       const ast = {
         children: [
           {
@@ -8310,15 +8300,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8338,7 +8328,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host-context() when ID mismatches', () => {
       const ast = {
         children: [
           {
@@ -8357,15 +8347,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -8385,7 +8375,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host(:state) on unclicked element', () => {
       const ast = {
         children: [
           {
@@ -8421,19 +8411,19 @@ describe('Evaluator', () => {
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'open' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
+          <style>
+            :host::before {
+              content: '[ ]';
+              white-space: pre;
+              font-family: monospace;
+            }
+            :host(:state(checked))::before {
+              content: '[x]'
+            }
+          </style>
+          <div>
+            <slot>Label</slot>
+          </div>
           `;
         }
 
@@ -8464,7 +8454,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :host(:state) when custom state is active', () => {
       const ast = {
         children: [
           {
@@ -8500,19 +8490,19 @@ describe('Evaluator', () => {
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'open' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
+          <style>
+            :host::before {
+              content: '[ ]';
+              white-space: pre;
+              font-family: monospace;
+            }
+            :host(:state(checked))::before {
+              content: '[x]'
+            }
+          </style>
+          <div>
+            <slot>Label</slot>
+          </div>
           `;
         }
 
@@ -8536,7 +8526,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host(:state) when state inactive', () => {
       const ast = {
         children: [
           {
@@ -8572,19 +8562,19 @@ describe('Evaluator', () => {
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'open' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
+          <style>
+            :host::before {
+              content: '[ ]';
+              white-space: pre;
+              font-family: monospace;
+            }
+            :host(:state(checked))::before {
+              content: '[x]'
+            }
+          </style>
+          <div>
+            <slot>Label</slot>
+          </div>
           `;
         }
 
@@ -8607,7 +8597,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :host(:state) updated via element property', () => {
       const ast = {
         children: [
           {
@@ -8643,20 +8633,20 @@ describe('Evaluator', () => {
           this.addEventListener('click', this._onClick.bind(this));
           const shadowRoot = this.attachShadow({ mode: 'open' });
           shadowRoot.innerHTML = `
-            <style>
-              :host::before {
-                content: '[ ]';
-                white-space: pre;
-                font-family: monospace;
-              }
-              :host(:state(checked))::before {
-                content: '[x]'
-              }
-            </style>
-            <div>
-              <slot>Label</slot>
-            </div>
-          `;
+        <style>
+          :host::before {
+            content: '[ ]';
+            white-space: pre;
+            font-family: monospace;
+          }
+          :host(:state(checked))::before {
+            content: '[x]'
+          }
+        </style>
+        <div>
+          <slot>Label</slot>
+        </div>
+      `;
         }
 
         get checked() {
@@ -8692,12 +8682,12 @@ describe('Evaluator', () => {
     let host, shadowRoot;
     beforeEach(() => {
       const html = `
-        <template id="template">
-          <div><slot id="foo" name="bar">Foo</slot></div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="foo">Qux</span>
-        </my-element>
+      <template id="template">
+        <div><slot id="foo" name="bar">Foo</slot></div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -8716,7 +8706,7 @@ describe('Evaluator', () => {
       shadowRoot = host.shadowRoot;
     });
 
-    it('should match logical pseudo-class and set opt.isShadowRoot', () => {
+    it('should set opt.isShadowRoot when matching :is(:host) selector', () => {
       const ast = {
         children: [
           {
@@ -8758,7 +8748,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should match :host pseudo-class', () => {
+    it('should match :host pseudo-class selector against ShadowRoot', () => {
       const ast = {
         children: null,
         name: 'host',
@@ -8771,7 +8761,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'matches :host');
     });
 
-    it('should match :host-context pseudo-class', () => {
+    it('should match :host-context selector against ShadowRoot', () => {
       const ast = {
         children: [
           {
@@ -8796,7 +8786,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'matches :host-context');
     });
 
-    it('should return false for unmatched :host pseudo-class', () => {
+    it('should return false when :host pseudo-class fails to match', () => {
       const ast = {
         children: [
           {
@@ -8821,7 +8811,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'does not match :host with invalid id');
     });
 
-    it('should return false for unsupported or unrelated pseudo', () => {
+    it('should return false for unrelated pseudo-class on ShadowRoot', () => {
       const ast = {
         children: null,
         name: 'hover',
@@ -8840,7 +8830,7 @@ describe('Evaluator', () => {
   });
 
   describe('match selector', () => {
-    it('should match', () => {
+    it('should match element by class selector AST', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -8852,7 +8842,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match newly created element with class selector', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -8867,7 +8857,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when class selector does not match', () => {
       const ast = {
         name: 'bar',
         type: CLASS_SELECTOR
@@ -8882,7 +8872,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match element by ID selector AST', () => {
       const ast = {
         name: 'div0',
         type: ID_SELECTOR
@@ -8894,7 +8884,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when ID selector does not match', () => {
       const ast = {
         name: 'foo',
         type: ID_SELECTOR
@@ -8906,7 +8896,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match ID selector containing escaped spaces', () => {
       const ast = {
         name: 'foo\\ bar',
         type: ID_SELECTOR
@@ -8921,7 +8911,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element by attribute presence selector', () => {
       const ast = {
         flags: null,
         evaluator: null,
@@ -8939,7 +8929,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element by type selector AST', () => {
       const ast = {
         name: 'dt',
         type: TYPE_SELECTOR
@@ -8951,7 +8941,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match element via logical :is() selector AST', () => {
       const ast = {
         children: [
           {
@@ -8979,7 +8969,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw DOMException for unknown pseudo-element ::foo', () => {
       const ast = {
         children: null,
         name: 'foo',
@@ -9007,7 +8997,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for ::before pseudo-element by default', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -9020,7 +9010,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match ::before pseudo-element when check is enabled', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -9037,7 +9027,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should warn', () => {
+    it('should log warning for ::before selector when warn is true', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -9058,7 +9048,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :host(#baz) selector AST against ShadowRoot', () => {
       const ast = {
         children: [
           {
@@ -9077,15 +9067,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -9105,7 +9095,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when :host(#foobar) ID fails to match', () => {
       const ast = {
         children: [
           {
@@ -9124,15 +9114,15 @@ describe('Evaluator', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -9154,7 +9144,7 @@ describe('Evaluator', () => {
   });
 
   describe('match leaves', () => {
-    it('should match', () => {
+    it('should return true when element matches all leaf selectors', () => {
       const leaves = [
         {
           name: 'li1',
@@ -9172,7 +9162,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when element fails any leaf selector', () => {
       const leaves = [
         {
           name: 'li1',
@@ -9190,7 +9180,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should cache results for non-form elements', () => {
+    it('should cache evaluation results for non-form elements', () => {
       const leaves = [
         {
           loc: null,
@@ -9214,7 +9204,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not cache results for form elements', () => {
+    it('should bypass result cache when evaluating form elements', () => {
       const leaves = [
         {
           loc: null,
@@ -9238,7 +9228,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not cache results for input elements', () => {
+    it('should bypass result cache when evaluating input elements', () => {
       const leaves = [
         {
           loc: null,
@@ -9262,7 +9252,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should cache results for standard pseudo-classes', () => {
+    it('should cache results when matching standard pseudo-classes', () => {
       const leaves = [
         {
           loc: null,
@@ -9291,7 +9281,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not cache results for KEYS_PS_UNCACHE pseudo-classes', () => {
+    it('should bypass cache for uncacheable pseudo-class selectors', () => {
       const leaves = [
         {
           loc: null,
@@ -9321,7 +9311,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should not cache results for KEYS_PS_UNCACHE pseudo-classes', () => {
+    it('should bypass cache for directional pseudo-class selectors', () => {
       const leaves = [
         {
           loc: null,
@@ -9356,7 +9346,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should use results cache', () => {
+    it('should return cached match result on subsequent evaluations', () => {
       const leaves = [
         {
           loc: null,
@@ -9376,7 +9366,7 @@ describe('Evaluator', () => {
       assert.strictEqual(res2, true, 'returns cached true from #results');
     });
 
-    it('should re-evaluate leaves when caches are cleared', () => {
+    it('should re-evaluate leaves after results cache is cleared', () => {
       const leaves = [
         {
           loc: null,
@@ -9469,7 +9459,7 @@ describe('Evaluator', () => {
   });
 
   describe('find descendant nodes', () => {
-    it('should get matched node(s)', () => {
+    it('should yield descendant element matching ID selector', () => {
       const leaves = [
         {
           name: 'foobar',
@@ -9486,7 +9476,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield all descendant elements for universal selector', () => {
       const leaves = [
         {
           name: '\\*',
@@ -9508,7 +9498,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant matching ID selector under refNode', () => {
       const leaves = [
         {
           name: 'li3',
@@ -9523,7 +9513,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array when descendant ID is not found', () => {
       const leaves = [
         {
           name: 'foobar',
@@ -9537,7 +9527,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array when target ID is refNode itself', () => {
       const leaves = [
         {
           name: 'ul1',
@@ -9551,7 +9541,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant matching combined type and ID', () => {
       const leaves = [
         {
           name: 'li3',
@@ -9570,7 +9560,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array when class fails on ID selector', () => {
       const leaves = [
         {
           name: 'li3',
@@ -9588,7 +9578,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield all descendant elements matching class selector', () => {
       const leaves = [
         {
           name: 'li',
@@ -9610,7 +9600,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant matching class and pseudo-class', () => {
       const leaves = [
         {
           name: 'li',
@@ -9629,7 +9619,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array when class selector is not found', () => {
       const leaves = [
         {
           name: 'foobar',
@@ -9643,7 +9633,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should fallback if getElementsByClassName is missing', () => {
+    it('should fallback search when getElementsByClassName missing', () => {
       const leaves = [
         {
           name: 'fallback-class',
@@ -9663,7 +9653,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [child, grandChild], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield matching descendant elements in XML document', () => {
       const leaves = [
         {
           name: 'div',
@@ -9690,7 +9680,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [div1, div2, div3, div4], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendants matching wildcard namespace type', () => {
       const leaves = [
         {
           name: '*|li',
@@ -9712,7 +9702,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield all descendant elements matching type selector', () => {
       const leaves = [
         {
           name: 'li',
@@ -9734,7 +9724,7 @@ describe('Evaluator', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant matching type and pseudo-class', () => {
       const leaves = [
         {
           name: 'li',
@@ -9753,7 +9743,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array when type selector is not found', () => {
       const leaves = [
         {
           name: 'ol',
@@ -9767,7 +9757,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should not match', () => {
+    it('should yield empty array for pseudo-element selectors', () => {
       const leaves = [
         {
           children: null,
@@ -9782,7 +9772,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant elements matching attribute selector', () => {
       const leaves = [
         {
           flags: null,
@@ -9804,7 +9794,7 @@ describe('Evaluator', () => {
       assert.deepEqual([...res], [span1, span3], 'nodes');
     });
 
-    it('should get matched node(s)', () => {
+    it('should yield descendant elements matching pseudo-class', () => {
       const leaves = [
         {
           children: null,

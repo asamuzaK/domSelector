@@ -194,7 +194,7 @@ describe('selector static analysis and validation', () => {
       return cssTree.toPlainObject(hasNode).children;
     };
 
-    it('should return true for valid nesting (no nested :has)', () => {
+    it('should return true for valid nesting', () => {
       assert.strictEqual(
         func(getHasChildren(':has(.foo, .bar)')),
         true,
@@ -277,7 +277,7 @@ describe('selector static analysis and validation', () => {
       );
     });
 
-    it('should not throw for allowed nested :has() (e.g., wrapped in :is)', () => {
+    it('should not throw for allowed nested :has()', () => {
       const validator = createHasValidator(mockWindow);
       const validNode = getHasNode(':has(:is(:has(.foo)))');
       assert.doesNotThrow(
@@ -295,7 +295,7 @@ describe('selector static analysis and validation', () => {
       );
     });
 
-    it('should not throw for empty :has() (handles null children safely)', () => {
+    it('should not throw for empty :has()', () => {
       const validator = createHasValidator(mockWindow);
       const emptyNode = {
         type: PS_CLASS_SELECTOR,
@@ -458,7 +458,7 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func(invalidPlainAst), false, 'invalid plain AST');
     });
 
-    it('should short-circuit recursion when isSupported is already false', () => {
+    it('should short-circuit recursion when isSupported is false', () => {
       const ast = getAST('::before .foo');
       assert.strictEqual(
         func(ast),
@@ -487,7 +487,7 @@ describe('selector static analysis and validation', () => {
       );
     });
 
-    it('should validate combinator syntax correctly for plain array ASTs', () => {
+    it('should validate combinator syntax correctly for array ASTs', () => {
       const getPlainAST = sel =>
         cssTree.toPlainObject(cssTree.parse(sel, { context: 'selectorList' }));
       assert.strictEqual(
@@ -817,7 +817,7 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func(':nth-child(even)'), true, 'result');
     });
 
-    it('should get false for invalid syntax (REG_INVALID_SYNTAX)', () => {
+    it('should get false for invalid syntax', () => {
       assert.strictEqual(func('div > > p'), false, 'consecutive combinators');
       assert.strictEqual(
         func('.foo + ~ .bar'),
@@ -841,7 +841,7 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func('div, '), false, 'ending with comma');
     });
 
-    it('should return false for descendant/child combinators in logical pseudo-classes when target is TARGET_ALL', () => {
+    it('should return false for descendant/child combinators', () => {
       assert.strictEqual(
         func(':is(.foo > .bar)', TARGET_ALL),
         false,

@@ -48,28 +48,28 @@ describe('EventHandler', () => {
   });
 
   describe('direct event handlers', () => {
-    it('should update currentFocus on handleFocusEvent', () => {
+    it('should update currentFocus on focus events', () => {
       const handler = new EventHandler(window);
       const evt = new window.FocusEvent('focus');
       handler.handleFocusEvent(evt);
       assert.strictEqual(handler.currentFocus, evt, 'currentFocus');
     });
 
-    it('should update currentEvent on handleMouseEvent', () => {
+    it('should update currentEvent on mouse events', () => {
       const handler = new EventHandler(window);
       const evt = new window.MouseEvent('mousedown');
       handler.handleMouseEvent(evt);
       assert.strictEqual(handler.currentEvent, evt, 'currentEvent');
     });
 
-    it('should update currentEvent for non-modifier keys on handleKeyboardEvent', () => {
+    it('should update currentEvent for non-modifier key presses', () => {
       const handler = new EventHandler(window);
       const evt = new window.KeyboardEvent('keydown', { key: 'a' });
       handler.handleKeyboardEvent(evt);
       assert.strictEqual(handler.currentEvent, evt, 'currentEvent');
     });
 
-    it('should not update currentEvent for modifier keys on handleKeyboardEvent', () => {
+    it('should retain currentEvent when a modifier key is pressed', () => {
       const handler = new EventHandler(window);
       const evt1 = new window.KeyboardEvent('keydown', { key: 'a' });
       handler.handleKeyboardEvent(evt1);

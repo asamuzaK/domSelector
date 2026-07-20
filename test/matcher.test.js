@@ -21,56 +21,56 @@ const STRING = 'String';
 
 describe('matcher', () => {
   const domStr = `<!doctype html>
-    <html lang="en">
-      <head>
-      </head>
-      <body>
-        <div id="div0">
+  <html lang="en">
+    <head>
+    </head>
+    <body>
+      <div id="div0">
+      </div>
+      <div id="div1">
+        <div id="div2">
+          <ul id="ul1">
+            <li id="li1" class="li">foo</li>
+            <li id="li2" class="li">bar</li>
+            <li id="li3" class="li"></li>
+          </ul>
         </div>
-        <div id="div1">
-          <div id="div2">
-            <ul id="ul1">
-              <li id="li1" class="li">foo</li>
-              <li id="li2" class="li">bar</li>
-              <li id="li3" class="li"></li>
-            </ul>
+        <div id="div3">
+          <dl id="dl1">
+            <dt id="dt1"></dt>
+            <dd id="dd1" class="dd">
+              <span id="span1" hidden></span>
+            </dd>
+            <dt id="dt2"></dt>
+            <dd id="dd2" class="dd">
+              <span id="span2"></span>
+            </dd>
+            <dt id="dt3"></dt>
+            <dd id="dd3" class="dd">
+              <span id="span3" hidden></span>
+            </dd>
+          </dl>
+        </div>
+        <div id="div4">
+          <div id="div5" class="foo">
+            <p id="p1"></p>
+            <p id="p2"></p>
+            <p id="p3"></p>
           </div>
-          <div id="div3">
-            <dl id="dl1">
-              <dt id="dt1"></dt>
-              <dd id="dd1" class="dd">
-                <span id="span1" hidden></span>
-              </dd>
-              <dt id="dt2"></dt>
-              <dd id="dd2" class="dd">
-                <span id="span2"></span>
-              </dd>
-              <dt id="dt3"></dt>
-              <dd id="dd3" class="dd">
-                <span id="span3" hidden></span>
-              </dd>
-            </dl>
+          <div id="div6" class="foo bar">
+            <p id="p4"></p>
+            <p id="p5"></p>
+            <p id="p6"></p>
           </div>
-          <div id="div4">
-            <div id="div5" class="foo">
-              <p id="p1"></p>
-              <p id="p2"></p>
-              <p id="p3"></p>
-            </div>
-            <div id="div6" class="foo bar">
-              <p id="p4"></p>
-              <p id="p5"></p>
-              <p id="p6"></p>
-            </div>
-            <div id="div7" class="baz">
-              <p id="p7"></p>
-              <p id="p8"></p>
-              <p id="p9"></p>
-            </div>
+          <div id="div7" class="baz">
+            <p id="p7"></p>
+            <p id="p8"></p>
+            <p id="p9"></p>
           </div>
         </div>
-      </body>
-    </html>
+      </div>
+    </body>
+  </html>
   `;
   const domOpt = {
     runScripts: 'dangerously',
@@ -91,7 +91,7 @@ describe('matcher', () => {
   describe('match pseudo-element selector', () => {
     const func = matcher.matchPseudoElementSelector;
 
-    it('should throw', () => {
+    it('should throw TypeError when AST type is undefined', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -101,14 +101,14 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for ::after pseudo-element', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('after', PS_ELEMENT_SELECTOR);
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw NOT_SUPPORTED_ERR for ::after with warn', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -126,14 +126,14 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for ::part() pseudo-element', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('part', PS_ELEMENT_SELECTOR);
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw NOT_SUPPORTED_ERR for ::part() with warn', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -151,14 +151,14 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for ::slotted() pseudo-element', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('slotted', PS_ELEMENT_SELECTOR);
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw NOT_SUPPORTED_ERR for ::slotted with warn', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -176,7 +176,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for unknown pseudo-element ::foo', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -194,7 +194,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for unknown pseudo with forgive', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('foo', PS_ELEMENT_SELECTOR, {
@@ -203,14 +203,14 @@ describe('matcher', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should not match', () => {
+    it('should return undefined for vendor-prefixed pseudo', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('-webkit-foo', PS_ELEMENT_SELECTOR);
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw NOT_SUPPORTED_ERR for vendor pseudo with warn', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -228,7 +228,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for unprefixed vendor pseudo', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -246,7 +246,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for unprefixed vendor forgive', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('webkit-foo', PS_ELEMENT_SELECTOR, {
@@ -255,7 +255,7 @@ describe('matcher', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for malformed vendor pseudo', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       assert.throws(
@@ -273,7 +273,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return undefined for malformed vendor forgive', () => {
       const node = document.createElement('div');
       document.getElementById('div0').appendChild(node);
       const res = func('-webkitfoo', PS_ELEMENT_SELECTOR, {
@@ -286,7 +286,7 @@ describe('matcher', () => {
   describe('match directionality pseudo-class', () => {
     const func = matcher.matchDirectionPseudoClass;
 
-    it('should throw', () => {
+    it('should throw TypeError when AST argument is invalid', () => {
       const ast = {};
       const node = document.createElement('bdo');
       assert.throws(
@@ -296,7 +296,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when AST name is empty string', () => {
       const ast = {
         name: '',
         type: IDENT
@@ -309,7 +309,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against bdo with dir=ltr', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -320,7 +320,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against div with dir=ltr', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -333,7 +333,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(rtl) against div with dir=rtl', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -346,7 +346,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against document root element', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -356,7 +356,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against tel input element', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -369,7 +369,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against tel input with dir=foo', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -383,7 +383,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against tel input with dir=auto', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -397,7 +397,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against textarea with dir=auto', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -410,7 +410,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against text input with dir=auto', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -424,7 +424,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against empty div with dir=auto', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -437,7 +437,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against bdi element with LTR text', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -450,7 +450,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(rtl) against bdi element with RTL text', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -463,7 +463,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against empty bdi element', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -475,21 +475,21 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) against assigned shadow slot node', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar" dir="auto">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar" dir="auto">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="foo">Qux</span>
+      </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -507,7 +507,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) when inheriting document direction', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -519,7 +519,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(rtl) when inheriting root dir=rtl', () => {
       const ast = {
         name: 'rtl',
         type: IDENT
@@ -533,7 +533,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match :dir(ltr) when inheriting parent dir=ltr', () => {
       const ast = {
         name: 'ltr',
         type: IDENT
@@ -550,7 +550,7 @@ describe('matcher', () => {
   describe('match language pseudo-class', () => {
     const func = matcher.matchLanguagePseudoClass;
 
-    it('should not match', () => {
+    it('should return false when language pattern name is empty', () => {
       const ast = {
         name: '',
         type: IDENT
@@ -565,7 +565,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when language string value is empty', () => {
       const ast = {
         type: STRING,
         value: ''
@@ -580,7 +580,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, false, 'result');
     });
 
-    it('should not match when langPattern is not a string (e.g. null)', () => {
+    it('should return false when language pattern value is null', () => {
       const ast = {
         type: STRING,
         value: null
@@ -595,7 +595,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, false, 'result (cached)');
     });
 
-    it('should match', () => {
+    it('should match wildcard language selector on node.lang', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -610,7 +610,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard string language selector on node.lang', () => {
       const ast = {
         type: STRING,
         value: '*'
@@ -625,7 +625,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard language selector on lang attribute', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -638,7 +638,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard language selector on inherited lang', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -650,7 +650,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match escaped wildcard lang selector on node.lang', () => {
       const ast = {
         name: '\\*',
         type: IDENT
@@ -663,7 +663,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match escaped wildcard subtag pattern \\*-FR', () => {
       const ast = {
         name: '\\*-FR',
         type: IDENT
@@ -676,7 +676,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for wildcard match on empty lang', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -689,7 +689,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for wildcard match in fragment', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -701,7 +701,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact language tag en on lang attribute', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -716,7 +716,7 @@ describe('matcher', () => {
       assert.strictEqual(res2, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match language subtag en-US with en pattern', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -729,7 +729,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match inherited language tag en from ancestor', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -741,7 +741,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when language tag de mismatches en', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -754,7 +754,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for language tag match in fragment', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -766,7 +766,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match extended language subtag pattern de-DE', () => {
       const ast = {
         name: 'de-DE',
         type: IDENT
@@ -779,7 +779,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match complex language subtag de-Latn-DE', () => {
       const ast = {
         name: 'de-Latn-DE',
         type: IDENT
@@ -792,7 +792,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match language tag case-insensitively de-de', () => {
       const ast = {
         name: 'de-de',
         type: IDENT
@@ -805,7 +805,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when language script subtag differs', () => {
       const ast = {
         name: 'de-de',
         type: IDENT
@@ -818,7 +818,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for non-ASCII language identifier', () => {
       const ast = {
         name: '日本語',
         type: IDENT
@@ -831,7 +831,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for non-ASCII language string', () => {
       const ast = {
         type: STRING,
         value: '日本語'
@@ -847,15 +847,15 @@ describe('matcher', () => {
 
   describe('match language pseudo-class - xml', () => {
     const xmlDom = `
-      <foo id="foo" xml:lang="en">
-        <bar id="bar">
-          <baz id="baz"/>
-        </bar>
-      </foo>
+    <foo id="foo" xml:lang="en">
+      <bar id="bar">
+        <baz id="baz"/>
+      </bar>
+    </foo>
     `;
     const func = matcher.matchLanguagePseudoClass;
 
-    it('should not match', () => {
+    it('should return false for empty name in XML document', () => {
       const ast = {
         name: '',
         type: IDENT
@@ -869,7 +869,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty string in XML document', () => {
       const ast = {
         type: STRING,
         value: ''
@@ -883,7 +883,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard language selector in XML document', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -897,7 +897,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match inherited wildcard language in XML document', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -910,7 +910,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for wildcard match on empty xml:lang', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -924,7 +924,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for wildcard match in XML fragment', () => {
       const ast = {
         name: '*',
         type: IDENT
@@ -937,7 +937,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for language match on empty xml:lang', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -951,7 +951,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match language tag en on xml:lang attribute', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -965,7 +965,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match language subtag en-US in XML document', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -979,7 +979,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match inherited language tag en in XML document', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -992,7 +992,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when parent xml:lang is empty', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -1006,7 +1006,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when xml:lang de mismatches en', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -1020,7 +1020,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for language tag in XML fragment', () => {
       const ast = {
         name: 'en',
         type: IDENT
@@ -1033,7 +1033,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match language pattern de-DE in XML document', () => {
       const ast = {
         name: 'de-DE',
         type: IDENT
@@ -1047,7 +1047,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match complex language tag in XML document', () => {
       const ast = {
         name: 'de-Latn-DE',
         type: IDENT
@@ -1061,7 +1061,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match language tag case-insensitively in XML', () => {
       const ast = {
         name: 'de-de',
         type: IDENT
@@ -1075,7 +1075,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when script subtag differs in XML', () => {
       const ast = {
         name: 'de-de',
         type: IDENT
@@ -1089,7 +1089,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for non-ASCII tag in XML document', () => {
       const ast = {
         name: '日本語',
         type: IDENT
@@ -1103,7 +1103,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for non-ASCII string in XML doc', () => {
       const ast = {
         type: STRING,
         value: '日本語'
@@ -1121,20 +1121,20 @@ describe('matcher', () => {
   describe('match checked pseudo-class', () => {
     const func = matcher.matchCheckedPseudoClass;
 
-    it('should get true for selected option', () => {
+    it('should return true for option element with selected prop', () => {
       const node = document.createElement('option');
       node.selected = true;
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for unselected option', () => {
+    it('should return false for option element without selected', () => {
       const node = document.createElement('option');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for checked checkbox input', () => {
+    it('should return true for checked checkbox input element', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
       node.checked = true;
@@ -1142,14 +1142,14 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for unchecked checkbox input', () => {
+    it('should return false for unchecked checkbox input element', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'checkbox');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for checked radio input', () => {
+    it('should return true for checked radio input element', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
       node.checked = true;
@@ -1157,14 +1157,14 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for unchecked radio input', () => {
+    it('should return false for unchecked radio input element', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'radio');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for checked text input', () => {
+    it('should return false for text input even if checked set', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       node.checked = true;
@@ -1172,7 +1172,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for div element', () => {
+    it('should return false for non-checkable div element', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
@@ -1182,33 +1182,33 @@ describe('matcher', () => {
   describe('match link pseudo-class', () => {
     const func = matcher.matchLinkPseudoClass;
 
-    it('should get true for a element with href', () => {
+    it('should return true for anchor element with href attr', () => {
       const node = document.createElement('a');
       node.setAttribute('href', 'https://example.com');
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for a element without href', () => {
+    it('should return false for anchor element lacking href attr', () => {
       const node = document.createElement('a');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for area element with href', () => {
+    it('should return true for area element with href attribute', () => {
       const node = document.createElement('area');
       node.setAttribute('href', '#foo');
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for area element without href', () => {
+    it('should return false for area element lacking href attribute', () => {
       const node = document.createElement('area');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for div element with href', () => {
+    it('should return false for non-link div element with href', () => {
       const node = document.createElement('div');
       node.setAttribute('href', 'https://example.com');
       const res = func(node);
@@ -1219,33 +1219,33 @@ describe('matcher', () => {
   describe('match open pseudo-class', () => {
     const func = matcher.matchOpenPseudoClass;
 
-    it('should get true for details element with open attribute', () => {
+    it('should return true for details element with open attribute', () => {
       const node = document.createElement('details');
       node.setAttribute('open', '');
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for details element without open attribute', () => {
+    it('should return false for details element lacking open attr', () => {
       const node = document.createElement('details');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for dialog element with open attribute', () => {
+    it('should return true for dialog element with open attribute', () => {
       const node = document.createElement('dialog');
       node.setAttribute('open', '');
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for dialog element without open attribute', () => {
+    it('should return false for dialog element lacking open attr', () => {
       const node = document.createElement('dialog');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for div element with open attribute', () => {
+    it('should return false for non-dialog div with open attr', () => {
       const node = document.createElement('div');
       node.setAttribute('open', '');
       const res = func(node);
@@ -1257,7 +1257,7 @@ describe('matcher', () => {
     const func = matcher.matchPlaceholderShownPseudoClass;
     const keys = new Set(['text', 'number']);
 
-    it('should get true for textarea with placeholder and empty value', () => {
+    it('should return true for empty textarea with placeholder', () => {
       const node = document.createElement('textarea');
       node.setAttribute('placeholder', 'foo');
       node.value = '';
@@ -1265,7 +1265,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for textarea with placeholder and non-empty value', () => {
+    it('should return false for textarea with value and placeholder', () => {
       const node = document.createElement('textarea');
       node.setAttribute('placeholder', 'foo');
       node.value = 'bar';
@@ -1273,7 +1273,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for textarea with multiline placeholder', () => {
+    it('should return false for textarea with multiline placeholder', () => {
       const node = document.createElement('textarea');
       node.setAttribute('placeholder', 'foo\nbar');
       node.value = '';
@@ -1281,14 +1281,14 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for textarea without placeholder', () => {
+    it('should return false for empty textarea lacking placeholder', () => {
       const node = document.createElement('textarea');
       node.value = '';
       const res = func(node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for input without type attribute (defaults to text)', () => {
+    it('should return true for default input with empty placeholder', () => {
       const node = document.createElement('input');
       node.setAttribute('placeholder', 'foo');
       node.value = '';
@@ -1296,7 +1296,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for input with allowed type, placeholder and empty value', () => {
+    it('should return true for text input with empty placeholder', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       node.setAttribute('placeholder', 'foo');
@@ -1305,7 +1305,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for input with allowed type, placeholder and non-empty value', () => {
+    it('should return false for text input with filled placeholder', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       node.setAttribute('placeholder', 'foo');
@@ -1314,7 +1314,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for input with disallowed type, even with placeholder and empty value', () => {
+    it('should return false for button input type with placeholder', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'button');
       node.setAttribute('placeholder', 'foo');
@@ -1323,7 +1323,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for div element with placeholder attribute', () => {
+    it('should return false for non-input div with placeholder', () => {
       const node = document.createElement('div');
       node.setAttribute('placeholder', 'foo');
       const res = func(node, keys);
@@ -1335,7 +1335,7 @@ describe('matcher', () => {
     const func = matcher.matchRangePseudoClass;
     const keys = new Set(['number', 'range', 'date']);
 
-    it('should get true for out-of-range (underflow)', () => {
+    it('should return true for out-of-range value underflow', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '5');
@@ -1344,7 +1344,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for out-of-range (overflow)', () => {
+    it('should return true for out-of-range value overflow', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('max', '5');
@@ -1353,7 +1353,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for out-of-range when within range', () => {
+    it('should return false for out-of-range when value in range', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '1');
@@ -1363,7 +1363,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for in-range when within range', () => {
+    it('should return true for in-range when value is within range', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '1');
@@ -1373,7 +1373,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for in-range (underflow)', () => {
+    it('should return false for in-range on value underflow', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '5');
@@ -1382,7 +1382,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for in-range when type is range even without min/max', () => {
+    it('should return true for in-range on range type without min/max', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'range');
       node.value = '50';
@@ -1390,7 +1390,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for in-range when type is number without min/max', () => {
+    it('should return false for in-range on number type without min/max', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.value = '50';
@@ -1398,7 +1398,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false when input is readonly', () => {
+    it('should return false for in-range when input is readonly', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '1');
@@ -1409,7 +1409,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false when input is disabled', () => {
+    it('should return false for in-range when input is disabled', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'number');
       node.setAttribute('min', '1');
@@ -1420,7 +1420,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false when type is not in keys', () => {
+    it('should return false for in-range on unsupported text type', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       node.setAttribute('min', '1');
@@ -1430,7 +1430,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for non-input element', () => {
+    it('should return false for in-range on non-input element', () => {
       const node = document.createElement('div');
       const res = func('in-range', node, keys);
       assert.strictEqual(res, false, 'result');
@@ -1440,106 +1440,106 @@ describe('matcher', () => {
   describe('match read-only / read-write pseudo-class', () => {
     const func = matcher.matchReadOnlyPseudoClass;
 
-    it('should get true', () => {
+    it('should return true for read-only on standard div element', () => {
       const node = document.createElement('div');
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on standard div element', () => {
       const node = document.createElement('div');
       const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-only on editable textarea', () => {
       const node = document.createElement('textarea');
       const res = func('read-only', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-write on editable textarea', () => {
       const node = document.createElement('textarea');
       const res = func('read-write', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-only on readonly prop textarea', () => {
       const node = document.createElement('textarea');
       node.readOnly = true;
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on readonly prop textarea', () => {
       const node = document.createElement('textarea');
       node.readOnly = true;
       const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-only on readonly attr textarea', () => {
       const node = document.createElement('textarea');
       node.setAttribute('readonly', 'readonly');
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on readonly attr textarea', () => {
       const node = document.createElement('textarea');
       node.setAttribute('readonly', 'readonly');
       const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-only on standard text input', () => {
       const node = document.createElement('input');
       const res = func('read-only', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-write on standard text input', () => {
       const node = document.createElement('input');
       const res = func('read-write', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-only on readonly prop input', () => {
       const node = document.createElement('input');
       node.readOnly = true;
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on readonly prop input', () => {
       const node = document.createElement('input');
       node.readOnly = true;
       const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-only on readonly attr input', () => {
       const node = document.createElement('input');
       node.setAttribute('readonly', 'readonly');
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on readonly attr input', () => {
       const node = document.createElement('input');
       node.setAttribute('readonly', 'readonly');
       const res = func('read-write', node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for read-only on button input type', () => {
       const node = document.createElement('input');
       node.type = 'button';
       const res = func('read-only', node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for read-write on button input type', () => {
       const node = document.createElement('input');
       node.type = 'button';
       const res = func('read-write', node);
@@ -1551,40 +1551,40 @@ describe('matcher', () => {
     const func = matcher.matchRequiredPseudoClass;
     const keys = new Set(['text', 'checkbox', 'radio', 'file']);
 
-    it('should get true for required select', () => {
+    it('should return true for required on select element with prop', () => {
       const node = document.createElement('select');
       node.required = true;
       const res = func('required', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for optional select when it is required', () => {
+    it('should return false for optional on required select element', () => {
       const node = document.createElement('select');
       node.required = true;
       const res = func('optional', node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for required select without required attribute', () => {
+    it('should return false for required on select lacking attribute', () => {
       const node = document.createElement('select');
       const res = func('required', node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for optional select without required attribute', () => {
+    it('should return true for optional on select lacking attribute', () => {
       const node = document.createElement('select');
       const res = func('optional', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for required textarea', () => {
+    it('should return true for required on textarea with attribute', () => {
       const node = document.createElement('textarea');
       node.setAttribute('required', '');
       const res = func('required', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for required input with allowed type', () => {
+    it('should return true for required on allowed text input type', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       node.required = true;
@@ -1592,21 +1592,21 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for required input with allowed type but no required attribute', () => {
+    it('should return false for required on text input without req', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       const res = func('required', node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for optional input with allowed type and no required attribute', () => {
+    it('should return true for optional on text input without req', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'text');
       const res = func('optional', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for required input with disallowed type', () => {
+    it('should return false for required on button input type', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'button');
       node.required = true;
@@ -1614,7 +1614,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for optional input with disallowed type even if it has required attribute', () => {
+    it('should return true for optional on button input type', () => {
       const node = document.createElement('input');
       node.setAttribute('type', 'button');
       node.required = true;
@@ -1622,41 +1622,41 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for required input without type attribute (defaults to text)', () => {
+    it('should return true for required on default input with prop', () => {
       const node = document.createElement('input');
       node.required = true;
       const res = func('required', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for required div element', () => {
+    it('should return false for required on div with attribute', () => {
       const node = document.createElement('div');
       node.setAttribute('required', '');
       const res = func('required', node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false for optional div element', () => {
+    it('should return false for optional on standard div element', () => {
       const node = document.createElement('div');
       const res = func('optional', node, keys);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true for input without type attribute but with required property', () => {
+    it('should return true for required input lacking type attr', () => {
       const node = document.createElement('input');
       node.required = true;
       const res = func('required', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true for input without type attribute but with required attribute', () => {
+    it('should return true for required input with required attr', () => {
       const node = document.createElement('input');
       node.setAttribute('required', 'required');
       const res = func('required', node, keys);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false for input without type attribute and without required state', () => {
+    it('should return false for required input lacking required state', () => {
       const node = document.createElement('input');
       const res = func('required', node, keys);
       assert.strictEqual(res, false, 'result');
@@ -1666,7 +1666,7 @@ describe('matcher', () => {
   describe('match attribute selector', () => {
     const func = matcher.matchAttributeSelector;
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for invalid attribute selector flag', () => {
       const ast = {
         flags: 'baz',
         matcher: '=',
@@ -1699,7 +1699,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match no-namespace attribute presence selector', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1718,7 +1718,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match no-namespace attribute with case flag s', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -1737,7 +1737,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match no-namespace attribute with case flag i', () => {
       const ast = {
         flags: 'i',
         matcher: null,
@@ -1756,7 +1756,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for no-namespace match on NS attr', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1775,7 +1775,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace attribute selector', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1794,7 +1794,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace attribute with flag s', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -1813,7 +1813,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace on plain attribute', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1832,7 +1832,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace with flag s on plain attr', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -1851,7 +1851,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for undeclared NS in attr', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1885,7 +1885,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match declared namespace attribute with check', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1910,7 +1910,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for undeclared NS with forgive', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1935,7 +1935,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for case-sensitive namespace mismatch', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -1956,7 +1956,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match case-sensitive namespaced attribute', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -1981,7 +1981,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when NS attribute case mismatches', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -2002,7 +2002,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match case-insensitive namespaced attribute', () => {
       const ast = {
         flags: 'i',
         matcher: null,
@@ -2027,7 +2027,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match case-insensitive NS attribute with flag i', () => {
       const ast = {
         flags: 'i',
         matcher: null,
@@ -2052,7 +2052,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match case-insensitive NS prefix with flag i', () => {
       const ast = {
         flags: 'i',
         matcher: null,
@@ -2077,7 +2077,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for namespaced selector on plain attr', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -2098,7 +2098,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match un-namespaced selector on NS attribute', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -2117,7 +2117,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match un-namespaced selector with flag s on NS', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -2136,7 +2136,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match un-namespaced selector on plain attribute', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -2155,7 +2155,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match un-namespaced selector with flag s on plain', () => {
       const ast = {
         flags: 's',
         matcher: null,
@@ -2174,7 +2174,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for attribute local name mismatch', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -2193,7 +2193,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when attribute name does not match', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -2212,7 +2212,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact attribute value with IDENT type', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2234,7 +2234,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact attribute value using flag s', () => {
       const ast = {
         flags: 's',
         matcher: '=',
@@ -2256,7 +2256,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for exact value case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '=',
@@ -2278,7 +2278,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for exact attribute value mismatch', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2300,7 +2300,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact attribute value with STRING type', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2322,7 +2322,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact string attribute value with flag s', () => {
       const ast = {
         flags: 's',
         matcher: '=',
@@ -2344,7 +2344,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for exact string case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '=',
@@ -2366,7 +2366,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact attribute value containing space', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2388,7 +2388,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact value on namespaced attribute', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2417,7 +2417,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for xml|lang namespace selector', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2445,7 +2445,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for xml:lang literal attribute', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -2473,7 +2473,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match whitespace-separated word in attribute', () => {
       const ast = {
         flags: null,
         matcher: '~=',
@@ -2495,7 +2495,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match whitespace-separated word using flag s', () => {
       const ast = {
         flags: 's',
         matcher: '~=',
@@ -2517,7 +2517,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for whitespace word case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '~=',
@@ -2539,7 +2539,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match whitespace-separated word at string end', () => {
       const ast = {
         flags: null,
         matcher: '~=',
@@ -2561,7 +2561,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when whitespace word is missing', () => {
       const ast = {
         flags: null,
         matcher: '~=',
@@ -2583,7 +2583,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty word matcher value', () => {
       const ast = {
         flags: null,
         matcher: '~=',
@@ -2605,7 +2605,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match exact hyphen-separated prefix attribute', () => {
       const ast = {
         flags: null,
         matcher: '|=',
@@ -2627,7 +2627,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match hyphen-separated prefix with flag s', () => {
       const ast = {
         flags: 's',
         matcher: '|=',
@@ -2649,7 +2649,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for hyphen prefix case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '|=',
@@ -2671,7 +2671,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match hyphen-separated prefix before hyphen', () => {
       const ast = {
         flags: null,
         matcher: '|=',
@@ -2693,7 +2693,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match hyphenated prefix using case flag s', () => {
       const ast = {
         flags: 's',
         matcher: '|=',
@@ -2715,7 +2715,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for hyphenated prefix mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '|=',
@@ -2737,7 +2737,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when hyphen prefix mismatches', () => {
       const ast = {
         flags: null,
         matcher: '|=',
@@ -2759,7 +2759,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty hyphen matcher value', () => {
       const ast = {
         flags: null,
         matcher: '|=',
@@ -2781,7 +2781,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match prefix attribute value using ^=', () => {
       const ast = {
         flags: null,
         matcher: '^=',
@@ -2803,7 +2803,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match prefix attribute substring with ^=', () => {
       const ast = {
         flags: null,
         matcher: '^=',
@@ -2825,7 +2825,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match prefix attribute value with space', () => {
       const ast = {
         flags: null,
         matcher: '^=',
@@ -2847,7 +2847,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for prefix attribute mismatch', () => {
       const ast = {
         flags: null,
         matcher: '^=',
@@ -2869,7 +2869,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match prefix attribute value with flag s', () => {
       const ast = {
         flags: 's',
         matcher: '^=',
@@ -2891,7 +2891,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for prefix attribute case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '^=',
@@ -2913,7 +2913,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty prefix matcher value', () => {
       const ast = {
         flags: 's',
         matcher: '^=',
@@ -2935,7 +2935,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match suffix attribute value using $=', () => {
       const ast = {
         flags: null,
         matcher: '$=',
@@ -2957,7 +2957,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match suffix attribute substring with $=', () => {
       const ast = {
         flags: null,
         matcher: '$=',
@@ -2979,7 +2979,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match suffix attribute value with space', () => {
       const ast = {
         flags: null,
         matcher: '$=',
@@ -3001,7 +3001,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for suffix attribute mismatch', () => {
       const ast = {
         flags: null,
         matcher: '$=',
@@ -3023,7 +3023,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match suffix attribute value with flag s', () => {
       const ast = {
         flags: 's',
         matcher: '$=',
@@ -3045,7 +3045,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for suffix attribute case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '$=',
@@ -3067,7 +3067,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty suffix matcher value', () => {
       const ast = {
         flags: 's',
         matcher: '$=',
@@ -3089,7 +3089,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match substring attribute value with *=', () => {
       const ast = {
         flags: null,
         matcher: '*=',
@@ -3111,7 +3111,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match substring attribute within string', () => {
       const ast = {
         flags: null,
         matcher: '*=',
@@ -3133,7 +3133,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match substring attribute surrounded by space', () => {
       const ast = {
         flags: null,
         matcher: '*=',
@@ -3155,7 +3155,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for substring attribute mismatch', () => {
       const ast = {
         flags: null,
         matcher: '*=',
@@ -3177,7 +3177,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match substring attribute value with flag s', () => {
       const ast = {
         flags: 's',
         matcher: '*=',
@@ -3199,7 +3199,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for substring case mismatch', () => {
       const ast = {
         flags: 's',
         matcher: '*=',
@@ -3221,7 +3221,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for empty substring value', () => {
       const ast = {
         flags: 's',
         matcher: '*=',
@@ -3243,7 +3243,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match(s)', () => {
+    it('should match attribute value in XML with flag i', () => {
       const ast = {
         flags: 'i',
         matcher: '=',
@@ -3266,7 +3266,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for attribute value in XML flag s', () => {
       const ast = {
         flags: 's',
         matcher: '=',
@@ -3289,7 +3289,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for attribute case mismatch in XML', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -3312,7 +3312,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match attribute name with escaped colon', () => {
       const ast = {
         flags: null,
         loc: null,
@@ -3333,7 +3333,7 @@ describe('matcher', () => {
       assert.deepEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for invalid escaped colon in NS', () => {
       const ast = {
         flags: null,
         loc: null,
@@ -3366,7 +3366,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for wildcard NS with escaped colon', () => {
       const ast = {
         flags: null,
         loc: null,
@@ -3387,7 +3387,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should ignore xml:lang attribute in namespace-less [lang]', () => {
+    it('should ignore xml:lang attribute for plain lang selector', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -3410,7 +3410,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match attribute with exact case in fallback loop', () => {
+    it('should match exact case attribute in fallback loop', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -3429,7 +3429,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match attribute starting with colon using value matcher in fallback loop', () => {
+    it('should match colon attribute with value in fallback loop', () => {
       const ast = {
         flags: null,
         matcher: '=',
@@ -3451,7 +3451,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should assign rawName to checkName in XML document', () => {
+    it('should match exact case attribute in XML document', () => {
       const ast = {
         flags: null,
         matcher: null,
@@ -3470,7 +3470,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match case-insensitively in XML document using the "i" flag', () => {
+    it('should match attribute name case-insensitively in XML', () => {
       const ast = {
         flags: 'i',
         matcher: '=',
@@ -3493,7 +3493,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match itemLocalName case-insensitively in XML document using the "i" flag for colon-separated attributes', () => {
+    it('should match local attribute name case-insensitively in XML', () => {
       const ast = {
         flags: 'i',
         matcher: '=',
@@ -3520,7 +3520,7 @@ describe('matcher', () => {
   describe('match type selector', () => {
     const func = matcher.matchTypeSelector;
 
-    it('should match(s)', () => {
+    it('should match no-namespace universal selector on div', () => {
       const ast = {
         name: '|*',
         type: TYPE_SELECTOR
@@ -3532,7 +3532,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for no-namespace universal on HTML', () => {
       const ast = {
         name: '|*',
         type: TYPE_SELECTOR
@@ -3542,7 +3542,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for no-namespace universal on NS div', () => {
       const ast = {
         name: '|*',
         type: TYPE_SELECTOR
@@ -3554,7 +3554,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace universal on HTML div', () => {
       const ast = {
         name: '*|*',
         type: TYPE_SELECTOR
@@ -3564,7 +3564,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace universal on NS element', () => {
       const ast = {
         name: '*|*',
         type: TYPE_SELECTOR
@@ -3580,7 +3580,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for undeclared namespace foo|*', () => {
       const ast = {
         name: 'foo|*',
         type: TYPE_SELECTOR
@@ -3603,7 +3603,7 @@ describe('matcher', () => {
       );
     });
 
-    it('should match', () => {
+    it('should match declared namespace universal selector foo|*', () => {
       const ast = {
         name: 'foo|*',
         type: TYPE_SELECTOR
@@ -3621,7 +3621,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match namespace universal selector with check option', () => {
       const ast = {
         name: 'foo|*',
         type: TYPE_SELECTOR
@@ -3638,7 +3638,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for undeclared NS with forgive', () => {
       const ast = {
         name: 'foo|*',
         type: TYPE_SELECTOR
@@ -3652,7 +3652,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match declared namespace type selector foo|bar', () => {
       const ast = {
         name: 'foo|bar',
         type: TYPE_SELECTOR
@@ -3677,7 +3677,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for local name mismatch in foo|bar', () => {
       const ast = {
         name: 'foo|bar',
         type: TYPE_SELECTOR
@@ -3695,7 +3695,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for undeclared NS in type selector', () => {
       const ast = {
         name: 'foo|bar',
         type: TYPE_SELECTOR
@@ -3710,7 +3710,7 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match no-namespace type selector on plain div', () => {
       const ast = {
         name: '|div',
         type: TYPE_SELECTOR
@@ -3722,17 +3722,16 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for no-namespace selector on HTML div', () => {
       const ast = {
         name: '|div',
         type: TYPE_SELECTOR
       };
       const node = document.getElementById('div0');
-      const res = func(ast, node);
-      assert.strictEqual(res, false, 'result');
+      assert.strictEqual(func(ast, node), false, 'result');
     });
 
-    it('should match', () => {
+    it('should match simple type selector foo on plain element', () => {
       const ast = {
         name: 'foo',
         type: TYPE_SELECTOR
@@ -3744,7 +3743,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector h on namespaced element', () => {
       const ast = {
         name: 'h',
         type: TYPE_SELECTOR
@@ -3756,7 +3755,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match uppercase type selector H on NS element', () => {
       const ast = {
         name: 'H',
         type: TYPE_SELECTOR
@@ -3768,7 +3767,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace type selector *|h on NS', () => {
       const ast = {
         name: '*|h',
         type: TYPE_SELECTOR
@@ -3780,7 +3779,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match universal type selector * on HTML element', () => {
       const ast = {
         name: '*',
         type: TYPE_SELECTOR
@@ -3790,7 +3789,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match universal type selector * on NS element', () => {
       const ast = {
         name: '*',
         type: TYPE_SELECTOR
@@ -3805,7 +3804,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector div on HTML div element', () => {
       const ast = {
         name: 'div',
         type: TYPE_SELECTOR
@@ -3815,7 +3814,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector div on namespaced div element', () => {
       const ast = {
         name: 'div',
         type: TYPE_SELECTOR
@@ -3830,7 +3829,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match wildcard namespace type selector *|div', () => {
       const ast = {
         name: '*|div',
         type: TYPE_SELECTOR
@@ -3845,16 +3844,16 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match namespaced type selector in HTML document', () => {
       const domStr = `<!doctype html>
-        <html>
-          <body>
-            <foo:bar xmlns:foo="https://example.com/foo" id="foobar">
-              <foo:baz/>
-              <foo:qux/>
-            </foo:bar>
-          </body>
-        </html>`;
+      <html>
+        <body>
+          <foo:bar xmlns:foo="https://example.com/foo" id="foobar">
+            <foo:baz/>
+            <foo:qux/>
+          </foo:bar>
+        </body>
+      </html>`;
       const doc = new window.DOMParser().parseFromString(domStr, 'text/html');
       const ast = {
         name: 'foo|bar',
@@ -3867,7 +3866,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector for literal tag name null', () => {
       const ast = {
         name: 'null',
         type: TYPE_SELECTOR
@@ -3879,7 +3878,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector for literal tag undefined', () => {
       const ast = {
         name: 'undefined',
         type: TYPE_SELECTOR
@@ -3891,7 +3890,7 @@ describe('matcher', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for undeclared namespace foo', () => {
       const ast = {
         name: 'foo|div',
         type: TYPE_SELECTOR

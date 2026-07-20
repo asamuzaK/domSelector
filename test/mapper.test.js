@@ -48,7 +48,7 @@ describe('Mapper', () => {
   });
 
   describe('correspond()', () => {
-    it('should create and cache new AST on cache miss', () => {
+    it('should process and cache selector data on cache miss', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div';
       const [ast, nodes, selectorAST] = mapper.correspond(selector);
@@ -86,7 +86,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should return cached data on cache hit and reset flags for reuse', () => {
+    it('should return cached AST and reset flags upon cache hit', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.test-class';
       const [ast1, nodes1] = mapper.correspond(selector);
@@ -115,7 +115,7 @@ describe('Mapper', () => {
       assert.strictEqual(nodes2[0].length, 0, 'nodes array should be cleared');
     });
 
-    it('should set invalidate flag to true for state-dependent pseudo-classes like :has()', () => {
+    it('should set invalidate flag to true for :has() pseudo-class', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div:has(p)';
       mapper.correspond(selector);
@@ -126,7 +126,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should maintain invalidate flag as false for simple selectors', () => {
+    it('should keep invalidate flag as false for simple ID selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = '#test';
       mapper.correspond(selector);
@@ -137,7 +137,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should create a new Map for documentCache if the document is not already present', () => {
+    it('should initialize new Map entry in documentCache when missing', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.new-selector';
       mockContext.documentCache.clear();
@@ -161,7 +161,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should reuse the existing Map in documentCache if the document is already present', () => {
+    it('should reuse documentCache Map instance for new selectors', () => {
       const mapper = new Mapper(mockContext);
       const selector1 = '.first-selector';
       const selector2 = '.second-selector';
@@ -186,7 +186,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should set invalidate to true when both hasLogicalPseudoFunc and hasNthChildOfSelector are true', () => {
+    it('should set invalidate to true for complex nth-child in :is()', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':is(p):nth-child(2 of .foo)';
       mapper.correspond(selector);
@@ -197,7 +197,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should set invalidate to false when hasLogicalPseudoFunc is true but hasNthChildOfSelector is false', () => {
+    it('should set invalidate to false when selector only has :is()', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':is(p)';
       mapper.correspond(selector);
@@ -208,7 +208,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should set invalidate to false when hasLogicalPseudoFunc is false but hasNthChildOfSelector is true', () => {
+    it('should set invalidate to false for standalone nth-child of', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':nth-child(2 of .foo)';
       mapper.correspond(selector);
@@ -219,7 +219,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should set invalidate to false when both hasLogicalPseudoFunc and hasNthChildOfSelector are false', () => {
+    it('should set invalidate to false for simple class selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.simple-class';
       mapper.correspond(selector);

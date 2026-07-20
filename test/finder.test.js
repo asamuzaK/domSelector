@@ -96,19 +96,19 @@ describe('Finder', () => {
   });
 
   describe('Finder', () => {
-    it('should be instance of Finder', () => {
+    it('should construct Finder instance with window parameter', () => {
       const finder = new Finder(window);
       assert.strictEqual(finder instanceof Finder, true, 'result');
     });
 
-    it('should be instance of Finder', () => {
+    it('should construct Finder instance with document parameter', () => {
       const finder = new Finder(window, document);
       assert.strictEqual(finder instanceof Finder, true, 'result');
     });
   });
 
   describe('handle error', () => {
-    it('should not throw', () => {
+    it('should suppress DOMException syntax error when noexcept is true', () => {
       const err = new DOMException('error', SYNTAX_ERR);
       const finder = new Finder(window);
       finder.setup('*', document, {
@@ -117,20 +117,20 @@ describe('Finder', () => {
       assert.doesNotThrow(() => finder.onError(err));
     });
 
-    it('should throw', () => {
+    it('should rethrow TypeError when calling onError handler', () => {
       const err = new TypeError('error');
       const finder = new Finder(window);
       assert.throws(() => finder.onError(err), window.TypeError, 'error');
     });
 
-    it('should throw', () => {
+    it('should rethrow generic Error with custom name property', () => {
       const err = new Error('error');
       err.name = 'UnknownError';
       const finder = new Finder(window);
       assert.throws(() => finder.onError(err), Error, 'error');
     });
 
-    it('should throw', () => {
+    it('should rethrow DOMException when noexcept is not enabled', () => {
       const err = new DOMException('error', SYNTAX_ERR);
       const finder = new Finder(window);
       finder.setup('*', document);
@@ -149,7 +149,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should not throw', () => {
+    it('should ignore NOT_SUPPORTED_ERR DOMException silently', () => {
       const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
       const finder = new Finder(window);
       finder.setup('*', document);
@@ -157,7 +157,7 @@ describe('Finder', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should not throw', () => {
+    it('should suppress TypeError when explicit noexcept option set', () => {
       const err = new TypeError('Unexpected type');
       const finder = new Finder(window);
       const res = finder.onError(err, {
@@ -166,7 +166,7 @@ describe('Finder', () => {
       assert.strictEqual(res, undefined, 'result');
     });
 
-    it('should warn', () => {
+    it('should output console warning for unsupported error with warn', () => {
       const stubWarn = sinon.stub(console, 'warn');
       const err = new window.DOMException('error', NOT_SUPPORTED_ERR);
       const finder = new Finder(window);
@@ -182,7 +182,7 @@ describe('Finder', () => {
   });
 
   describe('setup finder', () => {
-    it('should get value', () => {
+    it('should return Finder instance when setting up document root', () => {
       const finder = new Finder(window);
       const res = finder.setup('*', document, {
         warn: true
@@ -190,7 +190,7 @@ describe('Finder', () => {
       assert.deepEqual(res, finder, 'result');
     });
 
-    it('should get value', () => {
+    it('should return Finder instance when setup with fragment root', () => {
       const frag = document.createDocumentFragment();
       const finder = new Finder(window);
       const res = finder.setup('*', frag, {
@@ -199,7 +199,7 @@ describe('Finder', () => {
       assert.deepEqual(res, finder, 'result');
     });
 
-    it('should get value', () => {
+    it('should return Finder instance when setup with Element node', () => {
       const node = document.createElement('div');
       const finder = new Finder(window);
       const res = finder.setup('*', node, {
@@ -208,7 +208,7 @@ describe('Finder', () => {
       assert.deepEqual(res, finder, 'result');
     });
 
-    it('should get value', () => {
+    it('should return Finder instance when setting custom options', () => {
       const node = document.createElement('div');
       const finder = new Finder(window);
       const res = finder.setup('*', node, {
@@ -219,7 +219,7 @@ describe('Finder', () => {
       assert.deepEqual(res, finder, 'result');
     });
 
-    it('should get value', () => {
+    it('should return Finder instance when setting jsdom tree options', () => {
       const node = document.createElement('div');
       const finder = new Finder(window, {
         domSymbolTree: {},
@@ -233,7 +233,7 @@ describe('Finder', () => {
   });
 
   describe('match selector', () => {
-    it('should match', () => {
+    it('should match class selector against element with class', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -245,7 +245,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match class selector on appended dynamic Element', () => {
       const ast = {
         name: 'foo',
         type: CLASS_SELECTOR
@@ -260,7 +260,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when element lacks specified class name', () => {
       const ast = {
         name: 'bar',
         type: CLASS_SELECTOR
@@ -275,7 +275,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match ID selector against element with matching id', () => {
       const ast = {
         name: 'div0',
         type: ID_SELECTOR
@@ -287,7 +287,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when element ID does not match selector', () => {
       const ast = {
         name: 'foo',
         type: ID_SELECTOR
@@ -299,7 +299,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match ID selector containing escaped whitespace char', () => {
       const ast = {
         name: 'foo\\ bar',
         type: ID_SELECTOR
@@ -314,7 +314,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match attribute selector for present attribute flag', () => {
       const ast = {
         flags: null,
         finder: null,
@@ -332,7 +332,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match type selector against matching element tagName', () => {
       const ast = {
         name: 'dt',
         type: TYPE_SELECTOR
@@ -344,7 +344,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match', () => {
+    it('should match pseudo-class selector :is() on target element', () => {
       const ast = {
         children: [
           {
@@ -372,7 +372,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should throw', () => {
+    it('should throw SYNTAX_ERR for unknown pseudo-element ::foo', () => {
       const ast = {
         children: null,
         name: 'foo',
@@ -400,7 +400,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should not match', () => {
+    it('should return false for pseudo-element without check mode', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -413,7 +413,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match pseudo-element ::before when check mode is on', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -430,7 +430,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should warn', () => {
+    it('should output console warning for pseudo-element with warn', () => {
       const ast = {
         children: null,
         name: 'before',
@@ -451,7 +451,7 @@ describe('Finder', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should match :host(#id) pseudo-class against shadow root', () => {
       const ast = {
         children: [
           {
@@ -470,15 +470,15 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -498,7 +498,7 @@ describe('Finder', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for :host(#id) when host ID mismatches', () => {
       const ast = {
         children: [
           {
@@ -517,15 +517,15 @@ describe('Finder', () => {
         type: PS_CLASS_SELECTOR
       };
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -547,7 +547,7 @@ describe('Finder', () => {
   });
 
   describe('find entry nodes (via public API)', () => {
-    it('should get matched node(s) for pseudo-element with check', () => {
+    it('should find pseudo-element and return match info with check', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('#ul1::before', node, { check: true });
@@ -556,7 +556,7 @@ describe('Finder', () => {
       assert.strictEqual(res.pseudoElement, '::before', 'pseudoElement');
     });
 
-    it('should not match pseudo-element with check', () => {
+    it('should return false match for pseudo-element on wrong node', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('#ul1::before', node, { check: true });
@@ -564,7 +564,7 @@ describe('Finder', () => {
       assert.strictEqual(res.match, false, 'match');
     });
 
-    it('should get matched node(s) for pure pseudo-element', () => {
+    it('should find standalone pseudo-element with check mode on', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('::before', node, { check: true });
@@ -573,7 +573,7 @@ describe('Finder', () => {
       assert.strictEqual(res.pseudoElement, '::before', 'pseudoElement');
     });
 
-    it('should not match pure pseudo-element for element mismatch', () => {
+    it('should return empty array for standalone pseudo mismatch', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('::before', node);
@@ -581,14 +581,14 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by ID from document', () => {
+    it('should find element by ID selector from document scope', () => {
       const finder = new Finder(window);
       finder.setup('#ul1', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('ul1')], 'nodes');
     });
 
-    it('should get matched node(s) by ID from self', () => {
+    it('should find target element by ID selector from self scope', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('#ul1', node);
@@ -596,7 +596,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match by ID from self', () => {
+    it('should return empty result for mismatched ID on self node', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('#ul1', node);
@@ -604,7 +604,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node by ID from lineal', () => {
+    it('should find ancestor element matching ID in lineal search', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('#ul1', node);
@@ -612,14 +612,14 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('ul1')], 'nodes');
     });
 
-    it('should get matched node(s) by complex ID', () => {
+    it('should find element matching compound ID and class selector', () => {
       const finder = new Finder(window);
       finder.setup('#li1.li', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should get matched node(s) by complex ID on fragment', () => {
+    it('should find element matching compound ID in fragment scope', () => {
       const parent = document.createElement('ul');
       const node = document.createElement('li');
       node.id = 'li1';
@@ -631,28 +631,28 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match by complex ID', () => {
+    it('should return empty array when compound ID class fails', () => {
       const finder = new Finder(window);
       finder.setup('#li1.foobar', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by type and ID', () => {
+    it('should find element matching type and ID compound selector', () => {
       const finder = new Finder(window);
       finder.setup('ul#ul1', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('ul1')], 'nodes');
     });
 
-    it('should not match non-existent ID', () => {
+    it('should return empty result for non-existent ID selector', () => {
       const finder = new Finder(window);
       finder.setup('#foobar', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by ID in DocumentFragment', () => {
+    it('should find element by ID selector within DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       node.id = 'foobar';
@@ -663,7 +663,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match child ID from self context', () => {
+    it('should exclude context node when searching descendants by ID', () => {
       const node = document.createElement('div');
       node.id = 'foobar';
       const parent = document.getElementById('div0');
@@ -674,14 +674,14 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by ID and pseudo-class', () => {
+    it('should find element matching ID combined with pseudo-class', () => {
       const finder = new Finder(window);
       finder.setup('#li1:first-child', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should get matched node(s) by class first', () => {
+    it('should find first matching child element by class name', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('.li', node);
@@ -689,7 +689,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should get matched node(s) by class all', () => {
+    it('should find all matching descendant elements by class name', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('.li', node);
@@ -705,7 +705,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node(s) by class all from document', () => {
+    it('should find all matching elements by class from document', () => {
       const finder = new Finder(window);
       finder.setup('.li', document);
       const res = finder.find('all');
@@ -720,7 +720,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node(s) by class in DocumentFragment', () => {
+    it('should find all class elements within DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('div');
       parent.classList.add('foo');
@@ -734,7 +734,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [parent, node], 'nodes');
     });
 
-    it('should get matched node(s) by type and class', () => {
+    it('should find all elements matching type and class compound', () => {
       const finder = new Finder(window);
       finder.setup('li.li', document);
       const res = finder.find('all');
@@ -749,7 +749,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node(s) by class from self', () => {
+    it('should match current node by class name in self scope', () => {
       const node = document.getElementById('dd2');
       const finder = new Finder(window);
       finder.setup('.dd', node);
@@ -757,7 +757,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match class from self', () => {
+    it('should return empty array for class mismatch in self scope', () => {
       const node = document.getElementById('span2');
       const finder = new Finder(window);
       finder.setup('.dd', node);
@@ -765,7 +765,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by class from lineal', () => {
+    it('should find ancestor element by class name in lineal scope', () => {
       const node = document.getElementById('span2');
       const finder = new Finder(window);
       finder.setup('.dd', node);
@@ -773,7 +773,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('dd2')], 'nodes');
     });
 
-    it('should not match class from lineal', () => {
+    it('should return empty array for class mismatch in lineal', () => {
       const node = document.getElementById('span2');
       const finder = new Finder(window);
       finder.setup('.li', node);
@@ -781,7 +781,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should not match class from first', () => {
+    it('should return empty array when no child matches class', () => {
       const node = document.getElementById('dd1');
       const finder = new Finder(window);
       finder.setup('.dd', node);
@@ -789,7 +789,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by type from self', () => {
+    it('should match current node by element tag in self scope', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('ul', node);
@@ -797,7 +797,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match type from self', () => {
+    it('should return empty array for tag mismatch in self scope', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('ul', node);
@@ -805,7 +805,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by type from lineal', () => {
+    it('should find ancestor element by tag name in lineal scope', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('ul', node);
@@ -813,14 +813,14 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('ul1')], 'nodes');
     });
 
-    it('should get matched node(s) by complex selector', () => {
+    it('should find descendant element matching space combinator', () => {
       const finder = new Finder(window);
       finder.setup('ul li', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should not match type from lineal', () => {
+    it('should return empty array for tag mismatch in lineal search', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('ol', node);
@@ -828,7 +828,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by type first', () => {
+    it('should find first descendant element matching tag selector', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li', node);
@@ -836,7 +836,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should get matched node(s) by pseudo-class', () => {
+    it('should find elements matching structural :last-child', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:last-child', node);
@@ -844,7 +844,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('li3')], 'nodes');
     });
 
-    it('should get matched node(s) by pseudo-class first-child', () => {
+    it('should find elements matching structural :first-child', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:first-child', node);
@@ -852,7 +852,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
     });
 
-    it('should not match pseudo-class first-child first', () => {
+    it('should return empty when children lack :first-child tag', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li:first-child', node);
@@ -860,7 +860,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should not match pseudo-class first-child self', () => {
+    it('should return empty when self node lacks :first-child tag', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('dd:first-child', node);
@@ -868,21 +868,21 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by complex class and pseudo-class', () => {
+    it('should find element matching class and :last-child pseudo', () => {
       const finder = new Finder(window);
       finder.setup('li.li:last-child', document);
       const res = finder.find('all');
       assert.deepEqual([...res], [document.getElementById('li3')], 'nodes');
     });
 
-    it('should get matched node(s) resolving complex combinator path', () => {
+    it('should find element matching adjacent sibling class chain', () => {
       const finder = new Finder(window);
       finder.setup('li.li:first-child + li.li', document);
       const res = finder.find('all');
       assert.deepEqual([...res], [document.getElementById('li2')], 'nodes');
     });
 
-    it('should get matched node(s) by multiple classes', () => {
+    it('should find element matching chained multiple class names', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('div');
       parent.classList.add('foo', 'bar');
@@ -896,14 +896,14 @@ describe('Finder', () => {
       assert.deepEqual([...res], [parent], 'nodes');
     });
 
-    it('should not match non-existent class', () => {
+    it('should return empty result for non-existent class query', () => {
       const finder = new Finder(window);
       finder.setup('.foobar', document);
       const res = finder.find('all');
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by type on fragment', () => {
+    it('should find elements by tag name within DocumentFragment', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
@@ -913,7 +913,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should get matched node(s) by type on element', () => {
+    it('should find descendant elements by tag name under parent', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
       parent.appendChild(node);
@@ -923,7 +923,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match type with no descendants', () => {
+    it('should return empty result when target element has no child', () => {
       const parent = document.createElement('div');
       parent.classList.add('foo');
       const node = document.createElement('div');
@@ -935,7 +935,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should not match type on fragment with no descendants', () => {
+    it('should return empty result for unmatched tag in fragment', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
@@ -945,7 +945,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node(s) by pseudo-class from self', () => {
+    it('should match current element for :first-child in self mode', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup(':first-child', node);
@@ -953,7 +953,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should get matched node(s) by attribute and pseudo-class from self', () => {
+    it('should match self node for attribute and pseudo-class', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('[class]:first-child', node);
@@ -961,24 +961,24 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should be resolved correctly from pending items', () => {
+    it('should resolve :first-child from pending item queue', () => {
       const finder = new Finder(window);
       finder.setup(':first-child', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.documentElement], 'nodes');
     });
 
-    it('should get matched node for :host with child', () => {
+    it('should find descendant node matching :host div selector', () => {
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1000,17 +1000,17 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node.querySelector('div')], 'nodes');
     });
 
-    it('should get matched node for :host(#id) with child', () => {
+    it('should find descendant node matching :host(#id) div pattern', () => {
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1032,17 +1032,17 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node.querySelector('div')], 'nodes');
     });
 
-    it('should get matched node for :host', () => {
+    it('should match shadow root context for :host(#id) selector', () => {
       const html = `
-          <template id="template">
-            <div>
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1064,17 +1064,17 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should not match for :host with invalid is()', () => {
+    it('should return empty result for :host:is() with invalid ID', () => {
       const html = `
-          <template id="template">
-            <div id="foobar">
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div id="foobar">
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1097,17 +1097,17 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'nodes');
     });
 
-    it('should get matched node for :host:has()', () => {
+    it('should match shadow root context for :host:has() selector', () => {
       const html = `
-          <template id="template">
-            <div id="foobar">
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div id="foobar">
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1129,17 +1129,17 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should get matched node for :host:has():host-context()', () => {
+    it('should match shadow root for :host:has():host-context()', () => {
       const html = `
-          <template id="template">
-            <div id="foobar">
-              <slot id="foo" name="bar">Foo</slot>
-            </div>
-          </template>
-          <my-element id="baz">
-            <span id="qux" slot="foo">Qux</span>
-          </my-element>
-        `;
+        <template id="template">
+          <div id="foobar">
+            <slot id="foo" name="bar">Foo</slot>
+          </div>
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1161,7 +1161,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'nodes');
     });
 
-    it('should return precedeNodes when precede is true and nodes are found before boundary', () => {
+    it('should return empty array when search hits boundary node', () => {
       const node = document.getElementById('div6');
       const finder = new Finder(window);
       finder.setup('p *', node);
@@ -1171,7 +1171,7 @@ describe('Finder', () => {
   });
 
   describe('find matched nodes', () => {
-    it('should get matched node(s)', () => {
+    it('should find all elements matching comma selector list', () => {
       const finder = new Finder(window);
       finder.setup('li:last-child, li:first-child + li', document);
       const res = finder.find('all');
@@ -1182,7 +1182,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node(s)', () => {
+    it('should match self element against comma selector list', () => {
       const node = document.getElementById('li2');
       const finder = new Finder(window);
       finder.setup('li:last-child, li:first-child + li', node);
@@ -1190,7 +1190,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [node], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty array for non-matching comma list', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li:last-child, li:first-child + li', node);
@@ -1198,21 +1198,21 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty result for failed nth-child chain', () => {
       const finder = new Finder(window);
       finder.setup('ul:nth-child(2) > li, li:nth-child(4) + li', document);
       const res = finder.find('all');
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find first element matching general sibling list', () => {
       const finder = new Finder(window);
       finder.setup('ol > .li ~ li, ul > .li ~ li', document);
       const res = finder.find('first');
       assert.deepEqual([...res], [document.getElementById('li2')], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find first descendant tag element under root node', () => {
       const root = document.createElement('div');
       const div = document.createElement('div');
       const p = document.createElement('p');
@@ -1228,7 +1228,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [span], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find all descendant elements matching child chain', () => {
       const root = document.createElement('div');
       const div = document.createElement('div');
       const p = document.createElement('p');
@@ -1244,7 +1244,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [span, span2], 'result');
     });
 
-    it('should not match', () => {
+    it('should return empty result for un-triggered :active state', () => {
       const node = document.getElementById('ul1');
       const finder = new Finder(window);
       finder.setup('li:active', node);
@@ -1252,7 +1252,7 @@ describe('Finder', () => {
       assert.deepEqual([...res], [], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should find elements matching complex negated sibling chain', () => {
       const parent = document.getElementById('div0');
       const div = document.createElement('div');
       const div2 = document.createElement('div');
@@ -1287,7 +1287,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should return match result object for li::before check', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li::before', node, {
@@ -1307,7 +1307,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should return match result object for double pseudo-element', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li.li::before::marker', node, {
@@ -1327,7 +1327,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should get matched node', () => {
+    it('should return match result object without pseudo-element', () => {
       const node = document.getElementById('li1');
       const finder = new Finder(window);
       finder.setup('li', node, {
@@ -1347,7 +1347,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should merge multiple branches and require sorting', () => {
+    it('should merge and sort node collections from multiple branches', () => {
       const finder = new Finder(window);
       finder.setup('p, span', document);
       const res = finder.find('all');
@@ -1358,7 +1358,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should use fast path for single sorted branch', () => {
+    it('should execute fast path traversal for single sorted branch', () => {
       const node = document.getElementById('div1');
       const finder = new Finder(window);
       finder.setup('div', node);
@@ -1372,7 +1372,7 @@ describe('Finder', () => {
       assert.strictEqual(res.size, 6, 'div2, div3, div4, div5, div6, div7');
     });
 
-    it('should use basic set conversion for single sorted branch', () => {
+    it('should convert single sorted branch results directly to Set', () => {
       const finder = new Finder(window);
       finder.setup('div', document);
       const res = finder.find('all');
@@ -1388,7 +1388,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should handle single unsorted branch', () => {
+    it('should evaluate single unsorted branch using TreeWalker', () => {
       const node = document.getElementById('dl1');
       const finder = new Finder(window);
       finder.setup('[hidden]', node);
@@ -1410,7 +1410,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should handle multiple branches', () => {
+    it('should filter and merge matching nodes across branches', () => {
       const finder = new Finder(window);
       finder.setup('ol, ul', document);
       const res = finder.find('all');
@@ -1422,7 +1422,7 @@ describe('Finder', () => {
       );
     });
 
-    it('should advance refNode using force:true when multiple nodes fail the complex branch condition without duplicate IDs', () => {
+    it('should advance refNode on branch failure without duplicates', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <div class="parent">
@@ -1451,7 +1451,7 @@ describe('Finder', () => {
       document.body.removeChild(container);
     });
 
-    it('should break traversal when currentNode equals boundaryNode', () => {
+    it('should stop node traversal upon reaching boundary node', () => {
       const node = document.getElementById('p5');
       const finder = new Finder(window);
       finder.setup('h1 *', node);

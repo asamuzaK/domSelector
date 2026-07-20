@@ -90,15 +90,15 @@ describe('utility functions', () => {
   describe('verify array contents', () => {
     const func = util.verifyArray;
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when type parameter is missing', () => {
       assert.throws(() => func([]), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when array contains invalid types', () => {
       assert.throws(
         () => func([1], 'String'),
         TypeError,
@@ -106,7 +106,7 @@ describe('utility functions', () => {
       );
     });
 
-    it('should get value', () => {
+    it('should return array when all elements match required type', () => {
       const res = func(['foo', 'bar'], 'String');
       assert.deepEqual(res, ['foo', 'bar'], 'result');
     });
@@ -115,7 +115,7 @@ describe('utility functions', () => {
   describe('generate DOMException', () => {
     const func = util.generateException;
 
-    it('should generate DOMException', () => {
+    it('should create a DOMException instance with given properties', () => {
       const res = func('foo', 'SyntaxError', globalThis);
       assert.strictEqual(
         res instanceof globalThis.DOMException,
@@ -130,46 +130,46 @@ describe('utility functions', () => {
   describe('resolve content document, root node and tree walker', () => {
     const func = util.resolveContent;
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is an array', () => {
       assert.throws(() => func([]), TypeError, 'Unexpected type Array');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is a Text node', () => {
       const text = document.createTextNode('foo');
       assert.throws(() => func(text), TypeError, 'Unexpected node #text');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is a Window object', () => {
       assert.throws(() => func(window), TypeError, 'Unexpected type Window');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when argument is a Comment node', () => {
       const comment = new window.Comment('foo');
       assert.throws(() => func(comment), TypeError, 'Unexpected node #comment');
     });
 
-    it('should get result', () => {
+    it('should resolve document and root for Document node', () => {
       const res = func(document);
       assert.deepEqual(res, [document, document, false]);
     });
 
-    it('should get result', () => {
+    it('should resolve document and root for DocumentFragment', () => {
       const node = document.createDocumentFragment();
       const res = func(node);
       assert.deepEqual(res, [document, node, false]);
     });
 
-    it('should get result', () => {
+    it('should resolve document and root for element in DOM', () => {
       const node = document.getElementById('div0');
       const res = func(node);
       assert.deepEqual(res, [document, document, false]);
     });
 
-    it('should get result', () => {
+    it('should resolve document and root for element in fragment', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
@@ -177,7 +177,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, [document, frag, false]);
     });
 
-    it('should get result for detached template content descendants', () => {
+    it('should resolve context for detached template content', () => {
       const template = document.createElement('template');
       template.innerHTML = '<div id="inner"><span id="leaf"></span></div>';
       const node = template.content.getElementById('leaf');
@@ -187,7 +187,7 @@ describe('utility functions', () => {
       assert.strictEqual(res[2], false, 'shadow');
     });
 
-    it('should get result', () => {
+    it('should resolve context for detached element sub-tree', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
       parent.appendChild(node);
@@ -195,7 +195,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, [document, parent, false]);
     });
 
-    it('should get result', () => {
+    it('should resolve document and root for XML DOM nodes', () => {
       const domstr = '<foo id="foo"><bar id="bar" /></foo>';
       const doc = new window.DOMParser().parseFromString(domstr, 'text/xml');
       const node = doc.getElementById('bar');
@@ -203,16 +203,16 @@ describe('utility functions', () => {
       assert.deepEqual(res, [doc, doc, false]);
     });
 
-    it('should get result', () => {
+    it('should resolve context when input node is ShadowRoot', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -231,16 +231,16 @@ describe('utility functions', () => {
       assert.deepEqual(res, [document, node, true], 'result');
     });
 
-    it('should get result', () => {
+    it('should resolve context for node inside Shadow DOM tree', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -270,50 +270,50 @@ describe('utility functions', () => {
       treeWalker = null;
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is a string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should get null', () => {
+    it('should return null when treeWalker argument is omitted', () => {
       const res = func(document);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should match document node using treeWalker traversal', () => {
       const res = func(document, treeWalker);
       assert.deepEqual(res, document, 'result');
     });
 
-    it('should get null', () => {
+    it('should return null for node outside treeWalker root', () => {
       const frag = document.createDocumentFragment();
       const res = func(frag, treeWalker);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find target element using global treeWalker', () => {
       const node = document.getElementById('ul1');
       const res = func(node, treeWalker);
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should reset treeWalker and find target element', () => {
       const node = document.getElementById('ul1');
       func(document.getElementById('li1'), treeWalker);
       const res = func(node, treeWalker);
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should not match', () => {
+    it('should return null for node detached from treeWalker', () => {
       const node = document.createElement('ol');
       const res = func(node, treeWalker);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find child node using container treeWalker', () => {
       const parent = document.createElement('ol');
       const node = document.createElement('li');
       parent.appendChild(node);
@@ -322,7 +322,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, node, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should traverse upwards to match root fragment node', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('ol');
       const node = document.createElement('li');
@@ -334,7 +334,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, frag, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find second sibling node during tree traversal', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('ol');
       const node = document.createElement('li');
@@ -348,7 +348,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, node2, 'result');
     });
 
-    it('should get matched node', () => {
+    it('should find second sibling with reverse traversal flag', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('ol');
       const node = document.createElement('li');
@@ -362,7 +362,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, node2, 'result');
     });
 
-    it('should get null', () => {
+    it('should return null when reverse traversal fails match', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('ol');
       const node = document.createElement('li');
@@ -380,33 +380,33 @@ describe('utility functions', () => {
   describe('is custom element', () => {
     const func = util.isCustomElement;
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is a string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should not match', () => {
+    it('should return false for DocumentFragment node type', () => {
       const frag = document.createDocumentFragment();
       const res = func(frag);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for standard HTML div element', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for unregistered x-div element', () => {
       const node = document.createElement('x-div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should return true for defined autonomous custom element', () => {
       window.customElements.define(
         'sw-rey',
         class extends window.HTMLElement {}
@@ -417,7 +417,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false for element with invalid is attribute', () => {
       window.customElements.define(
         'sw-rey',
         class extends window.HTMLElement {}
@@ -429,7 +429,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should return true for customized built-in element', () => {
       window.customElements.define(
         'sw-rey',
         class extends window.HTMLElement {}
@@ -441,7 +441,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should not match', () => {
+    it('should return false when formAssociated option mismatches', () => {
       window.customElements.define(
         'sw-rey',
         class extends window.HTMLElement {}
@@ -454,7 +454,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should match', () => {
+    it('should return true for form-associated custom element', () => {
       window.customElements.define(
         'sw-poe',
         class extends window.HTMLElement {
@@ -473,15 +473,15 @@ describe('utility functions', () => {
   describe('get slotted text content', () => {
     const func = util.getSlottedTextContent;
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is a string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should get null', () => {
+    it('should return null for standard div without slot', () => {
       const html = '<div id="foo" name="bar">Foo</div>';
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -490,11 +490,11 @@ describe('utility functions', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get value', () => {
+    it('should return default slot text in light DOM element', () => {
       const html = `
-        <div>
-          <slot id="foo" name="bar">Foo</slot>
-        </div>
+      <div>
+        <slot id="foo" name="bar">Foo</slot>
+      </div>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -503,16 +503,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'Foo', 'result');
     });
 
-    it('should get value', () => {
+    it('should return empty string when slot content is empty', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar"></slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar"></slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -531,16 +531,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, '', 'result');
     });
 
-    it('should get value', () => {
+    it('should return fallback text when slot is unassigned', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -559,18 +559,18 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'Foo', 'result');
     });
 
-    it('should get value', () => {
+    it('should return assigned element text in shadow slot', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">
-            Qux
-          </span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">
+          Qux
+        </span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -593,20 +593,20 @@ describe('utility functions', () => {
   describe('get directionality of node', () => {
     const func = util.getDirectionality;
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is a string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should get null', () => {
+    it('should return null when evaluating Document node', () => {
       const res = func(document);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve directionality for dir=ltr attribute', () => {
       const node = document.createElement('div');
       node.dir = 'ltr';
       const parent = document.getElementById('div0');
@@ -615,7 +615,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should normalize uppercase DIR=LTR attribute to ltr', () => {
       const node = document.createElement('div');
       node.dir = 'LTR';
       const parent = document.getElementById('div0');
@@ -624,7 +624,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve directionality for dir=rtl attribute', () => {
       const node = document.createElement('div');
       node.dir = 'rtl';
       const parent = document.getElementById('div0');
@@ -633,7 +633,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should normalize uppercase DIR=RTL attribute to rtl', () => {
       const node = document.createElement('div');
       node.dir = 'RTL';
       const parent = document.getElementById('div0');
@@ -642,7 +642,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on textarea with LTR value', () => {
       const node = document.createElement('textarea');
       node.dir = 'auto';
       node.value = 'foo';
@@ -652,7 +652,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should normalize uppercase DIR=AUTO on textarea', () => {
       const node = document.createElement('textarea');
       node.dir = 'AUTO';
       node.value = 'foo';
@@ -662,7 +662,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on textarea with RTL value', () => {
       const node = document.createElement('textarea');
       node.dir = 'auto';
       node.value = '\u05EA';
@@ -672,7 +672,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should default empty dir=auto textarea element to ltr', () => {
       const node = document.createElement('textarea');
       node.dir = 'auto';
       const parent = document.getElementById('div0');
@@ -681,7 +681,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on text input with LTR value', () => {
       const node = document.createElement('input');
       node.type = 'text';
       node.dir = 'auto';
@@ -692,7 +692,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on text input with RTL value', () => {
       const node = document.createElement('input');
       node.type = 'text';
       node.dir = 'auto';
@@ -703,7 +703,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should default empty dir=auto text input element to ltr', () => {
       const node = document.createElement('input');
       node.type = 'text';
       node.dir = 'auto';
@@ -713,7 +713,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on general input with text', () => {
       const node = document.createElement('input');
       node.dir = 'auto';
       node.value = 'foo';
@@ -723,16 +723,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve slot dir=auto directionality in shadow', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar" dir="auto">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar" dir="auto">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -751,16 +751,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve container dir=auto directionality', () => {
       const html = `
-        <template id="template">
-          <div id="foobar" dir="auto">
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">Qux</span>
-        </my-element>
+      <template id="template">
+        <div id="foobar" dir="auto">
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -779,18 +779,18 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should ignore style and paragraph tags in dir=auto', () => {
       const html = `
-        <template id="template">
-          <div id="foobar" dir="auto">
-            <style></style>
-            <p id="quux" dir="auto">Quux</p>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">Qux</span>
-        </my-element>
+      <template id="template">
+        <div id="foobar" dir="auto">
+          <style></style>
+          <p id="quux" dir="auto">Quux</p>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -809,16 +809,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should detect RTL assigned slot content in dir=auto', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar" dir="auto">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar" dir="auto">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -837,16 +837,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should fallback unassigned slot dir=auto to ltr', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar" dir="auto">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar" dir="auto">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -865,7 +865,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on div with LTR content', () => {
       const node = document.createElement('div');
       node.dir = 'auto';
       node.textContent = 'foo';
@@ -875,7 +875,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on div with RTL content', () => {
       const node = document.createElement('div');
       node.dir = 'auto';
       node.textContent = '\u05EA';
@@ -885,7 +885,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should default empty dir=auto div element to ltr', () => {
       const node = document.createElement('div');
       node.dir = 'auto';
       const parent = document.getElementById('div0');
@@ -894,7 +894,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on div inside fragment', () => {
       const node = document.createElement('div');
       node.dir = 'auto';
       const frag = document.createDocumentFragment();
@@ -903,14 +903,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should evaluate dir=auto on detached div element', () => {
       const node = document.createElement('div');
       node.dir = 'auto';
       const res = func(node);
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should auto-detect directionality for bdi with LTR', () => {
       const node = document.createElement('bdi');
       node.textContent = 'foo';
       const parent = document.getElementById('div0');
@@ -919,7 +919,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should auto-detect directionality for bdi with RTL', () => {
       const node = document.createElement('bdi');
       node.textContent = '\u05EA';
       const parent = document.getElementById('div0');
@@ -928,7 +928,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should force ltr directionality for tel input type', () => {
       const node = document.createElement('input');
       node.type = 'tel';
       node.value = '\u05EA';
@@ -938,16 +938,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve default ltr directionality for slot', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -966,16 +966,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should detect RTL directionality from slot text', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="bar">${String.fromCodePoint(0x05ea)}</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -994,16 +994,16 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'rtl', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve default ltr for unassigned slot', () => {
       const html = `
-        <template id="template">
-          <div>
-            <slot id="foo" name="bar">Foo</slot>
-          </div>
-        </template>
-        <my-element id="baz">
-          <span id="qux" slot="quux">Qux</span>
-        </my-element>
+      <template id="template">
+        <div>
+          <slot id="foo" name="bar">Foo</slot>
+        </div>
+      </template>
+      <my-element id="baz">
+        <span id="qux" slot="quux">Qux</span>
+      </my-element>
       `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
@@ -1022,7 +1022,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should inherit document ltr directionality for div', () => {
       const node = document.createElement('div');
       node.textContent = '\u05EA';
       const parent = document.getElementById('div0');
@@ -1031,7 +1031,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should inherit ltr directionality for div in fragment', () => {
       const node = document.createElement('div');
       node.textContent = '\u05EA';
       const frag = document.createDocumentFragment();
@@ -1040,7 +1040,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'ltr', 'result');
     });
 
-    it('should get value', () => {
+    it('should default detached div element to ltr direction', () => {
       const node = document.createElement('div');
       node.textContent = '\u05EA';
       const res = func(node);
@@ -1048,7 +1048,7 @@ describe('utility functions', () => {
     });
   });
 
-  describe('getDirectionality (ascendant and slot coverage)', () => {
+  describe('getDirectionality (ascendant and slot)', () => {
     const func = util.getDirectionality;
 
     it('should inherit directionality from parent element', () => {
@@ -1105,29 +1105,29 @@ describe('utility functions', () => {
   describe('get language attribute', () => {
     const func = util.getLanguageAttribute;
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should get null', () => {
+    it('should return null when evaluating Document node', () => {
       const res = func(document);
       assert.strictEqual(res, null, 'result');
     });
 
-    it('should get null', () => {
+    it('should return null for element without lang attribute', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, null, 'result');
     });
 
-    it('should get empty string', () => {
+    it('should return empty string when lang attribute is empty', () => {
       const node = document.createElement('div');
       node.setAttribute('lang', '');
       const res = func(node);
       assert.strictEqual(res, '', 'result');
     });
 
-    it('should get null', () => {
+    it('should return null for child of element without lang', () => {
       const parent = document.createElement('div');
       const node = document.createElement('div');
       parent.appendChild(node);
@@ -1135,7 +1135,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, null, 'result');
     });
 
-    it('should get value', () => {
+    it('should inherit lang attribute value from parent element', () => {
       const parent = document.createElement('div');
       parent.setAttribute('lang', 'en');
       const node = document.createElement('div');
@@ -1144,7 +1144,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'en', 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve xml:lang attribute value in XML document', () => {
       const src = '<foo id="foo" xml:lang="en"><bar id="bar"/></foo>';
       const doc = new window.DOMParser().parseFromString(src, 'text/xml');
       const node = doc.getElementById('bar');
@@ -1152,7 +1152,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'en', 'result');
     });
 
-    it('should get null', () => {
+    it('should return null for element in fragment without lang', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElement('div');
       frag.appendChild(node);
@@ -1160,19 +1160,19 @@ describe('utility functions', () => {
       assert.strictEqual(res, null, 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve inherited lang attribute through Shadow DOM', () => {
       const html = `
-          <div lang='en-US'>
-            <template id="template">
-              <div>
-                <slot id="foo" name="bar">Foo</slot>
-              </div>
-            </template>
-            <my-element id="baz">
-              <span id="qux" slot="foo">Qux</span>
-            </my-element>
+      <div lang='en-US'>
+        <template id="template">
+          <div>
+            <slot id="foo" name="bar">Foo</slot>
           </div>
-        `;
+        </template>
+        <my-element id="baz">
+          <span id="qux" slot="foo">Qux</span>
+        </my-element>
+      </div>
+      `;
       const container = document.getElementById('div0');
       container.innerHTML = html;
       class MyElement extends window.HTMLElement {
@@ -1190,13 +1190,13 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'en-US', 'result');
     });
 
-    it('should get null', () => {
+    it('should return null for XML element lacking xml:lang attr', () => {
       const xmlDom = `
-        <foo id="foo">
-          <bar id="bar">
-            <baz id="baz"/>
-          </bar>
-        </foo>
+      <foo id="foo">
+        <bar id="bar">
+          <baz id="baz"/>
+        </bar>
+      </foo>
       `;
       const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
       const node = doc.createElement('div');
@@ -1206,13 +1206,13 @@ describe('utility functions', () => {
       assert.strictEqual(res, null, 'result');
     });
 
-    it('should get value', () => {
+    it('should resolve inherited xml:lang value in XML tree', () => {
       const xmlDom = `
-        <foo id="foo" xml:lang="en">
-          <bar id="bar">
-            <baz id="baz"/>
-          </bar>
-        </foo>
+      <foo id="foo" xml:lang="en">
+        <bar id="bar">
+          <baz id="baz"/>
+        </bar>
+      </foo>
       `;
       const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
       const node = doc.createElement('div');
@@ -1222,7 +1222,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'en', 'result');
     });
 
-    it('should hit cache during ascendant traversal', () => {
+    it('should use provided cache when traversing ancestor lang', () => {
       const parent = document.createElement('div');
       parent.setAttribute('lang', 'fr');
       const child = document.createElement('span');
@@ -1245,26 +1245,26 @@ describe('utility functions', () => {
   describe('is content editable', () => {
     const func = util.isContentEditable;
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is a string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should get false', () => {
+    it('should return false for Document node type', () => {
       const res = func(document);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for detached standard div element', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for standard div attached to DOM', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1272,7 +1272,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true when isContentEditable prop is true', () => {
       const node = document.createElement('div');
       Object.defineProperty(node, 'isContentEditable', {
         value: true,
@@ -1284,7 +1284,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true when document designMode is on', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1293,7 +1293,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for contenteditable="true" element', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'true');
       const parent = document.getElementById('div0');
@@ -1302,7 +1302,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for contenteditable="plaintext-only"', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'plaintext-only');
       const parent = document.getElementById('div0');
@@ -1311,7 +1311,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for empty contenteditable attribute', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', '');
       const parent = document.getElementById('div0');
@@ -1320,7 +1320,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for invalid contenteditable value', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'foo');
       const parent = document.getElementById('div0');
@@ -1329,7 +1329,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for contenteditable="inherit" at root', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'inherit');
       const parent = document.getElementById('div0');
@@ -1338,7 +1338,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should inherit editability from editable parent element', () => {
       const node1 = document.createElement('div');
       node1.setAttribute('contenteditable', 'inherit');
       const node2 = document.createElement('div');
@@ -1350,7 +1350,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should inherit editability when no attribute is set', () => {
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
       node2.setAttribute('contenteditable', 'true');
@@ -1365,17 +1365,17 @@ describe('utility functions', () => {
   describe('is node visible', () => {
     const func = util.isVisible;
 
-    it('should get false', () => {
+    it('should return false when node argument is undefined', () => {
       const res = func();
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when evaluating Document node', () => {
       const res = func(document);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for standard visible div element', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1383,7 +1383,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when element display style is none', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1392,7 +1392,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when element visibility is hidden', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1401,7 +1401,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when element visibility is collapse', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1410,7 +1410,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when element hidden property is true', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1419,7 +1419,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true when display style overrides hidden', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1433,17 +1433,17 @@ describe('utility functions', () => {
   describe('is focus visible', () => {
     const func = util.isFocusVisible;
 
-    it('should get false', () => {
+    it('should return false when node argument is undefined', () => {
       const res = func();
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when evaluating Document node', () => {
       const res = func(document);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for standard non-input div element', () => {
       const node = document.createElement('div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1451,7 +1451,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for standard text input element', () => {
       const node = document.createElement('input');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1459,7 +1459,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for radio button input element', () => {
       const node = document.createElement('input');
       node.type = 'radio';
       const parent = document.getElementById('div0');
@@ -1468,7 +1468,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for standard textarea element', () => {
       const node = document.createElement('textarea');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1476,7 +1476,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for contenteditable div element', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'true');
       const parent = document.getElementById('div0');
@@ -1489,35 +1489,35 @@ describe('utility functions', () => {
   describe('is focusable area', () => {
     const func = util.isFocusableArea;
 
-    it('should get false', () => {
+    it('should return false when node argument is undefined', () => {
       const res = func();
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when evaluating Document node', () => {
       const res = func(document);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when evaluating document body', () => {
       const res = func(document.body);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for detached standard div element', () => {
       const node = document.createElement('div');
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for attached standard div element', () => {
       const node = document.createElement('div');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for element with tabindex=-1', () => {
       const node = document.createElement('div');
       node.tabIndex = -1;
       document.body.appendChild(node);
@@ -1525,7 +1525,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for empty contenteditable attribute', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', '');
       document.body.appendChild(node);
@@ -1533,7 +1533,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for contenteditable="false" element', () => {
       const node = document.createElement('div');
       node.setAttribute('contenteditable', 'false');
       document.body.appendChild(node);
@@ -1541,14 +1541,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for anchor tag lacking href attr', () => {
       const node = document.createElement('a');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for anchor element with href attr', () => {
       const node = document.createElement('a');
       node.href = 'about:blank';
       document.body.appendChild(node);
@@ -1556,21 +1556,21 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for iframe element in document', () => {
       const node = document.createElement('iframe');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for standard active input element', () => {
       const node = document.createElement('input');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for disabled input property', () => {
       const node = document.createElement('input');
       node.disabled = true;
       document.body.appendChild(node);
@@ -1578,7 +1578,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for disabled input attribute', () => {
       const node = document.createElement('input');
       node.setAttribute('disabled', '');
       document.body.appendChild(node);
@@ -1586,7 +1586,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for hidden input property', () => {
       const node = document.createElement('input');
       node.hidden = true;
       document.body.appendChild(node);
@@ -1594,7 +1594,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for hidden input attribute', () => {
       const node = document.createElement('input');
       node.setAttribute('hidden', '');
       document.body.appendChild(node);
@@ -1602,14 +1602,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for summary outside details tag', () => {
       const node = document.createElement('summary');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for first summary in details tag', () => {
       const parent = document.createElement('details');
       const node = document.createElement('summary');
       parent.appendChild(node);
@@ -1618,7 +1618,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for second summary in details', () => {
       const parent = document.createElement('details');
       const nodeBefore = document.createElement('summary');
       const node = document.createElement('summary');
@@ -1629,7 +1629,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for first summary after div sibling', () => {
       const parent = document.createElement('details');
       const nodeBefore = document.createElement('div');
       const node = document.createElement('summary');
@@ -1640,14 +1640,14 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for standard button element', () => {
       const node = document.createElement('button');
       document.body.appendChild(node);
       const res = func(node);
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for disabled button element', () => {
       const node = document.createElement('button');
       node.disabled = true;
       document.body.appendChild(node);
@@ -1655,7 +1655,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for standard SVG element', () => {
       const node = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -1665,7 +1665,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for SVG element with tabindex=-1', () => {
       const node = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -1676,7 +1676,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for SVG text element with tabindex', () => {
       const parent = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -1692,7 +1692,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for non-focusable SVG mask element', () => {
       const parent = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -1708,7 +1708,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for SVG anchor element with href', () => {
       const parent = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -1721,7 +1721,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for MathML element in document', () => {
       const node = document.createElementNS(
         'http://www.w3.org/1998/Math/MathML',
         'math'
@@ -1735,17 +1735,17 @@ describe('utility functions', () => {
   describe('is focusable', () => {
     const func = util.isFocusable;
 
-    it('should get false', () => {
+    it('should return false when node argument is omitted', () => {
       const res = func();
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for Document node type', () => {
       const res = func(document);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for input inside enabled fieldset', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1757,7 +1757,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for input inside disabled fieldset', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1770,7 +1770,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for input with disabled attribute', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1783,7 +1783,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when parent form is display:none', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1796,7 +1796,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when parent form is visibility:hidden', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1809,7 +1809,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when parent form is visibility:collapse', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1822,7 +1822,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for content-visibility:hidden parent', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1835,7 +1835,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true when display style overrides hidden', () => {
       const form = document.createElement('form');
       const field = document.createElement('fieldset');
       const node = document.createElement('input');
@@ -1853,19 +1853,19 @@ describe('utility functions', () => {
   describe('get namespace URI', () => {
     const func = util.getNamespaceURI;
 
-    it('should throw', () => {
+    it('should throw TypeError when arguments are undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when second argument is an array', () => {
       assert.throws(() => func([]), TypeError, 'Unexpected type Array');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node argument is missing', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when node is invalid string type', () => {
       assert.throws(
         () => func('foo', 'bar'),
         TypeError,
@@ -1873,12 +1873,12 @@ describe('utility functions', () => {
       );
     });
 
-    it('should get null', () => {
+    it('should return null when prefix is not defined on document', () => {
       const res = func('foo', document);
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get null', () => {
+    it('should return null when element lacks xmlns attribute', () => {
       const node = document.createElementNS(
         'https://example.com/foo',
         'foo:div'
@@ -1889,7 +1889,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get result', () => {
+    it('should resolve namespace URI from local xmlns attribute', () => {
       const node = document.createElementNS(
         'https://example.com/foo',
         'foo:div'
@@ -1901,7 +1901,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, 'https://example.com/foo', 'result');
     });
 
-    it('should get null', () => {
+    it('should return null if parent xmlns namespace is separate', () => {
       const node = document.createElementNS(
         'https://example.com/foo',
         'foo:div'
@@ -1917,7 +1917,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, null, 'result');
     });
 
-    it('should get result', () => {
+    it('should resolve namespace URI set with setAttributeNS', () => {
       const node = document.createElementNS(
         'https://example.com/foo',
         'foo:div'
@@ -1937,12 +1937,12 @@ describe('utility functions', () => {
   describe('is namespace declared', () => {
     const func = util.isNamespaceDeclared;
 
-    it('should get false', () => {
+    it('should return false when arguments are undefined', () => {
       const res = func();
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for element without declared namespace', () => {
       const node = document.createElement('foo:div');
       const parent = document.getElementById('div0');
       parent.appendChild(node);
@@ -1950,7 +1950,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for element with declared namespace URI', () => {
       const node = document.createElementNS(
         'https://example.com/foo',
         'foo:div'
@@ -1961,7 +1961,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for element inside document fragment', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElementNS(
         'https://example.com/foo',
@@ -1972,7 +1972,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for element with explicit xmlns attr', () => {
       const frag = document.createDocumentFragment();
       const node = document.createElementNS(
         'https://example.com/foo',
@@ -1992,20 +1992,20 @@ describe('utility functions', () => {
   describe('is preceding', () => {
     const func = util.isPreceding;
 
-    it('should throw', () => {
+    it('should throw TypeError when both arguments are missing', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when first argument is string', () => {
       assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when second argument is missing', () => {
       const node = document.documentElement;
       assert.throws(() => func(node), TypeError, 'Unexpected type Undefined');
     });
 
-    it('should throw', () => {
+    it('should throw TypeError when second argument is string', () => {
       const node = document.documentElement;
       assert.throws(
         () => func(node, 'foo'),
@@ -2014,7 +2014,7 @@ describe('utility functions', () => {
       );
     });
 
-    it('should get true', () => {
+    it('should return true when first node is parent of second', () => {
       const nodeA = document.createElement('ul');
       const nodeB = document.createElement('li');
       const parent = document.getElementById('div0');
@@ -2024,7 +2024,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when first node is child of second', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('ul');
       const parent = document.getElementById('div0');
@@ -2034,7 +2034,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get true', () => {
+    it('should return true for preceding sibling element', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('li');
       const base = document.createElement('ul');
@@ -2046,7 +2046,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for succeeding sibling element', () => {
       const nodeA = document.createElement('li');
       const nodeB = document.createElement('li');
       const base = document.createElement('ul');
@@ -2058,20 +2058,20 @@ describe('utility functions', () => {
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when comparing with document root', () => {
       const node = document.createElement('div');
       const base = document.documentElement;
       const res = func(node, base);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false when comparing node with itself', () => {
       const node = document.createElement('div');
       const res = func(node, node);
       assert.strictEqual(res, false, 'result');
     });
 
-    it('should get false', () => {
+    it('should return false for detached template content node', () => {
       const tmpl = document.createElement('template');
       const node = document.createElement('div');
       tmpl.appendChild(node);
@@ -2085,7 +2085,7 @@ describe('utility functions', () => {
   describe('compare nodes', () => {
     const func = util.compareNodes;
 
-    it('should get -1', () => {
+    it('should return -1 when first node precedes second node', () => {
       const ul = document.createElement('ul');
       const node1 = document.createElement('li');
       const node2 = document.createElement('li');
@@ -2097,7 +2097,7 @@ describe('utility functions', () => {
       assert.strictEqual(res, -1, 'result');
     });
 
-    it('should get 1', () => {
+    it('should return 1 when second node precedes first node', () => {
       const ul = document.createElement('ul');
       const node1 = document.createElement('li');
       const node2 = document.createElement('li');
@@ -2113,7 +2113,7 @@ describe('utility functions', () => {
   describe('sort nodes', () => {
     const func = util.sortNodes;
 
-    it('should get matched node(s)', () => {
+    it('should sort list item nodes in document tree order', () => {
       const ul = document.createElement('ul');
       const node1 = document.createElement('li');
       const node2 = document.createElement('li');
@@ -2126,7 +2126,7 @@ describe('utility functions', () => {
       assert.deepEqual([...res], [node1, node2, node3], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should include parent element in sorted node order', () => {
       const ul = document.createElement('ul');
       const node1 = document.createElement('li');
       const node2 = document.createElement('li');
@@ -2139,7 +2139,7 @@ describe('utility functions', () => {
       assert.deepEqual([...res], [ul, node1, node2, node3], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should sort nodes within a DocumentFragment tree', () => {
       const frag = document.createDocumentFragment();
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
@@ -2150,7 +2150,7 @@ describe('utility functions', () => {
       assert.deepEqual([...res], [node1, node2, node3], 'result');
     });
 
-    it('should get matched node(s)', () => {
+    it('should deduplicate and sort nodes in document order', () => {
       const frag = document.createDocumentFragment();
       const node1 = document.createElement('div');
       const node2 = document.createElement('div');
@@ -2171,7 +2171,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, { seed: null, priority: 0 });
     });
 
-    it('should find TYPE_SELECTOR and ignore universal selector (*)', () => {
+    it('should select TYPE_SELECTOR while ignoring universal selector', () => {
       const nodes = [
         { type: TYPE_SELECTOR, name: '*' }, // ignored
         { type: TYPE_SELECTOR, name: 'div' }
@@ -2181,7 +2181,7 @@ describe('utility functions', () => {
       assert.strictEqual(res.priority, 1);
     });
 
-    it('should find CLASS_SELECTOR and overwrite TYPE_SELECTOR', () => {
+    it('should select CLASS_SELECTOR and override TYPE_SELECTOR', () => {
       const nodes = [
         { type: TYPE_SELECTOR, name: 'div' },
         { type: CLASS_SELECTOR, name: 'active' } // overwrites priority
@@ -2191,7 +2191,7 @@ describe('utility functions', () => {
       assert.strictEqual(res.priority, 2);
     });
 
-    it('should find ID_SELECTOR and overwrite CLASS_SELECTOR', () => {
+    it('should select ID_SELECTOR and override CLASS_SELECTOR', () => {
       const nodes = [
         { type: CLASS_SELECTOR, name: 'active' },
         { type: ID_SELECTOR, name: 'target' }, // overwrites priority
@@ -2208,11 +2208,10 @@ describe('utility functions', () => {
         { type: ID_SELECTOR, name: 'second-id' }
       ];
       const res = func(nodes);
-      // It should keep the first ID found because it returns early.
       assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
     });
 
-    it('should traverse nested arrays', () => {
+    it('should traverse nested arrays to find best selector seed', () => {
       const nodes = [
         [{ type: TYPE_SELECTOR, name: 'span' }],
         [{ type: CLASS_SELECTOR, name: 'inner' }]
@@ -2222,7 +2221,7 @@ describe('utility functions', () => {
       assert.strictEqual(res.priority, 2);
     });
 
-    it('should traverse node.children recursively', () => {
+    it('should traverse node children recursively for best seed', () => {
       const nodes = [
         {
           type: 999,
@@ -2271,7 +2270,7 @@ describe('utility functions', () => {
   describe('populateHasAllowlist', () => {
     const func = util.populateHasAllowlist;
 
-    it('should populate allowlist with the element, its siblings, and its parent', () => {
+    it('should populate allowlist with the element, siblings, and parent', () => {
       const parent = document.createElement('div');
       const prevSibling = document.createElement('div');
       const target = document.createElement('div');
@@ -2368,12 +2367,12 @@ describe('utility functions', () => {
 
     it('should collect all descendant elements from Document', () => {
       const html = `
-        <div id="parent">
-          <span class="child"></span>
-          <p class="child">
-            <strong class="grandchild"></strong>
-          </p>
-        </div>
+      <div id="parent">
+        <span class="child"></span>
+        <p class="child">
+          <strong class="grandchild"></strong>
+        </p>
+      </div>
       `;
       const doc = new window.DOMParser().parseFromString(html, 'text/html');
       const res = func(doc, doc);
@@ -2386,10 +2385,10 @@ describe('utility functions', () => {
     it('should collect all descendant elements from an Element', () => {
       const parent = document.createElement('div');
       parent.innerHTML = `
-        <span class="child1"></span>
-        <p class="child2">
-          <strong class="grandchild"></strong>
-        </p>
+      <span class="child1"></span>
+      <p class="child2">
+        <strong class="grandchild"></strong>
+      </p>
       `;
       document.body.appendChild(parent);
       const res = func(parent, document);
@@ -2404,10 +2403,10 @@ describe('utility functions', () => {
       const frag = document.createDocumentFragment();
       const parent = document.createElement('div');
       parent.innerHTML = `
-        <span class="child1"></span>
-        <p class="child2">
-          <strong class="grandchild"></strong>
-        </p>
+      <span class="child1"></span>
+      <p class="child2">
+        <strong class="grandchild"></strong>
+      </p>
       `;
       frag.appendChild(parent);
       const res = func(frag, document);
@@ -2428,7 +2427,7 @@ describe('utility functions', () => {
       assert.deepEqual(res, [], 'result should be an empty array');
     });
 
-    it('should ignore text nodes and comments (only collect ELEMENT_NODE)', () => {
+    it('should ignore text nodes and comments', () => {
       const parent = document.createElement('div');
       parent.appendChild(document.createTextNode('Hello'));
       parent.appendChild(document.createElement('span'));
@@ -2444,7 +2443,7 @@ describe('utility functions', () => {
   describe('get traversal strategy', () => {
     const func = util.getTraversalStrategy;
 
-    it('should get DIR_PREV and first twig when branch length is 1', () => {
+    it('should return DIR_PREV and first twig for single-twig branch', () => {
       const twig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const branch = [twig];
       const res = func(branch, 'all');
@@ -2452,7 +2451,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, twig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when hasScope is true', () => {
+    it('should return DIR_PREV and last twig when hasScope is true', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2461,7 +2460,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when last type is PS_ELEMENT_SELECTOR', () => {
+    it('should use DIR_PREV and last twig for pseudo-element end', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const lastTwig = {
         leaves: [{ name: 'before', type: PS_ELEMENT_SELECTOR }]
@@ -2472,7 +2471,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when last type is ID_SELECTOR', () => {
+    it('should return DIR_PREV and last twig when last leaf is ID', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const lastTwig = { leaves: [{ name: 'foo', type: ID_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2481,7 +2480,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_NEXT and first twig when first type is ID_SELECTOR', () => {
+    it('should return DIR_NEXT and first twig when first leaf is ID', () => {
       const firstTwig = { leaves: [{ name: 'foo', type: ID_SELECTOR }] };
       const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2490,7 +2489,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, firstTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when first twig is universal selector', () => {
+    it('should select DIR_PREV when first twig is universal selector', () => {
       const firstTwig = { leaves: [{ name: '*', type: TYPE_SELECTOR }] };
       const lastTwig = { leaves: [{ name: 'span', type: TYPE_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2499,7 +2498,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_NEXT and first twig when last twig is universal selector', () => {
+    it('should select DIR_NEXT when last twig is universal selector', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const lastTwig = { leaves: [{ name: '*', type: TYPE_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2508,7 +2507,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, firstTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when branch length is 2', () => {
+    it('should return DIR_PREV and last twig when branch length is 2', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const lastTwig = { leaves: [{ name: 'foo', type: CLASS_SELECTOR }] };
       const branch = [firstTwig, lastTwig];
@@ -2517,7 +2516,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig for > 2 branch length, scoped, TARGET_FIRST and descendant combinator', () => {
+    it('should return DIR_PREV and last twig for TARGET_FIRST mode', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },
@@ -2530,7 +2529,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_NEXT and first twig for > 2 branch length as default fallback', () => {
+    it('should default to DIR_NEXT and first twig for long branches', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },
@@ -2543,13 +2542,12 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, firstTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and lastType is TYPE_SELECTOR', () => {
+    it('should choose DIR_PREV when last leaf is type selector', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '+' },
         leaves: [{ name: 'span', type: CLASS_SELECTOR }]
       };
-      // lastType is TYPE_SELECTOR, which should return early with DIR_PREV
       const lastTwig = {
         combo: { name: '~' },
         leaves: [{ name: 'p', type: TYPE_SELECTOR }]
@@ -2560,13 +2558,12 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and all combinators are child or descendant', () => {
+    it('should choose DIR_PREV when combinators are hierarchy-only', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },
         leaves: [{ name: 'span', type: TYPE_SELECTOR }]
       };
-      // lastType is NOT TYPE_SELECTOR, but all combos are '>' or ' '
       const lastTwig = {
         combo: { name: ' ' },
         leaves: [{ name: 'foo', type: CLASS_SELECTOR }]
@@ -2577,7 +2574,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and lastType is TYPE_SELECTOR', () => {
+    it('should select DIR_PREV with 4th flag and last type selector', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '+' },
@@ -2593,7 +2590,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and all combinators are child or descendant', () => {
+    it('should select DIR_PREV with 4th flag and descendant combo', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },
@@ -2609,7 +2606,7 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
 
-    it('should get DIR_PREV and last twig when > 2 branch length, scoped, TARGET_FIRST, and a sibling combinator is present', () => {
+    it('should select DIR_PREV with 4th flag and sibling combo', () => {
       const firstTwig = { leaves: [{ name: 'div', type: TYPE_SELECTOR }] };
       const midTwig = {
         combo: { name: '>' },

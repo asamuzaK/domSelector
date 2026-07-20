@@ -66,17 +66,29 @@ describe('nwsapi', () => {
   });
 
   describe('Utility Functions', () => {
-    it('isHTML() should return true for HTML documents and nodes', () => {
-      assert.strictEqual(nw.isHTML(document), true);
-      assert.strictEqual(nw.isHTML(document.getElementById('div1')), true);
+    it('should identify HTML document and element instances correctly', () => {
+      assert.strictEqual(nw.isHTML(document), true, 'document is HTML');
+      assert.strictEqual(
+        nw.isHTML(document.getElementById('div1')),
+        true,
+        'element is HTML'
+      );
     });
 
-    it('isTarget() should check if element matches the URL hash', () => {
-      assert.strictEqual(nw.isTarget(document.getElementById('div0')), true);
-      assert.strictEqual(nw.isTarget(document.getElementById('div1')), false);
+    it('should return true when element ID matches document URL hash', () => {
+      assert.strictEqual(
+        nw.isTarget(document.getElementById('div0')),
+        true,
+        'target element matches hash'
+      );
+      assert.strictEqual(
+        nw.isTarget(document.getElementById('div1')),
+        false,
+        'non-target element does not match hash'
+      );
     });
 
-    it('isIndeterminate() should correctly identify indeterminate states', () => {
+    it('should evaluate indeterminate state on form control elements', () => {
       const chk1 = document.getElementById('chk1');
       chk1.indeterminate = true;
       assert.strictEqual(
@@ -117,7 +129,7 @@ describe('nwsapi', () => {
       );
     });
 
-    it('concatCall() should execute callback and return node array', () => {
+    it('should execute callback on node list and return array input', () => {
       const nodes = [
         document.getElementById('li1'),
         document.getElementById('li2')
@@ -129,20 +141,20 @@ describe('nwsapi', () => {
           return true;
         }
       });
-      assert.strictEqual(count, 2);
-      assert.deepEqual(res, nodes);
+      assert.strictEqual(count, 2, 'callback executed for each node');
+      assert.deepEqual(res, nodes, 'returns original node array');
     });
 
-    it('optimize() should perform fast string adjustments', () => {
+    it('should optimize selector string using token replacement AST', () => {
       const token = { index: 5, 1: '*', 2: '' };
       const selector = 'div > *';
       const res = nw.optimize(selector, token);
-      assert.strictEqual(typeof res, 'string');
+      assert.strictEqual(typeof res, 'string', 'returns string result');
     });
   });
 
   describe('isTarget() node reference logic', () => {
-    it('should use node.ownerDocument when an Element is passed', () => {
+    it('should resolve ownerDocument reference for target element node', () => {
       const div = document.getElementById('div0');
       assert.strictEqual(
         nw.isTarget(div),
@@ -151,7 +163,7 @@ describe('nwsapi', () => {
       );
     });
 
-    it('should use node itself when the Document object is passed', () => {
+    it('should return false when target check is called on Document', () => {
       const result = nw.isTarget(document);
       assert.strictEqual(
         result,
@@ -188,37 +200,73 @@ describe('nwsapi', () => {
       document.body.removeChild(container);
     });
 
-    it('should reset the state and return -1 when dir is 2', () => {
+    it('should reset state object and return -1 for direction code 2', () => {
       state.idx = 5;
       const result = nw.solveNth(null, 2, state, false);
-      assert.strictEqual(result, -1);
-      assert.strictEqual(state.idx, 0);
-      assert.strictEqual(state.nodes.length, 0);
+      assert.strictEqual(result, -1, 'returns -1 for reset direction');
+      assert.strictEqual(state.idx, 0, 'resets state index');
+      assert.strictEqual(state.nodes.length, 0, 'clears nodes array');
     });
 
-    it('should return the correct index in :nth-child mode (isOfType=false)', () => {
+    it('should calculate 1-based child index in nth-child mode', () => {
       const p1 = document.getElementById('p1');
       const s1 = document.getElementById('s1');
       const p2 = document.getElementById('p2');
-      assert.strictEqual(nw.solveNth(p1, false, state, false), 1); // 1st child
-      assert.strictEqual(nw.solveNth(s1, false, state, false), 2); // 2nd child
-      assert.strictEqual(nw.solveNth(p2, false, state, false), 3); // 3rd child
-      assert.strictEqual(nw.solveNth(p2, true, state, false), 2);
+      assert.strictEqual(
+        nw.solveNth(p1, false, state, false),
+        1,
+        '1st child index'
+      );
+      assert.strictEqual(
+        nw.solveNth(s1, false, state, false),
+        2,
+        '2nd child index'
+      );
+      assert.strictEqual(
+        nw.solveNth(p2, false, state, false),
+        3,
+        '3rd child index'
+      );
+      assert.strictEqual(
+        nw.solveNth(p2, true, state, false),
+        2,
+        '2nd child index from end'
+      );
     });
 
-    it('should return the correct index by tag name in :nth-of-type mode (isOfType=true)', () => {
+    it('should calculate 1-based type index in nth-of-type mode', () => {
       const p1 = document.getElementById('p1');
       const p2 = document.getElementById('p2');
       const s1 = document.getElementById('s1');
       const s2 = document.getElementById('s2');
-      assert.strictEqual(nw.solveNth(p1, false, state, true), 1);
-      assert.strictEqual(nw.solveNth(p2, false, state, true), 2);
-      assert.strictEqual(nw.solveNth(s1, false, state, true), 1);
-      assert.strictEqual(nw.solveNth(s2, false, state, true), 2);
-      assert.strictEqual(nw.solveNth(s1, true, state, true), 2);
+      assert.strictEqual(
+        nw.solveNth(p1, false, state, true),
+        1,
+        '1st p element index'
+      );
+      assert.strictEqual(
+        nw.solveNth(p2, false, state, true),
+        2,
+        '2nd p element index'
+      );
+      assert.strictEqual(
+        nw.solveNth(s1, false, state, true),
+        1,
+        '1st span element index'
+      );
+      assert.strictEqual(
+        nw.solveNth(s2, false, state, true),
+        2,
+        '2nd span element index'
+      );
+      assert.strictEqual(
+        nw.solveNth(s1, true, state, true),
+        2,
+        '2nd span element index from end'
+      );
     });
 
-    it('should reuse the cache for consecutive calls within the same parent element', () => {
+    it('should reuse parent cache for sequential sibling evaluation', () => {
       const p1 = document.getElementById('p1');
       const p2 = document.getElementById('p2');
       nw.solveNth(p1, false, state, false);
@@ -232,14 +280,18 @@ describe('nwsapi', () => {
       assert.strictEqual(state.idx, 3, 'Should correctly update the index');
     });
 
-    it('should create a new context when moving to a different parent element', () => {
+    it('should create new cache entry when parent container changes', () => {
       const p1 = document.getElementById('p1');
       const subDiv = document.createElement('div');
       subDiv.innerHTML = '<b id="b1"></b>';
       container.appendChild(subDiv);
       const b1 = document.getElementById('b1');
       nw.solveNth(p1, false, state, false); // context of 'container'
-      assert.strictEqual(state.parents.length, 1);
+      assert.strictEqual(
+        state.parents.length,
+        1,
+        'initial parent count registered'
+      );
       nw.solveNth(b1, false, state, false); // context of 'subDiv'
       assert.strictEqual(
         state.parents.length,
@@ -248,7 +300,7 @@ describe('nwsapi', () => {
       );
     });
 
-    it('should find the element using the middle-loop search when it is not at the cached boundaries', () => {
+    it('should calculate index via loop search for non-boundary node', () => {
       container.innerHTML = `
       <p id="p1"></p>
       <p id="p2"></p>
@@ -270,7 +322,7 @@ describe('nwsapi', () => {
       assert.strictEqual(state.idx, 3, 'Should update state.idx to 3');
     });
 
-    it('should hit the length cache when returning to a previously visited parent', () => {
+    it('should retrieve cached length when re-visiting parent node', () => {
       const container1 = document.createElement('div');
       container1.innerHTML = '<p id="c1-p1"></p><p id="c1-p2"></p>';
       const container2 = document.createElement('div');
@@ -281,9 +333,9 @@ describe('nwsapi', () => {
       const c1p2 = container1.lastElementChild;
       const c2s1 = container2.firstElementChild;
       nw.solveNth(c1p1, false, state, false);
-      assert.strictEqual(state.len, 2);
+      assert.strictEqual(state.len, 2, 'first container length cached');
       nw.solveNth(c2s1, false, state, false);
-      assert.strictEqual(state.len, 1);
+      assert.strictEqual(state.len, 1, 'second container length cached');
       const result = nw.solveNth(c1p2, false, state, false);
       assert.strictEqual(
         result,
@@ -304,7 +356,7 @@ describe('nwsapi', () => {
       document.body.removeChild(container2);
     });
 
-    it('should hit the length cache in isOfType mode when the tag is already cached for that parent', () => {
+    it('should retrieve cached type length for known parent element', () => {
       container.innerHTML = '<p id="type-p1"></p><p id="type-p2"></p>';
       const p1 = document.getElementById('type-p1');
       const p2 = document.getElementById('type-p2');
@@ -313,7 +365,7 @@ describe('nwsapi', () => {
       other.innerHTML = '<b></b>';
       nw.solveNth(other.firstChild, false, state, true);
       const result = nw.solveNth(p2, false, state, true);
-      assert.strictEqual(result, 2);
+      assert.strictEqual(result, 2, 'cached type index result');
       assert.strictEqual(
         state.len,
         2,
@@ -321,7 +373,7 @@ describe('nwsapi', () => {
       );
     });
 
-    it('should find the parent from the end of the cache (k-index search)', () => {
+    it('should locate parent via reverse cache search for multi-parent', () => {
       const c1 = document.createElement('div');
       const c2 = document.createElement('div');
       const c3 = document.createElement('div');
@@ -357,7 +409,7 @@ describe('nwsapi', () => {
       };
     });
 
-    it('should start traversal from firstElementChild when state.parent is defined', () => {
+    it('should traverse from firstElementChild when parent is defined', () => {
       const parent = document.createElement('div');
       parent.innerHTML = '<p id="p1"></p><p id="p2"></p>';
       const p2 = parent.lastElementChild;
@@ -370,7 +422,7 @@ describe('nwsapi', () => {
       );
     });
 
-    it('should fallback to "element" when state.parent is null/undefined', () => {
+    it('should fallback to single element when parent is null or unset', () => {
       const orphan = document.createElement('div');
       const result = nw.solveNth(orphan, false, state, false);
       assert.strictEqual(result, 1, 'Should return 1 for an orphan element');
@@ -386,26 +438,26 @@ describe('nwsapi', () => {
     });
 
     describe('Fast-path finders', () => {
-      it('byId() should retrieve nodes by ID', () => {
+      it('should retrieve element nodes by id using byId fast path', () => {
         const res = api.byId('ul1', document);
-        assert.strictEqual(res.length, 1);
-        assert.strictEqual(res[0].id, 'ul1');
+        assert.strictEqual(res.length, 1, 'found single node by id');
+        assert.strictEqual(res[0].id, 'ul1', 'element id matches');
       });
 
-      it('byTag() should retrieve nodes by tag name', () => {
+      it('should retrieve element nodes by tag using byTag fast path', () => {
         const res = api.byTag('li', document);
-        assert.strictEqual(res.length, 3);
-        assert.strictEqual(res[0].id, 'li1');
+        assert.strictEqual(res.length, 3, 'found three nodes by tag');
+        assert.strictEqual(res[0].id, 'li1', 'first element id matches');
       });
 
-      it('byClass() should retrieve nodes by class name', () => {
+      it('should retrieve elements by class name via byClass fast path', () => {
         const res = api.byClass('item', document);
-        assert.strictEqual(res.length, 2);
-        assert.strictEqual(res[0].id, 'li1');
-        assert.strictEqual(res[1].id, 'li2');
+        assert.strictEqual(res.length, 2, 'found two nodes by class');
+        assert.strictEqual(res[0].id, 'li1', 'first element id matches');
+        assert.strictEqual(res[1].id, 'li2', 'second element id matches');
       });
 
-      it('byClass() fallback should return empty array if context lacks getElementsByClassName', () => {
+      it('should return empty array when context lacks class lookup', () => {
         const mockContext = {
           localName: 'div',
           id: 'dummy'
@@ -417,32 +469,40 @@ describe('nwsapi', () => {
     });
 
     describe('DOM Matchers & Selectors', () => {
-      it('collect() should sort results in document order and remove duplicates on first run', () => {
+      it('should sort results in document order and remove duplicates', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('.empty, .li', ul);
-        assert.strictEqual(res.length, 3);
-        assert.strictEqual(res[0].id, 'li1');
-        assert.strictEqual(res[1].id, 'li2');
-        assert.strictEqual(res[2].id, 'li3');
+        assert.strictEqual(res.length, 3, 'sorted nodes count');
+        assert.strictEqual(res[0].id, 'li1', 'first element in order');
+        assert.strictEqual(res[1].id, 'li2', 'second element in order');
+        assert.strictEqual(res[2].id, 'li3', 'third element in order');
       });
 
-      it('match() should return boolean evaluating selector against element', () => {
+      it('should evaluate selector against element and return boolean', () => {
         const li1 = document.getElementById('li1');
-        assert.strictEqual(api.match('.li', li1), true);
-        assert.strictEqual(api.match('.empty', li1), false);
-        assert.strictEqual(api.match('#ul1 > li.item', li1), true);
+        assert.strictEqual(api.match('.li', li1), true, 'matches class');
+        assert.strictEqual(
+          api.match('.empty', li1),
+          false,
+          'does not match absent class'
+        );
+        assert.strictEqual(
+          api.match('#ul1 > li.item', li1),
+          true,
+          'matches child combinator'
+        );
       });
 
-      it('match() should execute callback if matched', () => {
+      it('should execute callback when match succeeds on target node', () => {
         const li1 = document.getElementById('li1');
         let called = false;
         api.match('.li', li1, () => {
           called = true;
         });
-        assert.strictEqual(called, true);
+        assert.strictEqual(called, true, 'callback executed on match');
       });
 
-      it('match() should correctly evaluate the :target pseudo-class', () => {
+      it('should evaluate :target pseudo-class against document URL', () => {
         const div0 = document.getElementById('div0');
         const div1 = document.getElementById('div1');
         assert.strictEqual(
@@ -456,141 +516,154 @@ describe('nwsapi', () => {
           'div1 should not match :target'
         );
         const targetNodes = api.select(':target', document);
-        assert.strictEqual(targetNodes.length, 1);
-        assert.strictEqual(targetNodes[0].id, 'div0');
+        assert.strictEqual(targetNodes.length, 1, 'target nodes count');
+        assert.strictEqual(targetNodes[0].id, 'div0', 'matched target node id');
       });
 
-      it('closest() should find the nearest matching ancestor', () => {
+      it('should find nearest matching ancestor element via closest()', () => {
         const span1 = document.getElementById('span1');
         const dl1 = document.getElementById('dl1');
-        assert.deepEqual(api.closest('dl', span1), dl1);
-        assert.deepEqual(api.closest('#div0', span1), null);
+        assert.deepEqual(api.closest('dl', span1), dl1, 'closest dl element');
+        assert.deepEqual(
+          api.closest('#div0', span1),
+          null,
+          'returns null when no ancestor matches'
+        );
       });
 
-      it('select() should collect all matching descendant elements', () => {
+      it('should collect all matching descendant elements via select()', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('.li', ul);
-        assert.strictEqual(res.length, 3);
-        assert.strictEqual(res[0].id, 'li1');
-        assert.strictEqual(res[2].id, 'li3');
+        assert.strictEqual(res.length, 3, 'selected nodes count');
+        assert.strictEqual(res[0].id, 'li1', 'first selected node id');
+        assert.strictEqual(res[2].id, 'li3', 'last selected node id');
       });
 
-      it('select() should support pseudo-classes', () => {
+      it('should collect elements matching structural pseudo-class', () => {
         const div1 = document.getElementById('div1');
         const res = api.select('li:last-child', div1);
-        assert.strictEqual(res.length, 1);
-        assert.strictEqual(res[0].id, 'li3');
+        assert.strictEqual(res.length, 1, 'selected last-child count');
+        assert.strictEqual(res[0].id, 'li3', 'matched last-child id');
       });
 
-      it('select() should use cache for single selector (no callback)', () => {
+      it('should return cached results for identical single selector', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('.li', ul);
         const res2 = api.select('.li', ul);
-        assert.strictEqual(res2.length, 3);
-        assert.deepEqual(res1, res2);
+        assert.strictEqual(res2.length, 3, 'cached result count');
+        assert.deepEqual(res1, res2, 'returns identical cached array');
       });
 
-      it('select() should use cache for single selector (with callback)', () => {
+      it('should execute callback using cached single selector query', () => {
         const ul = document.getElementById('ul1');
         const cb = () => {};
         api.select('.empty', ul, cb);
         const res2 = api.select('.empty', ul, cb);
-        assert.strictEqual(res2.length, 1);
-        assert.strictEqual(res2[0].id, 'li3');
+        assert.strictEqual(res2.length, 1, 'cached result count with callback');
+        assert.strictEqual(res2[0].id, 'li3', 'matched element id');
       });
 
-      it('select() should use cache for multiple selectors and handle duplicates', () => {
+      it('should deduplicate cached node list for multiple selectors', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('.li, .item', ul);
         const res2 = api.select('.li, .item', ul);
-        assert.strictEqual(res2.length, 3);
-        assert.strictEqual(res2[0].id, 'li1');
-        assert.strictEqual(res2[1].id, 'li2');
-        assert.strictEqual(res2[2].id, 'li3');
-        assert.deepEqual(res1, res2);
+        assert.strictEqual(res2.length, 3, 'cached multi-selector count');
+        assert.strictEqual(res2[0].id, 'li1', 'first node id');
+        assert.strictEqual(res2[1].id, 'li2', 'second node id');
+        assert.strictEqual(res2[2].id, 'li3', 'third node id');
+        assert.deepEqual(
+          res1,
+          res2,
+          'returns identical cached multi-selector array'
+        );
       });
 
-      it('select() should use cache for multiple selectors (with callback)', () => {
+      it('should execute callback using cached multi-selector query', () => {
         const ul = document.getElementById('ul1');
         const cb = () => {};
         api.select('.li, .item', ul, cb);
         const res2 = api.select('.li, .item', ul, cb);
-        assert.strictEqual(res2.length, 3);
+        assert.strictEqual(
+          res2.length,
+          3,
+          'cached multi-selector count with callback'
+        );
       });
 
-      it('first() should return the first matching descendant element', () => {
+      it('should return first matching descendant element via first()', () => {
         const ul = document.getElementById('ul1');
         const res = api.first('.li', ul);
-        assert.notStrictEqual(res, null);
-        assert.strictEqual(res.id, 'li1');
+        assert.notStrictEqual(res, null, 'returns non-null node');
+        assert.strictEqual(res.id, 'li1', 'first matching element id');
       });
 
-      it('first() should default to this.doc if context is not provided', () => {
+      it('should default search context to document when omitted', () => {
         const res = api.first('#li2');
-        assert.notStrictEqual(res, null);
-        assert.strictEqual(res.id, 'li2');
+        assert.notStrictEqual(res, null, 'returns non-null node from document');
+        assert.strictEqual(res.id, 'li2', 'matched element id from document');
       });
 
-      it('first() should return null if no match found', () => {
+      it('should return null when first() fails to find matching node', () => {
         const res = api.first('.not-exist', document);
-        assert.strictEqual(res, null);
+        assert.strictEqual(res, null, 'returns null for unmatched query');
       });
 
-      it('first() should execute the provided callback and stop after the first match', () => {
+      it('should execute callback and halt traversal on first match', () => {
         const ul = document.getElementById('ul1');
         const foundElements = [];
         const res = api.first('.li', ul, el => {
           foundElements.push(el);
         });
-        assert.notStrictEqual(res, null);
-        assert.strictEqual(res.id, 'li1');
-        assert.strictEqual(foundElements.length, 1);
-        assert.strictEqual(foundElements[0].id, 'li1');
+        assert.notStrictEqual(res, null, 'returns non-null first match');
+        assert.strictEqual(res.id, 'li1', 'matched node id');
+        assert.strictEqual(foundElements.length, 1, 'callback execution count');
+        assert.strictEqual(foundElements[0].id, 'li1', 'callback element id');
       });
 
-      it('first() should throw on empty string selector', () => {
+      it('should throw DOMException when calling first() with empty', () => {
         assert.throws(
           () => api.first('', document),
           err =>
-            err.name === 'SyntaxError' || err instanceof window.DOMException
+            err.name === 'SyntaxError' || err instanceof window.DOMException,
+          'Empty selector should throw a SyntaxError'
         );
       });
 
-      it('select() should correctly evaluate tree-structural pseudo-classes with formula "n"', () => {
+      it('should evaluate :nth-child(n) to select all child nodes', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:nth-child(n)', ul);
-        assert.strictEqual(res.length, 3);
-        assert.strictEqual(res[0].id, 'li1');
-        assert.strictEqual(res[1].id, 'li2');
-        assert.strictEqual(res[2].id, 'li3');
+        assert.strictEqual(res.length, 3, 'all nth-child match count');
+        assert.strictEqual(res[0].id, 'li1', '1st child id');
+        assert.strictEqual(res[1].id, 'li2', '2nd child id');
+        assert.strictEqual(res[2].id, 'li3', '3rd child id');
       });
 
-      it('select() should correctly evaluate tree-structural pseudo-classes with formula "1"', () => {
+      it('should evaluate :nth-child(1) to select first child node', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('li:nth-child(1)', ul);
-        assert.strictEqual(res1.length, 1);
-        assert.strictEqual(res1[0].id, 'li1');
+        assert.strictEqual(res1.length, 1, '1st nth-child count');
+        assert.strictEqual(res1[0].id, 'li1', '1st nth-child id');
         const res2 = api.select('li:nth-last-child(1)', ul);
-        assert.strictEqual(res2.length, 1);
-        assert.strictEqual(res2[0].id, 'li3');
+        assert.strictEqual(res2.length, 1, '1st nth-last-child count');
+        assert.strictEqual(res2[0].id, 'li3', '1st nth-last-child id');
         const res3 = api.select('li:nth-of-type(1)', ul);
-        assert.strictEqual(res3.length, 1);
-        assert.strictEqual(res3[0].id, 'li1');
+        assert.strictEqual(res3.length, 1, '1st nth-of-type count');
+        assert.strictEqual(res3[0].id, 'li1', '1st nth-of-type id');
         const res4 = api.select('li:nth-last-of-type(1)', ul);
-        assert.strictEqual(res4.length, 1);
-        assert.strictEqual(res4[0].id, 'li3');
+        assert.strictEqual(res4.length, 1, '1st nth-last-of-type count');
+        assert.strictEqual(res4[0].id, 'li3', '1st nth-last-of-type id');
       });
 
-      it('select() should correctly evaluate nth-child with a=0 formula (0n+b or 0)', () => {
+      it('should evaluate :nth-child with zero step formula 0n+b', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('li:nth-child(0n+2)', ul);
-        assert.strictEqual(res1.length, 1);
-        assert.strictEqual(res1[0].id, 'li2');
+        assert.strictEqual(res1.length, 1, '0n+2 match count');
+        assert.strictEqual(res1[0].id, 'li2', '0n+2 matched id');
         const res2 = api.select('li:nth-child(0)', ul);
-        assert.strictEqual(res2.length, 0);
+        assert.strictEqual(res2.length, 0, 'nth-child(0) match count');
       });
 
-      it('select() should correctly evaluate the :only-of-type pseudo-class', () => {
+      it('should match elements satisfying :only-of-type selector', () => {
         const div3 = document.getElementById('div3');
         const dl = document.getElementById('dl1');
         const newDt = document.createElement('dt');
@@ -609,20 +682,24 @@ describe('nwsapi', () => {
         );
       });
 
-      it('select() and match() should correctly evaluate the :has pseudo-class', () => {
+      it('should match and select elements using :has() pseudo-class', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('ul:has(.empty)', document);
-        assert.strictEqual(res1.length, 1);
-        assert.strictEqual(res1[0].id, 'ul1');
+        assert.strictEqual(res1.length, 1, 'ul:has(.empty) count');
+        assert.strictEqual(res1[0].id, 'ul1', 'ul:has(.empty) id');
         const res2 = api.select('li:has(span)', document);
-        assert.strictEqual(res2.length, 0);
-        assert.strictEqual(api.match('ul:has(.item)', ul), true);
+        assert.strictEqual(res2.length, 0, 'li:has(span) count');
+        assert.strictEqual(
+          api.match('ul:has(.item)', ul),
+          true,
+          'ul:has(.item) match boolean'
+        );
         const res3 = api.select('ul:has([class="li item"])', document);
-        assert.strictEqual(res3.length, 1);
-        assert.strictEqual(res3[0].id, 'ul1');
+        assert.strictEqual(res3.length, 1, 'ul:has([class=...]) count');
+        assert.strictEqual(res3[0].id, 'ul1', 'ul:has([class=...]) id');
       });
 
-      it('select() should correctly evaluate the :last-of-type pseudo-class', () => {
+      it('should match last element of type using :last-of-type', () => {
         const ul = document.getElementById('ul1');
         const span1 = document.createElement('span');
         span1.id = 'span-extra';
@@ -636,19 +713,23 @@ describe('nwsapi', () => {
           1,
           'Should match the last li element even if it is not the last child'
         );
-        assert.strictEqual(resLi[0].id, 'li3');
+        assert.strictEqual(resLi[0].id, 'li3', 'matched last-of-type li id');
         const resSpan = api.select('span:last-of-type', ul);
         assert.strictEqual(
           resSpan.length,
           1,
           'Should match the last span element'
         );
-        assert.strictEqual(resSpan[0].id, 'span-last');
+        assert.strictEqual(
+          resSpan[0].id,
+          'span-last',
+          'matched last-of-type span id'
+        );
         ul.removeChild(span1);
         ul.removeChild(span2);
       });
 
-      it('select() should correctly evaluate the :first-of-type pseudo-class', () => {
+      it('should match first element of type using :first-of-type', () => {
         const ul = document.getElementById('ul1');
         const span1 = document.createElement('span');
         span1.id = 'span-first';
@@ -659,18 +740,22 @@ describe('nwsapi', () => {
           1,
           'Should match the first li element even if it is not the first child'
         );
-        assert.strictEqual(resLi[0].id, 'li1');
+        assert.strictEqual(resLi[0].id, 'li1', 'matched first-of-type li id');
         const resSpan = api.select('span:first-of-type', ul);
         assert.strictEqual(
           resSpan.length,
           1,
           'Should match the first span element'
         );
-        assert.strictEqual(resSpan[0].id, 'span-first');
+        assert.strictEqual(
+          resSpan[0].id,
+          'span-first',
+          'matched first-of-type span id'
+        );
         ul.removeChild(span1);
       });
 
-      it('select() and match() should correctly evaluate the :first-child pseudo-class', () => {
+      it('should match and select elements using :first-child pseudo', () => {
         const ul = document.getElementById('ul1');
         const res1 = api.select('li:first-child', ul);
         assert.strictEqual(
@@ -710,7 +795,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('match() and select() should correctly evaluate :read-only and :read-write pseudo-classes', () => {
+      it('should evaluate :read-only and :read-write on form elements', () => {
         const textarea = document.createElement('textarea');
         document.body.appendChild(textarea);
         assert.strictEqual(
@@ -799,7 +884,7 @@ describe('nwsapi', () => {
     });
 
     describe('Error Handling', () => {
-      it('compileSelector() should throw on invalid start characters', () => {
+      it('should throw DOMException for invalid selector start char', () => {
         assert.throws(
           () => api.select('!invalid', document),
           err =>
@@ -814,7 +899,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('select() should throw when tree-structural pseudo-class formula is missing', () => {
+      it('should throw DOMException for empty nth pseudo formula', () => {
         assert.throws(
           () => api.select('li:nth-child()', document),
           err =>
@@ -829,7 +914,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('match() should throw TypeError when selectors argument is undefined', () => {
+      it('should throw TypeError when match() argument is undefined', () => {
         assert.throws(
           () => api.match(),
           err =>
@@ -839,7 +924,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('match() should throw on empty string selector', () => {
+      it('should throw DOMException for empty string in match()', () => {
         const li1 = document.getElementById('li1');
         assert.throws(
           () => api.match('', li1),
@@ -849,7 +934,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('select() should throw TypeError when selectors argument is undefined', () => {
+      it('should throw TypeError when select() argument is undefined', () => {
         assert.throws(
           () => api.select(),
           err =>
@@ -867,7 +952,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('select() should throw on empty string selector', () => {
+      it('should throw DOMException for empty string in select()', () => {
         assert.throws(
           () => api.select('', document),
           err =>
@@ -876,15 +961,16 @@ describe('nwsapi', () => {
         );
       });
 
-      it('select() should throw on invalid selectors', () => {
+      it('should throw DOMException for unknown pseudo-class query', () => {
         assert.throws(
           () => api.select(':invalid-pseudo'),
           err =>
-            err.name === 'SyntaxError' || err instanceof window.DOMException
+            err.name === 'SyntaxError' || err instanceof window.DOMException,
+          'Unknown pseudo-class should throw a SyntaxError'
         );
       });
 
-      it('select() should throw when selector ends with a trailing comma', () => {
+      it('should throw DOMException for selector with trailing comma', () => {
         assert.throws(
           () => api.select('div, span,'),
           err =>
@@ -901,14 +987,14 @@ describe('nwsapi', () => {
     });
 
     describe('Internal Compilers', () => {
-      it('compileAttribute() should handle empty value with ~= operator', () => {
+      it('should handle empty string value with word matcher ~=', () => {
         const div = document.createElement('div');
         div.setAttribute('data-test', ' ');
         const res = api.match('[data-test~=""]', div);
-        assert.strictEqual(typeof res, 'boolean');
+        assert.strictEqual(typeof res, 'boolean', 'returns boolean result');
       });
 
-      it('should handle non-string selectors by converting them to strings', () => {
+      it('should convert non-string selector inputs via toString()', () => {
         const customSelector = {
           toString: () => 'div'
         };
@@ -933,7 +1019,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('should compile "extra" check when |a| is not 1 (e.g., 3n+1 or -2n+3)', () => {
+      it('should compile step comparison when multiplier |a| > 1', () => {
         const ul = document.getElementById('ul1');
         ul.innerHTML = `
       <li id="li-1">1</li>
@@ -944,23 +1030,23 @@ describe('nwsapi', () => {
     `;
         const resPositive = api.select('li:nth-child(3n+1)', ul);
         assert.strictEqual(resPositive.length, 2, 'Should match 1st and 4th');
-        assert.strictEqual(resPositive[0].id, 'li-1');
-        assert.strictEqual(resPositive[1].id, 'li-4');
+        assert.strictEqual(resPositive[0].id, 'li-1', '1st match id');
+        assert.strictEqual(resPositive[1].id, 'li-4', '2nd match id');
         const resNegative = api.select('li:nth-child(-2n+5)', ul);
         assert.strictEqual(
           resNegative.length,
           3,
           'Should match 5th, 3rd, and 1st'
         );
-        assert.strictEqual(resNegative[0].id, 'li-1');
-        assert.strictEqual(resNegative[1].id, 'li-3');
-        assert.strictEqual(resNegative[2].id, 'li-5');
+        assert.strictEqual(resNegative[0].id, 'li-1', '1st negative match id');
+        assert.strictEqual(resNegative[1].id, 'li-3', '2nd negative match id');
+        assert.strictEqual(resNegative[2].id, 'li-5', '3rd negative match id');
       });
 
-      it('should set typeStr to "false" when using :nth-child (forward direction)', () => {
+      it('should configure forward traversal for :nth-child selector', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:nth-child(1)', ul);
-        assert.strictEqual(res.length, 1);
+        assert.strictEqual(res.length, 1, 'match count');
         assert.strictEqual(
           res[0].id,
           'li1',
@@ -968,10 +1054,10 @@ describe('nwsapi', () => {
         );
       });
 
-      it('should set typeStr to "true" when using :nth-last-child (backward direction)', () => {
+      it('should configure reverse traversal for :nth-last-child', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:nth-last-child(1)', ul);
-        assert.strictEqual(res.length, 1);
+        assert.strictEqual(res.length, 1, 'match count');
         assert.strictEqual(
           res[0].id,
           'li3',
@@ -979,10 +1065,10 @@ describe('nwsapi', () => {
         );
       });
 
-      it('should set typeStr to "false" when using :nth-of-type (forward direction)', () => {
+      it('should configure forward traversal for :nth-of-type', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:nth-of-type(2)', ul);
-        assert.strictEqual(res.length, 1);
+        assert.strictEqual(res.length, 1, 'match count');
         assert.strictEqual(
           res[0].id,
           'li2',
@@ -990,10 +1076,10 @@ describe('nwsapi', () => {
         );
       });
 
-      it('should set typeStr to "true" when using :nth-last-of-type (backward direction)', () => {
+      it('should configure reverse traversal for :nth-last-of-type', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:nth-last-of-type(2)', ul);
-        assert.strictEqual(res.length, 1);
+        assert.strictEqual(res.length, 1, 'match count');
         assert.strictEqual(
           res[0].id,
           'li2',
@@ -1001,7 +1087,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('should use "-" sign when b is positive (e.g., 3n+1)', () => {
+      it('should apply negative offset check for positive b term', () => {
         const ul = document.getElementById('ul1');
         ul.innerHTML = `
         <li id="li-1">1</li>
@@ -1010,12 +1096,12 @@ describe('nwsapi', () => {
         <li id="li-4">4</li>
       `;
         const res = api.select('li:nth-child(3n+1)', ul);
-        assert.strictEqual(res.length, 2);
-        assert.strictEqual(res[0].id, 'li-1');
-        assert.strictEqual(res[1].id, 'li-4');
+        assert.strictEqual(res.length, 2, 'match count');
+        assert.strictEqual(res[0].id, 'li-1', '1st match id');
+        assert.strictEqual(res[1].id, 'li-4', '2nd match id');
       });
 
-      it('should use "+" sign when b is negative (e.g., 3n-1)', () => {
+      it('should apply positive offset check for negative b term', () => {
         const ul = document.getElementById('ul1');
         ul.innerHTML = `
         <li id="li-1">1</li>
@@ -1024,18 +1110,18 @@ describe('nwsapi', () => {
         <li id="li-4">4</li>
       `;
         const res = api.select('li:nth-child(3n-1)', ul);
-        assert.strictEqual(res.length, 1);
-        assert.strictEqual(res[0].id, 'li-2');
+        assert.strictEqual(res.length, 1, 'match count');
+        assert.strictEqual(res[0].id, 'li-2', 'matched id');
       });
 
-      it('should set pseudoName to a lowercased string when match[1] exists', () => {
+      it('should normalize uppercase pseudo-class name to lowercase', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:NTH-CHILD(1)', ul);
-        assert.strictEqual(res.length, 1);
-        assert.strictEqual(res[0].id, 'li1');
+        assert.strictEqual(res.length, 1, 'match count');
+        assert.strictEqual(res[0].id, 'li1', 'matched id');
       });
 
-      it('should return the unmodified source when pseudoName is an empty string (match[1] is missing)', () => {
+      it('should throw DOMException when pseudo-class name is missing', () => {
         const invalidSelector = ':nth-child()';
         assert.throws(
           () => api.select(invalidSelector, document),
@@ -1044,11 +1130,11 @@ describe('nwsapi', () => {
               err.name === 'SyntaxError' || err instanceof window.DOMException
             );
           },
-          'Should throw SyntaxError when pseudo-class name or formula is missing'
+          'Should throw SyntaxError when pseudo-class name is missing'
         );
       });
 
-      it('compileAttribute() should use expr[0] when no namespace prefix is present', () => {
+      it('should match attribute without explicit namespace prefix', () => {
         const div = document.createElement('div');
         div.setAttribute('testattr', 'value');
         assert.ok(
@@ -1057,7 +1143,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('compileAttribute() should use expr[1] when a namespace prefix is present', () => {
+      it('should match attribute containing namespace prefix name', () => {
         const div = document.createElement('div');
         div.setAttribute('xlink:href', 'https://example.com');
         assert.ok(
@@ -1066,7 +1152,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('compileAttribute() should compile to if(false) when ~= value contains a space', () => {
+      it('should evaluate word matcher ~= to false for spaced values', () => {
         const div = document.createElement('div');
         div.setAttribute('data-test', 'foo bar');
         const res = api.match('[data-test~="foo bar"]', div);
@@ -1077,21 +1163,21 @@ describe('nwsapi', () => {
         );
       });
 
-      it('compile() should return the cached lambda function on subsequent calls with the same selector', () => {
+      it('should cache and reuse compiled selector lambda functions', () => {
         const selector = '.test-cache-selector';
         const selectLambda1 = api.compile(selector, true);
         const selectLambda2 = api.compile(selector, true);
         assert.strictEqual(
           selectLambda1,
           selectLambda2,
-          'Should return the exact same cached lambda object for select mode (mode: true)'
+          'Should return the exact same cached lambda object for select mode'
         );
         const matchLambda1 = api.compile(selector, false);
         const matchLambda2 = api.compile(selector, false);
         assert.strictEqual(
           matchLambda1,
           matchLambda2,
-          'Should return the exact same cached lambda object for match mode (mode: false)'
+          'Should return the exact same cached lambda object for match mode'
         );
         assert.notStrictEqual(
           selectLambda1,
@@ -1100,7 +1186,7 @@ describe('nwsapi', () => {
         );
       });
 
-      it('compilePseudoLogical() should fallback to [expr] when splitGroup match returns null', () => {
+      it('should safely fallback on invalid logical pseudo arguments', () => {
         try {
           api.select('div:is(,)', document);
           assert.fail(
@@ -1132,7 +1218,7 @@ describe('nwsapi', () => {
         }
       });
 
-      it('compileAttribute() should fully branch all attrCheck conditions', () => {
+      it('should evaluate all attribute presence and value matchers', () => {
         const div = document.createElement('div');
         document.body.appendChild(div);
         div.setAttribute('data-present', 'any-value');
@@ -1178,7 +1264,7 @@ describe('nwsapi', () => {
     });
 
     describe('Internal Compiler Fallbacks', () => {
-      it('byTag() fallback should handle wildcard and specific tags', () => {
+      it('should fallback byTag() to handle wildcard and specific tags', () => {
         const mockContext = {
           firstElementChild: {
             localName: 'div',
@@ -1194,10 +1280,10 @@ describe('nwsapi', () => {
         assert.strictEqual(resWildcard.length, 2, 'Wildcard matches all tags');
         const resDiv = api.byTag('DIV', mockContext);
         assert.strictEqual(resDiv.length, 1, 'Specific tag matches div');
-        assert.strictEqual(resDiv[0].localName, 'div');
+        assert.strictEqual(resDiv[0].localName, 'div', 'matched tag name');
       });
 
-      it('byTag() fallback should iterate and collect children elements', () => {
+      it('should iterate child nodes during byTag() fallback lookup', () => {
         const mockChild1 = { localName: 'span' };
         const mockChild2 = { localName: 'span' };
         const mockContext = {
@@ -1218,20 +1304,32 @@ describe('nwsapi', () => {
           2,
           'Should collect elements from children'
         );
-        assert.strictEqual(resSpan[0].localName, 'span');
-        assert.strictEqual(resSpan[1].localName, 'span');
+        assert.strictEqual(resSpan[0].localName, 'span', 'first span tag');
+        assert.strictEqual(resSpan[1].localName, 'span', 'second span tag');
         const resWildcard = api.byTag('*', mockContext);
         assert.strictEqual(
           resWildcard.length,
           3,
           'Should collect context element and its children'
         );
-        assert.strictEqual(resWildcard[0].localName, 'div');
-        assert.strictEqual(resWildcard[1].localName, 'span');
-        assert.strictEqual(resWildcard[2].localName, 'span');
+        assert.strictEqual(
+          resWildcard[0].localName,
+          'div',
+          'first element tag'
+        );
+        assert.strictEqual(
+          resWildcard[1].localName,
+          'span',
+          'second element tag'
+        );
+        assert.strictEqual(
+          resWildcard[2].localName,
+          'span',
+          'third element tag'
+        );
       });
 
-      it('compileSelector() should throw on unexpected characters via direct call', () => {
+      it('should throw DOMException for unexpected selector syntax', () => {
         const mockSource = 'r=true;';
         assert.throws(
           () => api.compileSelector('!invalid', mockSource, false),
@@ -1241,64 +1339,65 @@ describe('nwsapi', () => {
                 err instanceof window.DOMException) &&
               err.message.includes('is not a valid selector')
             );
-          }
+          },
+          'Invalid selector should throw SyntaxError'
         );
       });
 
-      it('compilePseudoStructural() should return unmodified source for unknown pseudo-classes', () => {
+      it('should return source untouched for unknown structural pseudo', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test5");';
         const result = api.compilePseudoStructural(mockMatch, mockSource);
-        assert.strictEqual(result, mockSource);
+        assert.strictEqual(result, mockSource, 'returns unmodified source');
       });
 
-      it('compilePseudoLogical() should return unmodified source for unknown pseudo-classes', () => {
+      it('should return source untouched for unknown logical pseudo', () => {
         const mockMatch = [':unknown(.foo)', 'unknown', '.foo'];
         const mockSource = 'console.log("test4");';
         const result = api.compilePseudoLogical(mockMatch, mockSource);
-        assert.strictEqual(result, mockSource);
+        assert.strictEqual(result, mockSource, 'returns unmodified source');
       });
 
-      it('compilePseudoLocation() should return unmodified source for unknown pseudo-classes', () => {
+      it('should return source untouched for unknown location pseudo', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test3");';
         const result = api.compilePseudoLocation(mockMatch, mockSource);
-        assert.strictEqual(result, mockSource);
+        assert.strictEqual(result, mockSource, 'returns unmodified source');
       });
 
-      it('compilePseudoInputState() should return unmodified source for unknown pseudo-classes', () => {
+      it('should return source untouched for unknown state pseudo', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test2");';
         const result = api.compilePseudoInputState(mockMatch, mockSource);
-        assert.strictEqual(result, mockSource);
+        assert.strictEqual(result, mockSource, 'returns unmodified source');
       });
 
-      it('compilePseudoInputValue() should return unmodified source for unknown pseudo-classes', () => {
+      it('should return source untouched for unknown value pseudo', () => {
         const mockMatch = [':unknown', 'unknown'];
         const mockSource = 'console.log("test");';
         const result = api.compilePseudoInputValue(mockMatch, mockSource);
-        assert.strictEqual(result, mockSource);
+        assert.strictEqual(result, mockSource, 'returns unmodified source');
       });
 
-      it('compilePseudoTreeStruct() should set pseudoName to a lowercased string when match[1] exists', () => {
+      it('should parse uppercase tree structural pseudo to lowercase', () => {
         const ul = document.getElementById('ul1');
         const res = api.select('li:NTH-CHILD(1)', ul);
-        assert.strictEqual(res.length, 1);
-        assert.strictEqual(res[0].id, 'li1');
+        assert.strictEqual(res.length, 1, 'match count');
+        assert.strictEqual(res[0].id, 'li1', 'matched element id');
       });
 
-      it('compilePseudoTreeStruct() should set pseudoName to empty string and throw when match[1] is missing', () => {
+      it('should throw DOMException when tree pseudo name is missing', () => {
         assert.throws(
           () => api.select('li:(1)', document),
           err =>
             err.name === 'SyntaxError' || err instanceof window.DOMException,
-          'Should throw SyntaxError when the pseudo-class name is missing'
+          'Missing pseudo name should throw SyntaxError'
         );
       });
     });
 
     describe('compilePseudoTreeStruct() internal direct calls', () => {
-      it('should return source and emit error when match[1] is undefined (else branch of pseudoName)', () => {
+      it('should throw DOMException for undefined tree pseudo name', () => {
         const api = new nw.Nwsapi(window, document);
         const mockMatch = [':(even)', undefined, 'even'];
         const mockSource = 'r=true;';
@@ -1313,11 +1412,11 @@ describe('nwsapi', () => {
               err.message.includes(selectorString)
             );
           },
-          'Should handle undefined pseudoName by falling back to empty string and throwing'
+          'Undefined formula should throw SyntaxError'
         );
       });
 
-      it('should return source and emit error when formula is missing', () => {
+      it('should throw DOMException for missing tree pseudo formula', () => {
         const api = new nw.Nwsapi(window, document);
         const mockMatch = [':nth-child()', 'nth-child', undefined];
         const mockSource = 'r=true;';
@@ -1325,7 +1424,8 @@ describe('nwsapi', () => {
           () =>
             api.compilePseudoTreeStruct(mockMatch, mockSource, ':nth-child()'),
           err =>
-            err.name === 'SyntaxError' || err instanceof window.DOMException
+            err.name === 'SyntaxError' || err instanceof window.DOMException,
+          'Missing formula should throw SyntaxError'
         );
       });
     });

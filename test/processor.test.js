@@ -36,7 +36,6 @@ describe('SelectorProcessor', () => {
 
   describe('process', () => {
     it('should process simple non-combinator branches correctly', () => {
-      // Pass a realistic raw token branch structure natively processed
       const rawBranches = [[{ type: 'TypeSelector', name: 'div' }]];
       const { ast, descendant } = processor.process(rawBranches, 'div');
       assert.strictEqual(descendant, false, 'descendant flag is false');
@@ -83,8 +82,6 @@ describe('SelectorProcessor', () => {
     });
 
     it('should handle unescaping and namespace detection', () => {
-      // Inject escaped tokens to verify native unescapeSelector behavior works
-      // inside process
       const rawBranches = [
         [{ type: 'TypeSelector', name: 'ns|div\\:escaped' }]
       ];
@@ -99,10 +96,7 @@ describe('SelectorProcessor', () => {
     });
 
     it('should trigger finder.onError hook', () => {
-      const rawBranches = [
-        // Combinator without preceding elements is invalid
-        [{ type: COMBINATOR, name: '+' }]
-      ];
+      const rawBranches = [[{ type: COMBINATOR, name: '+' }]];
       const result = processor.process(rawBranches, '+');
       assert.strictEqual(
         mockContext.onError.calledOnce,
