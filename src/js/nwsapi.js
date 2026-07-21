@@ -396,7 +396,7 @@ export const solveNth = (element, dir, state, isOfType) => {
  * Nwsapi
  * Compiles CSS selectors to efficiently match and query nodes.
  */
- export class Nwsapi {
+export class Nwsapi {
   /* private */
   #boundDocumentOrder;
   #compat;

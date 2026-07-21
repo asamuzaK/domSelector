@@ -640,7 +640,7 @@ export class Finder extends Evaluator {
   /**
    * Processes pending items to find matches.
    * @private
-   * @param {Set.<Map>} pendingItems - Set of pending items to process.
+   * @param {Set.<object>} pendingItems - Set of pending items to process.
    * @returns {void}
    */
   #processPendingItems = pendingItems => {
@@ -763,7 +763,12 @@ export class Finder extends Evaluator {
       if (index === branch.length - 1) {
         return nextNode;
       }
-      const result = this.#matchNodeNext(nextNode, branch, ++index, nextCombo);
+      const result = this.#matchNodeNext(
+        nextNode,
+        branch,
+        index + 1,
+        nextCombo
+      );
       if (result) {
         return result;
       }
