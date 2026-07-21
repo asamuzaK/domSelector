@@ -314,7 +314,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      return node;
+      return this.#wrapNode(node);
     }
     const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_LINEAL, wrapped =>
       this.#nwsapi.closest(selector, wrapped)
@@ -348,7 +348,8 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      return node.firstElementChild;
+      const wrappedNode = this.#wrapNode(node);
+      return wrappedNode.firstElementChild;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
     if (nodes && nodes.size) {
@@ -371,9 +372,12 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
+      const wrappedNode = this.#wrapNode(node);
       const document =
-        node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-      return collectAllDescendants(node, document);
+        wrappedNode.nodeType === DOCUMENT_NODE
+          ? wrappedNode
+          : wrappedNode.ownerDocument;
+      return collectAllDescendants(wrappedNode, document);
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
     if (nodes && nodes.size) {
