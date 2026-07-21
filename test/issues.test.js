@@ -1644,4 +1644,29 @@ describe('domSelector regression tests', () => {
       assert.strictEqual(stubEvent.callCount, 0, 'event is not called');
     });
   });
+
+  describe('#292 - https://github.com/asamuzaK/domSelector/issues/292', () => {
+    it('should return a non-null value', () => {
+      const { window } = jsdom();
+      const html = '<html><div id="test1"><div id="test2"></div></div></html>';
+      const doc = new window.DOMParser().parseFromString(html, 'text/html');
+      const root = doc.documentElement;
+      const test1 = root.querySelector('#test1');
+      const test1Clone = test1.cloneNode(true);
+      assert.deepEqual(
+        test1Clone.querySelector('#test2'),
+        test1Clone.querySelector('[id=test2]')
+      );
+      assert.deepEqual(
+        test1Clone.querySelector('#test2'),
+        test1Clone.querySelectorAll('#test2')[0]
+      );
+      root.appendChild(test1Clone);
+      assert.deepEqual(
+        test1Clone.querySelector('#test2'),
+        test1Clone.querySelector('[id=test2]'),
+        'ID selector and attribute selector points to the same node'
+      );
+    });
+  });
 });

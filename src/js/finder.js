@@ -407,7 +407,11 @@ export class Finder extends Evaluator {
     if (earlyResult) {
       return earlyResult;
     }
-    if (targetType === TARGET_FIRST && this.root.nodeType !== ELEMENT_NODE) {
+    if (
+      targetType === TARGET_FIRST &&
+      this.root.nodeType !== ELEMENT_NODE &&
+      this.node.nodeType !== ELEMENT_NODE
+    ) {
       const [leaf] = leaves;
       const node = this.root.getElementById(leaf.name);
       const nodes = [];
