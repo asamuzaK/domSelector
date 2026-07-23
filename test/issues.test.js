@@ -1669,4 +1669,62 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#295 - https://github.com/asamuzaK/domSelector/issues/295', () => {
+    it('should match node', () => {
+      const { document } = jsdom('<i data-x="a&b"></i>').window;
+      const node = document.querySelector('i');
+      assert.strictEqual(node.getAttribute('data-x'), 'a&b', 'attribute');
+      assert.strictEqual(node.matches('[data-x="a&b"]'), true, 'matches');
+      assert.deepEqual(
+        document.querySelector('[data-x="a&b"]'),
+        node,
+        'querySelector'
+      );
+    });
+
+    it('should match node', () => {
+      const { document } = jsdom('<i data-x="foo?x=1&y=2"></i>').window;
+      const node = document.querySelector('i');
+      assert.strictEqual(
+        node.getAttribute('data-x'),
+        'foo?x=1&y=2',
+        'attribute'
+      );
+      assert.strictEqual(
+        node.matches('[data-x="foo?x=1&y=2"]'),
+        true,
+        'matches'
+      );
+      assert.deepEqual(
+        document.querySelector('[data-x="foo?x=1&y=2"]'),
+        node,
+        'querySelector'
+      );
+    });
+
+    it('should match node', () => {
+      const { document } = jsdom('<i data-x="a/b?c"></i>').window;
+      const node = document.querySelector('i');
+      assert.strictEqual(node.getAttribute('data-x'), 'a/b?c', 'attribute');
+      assert.strictEqual(node.matches('[data-x="a/b?c"]'), true, 'matches');
+      assert.deepEqual(
+        document.querySelector('[data-x="a/b?c"]'),
+        node,
+        'querySelector'
+      );
+    });
+
+    it('should match node', () => {
+      const { document } = jsdom('<i data-x="/&"></i>').window;
+      const node = document.querySelector('i');
+      assert.strictEqual(node.getAttribute('data-x'), '/&', 'attribute');
+      assert.strictEqual(node.matches('[data-x="/&"]'), true, 'matches');
+      assert.deepEqual(
+        document.querySelector('[data-x="/&"]'),
+        node,
+        'querySelector'
+      );
+    });
+  });
 });

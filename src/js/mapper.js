@@ -61,6 +61,7 @@ export class Mapper {
     const {
       hasHasPseudoFunc,
       hasLogicalPseudoFunc,
+      hasNestingSelector,
       hasNthChildOfSelector,
       hasStatePseudoClass,
       hasUnsupportedPseudoClass
@@ -68,6 +69,7 @@ export class Mapper {
     // Determine invalidation flags.
     ctx.invalidate =
       hasHasPseudoFunc ||
+      hasNestingSelector ||
       hasStatePseudoClass ||
       hasUnsupportedPseudoClass ||
       !!(hasLogicalPseudoFunc && hasNthChildOfSelector);

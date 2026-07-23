@@ -11,6 +11,7 @@ export const DIR_NEXT = 'next';
 export const DIR_PREV = 'prev';
 export const IDENT = 'Identifier';
 export const ID_SELECTOR = 'IdSelector';
+export const NEST_SELECTOR = 'NestingSelector';
 export const NOT_SUPPORTED_ERR = 'NotSupportedError';
 export const NTH = 'Nth';
 export const OPERATOR = 'Operator';

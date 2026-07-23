@@ -23,6 +23,7 @@ import {
   ID_SELECTOR,
   KEYS_LOGICAL,
   KEYS_PS_CLASS_SUPPORTED,
+  NEST_SELECTOR,
   NTH,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -175,24 +176,23 @@ export const preprocess = value => {
   if (selector === '&') {
     return '';
   }
-  return selector.replace(/\x26/g, ':scope');
+  return selector;
 };
 
 /**
  * Creates an Abstract Syntax Tree (AST) from a CSS selector string.
  * @param {string} sel - The CSS selector string.
+ * @param {string} context - Parse what part of CSS.
  * @returns {object} The parsed AST object.
  */
-export const parseSelector = sel => {
+export const parseSelector = (sel, context = 'selectorList') => {
   const selector = preprocess(sel);
   // invalid selectors
   if (/^$|^\s*>|,\s*$/.test(selector)) {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   try {
-    return cssTree.parse(selector, {
-      context: 'selectorList'
-    });
+    return cssTree.parse(selector, { context });
   } catch (e) {
     const { message } = e;
     if (
@@ -241,6 +241,7 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
     hasNestedSelector: false,
+    hasNestingSelector: false,
     hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
     hasStatePseudoClass: false,
@@ -302,6 +303,7 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
           break;
         }
         case NTH: {
+          //info.hasNthPseudoClass = true;
           if (node.selector) {
             info.hasNestedSelector = true;
             info.hasNthChildOfSelector = true;
@@ -310,6 +312,10 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
         }
         case SELECTOR: {
           branches.add(node.children);
+          break;
+        }
+        case NEST_SELECTOR: {
+          info.hasNestingSelector = true;
           break;
         }
         default:

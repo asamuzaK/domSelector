@@ -701,6 +701,16 @@ describe('selector static analysis and validation', () => {
         true,
         'valid testing library attribute selector with child combinator'
       );
+      assert.strictEqual(
+        func('[data-x="a&b"]'),
+        false,
+        'attribute selector including `&`'
+      );
+      assert.strictEqual(
+        func('[data-x="/&"]'),
+        false,
+        'attribute selector including `/` and `&`'
+      );
     });
 
     it('should evaluate :has() specific branches', () => {

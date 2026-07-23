@@ -18,6 +18,7 @@ import {
   COMBINATOR,
   IDENT,
   ID_SELECTOR,
+  NEST_SELECTOR,
   NOT_SUPPORTED_ERR,
   NTH,
   OPERATOR,
@@ -9139,6 +9140,31 @@ describe('Evaluator', () => {
       const evaluator = new Evaluator(window);
       evaluator.setup(':host(#foobar) div', node);
       const res = evaluator.matchSelector(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match element by nesting selector AST', () => {
+      const ast = {
+        name: '&',
+        type: NEST_SELECTOR
+      };
+      const node = document.getElementById('div5');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('&', node); 
+      const res = evaluator.matchSelector(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false when nest selector does not match the node', () => {
+      const ast = {
+        name: '&',
+        type: NEST_SELECTOR
+      };
+      const scopeNode = document.getElementById('div0');
+      const targetNode = document.getElementById('div5'); // scopeNodeの小要素
+      const evaluator = new Evaluator(window);
+      evaluator.setup('&', scopeNode); 
+      const res = evaluator.matchSelector(ast, targetNode);
       assert.strictEqual(res, false, 'result');
     });
   });

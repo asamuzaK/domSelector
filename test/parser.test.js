@@ -17,6 +17,7 @@ import {
   COMBINATOR,
   IDENT,
   ID_SELECTOR,
+  NEST_SELECTOR,
   NTH,
   OPERATOR,
   PS_CLASS_SELECTOR,
@@ -179,9 +180,9 @@ describe('preprocess', () => {
     assert.strictEqual(res, '', 'result');
   });
 
-  it('should replace nesting selector & with :scope selector', () => {
+  it('should not replace nesting selector & with :scope selector', () => {
     const res = func('& .foo');
-    assert.strictEqual(res, ':scope .foo', 'result');
+    assert.strictEqual(res, '& .foo', 'result');
   });
 });
 
@@ -8172,6 +8173,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8354,6 +8356,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8420,6 +8423,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8524,6 +8528,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8590,6 +8595,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: true,
@@ -8636,6 +8642,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8682,6 +8689,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: true,
@@ -8742,6 +8750,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8836,6 +8845,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -8920,6 +8930,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9004,6 +9015,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9076,6 +9088,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9148,6 +9161,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9220,6 +9234,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9334,6 +9349,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9448,6 +9464,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: true,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
@@ -9602,6 +9619,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false,
@@ -9704,6 +9722,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false,
@@ -9844,6 +9863,7 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: true,
           hasNestedSelector: true,
+          hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
           hasStatePseudoClass: false,
@@ -9890,10 +9910,76 @@ describe('walk AST', () => {
           hasHasPseudoFunc: false,
           hasLogicalPseudoFunc: false,
           hasNestedSelector: false,
+          hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: true
+        }
+      },
+      'result'
+    );
+  });
+
+  it('should set hasNestingSelector flag for &', () => {
+    const ast = {
+      children: [
+        {
+          children: [
+            {
+              loc: null,
+              type: NEST_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ],
+          loc: null,
+          type: SELECTOR
+        }
+      ],
+      loc: null,
+      type: SELECTOR_LIST
+    };
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      {
+        branches: [
+          [
+            {
+              loc: null,
+              type: NEST_SELECTOR
+            },
+            {
+              loc: null,
+              name: '>',
+              type: COMBINATOR
+            },
+            {
+              loc: null,
+              name: 'li',
+              type: TYPE_SELECTOR
+            }
+          ]
+        ],
+        info: {
+          hasForgivenPseudoFunc: false,
+          hasHasPseudoFunc: false,
+          hasLogicalPseudoFunc: false,
+          hasNestedSelector: false,
+          hasNestingSelector: true,
+          hasNotPseudoFunc: false,
+          hasNthChildOfSelector: false,
+          hasStatePseudoClass: false,
+          hasUnsupportedPseudoClass: false
         }
       },
       'result'
