@@ -291,7 +291,11 @@ export const filterSelector = (selector, target) => {
   }
   // Exclude various complex or unsupported selectors early.
   // i.e. non-ASCII, escaped selectors, namespaced selectors, pseudo-elements.
-  if (selector.includes('/') || REG_EXCLUDE_BASIC.test(selector)) {
+  if (
+    selector.includes('/') ||
+    selector.includes('&') ||
+    REG_EXCLUDE_BASIC.test(selector)
+  ) {
     return false;
   }
   // Validate attribute selector integrity.

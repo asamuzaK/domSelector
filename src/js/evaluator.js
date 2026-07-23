@@ -18,7 +18,12 @@ import {
   matchRequiredPseudoClass,
   matchTypeSelector
 } from './matcher.js';
-import { generateCSS, unescapeSelector, walkAST } from './parser.js';
+import {
+  generateCSS,
+  parseSelector,
+  unescapeSelector,
+  walkAST
+} from './parser.js';
 import {
   findBestSeed,
   generateException,
@@ -47,6 +52,7 @@ import {
   INPUT_EDIT,
   INPUT_TEXT,
   KEYS_LOGICAL,
+  NEST_SELECTOR,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
@@ -2152,6 +2158,14 @@ export class Evaluator {
       case CLASS_SELECTOR: {
         const astName = unescapeSelector(ast.name);
         return node.classList.contains(astName);
+      }
+      case NEST_SELECTOR: {
+        const nestingAST = parseSelector(':scope', 'selector');
+        return this.matchPseudoClassSelector(
+          nestingAST.children.head.data,
+          node,
+          opt
+        );
       }
       case PS_CLASS_SELECTOR: {
         return this.matchPseudoClassSelector(ast, node, opt);
