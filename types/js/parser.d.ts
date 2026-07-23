@@ -1,6 +1,6 @@
 export declare const unescapeSelector: (selector?: string) => string;
 export declare const preprocess: (value: string) => string;
-export declare const parseSelector: (sel: string) => object;
+export declare const parseSelector: (sel: string, context?: string) => object;
 export declare const walkAST: (ast?: object, toObject?: boolean, callback?: Function) => {
     branches: Array<object>;
     info: object;

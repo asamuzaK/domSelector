@@ -9,54 +9,55 @@ export declare class Nwsapi {
     #private;
     hasDupes: boolean | undefined;
     constructor(window: object, document: object, cacheSize?: number);
-    private _documentOrder;
-    private _unique;
-    private _byId;
-    private _byTag;
-    private _byClass;
-    private _emit;
-    private _switchContext;
-    private _compileSelector;
-    _compileUniversal(selector: string, source: string): {
+    private #documentOrder;
+    private #unique;
+    byId(id: string, context: Element | Document): Array<Element>;
+    byTag(tag: string, context: Element | Document | DocumentFragment): Array<Element>;
+    byClass(cls: string, context: Element | Document | DocumentFragment): Array<Element>;
+    private #emit;
+    private #switchContext;
+    compileSelector(expression: string, source: string, mode: boolean): string;
+    compileUniversal(selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compileId(selector: string, source: string): {
+    compileId(selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compileClass(selector: string, source: string): {
+    compileClass(selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compileTag(selector: string, source: string): {
+    compileTag(selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compileAttribute(selector: string, source: string): {
+    compileAttribute(selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compileCombinator(symbol: string, selector: string, source: string): {
+    compileCombinator(symbol: string, selector: string, source: string): {
         source: string;
         selector: string;
     };
-    _compilePseudo(selector: string, source: string, selectorString: string): {
+    compilePseudo(selector: string, source: string, selectorString: string): {
         source: string;
         selector: string;
     };
-    _compilePseudoStructural(match: Array<string>, source: string): string;
-    _compilePseudoTreeStruct(match: Array<string>, source: string, selectorString: string): string;
-    _compilePseudoLogical(match: Array<string>, source: string): string;
-    _compilePseudoLocation(match: Array<string>, source: string): string;
-    _compilePseudoInputState(match: Array<string>, source: string): string;
-    _compilePseudoInputValue(match: Array<string>, source: string): string;
-    _compile(selector: string, mode: boolean): (c: Element | Element[] | NodeList, f?: ((element: Element) => boolean | void), x?: Element | Document | null, r?: boolean | Element[]) => boolean | Element[];
-    _collect(selectors: Array<string>, context: Element | Document, callback?: ((element: Element) => boolean | void) | undefined): object;
-    _matchCollect(selectors: Array<string>): object;
-    _parseSelector(selectors: string): Array<string>;
+    compilePseudoStructural(match: Array<string>, source: string): string;
+    compilePseudoTreeStruct(match: Array<string>, source: string, selectorString: string): string;
+    compilePseudoLogical(match: Array<string>, source: string): string;
+    compilePseudoLocation(match: Array<string>, source: string): string;
+    compilePseudoInputState(match: Array<string>, source: string): string;
+    compilePseudoInputValue(match: Array<string>, source: string): string;
+    compile(selector: string, mode: boolean): (c: Element | Element[] | NodeList, f?: ((element: Element) => boolean | void), x?: Element | Document | null, r?: boolean | Element[]) => boolean | Element[];
+    collect(selectors: Array<string>, context: Element | Document, callback?: ((element: Element) => boolean | void) | undefined): object;
+    private #matchCollect;
+    private #parseSelector;
     match(selectors: string, element: Element, callback?: ((element: Element) => boolean | void) | undefined): boolean;
     closest(selectors: string, element: Element, callback?: ((element: Element) => boolean | void) | undefined): Element | null;
     select(selectors: string, context: Element | Document, callback?: ((element: Element) => boolean | void) | undefined): Array<Element>;
     first(selectors: string, context: Element | Document, callback?: ((element: Element) => boolean | void) | undefined): Element | null;
+    clear(clearAll?: boolean): void;
 }

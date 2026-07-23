@@ -6,6 +6,7 @@ export declare const DIR_NEXT = "next";
 export declare const DIR_PREV = "prev";
 export declare const IDENT = "Identifier";
 export declare const ID_SELECTOR = "IdSelector";
+export declare const NEST_SELECTOR = "NestingSelector";
 export declare const NOT_SUPPORTED_ERR = "NotSupportedError";
 export declare const NTH = "Nth";
 export declare const OPERATOR = "Operator";

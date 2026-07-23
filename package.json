@@ -38,7 +38,7 @@
     "commander": "^15.0.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^63.1.0",
+    "eslint-plugin-jsdoc": "^63.2.1",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-regexp": "^3.1.1",
     "eslint-plugin-unicorn": "^65.0.1",
@@ -47,9 +47,9 @@
     "mitata": "^1.0.34",
     "mocha": "^11.7.6",
     "neostandard": "^0.13.0",
-    "prettier": "^3.9.5",
-    "sinon": "^22.0.0",
-    "tinybench": "^6.0.2",
+    "prettier": "^3.9.6",
+    "sinon": "^22.1.0",
+    "tinybench": "^6.1.2",
     "typescript": "^7.0.2",
     "wpt-runner": "^7.0.0"
   },
@@ -58,13 +58,13 @@
       "yargs": "^18.0.0"
     },
     "eslint": {
-      "brace-expansion": "^1.1.13",
-      "js-yaml": "^4.1.2"
+      "brace-expansion": "^1.1.16",
+      "js-yaml": "^4.3.0"
     },
     "jsdom": "$jsdom",
     "mocha": {
       "diff": "^8.0.3",
-      "js-yaml": "^4.1.2"
+      "js-yaml": "^4.3.0"
     },
     "serialize-javascript": "^7.0.4"
   },
@@ -88,5 +88,5 @@
   "engines": {
     "node": "^22.13.0 || >=24.0.0"
   },
-  "version": "8.2.5"
+  "version": "8.3.0"
 }
