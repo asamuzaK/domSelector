@@ -68,6 +68,15 @@ export class DOMSelector {
   }
 
   /**
+   * Wraps the node for IDL internal implementation if idlUtils is present.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The raw node.
+   * @returns {object} The wrapped or raw node.
+   */
+  #wrapNode = node =>
+    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+
+  /**
    * Validates a node and returns an Error if invalid.
    * @private
    * @param {Document|DocumentFragment|Element} node - The node to check.
@@ -85,26 +94,6 @@ export class DOMSelector {
   };
 
   /**
-   * Determines whether Nwsapi can be used for the given document.
-   * @private
-   * @param {Document} doc - The document object to check.
-   * @returns {boolean} `true` if Nwsapi can be used, otherwise `false`.
-   */
-  #canUseNwsapi = doc =>
-    doc === this.#document &&
-    doc.contentType === 'text/html' &&
-    doc.documentElement;
-
-  /**
-   * Wraps the node for IDL internal implementation if idlUtils is present.
-   * @private
-   * @param {Document|DocumentFragment|Element} node - The raw node.
-   * @returns {object} The wrapped or raw node.
-   */
-  #wrapNode = node =>
-    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-
-  /**
    * Executes Nwsapi matching logic with caching and error wrapping.
    * @private
    * @param {string} selector - The CSS selector to match against.
@@ -116,8 +105,12 @@ export class DOMSelector {
    */
   #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
     const document = node.ownerDocument;
-    const canExecute = node.isConnected && this.#canUseNwsapi(document);
-    if (canExecute) {
+    if (
+      node.isConnected &&
+      document === this.#document &&
+      document.contentType === 'text/html' &&
+      document.documentElement
+    ) {
       const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
       let filterMatches = this.#cache.get(cacheKey);
       if (filterMatches === undefined) {
@@ -126,7 +119,7 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          return { success: true, result: callback(this.#wrapNode(node)) };
+          return { success: true, result: callback(node) };
         } catch {
           // fall through
         }
@@ -146,9 +139,7 @@ export class DOMSelector {
    */
   #findNodes = (selector, node, opt, targetType) => {
     try {
-      return this.#finder
-        .setup(selector, this.#wrapNode(node), opt)
-        .find(targetType);
+      return this.#finder.setup(selector, node, opt).find(targetType);
     } catch (e) {
       return this.#finder.onError(e, opt);
     }
@@ -236,6 +227,7 @@ export class DOMSelector {
    * @returns {CheckResult} An object containing the check result.
    */
   check = (selector, node, opt = {}) => {
+    node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
       return this.#finder.onError(error, opt);
@@ -251,7 +243,7 @@ export class DOMSelector {
       selector,
       node,
       TARGET_SELF,
-      wrapped => this.#nwsapi.match(selector, wrapped),
+      n => this.#nwsapi.match(selector, n),
       true
     );
     if (nwsapiRes.success) {
@@ -271,9 +263,7 @@ export class DOMSelector {
       };
     }
     const options = { ...opt, check: true, noexcept: true, warn: false };
-    return this.#finder
-      .setup(selector, this.#wrapNode(node), options)
-      .find(TARGET_SELF);
+    return this.#finder.setup(selector, node, options).find(TARGET_SELF);
   };
 
   /**
@@ -281,9 +271,10 @@ export class DOMSelector {
    * @param {string} selector - The CSS selector to match against.
    * @param {Element} node - The element node to test.
    * @param {object} [opt] - Optional parameters.
-   * @returns {boolean} `true` if the element matches, or `false` otherwise.
+   * @returns {boolean} True if the element matches, false otherwise.
    */
   matches = (selector, node, opt = {}) => {
+    node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
       return this.#finder.onError(error, opt);
@@ -291,8 +282,8 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return true;
     }
-    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_SELF, wrapped =>
-      this.#nwsapi.match(selector, wrapped)
+    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_SELF, n =>
+      this.#nwsapi.match(selector, n)
     );
     if (nwsapiRes.success) {
       return nwsapiRes.result;
@@ -309,6 +300,7 @@ export class DOMSelector {
    * @returns {?Element} The first matching ancestor element, or `null`.
    */
   closest = (selector, node, opt = {}) => {
+    node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
       return this.#finder.onError(error, opt);
@@ -316,15 +308,15 @@ export class DOMSelector {
     if (REG_UNIVERSAL.test(selector)) {
       return this.#wrapNode(node);
     }
-    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_LINEAL, wrapped =>
-      this.#nwsapi.closest(selector, wrapped)
+    const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_LINEAL, n =>
+      this.#nwsapi.closest(selector, n)
     );
     if (nwsapiRes.success) {
       return nwsapiRes.result;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_LINEAL);
     if (nodes && nodes.size) {
-      let refNode = this.#wrapNode(node);
+      let refNode = node;
       while (refNode) {
         if (nodes.has(refNode)) {
           return refNode;
@@ -343,6 +335,7 @@ export class DOMSelector {
    * @returns {?Element} The first matching element, or `null`.
    */
   querySelector = (selector, node, opt = {}) => {
+    node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
       return this.#finder.onError(error, opt);
@@ -367,6 +360,7 @@ export class DOMSelector {
    * @returns {Array<Element>} An array of elements, or an empty array.
    */
   querySelectorAll = (selector, node, opt = {}) => {
+    node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
       return this.#finder.onError(error, opt);

@@ -894,7 +894,7 @@ export const collectAllDescendants = (node, document) => {
   if (document?.nodeType !== DOCUMENT_NODE) {
     throw new TypeError(`Unexpected type ${getType(document)}`);
   }
-  const walker = document.createTreeWalker(node, SHOW_ELEMENT, null);
+  const walker = document.createTreeWalker(node, SHOW_ELEMENT);
   const descendants = [];
   let refNode = walker.nextNode();
   while (refNode) {
