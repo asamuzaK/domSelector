@@ -306,7 +306,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      return this.#wrapNode(node);
+      return node;
     }
     const nwsapiRes = this.#tryNwsapi(selector, node, TARGET_LINEAL, n =>
       this.#nwsapi.closest(selector, n)
@@ -341,8 +341,7 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      const wrappedNode = this.#wrapNode(node);
-      return wrappedNode.firstElementChild;
+      return node.firstElementChild;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
     if (nodes && nodes.size) {
@@ -366,12 +365,9 @@ export class DOMSelector {
       return this.#finder.onError(error, opt);
     }
     if (REG_UNIVERSAL.test(selector)) {
-      const wrappedNode = this.#wrapNode(node);
       const document =
-        wrappedNode.nodeType === DOCUMENT_NODE
-          ? wrappedNode
-          : wrappedNode.ownerDocument;
-      return collectAllDescendants(wrappedNode, document);
+        node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+      return collectAllDescendants(node, document);
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
     if (nodes && nodes.size) {
