@@ -156,6 +156,7 @@ export class DOMSelector {
       this.#cache.clear();
     }
     this.#finder.clearResults(true);
+    this.#nwsapi.clear(clearAll);
   };
 
   /**

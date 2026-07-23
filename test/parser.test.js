@@ -8592,7 +8592,7 @@ describe('walk AST', () => {
           hasNestedSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
-          hasStatePseudoClass: false,
+          hasStatePseudoClass: true,
           hasUnsupportedPseudoClass: false
         }
       },

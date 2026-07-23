@@ -1333,4 +1333,19 @@ export class Nwsapi {
     }
     return null;
   }
+
+  /**
+   * Clears internal caches and state.
+   * @param {boolean} clearAll - Whether to clear all caches.
+   */
+  clear(clearAll = false) {
+    if (clearAll) {
+      this.#matchLambdas.clear();
+      this.#selectLambdas.clear();
+      this.#matchResolvers.clear();
+      this.#selectResolvers.clear();
+    }
+    this.#snapshot.nthElement(null, 2);
+    this.#snapshot.nthOfType(null, 2);
+  }
 }

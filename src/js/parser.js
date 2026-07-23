@@ -38,6 +38,14 @@ const AST_SORT_ORDER = new Map([
   [ATTR_SELECTOR, BIT_16],
   [PS_CLASS_SELECTOR, BIT_32]
 ]);
+const KEYS_PS_NTH = new Set([
+  'first-child',
+  'first-of-type',
+  'last-child',
+  'last-of-type',
+  'only-child',
+  'only-of-type'
+]);
 const KEYS_PS_CLASS_STATE = new Set([
   'checked',
   'closed',
@@ -52,7 +60,8 @@ const KEYS_PS_CLASS_STATE = new Set([
   'placeholder-shown',
   'read-only',
   'read-write',
-  'valid'
+  'valid',
+  ...KEYS_PS_NTH
 ]);
 const KEYS_SHADOW_HOST = new Set(['host', 'host-context']);
 const U_FFFD = '\uFFFD';
@@ -231,9 +240,9 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
     hasForgivenPseudoFunc: false,
     hasHasPseudoFunc: false,
     hasLogicalPseudoFunc: false,
+    hasNestedSelector: false,
     hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
-    hasNestedSelector: false,
     hasStatePseudoClass: false,
     hasUnsupportedPseudoClass: false
   };
