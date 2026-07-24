@@ -97,6 +97,7 @@ export class Evaluator {
   /* private fields */
   #anbCache;
   #astCache = new WeakMap();
+  #compiledMatchers;
   #documentURL;
   #eventHandler;
   #filterLeavesCache;
@@ -149,6 +150,7 @@ export class Evaluator {
     this.invalidate = false;
     this.clearResults();
     this.#documentURL = null;
+    this.#compiledMatchers = new WeakMap();
     this.#nthIndexCache = null;
     this.#setPool = [];
     this.#setPoolIndex = 0;
@@ -249,41 +251,26 @@ export class Evaluator {
         return nodeResult;
       }
     }
-    let cacheable = true;
-    if (node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName)) {
-      cacheable = false;
+    let compiled = this.#compiledMatchers.get(leaves);
+    if (!compiled) {
+      compiled = this.#compileLeaves(leaves);
+      this.#compiledMatchers.set(leaves, compiled);
     }
-    let bool;
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      switch (leaf.type) {
-        case ATTR_SELECTOR:
-        case ID_SELECTOR: {
-          cacheable = false;
-          break;
-        }
-        case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
-            cacheable = false;
-          }
-          break;
-        }
-        default: {
-          // No action needed for other types.
-        }
-      }
-      bool = this.matchSelector(leaf, node, opt);
-      if (!bool) {
-        break;
-      }
+    const bool = compiled.matcher(node, opt);
+    let cacheable = compiled.isAstCacheable;
+    if (
+      cacheable &&
+      node.nodeType === ELEMENT_NODE &&
+      KEYS_FORM.has(node.localName)
+    ) {
+      cacheable = false;
     }
     if (cacheable) {
       if (!result) {
         result = new WeakMap();
+        results.set(leaves, result);
       }
       result.set(node, bool);
-      results.set(leaves, result);
     }
     return bool;
   };
@@ -606,6 +593,93 @@ export class Evaluator {
       }
     }
     return false;
+  };
+
+  /**
+   * Creates an optimized closure-based matcher function for a single AST leaf.
+   * @private
+   * @param {object} leaf - The AST leaf node representing a selector condition.
+   * @returns {function(object, object=): boolean} A matcher function that evaluates a node against the leaf.
+   */
+  #createLeafMatcher = leaf => {
+    switch (leaf.type) {
+      case ID_SELECTOR: {
+        const idName = unescapeSelector(leaf.name);
+        return node => node.nodeType === ELEMENT_NODE && node.id === idName;
+      }
+      case CLASS_SELECTOR: {
+        const className = unescapeSelector(leaf.name);
+        return node =>
+          node.nodeType === ELEMENT_NODE && node.classList.contains(className);
+      }
+      case TYPE_SELECTOR: {
+        return (node, opt) =>
+          node.nodeType === ELEMENT_NODE && matchTypeSelector(leaf, node, opt);
+      }
+      case ATTR_SELECTOR: {
+        return (node, opt) =>
+          node.nodeType === ELEMENT_NODE &&
+          matchAttributeSelector(leaf, node, opt);
+      }
+      case NEST_SELECTOR: {
+        const nestingAST = parseSelector(':scope', 'selector');
+        const scopeData = nestingAST.children.head.data;
+        return (node, opt) =>
+          node.nodeType === ELEMENT_NODE &&
+          this.matchPseudoClassSelector(scopeData, node, opt);
+      }
+      case PS_CLASS_SELECTOR: {
+        return (node, opt) => {
+          if (node.nodeType === ELEMENT_NODE) {
+            return this.matchPseudoClassSelector(leaf, node, opt);
+          }
+          if (this.shadow && node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+            return this.#matchSelectorForShadowRoot(leaf, node, opt);
+          }
+          return false;
+        };
+      }
+      default: {
+        return (node, opt) => this.matchSelector(leaf, node, opt);
+      }
+    }
+  };
+
+  /**
+   * Compiles an array of AST leaves into a single composite matcher function.
+   * @private
+   * @param {Array.<object>} leaves - An array of AST leaf nodes.
+   * @returns {{isAstCacheable: boolean, matcher: function(object, object=): boolean}} An object containing the compiled matcher and its cacheability flag.
+   */
+  #compileLeaves = leaves => {
+    let isAstCacheable = true;
+    const matchers = leaves.map(leaf => {
+      switch (leaf.type) {
+        case ATTR_SELECTOR:
+        case ID_SELECTOR: {
+          isAstCacheable = false;
+          break;
+        }
+        case PS_CLASS_SELECTOR: {
+          if (KEYS_PS_UNCACHE.has(leaf.name)) {
+            isAstCacheable = false;
+          }
+          break;
+        }
+      }
+      return this.#createLeafMatcher(leaf);
+    });
+    return {
+      isAstCacheable,
+      matcher: (node, opt) => {
+        for (const matcher of matchers) {
+          if (!matcher(node, opt)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    };
   };
 
   /**

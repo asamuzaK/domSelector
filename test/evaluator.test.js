@@ -9416,6 +9416,35 @@ describe('Evaluator', () => {
         're-evaluates and returns false after explicit cache clear'
       );
     });
+
+    it('should match element by nest selector AST via compiled closure', () => {
+      const leaves = [
+        {
+          name: '&',
+          type: NEST_SELECTOR
+        }
+      ];
+      const node = document.getElementById('div5');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('&', node);
+      const res = evaluator.matchLeaves(leaves, node, {});
+      assert.strictEqual(res, true, 'matches the scoped node correctly');
+    });
+
+    it('should return false when nest selector closure does not match', () => {
+      const leaves = [
+        {
+          name: '&',
+          type: NEST_SELECTOR
+        }
+      ];
+      const scopeNode = document.getElementById('div0');
+      const targetNode = document.getElementById('div5');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('&', scopeNode);
+      const res = evaluator.matchLeaves(leaves, targetNode, {});
+      assert.strictEqual(res, false, 'fails to match a non-scoped node');
+    });
   });
 
   describe('get filter leaves', () => {
