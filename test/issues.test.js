@@ -1727,4 +1727,224 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#299 - https://github.com/asamuzaK/domSelector/issues/299', () => {
+    const html = `<!doctype html><html lang="en"><body>
+      <div id="upper" data-state="ACTIVE" title="Hello World"></div>
+      <div id="lower" data-state="active" title="hello world"></div>
+      <input id="input1" type="TEXT">
+      <input id="input2" type="text">
+    </body></html>`;
+
+    it('should match both cases with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.documentElement;
+      assert.strictEqual(
+        target.matches('[lang="EN"]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[lang="en"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should match both cases with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('input1');
+      assert.strictEqual(
+        target.matches('[type="TEXT"]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[type="text"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should match upper case with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('input1');
+      assert.strictEqual(
+        target.matches('[type="TEXT" s]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[type="text" s]'),
+        false,
+        'lower cased value'
+      );
+    });
+
+    it('should match both cases with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('input2');
+      assert.strictEqual(
+        target.matches('[type="TEXT"]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[type="text"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should match exactly with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('input1');
+      assert.strictEqual(
+        target.matches('[id="INPUT1"]'),
+        false,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[id="input1"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should only match upper case with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('upper');
+      assert.strictEqual(
+        target.matches('[data-state="ACTIVE"]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[data-state="active"]'),
+        false,
+        'lower cased value'
+      );
+    });
+
+    it('should only match upper case with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('upper');
+      assert.strictEqual(
+        target.matches('[title^="Hello"]'),
+        true,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[title^="hello"]'),
+        false,
+        'lower cased value'
+      );
+    });
+
+    it('should only match lower case with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('lower');
+      assert.strictEqual(
+        target.matches('[data-state="ACTIVE"]'),
+        false,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[data-state="active"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should only match lower case with matches()', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('lower');
+      assert.strictEqual(
+        target.matches('[title^="Hello"]'),
+        false,
+        'upper cased value'
+      );
+      assert.strictEqual(
+        target.matches('[title^="hello"]'),
+        true,
+        'lower cased value'
+      );
+    });
+
+    it('should match both cases with querySelectorAll()', () => {
+      const { document } = jsdom(html).window;
+      const node = document.documentElement;
+      assert.deepEqual(
+        document.querySelectorAll('[lang="EN"]'),
+        [node],
+        'upper cased value'
+      );
+      assert.deepEqual(
+        document.querySelectorAll('[lang="en"]'),
+        [node],
+        'lower cased value'
+      );
+    });
+
+    it('should match both cases with querySelectorAll()', () => {
+      const { document } = jsdom(html).window;
+      const input1 = document.getElementById('input1');
+      const input2 = document.getElementById('input2');
+      assert.deepEqual(
+        document.querySelectorAll('[type="TEXT"]'),
+        [input1, input2],
+        'upper cased value'
+      );
+      assert.deepEqual(
+        document.querySelectorAll('[type="text"]'),
+        [input1, input2],
+        'lower cased value'
+      );
+    });
+
+    it('should only match upper case with querySelectorAll()', () => {
+      const { document } = jsdom(html).window;
+      const upper = document.getElementById('upper');
+      assert.deepEqual(
+        document.querySelectorAll('[data-state="ACTIVE"]'),
+        [upper],
+        'upper cased value'
+      );
+      assert.deepEqual(
+        document.querySelectorAll('[title^="Hello"]'),
+        [upper],
+        'upper cased value'
+      );
+    });
+
+    it('should only match lower case with querySelectorAll()', () => {
+      const { document } = jsdom(html).window;
+      const lower = document.getElementById('lower');
+      assert.deepEqual(
+        document.querySelectorAll('[data-state="active"]'),
+        [lower],
+        'lower cased value'
+      );
+      assert.deepEqual(
+        document.querySelectorAll('[title^="hello"]'),
+        [lower],
+        'lower cased value'
+      );
+    });
+
+    it('should match exactly with querySelectorAll()', () => {
+      const { document } = jsdom(html).window;
+      const input1 = document.getElementById('input1');
+      assert.deepEqual(
+        document.querySelectorAll('[id="INPUT1"]'),
+        [],
+        'upper cased value'
+      );
+      assert.deepEqual(
+        document.querySelectorAll('[id="input1"]'),
+        [input1],
+        'upper cased value'
+      );
+    });
+  });
 });

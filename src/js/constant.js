@@ -134,6 +134,56 @@ export const INPUT_LTR = Object.freeze([
   'time'
 ]);
 
+/* Attribute names that must treet values as ASCII case-insensitive */
+export const ATTR_VALUE_I = Object.freeze([
+  'accept',
+  'accept-charset',
+  'align',
+  'alink',
+  'axis',
+  'bgcolor',
+  'charset',
+  'checked',
+  'clear',
+  'codetype',
+  'color',
+  'compact',
+  'declare',
+  'defer',
+  'dir',
+  'direction',
+  'disabled',
+  'enctype',
+  'face',
+  'frame',
+  'hreflang',
+  'http-equiv',
+  'lang',
+  'language',
+  'link',
+  'media',
+  'method',
+  'multiple',
+  'nohref',
+  'noresize',
+  'noshade',
+  'nowrap',
+  'readonly',
+  'rel',
+  'rev',
+  'rules',
+  'scope',
+  'scrolling',
+  'selected',
+  'shape',
+  'target',
+  'text',
+  'type',
+  'valign',
+  'valuetype',
+  'vlink'
+]);
+
 /* logical combination pseudo-classes */
 export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
 
