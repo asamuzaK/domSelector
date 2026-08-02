@@ -393,6 +393,43 @@ describe('nwsapi', () => {
       assert.strictEqual(state.set, 2, 'Should have used the cache at index 2');
       [c1, c2, c3].forEach(c => document.body.removeChild(c));
     });
+
+    it('should reset state cache when isOfType is true and element has non-XHTML namespace', () => {
+      const div1 = document.createElement('div');
+      div1.innerHTML = '<p id="test-p1"></p>';
+      const div2 = document.createElement('div');
+      div2.innerHTML = '<p id="test-p2"></p>';
+      document.body.appendChild(div1);
+      document.body.appendChild(div2);
+      nw.solveNth(div1.firstChild, false, state, true);
+      nw.solveNth(div2.firstChild, false, state, true);
+      assert.strictEqual(
+        state.parents.length,
+        2,
+        'Cache should initially contain multiple parents'
+      );
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      document.body.appendChild(svg);
+      const result = nw.solveNth(svg, false, state, true);
+      assert.strictEqual(
+        result,
+        1,
+        'Should return index 1 for the SVG element'
+      );
+      assert.strictEqual(
+        state.parents.length,
+        1,
+        'Cache should be reset, leaving only the new parent'
+      );
+      assert.strictEqual(
+        state.parents[0],
+        document.body,
+        'New parent is correctly cached at index 0 after reset'
+      );
+      document.body.removeChild(div1);
+      document.body.removeChild(div2);
+      document.body.removeChild(svg);
+    });
   });
 
   describe('solveNth() start element selection coverage', () => {
@@ -1260,6 +1297,34 @@ describe('nwsapi', () => {
           'Route 3: standard suffix match'
         );
         document.body.removeChild(div);
+      });
+
+      it('should determine case-sensitivity for attribute matchers correctly', () => {
+        const div = document.createElement('div');
+        div.setAttribute('data-custom', 'UPPERCASE');
+        assert.strictEqual(
+          api.match('[data-custom="uppercase"]', div),
+          false,
+          'Should strictly match case for standard custom attributes without "i" modifier'
+        );
+        assert.strictEqual(
+          api.match('[data-custom="uppercase" i]', div),
+          true,
+          'Should ignore case when explicit "i" modifier is provided'
+        );
+        const input = document.createElement('input');
+        input.setAttribute('type', 'CHECKBOX');
+        assert.strictEqual(
+          api.match('[type="checkbox"]', input),
+          true,
+          'Should ignore case automatically for attributes defined in HTML_TABLE (e.g., type)'
+        );
+        div.setAttribute('lang', 'EN-US');
+        assert.strictEqual(
+          api.match('[lang="en-us"]', div),
+          true,
+          'Should ignore case automatically for HTML_TABLE attributes like lang'
+        );
       });
     });
 

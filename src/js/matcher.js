@@ -16,6 +16,7 @@ import {
 /* constants */
 import {
   ALPHA_NUM,
+  ATTR_VALUE_I,
   INPUT_EDIT,
   LANG_PART,
   NOT_SUPPORTED_ERR,
@@ -23,6 +24,7 @@ import {
   STRING,
   SYNTAX_ERR
 } from './constant.js';
+const KEYS_ATTR_VALUE_I = new Set(ATTR_VALUE_I);
 const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 
 /* regexp */
@@ -453,18 +455,18 @@ export const matchAttributeSelector = (
   }
   if (meta.caseInsensitive === undefined) {
     let caseInsensitive = false;
-    if (isHTML) {
-      caseInsensitive = typeof astFlags !== 'string' || !/^s$/i.test(astFlags);
-    } else {
-      caseInsensitive = typeof astFlags === 'string' && /^i$/i.test(astFlags);
+    if (typeof astFlags === 'string') {
+      caseInsensitive = /^i$/i.test(astFlags);
+    } else if (isHTML) {
+      caseInsensitive = KEYS_ATTR_VALUE_I.has(astName.name);
     }
     meta.caseInsensitive = caseInsensitive;
     let astAttrName = unescapeSelector(astName.name);
-    if (caseInsensitive) {
+    meta.hasPipeInName = astAttrName.indexOf('|') > -1;
+    if ((isHTML && !meta.hasPipeInName) || caseInsensitive) {
       astAttrName = astAttrName.toLowerCase();
     }
     meta.astAttrName = astAttrName;
-    meta.hasPipeInName = astAttrName.indexOf('|') > -1;
     if (meta.hasPipeInName) {
       const { prefix, localName } = parseAstName(astAttrName);
       meta.astPrefix = prefix;

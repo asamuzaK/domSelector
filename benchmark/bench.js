@@ -178,7 +178,8 @@ const selectors = [
   '.box:first-of-type',
   '.box:nth-of-type(2n+1)',
   '*',
-  '[id]'
+  '[id]',
+  '[class="content"]'
 ];
 
 /* matcher tests */
@@ -556,6 +557,12 @@ bench
   })
   .add(`patched-jsdom matches('${selectors[17]}')`, () => {
     elementMatchesRandom2('patched-jsdom', selectors[17], 'p');
+  })
+  .add(`jsdom matches('${selectors[26]}')`, () => {
+    elementMatchesRandom('jsdom', selectors[26], 'p');
+  })
+  .add(`patched-jsdom matches('${selectors[26]}')`, () => {
+    elementMatchesRandom('patched-jsdom', selectors[26], 'p');
   })
   .add(`jsdom closest('${selectors[19]}')`, () => {
     elementClosestRandom('jsdom', selectors[19], 'p');
