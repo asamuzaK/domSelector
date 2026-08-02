@@ -82,6 +82,7 @@ export declare const INPUT_DATE: readonly string[];
 export declare const INPUT_TEXT: readonly string[];
 export declare const INPUT_EDIT: readonly string[];
 export declare const INPUT_LTR: readonly string[];
+export declare const ATTR_VALUE_I: readonly string[];
 export declare const KEYS_LOGICAL: Set<string>;
 export declare const KEYS_PS_CLASS_SUPPORTED: Set<string>;
 export declare const KEYS_PS_CLASS_UNSUPPORTED: Set<string>;
