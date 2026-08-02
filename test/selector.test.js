@@ -629,7 +629,7 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func('p.foo', TARGET_ALL), true, 'result');
       assert.strictEqual(
         func('p.content[id]:is(:last-child, :only-child)', TARGET_ALL),
-        false,
+        true,
         'result'
       );
       assert.strictEqual(func('.box + .box', TARGET_ALL), false, 'result');
@@ -650,15 +650,15 @@ describe('selector static analysis and validation', () => {
         true,
         'result'
       );
-      assert.strictEqual(func('[id="foo"]', TARGET_ALL), false, 'result');
+      assert.strictEqual(func('[id="foo"]', TARGET_ALL), true, 'result');
       assert.strictEqual(
         func('*[role~="button"]', TARGET_ALL),
-        false,
+        true,
         'result'
       );
       assert.strictEqual(
         func('[title],svg>title', TARGET_ALL),
-        false,
+        true,
         'result'
       );
     });
@@ -671,16 +671,16 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func(':has(.foo)', TARGET_LINEAL), false, 'result');
     });
 
-    it('should exclude attribute selectors', () => {
-      assert.strictEqual(func('[foo]'), false, 'valid attribute selector');
+    it('should evaluate attribute selector integrity', () => {
+      assert.strictEqual(func('[foo]'), true, 'valid attribute selector');
       assert.strictEqual(
         func('div[foo="bar"]'),
-        false,
+        true,
         'valid attribute selector'
       );
       assert.strictEqual(
         func('[foo][bar]'),
-        false,
+        true,
         'multiple valid attribute selectors'
       );
       assert.strictEqual(func('[foo'), false, 'missing closing bracket');
@@ -701,12 +701,12 @@ describe('selector static analysis and validation', () => {
       );
       assert.strictEqual(
         func('[title="foo"], svg title'),
-        false,
+        true,
         'valid testing library attribute selector with decendent combinator'
       );
       assert.strictEqual(
         func('[title="foo"], svg > title'),
-        false,
+        true,
         'valid testing library attribute selector with child combinator'
       );
       assert.strictEqual(
