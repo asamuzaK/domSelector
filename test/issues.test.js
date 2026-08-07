@@ -1947,4 +1947,63 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+  describe('#302 - https://github.com/asamuzaK/domSelector/issues/302', () => {
+    const html = `
+      <object id="foo"></object>
+      <object id="foo"></object>
+      <img id="foo">
+      <div id="bar"><span>baz</span></div>
+      <b id="bar">qux</b>
+    `;
+
+    it('should match a later element sharing the id', () => {
+      const { document } = jsdom(html).window;
+      const img = document.getElementsByTagName('img')[0];
+      assert.deepEqual(document.querySelector('img#foo'), img, 'type and id');
+      assert.deepEqual(
+        document.querySelector('#foo:not(object)'),
+        img,
+        'negated type'
+      );
+    });
+
+    it('should stay consistent with querySelectorAll() and matches()', () => {
+      const { document } = jsdom(html).window;
+      const img = document.getElementsByTagName('img')[0];
+      assert.deepEqual(
+        document.querySelectorAll('img#foo'),
+        [img],
+        'querySelectorAll()'
+      );
+      assert.strictEqual(img.matches('img#foo'), true, 'matches()');
+      assert.deepEqual(
+        document.querySelector('img#foo'),
+        img,
+        'querySelector()'
+      );
+    });
+
+    it('should still answer with the first element for a plain id selector', () => {
+      const { document } = jsdom(html).window;
+      const [firstObject] = document.getElementsByTagName('object');
+      assert.deepEqual(document.querySelector('#foo'), firstObject, 'plain id');
+      assert.deepEqual(
+        document.querySelector('object#foo'),
+        firstObject,
+        'first element matches'
+      );
+    });
+
+    it('should return null when nothing sharing the id matches', () => {
+      const { document } = jsdom(html).window;
+      assert.deepEqual(document.querySelector('p#foo'), null, 'no match');
+      assert.deepEqual(document.querySelector('#nope'), null, 'unknown id');
+    });
+
+    it('should match a later element sharing the id of an ancestor', () => {
+      const { document } = jsdom(html).window;
+      const b = document.getElementsByTagName('b')[0];
+      assert.deepEqual(document.querySelector('b#bar'), b, 'type and id');
+    });
+  });
 });
