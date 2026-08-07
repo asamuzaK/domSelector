@@ -1947,6 +1947,7 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
   describe('#302 - https://github.com/asamuzaK/domSelector/issues/302', () => {
     const html = `
       <object id="foo"></object>
