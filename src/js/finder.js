@@ -414,17 +414,18 @@ export class Finder extends Evaluator {
     ) {
       const [leaf] = leaves;
       const node = this.root.getElementById(leaf.name);
-      const nodes = [];
-      if (node) {
-        if (filterLeaves.length) {
-          if (this.matchLeaves(filterLeaves, node, this.matchOpts)) {
-            nodes.push(node);
-          }
-        } else {
-          nodes.push(node);
-        }
+      /*
+       * getElementById() answers with the first element carrying the id. For a compound
+       * selector that element may fail the remaining leaves while a later element sharing the
+       * id still matches, so the shortcut can only conclude the search when it succeeds.
+       */
+      if (!filterLeaves.length) {
+        const nodes = node ? [node] : [];
+        return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
-      return { compound, filtered: nodes.length > 0, nodes, pending: false };
+      if (node && this.matchLeaves(filterLeaves, node, this.matchOpts)) {
+        return { compound, filtered: true, nodes: [node], pending: false };
+      }
     }
     return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
   };
