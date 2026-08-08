@@ -462,11 +462,19 @@ export const matchAttributeSelector = (
     }
     meta.caseInsensitive = caseInsensitive;
     let astAttrName = unescapeSelector(astName.name);
-    meta.hasPipeInName = astAttrName.indexOf('|') > -1;
-    if ((isHTML && !meta.hasPipeInName) || caseInsensitive) {
+    if (isHTML) {
+      if (typeof astFlags === 'string') {
+        if (/^i$/i.test(astFlags)) {
+          astAttrName = astAttrName.toLowerCase();
+        }
+      } else {
+        astAttrName = astAttrName.toLowerCase();
+      }
+    } else if (caseInsensitive) {
       astAttrName = astAttrName.toLowerCase();
     }
     meta.astAttrName = astAttrName;
+    meta.hasPipeInName = astAttrName.indexOf('|') > -1;
     if (meta.hasPipeInName) {
       const { prefix, localName } = parseAstName(astAttrName);
       meta.astPrefix = prefix;
