@@ -831,6 +831,51 @@ describe('jsdom issues tagged with `selectors` label', () => {
     });
   });
 
+  describe('#4227 - https://github.com/jsdom/jsdom/issues/4227', () => {
+    const html = `
+    <div id="test-container">
+      <div class="root" id="root">
+        <table>
+          <tbody>
+            <tr id="row"></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    `;
+    let window, document;
+    beforeEach(() => {
+      const dom = jsdom(html);
+      window = dom.window;
+      document = window.document;
+    });
+    afterEach(() => {
+      window.close();
+      document = null;
+      window = null;
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('row');
+      const res = document.querySelectorAll('.root table tbody tr');
+      assert.deepEqual([...res], [node], 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('row');
+      const root = document.getElementById('root');
+      const res = root.querySelectorAll('table tbody tr');
+      assert.deepEqual([...res], [node], 'result');
+    });
+
+    it('should get matched node', () => {
+      const node = document.getElementById('row');
+      const root = document.getElementById('root');
+      const res = root.querySelectorAll('.root table tbody tr');
+      assert.deepEqual([...res], [node], 'result');
+    });
+  });
+
   /* xml related issues */
   describe('#2159 - https://github.com/jsdom/jsdom/issues/2159', () => {
     let window;
