@@ -1956,6 +1956,95 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
+    it('should lowercase attribute name in HTML with uppercase I flag', () => {
+      const ast = {
+        flags: 'I',
+        matcher: '=',
+        name: {
+          name: 'Foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('Foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should NOT lowercase attribute name in HTML with s flag', () => {
+      const ast = {
+        flags: 's',
+        matcher: '=',
+        name: {
+          name: 'Foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('Foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should lowercase attribute name in HTML when no flags are provided', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'Foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('Foo', 'bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should not lowercase attribute name in XML when no flags are provided', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: {
+          name: 'Foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: 'bar'
+        }
+      };
+      const domStr = '<root/>';
+      const doc = new window.DOMParser().parseFromString(domStr, 'text/xml');
+      const node = doc.createElement('item');
+      node.setAttribute('foo', 'bar');
+      doc.documentElement.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
     it('should match case-sensitive namespaced attribute', () => {
       const ast = {
         flags: 's',
