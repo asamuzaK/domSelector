@@ -651,16 +651,8 @@ describe('selector static analysis and validation', () => {
         'result'
       );
       assert.strictEqual(func('[id="foo"]', TARGET_ALL), true, 'result');
-      assert.strictEqual(
-        func('*[role~="button"]', TARGET_ALL),
-        true,
-        'result'
-      );
-      assert.strictEqual(
-        func('[title],svg>title', TARGET_ALL),
-        true,
-        'result'
-      );
+      assert.strictEqual(func('*[role~="button"]', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('[title],svg>title', TARGET_ALL), true, 'result');
     });
 
     it('should evaluate complex logical pseudo-classes', () => {

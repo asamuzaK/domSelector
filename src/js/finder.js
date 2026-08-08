@@ -178,6 +178,13 @@ export class Finder extends Evaluator {
   #traverseAndCollectNodes = (walker, leaves, opt = {}) => {
     const { boundaryNode, force, startNode, targetType } = opt;
     const collectedNodes = [];
+    if (
+      targetType === TARGET_ALL &&
+      boundaryNode &&
+      this.matchLeaves(leaves, boundaryNode, this.matchOpts)
+    ) {
+      collectedNodes.push(boundaryNode);
+    }
     let currentNode = traverseNode(startNode, walker, !!force);
     if (currentNode.nodeType !== ELEMENT_NODE) {
       currentNode = walker.nextNode();
@@ -223,9 +230,9 @@ export class Finder extends Evaluator {
       this.#rootWalker = this.createTreeWalker(this.root);
     }
     return this.#traverseAndCollectNodes(this.#rootWalker, leaves, {
+      boundaryNode: this.node,
       force,
       targetType,
-      boundaryNode: this.node,
       startNode: node
     });
   };
