@@ -2052,4 +2052,40 @@ describe('domSelector regression tests', () => {
       assert.deepEqual(document.querySelector('b#bar'), b, 'type and id');
     });
   });
+
+  describe('#306 - https://github.com/asamuzaK/domSelector/issues/306', () => {
+    const html = `'<!doctype html>
+    <body>
+      <svg id="target" viewBox="0 0 10 10" preserveAspectRatio="xMidYMid" class="logo"></svg>
+    </body>'
+    `;
+
+    it('should match case sensitive attribute', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('target');
+      const res = document.querySelector('svg[viewBox]');
+      assert.deepEqual(res, target);
+    });
+
+    it('should match case insensitive attribute', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('target');
+      const res = document.querySelector('svg[viewBox="0 0 10 10" i]');
+      assert.deepEqual(res, target);
+    });
+
+    it('should match case sensitive attribute', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('target');
+      const res = document.querySelector('svg[viewBox="0 0 10 10"]');
+      assert.deepEqual(res, target);
+    });
+
+    it('should match case sensitive attribute', () => {
+      const { document } = jsdom(html).window;
+      const target = document.getElementById('target');
+      const res = document.querySelector('svg[preserveAspectRatio="xMidYMid"]');
+      assert.deepEqual(res, target);
+    });
+  });
 });

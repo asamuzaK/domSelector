@@ -49,9 +49,11 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
+const NS_HTML = 'http://www.w3.org/1999/xhtml';
 
 /* regexp */
-const REG_IS_HTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
+const REG_IS_HTML = /^text\/html$/;
+const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
 
@@ -205,11 +207,30 @@ export const traverseNode = (node, walker, force = false) => {
 };
 
 /**
+ * Check if a node is an HTML element.
+ * @param {object} node - The Element node.
+ * @returns {boolean} - True if it's the HTML element.
+ */
+export const isHTMLElement = node => {
+  if (!node?.nodeType) {
+    throw new TypeError(`Unexpected type ${getType(node)}`);
+  }
+  if (node.nodeType !== ELEMENT_NODE) {
+    return false;
+  }
+  const { namespaceURI, ownerDocument } = node;
+  return (
+    REG_IS_HTML.test(ownerDocument.contentType) &&
+    (!namespaceURI || namespaceURI === NS_HTML)
+  );
+};
+
+/**
  * Check if a node is a custom element.
  * @param {object} node - The Element node.
  * @param {object} [opt] - Options.
  * @param {boolean} [opt.formAssociated] - True if the node is form associated.
- * @returns {boolean} - True if it's a custom element.
+ * @returns {boolean} - True if it's the custom element.
  */
 export const isCustomElement = (node, { formAssociated } = {}) => {
   if (!node?.nodeType) {
@@ -409,7 +430,7 @@ export const getLanguageAttribute = (node, langCache = new WeakMap()) => {
     return langCache.get(node);
   }
   const { contentType } = node.ownerDocument;
-  const isHtml = REG_IS_HTML.test(contentType);
+  const isHtml = REG_IS_XHTML.test(contentType);
   const isXml = REG_IS_XML.test(contentType);
   let isShadow = false;
   let result;
