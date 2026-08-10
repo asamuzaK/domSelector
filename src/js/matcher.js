@@ -10,6 +10,7 @@ import {
   getLanguageAttribute,
   getType,
   isContentEditable,
+  isHTMLElement,
   isNamespaceDeclared
 } from './utility.js';
 
@@ -400,7 +401,7 @@ export const matchAttributeSelector = (
       globalObject
     );
   }
-  const isHTML = node.ownerDocument.contentType === 'text/html';
+  const isHTML = isHTMLElement(node);
   let meta = astMetaCache.get(ast);
   if (meta === undefined) {
     meta = {
@@ -717,9 +718,7 @@ export const matchTypeSelector = (
     meta.astLocalNameLowerCased = parsedLocalName.toLowerCase();
     meta.hasPipe = astName.includes('|');
   }
-  const isHTML =
-    node.ownerDocument.contentType === 'text/html' &&
-    (!namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml');
+  const isHTML = isHTMLElement(node);
   if (isHTML && localName === meta.astLocalName && !meta.hasPipe) {
     return true;
   }

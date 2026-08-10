@@ -377,6 +377,88 @@ describe('utility functions', () => {
     });
   });
 
+  describe('is HTML element', () => {
+    const func = util.isHTMLElement;
+
+    it('should throw TypeError when node argument is undefined', () => {
+      assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
+    });
+
+    it('should throw TypeError when node argument is a string', () => {
+      assert.throws(() => func('foo'), TypeError, 'Unexpected type String');
+    });
+
+    it('should return false for Document node type', () => {
+      const res = func(document);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false for DocumentFragment node type', () => {
+      const frag = document.createDocumentFragment();
+      const res = func(frag);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false for Text node type', () => {
+      const text = document.createTextNode('foo');
+      const res = func(text);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return true for standard HTML div element', () => {
+      const node = document.createElement('div');
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return true for HTML element with explicit HTML namespace', () => {
+      const node = document.createElementNS(
+        'http://www.w3.org/1999/xhtml',
+        'div'
+      );
+      const res = func(node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false for SVG element in HTML document', () => {
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false for MathML element in HTML document', () => {
+      const node = document.createElementNS(
+        'http://www.w3.org/1998/Math/MathML',
+        'math'
+      );
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false for element in XML document (contentType is text/xml)', () => {
+      const xmlDom = '<foo id="foo"><bar id="bar"/></foo>';
+      const doc = new window.DOMParser().parseFromString(xmlDom, 'text/xml');
+      const node = doc.getElementById('bar');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should return false for XHTML element in application/xhtml+xml document', () => {
+      const xhtmlDom =
+        '<html xmlns="http://www.w3.org/1999/xhtml"><body><div id="div1"></div></body></html>';
+      const doc = new window.DOMParser().parseFromString(
+        xhtmlDom,
+        'application/xhtml+xml'
+      );
+      const node = doc.getElementById('div1');
+      const res = func(node);
+      assert.strictEqual(res, false, 'result');
+    });
+  });
+
   describe('is custom element', () => {
     const func = util.isCustomElement;
 
