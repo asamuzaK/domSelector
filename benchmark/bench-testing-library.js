@@ -3,6 +3,7 @@
  */
 import { run, bench, group } from 'mitata';
 import { JSDOM } from 'jsdom';
+import idlUtils from 'jsdom/lib/generated/idl/utils.js';
 import { DOMSelector } from '../src/index.js';
 
 const DEPTH = 4;
@@ -62,18 +63,13 @@ root.appendChild(targetRole);
 const totalElements = document.querySelectorAll('*').length;
 
 const domSelector = new DOMSelector(window);
-const documentImpl = {
-  compatMode: document.compatMode,
-  contentType: document.contentType,
-  nodeType: document.nodeType
-};
+const documentImpl = idlUtils.implForWrapper(document);
 const jsdomSelector = new DOMSelector(window, documentImpl, {
-  idlUtils: {
-    implForWrapper: node => (node === document ? documentImpl : node),
-    wrapperForImpl: node => node
-  }
+  idlUtils
 });
-const implicitRoleCandidates = [...document.querySelectorAll('input')];
+const implicitRoleCandidates = [...document.querySelectorAll('input')].map(
+  idlUtils.implForWrapper
+);
 
 console.log(`=======================================`);
 console.log(`DOMSelector Testing Library Queries Benchmark`);

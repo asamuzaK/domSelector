@@ -5,6 +5,7 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
+import idlUtils from 'jsdom/lib/generated/idl/utils.js';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as cssTree from 'css-tree';
@@ -921,23 +922,19 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, true, 'result');
     });
 
-    it('should compare wrapped document using idlUtils', () => {
+    it('should use Fast Path with jsdom implementation nodes', () => {
       const node = document.getElementById('li2');
-      const documentImpl = {
-        compatMode: 'CSS1Compat',
-        contentType: 'text/html',
-        nodeType: 9
-      };
-      const nodeImpl = {};
-      const wrapperForImpl = sinon.stub();
-      wrapperForImpl.withArgs(nodeImpl).returns(node);
-      const implForWrapper = sinon.stub();
-      implForWrapper.withArgs(document).returns(documentImpl);
+      const documentImpl = idlUtils.implForWrapper(document);
+      const nodeImpl = idlUtils.implForWrapper(node);
+      // The Finder fallback walks parentNode while resolving the root.
+      const parentNodeGetter = sinon.spy(node, 'parentNode', ['get']);
       const domSelector = new DOMSelector(window, documentImpl, {
-        idlUtils: { implForWrapper, wrapperForImpl }
+        idlUtils
       });
       const res = domSelector.matches('li', nodeImpl);
-      assert.strictEqual(implForWrapper.calledOnceWithExactly(document), true);
+      const parentNodeCallCount = parentNodeGetter.get.callCount;
+      parentNodeGetter.get.restore();
+      assert.strictEqual(parentNodeCallCount, 0, 'Fast Path');
       assert.strictEqual(res, true, 'result');
     });
 
