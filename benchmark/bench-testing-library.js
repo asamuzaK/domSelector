@@ -62,6 +62,18 @@ root.appendChild(targetRole);
 const totalElements = document.querySelectorAll('*').length;
 
 const domSelector = new DOMSelector(window);
+const documentImpl = {
+  compatMode: document.compatMode,
+  contentType: document.contentType,
+  nodeType: document.nodeType
+};
+const jsdomSelector = new DOMSelector(window, documentImpl, {
+  idlUtils: {
+    implForWrapper: node => (node === document ? documentImpl : node),
+    wrapperForImpl: node => node
+  }
+});
+const implicitRoleCandidates = [...document.querySelectorAll('input')];
 
 console.log(`=======================================`);
 console.log(`DOMSelector Testing Library Queries Benchmark`);
@@ -110,6 +122,14 @@ group(`Testing Library Typical Queries (Element)`, () => {
 
   bench(`[title="target-title"], svg title`, () => {
     domSelector.querySelectorAll('[title="target-title"], svg title', root);
+  });
+});
+
+group(`Testing Library Implicit Role Matching (jsdom)`, () => {
+  bench(`input:not([type]):not([list])`, () => {
+    for (const candidate of implicitRoleCandidates) {
+      jsdomSelector.matches('input:not([type]):not([list])', candidate);
+    }
   });
 });
 

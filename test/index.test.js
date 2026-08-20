@@ -921,6 +921,26 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, true, 'result');
     });
 
+    it('should compare wrapped document using idlUtils', () => {
+      const node = document.getElementById('li2');
+      const documentImpl = {
+        compatMode: 'CSS1Compat',
+        contentType: 'text/html',
+        nodeType: 9
+      };
+      const nodeImpl = {};
+      const wrapperForImpl = sinon.stub();
+      wrapperForImpl.withArgs(nodeImpl).returns(node);
+      const implForWrapper = sinon.stub();
+      implForWrapper.withArgs(document).returns(documentImpl);
+      const domSelector = new DOMSelector(window, documentImpl, {
+        idlUtils: { implForWrapper, wrapperForImpl }
+      });
+      const res = domSelector.matches('li', nodeImpl);
+      assert.strictEqual(implForWrapper.calledOnceWithExactly(document), true);
+      assert.strictEqual(res, true, 'result');
+    });
+
     it('should return false for pseudo-element via matches()', () => {
       const wrapperForImpl = sinon.stub().callsFake(node => node);
       const i = wrapperForImpl.callCount;
