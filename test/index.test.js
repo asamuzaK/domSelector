@@ -5,6 +5,7 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
+import idlUtils from 'jsdom/lib/generated/idl/utils.js';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as cssTree from 'css-tree';
@@ -919,6 +920,22 @@ describe('DOMSelector', () => {
       delete node._ownerDocument;
       assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
       assert.deepEqual(res, true, 'result');
+    });
+
+    it('should use Fast Path with jsdom implementation nodes', () => {
+      const node = document.getElementById('li2');
+      const documentImpl = idlUtils.implForWrapper(document);
+      const nodeImpl = idlUtils.implForWrapper(node);
+      // The Finder fallback walks parentNode while resolving the root.
+      const parentNodeGetter = sinon.spy(node, 'parentNode', ['get']);
+      const domSelector = new DOMSelector(window, documentImpl, {
+        idlUtils
+      });
+      const res = domSelector.matches('li', nodeImpl);
+      const parentNodeCallCount = parentNodeGetter.get.callCount;
+      parentNodeGetter.get.restore();
+      assert.strictEqual(parentNodeCallCount, 0, 'Fast Path');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should return false for pseudo-element via matches()', () => {

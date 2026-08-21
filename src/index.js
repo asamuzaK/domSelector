@@ -105,9 +105,11 @@ export class DOMSelector {
    */
   #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
     const document = node.ownerDocument;
+    // jsdom passes an internal document to the constructor but wraps entry nodes.
     if (
       node.isConnected &&
-      document === this.#document &&
+      (document === this.#document ||
+        this.#idlUtils?.implForWrapper?.(document) === this.#document) &&
       document.contentType === 'text/html' &&
       document.documentElement
     ) {

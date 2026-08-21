@@ -3,6 +3,7 @@
  */
 import { run, bench, group } from 'mitata';
 import { JSDOM } from 'jsdom';
+import idlUtils from 'jsdom/lib/generated/idl/utils.js';
 import { DOMSelector } from '../src/index.js';
 
 const DEPTH = 4;
@@ -62,6 +63,13 @@ root.appendChild(targetRole);
 const totalElements = document.querySelectorAll('*').length;
 
 const domSelector = new DOMSelector(window);
+const documentImpl = idlUtils.implForWrapper(document);
+const jsdomSelector = new DOMSelector(window, documentImpl, {
+  idlUtils
+});
+const implicitRoleCandidates = [...document.querySelectorAll('input')].map(
+  idlUtils.implForWrapper
+);
 
 console.log(`=======================================`);
 console.log(`DOMSelector Testing Library Queries Benchmark`);
@@ -110,6 +118,14 @@ group(`Testing Library Typical Queries (Element)`, () => {
 
   bench(`[title="target-title"], svg title`, () => {
     domSelector.querySelectorAll('[title="target-title"], svg title', root);
+  });
+});
+
+group(`Testing Library Implicit Role Matching (jsdom)`, () => {
+  bench(`input:not([type]):not([list])`, () => {
+    for (const candidate of implicitRoleCandidates) {
+      jsdomSelector.matches('input:not([type]):not([list])', candidate);
+    }
   });
 });
 
