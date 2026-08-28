@@ -20,7 +20,9 @@ import { collectAllDescendants, getType } from './js/utility.js';
 /* constants */
 import {
   DOCUMENT_NODE,
+  DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
+  SHOW_ELEMENT,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -31,6 +33,28 @@ const CACHE_SIZE = 4096;
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
+const REG_SIMPLE_DATA_ATTRIBUTE = /^\[(data-[a-z0-9_-]+)\]$/;
+
+/**
+ * Tests whether an element has an attribute with the given local name.
+ * @param {Element} node - The element to test.
+ * @param {string} name - The lower-case attribute local name.
+ * @returns {boolean} `true` if the attribute is present.
+ */
+const hasAttributeLocalName = (node, name) => {
+  if (node.hasAttribute(name)) {
+    return true;
+  }
+  const names = node.getAttributeNames();
+  for (let i = 0; i < names.length; i++) {
+    const itemName = names[i];
+    const colonIndex = itemName.indexOf(':');
+    if (colonIndex > -1 && itemName.slice(colonIndex + 1) === name) {
+      return true;
+    }
+  }
+  return false;
+};
 
 /**
  * @typedef {object} CheckResult
@@ -145,6 +169,45 @@ export class DOMSelector {
     } catch (e) {
       return this.#finder.onError(e, opt);
     }
+  };
+
+  /**
+   * Finds descendants for the simple data attribute-presence selectors used by
+   * Testing Library. More complex selectors continue through Finder.
+   * @private
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Document|DocumentFragment|Element} node - The node to find within.
+   * @returns {?Array<Element>} Matching elements, or `null` when this fast path does not apply.
+   */
+  #findBySimpleDataAttribute = (selector, node) => {
+    if (typeof selector !== 'string') {
+      return null;
+    }
+    const match = REG_SIMPLE_DATA_ATTRIBUTE.exec(selector);
+    if (
+      !match ||
+      (node.nodeType !== DOCUMENT_NODE &&
+        node.nodeType !== DOCUMENT_FRAGMENT_NODE &&
+        node.nodeType !== ELEMENT_NODE)
+    ) {
+      return null;
+    }
+    const document =
+      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+    if (document.contentType !== 'text/html') {
+      return null;
+    }
+    const name = match[1];
+    const walker = document.createTreeWalker(node, SHOW_ELEMENT);
+    const nodes = [];
+    let descendant = walker.nextNode();
+    while (descendant) {
+      if (hasAttributeLocalName(descendant, name)) {
+        nodes.push(descendant);
+      }
+      descendant = walker.nextNode();
+    }
+    return nodes;
   };
 
   /**
@@ -371,6 +434,10 @@ export class DOMSelector {
       const document =
         node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
+    }
+    const fastNodes = this.#findBySimpleDataAttribute(selector, node);
+    if (fastNodes) {
+      return fastNodes;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
     if (nodes && nodes.size) {

@@ -67,6 +67,7 @@ const documentImpl = idlUtils.implForWrapper(document);
 const jsdomSelector = new DOMSelector(window, documentImpl, {
   idlUtils
 });
+const rootImpl = idlUtils.implForWrapper(root);
 const implicitRoleCandidates = [...document.querySelectorAll('input')].map(
   idlUtils.implForWrapper
 );
@@ -78,6 +79,10 @@ console.log(`Total Elements in Document: ${totalElements}`);
 console.log(`=======================================`);
 
 group(`Testing Library Typical Queries (document)`, () => {
+  bench(`[data-testid]`, () => {
+    domSelector.querySelectorAll('[data-testid]', document);
+  });
+
   bench(`[data-testid="target-test-id"]`, () => {
     domSelector.querySelectorAll('[data-testid="target-test-id"]', document);
   });
@@ -100,6 +105,10 @@ group(`Testing Library Typical Queries (document)`, () => {
 });
 
 group(`Testing Library Typical Queries (Element)`, () => {
+  bench(`[data-testid]`, () => {
+    domSelector.querySelectorAll('[data-testid]', root);
+  });
+
   bench(`[data-testid="target-test-id"]`, () => {
     domSelector.querySelectorAll('[data-testid="target-test-id"]', root);
   });
@@ -122,6 +131,10 @@ group(`Testing Library Typical Queries (Element)`, () => {
 });
 
 group(`Testing Library Implicit Role Matching (jsdom)`, () => {
+  bench(`[data-testid]`, () => {
+    jsdomSelector.querySelectorAll('[data-testid]', rootImpl);
+  });
+
   bench(`input:not([type]):not([list])`, () => {
     for (const candidate of implicitRoleCandidates) {
       jsdomSelector.matches('input:not([type]):not([list])', candidate);
