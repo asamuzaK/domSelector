@@ -19,8 +19,8 @@ import { collectAllDescendants, getType, isHTMLElement } from './js/utility.js';
 
 /* constants */
 import {
-  DOCUMENT_NODE,
   DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_NODE,
   ELEMENT_NODE,
   SHOW_ELEMENT,
   TARGET_ALL,
@@ -46,17 +46,15 @@ const hasAttributeLocalName = (node, name) => {
     return true;
   }
   const names = node.getAttributeNames();
-  let isHTML;
   for (let i = 0; i < names.length; i++) {
     const itemName = names[i];
     const colonIndex = itemName.indexOf(':');
     if (colonIndex > -1) {
       const localName = itemName.slice(colonIndex + 1);
-      if (localName === name) {
-        return true;
-      }
-      isHTML ??= isHTMLElement(node);
-      if (isHTML && localName.toLowerCase() === name) {
+      if (
+        localName === name ||
+        (isHTMLElement(node) && localName.toLowerCase() === name)
+      ) {
         return true;
       }
     }
@@ -192,22 +190,26 @@ export class DOMSelector {
       return null;
     }
     const match = REG_SIMPLE_ATTRIBUTE.exec(selector);
-    if (
-      !match ||
-      // Finder deliberately excludes xml:lang from unprefixed [lang].
-      match[1] === 'lang' ||
-      (node.nodeType !== DOCUMENT_NODE &&
-        node.nodeType !== DOCUMENT_FRAGMENT_NODE &&
-        node.nodeType !== ELEMENT_NODE)
-    ) {
-      return null;
-    }
-    const document =
-      node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (document.contentType !== 'text/html') {
+    if (!match) {
       return null;
     }
     const name = match[1];
+    // Finder deliberately excludes xml:lang from unprefixed [lang].
+    if (name === 'lang') {
+      return null;
+    }
+    const { nodeType } = node;
+    const isQueryContext =
+      nodeType === DOCUMENT_NODE ||
+      nodeType === DOCUMENT_FRAGMENT_NODE ||
+      nodeType === ELEMENT_NODE;
+    if (!isQueryContext) {
+      return null;
+    }
+    const document = nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+    if (document.contentType !== 'text/html') {
+      return null;
+    }
     const walker = document.createTreeWalker(node, SHOW_ELEMENT);
     const nodes = [];
     let descendant = walker.nextNode();
@@ -446,7 +448,7 @@ export class DOMSelector {
       return collectAllDescendants(node, document);
     }
     const fastNodes = this.#findBySimpleAttribute(selector, node);
-    if (fastNodes) {
+    if (fastNodes !== null) {
       return fastNodes;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
