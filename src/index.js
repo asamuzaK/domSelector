@@ -15,7 +15,7 @@ import {
   filterSelector,
   isSupportedAST
 } from './js/selector.js';
-import { collectAllDescendants, getType } from './js/utility.js';
+import { collectAllDescendants, getType, isHTMLElement } from './js/utility.js';
 
 /* constants */
 import {
@@ -33,7 +33,7 @@ const CACHE_SIZE = 4096;
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
-const REG_SIMPLE_DATA_ATTRIBUTE = /^\[(data-[a-z0-9_-]+)\]$/;
+const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**
  * Tests whether an element has an attribute with the given local name.
@@ -46,11 +46,19 @@ const hasAttributeLocalName = (node, name) => {
     return true;
   }
   const names = node.getAttributeNames();
+  let isHTML;
   for (let i = 0; i < names.length; i++) {
     const itemName = names[i];
     const colonIndex = itemName.indexOf(':');
-    if (colonIndex > -1 && itemName.slice(colonIndex + 1) === name) {
-      return true;
+    if (colonIndex > -1) {
+      const localName = itemName.slice(colonIndex + 1);
+      if (localName === name) {
+        return true;
+      }
+      isHTML ??= isHTMLElement(node);
+      if (isHTML && localName.toLowerCase() === name) {
+        return true;
+      }
     }
   }
   return false;
@@ -172,20 +180,22 @@ export class DOMSelector {
   };
 
   /**
-   * Finds descendants for the simple data attribute-presence selectors used by
-   * Testing Library. More complex selectors continue through Finder.
+   * Finds descendants for simple attribute-presence selectors. More complex
+   * selectors continue through Finder.
    * @private
    * @param {string} selector - The CSS selector to match against.
    * @param {Document|DocumentFragment|Element} node - The node to find within.
    * @returns {?Array<Element>} Matching elements, or `null` when this fast path does not apply.
    */
-  #findBySimpleDataAttribute = (selector, node) => {
+  #findBySimpleAttribute = (selector, node) => {
     if (typeof selector !== 'string') {
       return null;
     }
-    const match = REG_SIMPLE_DATA_ATTRIBUTE.exec(selector);
+    const match = REG_SIMPLE_ATTRIBUTE.exec(selector);
     if (
       !match ||
+      // Finder deliberately excludes xml:lang from unprefixed [lang].
+      match[1] === 'lang' ||
       (node.nodeType !== DOCUMENT_NODE &&
         node.nodeType !== DOCUMENT_FRAGMENT_NODE &&
         node.nodeType !== ELEMENT_NODE)
@@ -435,7 +445,7 @@ export class DOMSelector {
         node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
     }
-    const fastNodes = this.#findBySimpleDataAttribute(selector, node);
+    const fastNodes = this.#findBySimpleAttribute(selector, node);
     if (fastNodes) {
       return fastNodes;
     }

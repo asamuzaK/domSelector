@@ -2027,29 +2027,34 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should query simple data attribute selectors in tree order', () => {
+    it('should query simple attribute selectors in tree order', () => {
       const root = document.createElement('div');
-      root.setAttribute('data-qa', 'root');
-      root.innerHTML =
-        '<div data-qa="first"><span data-qa="second"></span></div>';
+      root.setAttribute('hidden', '');
+      root.innerHTML = '<div hidden><span hidden></span></div>';
       const child1 = root.firstElementChild;
       const child2 = child1.firstElementChild;
       const domSelector = new DOMSelector(window);
-      const res = domSelector.querySelectorAll('[data-qa]', root);
+      const res = domSelector.querySelectorAll('[hidden]', root);
       assert.deepEqual(res, [child1, child2], 'result');
     });
 
-    it('should leave other attribute selector forms to Finder', () => {
+    it('should leave unsupported attribute selectors to Finder', () => {
       const root = document.createElement('div');
       root.innerHTML =
         '<span class="target" data-testid="target"></span>' +
         '<span class="other"></span>';
       const [target, other] = root.children;
+      target.setAttributeNS(
+        'http://www.w3.org/XML/1998/namespace',
+        'xml:lang',
+        'en'
+      );
       const cases = [
         ['[DATA-TESTID]', [target]],
         ['[data-testid="target"]', [target]],
         ['span[data-testid]', [target]],
-        ['[data-testid], .other', [target, other]]
+        ['[data-testid], .other', [target, other]],
+        ['[lang]', []]
       ];
       const domSelector = new DOMSelector(window);
       for (const [selector, expected] of cases) {
@@ -2095,16 +2100,17 @@ describe('DOMSelector', () => {
 
     it('should preserve local-name matching for namespaced attributes', () => {
       const root = document.createElement('div');
-      root.innerHTML = '<svg></svg><svg></svg>';
-      const [matchingSvg, caseSensitiveSvg] = root.children;
+      root.innerHTML = '<span></span><svg></svg><svg></svg>';
+      const [htmlElement, matchingSvg, caseSensitiveSvg] = root.children;
+      htmlElement.setAttributeNS('urn:test', 'x:data-TestID', 'target');
       matchingSvg.setAttributeNS('urn:test', 'x:data-testid', 'target');
       caseSensitiveSvg.setAttributeNS('urn:test', 'x:data-TestID', 'target');
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('[data-testid]', root);
-      assert.deepEqual(res, [matchingSvg], 'result');
+      assert.deepEqual(res, [htmlElement, matchingSvg], 'result');
     });
 
-    it('should leave simple data attribute queries on XML documents to Finder', () => {
+    it('should leave simple attribute queries on XML documents to Finder', () => {
       const xmlDom = new JSDOM('<root><child data-testid="target"/></root>', {
         contentType: 'application/xml'
       });

@@ -83,6 +83,10 @@ group(`Testing Library Typical Queries (document)`, () => {
     domSelector.querySelectorAll('[data-testid]', document);
   });
 
+  bench(`[title]`, () => {
+    domSelector.querySelectorAll('[title]', document);
+  });
+
   bench(`[data-testid="target-test-id"]`, () => {
     domSelector.querySelectorAll('[data-testid="target-test-id"]', document);
   });
@@ -109,6 +113,10 @@ group(`Testing Library Typical Queries (Element)`, () => {
     domSelector.querySelectorAll('[data-testid]', root);
   });
 
+  bench(`[title]`, () => {
+    domSelector.querySelectorAll('[title]', root);
+  });
+
   bench(`[data-testid="target-test-id"]`, () => {
     domSelector.querySelectorAll('[data-testid="target-test-id"]', root);
   });
@@ -133,6 +141,10 @@ group(`Testing Library Typical Queries (Element)`, () => {
 group(`Testing Library Implicit Role Matching (jsdom)`, () => {
   bench(`[data-testid]`, () => {
     jsdomSelector.querySelectorAll('[data-testid]', rootImpl);
+  });
+
+  bench(`[title]`, () => {
+    jsdomSelector.querySelectorAll('[title]', rootImpl);
   });
 
   bench(`input:not([type]):not([list])`, () => {
