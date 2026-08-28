@@ -15,14 +15,16 @@ import {
   filterSelector,
   isSupportedAST
 } from './js/selector.js';
-import { collectAllDescendants, getType, isHTMLElement } from './js/utility.js';
+import {
+  collectAllDescendants,
+  findBySimpleAttribute,
+  getType
+} from './js/utility.js';
 
 /* constants */
 import {
-  DOCUMENT_FRAGMENT_NODE,
   DOCUMENT_NODE,
   ELEMENT_NODE,
-  SHOW_ELEMENT,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -33,34 +35,6 @@ const CACHE_SIZE = 4096;
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
-const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
-
-/**
- * Tests whether an element has an attribute with the given local name.
- * @param {Element} node - The element to test.
- * @param {string} name - The lower-case attribute local name.
- * @returns {boolean} `true` if the attribute is present.
- */
-const hasAttributeLocalName = (node, name) => {
-  if (node.hasAttribute(name)) {
-    return true;
-  }
-  const names = node.getAttributeNames();
-  for (let i = 0; i < names.length; i++) {
-    const itemName = names[i];
-    const colonIndex = itemName.indexOf(':');
-    if (colonIndex > -1) {
-      const localName = itemName.slice(colonIndex + 1);
-      if (
-        localName === name ||
-        (isHTMLElement(node) && localName.toLowerCase() === name)
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
 
 /**
  * @typedef {object} CheckResult
@@ -175,51 +149,6 @@ export class DOMSelector {
     } catch (e) {
       return this.#finder.onError(e, opt);
     }
-  };
-
-  /**
-   * Finds descendants for simple attribute-presence selectors. More complex
-   * selectors continue through Finder.
-   * @private
-   * @param {string} selector - The CSS selector to match against.
-   * @param {Document|DocumentFragment|Element} node - The node to find within.
-   * @returns {?Array<Element>} Matching elements, or `null` when this fast path does not apply.
-   */
-  #findBySimpleAttribute = (selector, node) => {
-    if (typeof selector !== 'string') {
-      return null;
-    }
-    const match = REG_SIMPLE_ATTRIBUTE.exec(selector);
-    if (!match) {
-      return null;
-    }
-    const name = match[1];
-    // Finder deliberately excludes xml:lang from unprefixed [lang].
-    if (name === 'lang') {
-      return null;
-    }
-    const { nodeType } = node;
-    const isQueryContext =
-      nodeType === DOCUMENT_NODE ||
-      nodeType === DOCUMENT_FRAGMENT_NODE ||
-      nodeType === ELEMENT_NODE;
-    if (!isQueryContext) {
-      return null;
-    }
-    const document = nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-    if (document.contentType !== 'text/html') {
-      return null;
-    }
-    const walker = document.createTreeWalker(node, SHOW_ELEMENT);
-    const nodes = [];
-    let descendant = walker.nextNode();
-    while (descendant) {
-      if (hasAttributeLocalName(descendant, name)) {
-        nodes.push(descendant);
-      }
-      descendant = walker.nextNode();
-    }
-    return nodes;
   };
 
   /**
@@ -447,7 +376,7 @@ export class DOMSelector {
         node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
     }
-    const fastNodes = this.#findBySimpleAttribute(selector, node);
+    const fastNodes = findBySimpleAttribute(selector, node);
     if (fastNodes !== null) {
       return fastNodes;
     }
