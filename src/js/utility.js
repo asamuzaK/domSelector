@@ -963,11 +963,14 @@ export const findBySimpleAttribute = (selector, node) => {
   if (typeof selector !== 'string') {
     return null;
   }
+  if (!node?.nodeType) {
+    return null;
+  }
   const match = REG_SIMPLE_ATTRIBUTE.exec(selector);
   if (!match) {
     return null;
   }
-  const name = match[1];
+  const [, name] = match;
   // Finder deliberately excludes xml:lang from unprefixed [lang].
   if (name === 'lang') {
     return null;
@@ -986,12 +989,12 @@ export const findBySimpleAttribute = (selector, node) => {
   }
   const walker = document.createTreeWalker(node, SHOW_ELEMENT);
   const nodes = [];
-  let descendant = walker.nextNode();
-  while (descendant) {
-    if (hasAttributeLocalName(descendant, name)) {
-      nodes.push(descendant);
+  let nextNode = walker.nextNode();
+  while (nextNode) {
+    if (hasAttributeLocalName(nextNode, name)) {
+      nodes.push(nextNode);
     }
-    descendant = walker.nextNode();
+    nextNode = walker.nextNode();
   }
   return nodes;
 };

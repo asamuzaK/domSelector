@@ -377,7 +377,7 @@ export class DOMSelector {
       return collectAllDescendants(node, document);
     }
     const fastNodes = findBySimpleAttribute(selector, node);
-    if (fastNodes !== null) {
+    if (Array.isArray(fastNodes)) {
       return fastNodes;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);

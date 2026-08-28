@@ -2546,6 +2546,52 @@ describe('utility functions', () => {
   describe('findBySimpleAttribute', () => {
     const func = util.findBySimpleAttribute;
 
+    it('should return null if selector is not a string', () => {
+      const root = document.createElement('div');
+      const invalidSelectors = [undefined, null, 123, true, {}, []];
+      for (const selector of invalidSelectors) {
+        assert.strictEqual(
+          func(selector, root),
+          null,
+          `Testing with: ${String(selector)}`
+        );
+      }
+    });
+
+    it('should return null if node is not a valid query context', () => {
+      const textNode = document.createTextNode('text');
+      const commentNode = document.createComment('comment');
+      const attrNode = document.createAttribute('data-test');
+      assert.strictEqual(func('[hidden]', {}), null, 'Plain object');
+      assert.strictEqual(func('[hidden]', textNode), null, 'Text node');
+      assert.strictEqual(func('[hidden]', commentNode), null, 'Comment node');
+      assert.strictEqual(func('[hidden]', attrNode), null, 'Attribute node');
+    });
+
+    it('should return null if document contentType is not text/html', () => {
+      // text/xml
+      const xmlStr = '<root><child hidden=""></child></root>';
+      const xmlDoc = new window.DOMParser().parseFromString(xmlStr, 'text/xml');
+      // application/xhtml+xml
+      const xhtmlStr =
+        '<html xmlns="http://www.w3.org/1999/xhtml"><body hidden=""></body></html>';
+      const xhtmlDoc = new window.DOMParser().parseFromString(
+        xhtmlStr,
+        'application/xhtml+xml'
+      );
+      assert.strictEqual(func('[hidden]', xmlDoc), null, 'XML Document node');
+      assert.strictEqual(
+        func('[hidden]', xmlDoc.documentElement),
+        null,
+        'XML Element node'
+      );
+      assert.strictEqual(
+        func('[hidden]', xhtmlDoc),
+        null,
+        'XHTML Document node'
+      );
+    });
+
     it('should find matching descendants in tree order', () => {
       const root = document.createElement('div');
       root.setAttribute('hidden', '');
