@@ -24,6 +24,7 @@ import {
   unescapeSelector,
   walkAST
 } from './parser.js';
+import { ShadowDOMEvaluator } from './shadow.js';
 import {
   findBestSeed,
   generateException,
@@ -114,7 +115,7 @@ export class Evaluator {
   #results;
   #setPool;
   #setPoolIndex;
-  #verifyShadowHost;
+  #shadowDOMEvaluator;
   #walkers;
 
   /**
@@ -125,6 +126,7 @@ export class Evaluator {
     this.documentCache = new WeakMap();
     this.clearResults(true);
     this.#eventHandler = new EventHandler(window);
+    this.#shadowDOMEvaluator = new ShadowDOMEvaluator(this);
   }
 
   /**
@@ -152,7 +154,7 @@ export class Evaluator {
     this.#nthIndexCache = null;
     this.#setPool = [];
     this.#setPoolIndex = 0;
-    this.#verifyShadowHost = false;
+    this.#shadowDOMEvaluator.reset();
     this.#walkers = null;
     return this;
   }
@@ -225,7 +227,11 @@ export class Evaluator {
       node.nodeType === DOCUMENT_FRAGMENT_NODE &&
       ast.type === PS_CLASS_SELECTOR
     ) {
-      return this.#matchSelectorForShadowRoot(ast, node, opt);
+      return this.#shadowDOMEvaluator.matchSelectorForShadowRoot(
+        ast,
+        node,
+        opt
+      );
     }
     return false;
   };
@@ -312,43 +318,8 @@ export class Evaluator {
    * @param {object} node - The DocumentFragment node.
    * @returns {boolean} True if matches, otherwise false.
    */
-  evaluateShadowHost = (ast, node) => {
-    const { children: astChildren, name: astName } = ast;
-    // Handle simple pseudo-class (no arguments).
-    if (!Array.isArray(astChildren)) {
-      if (astName === 'host') {
-        return true;
-      }
-      const msg = `Invalid selector :${astName}`;
-      this.onError(generateException(msg, SYNTAX_ERR, this.window));
-      return false;
-    }
-    // Handle functional pseudo-class like :host(...).
-    if (astName !== 'host' && astName !== 'host-context') {
-      const msg = `Invalid selector :${astName}()`;
-      this.onError(generateException(msg, SYNTAX_ERR, this.window));
-      return false;
-    }
-    if (astChildren.length !== 1) {
-      const css = generateCSS(ast);
-      const msg = `Invalid selector ${css}`;
-      this.onError(generateException(msg, SYNTAX_ERR, this.window));
-      return false;
-    }
-    const { host } = node;
-    const { branches } = walkAST(astChildren[0]);
-    const [branch] = branches;
-    const [...leaves] = branch;
-    if (astName === 'host' && this.#evaluateHostPseudo(leaves, host, ast)) {
-      return true;
-    } else if (
-      astName === 'host-context' &&
-      this.#evaluateHostContextPseudo(leaves, host, ast)
-    ) {
-      return true;
-    }
-    return false;
-  };
+  evaluateShadowHost = (ast, node) =>
+    this.#shadowDOMEvaluator.evaluateShadowHost(ast, node);
 
   /**
    * Matches pseudo-class selector.
@@ -1757,7 +1728,7 @@ export class Evaluator {
       (opt.isShadowRoot || this.shadow) &&
       node.nodeType === DOCUMENT_FRAGMENT_NODE
     ) {
-      return this.#verifyShadowHost ? node : null;
+      return this.#shadowDOMEvaluator.verifyShadowHost ? node : null;
     }
     return node;
   };
@@ -2083,65 +2054,6 @@ export class Evaluator {
   };
 
   /**
-   * Evaluates the :host() pseudo-class.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
-   * @returns {boolean} True if matches, otherwise false.
-   */
-  #evaluateHostPseudo = (leaves, host, ast) => {
-    const l = leaves.length;
-    for (let i = 0; i < l; i++) {
-      const leaf = leaves[i];
-      if (leaf.type === COMBINATOR) {
-        const css = generateCSS(ast);
-        const msg = `Invalid selector ${css}`;
-        this.onError(generateException(msg, SYNTAX_ERR, this.window));
-        return false;
-      }
-      if (!this.matchSelector(leaf, host)) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  /**
-   * Evaluates the :host-context() pseudo-class.
-   * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
-   * @returns {boolean} True if matched.
-   */
-  #evaluateHostContextPseudo = (leaves, host, ast) => {
-    let parent = host;
-    while (parent) {
-      let bool;
-      const l = leaves.length;
-      for (let i = 0; i < l; i++) {
-        const leaf = leaves[i];
-        if (leaf.type === COMBINATOR) {
-          const css = generateCSS(ast);
-          const msg = `Invalid selector ${css}`;
-          this.onError(generateException(msg, SYNTAX_ERR, this.window));
-          return false;
-        }
-        bool = this.matchSelector(leaf, parent);
-        if (!bool) {
-          break;
-        }
-      }
-      if (bool) {
-        return true;
-      }
-      parent = parent.parentNode;
-    }
-    return false;
-  };
-
-  /**
    * Matches a selector for element nodes.
    * @private
    * @param {object} ast - The AST.
@@ -2190,30 +2102,6 @@ export class Evaluator {
         } catch (e) {
           this.onError(e);
         }
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Matches a selector for a shadow root.
-   * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
-   * @param {object} [opt] - Options.
-   * @returns {boolean} True if matches, otherwise false.
-   */
-  #matchSelectorForShadowRoot = (ast, node, opt = {}) => {
-    const { name: astName } = ast;
-    if (KEYS_LOGICAL.has(astName)) {
-      opt.isShadowRoot = true;
-      return this.matchPseudoClassSelector(ast, node, opt);
-    }
-    if (astName === 'host' || astName === 'host-context') {
-      const matches = this.evaluateShadowHost(ast, node, opt);
-      if (matches) {
-        this.#verifyShadowHost = true;
-        return true;
       }
     }
     return false;
