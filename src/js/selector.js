@@ -230,24 +230,24 @@ export const isSupportedAST = ast => {
 export const extractSubjectsRegExp = (selector, caseSensitive) => {
   const subjects = [];
   const groups = selector.split(',');
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i].trim();
+  for (const item of groups) {
+    const group = item.trim();
     if (!group) {
       continue;
     }
     const compounds = group.split(REG_COMBO);
-    const rightmost = compounds[compounds.length - 1];
+    const rightmost = compounds.at(-1);
     let idKey = null;
     let classKey = null;
     let tagKey = null;
     if (rightmost) {
       const idMatch = rightmost.match(REG_ID);
       if (idMatch) {
-        idKey = idMatch[idMatch.length - 1].slice(1);
+        idKey = idMatch.at(-1).slice(1);
       }
       const classMatch = rightmost.match(REG_CLASS);
       if (classMatch) {
-        classKey = classMatch[classMatch.length - 1].slice(1);
+        classKey = classMatch.at(-1).slice(1);
       }
       const tagMatch = rightmost.match(REG_TAG);
       if (tagMatch) {

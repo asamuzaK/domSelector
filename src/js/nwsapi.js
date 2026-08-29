@@ -223,8 +223,7 @@ export const isIndeterminate = node => {
     }
     const items = parent.getElementsByTagName('input');
     let checked;
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    for (const item of items) {
       if (item.getAttribute('type') === 'radio') {
         if (nodeName) {
           if (item.getAttribute('name') === nodeName) {
@@ -278,8 +277,8 @@ export const optimize = (selector, tokens) => {
  */
 export const matchAssert = (factory, element, callback) => {
   let res = false;
-  for (let i = 0, l = factory.length; i < l; i++) {
-    if (factory[i](element, null, null, false)) {
+  for (const factoryFn of factory) {
+    if (factoryFn(element, null, null, false)) {
       res = true;
       break;
     }
@@ -559,9 +558,9 @@ export class Nwsapi {
   byId(id, context) {
     const nodes = [];
     const all = context.getElementsByTagName('*');
-    for (let i = 0, len = all.length; i < len; i++) {
-      if (all[i].id === id) {
-        nodes.push(all[i]);
+    for (const element of all) {
+      if (element.id === id) {
+        nodes.push(element);
       }
     }
     return nodes;
@@ -592,8 +591,8 @@ export class Nwsapi {
         nodes.push(e);
       }
       const children = e[api](tag);
-      for (let i = 0; i < children.length; i++) {
-        nodes.push(children[i]);
+      for (const child of children) {
+        nodes.push(child);
       }
       e = e.nextElementSibling;
     }
@@ -992,9 +991,9 @@ export class Nwsapi {
       const uid = ++this.#uidCounter;
       const label = `l_${uid}`;
       let code = `{ let r_${uid}=false, e_${uid}=e, n_${uid}=n, o_${uid}=o; ${label}: { `;
-      for (let i = 0; i < subExprs.length; i++) {
+      for (const subExpr of subExprs) {
         const subCode = this.compileSelector(
-          subExprs[i],
+          subExpr,
           `r_${uid}=true; break ${label};`,
           false
         );
@@ -1196,7 +1195,7 @@ export class Nwsapi {
       this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
     } else {
       expressions = parsed.match(REX.splitGroup);
-      if (parsed[parsed.length - 1] === ',') {
+      if (parsed.at(-1) === ',') {
         this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
       }
     }

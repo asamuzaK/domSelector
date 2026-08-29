@@ -908,8 +908,7 @@ export class Finder extends Evaluator {
         );
       }
     } else {
-      for (let i = 0, len = entryNodes.length; i < len; i++) {
-        const node = entryNodes[i];
+      for (const node of entryNodes) {
         if (
           this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
         ) {
@@ -983,8 +982,7 @@ export class Finder extends Evaluator {
     lastIndex,
     targetType
   ) => {
-    for (let i = 0, len = entryNodes.length; i < len; i++) {
-      const node = entryNodes[i];
+    for (const node of entryNodes) {
       if (this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
         return node;
       }

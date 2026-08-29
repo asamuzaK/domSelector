@@ -430,8 +430,8 @@ export const matchAttributeSelector = (
         return false;
       }
       const checkName = isHTML ? meta.astName.toLowerCase() : meta.astName;
-      for (let i = 0, len = attrs.length; i < len; i++) {
-        let itemName = attrs[i].name;
+      for (const itemAttr of attrs) {
+        let itemName = itemAttr.name;
         if (isHTML) {
           itemName = itemName.toLowerCase();
         }
@@ -506,8 +506,7 @@ export const matchAttributeSelector = (
   if (meta.hasPipeInName) {
     const astPrefix = meta.astPrefix;
     const astLocalName = meta.astLocalName;
-    for (let i = 0, len = attributes.length; i < len; i++) {
-      const item = attributes[i];
+    for (const item of attributes) {
       let itemName = item.name;
       let itemValue = item.value;
       if (caseInsensitive) {
@@ -565,8 +564,7 @@ export const matchAttributeSelector = (
       }
     }
   } else {
-    for (let i = 0, len = attributes.length; i < len; i++) {
-      const item = attributes[i];
+    for (const item of attributes) {
       const origName = item.name;
       if (
         item.namespaceURI === 'http://www.w3.org/XML/1998/namespace' &&
