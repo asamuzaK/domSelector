@@ -25,6 +25,7 @@ import {
   walkAST
 } from './parser.js';
 import { ShadowDOMEvaluator } from './shadow.js';
+import { DOMTraverser } from './traverser.js';
 import {
   findBestSeed,
   generateException,
@@ -56,9 +57,7 @@ import {
   NEST_SELECTOR,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
-  PS_ELEMENT_SELECTOR,
   SHOW_ALL,
-  SHOW_CONTAINER,
   SYNTAX_ERR,
   TEXT_NODE,
   TYPE_SELECTOR
@@ -99,6 +98,7 @@ export class Evaluator {
   #anbCache;
   #astCache = new WeakMap();
   #documentURL;
+  #domTraverser;
   #eventHandler;
   #filterLeavesCache;
   #focusWithinCache;
@@ -116,7 +116,6 @@ export class Evaluator {
   #setPool;
   #setPoolIndex;
   #shadowDOMEvaluator;
-  #walkers;
 
   /**
    * @param {object} window - The window object.
@@ -125,6 +124,7 @@ export class Evaluator {
     this.window = window;
     this.documentCache = new WeakMap();
     this.clearResults(true);
+    this.#domTraverser = new DOMTraverser(this);
     this.#eventHandler = new EventHandler(window);
     this.#shadowDOMEvaluator = new ShadowDOMEvaluator(this);
   }
@@ -151,11 +151,11 @@ export class Evaluator {
     this.invalidate = false;
     this.clearResults();
     this.#documentURL = null;
+    this.#domTraverser.reset();
     this.#nthIndexCache = null;
     this.#setPool = [];
     this.#setPoolIndex = 0;
     this.#shadowDOMEvaluator.reset();
-    this.#walkers = null;
     return this;
   }
 
@@ -456,13 +456,13 @@ export class Evaluator {
       case 'target': {
         return this.#matchTargetPseudoClass(node);
       }
+      /* Tree-structural pseudo-classes */
       case 'scope': {
         if (this.node.nodeType === ELEMENT_NODE) {
           return !this.shadow && node === this.node;
         }
         return node === this.document.documentElement;
       }
-      /* Tree-structural pseudo-classes */
       case 'root': {
         return node === this.document.documentElement;
       }
@@ -578,6 +578,40 @@ export class Evaluator {
     }
     return false;
   };
+
+  /**
+   * Creates a TreeWalker.
+   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {object} [opt] - Options.
+   * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
+   * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
+   * @returns {object} The TreeWalker object.
+   */
+  createTreeWalker = (node, opt = {}) =>
+    this.#domTraverser.createTreeWalker(node, opt);
+
+  /**
+   * Yields combinator matches (Lazy evaluation, O(1) memory).
+   * @param {object} twig - The twig object.
+   * @param {object} node - The Element node.
+   * @param {object} [opt] - Options.
+   * @param {string} [opt.dir] - The find direction.
+   * @yields {object} The matched node.
+   */
+  *yieldCombinatorMatches(twig, node, opt = {}) {
+    yield* this.#domTraverser.yieldCombinatorMatches(twig, node, opt);
+  }
+
+  /**
+   * Finds descendant nodes and yields matches.
+   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {object} opt - Options.
+   * @yields {object} The matched node.
+   */
+  *yieldFindDescendantNodes(leaves, baseNode, opt) {
+    yield* this.#domTraverser.yieldFindDescendantNodes(leaves, baseNode, opt);
+  }
 
   /**
    * Evaluates the :default pseudo-class.
@@ -1072,210 +1106,6 @@ export class Evaluator {
     }
     return this.#focusWithinCache.has(node);
   };
-
-  /**
-   * Creates a TreeWalker.
-   * @param {object} node - The Document, DocumentFragment, or Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
-   * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
-   * @returns {object} The TreeWalker object.
-   */
-  createTreeWalker = (node, opt = {}) => {
-    const { force = false, whatToShow = SHOW_CONTAINER } = opt;
-    if (force) {
-      return this.document.createTreeWalker(node, whatToShow);
-    }
-    if (!this.#walkers) {
-      this.#walkers = new WeakMap();
-    }
-    let walker = this.#walkers.get(node);
-    if (walker) {
-      return walker;
-    }
-    walker = this.document.createTreeWalker(node, whatToShow);
-    this.#walkers.set(node, walker);
-    return walker;
-  };
-
-  /**
-   * Yields combinator matches (Lazy evaluation, O(1) memory).
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
-   * @yields {object} The matched node.
-   */
-  *yieldCombinatorMatches(twig, node, opt = {}) {
-    const {
-      combo: { name: comboName },
-      leaves
-    } = twig;
-    const { dir } = opt;
-    switch (comboName) {
-      case '+': {
-        const refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        if (refNode && this.matchLeaves(leaves, refNode, opt)) {
-          yield refNode;
-        }
-        break;
-      }
-      case '~': {
-        let refNode =
-          dir === DIR_NEXT
-            ? node.nextElementSibling
-            : node.previousElementSibling;
-        while (refNode) {
-          if (this.matchLeaves(leaves, refNode, opt)) {
-            yield refNode;
-          }
-          refNode =
-            dir === DIR_NEXT
-              ? refNode.nextElementSibling
-              : refNode.previousElementSibling;
-        }
-        break;
-      }
-      case '>': {
-        if (dir === DIR_NEXT) {
-          let refNode = node.firstElementChild;
-          while (refNode) {
-            if (this.matchLeaves(leaves, refNode, opt)) {
-              yield refNode;
-            }
-            refNode = refNode.nextElementSibling;
-          }
-        } else {
-          const { parentNode } = node;
-          if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
-            yield parentNode;
-          }
-        }
-        break;
-      }
-      case ' ':
-      default: {
-        if (dir === DIR_NEXT) {
-          for (const refNode of this.yieldFindDescendantNodes(
-            leaves,
-            node,
-            opt
-          )) {
-            yield refNode;
-          }
-        } else {
-          const ancestors = [];
-          let refNode = node.parentNode;
-          while (refNode) {
-            if (this.matchLeaves(leaves, refNode, opt)) {
-              ancestors.push(refNode);
-            }
-            refNode = refNode.parentNode;
-          }
-          if (ancestors.length) {
-            for (let i = ancestors.length - 1; i >= 0; i--) {
-              yield ancestors[i];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Traverses all descendant nodes and yields matches.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} opt - Options.
-   * @yields {object} The matched node.
-   */
-  *yieldTraverseAllDescendants(baseNode, leaves, opt) {
-    const walker = this.createTreeWalker(baseNode);
-    traverseNode(baseNode, walker);
-    let currentNode = walker.firstChild();
-    while (currentNode) {
-      if (this.matchLeaves(leaves, currentNode, opt)) {
-        yield currentNode;
-      }
-      currentNode = walker.nextNode();
-    }
-  }
-
-  /**
-   * Finds descendant nodes and yields matches.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} opt - Options.
-   * @yields {object} The matched node.
-   */
-  *yieldFindDescendantNodes(leaves, baseNode, opt) {
-    const [{ name, type: leafType }] = leaves;
-    const leafName = unescapeSelector(name);
-    const filterLeaves = this.getFilterLeaves(leaves);
-    const isSimple = filterLeaves.length === 0;
-    switch (leafType) {
-      case ID_SELECTOR: {
-        if (
-          !this.shadow &&
-          baseNode.nodeType === ELEMENT_NODE &&
-          this.root.nodeType !== ELEMENT_NODE
-        ) {
-          const foundNode = this.root.getElementById(leafName);
-          if (
-            foundNode &&
-            foundNode !== baseNode &&
-            baseNode.contains(foundNode)
-          ) {
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              yield foundNode;
-            }
-          }
-          return;
-        }
-        break;
-      }
-      case CLASS_SELECTOR: {
-        if (typeof baseNode.getElementsByClassName === 'function') {
-          const collection = baseNode.getElementsByClassName(leafName);
-          for (let i = 0, len = collection.length; i < len; i++) {
-            const item = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, item, opt)) {
-              yield item;
-            }
-          }
-          return;
-        }
-        break;
-      }
-      case TYPE_SELECTOR: {
-        if (
-          typeof baseNode.getElementsByTagName === 'function' &&
-          !leafName.includes('|')
-        ) {
-          const collection = baseNode.getElementsByTagName(leafName);
-          for (let i = 0, len = collection.length; i < len; i++) {
-            const item = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, item, opt)) {
-              yield item;
-            }
-          }
-          return;
-        }
-        break;
-      }
-      case PS_ELEMENT_SELECTOR: {
-        matchPseudoElementSelector(leafName, leafType, opt);
-        return;
-      }
-      default: {
-        // no-op
-      }
-    }
-    yield* this.yieldTraverseAllDescendants(baseNode, leaves, opt);
-  }
 
   /**
    * Gets selector branches from cache or parses them.
