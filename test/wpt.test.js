@@ -7699,9 +7699,9 @@ describe('local wpt test cases', () => {
       document.body.innerHTML = html;
       const getElementsByIds = ids => {
         const result = [];
-        ids.forEach(id => {
+        for (const id of ids) {
           result.push(document.getElementById(id));
-        });
+        }
         return result;
       };
       const testSelectorIdsMatch = (selector, ids, testName) => {

@@ -223,8 +223,7 @@ export const isIndeterminate = node => {
     }
     const items = parent.getElementsByTagName('input');
     let checked;
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    for (const item of items) {
       if (item.getAttribute('type') === 'radio') {
         if (nodeName) {
           if (item.getAttribute('name') === nodeName) {
@@ -592,8 +591,8 @@ export class Nwsapi {
         nodes.push(e);
       }
       const children = e[api](tag);
-      for (let i = 0; i < children.length; i++) {
-        nodes.push(children[i]);
+      for (const child of children) {
+        nodes.push(child);
       }
       e = e.nextElementSibling;
     }
@@ -992,9 +991,9 @@ export class Nwsapi {
       const uid = ++this.#uidCounter;
       const label = `l_${uid}`;
       let code = `{ let r_${uid}=false, e_${uid}=e, n_${uid}=n, o_${uid}=o; ${label}: { `;
-      for (let i = 0; i < subExprs.length; i++) {
+      for (const subExpr of subExprs) {
         const subCode = this.compileSelector(
-          subExprs[i],
+          subExpr,
           `r_${uid}=true; break ${label};`,
           false
         );

@@ -380,7 +380,9 @@ describe('nwsapi', () => {
       c1.innerHTML = '<p id="p1"></p>';
       c2.innerHTML = '<p id="p2"></p>';
       c3.innerHTML = '<p id="p3"></p>';
-      [c1, c2, c3].forEach(c => document.body.appendChild(c));
+      for (const c of [c1, c2, c3]) {
+        document.body.appendChild(c);
+      }
       const p1 = c1.firstChild;
       const p2 = c2.firstChild;
       const p3 = c3.firstChild;
@@ -391,7 +393,9 @@ describe('nwsapi', () => {
       const result = nw.solveNth(p3, false, state, false);
       assert.strictEqual(result, 1, 'Should correctly find the index of p3');
       assert.strictEqual(state.set, 2, 'Should have used the cache at index 2');
-      [c1, c2, c3].forEach(c => document.body.removeChild(c));
+      for (const c of [c1, c2, c3]) {
+        document.body.removeChild(c);
+      }
     });
 
     it('should reset state cache when isOfType is true and element has non-XHTML namespace', () => {
