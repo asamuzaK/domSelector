@@ -277,8 +277,8 @@ export const optimize = (selector, tokens) => {
  */
 export const matchAssert = (factory, element, callback) => {
   let res = false;
-  for (let i = 0, l = factory.length; i < l; i++) {
-    if (factory[i](element, null, null, false)) {
+  for (const factoryFn of factory) {
+    if (factoryFn(element, null, null, false)) {
       res = true;
       break;
     }
@@ -558,9 +558,9 @@ export class Nwsapi {
   byId(id, context) {
     const nodes = [];
     const all = context.getElementsByTagName('*');
-    for (let i = 0, len = all.length; i < len; i++) {
-      if (all[i].id === id) {
-        nodes.push(all[i]);
+    for (const element of all) {
+      if (element.id === id) {
+        nodes.push(element);
       }
     }
     return nodes;
@@ -1195,7 +1195,7 @@ export class Nwsapi {
       this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
     } else {
       expressions = parsed.match(REX.splitGroup);
-      if (parsed[parsed.length - 1] === ',') {
+      if (parsed.at(-1) === ',') {
         this.#emit(`'${rawSelectors}'${SEL_INVALID}`);
       }
     }
