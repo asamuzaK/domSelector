@@ -1486,28 +1486,18 @@ export class Evaluator {
       combo: { name: comboName },
       leaves
     } = twig;
-    const isLast = remainingLeaves.length === 0;
-    // Check if the target node satisfies the leaves and remaining conditions.
-    const checkNode = refNode => {
-      if (this.matchLeaves(leaves, refNode, opt)) {
-        if (isLast) {
-          return true;
-        }
-        if (this.#matchHasPseudoFunc(remainingLeaves, refNode, opt)) {
-          return true;
-        }
-      }
-      return false;
-    };
+    const isLastLeaf = remainingLeaves.length === 0;
     switch (comboName) {
       case '+': {
         const refNode = node.nextElementSibling;
-        return refNode ? checkNode(refNode) : false;
+        return refNode
+          ? this.#checkNode(refNode, leaves, remainingLeaves, opt)
+          : false;
       }
       case '~': {
         let refNode = node.nextElementSibling;
         while (refNode) {
-          if (checkNode(refNode)) {
+          if (this.#checkNode(refNode, leaves, remainingLeaves, opt)) {
             return true;
           }
           refNode = refNode.nextElementSibling;
@@ -1518,7 +1508,7 @@ export class Evaluator {
         // Direct children only
         let refNode = node.firstElementChild;
         while (refNode) {
-          if (checkNode(refNode)) {
+          if (this.#checkNode(refNode, leaves, remainingLeaves, opt)) {
             return true;
           }
           refNode = refNode.nextElementSibling;
@@ -1529,6 +1519,7 @@ export class Evaluator {
       default: {
         const [leaf] = leaves;
         const filterLeaves = this.getFilterLeaves(leaves);
+        const isLastFilter = filterLeaves.length === 0;
         // ID
         if (
           leaf.type === ID_SELECTOR &&
@@ -1539,12 +1530,11 @@ export class Evaluator {
           const leafName = unescapeSelector(leaf.name);
           const foundNode = this.root.getElementById(leafName);
           if (foundNode && foundNode !== node && node.contains(foundNode)) {
-            // Only check filter leaves if it's a compound selector
             if (
-              filterLeaves.length === 0 ||
+              isLastFilter ||
               this.matchLeaves(filterLeaves, foundNode, opt)
             ) {
-              if (isLast) {
+              if (isLastLeaf) {
                 return true;
               }
               if (this.#matchHasPseudoFunc(remainingLeaves, foundNode, opt)) {
@@ -1563,12 +1553,8 @@ export class Evaluator {
           const collection = node.getElementsByClassName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
             const item = collection[i];
-            // Apply filter before calling the expensive checkNode
-            if (
-              filterLeaves.length === 0 ||
-              this.matchLeaves(filterLeaves, item, opt)
-            ) {
-              if (isLast) {
+            if (isLastFilter || this.matchLeaves(filterLeaves, item, opt)) {
+              if (isLastLeaf) {
                 return true;
               }
               if (this.#matchHasPseudoFunc(remainingLeaves, item, opt)) {
@@ -1588,12 +1574,8 @@ export class Evaluator {
           const collection = node.getElementsByTagName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
             const item = collection[i];
-            // Apply filter before calling the expensive checkNode
-            if (
-              filterLeaves.length === 0 ||
-              this.matchLeaves(filterLeaves, item, opt)
-            ) {
-              if (isLast) {
+            if (isLastFilter || this.matchLeaves(filterLeaves, item, opt)) {
+              if (isLastLeaf) {
                 return true;
               }
               if (this.#matchHasPseudoFunc(remainingLeaves, item, opt)) {
@@ -1608,7 +1590,7 @@ export class Evaluator {
         traverseNode(node, walker);
         let currentNode = walker.firstChild();
         while (currentNode) {
-          if (checkNode(currentNode)) {
+          if (this.#checkNode(currentNode, leaves, remainingLeaves, opt)) {
             return true;
           }
           currentNode = walker.nextNode();
@@ -1616,6 +1598,27 @@ export class Evaluator {
         return false;
       }
     }
+  };
+
+  /**
+   * Checks if a target node satisfies the given conditions.
+   * @private
+   * @param {object} refNode - The element node to check.
+   * @param {Array.<object>} leaves - The current AST leaves.
+   * @param {Array.<object>} remainingLeaves - The remaining AST leaves.
+   * @param {object} opt - The match options.
+   * @returns {boolean} True if matched, otherwise false.
+   */
+  #checkNode = (refNode, leaves, remainingLeaves, opt) => {
+    if (this.matchLeaves(leaves, refNode, opt)) {
+      if (remainingLeaves.length === 0) {
+        return true;
+      }
+      if (this.#matchHasPseudoFunc(remainingLeaves, refNode, opt)) {
+        return true;
+      }
+    }
+    return false;
   };
 
   /**
