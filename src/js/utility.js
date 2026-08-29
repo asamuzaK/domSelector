@@ -937,8 +937,7 @@ export const hasAttributeLocalName = (node, name) => {
     return true;
   }
   const names = node.getAttributeNames();
-  for (let i = 0; i < names.length; i++) {
-    const itemName = names[i];
+  for (const itemName of names) {
     const colonIndex = itemName.indexOf(':');
     if (colonIndex > -1) {
       const localName = itemName.slice(colonIndex + 1);
