@@ -1270,9 +1270,9 @@ export class Evaluator {
         if (typeof baseNode.getElementsByClassName === 'function') {
           const collection = baseNode.getElementsByClassName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
-            const foundNode = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              yield foundNode;
+            const item = collection[i];
+            if (isSimple || this.matchLeaves(filterLeaves, item, opt)) {
+              yield item;
             }
           }
           return;
@@ -1286,9 +1286,9 @@ export class Evaluator {
         ) {
           const collection = baseNode.getElementsByTagName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
-            const foundNode = collection[i];
-            if (isSimple || this.matchLeaves(filterLeaves, foundNode, opt)) {
-              yield foundNode;
+            const item = collection[i];
+            if (isSimple || this.matchLeaves(filterLeaves, item, opt)) {
+              yield item;
             }
           }
           return;
@@ -1562,16 +1562,16 @@ export class Evaluator {
           const leafName = unescapeSelector(leaf.name);
           const collection = node.getElementsByClassName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
-            const refNode = collection[i];
+            const item = collection[i];
             // Apply filter before calling the expensive checkNode
             if (
               filterLeaves.length === 0 ||
-              this.matchLeaves(filterLeaves, refNode, opt)
+              this.matchLeaves(filterLeaves, item, opt)
             ) {
               if (isLast) {
                 return true;
               }
-              if (this.#matchHasPseudoFunc(remainingLeaves, refNode, opt)) {
+              if (this.#matchHasPseudoFunc(remainingLeaves, item, opt)) {
                 return true;
               }
             }
@@ -1587,16 +1587,16 @@ export class Evaluator {
           const leafName = unescapeSelector(leaf.name);
           const collection = node.getElementsByTagName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
-            const refNode = collection[i];
+            const item = collection[i];
             // Apply filter before calling the expensive checkNode
             if (
               filterLeaves.length === 0 ||
-              this.matchLeaves(filterLeaves, refNode, opt)
+              this.matchLeaves(filterLeaves, item, opt)
             ) {
               if (isLast) {
                 return true;
               }
-              if (this.#matchHasPseudoFunc(remainingLeaves, refNode, opt)) {
+              if (this.#matchHasPseudoFunc(remainingLeaves, item, opt)) {
                 return true;
               }
             }
