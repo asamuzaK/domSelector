@@ -2026,6 +2026,128 @@ describe('DOMSelector', () => {
         'result'
       );
     });
+
+    it('should query simple attribute selectors in tree order', () => {
+      const root = document.createElement('div');
+      root.setAttribute('hidden', '');
+      root.innerHTML = '<div hidden><span hidden></span></div>';
+      const child1 = root.firstElementChild;
+      const child2 = child1.firstElementChild;
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('[hidden]', root);
+      assert.deepEqual(res, [child1, child2], 'result');
+    });
+
+    it('should leave unsupported attribute selectors to Finder', () => {
+      const root = document.createElement('div');
+      root.innerHTML =
+        '<span class="target" data-testid="target"></span>' +
+        '<span class="other"></span>';
+      const [target, other] = root.children;
+      target.setAttributeNS(
+        'http://www.w3.org/XML/1998/namespace',
+        'xml:lang',
+        'en'
+      );
+      const cases = [
+        ['[DATA-TESTID]', [target]],
+        ['[data-testid="target"]', [target]],
+        ['span[data-testid]', [target]],
+        ['[data-testid], .other', [target, other]],
+        ['[lang]', []]
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const [selector, expected] of cases) {
+        const actual = domSelector.querySelectorAll(selector, root);
+        assert.deepEqual(actual, expected, selector);
+      }
+    });
+
+    it('should keep rejecting unsupported query contexts', () => {
+      const domSelector = new DOMSelector(window);
+      assert.throws(
+        () =>
+          domSelector.querySelectorAll(
+            '[data-testid]',
+            document.createTextNode('text')
+          ),
+        window.TypeError,
+        'Unexpected node #text'
+      );
+    });
+
+    it('should query document and shadow root contexts', () => {
+      document.documentElement.setAttribute('data-testid', 'html');
+      const child = document.createElement('span');
+      child.setAttribute('data-testid', 'child');
+      document.body.append(child);
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = '<span data-testid="shadow"></span>';
+      const shadowChild = shadow.firstElementChild;
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(
+        domSelector.querySelectorAll('[data-testid]', document),
+        [document.documentElement, child],
+        'document'
+      );
+      assert.deepEqual(
+        domSelector.querySelectorAll('[data-testid]', shadow),
+        [shadowChild],
+        'shadow root'
+      );
+    });
+
+    it('should preserve local-name matching for namespaced attributes', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<span></span><svg></svg><svg></svg>';
+      const [htmlElement, matchingSvg, caseSensitiveSvg] = root.children;
+      htmlElement.setAttributeNS('urn:test', 'x:data-TestID', 'target');
+      matchingSvg.setAttributeNS('urn:test', 'x:data-testid', 'target');
+      caseSensitiveSvg.setAttributeNS('urn:test', 'x:data-TestID', 'target');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll('[data-testid]', root);
+      assert.deepEqual(res, [htmlElement, matchingSvg], 'result');
+    });
+
+    it('should leave simple attribute queries on XML documents to Finder', () => {
+      const xmlDom = new JSDOM('<root><child data-testid="target"/></root>', {
+        contentType: 'application/xml'
+      });
+      const xmlDocument = xmlDom.window.document;
+      const domSelector = new DOMSelector(xmlDom.window);
+      const res = domSelector.querySelectorAll(
+        '[data-testid]',
+        xmlDocument.documentElement
+      );
+      assert.deepEqual(res, [xmlDocument.documentElement.firstElementChild]);
+      xmlDom.window.close();
+    });
+
+    it('should return a static data attribute query result after mutations', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<span data-testid="first"></span><span></span>';
+      const [child1, child2] = root.children;
+      const domSelector = new DOMSelector(window);
+      const before = domSelector.querySelectorAll('[data-testid]', root);
+      child1.removeAttribute('data-testid');
+      child2.setAttribute('data-testid', 'second');
+      const after = domSelector.querySelectorAll('[data-testid]', root);
+      assert.notStrictEqual(after, before, 'fresh result');
+      assert.deepEqual(before, [child1], 'before mutation');
+      assert.deepEqual(after, [child2], 'after mutation');
+    });
+
+    it('should use the simple data attribute path with jsdom impl nodes', () => {
+      const child = document.createElement('span');
+      child.setAttribute('data-testid', 'target');
+      document.body.append(child);
+      const documentImpl = idlUtils.implForWrapper(document);
+      const bodyImpl = idlUtils.implForWrapper(document.body);
+      const domSelector = new DOMSelector(window, documentImpl, { idlUtils });
+      const res = domSelector.querySelectorAll('[data-testid]', bodyImpl);
+      assert.deepEqual(res, [child], 'result');
+    });
   });
 });
 

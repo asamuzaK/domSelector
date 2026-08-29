@@ -56,6 +56,7 @@ const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**
  * Get type of an object.
@@ -923,6 +924,78 @@ export const collectAllDescendants = (node, document) => {
     refNode = walker.nextNode();
   }
   return descendants;
+};
+
+/**
+ * Tests whether an element has an attribute with the given local name.
+ * @param {Element} node - The element to test.
+ * @param {string} name - The lower-case attribute local name.
+ * @returns {boolean} `true` if the attribute is present.
+ */
+export const hasAttributeLocalName = (node, name) => {
+  if (node.hasAttribute(name)) {
+    return true;
+  }
+  const names = node.getAttributeNames();
+  for (const itemName of names) {
+    const colonIndex = itemName.indexOf(':');
+    if (colonIndex > -1) {
+      const localName = itemName.slice(colonIndex + 1);
+      if (
+        localName === name ||
+        (isHTMLElement(node) && localName.toLowerCase() === name)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+/**
+ * Finds descendants for simple attribute-presence selectors.
+ * @param {string} selector - The CSS selector to match against.
+ * @param {Document|DocumentFragment|Element} node - The node to find within.
+ * @returns {?Array<Element>} Matching elements, or `null` when this function does not apply.
+ */
+export const findBySimpleAttribute = (selector, node) => {
+  if (typeof selector !== 'string') {
+    return null;
+  }
+  if (!node?.nodeType) {
+    return null;
+  }
+  const match = REG_SIMPLE_ATTRIBUTE.exec(selector);
+  if (!match) {
+    return null;
+  }
+  const [, name] = match;
+  // Finder deliberately excludes xml:lang from unprefixed [lang].
+  if (name === 'lang') {
+    return null;
+  }
+  const { nodeType } = node;
+  const isQueryContext =
+    nodeType === DOCUMENT_NODE ||
+    nodeType === DOCUMENT_FRAGMENT_NODE ||
+    nodeType === ELEMENT_NODE;
+  if (!isQueryContext) {
+    return null;
+  }
+  const document = nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
+  if (document.contentType !== 'text/html') {
+    return null;
+  }
+  const walker = document.createTreeWalker(node, SHOW_ELEMENT);
+  const nodes = [];
+  let nextNode = walker.nextNode();
+  while (nextNode) {
+    if (hasAttributeLocalName(nextNode, name)) {
+      nodes.push(nextNode);
+    }
+    nextNode = walker.nextNode();
+  }
+  return nodes;
 };
 
 /**

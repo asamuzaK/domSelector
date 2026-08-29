@@ -2522,6 +2522,95 @@ describe('utility functions', () => {
     });
   });
 
+  describe('hasAttributeLocalName', () => {
+    const func = util.hasAttributeLocalName;
+
+    it('should match attributes by local name', () => {
+      const node = document.createElement('div');
+      const htmlNode = document.createElement('div');
+      const svgNode = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      node.setAttribute('data-testid', 'target');
+      htmlNode.setAttributeNS('urn:test', 'x:data-TestID', 'target');
+      svgNode.setAttributeNS('urn:test', 'x:data-TestID', 'target');
+      assert.strictEqual(func(node, 'data-testid'), true, 'matching');
+      assert.strictEqual(func(node, 'hidden'), false, 'not matching');
+      assert.strictEqual(func(htmlNode, 'data-testid'), true, 'HTML element');
+      assert.strictEqual(func(svgNode, 'data-testid'), false, 'SVG element');
+      assert.strictEqual(func(svgNode, 'data-TestID'), true, 'case-sensitive');
+    });
+  });
+
+  describe('findBySimpleAttribute', () => {
+    const func = util.findBySimpleAttribute;
+
+    it('should return null if selector is not a string', () => {
+      const root = document.createElement('div');
+      const invalidSelectors = [undefined, null, 123, true, {}, []];
+      for (const selector of invalidSelectors) {
+        assert.strictEqual(
+          func(selector, root),
+          null,
+          `Testing with: ${String(selector)}`
+        );
+      }
+    });
+
+    it('should return null if node is not a valid query context', () => {
+      const textNode = document.createTextNode('text');
+      const commentNode = document.createComment('comment');
+      const attrNode = document.createAttribute('data-test');
+      assert.strictEqual(func('[hidden]', {}), null, 'Plain object');
+      assert.strictEqual(func('[hidden]', textNode), null, 'Text node');
+      assert.strictEqual(func('[hidden]', commentNode), null, 'Comment node');
+      assert.strictEqual(func('[hidden]', attrNode), null, 'Attribute node');
+    });
+
+    it('should return null if document contentType is not text/html', () => {
+      // text/xml
+      const xmlStr = '<root><child hidden=""></child></root>';
+      const xmlDoc = new window.DOMParser().parseFromString(xmlStr, 'text/xml');
+      // application/xhtml+xml
+      const xhtmlStr =
+        '<html xmlns="http://www.w3.org/1999/xhtml"><body hidden=""></body></html>';
+      const xhtmlDoc = new window.DOMParser().parseFromString(
+        xhtmlStr,
+        'application/xhtml+xml'
+      );
+      assert.strictEqual(func('[hidden]', xmlDoc), null, 'XML Document node');
+      assert.strictEqual(
+        func('[hidden]', xmlDoc.documentElement),
+        null,
+        'XML Element node'
+      );
+      assert.strictEqual(
+        func('[hidden]', xhtmlDoc),
+        null,
+        'XHTML Document node'
+      );
+    });
+
+    it('should find matching descendants in tree order', () => {
+      const root = document.createElement('div');
+      root.setAttribute('hidden', '');
+      root.innerHTML =
+        '<div hidden><span></span></div><p><span hidden></span></p>';
+      const first = root.firstElementChild;
+      const second = root.lastElementChild.firstElementChild;
+      assert.deepEqual(func('[hidden]', root), [first, second], 'result');
+    });
+
+    it('should return null for selectors handled by Finder', () => {
+      const root = document.createElement('div');
+      const selectors = ['[data-testid="target"]', '[lang]'];
+      for (const selector of selectors) {
+        assert.strictEqual(func(selector, root), null, String(selector));
+      }
+    });
+  });
+
   describe('get traversal strategy', () => {
     const func = util.getTraversalStrategy;
 

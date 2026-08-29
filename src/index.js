@@ -15,7 +15,11 @@ import {
   filterSelector,
   isSupportedAST
 } from './js/selector.js';
-import { collectAllDescendants, getType } from './js/utility.js';
+import {
+  collectAllDescendants,
+  findBySimpleAttribute,
+  getType
+} from './js/utility.js';
 
 /* constants */
 import {
@@ -371,6 +375,10 @@ export class DOMSelector {
       const document =
         node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
+    }
+    const fastNodes = findBySimpleAttribute(selector, node);
+    if (Array.isArray(fastNodes)) {
+      return fastNodes;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
     if (nodes && nodes.size) {
