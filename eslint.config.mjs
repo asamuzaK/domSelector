@@ -48,6 +48,8 @@ export default [
         }
       ],
       'prefer-object-has-own': 'error',
+      'unicorn/no-for-each': 'error',
+      'unicorn/no-for-loop': 'error',
       'unicorn/prefer-node-protocol': 'error'
     }
   },
