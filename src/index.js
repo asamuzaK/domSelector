@@ -151,13 +151,14 @@ export class DOMSelector {
    * @param {string} selector - The CSS selector to check against.
    * @param {Element} node - The element node to check.
    * @param {object} [opt] - Optional parameters.
-   * @returns {CheckResult} An object containing the check result.
+   * @returns {CheckResult|null} An object containing the check result.
    */
   check = (selector, node, opt = {}) => {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
-      return this.#finder.onError(error, opt);
+      this.#finder.onError(error, opt);
+      return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
       return {
@@ -265,7 +266,8 @@ export class DOMSelector {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
-      return this.#finder.onError(error, opt);
+      this.#finder.onError(error, opt);
+      return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
       return node.firstElementChild;
@@ -289,7 +291,8 @@ export class DOMSelector {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
-      return this.#finder.onError(error, opt);
+      this.#finder.onError(error, opt);
+      return [];
     }
     if (REG_UNIVERSAL.test(selector)) {
       const document =
