@@ -381,10 +381,13 @@ export class DOMSelector {
    */
   #findNodes = (selector, node, opt, targetType) => {
     try {
-      return this.#finder.setup(selector, node, opt).find(targetType);
+      const res = this.#finder.setup(selector, node, opt).find(targetType);
+      if (res instanceof Set) {
+        return res;
+      }
     } catch (e) {
       this.#finder.onError(e, opt);
-      return null;
     }
+    return null;
   };
 }
