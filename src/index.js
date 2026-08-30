@@ -377,13 +377,17 @@ export class DOMSelector {
    * @param {Document|DocumentFragment|Element} node - The node from which to start searching.
    * @param {object} opt - Optional parameters.
    * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
-   * @returns {Set<Element>|Array<Element>|Element|boolean|null} The search results from Finder, or the error handling return value.
+   * @returns {Set<Element>|null} The search results from Finder, or null.
    */
   #findNodes = (selector, node, opt, targetType) => {
     try {
-      return this.#finder.setup(selector, node, opt).find(targetType);
+      const res = this.#finder.setup(selector, node, opt).find(targetType);
+      if (res instanceof Set) {
+        return res;
+      }
     } catch (e) {
-      return this.#finder.onError(e, opt);
+      this.#finder.onError(e, opt);
     }
+    return null;
   };
 }
