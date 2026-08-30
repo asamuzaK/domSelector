@@ -99,7 +99,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [all] - If true, clears all cached results.
    * @returns {void}
    */
-  clearResults(all = false) {
+  clearResults = (all = false) => {
     this.#anbCache = null;
     this.#focusWithinCache = null;
     this.#psDefaultCache = null;
@@ -109,18 +109,18 @@ export class PseudoClassEvaluator {
     this.#psIndeterminateCache = null;
     this.#psLangCache = null;
     this.#psValidCache = null;
-  }
+  };
 
   /**
    * Resets the evaluator state.
    * @returns {void}
    */
-  reset() {
+  reset = () => {
     this.#documentURL = null;
     this.#nthIndexCache = null;
     this.#setPool = [];
     this.#setPoolIndex = 0;
-  }
+  };
 
   /**
    * Matches a pseudo-class selector.
@@ -132,7 +132,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {boolean} True if matches, otherwise false.
    */
-  matchPseudoClassSelector(ast, node, opt = {}) {
+  matchPseudoClassSelector = (ast, node, opt = {}) => {
     const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
     const { forgive, warn = this.#evaluator.warn } = opt;
@@ -373,7 +373,7 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  }
+  };
 
   /**
    * Evaluates logical pseudo-class selector.
