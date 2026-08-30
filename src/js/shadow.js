@@ -16,7 +16,7 @@ export class ShadowDOMEvaluator {
   #verifyShadowHost;
 
   /**
-   * @param {object} evaluator - The parent Evaluator instance.
+   * @param {import('./evaluator.js').Evaluator} evaluator - The Evaluator instance.
    */
   constructor(evaluator) {
     this.#evaluator = evaluator;
@@ -41,8 +41,8 @@ export class ShadowDOMEvaluator {
 
   /**
    * Matches a selector for a shadow root.
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {DocumentFragment} node - The DocumentFragment node.
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
@@ -64,8 +64,8 @@ export class ShadowDOMEvaluator {
 
   /**
    * Evaluates shadow host pseudo-classes.
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {DocumentFragment} node - The DocumentFragment node.
    * @returns {boolean} True if matches, otherwise false.
    */
   evaluateShadowHost(ast, node) {
@@ -115,9 +115,9 @@ export class ShadowDOMEvaluator {
   /**
    * Evaluates the :host() pseudo-class.
    * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
+   * @param {Array<object>} leaves - The AST leaves.
+   * @param {Element} host - The host element.
+   * @param {import('css-tree').CssNode} ast - The original AST for error reporting.
    * @returns {boolean} True if matches, otherwise false.
    */
   #evaluateHostPseudo(leaves, host, ast) {
@@ -142,9 +142,9 @@ export class ShadowDOMEvaluator {
   /**
    * Evaluates the :host-context() pseudo-class.
    * @private
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} host - The host element.
-   * @param {object} ast - The original AST for error reporting.
+   * @param {Array<object>} leaves - The AST leaves.
+   * @param {Element} host - The host element.
+   * @param {import('css-tree').CssNode} ast - The original AST for error reporting.
    * @returns {boolean} True if matched, otherwise false.
    */
   #evaluateHostContextPseudo(leaves, host, ast) {

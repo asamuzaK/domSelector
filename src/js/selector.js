@@ -59,14 +59,14 @@ const REG_TEST_LIB = new RegExp(
 /**
  * Find a nested :has() pseudo-class.
  * @param {object} leaf - The AST leaf to check.
- * @returns {?object} The leaf if it's :has, otherwise null.
+ * @returns {object|null} The leaf if it's :has, otherwise null.
  */
 export const findNestedHas = leaf => leaf.name === 'has';
 
 /**
  * Find a logical pseudo-class that contains a nested :has().
  * @param {object} leaf - The AST leaf to check.
- * @returns {?object} The leaf if it matches, otherwise null.
+ * @returns {object|null} The leaf if it matches, otherwise null.
  */
 export const findLogicalWithNestedHas = leaf => {
   if (KEYS_LOGICAL.has(leaf.name) && cssTree.find(leaf, findNestedHas)) {
@@ -97,7 +97,7 @@ export const validateHasNesting = astChildren => {
 /**
  * Creates a callback function to validate :has() nesting during AST walk.
  * @param {object} globalObj - The global window object.
- * @returns {function(object): void} The callback function for walkAST.
+ * @returns {(node: object) => void} The callback function for walkAST.
  */
 export const createHasValidator = globalObj => node => {
   if (
@@ -127,7 +127,7 @@ export const isInvalidCombinator = (type, prevType, isLast) =>
 
 /**
  * Checks if a given AST is supported by the DOMSelector engine.
- * @param {object} ast - The AST to validate.
+ * @param {import('css-tree').CssNode} ast - The AST to validate.
  * @returns {boolean} True if the selector is fully supported.
  */
 export const isSupportedAST = ast => {

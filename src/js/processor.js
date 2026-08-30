@@ -11,6 +11,20 @@ import { generateException } from './utility.js';
 import { COMBINATOR, SYNTAX_ERR } from './constant.js';
 
 /**
+ * @typedef {object} ProcessedBranch
+ * @property {import('css-tree').CssNode|null} combo - The combinator AST node.
+ * @property {Array<import('css-tree').CssNode>} leaves - An array of AST leaf nodes.
+ */
+
+/**
+ * @typedef {object} ProcessedASTNode
+ * @property {Array<ProcessedBranch>} branch - The processed selector branch.
+ * @property {string|null} dir - The traversal direction.
+ * @property {boolean} filtered - Indicates if the node is filtered.
+ * @property {boolean} find - Indicates if the match is found.
+ */
+
+/**
  * SelectorProcessor
  * Processes raw selector branches into an internal AST format.
  */
@@ -26,9 +40,9 @@ export class SelectorProcessor {
 
   /**
    * Processes selector branches into the internal AST.
-   * @param {Array.<object>} branches - The raw selector branches.
+   * @param {Array<Array<import('css-tree').CssNode>>} branches - The raw selector branches.
    * @param {string} selector - The original CSS selector string.
-   * @returns {object} An object containing the ast and a descendant flag.
+   * @returns {{ast: Array<ProcessedASTNode>, descendant: boolean, invalidate?: boolean}} An object containing the ast, a descendant flag, and an optional invalidate flag.
    */
   process(branches, selector) {
     let descendant = false;

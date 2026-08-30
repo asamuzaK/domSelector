@@ -183,7 +183,7 @@ export const preprocess = value => {
  * Creates an Abstract Syntax Tree (AST) from a CSS selector string.
  * @param {string} sel - The CSS selector string.
  * @param {string} context - Parse what part of CSS.
- * @returns {object} The parsed AST object.
+ * @returns {import('css-tree').CssNode} The parsed AST object.
  */
 export const parseSelector = (sel, context = 'selectorList') => {
   const selector = preprocess(sel);
@@ -229,10 +229,10 @@ export const parseSelector = (sel, context = 'selectorList') => {
 /**
  * Walks the provided AST to collect selector branches and gather information
  * about its contents.
- * @param {object} ast - The AST to traverse.
+ * @param {import('css-tree').CssNode} ast - The AST to traverse.
  * @param {boolean} toObject - True if converts ast to object, false otherwise.
- * @param {function(object): void} [callback] - Optional callback for each node.
- * @returns {{branches: Array<object>, info: object}} An object containing the selector branches and info.
+ * @param {(node: import('css-tree').CssNode) => void} [callback] - Optional callback for each node.
+ * @returns {{branches: Array<Array<import('css-tree').CssNode>>, info: object}} An object containing the selector branches and info.
  */
 export const walkAST = (ast = {}, toObject = false, callback = null) => {
   const branches = new Set();
@@ -410,8 +410,8 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
 
 /**
  * Comparison function for sorting AST nodes based on specificity.
- * @param {object} a - The first AST node.
- * @param {object} b - The second AST node.
+ * @param {import('css-tree').CssNode} a - The first AST node.
+ * @param {import('css-tree').CssNode} b - The second AST node.
  * @returns {number} -1, 0 or 1, depending on the sort order.
  */
 export const compareASTNodes = (a, b) => {
@@ -428,8 +428,8 @@ export const compareASTNodes = (a, b) => {
 
 /**
  * Sorts a collection of AST nodes based on CSS specificity rules.
- * @param {Array<object>} asts - A collection of AST nodes to sort.
- * @returns {Array<object>} A new array containing the sorted AST nodes.
+ * @param {Array<import('css-tree').CssNode>} asts - A collection of AST nodes to sort.
+ * @returns {Array<import('css-tree').CssNode>} A new array containing the sorted AST nodes.
  */
 export const sortAST = asts => {
   const arr = [...asts];
@@ -466,7 +466,7 @@ export const parseAstName = selector => {
 
 /**
  * Extracts the rightmost subject keys (id, class, tag) from a CSS selector AST.
- * @param {object} ast - The AST representation of the CSS selector.
+ * @param {import('css-tree').CssNode} ast - The AST representation of the CSS selector.
  * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
  */
 export const extractSubjectsAst = ast => {

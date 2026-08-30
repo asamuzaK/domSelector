@@ -101,8 +101,8 @@ export const generateException = (msg, name, globalObject = globalThis) => {
 
 /**
  * Resolve content document, root node, and check if it's in a shadow DOM.
- * @param {object} node - Document, DocumentFragment, or Element node.
- * @returns {Array.<object|boolean>} - [document, root, isInShadow].
+ * @param {Document|DocumentFragment|Element} node - Document, DocumentFragment, or Element node.
+ * @returns {Array<Document|DocumentFragment|Element|boolean>} - [document, root, isInShadow].
  */
 export const resolveContent = node => {
   if (!node?.nodeType) {
@@ -150,10 +150,10 @@ export const resolveContent = node => {
 
 /**
  * Traverse node tree with a TreeWalker.
- * @param {object} node - The target node.
- * @param {object} walker - The TreeWalker instance.
+ * @param {Element} node - The target node.
+ * @param {TreeWalker} walker - The TreeWalker instance.
  * @param {boolean} [force] - Traverse only to the next node.
- * @returns {?object} - The current node if found, otherwise null.
+ * @returns {Element|null} - The current Element node if found, otherwise null.
  */
 export const traverseNode = (node, walker, force = false) => {
   if (!node?.nodeType) {
@@ -209,7 +209,7 @@ export const traverseNode = (node, walker, force = false) => {
 
 /**
  * Check if a node is an HTML element.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if it's the HTML element.
  */
 export const isHTMLElement = node => {
@@ -228,7 +228,7 @@ export const isHTMLElement = node => {
 
 /**
  * Check if a node is a custom element.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @param {object} [opt] - Options.
  * @param {boolean} [opt.formAssociated] - True if the node is form associated.
  * @returns {boolean} - True if it's the custom element.
@@ -262,8 +262,8 @@ export const isCustomElement = (node, { formAssociated } = {}) => {
 
 /**
  * Get slotted text content.
- * @param {object} node - The Element node (likely a <slot>).
- * @returns {?string} - The text content.
+ * @param {Element} node - The Element node (likely a <slot>).
+ * @returns {string|null} - The text content.
  */
 export const getSlottedTextContent = node => {
   if (!node?.nodeType) {
@@ -291,9 +291,9 @@ export const getSlottedTextContent = node => {
 /**
  * Get directionality of a node.
  * @see https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
- * @param {object} node - The Element node.
- * @param {WeakMap} [dirCache] - Cache for directionality.
- * @returns {?string} - 'ltr' or 'rtl'.
+ * @param {Element} node - The Element node.
+ * @param {WeakMap<Element, string>} [dirCache] - Cache for directionality.
+ * @returns {string|null} - 'ltr' or 'rtl'.
  */
 export const getDirectionality = (node, dirCache = new WeakMap()) => {
   if (!node?.nodeType) {
@@ -416,9 +416,9 @@ export const getDirectionality = (node, dirCache = new WeakMap()) => {
 
 /**
  * Get language attribute of a node.
- * @param {object} node - The Element node.
- * @param {WeakMap} [langCache] - Cache for language attributes.
- * @returns {?string} - Language attribute value.
+ * @param {Element} node - The Element node.
+ * @param {WeakMap<Element, string>} [langCache] - Cache for language attributes.
+ * @returns {string|null} - Language attribute value.
  */
 export const getLanguageAttribute = (node, langCache = new WeakMap()) => {
   if (!node?.nodeType) {
@@ -494,7 +494,7 @@ export const getLanguageAttribute = (node, langCache = new WeakMap()) => {
 /**
  * Check if content is editable.
  * NOTE: Not implemented in jsdom https://github.com/jsdom/jsdom/issues/1670
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if content is editable.
  */
 export const isContentEditable = node => {
@@ -541,7 +541,7 @@ export const isContentEditable = node => {
 
 /**
  * Check if a node is visible.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if the node is visible.
  */
 export const isVisible = node => {
@@ -556,7 +556,7 @@ export const isVisible = node => {
 
 /**
  * Check if focus is visible on the node.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if focus is visible.
  */
 export const isFocusVisible = node => {
@@ -582,7 +582,7 @@ export const isFocusVisible = node => {
 
 /**
  * Check if an area is focusable.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if the area is focusable.
  */
 export const isFocusableArea = node => {
@@ -684,7 +684,7 @@ export const isFocusableArea = node => {
  * @see https://phabricator.services.mozilla.com/D156219
  * @see https://github.com/jsdom/jsdom/issues/3029
  * @see https://github.com/jsdom/jsdom/issues/3464
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if the node is focusable.
  */
 export const isFocusable = node => {
@@ -725,8 +725,8 @@ export const isFocusable = node => {
 /**
  * Get namespace URI.
  * @param {string} ns - The namespace prefix.
- * @param {object} node - The Element node.
- * @returns {?string} - The namespace URI.
+ * @param {Element} node - The Element node.
+ * @returns {string|null} - The namespace URI.
  */
 export const getNamespaceURI = (ns, node) => {
   if (typeof ns !== 'string') {
@@ -756,7 +756,7 @@ export const getNamespaceURI = (ns, node) => {
 /**
  * Check if a namespace is declared.
  * @param {string} ns - The namespace.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} - True if the namespace is declared.
  */
 export const isNamespaceDeclared = (ns = '', node = {}) => {
@@ -781,8 +781,8 @@ export const isNamespaceDeclared = (ns = '', node = {}) => {
 
 /**
  * Check if nodeA precedes and/or contains nodeB.
- * @param {object} nodeA - The first Element node.
- * @param {object} nodeB - The second Element node.
+ * @param {Element} nodeA - The first Element node.
+ * @param {Element} nodeB - The second Element node.
  * @returns {boolean} - True if nodeA precedes nodeB.
  */
 export const isPreceding = (nodeA, nodeB) => {
@@ -802,8 +802,8 @@ export const isPreceding = (nodeA, nodeB) => {
 
 /**
  * Comparison function for sorting nodes based on document position.
- * @param {object} a - The first node.
- * @param {object} b - The second node.
+ * @param {Element} a - The first node.
+ * @param {Element} b - The second node.
  * @returns {number} - Sort order.
  */
 export const compareNodes = (a, b) => {
@@ -815,8 +815,8 @@ export const compareNodes = (a, b) => {
 
 /**
  * Sort a collection of nodes.
- * @param {Array.<object>|Set.<object>} nodes - Collection of nodes.
- * @returns {Array.<object>} - Collection of sorted nodes.
+ * @param {Array<Element>|Set<Element>} nodes - Collection of nodes.
+ * @returns {Array<Element>} - Collection of sorted nodes.
  */
 export const sortNodes = (nodes = []) => {
   const arr = [...nodes];
@@ -829,7 +829,7 @@ export const sortNodes = (nodes = []) => {
 /**
  * Traverses AST nodes to find the most optimal seed selector
  * (ID > Class > Tag).
- * @param {Array} nodes - AST nodes to traverse.
+ * @param {Array<object>} nodes - AST nodes to traverse.
  * @param {object} [state] - The current state of the search.
  * @returns {object} The search state containing the best seed.
  */
@@ -870,9 +870,9 @@ export const findBestSeed = (nodes, state = { seed: null, priority: 0 }) => {
 /**
  * Traces the DOM tree upwards and sideways from a seed element,
  * populating the allowlist with safe paths for :has() evaluation.
- * @param {object} current - The starting seed element.
- * @param {WeakSet} list - The WeakSet to populate.
- * @param {Set} visitedAncestors - The Set to track visited nodes.
+ * @param {Element} current - The starting seed element.
+ * @param {WeakSet<Element>} list - The WeakSet to populate.
+ * @param {Set<Element>} visitedAncestors - The Set to track visited nodes.
  * @returns {void}
  */
 export const populateHasAllowlist = (current, list, visitedAncestors) => {
@@ -956,7 +956,7 @@ export const hasAttributeLocalName = (node, name) => {
  * Finds descendants for simple attribute-presence selectors.
  * @param {string} selector - The CSS selector to match against.
  * @param {Document|DocumentFragment|Element} node - The node to find within.
- * @returns {?Array<Element>} Matching elements, or `null` when this function does not apply.
+ * @returns {Array<Element>|null} Matching elements, or `null` when this function does not apply.
  */
 export const findBySimpleAttribute = (selector, node) => {
   if (typeof selector !== 'string') {
@@ -1000,7 +1000,7 @@ export const findBySimpleAttribute = (selector, node) => {
 
 /**
  * Gets the traversal direction and starting twig.
- * @param {Array.<object>} branch - The selector branch.
+ * @param {Array<object>} branch - The selector branch.
  * @param {string} targetType - The target type.
  * @param {boolean} hasScope - True if selector includes ':scope'.
  * @param {boolean} scoped - True if traversal is scoped within target node.

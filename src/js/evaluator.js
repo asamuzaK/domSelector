@@ -29,13 +29,7 @@ import {
   TYPE_SELECTOR
 } from './constant.js';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
-const KEYS_PS_UNCACHE = new Set([
-  'any-link',
-  'defined',
-  'dir',
-  'link',
-  'scope'
-]);
+const KEYS_UNCACHE = new Set(['any-link', 'defined', 'dir', 'link', 'scope']);
 
 /**
  * Evaluator
@@ -52,21 +46,21 @@ export class Evaluator {
   #shadowDOMEvaluator;
 
   /**
-   * @param {object} window - The window object.
+   * @param {Window} window - The window object.
    */
   constructor(window) {
     this.window = window;
     this.documentCache = new WeakMap();
     this.#domTraverser = new DOMTraverser(this);
     this.#eventHandler = new EventHandler(window);
-    this.#shadowDOMEvaluator = new ShadowDOMEvaluator(this);
     this.#pseudoClassEvaluator = new PseudoClassEvaluator(this);
+    this.#shadowDOMEvaluator = new ShadowDOMEvaluator(this);
     this.clearResults(true);
   }
 
   /**
    * Gets the event handler.
-   * @returns {EventHandler} EventHandler instance.
+   * @returns {EventHandler} The EventHandler instance.
    */
   get eventHandler() {
     return this.#eventHandler;
@@ -83,12 +77,12 @@ export class Evaluator {
   /**
    * Sets up the evaluator.
    * @param {string} selector - The CSS selector.
-   * @param {object} node - Document, DocumentFragment, or Element.
+   * @param {Document|DocumentFragment|Element} node - Document, DocumentFragment, or Element.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.check] - Indicates if running in internal check().
    * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
-   * @returns {object} The evaluator instance.
+   * @returns {Evaluator} The Evaluator instance.
    */
   setup(selector, node, opt = {}) {
     const { check, noexcept, warn } = opt;
@@ -153,8 +147,8 @@ export class Evaluator {
 
   /**
    * Matches a selector.
-   * @param {object} ast - The AST.
-   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Document|DocumentFragment|Element} node - The Document, DocumentFragment, or Element node.
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
@@ -178,8 +172,8 @@ export class Evaluator {
 
   /**
    * Matches leaves against a node with cache check.
-   * @param {Array.<object>} leaves - The AST leaves to match.
-   * @param {object} node - The DOM node.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
+   * @param {Element} node - The Element node.
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */
@@ -210,7 +204,7 @@ export class Evaluator {
           break;
         }
         case PS_CLASS_SELECTOR: {
-          if (KEYS_PS_UNCACHE.has(leaf.name)) {
+          if (KEYS_UNCACHE.has(leaf.name)) {
             cacheable = false;
           }
           break;
@@ -236,8 +230,8 @@ export class Evaluator {
 
   /**
    * Returns a cached slice of the leaves array (excluding the first item).
-   * @param {Array.<object>} leaves - The original AST leaves array.
-   * @returns {Array.<object>} The filtered leaves.
+   * @param {Array<import('css-tree').CssNode>} leaves - The original AST leaves array.
+   * @returns {Array<object>} The filtered leaves.
    */
   getFilterLeaves = leaves => {
     if (!this.#filterLeavesCache) {
@@ -254,8 +248,8 @@ export class Evaluator {
 
   /**
    * Evaluates shadow host pseudo-classes.
-   * @param {object} ast - The AST.
-   * @param {object} node - The DocumentFragment node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {DocumentFragment} node - The DocumentFragment node.
    * @returns {boolean} True if matches, otherwise false.
    */
   evaluateShadowHost = (ast, node) =>
@@ -264,12 +258,12 @@ export class Evaluator {
   /**
    * Matches pseudo-class selector.
    * @see https://html.spec.whatwg.org/_pseudo-classes
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
-   * @returns {Set.<object>|boolean} A collection of matched nodes.
+   * @returns {Set<Element>|boolean} A collection of matched nodes.
    */
   matchPseudoClassSelector = (ast, node, opt = {}) => {
     return this.#pseudoClassEvaluator.matchPseudoClassSelector(ast, node, opt);
@@ -277,22 +271,22 @@ export class Evaluator {
 
   /**
    * Creates a TreeWalker.
-   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {Document|DocumentFragment|Element} node - The Document, DocumentFragment, or Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
    * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
-   * @returns {object} The TreeWalker object.
+   * @returns {TreeWalker} The TreeWalker object.
    */
   createTreeWalker = (node, opt = {}) =>
     this.#domTraverser.createTreeWalker(node, opt);
 
   /**
    * Yields combinator matches (Lazy evaluation, O(1) memory).
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
+   * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {string} [opt.dir] - The find direction.
-   * @yields {object} The matched node.
+   * @yields {Element} The matched node.
    */
   *yieldCombinatorMatches(twig, node, opt = {}) {
     yield* this.#domTraverser.yieldCombinatorMatches(twig, node, opt);
@@ -300,10 +294,10 @@ export class Evaluator {
 
   /**
    * Finds descendant nodes and yields matches.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
+   * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
    * @param {object} opt - Options.
-   * @yields {object} The matched node.
+   * @yields {Element} The matched node.
    */
   *yieldFindDescendantNodes(leaves, baseNode, opt) {
     yield* this.#domTraverser.yieldFindDescendantNodes(leaves, baseNode, opt);
@@ -312,8 +306,8 @@ export class Evaluator {
   /**
    * Matches a selector for element nodes.
    * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */

@@ -88,7 +88,7 @@ export class PseudoClassEvaluator {
   #setPoolIndex = 0;
 
   /**
-   * @param {object} evaluator - The parent Evaluator instance.
+   * @param {import('./evaluator.js').Evaluator} evaluator - The Evaluator instance.
    */
   constructor(evaluator) {
     this.#evaluator = evaluator;
@@ -125,8 +125,8 @@ export class PseudoClassEvaluator {
   /**
    * Matches a pseudo-class selector.
    * @see https://html.spec.whatwg.org/_pseudo-classes
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
@@ -378,8 +378,8 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates logical pseudo-class selector.
    * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
@@ -450,8 +450,8 @@ export class PseudoClassEvaluator {
    * Evaluates pseudo-class function.
    * @private
    * @see https://html.spec.whatwg.org/_pseudo-classes
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
@@ -590,7 +590,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :active pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchActivePseudoClass = node => {
@@ -607,7 +607,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :default pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchDefaultPseudoClass = node => {
@@ -680,7 +680,7 @@ export class PseudoClassEvaluator {
    * Evaluates the :disabled and :enabled pseudo-classes with tree-caching.
    * @private
    * @param {string} astName - The pseudo-class name ('disabled' or 'enabled').
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchDisabledPseudoClass = (astName, node) => {
@@ -742,7 +742,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :empty pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchEmptyPseudoClass = node => {
@@ -769,7 +769,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :focus pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchFocusPseudoClass = node => {
@@ -796,7 +796,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :focus-visible pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchFocusVisiblePseudoClass = node => {
@@ -873,7 +873,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :focus-within pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchFocusWithinPseudoClass = node => {
@@ -905,7 +905,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :hover pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchHoverPseudoClass = node => {
@@ -920,7 +920,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :indeterminate pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchIndeterminatePseudoClass = node => {
@@ -986,7 +986,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :local-link pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchLocalLinkPseudoClass = node => {
@@ -1008,7 +1008,7 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates the :target pseudo-class.
    * @private
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchTargetPseudoClass = node => {
@@ -1027,7 +1027,7 @@ export class PseudoClassEvaluator {
    * Evaluates the :valid and :invalid pseudo-classes.
    * @private
    * @param {string} astName - The name of the pseudo-class.
-   * @param {object} node - The Element node.
+   * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchValidityPseudoClass = (astName, node) => {
@@ -1080,8 +1080,8 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates An+B mathematically.
    * @private
-   * @param {object} ast - The AST.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} ast - The AST.
+   * @param {Element} node - The Element node.
    * @param {string} nthName - The name of the nth pseudo-class.
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
@@ -1210,8 +1210,8 @@ export class PseudoClassEvaluator {
   /**
    * Gets selector branches from cache or parses them.
    * @private
-   * @param {object} selector - The AST.
-   * @returns {Array.<Array.<object>>} The selector branches.
+   * @param {import('css-tree').CssNode} selector - The AST.
+   * @returns {Array<Array<import('css-tree').CssNode>>} The selector branches.
    */
   #getSelectorBranches = selector => {
     let branches = this.#astCache.get(selector);
@@ -1227,8 +1227,8 @@ export class PseudoClassEvaluator {
   /**
    * Checks if a node matches any of the given selector branches.
    * @private
-   * @param {Array.<Array.<object>>} branches - The selector branches to test.
-   * @param {object} node - The element node to match against.
+   * @param {Array<Array<import('css-tree').CssNode>>} branches - The selector branches to test.
+   * @param {Element} node - The element node to match against.
    * @param {object} [opt] - Optional parameters.
    * @returns {boolean} True if any branch matches, otherwise false.
    */
@@ -1246,8 +1246,8 @@ export class PseudoClassEvaluator {
   /**
    * Matches logical pseudo-class functions.
    * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} astData - The AST data.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
@@ -1323,10 +1323,10 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates :has() pseudo-class.
    * @private
-   * @param {object} astData - The AST data.
-   * @param {object} node - The Element node.
+   * @param {import('css-tree').CssNode} astData - The AST data.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
-   * @returns {?object} The matched node.
+   * @returns {Element|null} The matched node.
    */
   #evaluateHasPseudo = (astData, node, opt = {}) => {
     const { branches } = astData;
@@ -1373,7 +1373,7 @@ export class PseudoClassEvaluator {
   /**
    * Builds an Allowlist for the :has() branch using a sparse seed element.
    * @private
-   * @param {Array} leaves - The AST leaves of the selector branch.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves of the selector branch.
    * @returns {object|null} The wrapper object containing the WeakSet, or null.
    */
   #buildHasAllowlist = leaves => {
@@ -1431,7 +1431,7 @@ export class PseudoClassEvaluator {
   /**
    * Retrieves a cleared Set from the pool.
    * @private
-   * @returns {Set.<object>} A cleared Set instance.
+   * @returns {Set<object>} A cleared Set instance.
    */
   #acquireSet = () => {
     if (this.#setPoolIndex === this.#setPool.length) {
@@ -1445,8 +1445,8 @@ export class PseudoClassEvaluator {
   /**
    * Matches the :has() pseudo-class function.
    * @private
-   * @param {Array.<object>} astLeaves - The AST leaves.
-   * @param {object} node - The Element node.
+   * @param {Array<import('css-tree').CssNode>} astLeaves - The AST leaves.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
@@ -1478,9 +1478,9 @@ export class PseudoClassEvaluator {
   /**
    * Evaluates if any combinator match satisfies the condition to short-circuit.
    * @private
-   * @param {object} twig - The AST twig object.
-   * @param {object} node - The element node.
-   * @param {Array.<object>} remainingLeaves - The remaining AST leaves.
+   * @param {import('./processor.js').ProcessedBranch} twig - The AST twig object.
+   * @param {Element} node - The Element node.
+   * @param {Array<object>} remainingLeaves - The remaining AST leaves.
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */
@@ -1607,9 +1607,9 @@ export class PseudoClassEvaluator {
   /**
    * Checks if a target node satisfies the given conditions.
    * @private
-   * @param {object} refNode - The element node to check.
-   * @param {Array.<object>} leaves - The current AST leaves.
-   * @param {Array.<object>} remainingLeaves - The remaining AST leaves.
+   * @param {Element} refNode - The element node to check.
+   * @param {Array<import('css-tree').CssNode>} leaves - The current AST leaves.
+   * @param {Array<import('css-tree').CssNode>} remainingLeaves - The remaining AST leaves.
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */

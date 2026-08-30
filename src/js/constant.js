@@ -96,14 +96,18 @@ export const LOGIC_COMPOUND = `(?:is|not)\\(\\s*${COMPOUND_L}(?:\\s*,\\s*${COMPO
 export const LOGIC_COMPLEX = `(?:is|not)\\(\\s*${COMPLEX_L}(?:\\s*,\\s*${COMPLEX_L})*\\s*\\)`;
 
 /* forms and input types */
+/** @type {Array<string>} */
 export const FORM_PARTS = Object.freeze([
   'button',
   'input',
   'select',
   'textarea'
 ]);
+/** @type {Array<string>} */
 export const INPUT_BUTTON = Object.freeze(['button', 'reset', 'submit']);
+/** @type {Array<string>} */
 export const INPUT_CHECK = Object.freeze(['checkbox', 'radio']);
+/** @type {Array<string>} */
 export const INPUT_DATE = Object.freeze([
   'date',
   'datetime-local',
@@ -111,6 +115,7 @@ export const INPUT_DATE = Object.freeze([
   'time',
   'week'
 ]);
+/** @type {Array<string>} */
 export const INPUT_TEXT = Object.freeze([
   'email',
   'password',
@@ -119,11 +124,13 @@ export const INPUT_TEXT = Object.freeze([
   'text',
   'url'
 ]);
+/** @type {Array<string>} */
 export const INPUT_EDIT = Object.freeze([
   ...INPUT_DATE,
   ...INPUT_TEXT,
   'number'
 ]);
+/** @type {Array<string>} */
 export const INPUT_LTR = Object.freeze([
   ...INPUT_CHECK,
   'color',
@@ -134,7 +141,8 @@ export const INPUT_LTR = Object.freeze([
   'time'
 ]);
 
-/* Attribute names that must treet values as ASCII case-insensitive */
+/* Attribute names that must treat values as ASCII case-insensitive */
+/** @type {Array<string>} */
 export const ATTR_VALUE_I = Object.freeze([
   'accept',
   'accept-charset',
@@ -185,9 +193,11 @@ export const ATTR_VALUE_I = Object.freeze([
 ]);
 
 /* logical combination pseudo-classes */
+/** @type {Set<string>} */
 export const KEYS_LOGICAL = new Set(['has', 'is', 'not', 'where']);
 
 /* lists of supported / unsupported pseudo-classes and pseudo-elements */
+/** @type {Set<string>} */
 export const KEYS_PS_CLASS_SUPPORTED = new Set([
   'active',
   'any-link',
@@ -241,6 +251,7 @@ export const KEYS_PS_CLASS_SUPPORTED = new Set([
   'where'
 ]);
 
+/** @type {Set<string>} */
 export const KEYS_PS_CLASS_UNSUPPORTED = new Set([
   'autofill',
   'blank',
@@ -268,6 +279,7 @@ export const KEYS_PS_CLASS_UNSUPPORTED = new Set([
   '-webkit-autofill'
 ]);
 
+/** @type {Set<string>} */
 export const KEYS_PS_ELEMENT_UNSUPPORTED = new Set([
   'after',
   'backdrop',

@@ -34,7 +34,7 @@ export class EventHandler {
   #cleanupFunctions;
 
   /**
-   * @param {object} window - The window object.
+   * @param {Window} window - The window object.
    */
   constructor(window) {
     this.#window = window;
@@ -76,7 +76,7 @@ export class EventHandler {
 
   /**
    * Gets the node that last had visible focus.
-   * @returns {Node|null} The last focused node.
+   * @returns {Element|null} The last focused node.
    */
   get lastFocusVisible() {
     return this.#lastFocusVisible;
@@ -84,7 +84,7 @@ export class EventHandler {
 
   /**
    * Sets the node that last had visible focus.
-   * @param {Node} node - The node to set as the last visible focus.
+   * @param {Element} node - The node to set as the last visible focus.
    */
   set lastFocusVisible(node) {
     this.#lastFocusVisible = node;

@@ -113,8 +113,8 @@ export const matchPseudoElementSelector = (
 
 /**
  * Matches the :dir() pseudo-class against an element's directionality.
- * @param {object} ast - The AST object for the pseudo-class.
- * @param {object} node - The element node to match against.
+ * @param {import('css-tree').CssNode} ast - The AST object for the pseudo-class.
+ * @param {Element} node - The element node to match against.
  * @param {WeakMap} [dirCache] - Cache for directionality.
  * @throws {TypeError} If the AST does not contain a valid direction value.
  * @returns {boolean} - True if matches, otherwise false.
@@ -135,8 +135,8 @@ export const matchDirectionPseudoClass = (
 
 /**
  * Matches the :lang() pseudo-class against an element's language attribute.
- * @param {object} ast - The AST object for the pseudo-class child.
- * @param {object} node - The element node to match against.
+ * @param {import('css-tree').CssNode} ast - The AST object for the pseudo-class child.
+ * @param {Element} node - The element node to match against.
  * @param {WeakMap} [langCache] - Cache for language attributes.
  * @throws {TypeError} If the AST does not contain a valid language value.
  * @returns {boolean} - True if matches, otherwise false.
@@ -194,7 +194,7 @@ export const matchLanguagePseudoClass = (
 
 /**
  * Matches the :checked pseudo-class.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchCheckedPseudoClass = node => {
@@ -213,7 +213,7 @@ export const matchCheckedPseudoClass = node => {
 
 /**
  * Matches the :any-link and :link pseudo-classes.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchLinkPseudoClass = node => {
@@ -226,7 +226,7 @@ export const matchLinkPseudoClass = node => {
 
 /**
  * Matches the :open pseudo-class.
- * @param {object} node - The Element node.
+ * @param {Element} node - The Element node.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchOpenPseudoClass = node => {
@@ -239,8 +239,8 @@ export const matchOpenPseudoClass = node => {
 
 /**
  * Matches the :placeholder-shown pseudo-class.
- * @param {object} node - The Element node.
- * @param {Set.<string>} keys - A set of input type keys.
+ * @param {Element} node - The Element node.
+ * @param {Set<string>} keys - A set of input type keys.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchPlaceholderShownPseudoClass = (node, keys) => {
@@ -274,8 +274,8 @@ export const matchPlaceholderShownPseudoClass = (node, keys) => {
 /**
  * Matches the :in-range and :out-of-range pseudo-classes.
  * @param {string} astName - The name of the pseudo-class.
- * @param {object} node - The Element node.
- * @param {Set.<string>} keys - A set of input type keys.
+ * @param {Element} node - The Element node.
+ * @param {Set<string>} keys - A set of input type keys.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchRangePseudoClass = (astName, node, keys) => {
@@ -306,7 +306,7 @@ export const matchRangePseudoClass = (astName, node, keys) => {
 /**
  * Match the :read-only and :read-write pseudo-classes
  * @param {string} astName - pseudo-class name
- * @param {object} node - Element node
+ * @param {Element} node - Element node
  * @returns {boolean} - True if matches, otherwise false.
  */
 export const matchReadOnlyPseudoClass = (astName, node) => {
@@ -341,8 +341,8 @@ export const matchReadOnlyPseudoClass = (astName, node) => {
 /**
  * Matches the :required and :optional pseudo-classes.
  * @param {string} astName - The name of the pseudo-class.
- * @param {object} node - The Element node.
- * @param {Set.<string>} keys - A set of input type keys.
+ * @param {Element} node - The Element node.
+ * @param {Set<string>} keys - A set of input type keys.
  * @returns {boolean} True if matches, otherwise false.
  */
 export const matchRequiredPseudoClass = (astName, node, keys) => {
@@ -374,8 +374,8 @@ export const matchRequiredPseudoClass = (astName, node, keys) => {
 
 /**
  * Matches an attribute selector against an element.
- * @param {object} ast - The AST for the attribute selector.
- * @param {object} node - The element node to match against.
+ * @param {import('css-tree').CssNode} ast - The AST for the attribute selector.
+ * @param {Element} node - The element node to match against.
  * @param {object} [opt] - Optional parameters.
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
@@ -684,8 +684,8 @@ export const matchAttributeSelector = (
 
 /**
  * Matches a type selector against an element.
- * @param {object} ast - The AST for the type selector.
- * @param {object} node - The element node to match against.
+ * @param {import('css-tree').CssNode} ast - The AST for the type selector.
+ * @param {Element} node - The element node to match against.
  * @param {object} [opt] - Optional parameters.
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive undeclared namespace.

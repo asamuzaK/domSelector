@@ -24,7 +24,7 @@ export class Mapper {
   /**
    * Gets the corresponding AST and empty nodes array for the given selector.
    * @param {string} selector - The CSS selector string.
-   * @returns {Array} An array containing the AST, empty nodes array, and selector AST.
+   * @returns {[Array<import('./processor.js').ProcessedASTNode>, Array<Array<Element>>, import('css-tree').CssNode]} An array containing the processed AST, an array for nodes, and the original selector AST.
    */
   correspond(selector) {
     const ctx = this.#context;

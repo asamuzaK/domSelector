@@ -25,7 +25,7 @@ export class DOMTraverser {
   #walkers;
 
   /**
-   * @param {object} evaluator - The parent Evaluator instance.
+   * @param {import('./evaluator.js').Evaluator} evaluator - The Evaluator instance.
    */
   constructor(evaluator) {
     this.#evaluator = evaluator;
@@ -41,11 +41,11 @@ export class DOMTraverser {
 
   /**
    * Creates a TreeWalker.
-   * @param {object} node - The Document, DocumentFragment, or Element node.
+   * @param {Document|DocumentFragment|Element} node - The Document, DocumentFragment, or Element node.
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
    * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
-   * @returns {object} The TreeWalker object.
+   * @returns {TreeWalker} The TreeWalker object.
    */
   createTreeWalker(node, opt = {}) {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
@@ -65,12 +65,12 @@ export class DOMTraverser {
   }
 
   /**
-   * Yields combinator matches (Lazy evaluation, O(1) memory).
-   * @param {object} twig - The twig object.
-   * @param {object} node - The Element node.
+   * Yields combinator matches.
+   * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
+   * @param {Element} node - The Element node.
    * @param {object} [opt] - Options.
    * @param {string} [opt.dir] - The find direction.
-   * @yields {object} The matched node.
+   * @yields {Element} The matched node.
    */
   *yieldCombinatorMatches(twig, node, opt = {}) {
     const {
@@ -156,10 +156,10 @@ export class DOMTraverser {
 
   /**
    * Finds descendant nodes and yields matches.
-   * @param {Array.<object>} leaves - The AST leaves.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
+   * @param {Array<object>} leaves - The AST leaves.
+   * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
    * @param {object} opt - Options.
-   * @yields {object} The matched node.
+   * @yields {Element} The matched node.
    */
   *yieldFindDescendantNodes(leaves, baseNode, opt) {
     const [{ name, type: leafType }] = leaves;
@@ -238,10 +238,10 @@ export class DOMTraverser {
 
   /**
    * Traverses all descendant nodes and yields matches.
-   * @param {object} baseNode - The base Element node or Element.shadowRoot.
-   * @param {Array.<object>} leaves - The AST leaves.
+   * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
+   * @param {Array<object>} leaves - The AST leaves.
    * @param {object} opt - Options.
-   * @yields {object} The matched node.
+   * @yields {Element} The matched node.
    */
   *yieldTraverseAllDescendants(baseNode, leaves, opt) {
     const walker = this.createTreeWalker(baseNode);

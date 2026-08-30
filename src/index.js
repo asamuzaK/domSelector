@@ -39,8 +39,8 @@ const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
 /**
  * @typedef {object} CheckResult
  * @property {boolean} match - The match result.
- * @property {string?} pseudoElement - The pseudo-element, if any.
- * @property {object?} ast - The AST object.
+ * @property {string|null} pseudoElement - The pseudo-element, if any.
+ * @property {import('css-tree').CssNode|null} ast - The AST object.
  */
 
 /* DOMSelector */
@@ -70,86 +70,6 @@ export class DOMSelector {
     this.#finder = new Finder(this.#window);
     this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
   }
-
-  /**
-   * Wraps the node for IDL internal implementation if idlUtils is present.
-   * @private
-   * @param {Document|DocumentFragment|Element} node - The raw node.
-   * @returns {object} The wrapped or raw node.
-   */
-  #wrapNode = node =>
-    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
-
-  /**
-   * Validates a node and returns an Error if invalid.
-   * @private
-   * @param {Document|DocumentFragment|Element} node - The node to check.
-   * @param {boolean} [element] - `true` if the node must be an Element.
-   * @returns {TypeError|null} Returns a TypeError if invalid, otherwise null.
-   */
-  #validateNodeType = (node, element = false) => {
-    if (!node?.nodeType) {
-      return new this.#window.TypeError(`Unexpected type ${getType(node)}`);
-    }
-    if (element && node.nodeType !== ELEMENT_NODE) {
-      return new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
-    }
-    return null;
-  };
-
-  /**
-   * Executes Nwsapi matching logic with caching and error wrapping.
-   * @private
-   * @param {string} selector - The CSS selector to match against.
-   * @param {Document|Element} node - The target node to check.
-   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_SELF).
-   * @param {function(object): (Array<Element>|Element|boolean|null)} callback - The callback function that executes the specific nwsapi method.
-   * @param {boolean} [isCheck] - True if is check method.
-   * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
-   */
-  #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
-    const document = node.ownerDocument;
-    // jsdom passes an internal document to the constructor but wraps entry nodes.
-    if (
-      node.isConnected &&
-      (document === this.#document ||
-        this.#idlUtils?.implForWrapper?.(document) === this.#document) &&
-      document.contentType === 'text/html' &&
-      document.documentElement
-    ) {
-      const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, targetType);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          return { success: true, result: callback(node) };
-        } catch {
-          // fall through
-        }
-      }
-    }
-    return { success: false, result: null };
-  };
-
-  /**
-   * Encapsulates Finder traversal logic and error handling.
-   * @private
-   * @param {string} selector - The CSS selector to match against.
-   * @param {Document|DocumentFragment|Element} node - The node from which to start searching.
-   * @param {object} opt - Optional parameters.
-   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
-   * @returns {Set<Element>|Array<Element>|Element|boolean|null} The search results from Finder, or the error handling return value.
-   */
-  #findNodes = (selector, node, opt, targetType) => {
-    try {
-      return this.#finder.setup(selector, node, opt).find(targetType);
-    } catch (e) {
-      return this.#finder.onError(e, opt);
-    }
-  };
 
   /**
    * Clears the internal caches.
@@ -304,7 +224,7 @@ export class DOMSelector {
    * @param {string} selector - The CSS selector to match against.
    * @param {Element} node - The element from which to start traversing.
    * @param {object} [opt] - Optional parameters.
-   * @returns {?Element} The first matching ancestor element, or `null`.
+   * @returns {Element|null} The first matching ancestor element, or `null`.
    */
   closest = (selector, node, opt = {}) => {
     node = this.#wrapNode(node);
@@ -339,7 +259,7 @@ export class DOMSelector {
    * @param {string} selector - The CSS selector to match.
    * @param {Document|DocumentFragment|Element} node - The node to find within.
    * @param {object} [opt] - Optional parameters.
-   * @returns {?Element} The first matching element, or `null`.
+   * @returns {Element|null} The first matching element, or `null`.
    */
   querySelector = (selector, node, opt = {}) => {
     node = this.#wrapNode(node);
@@ -385,5 +305,85 @@ export class DOMSelector {
       return [...nodes];
     }
     return [];
+  };
+
+  /**
+   * Wraps the node for IDL internal implementation if idlUtils is present.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The raw node.
+   * @returns {object} The wrapped or raw node.
+   */
+  #wrapNode = node =>
+    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+
+  /**
+   * Validates a node and returns an Error if invalid.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The node to check.
+   * @param {boolean} [element] - `true` if the node must be an Element.
+   * @returns {TypeError|null} Returns a TypeError if invalid, otherwise null.
+   */
+  #validateNodeType = (node, element = false) => {
+    if (!node?.nodeType) {
+      return new this.#window.TypeError(`Unexpected type ${getType(node)}`);
+    }
+    if (element && node.nodeType !== ELEMENT_NODE) {
+      return new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
+    }
+    return null;
+  };
+
+  /**
+   * Executes Nwsapi matching logic with caching and error wrapping.
+   * @private
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Document|Element} node - The target node to check.
+   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_SELF).
+   * @param {(node: Element) => Array<Element>|Element|boolean|null} callback - The callback function that executes the specific nwsapi method.
+   * @param {boolean} [isCheck] - True if is check method.
+   * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
+   */
+  #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
+    const document = node.ownerDocument;
+    // jsdom passes an internal document to the constructor but wraps entry nodes.
+    if (
+      node.isConnected &&
+      (document === this.#document ||
+        this.#idlUtils?.implForWrapper?.(document) === this.#document) &&
+      document.contentType === 'text/html' &&
+      document.documentElement
+    ) {
+      const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
+      let filterMatches = this.#cache.get(cacheKey);
+      if (filterMatches === undefined) {
+        filterMatches = filterSelector(selector, targetType);
+        this.#cache.set(cacheKey, filterMatches);
+      }
+      if (filterMatches) {
+        try {
+          return { success: true, result: callback(node) };
+        } catch {
+          // fall through
+        }
+      }
+    }
+    return { success: false, result: null };
+  };
+
+  /**
+   * Encapsulates Finder traversal logic and error handling.
+   * @private
+   * @param {string} selector - The CSS selector to match against.
+   * @param {Document|DocumentFragment|Element} node - The node from which to start searching.
+   * @param {object} opt - Optional parameters.
+   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
+   * @returns {Set<Element>|Array<Element>|Element|boolean|null} The search results from Finder, or the error handling return value.
+   */
+  #findNodes = (selector, node, opt, targetType) => {
+    try {
+      return this.#finder.setup(selector, node, opt).find(targetType);
+    } catch (e) {
+      return this.#finder.onError(e, opt);
+    }
   };
 }

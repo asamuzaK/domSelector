@@ -149,6 +149,10 @@ const REX = Object.freeze(
 );
 
 /**
+ * @typedef {(c: Element|Array<Element>|NodeList, f?: ((element: Element) => boolean|void), x?: Element|Document|null, r?: boolean|Array<Element>) => boolean|Array<Element>} ResolverFactory
+ */
+
+/**
  * Iterates through nodes and calls a callback function, concatenating elements.
  * @param {Array<Element>|NodeList} nodes - The nodes to process.
  * @param {((element: Element) => boolean | void)=} callback - Optional callback.
@@ -270,7 +274,7 @@ export const optimize = (selector, tokens) => {
 
 /**
  * Validates the matched resolvers sequentially upon a defined Element.
- * @param {Array<(c: Element, f?: ((element: Element) => boolean|void), x?: null, r?: boolean) => boolean>} factory - Collection of factory lambda checking functions.
+ * @param {Array<ResolverFactory>} factory - Collection of factory lambda checking functions.
  * @param {Element} element - The referenced node resolving.
  * @param {((element: Element) => boolean | void)=} callback - Callback operation.
  * @returns {boolean} Whether all condition factories asserted positively.
@@ -458,8 +462,8 @@ export class Nwsapi {
 
   /**
    * Initializes the Nwsapi instance.
-   * @param {object} window - The Window object.
-   * @param {object} document - The Document node.
+   * @param {Window} window - The Window object.
+   * @param {Document} document - The Document node.
    * @param {number} [cacheSize] - The max number of items to cache.
    */
   constructor(window, document, cacheSize = CACHE_SIZE) {
@@ -1065,7 +1069,7 @@ export class Nwsapi {
    * Checks and fetches lambdas from GenerationalCache, compiling closures.
    * @param {string} selector - The CSS selector string.
    * @param {boolean} mode - Mode specifying lambda output behavior (true: select, false: match).
-   * @returns {(c: Element|Element[]|NodeList, f?: ((element: Element) => boolean|void), x?: Element|Document|null, r?: boolean|Element[]) => boolean|Element[]} The generated executable selector processing function.
+   * @returns {ResolverFactory} The generated executable selector processing function.
    */
   compile(selector, mode) {
     let head = '';
