@@ -421,7 +421,9 @@ describe('DOMTraverser', () => {
       innerDup.id = 'duplicate-id';
       root.appendChild(innerDup);
       const leaves = [{ name: 'duplicate-id', type: ID_SELECTOR }];
-      mockEvaluator.matchLeaves.callsFake((leaves, node) => node.id === 'duplicate-id');
+      mockEvaluator.matchLeaves.callsFake(
+        (leaves, node) => node.id === 'duplicate-id'
+      );
       const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
       assert.strictEqual(
         result.length,

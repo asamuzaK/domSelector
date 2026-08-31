@@ -1638,6 +1638,25 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, document.firstElementChild, 'result');
     });
 
+    it('should return root element for universal query on document', () => {
+      const domSelector = new DOMSelector(window);
+      const doc = document.implementation.createDocument(
+        'http://www.w3.org/1999/xhtml',
+        'html',
+        null,
+      );
+      const res = domSelector.querySelector('*', doc);
+      assert.strictEqual(res === null, false, 'res is non null');
+      assert.strictEqual(res.nodeType, 1, 'node type is Element');
+      assert.strictEqual(res.localName, 'html', 'local name is HTML');
+    });
+
+    it('should query first document child for universal selector', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(' * ', document);
+      assert.deepEqual(res, document.firstElementChild, 'result');
+    });
+
     it('should query first element child for universal selector', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('span');
@@ -1646,6 +1665,17 @@ describe('DOMSelector', () => {
       node.appendChild(child2);
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('*', node);
+      assert.deepEqual(res, child1, 'result');
+    });
+
+    it('should query first element child for universal selector', () => {
+      const node = document.createElement('div');
+      const child1 = document.createElement('span');
+      const child2 = document.createElement('p');
+      node.appendChild(child1);
+      node.appendChild(child2);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(' * ', node);
       assert.deepEqual(res, child1, 'result');
     });
 
@@ -1658,8 +1688,64 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, child, 'result');
     });
 
+    it('should query first child for wildcard namespaced *|*', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('span');
+      node.appendChild(child);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(' *|* ', node);
+      assert.deepEqual(res, child, 'result');
+    });
+
     it('should return null for universal query on empty element', () => {
       const node = document.createElement('div');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', node);
+      assert.deepEqual(res, null, 'result');
+    });
+
+    it('should query first element child for universal selector', () => {
+      const node = document.createDocumentFragment();
+      const child1 = document.createElement('span');
+      const child2 = document.createElement('p');
+      node.appendChild(child1);
+      node.appendChild(child2);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*', node);
+      assert.deepEqual(res, child1, 'result');
+    });
+
+    it('should query first element child for universal selector', () => {
+      const node = document.createDocumentFragment();
+      const child1 = document.createElement('span');
+      const child2 = document.createElement('p');
+      node.appendChild(child1);
+      node.appendChild(child2);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(' * ', node);
+      assert.deepEqual(res, child1, 'result');
+    });
+
+    it('should query first child for wildcard namespaced *|*', () => {
+      const node = document.createDocumentFragment();
+      const child = document.createElement('span');
+      node.appendChild(child);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('*|*', node);
+      assert.deepEqual(res, child, 'result');
+    });
+
+    it('should query first child for wildcard namespaced *|*', () => {
+      const node = document.createDocumentFragment();
+      const child = document.createElement('span');
+      node.appendChild(child);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(' *|* ', node);
+      assert.deepEqual(res, child, 'result');
+    });
+
+    it('should return null for universal query on empty element', () => {
+      const node = document.createDocumentFragment();
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector('*', node);
       assert.deepEqual(res, null, 'result');

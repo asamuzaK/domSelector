@@ -34,7 +34,7 @@ const CACHE_SIZE = 4096;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
-const REG_UNIVERSAL = /^(?:\*\|)?\*$/;
+const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 
 /**
  * @typedef {object} CheckResult
