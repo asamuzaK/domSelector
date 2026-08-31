@@ -151,6 +151,7 @@ export class DOMSelector {
    * @param {string} selector - The CSS selector to check against.
    * @param {Element} node - The element node to check.
    * @param {object} [opt] - Optional parameters.
+   * @param {boolean} [opt.requireAst] - Indicates always try to parse AST.
    * @returns {CheckResult|null} An object containing the check result.
    */
   check = (selector, node, opt = {}) => {
@@ -182,6 +183,14 @@ export class DOMSelector {
         if (ast === undefined) {
           ast = parseSelector(selector);
           this.#cache.set(astCacheKey, ast);
+        }
+      } else if (opt.requireAst) {
+        try {
+          ast = parseSelector(selector);        
+        } catch {
+          ast = null;
+        } finally {
+          this.#cache.set(astCacheKey, ast);          
         }
       }
       return {
