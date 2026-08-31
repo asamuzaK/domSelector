@@ -475,6 +475,36 @@ describe('DOMSelector', () => {
       );
     });
 
+    it('should not match simple tag selector but parse AST', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('dd', node, { requireAst: true });
+      assert.deepEqual(
+        res,
+        {
+          match: false,
+          pseudoElement: null,
+          ast: cssTree.parse('dd', {
+            context: 'selectorList'
+          })
+        },
+        'result'
+      );
+
+      const res2 = domSelector.check('dd', node, { requireAst: true });
+      assert.deepEqual(
+        res2,
+        {
+          match: false,
+          pseudoElement: null,
+          ast: cssTree.parse('dd', {
+            context: 'selectorList'
+          })
+        },
+        'result'
+      );
+    });
+
     it('should match selector with pseudo-element ::before', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
