@@ -184,9 +184,10 @@ export class DOMTraverser {
               this.#evaluator.matchLeaves(filterLeaves, foundNode, opt)
             ) {
               yield foundNode;
+              return;
             }
           }
-          return;
+          break;
         }
         break;
       }

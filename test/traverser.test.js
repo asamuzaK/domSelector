@@ -244,6 +244,7 @@ describe('DOMTraverser', () => {
     it('should not yield if ID is not a descendant of baseNode', () => {
       const leaves = [{ name: 'root', type: ID_SELECTOR }];
       const child = document.getElementById('target');
+      mockEvaluator.matchLeaves.callsFake((leaves, node) => node.id === 'root');
       const result = [...traverser.yieldFindDescendantNodes(leaves, child, {})];
       assert.strictEqual(
         result.length,
@@ -409,6 +410,53 @@ describe('DOMTraverser', () => {
         mockEvaluator.matchLeaves.called,
         false,
         'Does not fallback to TreeWalker'
+      );
+    });
+
+    it('should fallback to TreeWalker if the element found by ID is outside the baseNode (duplicate ID issue)', () => {
+      const outerDup = document.createElement('div');
+      outerDup.id = 'duplicate-id';
+      document.body.insertBefore(outerDup, root);
+      const innerDup = document.createElement('div');
+      innerDup.id = 'duplicate-id';
+      root.appendChild(innerDup);
+      const leaves = [{ name: 'duplicate-id', type: ID_SELECTOR }];
+      mockEvaluator.matchLeaves.callsFake((leaves, node) => node.id === 'duplicate-id');
+      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      assert.strictEqual(
+        result.length,
+        1,
+        'Should not stop searching if the first found ID is outside the baseNode'
+      );
+      assert.strictEqual(
+        result[0],
+        innerDup,
+        'Should yield the inner duplicate ID by falling back to TreeWalker'
+      );
+    });
+
+    it('should fallback to TreeWalker if the first found ID element fails filter conditions', () => {
+      const innerDup1 = document.createElement('div');
+      innerDup1.id = 'duplicate-id-filter';
+      root.appendChild(innerDup1);
+      const innerDup2 = document.createElement('div');
+      innerDup2.id = 'duplicate-id-filter';
+      root.appendChild(innerDup2);
+      const leaves = [{ name: 'duplicate-id-filter', type: ID_SELECTOR }];
+      mockEvaluator.getFilterLeaves.returns([{}]);
+      mockEvaluator.matchLeaves.callsFake((filterLeaves, node) => {
+        return node === innerDup2;
+      });
+      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      assert.strictEqual(
+        result.length,
+        1,
+        'Should not stop searching if the first found ID fails the filter'
+      );
+      assert.strictEqual(
+        result[0],
+        innerDup2,
+        'Should yield the second element that passed the filter by falling back to TreeWalker'
       );
     });
   });
