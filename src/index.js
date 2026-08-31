@@ -169,7 +169,7 @@ export class DOMSelector {
         this.#cache.set(astCacheKey, ast);
       }
       return {
-        ast: parseSelector(selector),
+        ast,
         match: true,
         pseudoElement: null
       };
