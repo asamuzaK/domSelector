@@ -365,13 +365,14 @@ export class DOMSelector {
       }
       if (filterMatches) {
         try {
-          return { success: true, result: callback(node) };
+          const result = callback(node);
+          return { result, success: true };
         } catch {
           // fall through
         }
       }
     }
-    return { success: false, result: null };
+    return { result: null, success: false };
   };
 
   /**
