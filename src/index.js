@@ -176,9 +176,9 @@ export class DOMSelector {
       true
     );
     if (nwsapiRes.success) {
+      const astCacheKey = `check_ast_${selector}`;
       let ast = null;
       if (nwsapiRes.result) {
-        const astCacheKey = `check_ast_${selector}`;
         ast = this.#cache.get(astCacheKey);
         if (ast === undefined) {
           ast = parseSelector(selector);
