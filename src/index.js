@@ -162,6 +162,12 @@ export class DOMSelector {
       return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
+      const astCacheKey = `check_ast_${selector.trim()}`;
+      let ast = this.#cache.get(astCacheKey);
+      if (ast === undefined) {
+        ast = parseSelector(selector);
+        this.#cache.set(astCacheKey, ast);
+      }
       return {
         ast: parseSelector(selector),
         match: true,
