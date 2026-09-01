@@ -35,9 +35,9 @@ export class ShadowDOMEvaluator {
    * Resets the evaluation state.
    * @returns {void}
    */
-  reset = () => {
+  reset() {
     this.#verifyShadowHost = false;
-  };
+  }
 
   /**
    * Matches a selector for a shadow root.
@@ -46,7 +46,7 @@ export class ShadowDOMEvaluator {
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  matchSelectorForShadowRoot = (ast, node, opt = {}) => {
+  matchSelectorForShadowRoot(ast, node, opt = {}) {
     const { name: astName } = ast;
     if (KEYS_LOGICAL.has(astName)) {
       opt.isShadowRoot = true;
@@ -60,7 +60,7 @@ export class ShadowDOMEvaluator {
       }
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates shadow host pseudo-classes.
@@ -68,7 +68,7 @@ export class ShadowDOMEvaluator {
    * @param {DocumentFragment} node - The DocumentFragment node.
    * @returns {boolean} True if matches, otherwise false.
    */
-  evaluateShadowHost = (ast, node) => {
+  evaluateShadowHost(ast, node) {
     const { children: astChildren, name: astName } = ast;
     // Handle simple pseudo-class (no arguments).
     if (!Array.isArray(astChildren)) {
@@ -110,7 +110,7 @@ export class ShadowDOMEvaluator {
       return true;
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :host() pseudo-class.
@@ -120,7 +120,7 @@ export class ShadowDOMEvaluator {
    * @param {import('css-tree').CssNode} ast - The original AST for error reporting.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #evaluateHostPseudo = (leaves, host, ast) => {
+  #evaluateHostPseudo(leaves, host, ast) {
     const l = leaves.length;
     for (let i = 0; i < l; i++) {
       const leaf = leaves[i];
@@ -137,7 +137,7 @@ export class ShadowDOMEvaluator {
       }
     }
     return true;
-  };
+  }
 
   /**
    * Evaluates the :host-context() pseudo-class.
@@ -147,7 +147,7 @@ export class ShadowDOMEvaluator {
    * @param {import('css-tree').CssNode} ast - The original AST for error reporting.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #evaluateHostContextPseudo = (leaves, host, ast) => {
+  #evaluateHostContextPseudo(leaves, host, ast) {
     let parent = host;
     while (parent) {
       let bool;
@@ -173,5 +173,5 @@ export class ShadowDOMEvaluator {
       parent = parent.parentNode;
     }
     return false;
-  };
+  }
 }

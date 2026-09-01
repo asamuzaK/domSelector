@@ -77,13 +77,13 @@ export class DOMSelector {
    * only cached matching results are cleared.
    * @returns {void}
    */
-  clear = (clearAll = false) => {
+  clear(clearAll = false) {
     if (clearAll) {
       this.#cache.clear();
     }
     this.#finder.clearResults(true);
     this.#nwsapi.clear(clearAll);
-  };
+  }
 
   /**
    * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
@@ -91,7 +91,7 @@ export class DOMSelector {
    * @param {boolean} caseSensitive - True if tag key should be case sensitive.
    * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
    */
-  extractSubjects = (selector, caseSensitive = false) => {
+  extractSubjects(selector, caseSensitive = false) {
     if (!selector || typeof selector !== 'string') {
       return [{ id: null, className: null, tag: null }];
     }
@@ -116,14 +116,14 @@ export class DOMSelector {
     }
     this.#cache.set(cacheKey, subjects);
     return subjects;
-  };
+  }
 
   /**
    * Checks if the given CSS selector is supported by this engine.
    * @param {string} selector - The CSS selector to check.
    * @returns {boolean} `true` if the selector is supported, `false` otherwise.
    */
-  supports = selector => {
+  supports(selector) {
     if (typeof selector !== 'string') {
       return false;
     }
@@ -144,7 +144,7 @@ export class DOMSelector {
     }
     this.#cache.set(cacheKey, isSupported);
     return isSupported;
-  };
+  }
 
   /**
    * Checks if an element matches a CSS selector.
@@ -154,7 +154,7 @@ export class DOMSelector {
    * @param {boolean} [opt.requireAst] - Indicates always try to parse AST.
    * @returns {CheckResult|null} An object containing the check result.
    */
-  check = (selector, node, opt = {}) => {
+  check(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
@@ -199,7 +199,7 @@ export class DOMSelector {
     }
     const options = { ...opt, check: true, noexcept: true, warn: false };
     return this.#finder.setup(selector, node, options).find(TARGET_SELF);
-  };
+  }
 
   /**
    * Returns true if the element matches the selector.
@@ -208,7 +208,7 @@ export class DOMSelector {
    * @param {object} [opt] - Optional parameters.
    * @returns {boolean} True if the element matches, false otherwise.
    */
-  matches = (selector, node, opt = {}) => {
+  matches(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
@@ -225,7 +225,7 @@ export class DOMSelector {
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_SELF);
     return !!(nodes && nodes.size > 0);
-  };
+  }
 
   /**
    * Traverses up the DOM tree to find the first node that matches the selector.
@@ -234,7 +234,7 @@ export class DOMSelector {
    * @param {object} [opt] - Optional parameters.
    * @returns {Element|null} The first matching ancestor element, or `null`.
    */
-  closest = (selector, node, opt = {}) => {
+  closest(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node, true);
     if (error) {
@@ -260,7 +260,7 @@ export class DOMSelector {
       }
     }
     return null;
-  };
+  }
 
   /**
    * Returns the first element within the subtree that matches the selector.
@@ -269,7 +269,7 @@ export class DOMSelector {
    * @param {object} [opt] - Optional parameters.
    * @returns {Element|null} The first matching element, or `null`.
    */
-  querySelector = (selector, node, opt = {}) => {
+  querySelector(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
@@ -284,7 +284,7 @@ export class DOMSelector {
       return nodes.values().next().value;
     }
     return null;
-  };
+  }
 
   /**
    * Returns an array of elements within the subtree that match the selector.
@@ -294,7 +294,7 @@ export class DOMSelector {
    * @param {object} [opt] - Optional parameters.
    * @returns {Array<Element>} An array of elements, or an empty array.
    */
-  querySelectorAll = (selector, node, opt = {}) => {
+  querySelectorAll(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const error = this.#validateNodeType(node);
     if (error) {
@@ -315,7 +315,7 @@ export class DOMSelector {
       return [...nodes];
     }
     return [];
-  };
+  }
 
   /**
    * Wraps the node for IDL internal implementation if idlUtils is present.
@@ -323,8 +323,9 @@ export class DOMSelector {
    * @param {Document|DocumentFragment|Element} node - The raw node.
    * @returns {object} The wrapped or raw node.
    */
-  #wrapNode = node =>
-    this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+  #wrapNode(node) {
+    return this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+  }
 
   /**
    * Validates a node and returns an Error if invalid.
@@ -333,7 +334,7 @@ export class DOMSelector {
    * @param {boolean} [element] - `true` if the node must be an Element.
    * @returns {TypeError|null} Returns a TypeError if invalid, otherwise null.
    */
-  #validateNodeType = (node, element = false) => {
+  #validateNodeType(node, element = false) {
     if (!node?.nodeType) {
       return new this.#window.TypeError(`Unexpected type ${getType(node)}`);
     }
@@ -341,7 +342,7 @@ export class DOMSelector {
       return new this.#window.TypeError(`Unexpected node ${node.nodeName}`);
     }
     return null;
-  };
+  }
 
   /**
    * Executes Nwsapi matching logic with caching and error wrapping.
@@ -353,7 +354,7 @@ export class DOMSelector {
    * @param {boolean} [isCheck] - True if is check method.
    * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
    */
-  #tryNwsapi = (selector, node, targetType, callback, isCheck = false) => {
+  #tryNwsapi(selector, node, targetType, callback, isCheck = false) {
     const document = node.ownerDocument;
     // jsdom passes an internal document to the constructor but wraps entry nodes.
     if (
@@ -379,7 +380,7 @@ export class DOMSelector {
       }
     }
     return { result: null, success: false };
-  };
+  }
 
   /**
    * Encapsulates Finder traversal logic and error handling.
@@ -390,7 +391,7 @@ export class DOMSelector {
    * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
    * @returns {Set<Element>|null} The search results from Finder, or null.
    */
-  #findNodes = (selector, node, opt, targetType) => {
+  #findNodes(selector, node, opt, targetType) {
     try {
       const res = this.#finder.setup(selector, node, opt).find(targetType);
       if (res instanceof Set) {
@@ -400,5 +401,5 @@ export class DOMSelector {
       this.#finder.onError(e, opt);
     }
     return null;
-  };
+  }
 }

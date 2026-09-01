@@ -47,7 +47,7 @@ export class DOMTraverser {
    * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
    * @returns {TreeWalker} The TreeWalker object.
    */
-  createTreeWalker = (node, opt = {}) => {
+  createTreeWalker(node, opt = {}) {
     const { force = false, whatToShow = SHOW_CONTAINER } = opt;
     if (force) {
       return this.#evaluator.document.createTreeWalker(node, whatToShow);
@@ -62,7 +62,7 @@ export class DOMTraverser {
     walker = this.#evaluator.document.createTreeWalker(node, whatToShow);
     this.#walkers.set(node, walker);
     return walker;
-  };
+  }
 
   /**
    * Yields combinator matches.

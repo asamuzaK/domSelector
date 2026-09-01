@@ -10,13 +10,13 @@ import sinon from 'sinon';
 
 /* test */
 import { Mapper } from '../src/js/mapper.js';
+import { SelectorProcessor } from '../src/js/processor.js';
 
 describe('Mapper', () => {
   let window;
   let document;
   let mockContext;
   let processorStub;
-  let mockProcessor;
 
   beforeEach(() => {
     const dom = new JSDOM(
@@ -33,14 +33,14 @@ describe('Mapper', () => {
       selectorAST: null
     };
     // Stub processor
-    processorStub = sinon.stub().callsFake((branches, selector) => {
-      return {
-        ast: [{ id: 1, dir: null, filtered: false, find: false }],
-        descendant: false
-      };
-    });
-    // Mock Processor
-    mockProcessor = { process: processorStub };
+    processorStub = sinon
+      .stub(SelectorProcessor.prototype, 'process')
+      .callsFake((branches, selector) => {
+        return {
+          ast: [{ id: 1, dir: null, filtered: false, find: false }],
+          descendant: false
+        };
+      });
   });
 
   afterEach(() => {
@@ -49,7 +49,7 @@ describe('Mapper', () => {
 
   describe('correspond()', () => {
     it('should process and cache selector data on cache miss', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = 'div';
       const [ast, nodes, selectorAST] = mapper.correspond(selector);
       assert.strictEqual(Array.isArray(ast), true, 'ast should be an array');
@@ -87,7 +87,7 @@ describe('Mapper', () => {
     });
 
     it('should return cached AST and reset flags upon cache hit', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = '.test-class';
       const [ast1, nodes1] = mapper.correspond(selector);
       ast1[0].dir = 'next';
@@ -116,7 +116,7 @@ describe('Mapper', () => {
     });
 
     it('should set invalidate flag to true for :has() pseudo-class', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = 'div:has(p)';
       mapper.correspond(selector);
       assert.strictEqual(
@@ -127,7 +127,7 @@ describe('Mapper', () => {
     });
 
     it('should keep invalidate flag as false for simple ID selector', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = '#test';
       mapper.correspond(selector);
       assert.strictEqual(
@@ -138,7 +138,7 @@ describe('Mapper', () => {
     });
 
     it('should initialize new Map entry in documentCache when missing', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = '.new-selector';
       mockContext.documentCache.clear();
       assert.strictEqual(mockContext.documentCache.has(document), false);
@@ -162,7 +162,7 @@ describe('Mapper', () => {
     });
 
     it('should reuse documentCache Map instance for new selectors', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector1 = '.first-selector';
       const selector2 = '.second-selector';
       mapper.correspond(selector1);
@@ -187,7 +187,7 @@ describe('Mapper', () => {
     });
 
     it('should set invalidate to true for complex nth-child in :is()', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = ':is(p):nth-child(2 of .foo)';
       mapper.correspond(selector);
       assert.strictEqual(
@@ -198,7 +198,7 @@ describe('Mapper', () => {
     });
 
     it('should set invalidate to false when selector only has :is()', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = ':is(p)';
       mapper.correspond(selector);
       assert.strictEqual(
@@ -209,7 +209,7 @@ describe('Mapper', () => {
     });
 
     it('should set invalidate to false for standalone nth-child of', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = ':nth-child(2 of .foo)';
       mapper.correspond(selector);
       assert.strictEqual(
@@ -220,7 +220,7 @@ describe('Mapper', () => {
     });
 
     it('should set invalidate to false for simple class selector', () => {
-      const mapper = new Mapper(mockContext, mockProcessor);
+      const mapper = new Mapper(mockContext);
       const selector = '.simple-class';
       mapper.correspond(selector);
       assert.strictEqual(

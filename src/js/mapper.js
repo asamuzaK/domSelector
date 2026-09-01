@@ -15,11 +15,10 @@ export class Mapper {
 
   /**
    * @param {import('./finder.js').Finder} context - The Finder instance.
-   * @param {SelectorProcessor} [processor] - The SelectorProcessor instance.
    */
-  constructor(context, processor) {
+  constructor(context) {
     this.#context = context;
-    this.#processor = processor ?? new SelectorProcessor(context);
+    this.#processor = new SelectorProcessor(context);
   }
 
   /**
@@ -27,7 +26,7 @@ export class Mapper {
    * @param {string} selector - The CSS selector string.
    * @returns {[Array<import('./processor.js').ProcessedASTNode>, Array<Array<Element>>, import('css-tree').CssNode]} An array containing the processed AST, an array for nodes, and the original selector AST.
    */
-  correspond = selector => {
+  correspond(selector) {
     const ctx = this.#context;
     const nodes = [];
     let ast = null;
@@ -98,5 +97,5 @@ export class Mapper {
       nodes[i] = [];
     }
     return [ast, nodes, selectorAST];
-  };
+  }
 }

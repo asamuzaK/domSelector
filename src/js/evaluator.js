@@ -109,7 +109,7 @@ export class Evaluator {
    * @throws {Error} Throws an error.
    * @returns {void}
    */
-  onError = (e, opt = {}) => {
+  onError(e, opt = {}) {
     const noexcept = opt.noexcept ?? this.noexcept;
     if (noexcept) {
       return;
@@ -129,21 +129,21 @@ export class Evaluator {
       throw new this.window[e.name](e.message, { cause: e });
     }
     throw e;
-  };
+  }
 
   /**
    * Clear cached results.
    * @param {boolean} all - Clear all results.
    * @returns {void}
    */
-  clearResults = (all = false) => {
+  clearResults(all = false) {
     this.#invalidateResults = null;
     this.#pseudoClassEvaluator.clearResults(all);
     if (all) {
       this.#filterLeavesCache = null;
       this.#results = new WeakMap();
     }
-  };
+  }
 
   /**
    * Matches a selector.
@@ -152,7 +152,7 @@ export class Evaluator {
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  matchSelector = (ast, node, opt) => {
+  matchSelector(ast, node, opt) {
     if (node.nodeType === ELEMENT_NODE) {
       return this.#matchSelectorForElement(ast, node, opt);
     }
@@ -168,7 +168,7 @@ export class Evaluator {
       );
     }
     return false;
-  };
+  }
 
   /**
    * Matches leaves against a node with cache check.
@@ -177,7 +177,7 @@ export class Evaluator {
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */
-  matchLeaves = (leaves, node, opt) => {
+  matchLeaves(leaves, node, opt) {
     if (!this.#invalidateResults) {
       this.#invalidateResults = new WeakMap();
     }
@@ -226,14 +226,14 @@ export class Evaluator {
       results.set(leaves, result);
     }
     return bool;
-  };
+  }
 
   /**
    * Returns a cached slice of the leaves array (excluding the first item).
    * @param {Array<import('css-tree').CssNode>} leaves - The original AST leaves array.
    * @returns {Array<object>} The filtered leaves.
    */
-  getFilterLeaves = leaves => {
+  getFilterLeaves(leaves) {
     if (!this.#filterLeavesCache) {
       this.#filterLeavesCache = new WeakMap();
     }
@@ -244,7 +244,7 @@ export class Evaluator {
     filterLeaves = leaves.slice(1);
     this.#filterLeavesCache.set(leaves, filterLeaves);
     return filterLeaves;
-  };
+  }
 
   /**
    * Evaluates shadow host pseudo-classes.
@@ -252,8 +252,9 @@ export class Evaluator {
    * @param {DocumentFragment} node - The DocumentFragment node.
    * @returns {boolean} True if matches, otherwise false.
    */
-  evaluateShadowHost = (ast, node) =>
-    this.#shadowDOMEvaluator.evaluateShadowHost(ast, node);
+  evaluateShadowHost(ast, node) {
+    return this.#shadowDOMEvaluator.evaluateShadowHost(ast, node);
+  }
 
   /**
    * Matches pseudo-class selector.
@@ -265,9 +266,9 @@ export class Evaluator {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {Set<Element>|boolean} A collection of matched nodes.
    */
-  matchPseudoClassSelector = (ast, node, opt = {}) => {
+  matchPseudoClassSelector(ast, node, opt = {}) {
     return this.#pseudoClassEvaluator.matchPseudoClassSelector(ast, node, opt);
-  };
+  }
 
   /**
    * Creates a TreeWalker.
@@ -277,8 +278,9 @@ export class Evaluator {
    * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
    * @returns {TreeWalker} The TreeWalker object.
    */
-  createTreeWalker = (node, opt = {}) =>
-    this.#domTraverser.createTreeWalker(node, opt);
+  createTreeWalker(node, opt = {}) {
+    return this.#domTraverser.createTreeWalker(node, opt);
+  }
 
   /**
    * Yields combinator matches (Lazy evaluation, O(1) memory).
@@ -311,7 +313,7 @@ export class Evaluator {
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #matchSelectorForElement = (ast, node, opt) => {
+  #matchSelectorForElement(ast, node, opt) {
     const { type: astType } = ast;
     switch (astType) {
       case ATTR_SELECTOR: {
@@ -355,5 +357,5 @@ export class Evaluator {
       }
     }
     return false;
-  };
+  }
 }

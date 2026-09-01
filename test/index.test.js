@@ -1643,7 +1643,7 @@ describe('DOMSelector', () => {
       const doc = document.implementation.createDocument(
         'http://www.w3.org/1999/xhtml',
         'html',
-        null,
+        null
       );
       const res = domSelector.querySelector('*', doc);
       assert.strictEqual(res === null, false, 'res is non null');
