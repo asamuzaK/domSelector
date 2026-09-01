@@ -44,15 +44,15 @@ export class EventHandler {
     this.#eventHandlers = [
       {
         keys: ['focus', 'focusin'],
-        handler: this.handleFocusEvent
+        handler: this.handleFocusEvent.bind(this)
       },
       {
         keys: ['keydown', 'keyup'],
-        handler: this.handleKeyboardEvent
+        handler: this.handleKeyboardEvent.bind(this)
       },
       {
         keys: ['mouseover', 'mousedown', 'mouseup', 'click', 'mouseout'],
-        handler: this.handleMouseEvent
+        handler: this.handleMouseEvent.bind(this)
       }
     ];
     this.registerEventListeners();
@@ -94,33 +94,33 @@ export class EventHandler {
    * Handles focus events and updates the current focus state.
    * @param {Event} evt - The focus event.
    */
-  handleFocusEvent = evt => {
+  handleFocusEvent(evt) {
     this.#fucusEvent = evt;
-  };
+  }
 
   /**
    * Handles keyboard events and updates the current event state.
    * @param {KeyboardEvent} evt - The keyboard event.
    */
-  handleKeyboardEvent = evt => {
+  handleKeyboardEvent(evt) {
     const { key } = evt;
     if (!KEYS_MODIFIER.has(key)) {
       this.#event = evt;
     }
-  };
+  }
 
   /**
    * Handles mouse events and updates the current event state.
    * @param {MouseEvent} evt - The mouse event.
    */
-  handleMouseEvent = evt => {
+  handleMouseEvent(evt) {
     this.#event = evt;
-  };
+  }
 
   /**
    * Registers all predefined event listeners on the window object.
    */
-  registerEventListeners = () => {
+  registerEventListeners() {
     if (!this.#cleanupFunctions) {
       this.#cleanupFunctions = [];
     }
@@ -135,12 +135,12 @@ export class EventHandler {
         });
       }
     }
-  };
+  }
 
   /**
    * Removes all registered event listeners and resets all internal states.
    */
-  destroy = () => {
+  destroy() {
     if (this.#cleanupFunctions) {
       for (const cleanup of this.#cleanupFunctions) {
         cleanup();
@@ -150,5 +150,5 @@ export class EventHandler {
     this.#event = null;
     this.#fucusEvent = null;
     this.#lastFocusVisible = null;
-  };
+  }
 }

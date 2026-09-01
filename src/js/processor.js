@@ -44,7 +44,7 @@ export class SelectorProcessor {
    * @param {string} selector - The original CSS selector string.
    * @returns {{ast: Array<ProcessedASTNode>, descendant: boolean, invalidate?: boolean}} An object containing the ast, a descendant flag, and an optional invalidate flag.
    */
-  process = (branches, selector) => {
+  process(branches, selector) {
     let descendant = false;
     const ast = [];
     for (const items of branches) {
@@ -96,5 +96,5 @@ export class SelectorProcessor {
       ast.push({ branch, dir: null, filtered: false, find: false });
     }
     return { ast, descendant };
-  };
+  }
 }

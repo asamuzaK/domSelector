@@ -99,7 +99,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [all] - If true, clears all cached results.
    * @returns {void}
    */
-  clearResults = (all = false) => {
+  clearResults(all = false) {
     this.#anbCache = null;
     this.#focusWithinCache = null;
     this.#psDefaultCache = null;
@@ -109,18 +109,18 @@ export class PseudoClassEvaluator {
     this.#psIndeterminateCache = null;
     this.#psLangCache = null;
     this.#psValidCache = null;
-  };
+  }
 
   /**
    * Resets the evaluator state.
    * @returns {void}
    */
-  reset = () => {
+  reset() {
     this.#documentURL = null;
     this.#nthIndexCache = null;
     this.#setPool = [];
     this.#setPoolIndex = 0;
-  };
+  }
 
   /**
    * Matches a pseudo-class selector.
@@ -132,7 +132,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {boolean} True if matches, otherwise false.
    */
-  matchPseudoClassSelector = (ast, node, opt = {}) => {
+  matchPseudoClassSelector(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
     const { localName, parentNode } = node;
     const { forgive, warn = this.#evaluator.warn } = opt;
@@ -373,7 +373,7 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates logical pseudo-class selector.
@@ -385,7 +385,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #evaluateLogicalPseudo = (ast, node, opt = {}) => {
+  #evaluateLogicalPseudo(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
     if (!astChildren.length && astName !== 'is' && astName !== 'where') {
       const css = generateCSS(ast);
@@ -444,7 +444,7 @@ export class PseudoClassEvaluator {
     const astData = { astName, isInvalidShadow, twigBranches };
     this.#astCache.set(ast, astData);
     return this.#matchLogicalPseudoFunc(astData, node, opt);
-  };
+  }
 
   /**
    * Evaluates pseudo-class function.
@@ -457,7 +457,7 @@ export class PseudoClassEvaluator {
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #evaluatePseudoClassFunc = (ast, node, opt = {}) => {
+  #evaluatePseudoClassFunc(ast, node, opt = {}) {
     const { children: astChildren, name: astName } = ast;
     const { forgive, warn = this.#evaluator.warn } = opt;
     if (/^nth-(?:last-)?(?:child|of-type)$/.test(astName)) {
@@ -585,7 +585,7 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :active pseudo-class.
@@ -593,7 +593,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchActivePseudoClass = node => {
+  #matchActivePseudoClass(node) {
     const { buttons, target, type } =
       this.#evaluator.eventHandler.currentEvent ?? {};
     return (
@@ -602,7 +602,7 @@ export class PseudoClassEvaluator {
       target?.nodeType === ELEMENT_NODE &&
       node.contains(target)
     );
-  };
+  }
 
   /**
    * Evaluates the :default pseudo-class.
@@ -610,7 +610,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchDefaultPseudoClass = node => {
+  #matchDefaultPseudoClass(node) {
     const { localName } = node;
     if (localName === 'option') {
       return node.hasAttribute('selected');
@@ -674,7 +674,7 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :disabled and :enabled pseudo-classes with tree-caching.
@@ -683,7 +683,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchDisabledPseudoClass = (astName, node) => {
+  #matchDisabledPseudoClass(astName, node) {
     const { localName, parentNode } = node;
     if (
       !KEYS_FORM_PS_DISABLED.has(localName) &&
@@ -737,7 +737,7 @@ export class PseudoClassEvaluator {
       return isDisabled;
     }
     return !isDisabled;
-  };
+  }
 
   /**
    * Evaluates the :empty pseudo-class.
@@ -745,7 +745,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchEmptyPseudoClass = node => {
+  #matchEmptyPseudoClass(node) {
     if (!node.hasChildNodes()) {
       return true;
     }
@@ -764,7 +764,7 @@ export class PseudoClassEvaluator {
       refNode = walker.nextSibling();
     }
     return bool;
-  };
+  }
 
   /**
    * Evaluates the :focus pseudo-class.
@@ -772,7 +772,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchFocusPseudoClass = node => {
+  #matchFocusPseudoClass(node) {
     const activeElement = this.#evaluator.document.activeElement;
     if (activeElement.shadowRoot) {
       const activeShadowElement = activeElement.shadowRoot.activeElement;
@@ -791,7 +791,7 @@ export class PseudoClassEvaluator {
       }
     }
     return node === activeElement && isFocusableArea(node);
-  };
+  }
 
   /**
    * Evaluates the :focus-visible pseudo-class.
@@ -799,7 +799,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchFocusVisiblePseudoClass = node => {
+  #matchFocusVisiblePseudoClass(node) {
     if (
       node === this.#evaluator.document.activeElement &&
       isFocusableArea(node)
@@ -868,7 +868,7 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :focus-within pseudo-class.
@@ -876,7 +876,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchFocusWithinPseudoClass = node => {
+  #matchFocusWithinPseudoClass(node) {
     if (!this.#focusWithinCache) {
       this.#focusWithinCache = new Set();
       let currentFocus = this.#evaluator.document.activeElement;
@@ -900,7 +900,7 @@ export class PseudoClassEvaluator {
       }
     }
     return this.#focusWithinCache.has(node);
-  };
+  }
 
   /**
    * Evaluates the :hover pseudo-class.
@@ -908,14 +908,14 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchHoverPseudoClass = node => {
+  #matchHoverPseudoClass(node) {
     const { target, type } = this.#evaluator.eventHandler.currentEvent ?? {};
     return (
       /^(?:click|mouse(?:down|over|up))$/.test(type) &&
       target?.nodeType === ELEMENT_NODE &&
       node.contains(target)
     );
-  };
+  }
 
   /**
    * Evaluates the :indeterminate pseudo-class.
@@ -923,7 +923,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchIndeterminatePseudoClass = node => {
+  #matchIndeterminatePseudoClass(node) {
     const { localName } = node;
     if (localName === 'progress') {
       return !node.hasAttribute('value');
@@ -981,7 +981,7 @@ export class PseudoClassEvaluator {
       return !checked;
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :local-link pseudo-class.
@@ -989,7 +989,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchLocalLinkPseudoClass = node => {
+  #matchLocalLinkPseudoClass(node) {
     const { localName } = node;
     if (
       (localName === 'a' || localName === 'area') &&
@@ -1003,7 +1003,7 @@ export class PseudoClassEvaluator {
       return attrURL.origin === origin && attrURL.pathname === pathname;
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates the :target pseudo-class.
@@ -1011,7 +1011,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchTargetPseudoClass = node => {
+  #matchTargetPseudoClass(node) {
     if (!this.#documentURL) {
       this.#documentURL = new URL(this.#evaluator.document.URL);
     }
@@ -1021,7 +1021,7 @@ export class PseudoClassEvaluator {
       hash === `#${node.id}` &&
       this.#evaluator.document.contains(node)
     );
-  };
+  }
 
   /**
    * Evaluates the :valid and :invalid pseudo-classes.
@@ -1030,7 +1030,7 @@ export class PseudoClassEvaluator {
    * @param {Element} node - The Element node.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchValidityPseudoClass = (astName, node) => {
+  #matchValidityPseudoClass(astName, node) {
     const { localName } = node;
     if (KEYS_FORM_PS_VALID.has(localName)) {
       let { valid } = node.validity;
@@ -1075,7 +1075,7 @@ export class PseudoClassEvaluator {
       return astName === 'invalid' ? !valid : valid;
     }
     return false;
-  };
+  }
 
   /**
    * Evaluates An+B mathematically.
@@ -1086,7 +1086,7 @@ export class PseudoClassEvaluator {
    * @param {object} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #matchAnPlusB = (ast, node, nthName, opt) => {
+  #matchAnPlusB(ast, node, nthName, opt) {
     const { parentNode } = node;
     if (!parentNode && node !== this.#evaluator.root) {
       return false;
@@ -1205,7 +1205,7 @@ export class PseudoClassEvaluator {
       return false;
     }
     return a > 0 ? diff >= 0 : diff <= 0;
-  };
+  }
 
   /**
    * Gets selector branches from cache or parses them.
@@ -1213,7 +1213,7 @@ export class PseudoClassEvaluator {
    * @param {import('css-tree').CssNode} selector - The AST.
    * @returns {Array<Array<import('css-tree').CssNode>>} The selector branches.
    */
-  #getSelectorBranches = selector => {
+  #getSelectorBranches(selector) {
     let branches = this.#astCache.get(selector);
     if (branches) {
       return branches;
@@ -1222,7 +1222,7 @@ export class PseudoClassEvaluator {
     branches = walkedResult.branches;
     this.#astCache.set(selector, branches);
     return branches;
-  };
+  }
 
   /**
    * Checks if a node matches any of the given selector branches.
@@ -1232,7 +1232,7 @@ export class PseudoClassEvaluator {
    * @param {object} [opt] - Optional parameters.
    * @returns {boolean} True if any branch matches, otherwise false.
    */
-  #filterNthChildOfSelectorBranches = (branches, node, opt) => {
+  #filterNthChildOfSelectorBranches(branches, node, opt) {
     let filterMatch = false;
     for (const branch of branches) {
       if (this.#evaluator.matchLeaves(branch, node, opt)) {
@@ -1241,7 +1241,7 @@ export class PseudoClassEvaluator {
       }
     }
     return filterMatch;
-  };
+  }
 
   /**
    * Matches logical pseudo-class functions.
@@ -1251,7 +1251,7 @@ export class PseudoClassEvaluator {
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #matchLogicalPseudoFunc = (astData, node, opt = {}) => {
+  #matchLogicalPseudoFunc(astData, node, opt = {}) {
     const { astName, isInvalidShadow, twigBranches } = astData;
     if (astName === 'has') {
       return this.#evaluateHasPseudo(astData, node, opt) === node;
@@ -1318,7 +1318,7 @@ export class PseudoClassEvaluator {
     opt.forgive = prevForgive;
     opt.dir = prevDir;
     return astName === 'not' ? !bool : bool;
-  };
+  }
 
   /**
    * Evaluates :has() pseudo-class.
@@ -1328,7 +1328,7 @@ export class PseudoClassEvaluator {
    * @param {object} [opt] - Options.
    * @returns {Element|null} The matched node.
    */
-  #evaluateHasPseudo = (astData, node, opt = {}) => {
+  #evaluateHasPseudo(astData, node, opt = {}) {
     const { branches } = astData;
     let bool = false;
     if (!this.#psHasFilterCache) {
@@ -1368,7 +1368,7 @@ export class PseudoClassEvaluator {
       return this.#evaluator.verifyShadowHost ? node : null;
     }
     return node;
-  };
+  }
 
   /**
    * Builds an Allowlist for the :has() branch using a sparse seed element.
@@ -1376,7 +1376,7 @@ export class PseudoClassEvaluator {
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves of the selector branch.
    * @returns {object|null} The wrapper object containing the WeakSet, or null.
    */
-  #buildHasAllowlist = leaves => {
+  #buildHasAllowlist(leaves) {
     const { seed } = findBestSeed(leaves);
     if (!seed) {
       return null;
@@ -1426,21 +1426,21 @@ export class PseudoClassEvaluator {
       }
     }
     return filterResult;
-  };
+  }
 
   /**
    * Retrieves a cleared Set from the pool.
    * @private
    * @returns {Set<object>} A cleared Set instance.
    */
-  #acquireSet = () => {
+  #acquireSet() {
     if (this.#setPoolIndex === this.#setPool.length) {
       this.#setPool.push(new Set());
     }
     const set = this.#setPool[this.#setPoolIndex++];
     set.clear();
     return set;
-  };
+  }
 
   /**
    * Matches the :has() pseudo-class function.
@@ -1450,7 +1450,7 @@ export class PseudoClassEvaluator {
    * @param {object} [opt] - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #matchHasPseudoFunc = (astLeaves, node, opt = {}) => {
+  #matchHasPseudoFunc(astLeaves, node, opt = {}) {
     let combo;
     let startIndex = 0;
     if (astLeaves[0].type === COMBINATOR) {
@@ -1473,7 +1473,7 @@ export class PseudoClassEvaluator {
     opt.dir = DIR_NEXT;
     const remainingLeaves = astLeaves.slice(nextComboIndex);
     return this.#hasCombinatorMatch(twig, node, remainingLeaves, opt);
-  };
+  }
 
   /**
    * Evaluates if any combinator match satisfies the condition to short-circuit.
@@ -1484,7 +1484,7 @@ export class PseudoClassEvaluator {
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #hasCombinatorMatch = (twig, node, remainingLeaves, opt) => {
+  #hasCombinatorMatch(twig, node, remainingLeaves, opt) {
     const {
       combo: { name: comboName },
       leaves
@@ -1602,7 +1602,7 @@ export class PseudoClassEvaluator {
         return false;
       }
     }
-  };
+  }
 
   /**
    * Checks if a target node satisfies the given conditions.
@@ -1613,7 +1613,7 @@ export class PseudoClassEvaluator {
    * @param {object} opt - The match options.
    * @returns {boolean} True if matched, otherwise false.
    */
-  #checkNode = (refNode, leaves, remainingLeaves, opt) => {
+  #checkNode(refNode, leaves, remainingLeaves, opt) {
     if (this.#evaluator.matchLeaves(leaves, refNode, opt)) {
       if (remainingLeaves.length === 0) {
         return true;
@@ -1623,5 +1623,5 @@ export class PseudoClassEvaluator {
       }
     }
     return false;
-  };
+  }
 }
