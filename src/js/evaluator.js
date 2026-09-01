@@ -41,6 +41,7 @@ export class Evaluator {
   #eventHandler;
   #filterLeavesCache;
   #invalidateResults;
+  #nestingAST;
   #pseudoClassEvaluator;
   #results;
   #shadowDOMEvaluator;
@@ -141,6 +142,7 @@ export class Evaluator {
     this.#pseudoClassEvaluator.clearResults(all);
     if (all) {
       this.#filterLeavesCache = null;
+      this.#nestingAST = null;
       this.#results = new WeakMap();
     }
   }
@@ -327,9 +329,11 @@ export class Evaluator {
         return node.classList.contains(astName);
       }
       case NEST_SELECTOR: {
-        const nestingAST = parseSelector(':scope', 'selector');
+        if (!this.#nestingAST) {
+          this.#nestingAST = parseSelector(':scope', 'selector');
+        }
         return this.matchPseudoClassSelector(
-          nestingAST.children.head.data,
+          this.#nestingAST.children.head.data,
           node,
           opt
         );
