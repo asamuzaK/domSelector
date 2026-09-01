@@ -1034,9 +1034,9 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
     return { dir: DIR_PREV, twig: lastTwig };
   } else if (lastName === '*' && lastType === TYPE_SELECTOR) {
     return { dir: DIR_NEXT, twig: firstTwig };
-  } else if (branchLen === 1 || branchLen === 2) {
+  } else if (branchLen === 2) {
     return { dir: DIR_PREV, twig: lastTwig };
-  } else if (branchLen > 2 && scoped && targetType === TARGET_FIRST) {
+  } else if (scoped && targetType === TARGET_FIRST) {
     return { dir: DIR_PREV, twig: lastTwig };
   }
   return { dir: DIR_NEXT, twig: firstTwig };
