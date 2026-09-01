@@ -68,7 +68,7 @@ export class Finder extends Evaluator {
   /**
    * Finds matched nodes.
    * @param {string} targetType - The target type.
-   * @returns {Set<Element>|import('./index.js').CheckResult} A collection of matched nodes.
+   * @returns {Set<Element>|import('../index.js').CheckResult} A collection of matched nodes or a CheckResult object.
    */
   find(targetType) {
     let collection;
