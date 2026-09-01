@@ -9153,6 +9153,8 @@ describe('Evaluator', () => {
       evaluator.setup('&', node);
       const res = evaluator.matchSelector(ast, node);
       assert.strictEqual(res, true, 'result');
+      const res2 = evaluator.matchSelector(ast, node);
+      assert.strictEqual(res2, true, 'result');
     });
 
     it('should return false when nest selector does not match the node', () => {
