@@ -841,18 +841,19 @@ export const findBestSeed = (nodes, state = { seed: null, priority: 0 }) => {
     if (Array.isArray(node)) {
       findBestSeed(node, state);
     } else if (node && typeof node === 'object') {
-      // ID Selector (Fastest: getElementById)
+      // ID Selector (Fastest)
       if (node.type === ID_SELECTOR) {
         state.seed = { type: 'id', value: node.name };
         state.priority = 3;
         return state;
       } else if (node.type === CLASS_SELECTOR && state.priority < 2) {
-        // Class Selector (Faster: getElementsByClassName)
+        // Class Selector
         state.seed = { type: 'class', value: node.name };
         state.priority = 2;
       } else if (
         node.type === TYPE_SELECTOR &&
         state.priority < 1 &&
+        node.name &&
         node.name !== '*'
       ) {
         // Type/Tag Selector (Excludes universal '*')
@@ -1041,3 +1042,29 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   }
   return { dir: DIR_NEXT, twig: firstTwig };
 };
+
+/**
+ * Checks if the fast ID search (getElementById) is applicable.
+ * @param {Element} node - The starting node for the search.
+ * @param {Document|DocumentFragment|Element} root - The root node of the tree.
+ * @returns {boolean} True if fast ID search is applicable, otherwise false.
+ */
+export const canUseFastIdSearch = (node, root) =>
+  node.nodeType === ELEMENT_NODE && root.nodeType !== ELEMENT_NODE;
+
+/**
+ * Checks if the fast class search (getElementsByClassName) is applicable.
+ * @param {Document|DocumentFragment|Element} node - The node to search within.
+ * @returns {boolean} True if fast class search is applicable, otherwise false.
+ */
+export const canUseFastClassSearch = node =>
+  typeof node.getElementsByClassName === 'function';
+
+/**
+ * Checks if the fast tag search (getElementsByTagName) is applicable.
+ * @param {Document|DocumentFragment|Element} node - The node to search within.
+ * @param {string} leafName - The tag name to search for.
+ * @returns {boolean} True if fast tag search is applicable, otherwise false.
+ */
+export const canUseFastTagSearch = (node, leafName) =>
+  typeof node.getElementsByTagName === 'function' && !leafName.includes('|');

@@ -14,6 +14,7 @@ import {
   DIR_NEXT,
   DIR_PREV,
   ID_SELECTOR,
+  PS_CLASS_SELECTOR,
   PS_ELEMENT_SELECTOR,
   SHOW_CONTAINER,
   TARGET_FIRST,
@@ -2347,6 +2348,27 @@ describe('utility functions', () => {
       assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
       assert.strictEqual(res.priority, 3);
     });
+
+    it('should ignore TYPE_SELECTOR when name is undefined or empty', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: undefined },
+        { type: TYPE_SELECTOR, name: '' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res, { seed: null, priority: 0 });
+    });
+
+    it('should not pick invalid seed for pseudo-class only selectors like :dir()', () => {
+      const nodes = [
+        {
+          type: PS_CLASS_SELECTOR,
+          name: 'dir',
+          children: [{ type: 999, value: 'rtl' }]
+        }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res, { seed: null, priority: 0 });
+    });
   });
 
   describe('populateHasAllowlist', () => {
@@ -2791,6 +2813,97 @@ describe('utility functions', () => {
       const res = func(branch, TARGET_FIRST, false, true);
       assert.strictEqual(res.dir, DIR_PREV, 'direction');
       assert.deepEqual(res.twig, lastTwig, 'twig');
+    });
+  });
+
+  describe('canUseFastIdSearch', () => {
+    const func = util.canUseFastIdSearch;
+
+    it('should return true when node is an Element and root is a Document', () => {
+      const node = document.createElement('div');
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        true,
+        'applicable for Element within Document'
+      );
+    });
+
+    it('should return true when node is an Element and root is a ShadowRoot', () => {
+      const node = document.createElement('div');
+      const root = document.createDocumentFragment();
+      assert.strictEqual(
+        func(node, root),
+        true,
+        'applicable for Element within DocumentFragment'
+      );
+    });
+
+    it('should return false when node is a Document', () => {
+      const node = document;
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when node is not an Element'
+      );
+    });
+
+    it('should return false when node is a DocumentFragment', () => {
+      const node = document.createDocumentFragment();
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when node is a DocumentFragment'
+      );
+    });
+
+    it('should return false when root is an Element', () => {
+      const node = document.createElement('span');
+      const root = document.createElement('div');
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when root is an Element'
+      );
+    });
+  });
+
+  describe('canUseFastClassSearch', () => {
+    const func = util.canUseFastClassSearch;
+
+    it('should return true when getElementsByClassName is a function', () => {
+      const node = document.createElement('div');
+      assert.strictEqual(func(node), true, 'Element supports it');
+    });
+
+    it('should return false when getElementsByClassName is not a function', () => {
+      const node = { getElementsByClassName: undefined };
+      assert.strictEqual(func(node), false, 'Object without method');
+    });
+  });
+
+  describe('canUseFastTagSearch', () => {
+    const func = util.canUseFastTagSearch;
+
+    it('should return true when getElementsByTagName is available and no namespace pipe is present', () => {
+      const node = document.createElement('div');
+      assert.strictEqual(func(node, 'div'), true, 'Valid tag search');
+    });
+
+    it('should return false when namespace pipe is present in leafName', () => {
+      const node = document.createElement('div');
+      assert.strictEqual(
+        func(node, 'svg|a'),
+        false,
+        'Namespaced tag search is not supported by fast path'
+      );
+    });
+
+    it('should return false when getElementsByTagName is not a function', () => {
+      const node = { getElementsByTagName: undefined };
+      assert.strictEqual(func(node, 'div'), false, 'Object without method');
     });
   });
 });
