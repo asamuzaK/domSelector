@@ -1843,7 +1843,14 @@ describe('PseudoClassEvaluator', () => {
       const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
       mockEvaluator.eventHandler = {
         currentFocus: { target: inputTarget, relatedTarget: null },
-        currentEvent: { type: 'keydown', key: 'Tab', target: document.body, altKey: false, ctrlKey: false, metaKey: false }
+        currentEvent: {
+          type: 'keydown',
+          key: 'Tab',
+          target: document.body,
+          altKey: false,
+          ctrlKey: false,
+          metaKey: false
+        }
       };
       pseudoEvaluator.matchPseudoClassSelector(ast, inputTarget, {});
       pseudoEvaluator.reset();
@@ -1851,7 +1858,7 @@ describe('PseudoClassEvaluator', () => {
       mockEvaluator.eventHandler = {
         currentFocus: {
           target: buttonTarget,
-          relatedTarget: inputTarget 
+          relatedTarget: inputTarget
         },
         currentEvent: null
       };
@@ -3527,7 +3534,11 @@ describe('PseudoClassEvaluator', () => {
       const result1 = pseudoEvaluator.matchPseudoClassSelector(ast, child, {});
       assert.strictEqual(result1, false, 'should fail gracefully');
       const result2 = pseudoEvaluator.matchPseudoClassSelector(ast, child, {});
-      assert.strictEqual(result2, false, 'should fail safely on repeated calls');
+      assert.strictEqual(
+        result2,
+        false,
+        'should fail safely on repeated calls'
+      );
       parent.remove();
     });
 
@@ -3560,13 +3571,21 @@ describe('PseudoClassEvaluator', () => {
       child.setAttribute('data-test', 'true');
       const originalMatchLeaves = mockEvaluator.matchLeaves;
       mockEvaluator.matchLeaves = sinon.stub().callsFake((leaves, node) => {
-        if (leaves.some(l => l.type === ATTR_SELECTOR && l.name.name === 'data-test')) {
+        if (
+          leaves.some(
+            l => l.type === ATTR_SELECTOR && l.name.name === 'data-test'
+          )
+        ) {
           return node.hasAttribute('data-test');
         }
         return true;
       });
       const result = pseudoEvaluator.matchPseudoClassSelector(ast, parent, {});
-      assert.strictEqual(result, true, ':has(*:...) should successfully fall back to TreeWalker');
+      assert.strictEqual(
+        result,
+        true,
+        ':has(*:...) should successfully fall back to TreeWalker'
+      );
       mockEvaluator.matchLeaves = originalMatchLeaves;
       parent.remove();
     });
