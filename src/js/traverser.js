@@ -169,7 +169,6 @@ export class DOMTraverser {
     switch (leafType) {
       case ID_SELECTOR: {
         if (
-          !this.#evaluator.shadow &&
           baseNode.nodeType === ELEMENT_NODE &&
           this.#evaluator.root.nodeType !== ELEMENT_NODE
         ) {
