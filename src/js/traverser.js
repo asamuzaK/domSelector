@@ -4,11 +4,10 @@
 
 import { matchPseudoElementSelector } from './matcher.js';
 import { unescapeSelector } from './parser.js';
-import { traverseNode } from './utility.js';
+import { canUseFastIdSearch, traverseNode } from './utility.js';
 
 import {
   DIR_NEXT,
-  ELEMENT_NODE,
   ID_SELECTOR,
   CLASS_SELECTOR,
   TYPE_SELECTOR,
@@ -168,10 +167,7 @@ export class DOMTraverser {
     const isSimple = filterLeaves.length === 0;
     switch (leafType) {
       case ID_SELECTOR: {
-        if (
-          baseNode.nodeType === ELEMENT_NODE &&
-          this.#evaluator.root.nodeType !== ELEMENT_NODE
-        ) {
+        if (canUseFastIdSearch(baseNode, this.#evaluator.root)) {
           const foundNode = this.#evaluator.root.getElementById(leafName);
           if (
             foundNode &&

@@ -2793,4 +2793,58 @@ describe('utility functions', () => {
       assert.deepEqual(res.twig, lastTwig, 'twig');
     });
   });
+
+  describe('canUseFastIdSearch', () => {
+    const func = util.canUseFastIdSearch;
+
+    it('should return true when node is an Element and root is a Document', () => {
+      const node = document.createElement('div');
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        true,
+        'applicable for Element within Document'
+      );
+    });
+
+    it('should return true when node is an Element and root is a ShadowRoot', () => {
+      const node = document.createElement('div');
+      const root = document.createDocumentFragment();
+      assert.strictEqual(
+        func(node, root),
+        true,
+        'applicable for Element within DocumentFragment'
+      );
+    });
+
+    it('should return false when node is a Document', () => {
+      const node = document;
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when node is not an Element'
+      );
+    });
+
+    it('should return false when node is a DocumentFragment', () => {
+      const node = document.createDocumentFragment();
+      const root = document;
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when node is a DocumentFragment'
+      );
+    });
+
+    it('should return false when root is an Element', () => {
+      const node = document.createElement('span');
+      const root = document.createElement('div');
+      assert.strictEqual(
+        func(node, root),
+        false,
+        'not applicable when root is an Element'
+      );
+    });
+  });
 });

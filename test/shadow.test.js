@@ -138,7 +138,11 @@ describe('ShadowDOMEvaluator', () => {
         false,
         'should not call onError for valid comma-separated selectors'
       );
-      assert.strictEqual(res, true, 'result should be true if any selector matches');
+      assert.strictEqual(
+        res,
+        true,
+        'result should be true if any selector matches'
+      );
     });
 
     it('should traverse across multiple shadow boundaries', () => {
@@ -158,9 +162,15 @@ describe('ShadowDOMEvaluator', () => {
           }
         ]
       };
-      mockEvaluator.matchSelector.withArgs(sinon.match.any, innerHost).returns(false);
-      mockEvaluator.matchSelector.withArgs(sinon.match.any, outerShadow).returns(false);
-      mockEvaluator.matchSelector.withArgs(sinon.match.any, outerHost).returns(true);
+      mockEvaluator.matchSelector
+        .withArgs(sinon.match.any, innerHost)
+        .returns(false);
+      mockEvaluator.matchSelector
+        .withArgs(sinon.match.any, outerShadow)
+        .returns(false);
+      mockEvaluator.matchSelector
+        .withArgs(sinon.match.any, outerHost)
+        .returns(true);
       const res = shadowEvaluator.evaluateShadowHost(ast, innerShadow);
       assert.strictEqual(
         res,

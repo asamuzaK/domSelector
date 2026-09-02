@@ -1041,3 +1041,12 @@ export const getTraversalStrategy = (branch, targetType, hasScope, scoped) => {
   }
   return { dir: DIR_NEXT, twig: firstTwig };
 };
+
+/**
+ * Checks if the fast ID search (getElementById) is applicable.
+ * @param {Element} node - The starting node for the search.
+ * @param {Document|DocumentFragment|Element} root - The root node of the tree.
+ * @returns {boolean} True if fast ID search is applicable, otherwise false.
+ */
+export const canUseFastIdSearch = (node, root) =>
+  node.nodeType === ELEMENT_NODE && root.nodeType !== ELEMENT_NODE;
