@@ -121,17 +121,11 @@ export class EventHandler {
    * Registers all predefined event listeners on the window object.
    */
   registerEventListeners() {
-    if (!this.#cleanupFunctions) {
-      this.#cleanupFunctions = [];
-    }
     for (const { keys, handler } of this.#eventHandlers) {
       for (const key of keys) {
         this.#window.addEventListener(key, handler, {
           capture: true,
           passive: true
-        });
-        this.#cleanupFunctions.push(() => {
-          this.#window.removeEventListener(key, handler, { capture: true });
         });
       }
     }
@@ -141,12 +135,11 @@ export class EventHandler {
    * Removes all registered event listeners and resets all internal states.
    */
   destroy() {
-    if (this.#cleanupFunctions) {
-      for (const cleanup of this.#cleanupFunctions) {
-        cleanup();
+    for (const { keys, handler } of this.#eventHandlers) {
+      for (const key of keys) {
+        this.#window.removeEventListener(key, handler, { capture: true });
       }
     }
-    this.#cleanupFunctions = null;
     this.#event = null;
     this.#focusEvent = null;
     this.#lastFocusVisible = null;

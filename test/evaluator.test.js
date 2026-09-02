@@ -237,6 +237,42 @@ describe('Evaluator', () => {
     });
   });
 
+  describe('destroy evaluator', () => {
+    it('should call clearResults(true) and destroy EventHandler', () => {
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      const spyEventHandlerDestroy = sinon.spy(
+        evaluator.eventHandler,
+        'destroy'
+      );
+      const spyClearResults = sinon.spy(evaluator, 'clearResults');
+      evaluator.destroy();
+      assert.strictEqual(
+        spyClearResults.calledWithExactly(true),
+        true,
+        'clearResults(true) was called'
+      );
+      assert.strictEqual(
+        spyEventHandlerDestroy.calledOnce,
+        true,
+        'eventHandler.destroy() was called'
+      );
+      spyClearResults.restore();
+      spyEventHandlerDestroy.restore();
+    });
+
+    it('should gracefully handle destroy when eventHandler is null', () => {
+      const evaluator = new Evaluator(window);
+      Object.defineProperty(evaluator, 'eventHandler', {
+        get: () => null,
+        configurable: true
+      });
+      assert.doesNotThrow(() => {
+        evaluator.destroy();
+      }, 'does not throw when eventHandler is absent');
+    });
+  });
+
   describe('create tree walker', () => {
     it('should create a TreeWalker with document as root', () => {
       const evaluator = new Evaluator(window);
