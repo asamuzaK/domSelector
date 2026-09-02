@@ -29,7 +29,7 @@ export class EventHandler {
   #window;
   #event;
   #eventHandlers;
-  #fucusEvent;
+  #focusEvent;
   #lastFocusVisible;
   #cleanupFunctions;
 
@@ -39,7 +39,7 @@ export class EventHandler {
   constructor(window) {
     this.#window = window;
     this.#event = null;
-    this.#fucusEvent = null;
+    this.#focusEvent = null;
     this.#lastFocusVisible = null;
     this.#eventHandlers = [
       {
@@ -71,7 +71,7 @@ export class EventHandler {
    * @returns {Event|null} The current focus event object.
    */
   get currentFocus() {
-    return this.#fucusEvent;
+    return this.#focusEvent;
   }
 
   /**
@@ -95,7 +95,7 @@ export class EventHandler {
    * @param {Event} evt - The focus event.
    */
   handleFocusEvent(evt) {
-    this.#fucusEvent = evt;
+    this.#focusEvent = evt;
   }
 
   /**
@@ -148,7 +148,7 @@ export class EventHandler {
     }
     this.#cleanupFunctions = null;
     this.#event = null;
-    this.#fucusEvent = null;
+    this.#focusEvent = null;
     this.#lastFocusVisible = null;
   }
 }
