@@ -4,7 +4,12 @@
 
 import { matchPseudoElementSelector } from './matcher.js';
 import { unescapeSelector } from './parser.js';
-import { canUseFastIdSearch, traverseNode } from './utility.js';
+import {
+  canUseFastClassSearch,
+  canUseFastIdSearch,
+  canUseFastTagSearch,
+  traverseNode
+} from './utility.js';
 
 import {
   DIR_NEXT,
@@ -187,7 +192,7 @@ export class DOMTraverser {
         break;
       }
       case CLASS_SELECTOR: {
-        if (typeof baseNode.getElementsByClassName === 'function') {
+        if (canUseFastClassSearch(baseNode)) {
           const collection = baseNode.getElementsByClassName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
             const item = collection[i];
@@ -203,10 +208,7 @@ export class DOMTraverser {
         break;
       }
       case TYPE_SELECTOR: {
-        if (
-          typeof baseNode.getElementsByTagName === 'function' &&
-          !leafName.includes('|')
-        ) {
+        if (canUseFastTagSearch(baseNode, leafName)) {
           const collection = baseNode.getElementsByTagName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
             const item = collection[i];

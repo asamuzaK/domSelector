@@ -15,7 +15,9 @@ import {
 } from './matcher.js';
 import { generateCSS, unescapeSelector, walkAST } from './parser.js';
 import {
+  canUseFastClassSearch,
   canUseFastIdSearch,
+  canUseFastTagSearch,
   findBestSeed,
   generateException,
   isCustomElement,
@@ -1544,10 +1546,7 @@ export class PseudoClassEvaluator {
           }
           return false;
         }
-        if (
-          leaf.type === CLASS_SELECTOR &&
-          typeof node.getElementsByClassName === 'function'
-        ) {
+        if (leaf.type === CLASS_SELECTOR && canUseFastClassSearch(node)) {
           const leafName = unescapeSelector(leaf.name);
           const collection = node.getElementsByClassName(leafName);
           for (let i = 0, len = collection.length; i < len; i++) {
@@ -1568,8 +1567,7 @@ export class PseudoClassEvaluator {
         }
         if (
           leaf.type === TYPE_SELECTOR &&
-          typeof node.getElementsByTagName === 'function' &&
-          !leaf.name.includes('|') &&
+          canUseFastTagSearch(node, leaf.name) &&
           leaf.name !== '*'
         ) {
           const leafName = unescapeSelector(leaf.name);
