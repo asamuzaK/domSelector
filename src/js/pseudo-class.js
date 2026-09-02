@@ -804,7 +804,7 @@ export class PseudoClassEvaluator {
       node === this.#evaluator.document.activeElement &&
       isFocusableArea(node)
     ) {
-      let bool;
+      let bool = false;
       if (isFocusVisible(node)) {
         bool = true;
       } else if (this.#evaluator.eventHandler.currentFocus) {
@@ -1570,7 +1570,8 @@ export class PseudoClassEvaluator {
         if (
           leaf.type === TYPE_SELECTOR &&
           typeof node.getElementsByTagName === 'function' &&
-          !leaf.name.includes('|')
+          !leaf.name.includes('|') &&
+          leaf.name !== '*'
         ) {
           const leafName = unescapeSelector(leaf.name);
           const collection = node.getElementsByTagName(leafName);
