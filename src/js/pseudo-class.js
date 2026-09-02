@@ -15,6 +15,7 @@ import {
 } from './matcher.js';
 import { generateCSS, unescapeSelector, walkAST } from './parser.js';
 import {
+  canUseFastIdSearch,
   findBestSeed,
   generateException,
   isCustomElement,
@@ -1524,9 +1525,7 @@ export class PseudoClassEvaluator {
         const isLastFilter = filterLeaves.length === 0;
         if (
           leaf.type === ID_SELECTOR &&
-          !this.#evaluator.shadow &&
-          node.nodeType === ELEMENT_NODE &&
-          this.#evaluator.root.nodeType !== ELEMENT_NODE
+          canUseFastIdSearch(node, this.#evaluator.root)
         ) {
           const leafName = unescapeSelector(leaf.name);
           const foundNode = this.#evaluator.root.getElementById(leafName);

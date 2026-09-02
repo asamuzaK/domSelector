@@ -458,8 +458,14 @@ describe('DOMTraverser', () => {
       mockEvaluator.shadow = true;
       mockEvaluator.getFilterLeaves.returns([]); // isSimple = true
       const leaves = [{ name: 'shadow-child', type: ID_SELECTOR }];
-      const result = [...traverser.yieldFindDescendantNodes(leaves, baseNode, {})];
-      assert.strictEqual(result.length, 1, 'Should find the node via fast path in Shadow DOM');
+      const result = [
+        ...traverser.yieldFindDescendantNodes(leaves, baseNode, {})
+      ];
+      assert.strictEqual(
+        result.length,
+        1,
+        'Should find the node via fast path in Shadow DOM'
+      );
       assert.strictEqual(result[0].id, 'shadow-child');
       mockEvaluator.root = document;
       mockEvaluator.shadow = false;
