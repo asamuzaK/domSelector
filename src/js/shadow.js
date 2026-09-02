@@ -89,7 +89,7 @@ export class ShadowDOMEvaluator {
       );
       return false;
     }
-    if (astChildren.length !== 1) {
+    if (astChildren.length === 0) {
       const css = generateCSS(ast);
       const msg = `Invalid selector ${css}`;
       this.#evaluator.onError(
@@ -98,16 +98,18 @@ export class ShadowDOMEvaluator {
       return false;
     }
     const { host } = node;
-    const { branches } = walkAST(astChildren[0]);
-    const [branch] = branches;
-    const [...leaves] = branch;
-    if (astName === 'host' && this.#evaluateHostPseudo(leaves, host, ast)) {
-      return true;
-    } else if (
-      astName === 'host-context' &&
-      this.#evaluateHostContextPseudo(leaves, host, ast)
-    ) {
-      return true;
+    for (const child of astChildren) {
+      const { branches } = walkAST(child);
+      for (const branch of branches) {
+        if (astName === 'host' && this.#evaluateHostPseudo(branch, host, ast)) {
+          return true;
+        } else if (
+          astName === 'host-context' &&
+          this.#evaluateHostContextPseudo(branch, host, ast)
+        ) {
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -170,7 +172,7 @@ export class ShadowDOMEvaluator {
       if (bool) {
         return true;
       }
-      parent = parent.parentNode;
+      parent = parent.parentNode || parent.host;
     }
     return false;
   }
