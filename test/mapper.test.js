@@ -229,5 +229,32 @@ describe('Mapper', () => {
         'invalidate should be false when neither condition is met'
       );
     });
+
+    it('should return fresh AST objects to prevent cache mutation', () => {
+      const mapper = new Mapper(mockContext);
+      const selector = '.pure-cache-test';
+      const [ast1] = mapper.correspond(selector);
+      // Simulate finder.js mutating the execution state wrapper
+      ast1[0].find = true;
+      ast1[0].dir = 'prev';
+      // Fetch again to ensure cache hit
+      processorStub.resetHistory();
+      const [ast2] = mapper.correspond(selector);
+      assert.strictEqual(
+        processorStub.notCalled, 
+        true, 
+        'Should hit the cache'
+      );
+      assert.notStrictEqual(
+        ast1[0], 
+        ast2[0], 
+        'Should return entirely different wrapper instances'
+      );
+      assert.strictEqual(
+        ast2[0].find, 
+        false, 
+        'Fresh wrapper should not be affected by previous state mutations'
+      );
+    });
   });
 });

@@ -43,13 +43,17 @@ export class Mapper {
     // Clear flags for reuse if cache hit.
     if (ast) {
       const l = ast.length;
+      const freshAst = new Array(l);
       for (let i = 0; i < l; i++) {
-        ast[i].dir = null;
-        ast[i].filtered = false;
-        ast[i].find = false;
+        freshAst[i] = {
+          branch: ast[i].branch,
+          dir: null,
+          filtered: false,
+          find: false
+        };
         nodes[i] = [];
       }
-      return [ast, nodes, ctx.selectorAST];
+      return [freshAst, nodes, ctx.selectorAST];
     }
     // Parse selector and build metadata.
     const selectorAST = parseSelector(selector);
@@ -83,6 +87,7 @@ export class Mapper {
       cachedItem = ctx.documentCache.get(ctx.document);
     } else {
       cachedItem = new Map();
+      ctx.documentCache.set(ctx.document, cachedItem);
     }
     cachedItem.set(selector, {
       ast,
@@ -90,12 +95,18 @@ export class Mapper {
       invalidate: ctx.invalidate,
       selectorAST
     });
-    ctx.documentCache.set(ctx.document, cachedItem);
     // Initialize nodes.
     const l = ast.length;
+    const freshAst = new Array(l);
     for (let i = 0; i < l; i++) {
+      freshAst[i] = {
+        branch: ast[i].branch,
+        dir: null,
+        filtered: false,
+        find: false
+      };
       nodes[i] = [];
     }
-    return [ast, nodes, selectorAST];
+    return [freshAst, nodes, selectorAST];
   }
 }
