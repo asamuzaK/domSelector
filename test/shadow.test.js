@@ -13,6 +13,7 @@ import { ShadowDOMEvaluator } from '../src/js/shadow.js';
 
 /* constants */
 import {
+  CLASS_SELECTOR,
   COMBINATOR,
   ID_SELECTOR,
   PS_CLASS_SELECTOR,
@@ -112,6 +113,59 @@ describe('ShadowDOMEvaluator', () => {
         shadowEvaluator.verifyShadowHost,
         false,
         'verifyShadowHost remains false'
+      );
+    });
+
+    it('should support comma-separated list like :host(.a, .b)', () => {
+      const ast = {
+        name: 'host',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            type: SELECTOR,
+            children: [{ name: 'a', type: CLASS_SELECTOR }]
+          },
+          {
+            type: SELECTOR,
+            children: [{ name: 'b', type: CLASS_SELECTOR }]
+          }
+        ]
+      };
+      mockEvaluator.matchSelector.returns(true);
+      const res = shadowEvaluator.evaluateShadowHost(ast, shadowRoot);
+      assert.strictEqual(
+        mockEvaluator.onError.called,
+        false,
+        'should not call onError for valid comma-separated selectors'
+      );
+      assert.strictEqual(res, true, 'result should be true if any selector matches');
+    });
+
+    it('should traverse across multiple shadow boundaries', () => {
+      const outerHost = document.createElement('div');
+      document.body.appendChild(outerHost);
+      const outerShadow = outerHost.attachShadow({ mode: 'open' });
+      const innerHost = document.createElement('div');
+      outerShadow.appendChild(innerHost);
+      const innerShadow = innerHost.attachShadow({ mode: 'open' });
+      const ast = {
+        name: 'host-context',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            type: SELECTOR,
+            children: [{ name: 'foo', type: CLASS_SELECTOR }]
+          }
+        ]
+      };
+      mockEvaluator.matchSelector.withArgs(sinon.match.any, innerHost).returns(false);
+      mockEvaluator.matchSelector.withArgs(sinon.match.any, outerShadow).returns(false);
+      mockEvaluator.matchSelector.withArgs(sinon.match.any, outerHost).returns(true);
+      const res = shadowEvaluator.evaluateShadowHost(ast, innerShadow);
+      assert.strictEqual(
+        res,
+        true,
+        'should traverse through shadow boundaries to find matching ancestor'
       );
     });
   });
