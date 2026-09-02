@@ -266,7 +266,7 @@ export class Evaluator {
    * @param {object} [opt] - Options.
    * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
    * @param {boolean} [opt.warn] - If true, console warnings are enabled.
-   * @returns {Set<Element>|boolean} A collection of matched nodes.
+   * @returns {boolean} True if matches, otherwise false.
    */
   matchPseudoClassSelector(ast, node, opt = {}) {
     return this.#pseudoClassEvaluator.matchPseudoClassSelector(ast, node, opt);
