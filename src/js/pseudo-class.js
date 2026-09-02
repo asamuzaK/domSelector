@@ -776,24 +776,25 @@ export class PseudoClassEvaluator {
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchFocusPseudoClass(node) {
-    const activeElement = this.#evaluator.document.activeElement;
-    if (activeElement.shadowRoot) {
-      const activeShadowElement = activeElement.shadowRoot.activeElement;
-      let current = activeShadowElement;
-      while (current) {
-        if (current.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          const { host } = current;
-          if (host === activeElement) {
-            if (isFocusableArea(node)) {
-              return true;
-            }
-            return host === node;
-          }
+    const { activeElement } = this.#evaluator.document;
+    if (!activeElement) {
+      return false;
+    }
+    let active = activeElement;
+    while (active) {
+      if (node === active) {
+        if (active.shadowRoot && active.shadowRoot.activeElement) {
+          return true;
         }
-        current = current.parentNode;
+        return isFocusableArea(node);
+      }
+      if (active.shadowRoot && active.shadowRoot.activeElement) {
+        active = active.shadowRoot.activeElement;
+      } else {
+        break;
       }
     }
-    return node === activeElement && isFocusableArea(node);
+    return false;
   }
 
   /**
