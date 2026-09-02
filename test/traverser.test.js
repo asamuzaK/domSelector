@@ -293,23 +293,6 @@ describe('DOMTraverser', () => {
       );
     });
 
-    it('should fallback to TreeWalker for ID_SELECTOR when evaluator.shadow is true', () => {
-      const leaves = [{ name: 'child2', type: ID_SELECTOR }];
-      mockEvaluator.shadow = true;
-      mockEvaluator.matchLeaves.returns(true);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
-      assert.ok(
-        result.length > 1,
-        'Falls back to TreeWalker and yields multiple nodes'
-      );
-      assert.strictEqual(
-        result[0].id,
-        'prev-sib',
-        'First yielded node is from TreeWalker'
-      );
-      mockEvaluator.shadow = false;
-    });
-
     it('should fallback to TreeWalker for ID_SELECTOR when baseNode is not an ELEMENT_NODE', () => {
       const leaves = [{ name: 'target', type: ID_SELECTOR }];
       mockEvaluator.matchLeaves.returns(true);
@@ -460,6 +443,27 @@ describe('DOMTraverser', () => {
         innerDup2,
         'Should yield the second element that passed the filter by falling back to TreeWalker'
       );
+    });
+
+    it('should find descendant by ID_SELECTOR via fast path', () => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      const baseNode = document.createElement('div');
+      const targetNode = document.createElement('span');
+      targetNode.id = 'shadow-child';
+      baseNode.appendChild(targetNode);
+      shadowRoot.appendChild(baseNode);
+      mockEvaluator.root = shadowRoot;
+      mockEvaluator.shadow = true;
+      mockEvaluator.getFilterLeaves.returns([]); // isSimple = true
+      const leaves = [{ name: 'shadow-child', type: ID_SELECTOR }];
+      const result = [...traverser.yieldFindDescendantNodes(leaves, baseNode, {})];
+      assert.strictEqual(result.length, 1, 'Should find the node via fast path in Shadow DOM');
+      assert.strictEqual(result[0].id, 'shadow-child');
+      mockEvaluator.root = document;
+      mockEvaluator.shadow = false;
+      host.remove();
     });
   });
 });
