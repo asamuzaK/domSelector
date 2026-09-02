@@ -1334,6 +1334,19 @@ describe('PseudoClassEvaluator', () => {
       );
     });
 
+    it('should return false when document.activeElement is null', () => {
+      const originalDocument = mockEvaluator.document;
+      mockEvaluator.document = { activeElement: null };
+      focusableInput.focus();
+      const ast = { name: 'focus', type: PS_CLASS_SELECTOR };
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(ast, focusableInput, {}),
+        false,
+        'returns false when document.activeElement is null'
+      );
+      mockEvaluator.document = originalDocument;
+    });
+
     describe('Shadow DOM activeElement traversal', () => {
       it('should return true for focusable node inside Shadow DOM', () => {
         const host = document.createElement('div');
@@ -1373,6 +1386,64 @@ describe('PseudoClassEvaluator', () => {
           'returns true for shadow host element matching active inner element'
         );
         host.remove();
+      });
+    });
+
+    describe('Shadow DOM activeElement nested and edge cases', () => {
+      it('should not match unrelated focusable elements when shadow DOM has focus', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        if (typeof host.attachShadow !== 'function') {
+          host.remove();
+          this.skip();
+        }
+        const shadowRoot = host.attachShadow({ mode: 'open' });
+        const shadowInput = document.createElement('input');
+        shadowRoot.appendChild(shadowInput);
+        const otherInput = document.createElement('input');
+        document.body.appendChild(otherInput);
+        shadowInput.focus();
+        const ast = { name: 'focus', type: PS_CLASS_SELECTOR };
+        assert.strictEqual(
+          pseudoEvaluator.matchPseudoClassSelector(ast, otherInput, {}),
+          false,
+          'other focusable elements should not match :focus just because shadow DOM is focused'
+        );
+        host.remove();
+        otherInput.remove();
+      });
+
+      it('should traverse nested Shadow DOMs and match the active element', () => {
+        const hostA = document.createElement('div');
+        document.body.appendChild(hostA);
+        if (typeof hostA.attachShadow !== 'function') {
+          hostA.remove();
+          this.skip();
+        }
+        const shadowA = hostA.attachShadow({ mode: 'open' });
+        const hostB = document.createElement('div');
+        shadowA.appendChild(hostB);
+        const shadowB = hostB.attachShadow({ mode: 'open' });
+        const input = document.createElement('input');
+        shadowB.appendChild(input);
+        input.focus();
+        const ast = { name: 'focus', type: PS_CLASS_SELECTOR };
+        assert.strictEqual(
+          pseudoEvaluator.matchPseudoClassSelector(ast, input, {}),
+          true,
+          'deeply nested input matches :focus'
+        );
+        assert.strictEqual(
+          pseudoEvaluator.matchPseudoClassSelector(ast, hostB, {}),
+          true,
+          'inner shadow host matches :focus'
+        );
+        assert.strictEqual(
+          pseudoEvaluator.matchPseudoClassSelector(ast, hostA, {}),
+          true,
+          'outer shadow host matches :focus'
+        );
+        hostA.remove();
       });
     });
   });
@@ -1765,6 +1836,30 @@ describe('PseudoClassEvaluator', () => {
       );
       node.remove();
       mockEvaluator.eventHandler = null;
+    });
+
+    it('should not clear #lastFocusVisible when reset() is called', () => {
+      inputTarget.focus();
+      const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
+      mockEvaluator.eventHandler = {
+        currentFocus: { target: inputTarget, relatedTarget: null },
+        currentEvent: { type: 'keydown', key: 'Tab', target: document.body, altKey: false, ctrlKey: false, metaKey: false }
+      };
+      pseudoEvaluator.matchPseudoClassSelector(ast, inputTarget, {});
+      pseudoEvaluator.reset();
+      buttonTarget.focus();
+      mockEvaluator.eventHandler = {
+        currentFocus: {
+          target: buttonTarget,
+          relatedTarget: inputTarget 
+        },
+        currentEvent: null
+      };
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {}),
+        true,
+        'returns true because reset() does not clear #lastFocusVisible'
+      );
     });
   });
 
@@ -3402,6 +3497,77 @@ describe('PseudoClassEvaluator', () => {
         true,
         'second evaluation returns true using cached AST data'
       );
+      parent.remove();
+    });
+
+    it('should correctly restore #setPoolIndex', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+      const ast = {
+        name: 'is',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            type: SELECTOR_LIST,
+            children: [
+              {
+                type: SELECTOR,
+                children: [
+                  { name: 'unknown', type: CLASS_SELECTOR },
+                  { name: '>', type: COMBINATOR },
+                  { name: 'span', type: TYPE_SELECTOR }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+      const result1 = pseudoEvaluator.matchPseudoClassSelector(ast, child, {});
+      assert.strictEqual(result1, false, 'should fail gracefully');
+      const result2 = pseudoEvaluator.matchPseudoClassSelector(ast, child, {});
+      assert.strictEqual(result2, false, 'should fail safely on repeated calls');
+      parent.remove();
+    });
+
+    it('should not throw error and should not skip evaluate', () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      document.getElementById('div0').appendChild(parent);
+      const ast = {
+        name: 'has',
+        type: PS_CLASS_SELECTOR,
+        children: [
+          {
+            type: SELECTOR_LIST,
+            children: [
+              {
+                type: SELECTOR,
+                children: [
+                  { name: '*', type: TYPE_SELECTOR },
+                  {
+                    name: { name: 'data-test', type: IDENT },
+                    type: ATTR_SELECTOR
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+      child.setAttribute('data-test', 'true');
+      const originalMatchLeaves = mockEvaluator.matchLeaves;
+      mockEvaluator.matchLeaves = sinon.stub().callsFake((leaves, node) => {
+        if (leaves.some(l => l.type === ATTR_SELECTOR && l.name.name === 'data-test')) {
+          return node.hasAttribute('data-test');
+        }
+        return true;
+      });
+      const result = pseudoEvaluator.matchPseudoClassSelector(ast, parent, {});
+      assert.strictEqual(result, true, ':has(*:...) should successfully fall back to TreeWalker');
+      mockEvaluator.matchLeaves = originalMatchLeaves;
       parent.remove();
     });
   });
