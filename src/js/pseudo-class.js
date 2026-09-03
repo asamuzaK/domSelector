@@ -697,11 +697,15 @@ export class PseudoClassEvaluator {
     if (!this.#psDisabledCache) {
       this.#psDisabledCache = new WeakSet();
     }
+    let isDisabled = this.#psDisabledCache.get(node);
+    if (isDisabled !== undefined) {
+      return isDisabled;
+    }
     if (node.disabled || node.hasAttribute('disabled')) {
       this.#psDisabledCache.add(node);
       return astName === 'disabled';
     }
-    let isDisabled = false;
+    isDisabled = false;
     if (localName === 'option') {
       if (
         parentNode &&
