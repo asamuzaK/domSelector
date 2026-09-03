@@ -1151,7 +1151,7 @@ describe('PseudoClassEvaluator', () => {
         'input inherits disabled state from disabled fieldset'
       );
       assert.strictEqual(
-        pseudoEvaluator.matchPseudoClassSelector(asEnabled, input, {}),
+        pseudoEvaluator.matchPseudoClassSelector(astEnabled, input, {}),
         false,
         'input inherits disabled state from disabled fieldset'
       );
