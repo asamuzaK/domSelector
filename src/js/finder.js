@@ -6,8 +6,14 @@
 import { Evaluator } from './evaluator.js';
 import { Mapper } from './mapper.js';
 import { matchPseudoElementSelector } from './matcher.js';
-import { generateCSS, unescapeSelector } from './parser.js';
-import { getTraversalStrategy, sortNodes, traverseNode } from './utility.js';
+import { generateCSS } from './parser.js';
+import {
+  canUseFastClassSearch,
+  canUseFastTagSearch,
+  getTraversalStrategy,
+  sortNodes,
+  traverseNode
+} from './utility.js';
 
 /* constants */
 import {
@@ -381,11 +387,11 @@ export class Finder extends Evaluator {
     if (
       targetType !== TARGET_FIRST &&
       !precede &&
-      typeof this.node.getElementsByClassName === 'function'
+      canUseFastClassSearch(this.node)
     ) {
       this.matchLeaves(leaves, this.node, this.matchOpts);
       const [leaf] = leaves;
-      const className = unescapeSelector(leaf.name);
+      const className = this.getUnescapedName(leaf);
       const collection = this.node.getElementsByClassName(className);
       return this.#filterAndFormatCollection(
         collection,
@@ -417,13 +423,12 @@ export class Finder extends Evaluator {
       return earlyResult;
     }
     const [leaf] = leaves;
-    const tagName = unescapeSelector(leaf.name);
+    const tagName = this.getUnescapedName(leaf);
     if (
       targetType !== TARGET_FIRST &&
       !precede &&
       this.document.contentType === 'text/html' &&
-      typeof this.node.getElementsByTagName === 'function' &&
-      tagName.indexOf('|') === -1
+      canUseFastTagSearch(this.node, tagName)
     ) {
       this.matchLeaves(leaves, this.node, this.matchOpts);
       const collection = this.node.getElementsByTagName(tagName);

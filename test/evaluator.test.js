@@ -273,6 +273,36 @@ describe('Evaluator', () => {
     });
   });
 
+  describe('getUnescapedName', () => {
+    it('should unescape AST name property correctly', () => {
+      const evaluator = new Evaluator(window);
+      const ast = {
+        name: 'foo\\ bar',
+        type: CLASS_SELECTOR
+      };
+
+      const result = evaluator.getUnescapedName(ast);
+      assert.strictEqual(result, 'foo bar', 'unescaped name');
+    });
+
+    it('should return cached name on repeated calls for the same AST node', () => {
+      const evaluator = new Evaluator(window);
+      const ast = {
+        name: 'test\\-class',
+        type: CLASS_SELECTOR
+      };
+      const firstResult = evaluator.getUnescapedName(ast);
+      assert.strictEqual(firstResult, 'test-class', 'first result');
+      ast.name = 'mutated\\-name';
+      const secondResult = evaluator.getUnescapedName(ast);
+      assert.strictEqual(
+        secondResult,
+        'test-class',
+        'returns cached result despite AST name property mutation'
+      );
+    });
+  });
+
   describe('create tree walker', () => {
     it('should create a TreeWalker with document as root', () => {
       const evaluator = new Evaluator(window);
