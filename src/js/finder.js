@@ -650,15 +650,14 @@ export class Finder extends Evaluator {
       return this.#processComplexBranchFirstNext(
         branch,
         entryNodes,
-        lastIndex,
         targetType
       );
     } else {
       return this.#processComplexBranchFirstPrev(
         branch,
         entryNodes,
-        lastIndex,
-        targetType
+        targetType,
+        lastIndex
       );
     }
   }
@@ -668,11 +667,10 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('./processor.js').ProcessedBranch>} branch - The selector branch.
    * @param {Array<Element>} entryNodes - The entry nodes.
-   * @param {number} lastIndex - The last index of the branch.
    * @param {string} targetType - The target type.
    * @returns {Element|null} The matched node or null if not found.
    */
-  #processComplexBranchFirstNext(branch, entryNodes, lastIndex, targetType) {
+  #processComplexBranchFirstNext(branch, entryNodes, targetType) {
     const { combo: entryCombo } = branch[0];
     for (const node of entryNodes) {
       const matchedNode = this.#matchNodeNext(node, branch, 1, entryCombo);
@@ -745,11 +743,11 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('./processor.js').ProcessedBranch>} branch - The selector branch.
    * @param {Array<Element>} entryNodes - The entry nodes.
-   * @param {number} lastIndex - The last index of the branch.
    * @param {string} targetType - The target type.
+   * @param {number} lastIndex - The last index of the branch.
    * @returns {Element|null} The matched node or null if not found.
    */
-  #processComplexBranchFirstPrev(branch, entryNodes, lastIndex, targetType) {
+  #processComplexBranchFirstPrev(branch, entryNodes, targetType, lastIndex) {
     for (const node of entryNodes) {
       if (this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
         return node;
