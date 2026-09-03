@@ -56,7 +56,10 @@ const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
-const REG_EXACT_ID_ATTRIBUTE = /^\[id="([^"\\]+)"\]$/u;
+// Space and printable ASCII except double quotes and backslashes,
+// plus non-ASCII Unicode scalar values.
+const REG_EXACT_ID_ATTRIBUTE =
+  /^\[id="([\x20\x21\x23-\x5b\x5d-\x7e\u0080-\ud7ff\ue000-\u{10ffff}]+)"\]$/u;
 const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**
@@ -963,28 +966,19 @@ export const hasAttributeLocalName = (node, name) => {
  */
 export const findByExactIdAttribute = (selector, node) => {
   if (typeof selector !== 'string') {
-    return undefined;
+    return;
   }
   if (!selector.startsWith('[id="')) {
-    return undefined;
+    return;
   }
   if (!node?.nodeType) {
-    return undefined;
+    return;
   }
   const match = REG_EXACT_ID_ATTRIBUTE.exec(selector);
   if (!match) {
-    return undefined;
+    return;
   }
   const [, id] = match;
-  if (!id.isWellFormed()) {
-    return undefined;
-  }
-  for (let i = 0; i < id.length; i++) {
-    const codeUnit = id.charCodeAt(i);
-    if (codeUnit <= 0x1f || codeUnit === 0x7f) {
-      return undefined;
-    }
-  }
   if (node.nodeType === DOCUMENT_NODE) {
     return node.getElementById(id);
   }
@@ -992,7 +986,7 @@ export const findByExactIdAttribute = (selector, node) => {
     node.nodeType !== ELEMENT_NODE ||
     node.getRootNode() !== node.ownerDocument
   ) {
-    return undefined;
+    return;
   }
   const candidate = node.ownerDocument.getElementById(id);
   if (candidate === null) {
@@ -1001,7 +995,6 @@ export const findByExactIdAttribute = (selector, node) => {
   if (candidate !== node && node.contains(candidate)) {
     return candidate;
   }
-  return undefined;
 };
 
 /**

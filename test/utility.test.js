@@ -2571,11 +2571,14 @@ describe('utility functions', () => {
     it('should find an exact ID in document and element contexts', () => {
       const root = document.createElement('div');
       const target = root.appendChild(document.createElement('span'));
-      target.id = 'base-ui-«r1»-label';
       document.body.appendChild(root);
-      const selector = '[id="base-ui-«r1»-label"]';
-      assert.strictEqual(func(selector, document), target, 'Document');
-      assert.strictEqual(func(selector, root), target, 'Element');
+      const ids = ['base-ui-«r1»-label', 'punctuation-[]=', 'emoji-😀'];
+      for (const id of ids) {
+        target.id = id;
+        const selector = `[id="${id}"]`;
+        assert.strictEqual(func(selector, document), target, `Document: ${id}`);
+        assert.strictEqual(func(selector, root), target, `Element: ${id}`);
+      }
     });
 
     it('should return null when the document has no matching ID', () => {
@@ -2618,6 +2621,8 @@ describe('utility functions', () => {
         ['single-quoted value', "[id='target']", document],
         ['uppercase name', '[ID="target"]', document],
         ['control character', `[id="${String.fromCharCode(0)}"]`, document],
+        ['newline', '[id="\n"]', document],
+        ['delete character', `[id="${String.fromCharCode(0x7f)}"]`, document],
         ['lone surrogate', `[id="${String.fromCharCode(0xd800)}"]`, document],
         ['detached Element', '[id="target"]', detached],
         ['DocumentFragment', '[id="target"]', fragment],

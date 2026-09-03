@@ -281,7 +281,7 @@ export class DOMSelector {
       return node.firstElementChild;
     }
     const fastNode = findByExactIdAttribute(selector, node);
-    if (fastNode !== undefined) {
+    if (fastNode === null || fastNode?.nodeType === ELEMENT_NODE) {
       return fastNode;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
