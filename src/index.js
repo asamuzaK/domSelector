@@ -17,6 +17,7 @@ import {
 } from './js/selector.js';
 import {
   collectAllDescendants,
+  findByExactIdAttribute,
   findBySimpleAttribute,
   getType
 } from './js/utility.js';
@@ -278,6 +279,10 @@ export class DOMSelector {
     }
     if (REG_UNIVERSAL.test(selector)) {
       return node.firstElementChild;
+    }
+    const fastNode = findByExactIdAttribute(selector, node);
+    if (fastNode !== undefined) {
+      return fastNode;
     }
     const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
     if (nodes && nodes.size) {

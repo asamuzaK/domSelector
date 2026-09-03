@@ -1345,12 +1345,133 @@ describe('DOMSelector', () => {
       assert.deepEqual(res, target, 'result');
     });
 
-    it('should query single element matching attribute selector', () => {
-      const node = document.getElementById('div1');
+    it('should query exact ID attributes in document and element contexts', () => {
+      const root = document.getElementById('div1');
       const target = document.getElementById('dt1');
+      target.id = 'base-ui-«r1»-label';
       const domSelector = new DOMSelector(window);
-      const res = domSelector.querySelector('[id="dt1"]', node);
-      assert.deepEqual(res, target, 'result');
+      const selector = '[id="base-ui-«r1»-label"]';
+      assert.strictEqual(domSelector.querySelector(selector, document), target);
+      assert.strictEqual(domSelector.querySelector(selector, root), target);
+
+      target.id = 'updated';
+      assert.strictEqual(domSelector.querySelector(selector, document), null);
+      assert.strictEqual(
+        domSelector.querySelector('[id="updated"]', document),
+        target
+      );
+    });
+
+    it('should handle duplicate IDs in element contexts', () => {
+      const outside = document.createElement('div');
+      outside.id = 'duplicate';
+      const root = document.createElement('div');
+      const inside = root.appendChild(document.createElement('span'));
+      inside.id = 'duplicate';
+      document.body.append(outside, root);
+      const domSelector = new DOMSelector(window);
+      assert.strictEqual(
+        domSelector.querySelector('[id="duplicate"]', root),
+        inside,
+        'first document match is outside the context'
+      );
+
+      root.id = 'context';
+      const child = root.appendChild(document.createElement('span'));
+      child.id = 'context';
+      assert.strictEqual(
+        domSelector.querySelector('[id="context"]', root),
+        child,
+        'context cannot select itself'
+      );
+    });
+
+    it('should query exact ID attributes outside the document tree', () => {
+      const detached = document.createElement('div');
+      const detachedTarget = detached.appendChild(
+        document.createElement('span')
+      );
+      detachedTarget.id = 'detached';
+      const domSelector = new DOMSelector(window);
+      assert.strictEqual(
+        domSelector.querySelector('[id="detached"]', detached),
+        detachedTarget,
+        'result'
+      );
+    });
+
+    it('should defer exact ID selectors that require CSS parsing', () => {
+      const target = document.body.appendChild(document.createElement('div'));
+      const domSelector = new DOMSelector(window);
+
+      const cases = [
+        ['', '[id=""]'],
+        ['quote"value', '[id="quote\\"value"]']
+      ];
+      for (const [id, selector] of cases) {
+        target.id = id;
+        assert.strictEqual(
+          domSelector.querySelector(selector, document),
+          target
+        );
+      }
+    });
+
+    it('should only match exact ID attributes in the null namespace', () => {
+      const namespaced = document.createElement('div');
+      namespaced.setAttributeNS('urn:test', 'x:id', 'target');
+      const nonLowercase = document.createElement('div');
+      nonLowercase.setAttributeNS(null, 'ID', 'non-lowercase');
+      document.body.append(namespaced, nonLowercase);
+      const domSelector = new DOMSelector(window);
+      assert.strictEqual(
+        domSelector.querySelector('[id="target"]', document),
+        null,
+        'namespaced attribute'
+      );
+      assert.strictEqual(
+        domSelector.querySelector('[id="non-lowercase"]', document),
+        null,
+        'non-lowercase attribute'
+      );
+
+      const target = document.body.appendChild(
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      );
+      target.id = 'target';
+      assert.strictEqual(
+        domSelector.querySelector('[id="target"]', document),
+        target,
+        'null-namespace attribute'
+      );
+
+      const xmlDocument = new window.DOMParser().parseFromString(
+        '<root><target id="case-sensitive"/></root>',
+        'text/xml'
+      );
+      assert.strictEqual(
+        domSelector.querySelector('[id="case-sensitive"]', xmlDocument),
+        xmlDocument.documentElement.firstElementChild,
+        'XML document'
+      );
+    });
+
+    it('should query exact ID attributes after adoption', () => {
+      const target = document.body.appendChild(document.createElement('div'));
+      target.id = 'adopted';
+      const domSelector = new DOMSelector(window);
+      const otherDocument = document.implementation.createHTMLDocument();
+      otherDocument.body.appendChild(target);
+      assert.strictEqual(
+        domSelector.querySelector('[id="adopted"]', document),
+        null,
+        'old document'
+      );
+      assert.strictEqual(
+        domSelector.querySelector('[id="adopted"]', otherDocument),
+        target,
+        'new document'
+      );
     });
 
     // FIXME

@@ -2565,6 +2565,72 @@ describe('utility functions', () => {
     });
   });
 
+  describe('findByExactIdAttribute', () => {
+    const func = util.findByExactIdAttribute;
+
+    it('should find an exact ID in document and element contexts', () => {
+      const root = document.createElement('div');
+      const target = root.appendChild(document.createElement('span'));
+      target.id = 'base-ui-«r1»-label';
+      document.body.appendChild(root);
+      const selector = '[id="base-ui-«r1»-label"]';
+      assert.strictEqual(func(selector, document), target, 'Document');
+      assert.strictEqual(func(selector, root), target, 'Element');
+    });
+
+    it('should return null when the document has no matching ID', () => {
+      assert.strictEqual(func('[id="missing"]', document), null, 'result');
+      const root = document.body.appendChild(document.createElement('div'));
+      assert.strictEqual(func('[id="missing"]', root), null, 'Element');
+    });
+
+    it('should defer when the first document match cannot answer an element query', () => {
+      const outside = document.createElement('div');
+      outside.id = 'duplicate';
+      const root = document.createElement('div');
+      const inside = root.appendChild(document.createElement('span'));
+      inside.id = 'duplicate';
+      document.body.append(outside, root);
+      assert.strictEqual(
+        func('[id="duplicate"]', root),
+        undefined,
+        'first match outside context'
+      );
+
+      root.id = 'context';
+      assert.strictEqual(
+        func('[id="context"]', root),
+        undefined,
+        'context cannot select itself'
+      );
+    });
+
+    it('should defer unsupported selectors and query contexts', () => {
+      const detached = document.createElement('div');
+      const fragment = document.createDocumentFragment();
+      const host = document.body.appendChild(document.createElement('div'));
+      const shadow = host.attachShadow({ mode: 'open' });
+      const cases = [
+        ['empty value', '[id=""]', document],
+        ['escaped quote', '[id="quote\\"value"]', document],
+        ['escaped backslash', '[id="back\\\\slash"]', document],
+        ['unquoted value', '[id=target]', document],
+        ['single-quoted value', "[id='target']", document],
+        ['uppercase name', '[ID="target"]', document],
+        ['control character', `[id="${String.fromCharCode(0)}"]`, document],
+        ['lone surrogate', `[id="${String.fromCharCode(0xd800)}"]`, document],
+        ['detached Element', '[id="target"]', detached],
+        ['DocumentFragment', '[id="target"]', fragment],
+        ['ShadowRoot', '[id="target"]', shadow],
+        ['non-string selector', undefined, document],
+        ['invalid node', '[id="target"]', {}]
+      ];
+      for (const [label, selector, context] of cases) {
+        assert.strictEqual(func(selector, context), undefined, label);
+      }
+    });
+  });
+
   describe('findBySimpleAttribute', () => {
     const func = util.findBySimpleAttribute;
 

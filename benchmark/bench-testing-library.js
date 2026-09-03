@@ -60,6 +60,17 @@ const targetRole = document.createElement('div');
 targetRole.setAttribute('data-role', 'component tile active'); // スペース区切りの複数値
 root.appendChild(targetRole);
 
+const labelElements = [...root.querySelectorAll('div[data-testid]')].slice(
+  0,
+  24
+);
+const labelledControls = [...root.querySelectorAll('input')].slice(0, 24);
+for (let i = 0; i < labelledControls.length; i++) {
+  const id = `base-ui-«r${i}»-label`;
+  labelElements[i].id = id;
+  labelledControls[i].setAttribute('aria-labelledby', id);
+}
+
 const totalElements = document.querySelectorAll('*').length;
 
 const domSelector = new DOMSelector(window);
@@ -71,6 +82,13 @@ const rootImpl = idlUtils.implForWrapper(root);
 const implicitRoleCandidates = [...document.querySelectorAll('input')].map(
   idlUtils.implForWrapper
 );
+
+function resolveLabels(selectorEngine, context) {
+  for (const control of labelledControls) {
+    const id = control.getAttribute('aria-labelledby');
+    selectorEngine.querySelector(`[id="${id}"]`, context);
+  }
+}
 
 console.log(`=======================================`);
 console.log(`DOMSelector Testing Library Queries Benchmark`);
@@ -106,6 +124,10 @@ group(`Testing Library Typical Queries (document)`, () => {
   bench(`[title="target-title"], svg title`, () => {
     domSelector.querySelectorAll('[title="target-title"], svg title', document);
   });
+
+  bench(`24 aria-labelledby ID references`, () => {
+    resolveLabels(domSelector, document);
+  });
 });
 
 group(`Testing Library Typical Queries (Element)`, () => {
@@ -136,6 +158,10 @@ group(`Testing Library Typical Queries (Element)`, () => {
   bench(`[title="target-title"], svg title`, () => {
     domSelector.querySelectorAll('[title="target-title"], svg title', root);
   });
+
+  bench(`24 aria-labelledby ID references`, () => {
+    resolveLabels(domSelector, root);
+  });
 });
 
 group(`Testing Library Implicit Role Matching (jsdom)`, () => {
@@ -151,6 +177,10 @@ group(`Testing Library Implicit Role Matching (jsdom)`, () => {
     for (const candidate of implicitRoleCandidates) {
       jsdomSelector.matches('input:not([type]):not([list])', candidate);
     }
+  });
+
+  bench(`24 aria-labelledby ID references`, () => {
+    resolveLabels(jsdomSelector, rootImpl);
   });
 });
 
