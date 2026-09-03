@@ -56,10 +56,7 @@ const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
-// Space and printable ASCII except double quotes and backslashes,
-// plus non-ASCII Unicode scalar values.
-const REG_EXACT_ID_ATTRIBUTE =
-  /^\[id="([\x20\x21\x23-\x5b\x5d-\x7e\u0080-\ud7ff\ue000-\u{10ffff}]+)"\]$/u;
+const REG_EXACT_ID_ATTRIBUTE = /^\[id="([\x21\x23-\x5b\x5d-\x7e«»]+)"\]$/;
 const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**

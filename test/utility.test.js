@@ -2572,7 +2572,7 @@ describe('utility functions', () => {
       const root = document.createElement('div');
       const target = root.appendChild(document.createElement('span'));
       document.body.appendChild(root);
-      const ids = ['base-ui-«r1»-label', 'punctuation-[]=', 'emoji-😀'];
+      const ids = ['base-ui-«r1»-label', 'punctuation-[]='];
       for (const id of ids) {
         target.id = id;
         const selector = `[id="${id}"]`;
@@ -2623,6 +2623,8 @@ describe('utility functions', () => {
         ['control character', `[id="${String.fromCharCode(0)}"]`, document],
         ['newline', '[id="\n"]', document],
         ['delete character', `[id="${String.fromCharCode(0x7f)}"]`, document],
+        ['space', '[id="with space"]', document],
+        ['other Unicode', '[id="emoji-😀"]', document],
         ['lone surrogate', `[id="${String.fromCharCode(0xd800)}"]`, document],
         ['detached Element', '[id="target"]', detached],
         ['DocumentFragment', '[id="target"]', fragment],
