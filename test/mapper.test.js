@@ -240,19 +240,15 @@ describe('Mapper', () => {
       // Fetch again to ensure cache hit
       processorStub.resetHistory();
       const [ast2] = mapper.correspond(selector);
-      assert.strictEqual(
-        processorStub.notCalled, 
-        true, 
-        'Should hit the cache'
-      );
+      assert.strictEqual(processorStub.notCalled, true, 'Should hit the cache');
       assert.notStrictEqual(
-        ast1[0], 
-        ast2[0], 
+        ast1[0],
+        ast2[0],
         'Should return entirely different wrapper instances'
       );
       assert.strictEqual(
-        ast2[0].find, 
-        false, 
+        ast2[0].find,
+        false,
         'Fresh wrapper should not be affected by previous state mutations'
       );
     });
