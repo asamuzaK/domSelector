@@ -266,6 +266,20 @@ export class Evaluator {
   }
 
   /**
+   * Gets the unescaped name of an AST node from the cache.
+   * @param {import('css-tree').CssNode} ast - The AST node.
+   * @returns {string} The unescaped name.
+   */
+  getUnescapedName(ast) {
+    let name = this.#unescapedCache.get(ast);
+    if (name === undefined) {
+      name = unescapeSelector(ast.name);
+      this.#unescapedCache.set(ast, name);
+    }
+    return name;
+  }
+
+  /**
    * Evaluates shadow host pseudo-classes.
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {DocumentFragment} node - The DocumentFragment node.
@@ -339,10 +353,10 @@ export class Evaluator {
         return matchAttributeSelector(ast, node, opt);
       }
       case ID_SELECTOR: {
-        return node.id === this.#getUnescapedName(ast);
+        return node.id === this.getUnescapedName(ast);
       }
       case CLASS_SELECTOR: {
-        const astName = this.#getUnescapedName(ast);
+        const astName = this.getUnescapedName(ast);
         return node.classList.contains(astName);
       }
       case NEST_SELECTOR: {
@@ -369,7 +383,7 @@ export class Evaluator {
             this.pseudoElements.push(css);
             return true;
           } else {
-            const astName = this.#getUnescapedName(ast);
+            const astName = this.getUnescapedName(ast);
             matchPseudoElementSelector(astName, astType, opt);
           }
         } catch (e) {
@@ -378,19 +392,5 @@ export class Evaluator {
       }
     }
     return false;
-  }
-
-  /**
-   * Gets the unescaped name of an AST node from the cache.
-   * @param {import('css-tree').CssNode} ast - The AST node.
-   * @returns {string} The unescaped name.
-   */
-  #getUnescapedName(ast) {
-    let name = this.#unescapedCache.get(ast);
-    if (name === undefined) {
-      name = unescapeSelector(ast.name);
-      this.#unescapedCache.set(ast, name);
-    }
-    return name;
   }
 }
