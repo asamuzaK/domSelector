@@ -694,16 +694,18 @@ export class PseudoClassEvaluator {
     ) {
       return false;
     }
+    if (node.disabled || node.hasAttribute('disabled')) {
+      return astName === 'disabled';
+    }
     if (!this.#psDisabledCache) {
-      this.#psDisabledCache = new WeakSet();
+      this.#psDisabledCache = new WeakMap();
     }
     let isDisabled = this.#psDisabledCache.get(node);
     if (isDisabled !== undefined) {
-      return isDisabled;
-    }
-    if (node.disabled || node.hasAttribute('disabled')) {
-      this.#psDisabledCache.add(node);
-      return astName === 'disabled';
+      if (astName === 'disabled') {
+        return isDisabled;
+      }
+      return !isDisabled;
     }
     isDisabled = false;
     if (localName === 'option') {
@@ -738,7 +740,7 @@ export class PseudoClassEvaluator {
       }
     }
     if (isDisabled) {
-      this.#psDisabledCache.add(node);
+      this.#psDisabledCache.set(node, isDisabled);
     }
     if (astName === 'disabled') {
       return isDisabled;
