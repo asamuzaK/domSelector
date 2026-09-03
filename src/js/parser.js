@@ -350,12 +350,12 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
         ) {
           const itemList = list.filter(i => {
             const { children, name, type } = i;
-            const res =
+            return (
               type === PS_CLASS_SELECTOR &&
               KEYS_SHADOW_HOST.has(name) &&
               Array.isArray(children) &&
-              children.length;
-            return res;
+              children.length
+            );
           });
           for (const { children } of itemList) {
             // Selector
@@ -371,9 +371,9 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
         ) {
           const itemList = list.filter(i => {
             const { name, type } = i;
-            const res =
-              type === PS_ELEMENT_SELECTOR && REG_SHADOW_PS_ELEMENT.test(name);
-            return res;
+            return (
+              type === PS_ELEMENT_SELECTOR && REG_SHADOW_PS_ELEMENT.test(name)
+            );
           });
           for (const { children } of itemList) {
             // Selector
@@ -386,8 +386,7 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
         } else if (node.type === NTH && node.selector) {
           const itemList = list.filter(i => {
             const { selector, type } = i;
-            const res = type === NTH && selector;
-            return res;
+            return type === NTH && selector;
           });
           for (const { selector } of itemList) {
             const { children } = selector;
@@ -482,15 +481,18 @@ export const extractSubjectsAst = ast => {
         if (node.type === COMBINATOR) {
           break;
         }
-        if (node.type === ID_SELECTOR) {
-          idKey = idKey ?? unescapeSelector(node.name);
-        } else if (node.type === CLASS_SELECTOR) {
-          classKey = classKey ?? unescapeSelector(node.name);
-        } else if (node.type === TYPE_SELECTOR) {
+        if (node.type === ID_SELECTOR && idKey === null) {
+          idKey = unescapeSelector(node.name);
+        } else if (node.type === CLASS_SELECTOR && classKey === null) {
+          classKey = unescapeSelector(node.name);
+        } else if (node.type === TYPE_SELECTOR && tagKey === null) {
           const { localName } = parseAstName(unescapeSelector(node.name));
           if (localName !== '*') {
-            tagKey = tagKey ?? localName.toLowerCase();
+            tagKey = localName.toLowerCase();
           }
+        }
+        if (idKey !== null && classKey !== null && tagKey !== null) {
+          break;
         }
         current = current.prev;
       }
