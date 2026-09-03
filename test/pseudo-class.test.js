@@ -1133,6 +1133,11 @@ describe('PseudoClassEvaluator', () => {
         true,
         'option inherits disabled state from optgroup'
       );
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(astEnabled, option, {}),
+        false,
+        'option inherits disabled state from optgroup'
+      );
     });
 
     it('should inherit disabled state from ancestor <fieldset>', () => {
@@ -1143,6 +1148,11 @@ describe('PseudoClassEvaluator', () => {
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(astDisabled, input, {}),
         true,
+        'input inherits disabled state from disabled fieldset'
+      );
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(asEnabled, input, {}),
+        false,
         'input inherits disabled state from disabled fieldset'
       );
     });
