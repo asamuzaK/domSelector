@@ -128,8 +128,9 @@ export class Evaluator {
       }
       throw new this.window.DOMException(e.message, e.name);
     }
-    if (e.name in this.window) {
-      throw new this.window[e.name](e.message, { cause: e });
+    const ErrorCtor = this.window[e.name];
+    if (typeof ErrorCtor === 'function') {
+      throw new ErrorCtor(e.message, { cause: e });
     }
     throw e;
   }
