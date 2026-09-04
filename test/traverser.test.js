@@ -49,7 +49,8 @@ describe('DOMTraverser', () => {
       root: document,
       shadow: false,
       matchLeaves: sinon.stub().returns(true),
-      getFilterLeaves: sinon.stub().returns([]) // デフォルトは isSimple = true
+      getFilterLeaves: sinon.stub().returns([]),
+      getUnescapedName: sinon.stub().callsFake(leaf => leaf.name)
     };
     traverser = new DOMTraverser(mockEvaluator);
   });
@@ -183,12 +184,9 @@ describe('DOMTraverser', () => {
 
     it('should yield matching previous siblings for "~" combinator (DIR_PREV)', () => {
       const twig = { combo: { name: '~' }, leaves: [] };
-
-      // DIR_PREV を指定して前の兄弟要素を探索
       const result = [
         ...traverser.yieldCombinatorMatches(twig, target, { dir: DIR_PREV })
       ];
-
       assert.strictEqual(
         result.length,
         1,

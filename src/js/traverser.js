@@ -2,8 +2,8 @@
  * traverser.js
  */
 
+/* import */
 import { matchPseudoElementSelector } from './matcher.js';
-import { unescapeSelector } from './parser.js';
 import {
   canUseFastClassSearch,
   canUseFastIdSearch,
@@ -11,6 +11,7 @@ import {
   traverseNode
 } from './utility.js';
 
+/* constants */
 import {
   DIR_NEXT,
   ID_SELECTOR,
@@ -166,8 +167,9 @@ export class DOMTraverser {
    * @yields {Element} The matched node.
    */
   *yieldFindDescendantNodes(leaves, baseNode, opt) {
-    const [{ name, type: leafType }] = leaves;
-    const leafName = unescapeSelector(name);
+    const [leaf] = leaves;
+    const { type: leafType } = leaf;
+    const leafName = this.#evaluator.getUnescapedName(leaf);
     const filterLeaves = this.#evaluator.getFilterLeaves(leaves);
     const isSimple = filterLeaves.length === 0;
     switch (leafType) {
