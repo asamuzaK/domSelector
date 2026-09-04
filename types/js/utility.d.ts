@@ -24,5 +24,6 @@ export declare const findBestSeed: (nodes: any[], state?: object) => object;
 export declare const populateHasAllowlist: (current: object, list: WeakSet<any>, visitedAncestors: Set<any>) => void;
 export declare const collectAllDescendants: (node: Document | DocumentFragment | Element, document: Document) => Array<Element>;
 export declare const hasAttributeLocalName: (node: Element, name: string) => boolean;
+export declare const findByExactIdAttribute: (selector: string, node: Document | DocumentFragment | Element) => Element | null | undefined;
 export declare const findBySimpleAttribute: (selector: string, node: Document | DocumentFragment | Element) => Array<Element> | null;
 export declare const getTraversalStrategy: (branch: Array<object>, targetType: string, hasScope: boolean, scoped: boolean) => object;

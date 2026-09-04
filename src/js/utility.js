@@ -56,6 +56,8 @@ const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
+const REG_EXACT_ID_ATTRIBUTE =
+  /^\[id="([A-Za-z]\w*(?:-(?:\w*|\u00AB\w+\u00BB))*)"\]$/;
 const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**
@@ -951,6 +953,43 @@ export const hasAttributeLocalName = (node, name) => {
     }
   }
   return false;
+};
+
+/**
+ * Finds the first descendant for an exact ID attribute selector.
+ * @param {string} selector - The CSS selector to match against.
+ * @param {Document|DocumentFragment|Element} node - The node to find within.
+ * @returns {Element|null|undefined} The matching element, `null` if no ID exists,
+ * or `undefined` when the normal selector engine must be used.
+ */
+export const findByExactIdAttribute = (selector, node) => {
+  if (typeof selector !== 'string') {
+    return;
+  }
+  if (!node?.nodeType) {
+    return;
+  }
+  const match = REG_EXACT_ID_ATTRIBUTE.exec(selector);
+  if (!match) {
+    return;
+  }
+  const [, id] = match;
+  if (node.nodeType === DOCUMENT_NODE) {
+    return node.getElementById(id);
+  }
+  if (
+    node.nodeType !== ELEMENT_NODE ||
+    node.getRootNode() !== node.ownerDocument
+  ) {
+    return;
+  }
+  const candidate = node.ownerDocument.getElementById(id);
+  if (candidate === null) {
+    return null;
+  }
+  if (candidate !== node && node.contains(candidate)) {
+    return candidate;
+  }
 };
 
 /**
