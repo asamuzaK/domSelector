@@ -2054,10 +2054,10 @@ describe('domSelector regression tests', () => {
   });
 
   describe('#306 - https://github.com/asamuzaK/domSelector/issues/306', () => {
-    const html = `'<!doctype html>
+    const html = `<!doctype html>
     <body>
       <svg id="target" viewBox="0 0 10 10" preserveAspectRatio="xMidYMid" class="logo"></svg>
-    </body>'
+    </body>
     `;
 
     it('should match case sensitive attribute', () => {
@@ -2086,6 +2086,26 @@ describe('domSelector regression tests', () => {
       const target = document.getElementById('target');
       const res = document.querySelector('svg[preserveAspectRatio="xMidYMid"]');
       assert.deepEqual(res, target);
+    });
+  });
+
+  describe('#310 - https://github.com/asamuzaK/domSelector/issues/310', () => {
+    const html = `<!doctype html>
+    <body>
+      <div id="html1" viewBox="html-val"></div>
+      <svg id="svg1" viewBox="svg-val"></svg>
+    </body>`;
+
+    it('should match nodes length', () => {
+      const { document } = jsdom(html).window;
+      const res = document.querySelectorAll('[viewBox]');
+      assert.strictEqual(res.length, 2);
+    });
+
+    it('should match nodes length', () => {
+      const { document } = jsdom(html).window;
+      const res = document.querySelectorAll('[viewbox]');
+      assert.strictEqual(res.length, 1);
     });
   });
 });
