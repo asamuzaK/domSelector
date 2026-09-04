@@ -56,7 +56,8 @@ const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
-const REG_EXACT_ID_ATTRIBUTE = /^\[id="([\x21\x23-\x5b\x5d-\x7e«»]+)"\]$/;
+const REG_EXACT_ID_ATTRIBUTE =
+  /^\[id="([A-Za-z]\w*(?:-(?:\w*|\u00AB\w+\u00BB))*)"\]$/;
 const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
 
 /**
@@ -963,9 +964,6 @@ export const hasAttributeLocalName = (node, name) => {
  */
 export const findByExactIdAttribute = (selector, node) => {
   if (typeof selector !== 'string') {
-    return;
-  }
-  if (!selector.startsWith('[id="')) {
     return;
   }
   if (!node?.nodeType) {

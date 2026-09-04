@@ -2572,7 +2572,17 @@ describe('utility functions', () => {
       const root = document.createElement('div');
       const target = root.appendChild(document.createElement('span'));
       document.body.appendChild(root);
-      const ids = ['base-ui-«r1»-label', 'punctuation-[]='];
+      const ids = [
+        'foo',
+        'Foo',
+        'foo-bar',
+        'foo-bar_baz',
+        'foo-1-bar',
+        'foo-_bar-baz',
+        'foo-«bar»-baz',
+        'foo-«_bar»-baz',
+        'foo-«1»-bar'
+      ];
       for (const id of ids) {
         target.id = id;
         const selector = `[id="${id}"]`;
@@ -2615,9 +2625,15 @@ describe('utility functions', () => {
       const shadow = host.attachShadow({ mode: 'open' });
       const cases = [
         ['empty value', '[id=""]', document],
+        ['unquoted value', '[id=foo]', document],
+        ['qualified selector', 'a[id="foo"]', document],
+        ['leading digit', '[id="1-foo"]', document],
+        ['empty guillemets', '[id="foo-«»-bar"]', document],
+        ['hyphen in guillemets', '[id="foo-«bar-baz»-qux"]', document],
+        ['period', '[id="foo.bar"]', document],
+        ['braces', '[id="foo-{}-bar"]', document],
         ['escaped quote', '[id="quote\\"value"]', document],
         ['escaped backslash', '[id="back\\\\slash"]', document],
-        ['unquoted value', '[id=target]', document],
         ['single-quoted value', "[id='target']", document],
         ['uppercase name', '[ID="target"]', document],
         ['control character', `[id="${String.fromCharCode(0)}"]`, document],
