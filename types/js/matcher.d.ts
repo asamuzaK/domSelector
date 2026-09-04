@@ -3,21 +3,21 @@ export declare const matchPseudoElementSelector: (astName: string, astType: stri
     globalObject?: object;
     warn?: boolean;
 }) => void;
-export declare const matchDirectionPseudoClass: (ast: object, node: object, dirCache?: WeakMap<any, any>) => boolean;
-export declare const matchLanguagePseudoClass: (ast: object, node: object, langCache?: WeakMap<any, any>) => boolean;
-export declare const matchCheckedPseudoClass: (node: object) => boolean;
-export declare const matchLinkPseudoClass: (node: object) => boolean;
-export declare const matchOpenPseudoClass: (node: object) => boolean;
-export declare const matchPlaceholderShownPseudoClass: (node: object, keys: Set<string>) => boolean;
-export declare const matchRangePseudoClass: (astName: string, node: object, keys: Set<string>) => boolean;
-export declare const matchReadOnlyPseudoClass: (astName: string, node: object) => boolean;
-export declare const matchRequiredPseudoClass: (astName: string, node: object, keys: Set<string>) => boolean;
-export declare const matchAttributeSelector: (ast: object, node: object, { check, forgive, globalObject }?: {
+export declare const matchDirectionPseudoClass: (ast: import('css-tree').CssNode, node: Element, dirCache?: WeakMap<any, any>) => boolean;
+export declare const matchLanguagePseudoClass: (ast: import('css-tree').CssNode, node: Element, langCache?: WeakMap<any, any>) => boolean;
+export declare const matchCheckedPseudoClass: (node: Element) => boolean;
+export declare const matchLinkPseudoClass: (node: Element) => boolean;
+export declare const matchOpenPseudoClass: (node: Element) => boolean;
+export declare const matchPlaceholderShownPseudoClass: (node: Element, keys: Set<string>) => boolean;
+export declare const matchRangePseudoClass: (astName: string, node: Element, keys: Set<string>) => boolean;
+export declare const matchReadOnlyPseudoClass: (astName: string, node: Element) => boolean;
+export declare const matchRequiredPseudoClass: (astName: string, node: Element, keys: Set<string>) => boolean;
+export declare const matchAttributeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject }?: {
     check?: boolean;
     forgive?: boolean;
     globalObject?: object;
 }) => boolean;
-export declare const matchTypeSelector: (ast: object, node: object, { check, forgive, globalObject }?: {
+export declare const matchTypeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject }?: {
     check?: boolean;
     forgive?: boolean;
     globalObject?: object;

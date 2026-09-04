@@ -1,14 +1,15 @@
+export type ResolverFactory = (c: Element | Array<Element> | NodeList, f?: ((element: Element) => boolean | void), x?: Element | Document | null, r?: boolean | Array<Element>) => boolean | Array<Element>;
 export declare const concatCall: (nodes: Array<Element> | NodeList, callback?: ((element: Element) => boolean | void) | undefined) => Array<Element>;
 export declare const isHTML: (node: Element | Document) => boolean;
 export declare const isTarget: (node: Element) => boolean;
 export declare const isIndeterminate: (node: Element) => boolean;
 export declare const optimize: (selector: string, tokens: Array<string>) => string;
-export declare const matchAssert: (factory: Array<(c: Element, f?: ((element: Element) => boolean | void), x?: null, r?: boolean) => boolean>, element: Element, callback?: ((element: Element) => boolean | void) | undefined) => boolean;
+export declare const matchAssert: (factory: Array<ResolverFactory>, element: Element, callback?: ((element: Element) => boolean | void) | undefined) => boolean;
 export declare const solveNth: (element: Element, dir: boolean | number, state: object, isOfType: boolean) => number;
 export declare class Nwsapi {
     #private;
     hasDupes: boolean | undefined;
-    constructor(window: object, document: object, cacheSize?: number);
+    constructor(window: Window, document: Document, cacheSize?: number);
     private #documentOrder;
     private #unique;
     byId(id: string, context: Element | Document): Array<Element>;
@@ -51,7 +52,7 @@ export declare class Nwsapi {
     compilePseudoLocation(match: Array<string>, source: string): string;
     compilePseudoInputState(match: Array<string>, source: string): string;
     compilePseudoInputValue(match: Array<string>, source: string): string;
-    compile(selector: string, mode: boolean): (c: Element | Element[] | NodeList, f?: ((element: Element) => boolean | void), x?: Element | Document | null, r?: boolean | Element[]) => boolean | Element[];
+    compile(selector: string, mode: boolean): ResolverFactory;
     collect(selectors: Array<string>, context: Element | Document, callback?: ((element: Element) => boolean | void) | undefined): object;
     private #matchCollect;
     private #parseSelector;

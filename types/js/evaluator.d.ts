@@ -1,6 +1,7 @@
+import { EventHandler } from './event.js';
 export declare class Evaluator {
     #private;
-    window: object;
+    window: Window;
     documentCache: WeakMap<WeakKey, any>;
     check: boolean | undefined;
     noexcept: boolean | undefined;
@@ -8,34 +9,38 @@ export declare class Evaluator {
     matchOpts: {
         warn: boolean;
     } | undefined;
-    node: object | undefined;
+    node: Document | DocumentFragment | Element | undefined;
     pseudoElements: any[] | undefined;
     invalidate: boolean | undefined;
-    constructor(window: object);
-    setup(selector: string, node: object, opt?: {
+    constructor(window: Window);
+    get eventHandler(): EventHandler;
+    get verifyShadowHost(): boolean;
+    setup(selector: string, node: Document | DocumentFragment | Element, opt?: {
         check?: boolean;
         noexcept?: boolean;
         warn?: boolean;
-    }): object;
-    onError: (e: Error, opt?: {
+    }): Evaluator;
+    onError(e: Error, opt?: {
         noexcept?: boolean;
-    }) => void;
-    clearResults: (all?: boolean) => void;
-    matchSelector: (ast: object, node: object, opt: object) => boolean;
-    matchLeaves: (leaves: Array<object>, node: object, opt: object) => boolean;
-    getFilterLeaves: (leaves: Array<object>) => Array<object>;
-    evaluateShadowHost: (ast: object, node: object) => boolean;
-    matchPseudoClassSelector: (ast: object, node: object, opt?: {
+    }): void;
+    destroy(): void;
+    clearResults(all?: boolean): void;
+    matchSelector(ast: import('css-tree').CssNode, node: Document | DocumentFragment | Element, opt: object): boolean;
+    matchLeaves(leaves: Array<import('css-tree').CssNode>, node: Element, opt: object): boolean;
+    getFilterLeaves(leaves: Array<import('css-tree').CssNode>): Array<object>;
+    getUnescapedName(ast: import('css-tree').CssNode): string;
+    evaluateShadowHost(ast: import('css-tree').CssNode, node: DocumentFragment): boolean;
+    matchPseudoClassSelector(ast: import('css-tree').CssNode, node: Element, opt?: {
         forgive?: boolean;
         warn?: boolean;
-    }) => Set<object> | boolean;
-    createTreeWalker: (node: object, opt?: {
+    }): boolean;
+    createTreeWalker(node: Document | DocumentFragment | Element, opt?: {
         force?: boolean;
         whatToShow?: number;
-    }) => object;
-    yieldCombinatorMatches(twig: object, node: object, opt?: {
+    }): TreeWalker;
+    yieldCombinatorMatches(twig: import('./processor.js').ProcessedBranch, node: Element, opt?: {
         dir?: string;
     }): Generator<any, void, unknown>;
-    yieldTraverseAllDescendants(baseNode: object, leaves: Array<object>, opt: object): Generator<any, void, unknown>;
-    yieldFindDescendantNodes(leaves: Array<object>, baseNode: object, opt: object): Generator<any, void, unknown>;
+    yieldFindDescendantNodes(leaves: Array<import('css-tree').CssNode>, baseNode: DocumentFragment | Element, opt: object): Generator<any, void, unknown>;
+    private #matchSelectorForElement;
 }
