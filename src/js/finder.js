@@ -529,29 +529,18 @@ export class Finder extends Evaluator {
     if (!pendingItems.size) {
       return;
     }
-    if (!this.#rootWalker) {
-      this.#rootWalker = this.createTreeWalker(this.root);
-    }
     const node = this.#scoped ? this.node : this.root;
-    const walker = this.#rootWalker;
-    let nextNode = traverseNode(node, walker);
+    const walker = this.createTreeWalker(node, { force: true });
+    let nextNode = node;
     while (nextNode) {
-      const isWithinScope =
-        this.node.nodeType !== ELEMENT_NODE ||
-        nextNode === this.node ||
-        this.node.contains(nextNode);
-      if (isWithinScope) {
-        for (const pendingItem of pendingItems) {
-          const { leaves } = pendingItem.twig;
-          if (this.matchLeaves(leaves, nextNode, this.matchOpts)) {
-            const { index } = pendingItem;
-            this.#ast[index].filtered = true;
-            this.#ast[index].find = true;
-            this.#nodes[index].push(nextNode);
-          }
+      for (const pendingItem of pendingItems) {
+        const { leaves } = pendingItem.twig;
+        if (this.matchLeaves(leaves, nextNode, this.matchOpts)) {
+          const { index } = pendingItem;
+          this.#ast[index].filtered = true;
+          this.#ast[index].find = true;
+          this.#nodes[index].push(nextNode);
         }
-      } else if (this.#scoped) {
-        break;
       }
       nextNode = walker.nextNode();
     }
