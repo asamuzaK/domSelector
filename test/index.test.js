@@ -1874,6 +1874,22 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should keep attribute case rules separate for HTML and SVG', () => {
+      const root = document.createElement('div');
+      root.innerHTML =
+        '<input type="TEXT" data-probe><svg type="TEXT" data-probe></svg>';
+      document.body.appendChild(root);
+      const [input, svg] = root.children;
+      const domSelector = new DOMSelector(window);
+      const selector = '[type="text"][data-probe]';
+      const before = domSelector.querySelectorAll(selector, root);
+      assert.deepEqual(before, [input], 'HTML first');
+      root.prepend(svg);
+      domSelector.clear(true);
+      const after = domSelector.querySelectorAll(selector, root);
+      assert.deepEqual(after, [input], 'SVG first');
+    });
+
     it('should throw TypeError when querySelectorAll args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelectorAll(),
