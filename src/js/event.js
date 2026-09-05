@@ -31,7 +31,6 @@ export class EventHandler {
   #eventHandlers;
   #focusEvent;
   #lastFocusVisible;
-  #cleanupFunctions;
 
   /**
    * @param {Window} window - The window object.
