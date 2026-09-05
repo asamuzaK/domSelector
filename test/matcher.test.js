@@ -1666,6 +1666,93 @@ describe('matcher', () => {
   describe('match attribute selector', () => {
     const func = matcher.matchAttributeSelector;
 
+    describe('simple quoted equality', () => {
+      const createAST = (name, value, flags = null, type = STRING) => ({
+        type: ATTR_SELECTOR,
+        name: { type: IDENT, name },
+        matcher: '=',
+        flags,
+        value: type === STRING ? { type, value } : { type, name: value }
+      });
+
+      for (const name of [
+        'data-testid',
+        'aria-label',
+        'title',
+        'placeholder',
+        'data-x_1'
+      ]) {
+        it(`matches ${name} without materializing the attribute collection`, () => {
+          const node = document.createElement('div');
+          node.setAttribute(name, 'target');
+          Object.defineProperty(node, 'attributes', {
+            get() {
+              assert.fail('should not read the attribute collection');
+            }
+          });
+          assert.strictEqual(func(createAST(name, 'target'), node), true);
+          assert.strictEqual(func(createAST(name, 'other'), node), false);
+          assert.strictEqual(func(createAST('missing', ''), node), false);
+        });
+      }
+
+      for (const [name, flags, type] of [
+        ['DATA-TESTID', null, STRING],
+        ['data-testid', 'i', STRING],
+        ['data-testid', 's', STRING],
+        ['data-testid', null, IDENT],
+        ['lang', null, STRING],
+        ['type', null, STRING],
+        ['*|data-testid', null, STRING]
+      ]) {
+        it(`keeps the general matcher for ${name}, ${flags}, ${type}`, () => {
+          const node = document.createElement('div');
+          node.setAttribute(
+            name === '*|data-testid' ? 'data-testid' : name,
+            'target'
+          );
+          const attributes = node.attributes;
+          let reads = 0;
+          Object.defineProperty(node, 'attributes', {
+            get() {
+              reads++;
+              return attributes;
+            }
+          });
+          assert.strictEqual(
+            func(createAST(name, 'target', flags, type), node),
+            true
+          );
+          assert.ok(
+            reads > 0,
+            'general matching should read the attribute collection'
+          );
+        });
+      }
+
+      it('does not reuse HTML matching behavior for SVG or XML elements', () => {
+        const ast = createAST('data-testid', 'target');
+        const htmlNode = document.createElement('div');
+        htmlNode.setAttribute('data-testid', 'target');
+        assert.strictEqual(func(ast, htmlNode), true);
+        const svgNode = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'svg'
+        );
+        svgNode.setAttribute('DATA-TESTID', 'target');
+        assert.strictEqual(func(ast, svgNode), false);
+        svgNode.setAttribute('data-testid', 'target');
+        assert.strictEqual(func(ast, svgNode), true);
+        const xmlDocument = new window.DOMParser().parseFromString(
+          '<root DATA-TESTID="target"/>',
+          'application/xml'
+        );
+        assert.strictEqual(func(ast, xmlDocument.documentElement), false);
+        xmlDocument.documentElement.setAttribute('data-testid', 'target');
+        assert.strictEqual(func(ast, xmlDocument.documentElement), true);
+      });
+    });
+
     it('should throw SYNTAX_ERR for invalid attribute selector flag', () => {
       const ast = {
         flags: 'baz',

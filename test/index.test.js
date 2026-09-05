@@ -3495,3 +3495,128 @@ describe('patched JSDOM', () => {
     });
   });
 });
+
+describe('attribute equality fast path', () => {
+  let window, document, engine, element;
+  beforeEach(() => {
+    ({ window } = new JSDOM());
+    ({ document } = window);
+    engine = new DOMSelector(window);
+    element = document.createElement('div');
+    document.body.append(element);
+  });
+  afterEach(() => window.close());
+
+  it('matches duplicate qualified names in different namespaces', () => {
+    element.setAttribute('data-testid', 'other');
+    element.setAttributeNS('urn:test', 'data-testid', 'target');
+    assert.deepEqual(
+      engine.querySelectorAll('[data-testid="target"]', document),
+      [element]
+    );
+  });
+
+  it('matches a prefixed attribute after an ordinary value misses', () => {
+    element.setAttribute('data-testid', 'other');
+    element.setAttributeNS('urn:test', 'p:data-testid', 'target');
+    assert.deepEqual(
+      engine.querySelectorAll('[data-testid="target"]', document),
+      [element]
+    );
+  });
+
+  it('distinguishes an empty value from a missing attribute', () => {
+    assert.deepEqual(engine.querySelectorAll('[data-testid=""]', document), []);
+    element.setAttribute('data-testid', '');
+    assert.deepEqual(engine.querySelectorAll('[data-testid=""]', document), [
+      element
+    ]);
+  });
+
+  it('updates after matching values change and subtrees are replaced', () => {
+    const query = () =>
+      engine.querySelectorAll('[data-testid="target"]', document);
+    element.setAttribute('data-testid', 'target');
+    assert.deepEqual(query(), [element]);
+    element.setAttribute('data-testid', 'other');
+    engine.clear();
+    assert.deepEqual(query(), []);
+    const replacement = element.cloneNode();
+    replacement.setAttribute('data-testid', 'target');
+    element.replaceWith(replacement);
+    engine.clear();
+    assert.deepEqual(query(), [replacement]);
+  });
+
+  it('preserves case flags and HTML attribute value rules', () => {
+    element.setAttribute('data-testid', 'TARGET');
+    assert.deepEqual(
+      engine.querySelectorAll('[data-testid="target"]', document),
+      []
+    );
+    assert.deepEqual(
+      engine.querySelectorAll('[data-testid="target" i]', document),
+      [element]
+    );
+    assert.deepEqual(
+      engine.querySelectorAll('[data-testid="target" s]', document),
+      []
+    );
+    const input = document.createElement('input');
+    input.setAttribute('type', 'TEXT');
+    document.body.append(input);
+    assert.deepEqual(engine.querySelectorAll('[type="text"]', document), [
+      input
+    ]);
+  });
+
+  for (const selector of [
+    '[data-testid="target" z]',
+    '[data-testid="target"] garbage|node',
+    '[data-testid="target"]:not(',
+    '[data-testid="target"],'
+  ]) {
+    it(`still validates ${selector} before matching`, () => {
+      element.setAttribute('data-testid', 'target');
+      for (const method of [
+        'querySelector',
+        'querySelectorAll',
+        'matches',
+        'closest'
+      ]) {
+        assert.throws(
+          () =>
+            engine[method](
+              selector,
+              method.startsWith('query') ? document : element
+            ),
+          {
+            name: 'SyntaxError'
+          }
+        );
+      }
+    });
+  }
+
+  for (const value of ['a b', '«label»', 'a\u0000b']) {
+    it(`preserves parsed string handling for ${JSON.stringify(value)}`, () => {
+      element.setAttribute('data-testid', value.replaceAll('\u0000', '\uFFFD'));
+      assert.deepEqual(
+        engine.querySelectorAll(`[data-testid="${value}"]`, document),
+        [element]
+      );
+    });
+  }
+
+  it('preserves escaped attribute names and values', () => {
+    element.setAttribute('data-testid', 'target');
+    assert.deepEqual(
+      engine.querySelectorAll(String.raw`[data-\74 estid="target"]`, document),
+      [element]
+    );
+    assert.deepEqual(
+      engine.querySelectorAll(String.raw`[data-testid="\74 arget"]`, document),
+      [element]
+    );
+  });
+});

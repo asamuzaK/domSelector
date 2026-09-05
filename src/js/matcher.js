@@ -31,6 +31,8 @@ const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 /* regexp */
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
+const REG_EQUALITY_ATTRIBUTE_NAME = /^[a-z][a-z0-9_-]*$/;
+
 /* cache */
 const astMetaCache = new WeakMap();
 
@@ -405,9 +407,42 @@ export const matchAttributeSelector = (
   let meta = astMetaCache.get(ast);
   if (meta === undefined) {
     meta = {
-      attrValues: new Set()
+      attrValues: new Set(),
+      equalityName:
+        astMatcher === '=' &&
+        !astFlags &&
+        astValue?.type === STRING &&
+        typeof astValue.value === 'string' &&
+        typeof astName.name === 'string' &&
+        REG_EQUALITY_ATTRIBUTE_NAME.test(astName.name) &&
+        astName.name !== 'lang' &&
+        !KEYS_ATTR_VALUE_I.has(astName.name)
+          ? astName.name
+          : null
     };
     astMetaCache.set(ast, meta);
+  }
+  // Parsing and flag validation still run before this matching shortcut.
+  if (isHTML && meta.equalityName !== null) {
+    const name = meta.equalityName;
+    if (node.getAttribute(name) === astValue.value) {
+      return true;
+    }
+    // Prefixed or duplicate names can hide another matching attribute.
+    let occurrences = 0;
+    let needsFallback = false;
+    for (const attributeName of node.getAttributeNames()) {
+      if (
+        attributeName.includes(':') ||
+        (attributeName === name && ++occurrences > 1)
+      ) {
+        needsFallback = true;
+        break;
+      }
+    }
+    if (!needsFallback) {
+      return false;
+    }
   }
   if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
     if (meta.astName === undefined) {
