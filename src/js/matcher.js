@@ -34,6 +34,7 @@ const REG_ATTR_EQUALITY_NAME = /^[a-z][a-z0-9_-]*$/;
 
 /* cache */
 const astMetaCache = new WeakMap();
+const htmlAttrMetaCache = new WeakMap();
 
 /**
  * Validates a pseudo-element selector.
@@ -404,7 +405,8 @@ export const matchAttributeSelector = (
   }
   const astRawName = astName?.name;
   const isHTML = isHTMLElement(node);
-  let meta = astMetaCache.get(ast);
+  const metaCache = isHTML ? htmlAttrMetaCache : astMetaCache;
+  let meta = metaCache.get(ast);
   if (meta === undefined) {
     meta = {
       attrValues: new Set(),
@@ -421,7 +423,7 @@ export const matchAttributeSelector = (
     ) {
       meta.equalityName = astRawName;
     }
-    astMetaCache.set(ast, meta);
+    metaCache.set(ast, meta);
   }
   // Parsing and flag validation still run before this matching shortcut.
   if (isHTML && meta.equalityName !== null) {
