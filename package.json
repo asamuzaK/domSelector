@@ -58,7 +58,6 @@
   },
   "scripts": {
     "bench": "node --expose-gc benchmark/bench.js",
-    "bench:attribute-mutations": "node --expose-gc benchmark/bench-attribute-mutations.js",
     "bench:cache": "node --expose-gc benchmark/bench-cache.js",
     "bench:nwsapi": "node --expose-gc benchmark/bench-nwsapi.js",
     "bench:ps-form": "node --expose-gc benchmark/bench-default.js && node --expose-gc benchmark/bench-indeterminate.js && node --expose-gc benchmark/bench-valid-invalid.js",

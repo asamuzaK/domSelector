@@ -408,18 +408,15 @@ export const matchAttributeSelector = (
   if (meta === undefined) {
     meta = {
       attrValues: new Set(),
-      equalityName:
-        astMatcher === '=' &&
-        !astFlags &&
-        astValue?.type === STRING &&
-        typeof astValue.value === 'string' &&
-        typeof astName.name === 'string' &&
-        REG_EQUALITY_ATTRIBUTE_NAME.test(astName.name) &&
-        astName.name !== 'lang' &&
-        !KEYS_ATTR_VALUE_I.has(astName.name)
-          ? astName.name
-          : null
+      equalityName: null
     };
+    if (astMatcher === '=' && !astFlags && astValue?.type === STRING) {
+      const name = astName.name;
+      const caseSensitive = name !== 'lang' && !KEYS_ATTR_VALUE_I.has(name);
+      if (caseSensitive && REG_EQUALITY_ATTRIBUTE_NAME.test(name)) {
+        meta.equalityName = name;
+      }
+    }
     astMetaCache.set(ast, meta);
   }
   // Parsing and flag validation still run before this matching shortcut.
