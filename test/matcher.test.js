@@ -1666,37 +1666,45 @@ describe('matcher', () => {
   describe('match attribute selector', () => {
     const func = matcher.matchAttributeSelector;
 
-    describe('simple quoted equality', () => {
-      const createAST = (name, value, flags = null, type = STRING) => ({
-        type: ATTR_SELECTOR,
-        name: { type: IDENT, name },
-        matcher: '=',
-        flags,
-        value: type === STRING ? { type, value } : { type, name: value }
-      });
-
-      for (const name of [
+    it('should match quoted equality without reading the attribute collection', () => {
+      const names = [
         'data-testid',
         'aria-label',
         'title',
         'placeholder',
         'data-x_1'
-      ]) {
-        it(`matches ${name} without materializing the attribute collection`, () => {
-          const node = document.createElement('div');
-          node.setAttribute(name, 'target');
-          Object.defineProperty(node, 'attributes', {
-            get() {
-              assert.fail('should not read the attribute collection');
-            }
-          });
-          assert.strictEqual(func(createAST(name, 'target'), node), true);
-          assert.strictEqual(func(createAST(name, 'other'), node), false);
-          assert.strictEqual(func(createAST('missing', ''), node), false);
+      ];
+      for (const name of names) {
+        const ast = {
+          flags: null,
+          matcher: '=',
+          name: { name, type: IDENT },
+          type: ATTR_SELECTOR,
+          value: { type: STRING, value: 'target' }
+        };
+        const node = document.createElement('div');
+        node.setAttribute(name, 'target');
+        Object.defineProperty(node, 'attributes', {
+          get() {
+            assert.fail('should not read the attribute collection');
+          }
         });
+        const res = func(ast, node);
+        assert.strictEqual(res, true, name);
+        node.setAttribute(name, 'other');
+        const unmatched = func(ast, node);
+        assert.strictEqual(unmatched, false, 'unmatched value');
+        node.removeAttribute(name);
+        const missing = func(
+          { ...ast, value: { type: STRING, value: '' } },
+          node
+        );
+        assert.strictEqual(missing, false, 'missing attribute');
       }
+    });
 
-      for (const [name, flags, type] of [
+    it('should use the general matcher for unsupported equality selectors', () => {
+      const cases = [
         ['DATA-TESTID', null, STRING],
         ['data-testid', 'i', STRING],
         ['data-testid', 's', STRING],
@@ -1704,53 +1712,68 @@ describe('matcher', () => {
         ['lang', null, STRING],
         ['type', null, STRING],
         ['*|data-testid', null, STRING]
-      ]) {
-        it(`keeps the general matcher for ${name}, ${flags}, ${type}`, () => {
-          const node = document.createElement('div');
-          node.setAttribute(
-            name === '*|data-testid' ? 'data-testid' : name,
-            'target'
-          );
-          const attributes = node.attributes;
-          let reads = 0;
-          Object.defineProperty(node, 'attributes', {
-            get() {
-              reads++;
-              return attributes;
-            }
-          });
-          assert.strictEqual(
-            func(createAST(name, 'target', flags, type), node),
-            true
-          );
-          assert.ok(
-            reads > 0,
-            'general matching should read the attribute collection'
-          );
+      ];
+      for (const [name, flags, type] of cases) {
+        const ast = {
+          flags,
+          matcher: '=',
+          name: { name, type: IDENT },
+          type: ATTR_SELECTOR,
+          value:
+            type === STRING
+              ? { type, value: 'target' }
+              : { type, name: 'target' }
+        };
+        const node = document.createElement('div');
+        node.setAttribute(
+          name === '*|data-testid' ? 'data-testid' : name,
+          'target'
+        );
+        const attributes = node.attributes;
+        let reads = 0;
+        Object.defineProperty(node, 'attributes', {
+          get() {
+            reads++;
+            return attributes;
+          }
         });
+        const res = func(ast, node);
+        assert.strictEqual(res, true, 'result');
+        assert.strictEqual(reads > 0, true, 'attribute collection');
       }
+    });
 
-      it('does not reuse HTML matching behavior for SVG or XML elements', () => {
-        const ast = createAST('data-testid', 'target');
-        const htmlNode = document.createElement('div');
-        htmlNode.setAttribute('data-testid', 'target');
-        assert.strictEqual(func(ast, htmlNode), true);
-        const svgNode = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          'svg'
-        );
-        svgNode.setAttribute('DATA-TESTID', 'target');
-        assert.strictEqual(func(ast, svgNode), false);
-        svgNode.setAttribute('data-testid', 'target');
-        assert.strictEqual(func(ast, svgNode), true);
-        const xmlDocument = new window.DOMParser().parseFromString(
-          '<root DATA-TESTID="target"/>',
-          'application/xml'
-        );
-        assert.strictEqual(func(ast, xmlDocument.documentElement), false);
-        xmlDocument.documentElement.setAttribute('data-testid', 'target');
-        assert.strictEqual(func(ast, xmlDocument.documentElement), true);
-      });
+    it('should preserve case sensitivity when reusing an AST across documents', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: { name: 'data-testid', type: IDENT },
+        type: ATTR_SELECTOR,
+        value: { type: STRING, value: 'target' }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'HTML element');
+      const svgNode = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      svgNode.setAttribute('DATA-TESTID', 'target');
+      const unmatchedSvg = func(ast, svgNode);
+      assert.strictEqual(unmatchedSvg, false, 'uppercase SVG attribute');
+      svgNode.setAttribute('data-testid', 'target');
+      const matchedSvg = func(ast, svgNode);
+      assert.strictEqual(matchedSvg, true, 'lowercase SVG attribute');
+      const xmlDocument = new window.DOMParser().parseFromString(
+        '<root DATA-TESTID="target"/>',
+        'application/xml'
+      );
+      const unmatchedXml = func(ast, xmlDocument.documentElement);
+      assert.strictEqual(unmatchedXml, false, 'uppercase XML attribute');
+      xmlDocument.documentElement.setAttribute('data-testid', 'target');
+      const matchedXml = func(ast, xmlDocument.documentElement);
+      assert.strictEqual(matchedXml, true, 'lowercase XML attribute');
     });
 
     it('should throw SYNTAX_ERR for invalid attribute selector flag', () => {
