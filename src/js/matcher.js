@@ -33,6 +33,7 @@ const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
 
 /* cache */
 const astMetaCache = new WeakMap();
+const htmlAttrMetaCache = new WeakMap();
 
 /**
  * Validates a pseudo-element selector.
@@ -402,12 +403,13 @@ export const matchAttributeSelector = (
     );
   }
   const isHTML = isHTMLElement(node);
-  let meta = astMetaCache.get(ast);
+  const metaCache = isHTML ? htmlAttrMetaCache : astMetaCache;
+  let meta = metaCache.get(ast);
   if (meta === undefined) {
     meta = {
       attrValues: new Set()
     };
-    astMetaCache.set(ast, meta);
+    metaCache.set(ast, meta);
   }
   if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
     if (meta.astName === undefined) {
