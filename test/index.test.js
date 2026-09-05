@@ -1874,6 +1874,51 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should keep pending attribute queries within their context', () => {
+      const root = document.createElement('div');
+      root.innerHTML =
+        '<div data-container><span data-testid="target"></span></div>';
+      const container = root.firstElementChild;
+      const target = container.firstElementChild;
+      const before = target.cloneNode();
+      const after = target.cloneNode();
+      document.body.append(before, root, after);
+      const domSelector = new DOMSelector(window);
+      const cases = [
+        ['[data-testid="target"]', [target]],
+        ['[data-testid="target"], span', [target]],
+        [':scope, [data-testid="target"]', [target]],
+        ['[data-container] [data-testid="target"]', [target]],
+        ['body [data-testid="target"]', [target]]
+      ];
+      for (const [selector, expected] of cases) {
+        const res = domSelector.querySelectorAll(selector, container);
+        assert.deepEqual(res, expected, selector);
+      }
+      container.remove();
+      const detached = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        container
+      );
+      assert.deepEqual(detached, [target], 'detached context');
+    });
+
+    it('should keep pending attribute queries within a shadow root', () => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML =
+        '<span data-testid="target"></span><div><span data-testid="target"></span></div>';
+      const container = shadow.lastElementChild;
+      const target = container.firstElementChild;
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll(
+        '[data-testid="target"], span',
+        container
+      );
+      assert.deepEqual(res, [target], 'result');
+    });
+
     it('should throw TypeError when querySelectorAll args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelectorAll(),

@@ -184,4 +184,24 @@ group(`Testing Library Implicit Role Matching (jsdom)`, () => {
   });
 });
 
+const scopedWindow = new JSDOM('<!DOCTYPE html><body></body>').window;
+const scopedDocument = scopedWindow.document;
+const background = scopedDocument.createElement('aside');
+background.innerHTML = '<div><span></span></div>'.repeat(5000);
+const container = scopedDocument.createElement('main');
+container.innerHTML = '<div data-testid="target"><span></span></div>'.repeat(50);
+scopedDocument.body.append(background, container);
+const scopedSelector = new DOMSelector(scopedWindow);
+
+group(`Scoped Queries (100 elements after 10,000 unrelated elements)`, () => {
+  bench(`[data-testid="target"]`, () => {
+    scopedSelector.querySelectorAll('[data-testid="target"]', container);
+  });
+
+  bench(`[data-testid="target"], span`, () => {
+    scopedSelector.querySelectorAll('[data-testid="target"], span', container);
+  });
+});
+
 await run({ colors: true });
+scopedWindow.close();
