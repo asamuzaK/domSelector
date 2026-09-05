@@ -429,10 +429,10 @@ export const matchAttributeSelector = (
     let occurrences = 0;
     let needsFallback = false;
     for (const attributeName of node.getAttributeNames()) {
-      if (
-        attributeName.includes(':') ||
-        (attributeName === name && ++occurrences > 1)
-      ) {
+      if (attributeName === name) {
+        occurrences++;
+      }
+      if (attributeName.includes(':') || occurrences > 1) {
         needsFallback = true;
         break;
       }
