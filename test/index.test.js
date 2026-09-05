@@ -751,6 +751,32 @@ describe('DOMSelector', () => {
   });
 
   describe('matches', () => {
+    it('should throw DOMException for invalid equality selectors', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const selectors = [
+        '[data-testid="target" z]',
+        '[data-testid="target"] garbage|node',
+        '[data-testid="target"]:not(',
+        '[data-testid="target"],'
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const selector of selectors) {
+        assert.throws(
+          () => domSelector.matches(selector, node),
+          e => {
+            assert.strictEqual(
+              e instanceof window.DOMException,
+              true,
+              'instance'
+            );
+            assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+            return true;
+          }
+        );
+      }
+    });
     it('should throw TypeError when selector argument is omitted', () => {
       assert.throws(
         () => new DOMSelector(window).matches(),
@@ -1018,6 +1044,32 @@ describe('DOMSelector', () => {
   });
 
   describe('closest', () => {
+    it('should throw DOMException for invalid equality selectors', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const selectors = [
+        '[data-testid="target" z]',
+        '[data-testid="target"] garbage|node',
+        '[data-testid="target"]:not(',
+        '[data-testid="target"],'
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const selector of selectors) {
+        assert.throws(
+          () => domSelector.closest(selector, node),
+          e => {
+            assert.strictEqual(
+              e instanceof window.DOMException,
+              true,
+              'instance'
+            );
+            assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+            return true;
+          }
+        );
+      }
+    });
     it('should throw TypeError when arguments are omitted', () => {
       assert.throws(
         () => new DOMSelector(window).closest(null),
@@ -1296,6 +1348,32 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelector', () => {
+    it('should throw DOMException for invalid equality selectors', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const selectors = [
+        '[data-testid="target" z]',
+        '[data-testid="target"] garbage|node',
+        '[data-testid="target"]:not(',
+        '[data-testid="target"],'
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const selector of selectors) {
+        assert.throws(
+          () => domSelector.querySelector(selector, document),
+          e => {
+            assert.strictEqual(
+              e instanceof window.DOMException,
+              true,
+              'instance'
+            );
+            assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+            return true;
+          }
+        );
+      }
+    });
     it('should throw TypeError when querySelector args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelector(),
@@ -1874,6 +1952,32 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should throw DOMException for invalid equality selectors', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const selectors = [
+        '[data-testid="target" z]',
+        '[data-testid="target"] garbage|node',
+        '[data-testid="target"]:not(',
+        '[data-testid="target"],'
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const selector of selectors) {
+        assert.throws(
+          () => domSelector.querySelectorAll(selector, document),
+          e => {
+            assert.strictEqual(
+              e instanceof window.DOMException,
+              true,
+              'instance'
+            );
+            assert.strictEqual(e.name, SYNTAX_ERR, 'name');
+            return true;
+          }
+        );
+      }
+    });
     it('should throw TypeError when querySelectorAll args missing', () => {
       assert.throws(
         () => new DOMSelector(window).querySelectorAll(),
@@ -2262,6 +2366,124 @@ describe('DOMSelector', () => {
         ],
         'result'
       );
+    });
+
+    it('should match equal attribute values in different namespaces', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'other');
+      node.setAttributeNS('urn:test', 'data-testid', 'target');
+      document.body.appendChild(node);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        document
+      );
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should match a prefixed attribute when the ordinary value differs', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'other');
+      node.setAttributeNS('urn:test', 'p:data-testid', 'target');
+      document.body.appendChild(node);
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        document
+      );
+      assert.deepEqual(res, [node], 'result');
+    });
+
+    it('should distinguish empty and missing attribute values', () => {
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const domSelector = new DOMSelector(window);
+      const before = domSelector.querySelectorAll('[data-testid=""]', document);
+      assert.deepEqual(before, [], 'missing attribute');
+      node.setAttribute('data-testid', '');
+      const after = domSelector.querySelectorAll('[data-testid=""]', document);
+      assert.deepEqual(after, [node], 'empty attribute');
+    });
+
+    it('should query equal attribute values after mutations', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const domSelector = new DOMSelector(window);
+      const before = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        document
+      );
+      assert.deepEqual(before, [node], 'before mutation');
+      node.setAttribute('data-testid', 'other');
+      domSelector.clear();
+      const after = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        document
+      );
+      assert.deepEqual(after, [], 'after mutation');
+      const replacement = node.cloneNode();
+      replacement.setAttribute('data-testid', 'target');
+      node.replaceWith(replacement);
+      domSelector.clear();
+      const res = domSelector.querySelectorAll(
+        '[data-testid="target"]',
+        document
+      );
+      assert.deepEqual(res, [replacement], 'after replacement');
+    });
+
+    it('should preserve attribute value case rules for equality selectors', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'TARGET');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'TEXT');
+      document.body.append(node, input);
+      const cases = [
+        ['[data-testid="target"]', []],
+        ['[data-testid="target" i]', [node]],
+        ['[data-testid="target" s]', []],
+        ['[type="text"]', [input]]
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const [selector, expected] of cases) {
+        const res = domSelector.querySelectorAll(selector, document);
+        assert.deepEqual(res, expected, selector);
+      }
+    });
+
+    it('should query quoted attribute values containing special characters', () => {
+      const node = document.createElement('div');
+      document.body.appendChild(node);
+      const cases = [
+        ['a b', 'a b'],
+        ['«label»', '«label»'],
+        ['a\u0000b', 'a\uFFFDb']
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const [value, expected] of cases) {
+        node.setAttribute('data-testid', expected);
+        const res = domSelector.querySelectorAll(
+          `[data-testid="${value}"]`,
+          document
+        );
+        assert.deepEqual(res, [node], value);
+      }
+    });
+
+    it('should query escaped attribute names and values', () => {
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      document.body.appendChild(node);
+      const selectors = [
+        '[data-\\74 estid="target"]',
+        '[data-testid="\\74 arget"]'
+      ];
+      const domSelector = new DOMSelector(window);
+      for (const selector of selectors) {
+        const res = domSelector.querySelectorAll(selector, document);
+        assert.deepEqual(res, [node], selector);
+      }
     });
 
     it('should query simple attribute selectors in tree order', () => {

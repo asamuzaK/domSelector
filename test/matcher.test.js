@@ -1666,6 +1666,116 @@ describe('matcher', () => {
   describe('match attribute selector', () => {
     const func = matcher.matchAttributeSelector;
 
+    it('should match quoted equality without reading the attribute collection', () => {
+      const names = [
+        'data-testid',
+        'aria-label',
+        'title',
+        'placeholder',
+        'data-x_1'
+      ];
+      for (const name of names) {
+        const ast = {
+          flags: null,
+          matcher: '=',
+          name: { name, type: IDENT },
+          type: ATTR_SELECTOR,
+          value: { type: STRING, value: 'target' }
+        };
+        const node = document.createElement('div');
+        node.setAttribute(name, 'target');
+        Object.defineProperty(node, 'attributes', {
+          get() {
+            assert.fail('should not read the attribute collection');
+          }
+        });
+        const res = func(ast, node);
+        assert.strictEqual(res, true, name);
+        node.setAttribute(name, 'other');
+        const unmatched = func(ast, node);
+        assert.strictEqual(unmatched, false, 'unmatched value');
+        node.removeAttribute(name);
+        const missing = func(
+          { ...ast, value: { type: STRING, value: '' } },
+          node
+        );
+        assert.strictEqual(missing, false, 'missing attribute');
+      }
+    });
+
+    it('should use the general matcher for unsupported equality selectors', () => {
+      const cases = [
+        ['DATA-TESTID', null, STRING],
+        ['data-testid', 'i', STRING],
+        ['data-testid', 's', STRING],
+        ['data-testid', null, IDENT],
+        ['lang', null, STRING],
+        ['type', null, STRING],
+        ['*|data-testid', null, STRING]
+      ];
+      for (const [name, flags, type] of cases) {
+        const ast = {
+          flags,
+          matcher: '=',
+          name: { name, type: IDENT },
+          type: ATTR_SELECTOR,
+          value:
+            type === STRING
+              ? { type, value: 'target' }
+              : { type, name: 'target' }
+        };
+        const node = document.createElement('div');
+        node.setAttribute(
+          name === '*|data-testid' ? 'data-testid' : name,
+          'target'
+        );
+        const attributes = node.attributes;
+        let reads = 0;
+        Object.defineProperty(node, 'attributes', {
+          get() {
+            reads++;
+            return attributes;
+          }
+        });
+        const res = func(ast, node);
+        assert.strictEqual(res, true, 'result');
+        assert.strictEqual(reads > 0, true, 'attribute collection');
+      }
+    });
+
+    it('should preserve case sensitivity when reusing an AST across documents', () => {
+      const ast = {
+        flags: null,
+        matcher: '=',
+        name: { name: 'data-testid', type: IDENT },
+        type: ATTR_SELECTOR,
+        value: { type: STRING, value: 'target' }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('data-testid', 'target');
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'HTML element');
+      const svgNode = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      svgNode.setAttribute('DATA-TESTID', 'target');
+      const unmatchedSvg = func(ast, svgNode);
+      assert.strictEqual(unmatchedSvg, false, 'uppercase SVG attribute');
+      svgNode.setAttribute('data-testid', 'target');
+      const matchedSvg = func(ast, svgNode);
+      assert.strictEqual(matchedSvg, true, 'lowercase SVG attribute');
+      const xmlDocument = new window.DOMParser().parseFromString(
+        '<root DATA-TESTID="target"/>',
+        'application/xml'
+      );
+      const unmatchedXml = func(ast, xmlDocument.documentElement);
+      assert.strictEqual(unmatchedXml, false, 'uppercase XML attribute');
+      xmlDocument.documentElement.setAttribute('data-testid', 'target');
+      const matchedXml = func(ast, xmlDocument.documentElement);
+      assert.strictEqual(matchedXml, true, 'lowercase XML attribute');
+    });
+
     it('should throw SYNTAX_ERR for invalid attribute selector flag', () => {
       const ast = {
         flags: 'baz',
