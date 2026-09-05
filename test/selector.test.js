@@ -608,6 +608,7 @@ describe('selector static analysis and validation', () => {
     it('should get false for invalid inputs', () => {
       assert.strictEqual(func(), false, 'result');
       assert.strictEqual(func('null'), false, 'result');
+      assert.strictEqual(func('undefined'), false, 'result');
     });
 
     it('should get true for basic selectors', () => {
@@ -659,6 +660,7 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func(':is(.foo, .bar)'), true, 'result');
       assert.strictEqual(func(':is()'), false, 'result');
       assert.strictEqual(func(':has(.foo)'), false, 'result');
+      assert.strictEqual(func(':Has(.foo)'), false, 'result');
       assert.strictEqual(func('.bar :has(.foo)', TARGET_SELF), true, 'result');
       assert.strictEqual(func(':has(.foo)', TARGET_LINEAL), false, 'result');
     });

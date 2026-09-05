@@ -34,18 +34,22 @@ const REG_EXCLUDE_QSA = new RegExp(
   `(?:^(?:[A-Z]|\\.)[\\w-]*$|${COMPOUND_I}${COMBO}${COMPOUND_I})`,
   'i'
 );
+const REG_HAS = /has\(/i;
+const REG_IS_NOT = /(?:is|not)\(/i;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
 const REG_LOGIC_COMPLEX = new RegExp(
-  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPLEX})`,
+  'i'
 );
 const REG_LOGIC_COMPOUND = new RegExp(
-  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`
+  `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND})`,
+  'i'
 );
 const REG_LOGIC_HAS_COMPOUND = new RegExp(
   `:(?!${PSEUDO_CLASS}|${N_TH}|${LOGIC_COMPOUND}|${HAS_COMPOUND})`
 );
 const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
-const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`);
+const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`, 'i');
 const REG_COMBO = new RegExp(COMBO);
 const REG_ID = /#(\D[^#.*]+)/g;
 const REG_CLASS = /\.(\D[^#.*]+)/g;
@@ -270,10 +274,12 @@ export const extractSubjectsRegExp = (selector, caseSensitive) => {
  */
 export const filterSelector = (selector, target) => {
   // Basic validation and fast-fail for null/undefined/non-string values.
+  // Rejects stringified nullish values as well.
   if (
     !selector ||
     typeof selector !== 'string' ||
-    /null|undefined/.test(selector)
+    selector === 'null' ||
+    selector === 'undefined'
   ) {
     return false;
   }
@@ -311,19 +317,18 @@ export const filterSelector = (selector, target) => {
     const isComplex =
       target === TARGET_ALL ? false : REG_COMPLEX.test(selector);
     // Handle :has() specifically.
-    if (selector.includes(':has(')) {
+    if (REG_HAS.test(selector)) {
       if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {
         return false;
       }
       return REG_END_WITH_HAS.test(selector);
     }
     // Handle :is() and :not().
-    if (/(?:is|not)\(/.test(selector)) {
+    if (REG_IS_NOT.test(selector)) {
       if (isComplex) {
         return !REG_LOGIC_COMPLEX.test(selector);
-      } else {
-        return !REG_LOGIC_COMPOUND.test(selector);
       }
+      return !REG_LOGIC_COMPOUND.test(selector);
     }
     // Default check for other pseudo-classes against known list.
     if (REG_WO_LOGICAL.test(selector)) {
