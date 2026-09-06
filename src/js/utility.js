@@ -58,7 +58,7 @@ const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
 const REG_EXACT_ID_ATTRIBUTE =
   /^\[id="([A-Za-z]\w*(?:-(?:\w*|\u00AB\w+\u00BB))*)"\]$/;
-const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z0-9_-]*)\]$/;
+const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z\d_-]*)\]$/;
 
 /**
  * Get type of an object.
