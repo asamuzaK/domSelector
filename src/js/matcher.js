@@ -403,6 +403,7 @@ export const matchAttributeSelector = (
       globalObject
     );
   }
+  const astRawName = astName?.name;
   const isHTML = isHTMLElement(node);
   let meta = astMetaCache.get(ast);
   if (meta === undefined) {
@@ -410,26 +411,30 @@ export const matchAttributeSelector = (
       attrValues: new Set(),
       equalityName: null
     };
-    if (astMatcher === '=' && !astFlags && astValue?.type === STRING) {
-      const name = astName.name;
-      const caseSensitive = name !== 'lang' && !KEYS_ATTR_VALUE_I.has(name);
-      if (caseSensitive && REG_EQUALITY_ATTRIBUTE_NAME.test(name)) {
-        meta.equalityName = name;
-      }
+    if (
+      astMatcher === '=' &&
+      !astFlags &&
+      astValue?.type === STRING &&
+      typeof astRawName === 'string' &&
+      astRawName !== 'lang' &&
+      !KEYS_ATTR_VALUE_I.has(astRawName) &&
+      REG_EQUALITY_ATTRIBUTE_NAME.test(astRawName)
+    ) {
+      meta.equalityName = astRawName;
     }
     astMetaCache.set(ast, meta);
   }
   // Parsing and flag validation still run before this matching shortcut.
   if (isHTML && meta.equalityName !== null) {
-    const name = meta.equalityName;
-    if (node.getAttribute(name) === astValue.value) {
+    const attrName = meta.equalityName;
+    if (node.getAttribute(attrName) === astValue.value) {
       return true;
     }
     // Prefixed or duplicate names can hide another matching attribute.
     let occurrences = 0;
     let needsFallback = false;
     for (const attributeName of node.getAttributeNames()) {
-      if (attributeName === name) {
+      if (attributeName === attrName) {
         occurrences++;
       }
       if (attributeName.includes(':') || occurrences > 1) {
@@ -441,9 +446,9 @@ export const matchAttributeSelector = (
       return false;
     }
   }
-  if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
+  if (astMatcher === null && !astFlags && typeof astRawName === 'string') {
     if (meta.astName === undefined) {
-      const rawName = unescapeSelector(astName.name);
+      const rawName = unescapeSelector(astRawName);
       meta.astName = rawName;
       meta.hasPipe = rawName.indexOf('|') > -1;
     }
@@ -491,10 +496,10 @@ export const matchAttributeSelector = (
     if (typeof astFlags === 'string') {
       caseInsensitive = /^i$/i.test(astFlags);
     } else if (isHTML) {
-      caseInsensitive = KEYS_ATTR_VALUE_I.has(astName.name);
+      caseInsensitive = KEYS_ATTR_VALUE_I.has(astRawName);
     }
     meta.caseInsensitive = caseInsensitive;
-    let astAttrName = unescapeSelector(astName.name);
+    let astAttrName = unescapeSelector(astRawName);
     if (isHTML) {
       if (typeof astFlags === 'string') {
         if (/^i$/i.test(astFlags)) {
