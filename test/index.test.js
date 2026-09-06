@@ -1952,6 +1952,35 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should match complex logical selectors across query contexts', () => {
+      document.body.innerHTML = `
+        <div id="container" class="container">
+          <div id="scope">
+            <div id="target" class="box">
+              <div class="parent"><div class="child"></div></div>
+            </div>
+          </div>
+        </div>`;
+      const container = document.getElementById('container');
+      const scope = document.getElementById('scope');
+      const target = document.getElementById('target');
+      const domSelector = new DOMSelector(window);
+      const cases = [
+        [document, ':is(.container .box)', [target]],
+        [scope, ':is(.container .box)', [target]],
+        [
+          document,
+          ':has(.parent .child)',
+          [document.documentElement, document.body, container, scope, target]
+        ],
+        [scope, ':has(.parent .child)', [target]]
+      ];
+      for (const [context, selector, expected] of cases) {
+        const res = domSelector.querySelectorAll(selector, context);
+        assert.deepEqual(res, expected, selector);
+      }
+    });
+
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
       node.setAttribute('data-testid', 'target');
