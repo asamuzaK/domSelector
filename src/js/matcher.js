@@ -30,8 +30,7 @@ const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 
 /* regexp */
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
-
-const REG_EQUALITY_ATTRIBUTE_NAME = /^[a-z][a-z0-9_-]*$/;
+const REG_ATTR_EQUALITY_NAME = /^[a-z][a-z0-9_-]*$/;
 
 /* cache */
 const astMetaCache = new WeakMap();
@@ -418,7 +417,7 @@ export const matchAttributeSelector = (
       typeof astRawName === 'string' &&
       astRawName !== 'lang' &&
       !KEYS_ATTR_VALUE_I.has(astRawName) &&
-      REG_EQUALITY_ATTRIBUTE_NAME.test(astRawName)
+      REG_ATTR_EQUALITY_NAME.test(astRawName)
     ) {
       meta.equalityName = astRawName;
     }
