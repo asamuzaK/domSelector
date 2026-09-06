@@ -30,6 +30,7 @@ const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 
 /* regexp */
 const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+const REG_ATTR_EQUALITY_NAME = /^[a-z][a-z0-9_-]*$/;
 
 /* cache */
 const astMetaCache = new WeakMap();
@@ -401,17 +402,52 @@ export const matchAttributeSelector = (
       globalObject
     );
   }
+  const astRawName = astName?.name;
   const isHTML = isHTMLElement(node);
   let meta = astMetaCache.get(ast);
   if (meta === undefined) {
     meta = {
-      attrValues: new Set()
+      attrValues: new Set(),
+      equalityName: null
     };
+    if (
+      astMatcher === '=' &&
+      !astFlags &&
+      astValue?.type === STRING &&
+      typeof astRawName === 'string' &&
+      astRawName !== 'lang' &&
+      !KEYS_ATTR_VALUE_I.has(astRawName) &&
+      REG_ATTR_EQUALITY_NAME.test(astRawName)
+    ) {
+      meta.equalityName = astRawName;
+    }
     astMetaCache.set(ast, meta);
   }
-  if (astMatcher === null && !astFlags && typeof astName?.name === 'string') {
+  // Parsing and flag validation still run before this matching shortcut.
+  if (isHTML && meta.equalityName !== null) {
+    const attrName = meta.equalityName;
+    if (node.getAttribute(attrName) === astValue.value) {
+      return true;
+    }
+    // Prefixed or duplicate names can hide another matching attribute.
+    let occurrences = 0;
+    let needsFallback = false;
+    for (const attributeName of node.getAttributeNames()) {
+      if (attributeName === attrName) {
+        occurrences++;
+      }
+      if (attributeName.includes(':') || occurrences > 1) {
+        needsFallback = true;
+        break;
+      }
+    }
+    if (!needsFallback) {
+      return false;
+    }
+  }
+  if (astMatcher === null && !astFlags && typeof astRawName === 'string') {
     if (meta.astName === undefined) {
-      const rawName = unescapeSelector(astName.name);
+      const rawName = unescapeSelector(astRawName);
       meta.astName = rawName;
       meta.hasPipe = rawName.indexOf('|') > -1;
     }
@@ -459,10 +495,10 @@ export const matchAttributeSelector = (
     if (typeof astFlags === 'string') {
       caseInsensitive = /^i$/i.test(astFlags);
     } else if (isHTML) {
-      caseInsensitive = KEYS_ATTR_VALUE_I.has(astName.name);
+      caseInsensitive = KEYS_ATTR_VALUE_I.has(astRawName);
     }
     meta.caseInsensitive = caseInsensitive;
-    let astAttrName = unescapeSelector(astName.name);
+    let astAttrName = unescapeSelector(astRawName);
     if (isHTML) {
       if (typeof astFlags === 'string') {
         if (/^i$/i.test(astFlags)) {

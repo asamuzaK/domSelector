@@ -43,7 +43,7 @@ function buildTree(parent, currentDepth) {
 }
 buildTree(root, 0);
 
-const targetTestId = document.createElement('div');
+let targetTestId = document.createElement('div');
 targetTestId.setAttribute('data-testid', 'target-test-id');
 root.appendChild(targetTestId);
 
@@ -181,6 +181,32 @@ group(`Testing Library Implicit Role Matching (jsdom)`, () => {
 
   bench(`24 aria-labelledby ID references`, () => {
     resolveLabels(jsdomSelector, rootImpl);
+  });
+});
+
+group(`Attribute Equality After Mutations (Element)`, () => {
+  const query = () => domSelector.querySelectorAll('[data-testid="target-test-id"]', root);
+
+  bench(`Unrelated attribute mutation`, () => {
+    root.toggleAttribute('data-dirty');
+    // Mirrors jsdom's invalidation of its selector instance after mutations.
+    domSelector.clear();
+    return query();
+  });
+
+  bench(`Matching attribute mutation`, () => {
+    const value = targetTestId.getAttribute('data-testid');
+    targetTestId.setAttribute('data-testid', value === 'target-test-id' ? 'changed' : 'target-test-id');
+    domSelector.clear();
+    return query();
+  });
+
+  bench(`Subtree replacement`, () => {
+    const next = targetTestId.cloneNode();
+    targetTestId.replaceWith(next);
+    targetTestId = next;
+    domSelector.clear();
+    return query();
   });
 });
 
