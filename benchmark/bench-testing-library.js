@@ -55,9 +55,8 @@ const targetPlaceholder = document.createElement('input');
 targetPlaceholder.setAttribute('placeholder', 'target-placeholder');
 root.appendChild(targetPlaceholder);
 
-// [data-role~="..."] 検証用のターゲット要素を追加
 const targetRole = document.createElement('div');
-targetRole.setAttribute('data-role', 'component tile active'); // スペース区切りの複数値
+targetRole.setAttribute('data-role', 'component tile active');
 root.appendChild(targetRole);
 
 const labelElements = [...root.querySelectorAll('div[data-testid]')].slice(
