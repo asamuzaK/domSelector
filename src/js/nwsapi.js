@@ -9,7 +9,7 @@ import { LRUCache } from 'lru-cache';
 import { isContentEditable } from './utility.js';
 
 /* constants */
-import { DOCUMENT_NODE, ELEMENT_NODE } from './constant.js';
+import { DOCUMENT_NODE, ELEMENT_NODE, MIME_HTML } from './constant.js';
 const CACHE_SIZE = 4096;
 const F_INIT = '"use strict";return function resolver(c,f,x,r)';
 const S_HEAD = 'var e,n,o,j=r.length-1,k=-1';
@@ -177,7 +177,7 @@ export const concatCall = (nodes, callback) => {
 export const isHTML = node => {
   const document = node.ownerDocument || node;
   return (
-    document.nodeType === DOCUMENT_NODE && document.contentType === 'text/html'
+    document.nodeType === DOCUMENT_NODE && document.contentType === MIME_HTML
   );
 };
 

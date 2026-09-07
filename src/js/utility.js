@@ -21,6 +21,7 @@ import {
   INPUT_EDIT,
   INPUT_LTR,
   INPUT_TEXT,
+  MIME_HTML,
   PS_ELEMENT_SELECTOR,
   SHOW_ELEMENT,
   TARGET_FIRST,
@@ -52,7 +53,6 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
 const NS_HTML = 'http://www.w3.org/1999/xhtml';
 
 /* regexp */
-const REG_IS_HTML = /^text\/html$/;
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
 const REG_IS_XML =
   /^(?:application\/(?:[\w\-.]+\+)?|image\/[\w\-.]+\+|text\/)xml$/;
@@ -223,7 +223,7 @@ export const isHTMLElement = node => {
   }
   const { namespaceURI, ownerDocument } = node;
   return (
-    REG_IS_HTML.test(ownerDocument.contentType) &&
+    ownerDocument.contentType === MIME_HTML &&
     (!namespaceURI || namespaceURI === NS_HTML)
   );
 };
@@ -1023,7 +1023,7 @@ export const findBySimpleAttribute = (selector, node) => {
     return null;
   }
   const document = nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
-  if (document.contentType !== 'text/html') {
+  if (document.contentType !== MIME_HTML) {
     return null;
   }
   const walker = document.createTreeWalker(node, SHOW_ELEMENT);
