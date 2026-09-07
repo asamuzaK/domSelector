@@ -8,6 +8,7 @@ export declare class Evaluator {
     warn: boolean | undefined;
     matchOpts: {
         warn: boolean;
+        isHTMLDocument: boolean;
     } | undefined;
     node: Document | DocumentFragment | Element | undefined;
     pseudoElements: any[] | undefined;

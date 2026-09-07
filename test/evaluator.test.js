@@ -187,6 +187,29 @@ describe('Evaluator', () => {
   });
 
   describe('setup evaluator', () => {
+    it('should read the document type once while matching multiple elements', () => {
+      const contentType = document.contentType;
+      let reads = 0;
+      Object.defineProperty(document, 'contentType', {
+        get() {
+          reads++;
+          return contentType;
+        }
+      });
+      const evaluator = new Evaluator(window).setup('div', document);
+      const ast = { type: TYPE_SELECTOR, name: 'div' };
+      for (const node of [
+        document.createElement('div'),
+        document.createElement('div')
+      ]) {
+        assert.strictEqual(
+          evaluator.matchSelector(ast, node, evaluator.matchOpts),
+          true
+        );
+      }
+      assert.strictEqual(reads, 1);
+    });
+
     it('should return self when setting up with a Document node', () => {
       const evaluator = new Evaluator(window);
       const res = evaluator.setup('*', document, {

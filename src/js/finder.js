@@ -428,7 +428,7 @@ export class Finder extends Evaluator {
     if (
       targetType !== TARGET_FIRST &&
       !precede &&
-      this.document.contentType === 'text/html' &&
+      this.matchOpts.isHTMLDocument &&
       canUseFastTagSearch(this.node, tagName)
     ) {
       this.matchLeaves(leaves, this.node, this.matchOpts);
@@ -860,8 +860,8 @@ export class Finder extends Evaluator {
    */
   #matchSelf(leaves) {
     const matched = this.matchLeaves(leaves, this.node, {
-      check: this.check,
-      warn: this.warn
+      ...this.matchOpts,
+      check: this.check
     });
     const nodes = matched ? [this.node] : [];
     return [nodes, matched, this.pseudoElements];

@@ -3,7 +3,7 @@ export declare const verifyArray: (arr: any[], type: string) => any[];
 export declare const generateException: (msg: string, name: string, globalObject?: object) => DOMException;
 export declare const resolveContent: (node: Document | DocumentFragment | Element) => Array<Document | DocumentFragment | Element | boolean>;
 export declare const traverseNode: (node: Element, walker: TreeWalker, force?: boolean) => Element | null;
-export declare const isHTMLElement: (node: Element) => boolean;
+export declare const isHTMLElement: (node: Element, isHTMLDocument?: boolean) => boolean;
 export declare const isCustomElement: (node: Element, { formAssociated }?: {
     formAssociated?: boolean;
 }) => boolean;

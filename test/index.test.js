@@ -751,6 +751,22 @@ describe('DOMSelector', () => {
   });
 
   describe('matches', () => {
+    it('should reuse the document type while matching a compound selector', () => {
+      const domSelector = new DOMSelector(window);
+      const node = document.createElement('div');
+      node.setAttribute('data-kind', 'target');
+      const contentType = document.contentType;
+      let reads = 0;
+      Object.defineProperty(document, 'contentType', {
+        get() {
+          reads++;
+          return contentType;
+        }
+      });
+      assert.strictEqual(domSelector.matches('DIV[data-kind]', node), true);
+      assert.strictEqual(reads, 1);
+    });
+
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
       node.setAttribute('data-testid', 'target');
@@ -1952,6 +1968,43 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should keep HTML and SVG case matching separate within a query', () => {
+      const domSelector = new DOMSelector(window);
+      const parent = document.createElement('section');
+      parent.innerHTML =
+        '<g data-kind="target"></g><svg><g data-kind="target"></g></svg>';
+      const html = parent.firstElementChild;
+      const svg = parent.lastElementChild.firstElementChild;
+      assert.deepEqual(domSelector.querySelectorAll('G[data-kind]', parent), [
+        html
+      ]);
+      assert.deepEqual(domSelector.querySelectorAll('g[data-kind]', parent), [
+        html,
+        svg
+      ]);
+      assert.deepEqual(
+        domSelector.querySelectorAll(':is(G)[data-kind]', parent),
+        [html]
+      );
+    });
+
+    it('should use the current document type after adopting an element', () => {
+      const domSelector = new DOMSelector(window);
+      const xml = document.implementation.createDocument(null, 'root');
+      const parent = document.createElement('section');
+      const node = document.createElement('div');
+      node.setAttribute('data-kind', 'target');
+      parent.appendChild(node);
+      const selector = 'DIV[data-kind]';
+      assert.deepEqual(domSelector.querySelectorAll(selector, parent), [node]);
+      xml.adoptNode(parent);
+      domSelector.clear();
+      assert.deepEqual(domSelector.querySelectorAll(selector, parent), []);
+      document.adoptNode(parent);
+      domSelector.clear();
+      assert.deepEqual(domSelector.querySelectorAll(selector, parent), [node]);
+    });
+
     it('should match complex logical selectors across query contexts', () => {
       document.body.innerHTML = `
         <div id="container" class="container">

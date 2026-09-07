@@ -382,12 +382,13 @@ export const matchRequiredPseudoClass = (astName, node, keys) => {
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
  * @param {object} [opt.globalObject] - The global object.
+ * @param {boolean} [opt.isHTMLDocument] - True if the query document is HTML.
  * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
 export const matchAttributeSelector = (
   ast,
   node,
-  { check, forgive, globalObject } = {}
+  { check, forgive, globalObject, isHTMLDocument } = {}
 ) => {
   const {
     flags: astFlags,
@@ -404,7 +405,7 @@ export const matchAttributeSelector = (
     );
   }
   const astRawName = astName?.name;
-  const isHTML = isHTMLElement(node);
+  const isHTML = isHTMLElement(node, isHTMLDocument);
   const metaCache = isHTML ? htmlAttrMetaCache : astMetaCache;
   let meta = metaCache.get(ast);
   if (meta === undefined) {
@@ -728,12 +729,13 @@ export const matchAttributeSelector = (
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive undeclared namespace.
  * @param {object} [opt.globalObject] - The global object.
+ * @param {boolean} [opt.isHTMLDocument] - True if the query document is HTML.
  * @returns {boolean} - True if the type selector matches, otherwise false.
  */
 export const matchTypeSelector = (
   ast,
   node,
-  { check, forgive, globalObject } = {}
+  { check, forgive, globalObject, isHTMLDocument } = {}
 ) => {
   const { localName, namespaceURI, prefix } = node;
   let meta = astMetaCache.get(ast);
@@ -754,7 +756,7 @@ export const matchTypeSelector = (
     meta.astLocalNameLowerCased = parsedLocalName.toLowerCase();
     meta.hasPipe = astName.includes('|');
   }
-  const isHTML = isHTMLElement(node);
+  const isHTML = isHTMLElement(node, isHTMLDocument);
   if (isHTML && localName === meta.astLocalName && !meta.hasPipe) {
     return true;
   }

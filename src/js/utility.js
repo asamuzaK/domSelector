@@ -212,9 +212,10 @@ export const traverseNode = (node, walker, force = false) => {
 /**
  * Check if a node is an HTML element.
  * @param {Element} node - The Element node.
+ * @param {boolean} [isHTMLDocument] - True if the query document is HTML.
  * @returns {boolean} - True if it's the HTML element.
  */
-export const isHTMLElement = node => {
+export const isHTMLElement = (node, isHTMLDocument) => {
   if (!node?.nodeType) {
     throw new TypeError(`Unexpected type ${getType(node)}`);
   }
@@ -223,7 +224,7 @@ export const isHTMLElement = node => {
   }
   const { namespaceURI, ownerDocument } = node;
   return (
-    REG_IS_HTML.test(ownerDocument.contentType) &&
+    (isHTMLDocument ?? REG_IS_HTML.test(ownerDocument.contentType)) &&
     (!namespaceURI || namespaceURI === NS_HTML)
   );
 };

@@ -12,13 +12,15 @@ export declare const matchPlaceholderShownPseudoClass: (node: Element, keys: Set
 export declare const matchRangePseudoClass: (astName: string, node: Element, keys: Set<string>) => boolean;
 export declare const matchReadOnlyPseudoClass: (astName: string, node: Element) => boolean;
 export declare const matchRequiredPseudoClass: (astName: string, node: Element, keys: Set<string>) => boolean;
-export declare const matchAttributeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject }?: {
+export declare const matchAttributeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject, isHTMLDocument }?: {
     check?: boolean;
     forgive?: boolean;
     globalObject?: object;
+    isHTMLDocument?: boolean;
 }) => boolean;
-export declare const matchTypeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject }?: {
+export declare const matchTypeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject, isHTMLDocument }?: {
     check?: boolean;
     forgive?: boolean;
     globalObject?: object;
+    isHTMLDocument?: boolean;
 }) => boolean;

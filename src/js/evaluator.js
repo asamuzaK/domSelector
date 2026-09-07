@@ -92,8 +92,11 @@ export class Evaluator {
     this.check = !!check;
     this.noexcept = !!noexcept;
     this.warn = !!warn;
-    this.matchOpts = { warn: this.warn };
     [this.document, this.root, this.shadow] = resolveContent(node);
+    this.matchOpts = {
+      warn: this.warn,
+      isHTMLDocument: this.document.contentType === 'text/html'
+    };
     this.node = node;
     this.pseudoElements = [];
     this.invalidate = false;
