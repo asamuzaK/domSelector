@@ -1044,6 +1044,76 @@ describe('DOMSelector', () => {
   });
 
   describe('closest', () => {
+    it('should find the nearest attribute match after mutations', () => {
+      document.body.innerHTML = `
+        <div id="outer" data-rootownerid>
+          <div id="inner" data-rootownerid data-active>
+            <span id="target"></span>
+          </div>
+        </div>`;
+      const outer = document.getElementById('outer');
+      const inner = document.getElementById('inner');
+      const target = document.getElementById('target');
+      const domSelector = new DOMSelector(window);
+
+      assert.strictEqual(
+        domSelector.closest('[data-rootownerid]', target),
+        inner
+      );
+      assert.strictEqual(
+        domSelector.closest('[data-rootownerid][data-active]', target),
+        inner
+      );
+      assert.strictEqual(
+        domSelector.closest('#outer, [data-rootownerid]', target),
+        inner
+      );
+
+      inner.removeAttribute('data-rootownerid');
+      domSelector.clear();
+      assert.strictEqual(
+        domSelector.closest('[data-rootownerid]', target),
+        outer
+      );
+      target.setAttribute('data-rootownerid', '');
+      domSelector.clear();
+      assert.strictEqual(
+        domSelector.closest('[data-rootownerid]', target),
+        target
+      );
+      assert.strictEqual(domSelector.closest('[data-missing]', target), null);
+    });
+
+    for (const context of ['document', 'detached', 'shadow']) {
+      it(`should keep searching for complex closest selectors in ${context}`, () => {
+        const container = document.createElement('section');
+        container.setAttribute('data-group', '');
+        container.innerHTML = `
+          <div data-owner>
+            <div>
+              <div data-owner><span></span></div>
+            </div>
+          </div>`;
+        if (context === 'document') {
+          document.body.appendChild(container);
+        } else if (context === 'shadow') {
+          const host = document.createElement('div');
+          document.body.appendChild(host);
+          host.attachShadow({ mode: 'open' }).appendChild(container);
+        }
+        const target = container.querySelector('span');
+        const domSelector = new DOMSelector(window);
+        assert.strictEqual(
+          domSelector.closest('[data-owner]', target),
+          target.parentElement
+        );
+        assert.strictEqual(
+          domSelector.closest('[data-group] > [data-owner]', target),
+          container.firstElementChild
+        );
+      });
+    }
+
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
       node.setAttribute('data-testid', 'target');

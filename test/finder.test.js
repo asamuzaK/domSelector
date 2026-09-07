@@ -1458,5 +1458,40 @@ describe('Finder', () => {
       const res = finder.find('first');
       assert.deepEqual([...res], [], 'result');
     });
+
+    for (const [selector, ancestorIds] of [
+      ['[data-rootownerid]', ['inner']],
+      ['.container [data-rootownerid]', ['inner', 'outer']]
+    ]) {
+      it(`should check lineal ancestors for ${selector}`, () => {
+        document.body.innerHTML = `
+          <div class="container">
+            <div id="outer" data-rootownerid>
+              <div id="inner" data-rootownerid data-active>
+                <span id="target"></span>
+              </div>
+            </div>
+          </div>
+        `;
+        const finder = new Finder(window);
+        finder.setup(selector, document.getElementById('target'));
+        const spy = sinon.spy(finder, 'matchLeaves');
+        const res = finder.find('lineal');
+        assert.ok(res instanceof Set, 'returns a Set');
+        assert.strictEqual(res.size, 1, 'size');
+        assert.deepEqual(
+          [...res],
+          [document.getElementById('inner')],
+          'result'
+        );
+        for (const id of ['inner', 'outer']) {
+          assert.strictEqual(
+            spy.calledWith(sinon.match.any, document.getElementById(id)),
+            ancestorIds.includes(id),
+            `checks ${id}`
+          );
+        }
+      });
+    }
   });
 });

@@ -886,6 +886,9 @@ export class Finder extends Evaluator {
       while (currentNode) {
         if (this.matchLeaves(leaves, currentNode, this.matchOpts)) {
           nodes.push(currentNode);
+          if (!complex) {
+            break;
+          }
         }
         currentNode = currentNode.parentNode;
       }

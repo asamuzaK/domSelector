@@ -228,5 +228,41 @@ group(`Scoped Queries (100 elements after 10,000 unrelated elements)`, () => {
   });
 });
 
+group('closest attribute ancestor', () => {
+  for (const depth of [20, 200]) {
+    for (const distance of [0, 1, 5, -1]) {
+      const container = document.createElement('div');
+      document.body.append(container);
+      let target = container;
+      const ancestors = [container];
+      for (let i = 0; i < depth; i++) {
+        const child = document.createElement('div');
+        target.append(child);
+        target = child;
+        ancestors.push(child);
+      }
+      const expected = distance < 0 ? null : ancestors.at(-1 - distance);
+      if (expected) {
+        expected.setAttribute('data-rootownerid', 'owner');
+      }
+      if (domSelector.closest('[data-rootownerid]', target) !== expected) {
+        throw new Error('Unexpected closest result');
+      }
+      bench(`closest [data-rootownerid] / depth ${depth} / distance ${distance}`, () => {
+        domSelector.closest('[data-rootownerid]', target);
+      });
+      if (distance === 1) {
+        let revision = false;
+        bench(`closest [data-rootownerid] after mutation / depth ${depth}`, () => {
+          revision = !revision;
+          target.setAttribute('data-revision', `${revision}`);
+          domSelector.clear();
+          domSelector.closest('[data-rootownerid]', target);
+        });
+      }
+    }
+  }
+});
+
 await run({ colors: true });
 scopedWindow.close();
