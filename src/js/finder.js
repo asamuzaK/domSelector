@@ -24,6 +24,7 @@ import {
   DOCUMENT_FRAGMENT_NODE,
   ELEMENT_NODE,
   ID_SELECTOR,
+  MIME_HTML,
   PS_ELEMENT_SELECTOR,
   TARGET_ALL,
   TARGET_FIRST,
@@ -428,7 +429,7 @@ export class Finder extends Evaluator {
     if (
       targetType !== TARGET_FIRST &&
       !precede &&
-      this.document.contentType === 'text/html' &&
+      this.document.contentType === MIME_HTML &&
       canUseFastTagSearch(this.node, tagName)
     ) {
       this.matchLeaves(leaves, this.node, this.matchOpts);

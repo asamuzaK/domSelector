@@ -296,3 +296,7 @@ export const KEYS_PS_ELEMENT_UNSUPPORTED = new Set([
   'slotted',
   'target-text'
 ]);
+
+/* mime type */
+/** @type {string} */
+export const MIME_HTML = 'text/html';
