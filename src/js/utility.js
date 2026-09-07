@@ -60,6 +60,9 @@ const REG_EXACT_ID_ATTRIBUTE =
   /^\[id="([A-Za-z]\w*(?:-(?:\w*|\u00AB\w+\u00BB))*)"\]$/;
 const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z\d_-]*)\]$/;
 
+/* cache */
+const htmlDocumentCache = new WeakMap();
+
 /**
  * Get type of an object.
  * @param {object} o - Object to check.
@@ -222,10 +225,12 @@ export const isHTMLElement = node => {
     return false;
   }
   const { namespaceURI, ownerDocument } = node;
-  return (
-    REG_IS_HTML.test(ownerDocument.contentType) &&
-    (!namespaceURI || namespaceURI === NS_HTML)
-  );
+  let isHTMLDocument = htmlDocumentCache.get(ownerDocument);
+  if (isHTMLDocument === undefined) {
+    isHTMLDocument = REG_IS_HTML.test(ownerDocument.contentType);
+    htmlDocumentCache.set(ownerDocument, isHTMLDocument);
+  }
+  return isHTMLDocument && (!namespaceURI || namespaceURI === NS_HTML);
 };
 
 /**

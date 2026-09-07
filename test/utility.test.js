@@ -381,6 +381,35 @@ describe('utility functions', () => {
   describe('is HTML element', () => {
     const func = util.isHTMLElement;
 
+    it('should read the document content type once for multiple elements', () => {
+      const contentType = document.contentType;
+      let reads = 0;
+      Object.defineProperty(document, 'contentType', {
+        get() {
+          reads++;
+          return contentType;
+        }
+      });
+      assert.strictEqual(func(document.createElement('div')), true);
+      assert.strictEqual(func(document.createElement('span')), true);
+      assert.strictEqual(reads, 1);
+    });
+
+    it('should keep namespaces and adopted documents separate', () => {
+      const xml = document.implementation.createDocument(null, 'root');
+      const html = document.createElement('div');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      for (let i = 0; i < 2; i++) {
+        assert.strictEqual(func(html), true, 'HTML');
+        assert.strictEqual(func(svg), false, 'SVG');
+        assert.strictEqual(func(xml.documentElement), false, 'XML');
+      }
+      xml.adoptNode(html);
+      assert.strictEqual(func(html), false, 'HTML namespace in XML');
+      document.adoptNode(html);
+      assert.strictEqual(func(html), true, 'adopted back into HTML');
+    });
+
     it('should throw TypeError when node argument is undefined', () => {
       assert.throws(() => func(), TypeError, 'Unexpected type Undefined');
     });
