@@ -17,6 +17,7 @@ import {
 
 /* constants */
 import {
+  ATTR_SELECTOR,
   CLASS_SELECTOR,
   DIR_NEXT,
   DIR_PREV,
@@ -508,7 +509,10 @@ export class Finder extends Evaluator {
     if (earlyResult) {
       return earlyResult;
     }
-    if (targetType === TARGET_FIRST) {
+    if (
+      targetType === TARGET_FIRST ||
+      (leaf.type === ATTR_SELECTOR && !compound)
+    ) {
       return this.#fallbackToWalkerResult(
         leaves,
         targetType,
