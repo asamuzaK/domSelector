@@ -1020,6 +1020,101 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
+    it('should reevaluate attribute matches after mutations and cache clearing', () => {
+      const engine = new DOMSelector(window);
+      const node = document.createElement('div');
+      const selector = '[data-state="ready"]';
+      assert.strictEqual(engine.matches(selector, node), false);
+      node.setAttribute('data-state', 'ready');
+      assert.strictEqual(engine.matches(selector, node), true);
+      node.setAttribute('data-state', 'waiting');
+      assert.strictEqual(engine.matches(selector, node), false);
+      node.setAttribute('data-state', 'ready');
+      engine.clear();
+      assert.strictEqual(engine.matches(selector, node), true);
+      engine.clear(true);
+      node.removeAttribute('data-state');
+      assert.strictEqual(engine.matches(selector, node), false);
+    });
+
+    it('should preserve attribute operators, escaping and case flags', () => {
+      const engine = new DOMSelector(window);
+      const node = document.createElement('div');
+      node.setAttribute('data-state', 'Ready now');
+      for (const [selector, expected] of [
+        ['[data-state]', true],
+        ['[data\\-state]', true],
+        ['[data-state="ready now" i]', true],
+        ['[data-state="ready now" s]', false],
+        ['[data-state~="now"]', true],
+        ['[data-state^="Ready"]', true],
+        ['[data-state$="now"]', true],
+        ['[data-state*="dy n"]', true],
+        ['[data-state|="Ready"]', false],
+        ['[data-state^=""]', false],
+        ['[data-state][data-other]', false],
+        ['[data-other], [data-state]', true],
+        ['[data-state] > [data-state]', false]
+      ]) {
+        assert.strictEqual(engine.matches(selector, node), expected, selector);
+        assert.strictEqual(engine.matches(selector, node), expected, selector);
+      }
+    });
+
+    it('should match namespaced attributes in a shadow tree', () => {
+      const engine = new DOMSelector(window);
+      const host = document.createElement('div');
+      const root = host.attachShadow({ mode: 'closed' });
+      const node = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
+      node.setAttributeNS('urn:test', 'test:data-state', 'ready');
+      root.append(node);
+      for (const selector of ['[data-state]', '[*|data-state="ready"]']) {
+        assert.strictEqual(engine.matches(selector, node), true, selector);
+        document.body.append(host);
+        assert.strictEqual(engine.matches(selector, node), true, selector);
+        host.remove();
+      }
+    });
+
+    it('should preserve XML attribute case with a reused selector', () => {
+      const engine = new DOMSelector(window);
+      const xml = new window.DOMParser().parseFromString(
+        '<root/>',
+        'application/xml'
+      );
+      const node = xml.documentElement;
+      const htmlNode = document.createElement('div');
+      htmlNode.setAttribute('data-state', 'ready');
+      node.setAttribute('DATA-STATE', 'ready');
+      for (let i = 0; i < 2; i++) {
+        assert.strictEqual(engine.matches('[data-state]', htmlNode), true);
+        assert.strictEqual(engine.matches('[data-state]', node), false);
+        assert.strictEqual(engine.matches('[DATA-STATE]', node), true);
+      }
+    });
+
+    it('should throw attribute syntax errors after a noexcept call', () => {
+      const engine = new DOMSelector(window);
+      for (const selector of [
+        '[]',
+        '[data-state="ready" q]',
+        '[data-state="ready]'
+      ]) {
+        assert.strictEqual(
+          engine.matches(selector, document.body, { noexcept: true }),
+          false
+        );
+        assert.throws(
+          () => engine.matches(selector, document.body),
+          error =>
+            error instanceof window.DOMException && error.name === SYNTAX_ERR
+        );
+      }
+    });
+
     it('should return false for empty selector with noexcept', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('', document.body, {

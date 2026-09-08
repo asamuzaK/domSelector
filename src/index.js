@@ -8,6 +8,7 @@
 /* import */
 import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
+import { matchAttributeSelector } from './js/matcher.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst, parseSelector } from './js/parser.js';
 import {
@@ -24,6 +25,7 @@ import {
 
 /* constants */
 import {
+  ATTR_SELECTOR,
   DOCUMENT_NODE,
   ELEMENT_NODE,
   MIME_HTML,
@@ -36,6 +38,7 @@ const CACHE_SIZE = 4096;
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
+const REG_ATTRIBUTE = /^\[[\s\S]*\]$/;
 const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 
 /**
@@ -225,6 +228,30 @@ export class DOMSelector {
     if (nwsapiRes.success) {
       return nwsapiRes.result;
     }
+    if (typeof selector === 'string' && REG_ATTRIBUTE.test(selector)) {
+      try {
+        const cacheKey = `attribute_match_${selector}`;
+        let ast = this.#cache.get(cacheKey);
+        if (ast === undefined) {
+          const list = parseSelector(selector);
+          const child = list.children.first;
+          ast =
+            list.children.size === 1 &&
+            child.children.size === 1 &&
+            child.children.first.type === ATTR_SELECTOR
+              ? child.children.first
+              : null;
+          this.#cache.set(cacheKey, ast);
+        }
+        if (ast !== null) {
+          return matchAttributeSelector(ast, node, {
+            globalObject: this.#window
+          });
+        }
+      } catch {
+        // Let Finder handle invalid selectors and error options.
+      }
+    }
     const nodes = this.#findNodes(selector, node, opt, TARGET_SELF);
     return !!(nodes && nodes.size > 0);
   }
@@ -361,6 +388,15 @@ export class DOMSelector {
    * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
    */
   #tryNwsapi(selector, node, targetType, callback, isCheck = false) {
+    const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
+    let filterMatches = this.#cache.get(cacheKey);
+    if (filterMatches === undefined) {
+      filterMatches = filterSelector(selector, targetType);
+      this.#cache.set(cacheKey, filterMatches);
+    }
+    if (!filterMatches) {
+      return { result: null, success: false };
+    }
     const document = node.ownerDocument;
     // jsdom passes an internal document to the constructor but wraps entry nodes.
     if (
@@ -370,19 +406,11 @@ export class DOMSelector {
       document.contentType === MIME_HTML &&
       document.documentElement
     ) {
-      const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
-      let filterMatches = this.#cache.get(cacheKey);
-      if (filterMatches === undefined) {
-        filterMatches = filterSelector(selector, targetType);
-        this.#cache.set(cacheKey, filterMatches);
-      }
-      if (filterMatches) {
-        try {
-          const result = callback(node);
-          return { result, success: true };
-        } catch {
-          // fall through
-        }
+      try {
+        const result = callback(node);
+        return { result, success: true };
+      } catch {
+        // fall through
       }
     }
     return { result: null, success: false };
