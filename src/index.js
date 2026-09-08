@@ -26,6 +26,7 @@ import {
 import {
   DOCUMENT_NODE,
   ELEMENT_NODE,
+  MIME_HTML,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -366,7 +367,7 @@ export class DOMSelector {
       node.isConnected &&
       (document === this.#document ||
         this.#idlUtils?.implForWrapper?.(document) === this.#document) &&
-      document.contentType === 'text/html' &&
+      document.contentType === MIME_HTML &&
       document.documentElement
     ) {
       const cacheKey = `${isCheck ? 'check' : targetType}_${selector}`;
