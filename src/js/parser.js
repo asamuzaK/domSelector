@@ -227,6 +227,24 @@ export const parseSelector = (sel, context = 'selectorList') => {
 };
 
 /**
+ * Parses a selector containing only one attribute selector.
+ * @param {string} selector - The CSS selector string.
+ * @returns {import('css-tree').CssNode|null} The attribute AST, or null for other selectors.
+ */
+export const parseSingleAttributeSelector = selector => {
+  const list = parseSelector(selector);
+  const child = list.children.first;
+  if (
+    list.children.size === 1 &&
+    child.children.size === 1 &&
+    child.children.first.type === ATTR_SELECTOR
+  ) {
+    return child.children.first;
+  }
+  return null;
+};
+
+/**
  * Walks the provided AST to collect selector branches and gather information
  * about its contents.
  * @param {import('css-tree').CssNode} ast - The AST to traverse.

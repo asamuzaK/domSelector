@@ -10,7 +10,11 @@ import { LRUCache } from 'lru-cache';
 import { Finder } from './js/finder.js';
 import { matchAttributeSelector } from './js/matcher.js';
 import { Nwsapi } from './js/nwsapi.js';
-import { extractSubjectsAst, parseSelector } from './js/parser.js';
+import {
+  extractSubjectsAst,
+  parseSelector,
+  parseSingleAttributeSelector
+} from './js/parser.js';
 import {
   extractSubjectsRegExp,
   filterSelector,
@@ -25,7 +29,6 @@ import {
 
 /* constants */
 import {
-  ATTR_SELECTOR,
   DOCUMENT_NODE,
   ELEMENT_NODE,
   MIME_HTML,
@@ -233,14 +236,7 @@ export class DOMSelector {
         const cacheKey = `attribute_match_${selector}`;
         let ast = this.#cache.get(cacheKey);
         if (ast === undefined) {
-          const list = parseSelector(selector);
-          const child = list.children.first;
-          ast =
-            list.children.size === 1 &&
-            child.children.size === 1 &&
-            child.children.first.type === ATTR_SELECTOR
-              ? child.children.first
-              : null;
+          ast = parseSingleAttributeSelector(selector);
           this.#cache.set(cacheKey, ast);
         }
         if (ast !== null) {

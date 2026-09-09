@@ -12,6 +12,7 @@ import * as cssTree from 'css-tree';
 
 /* test */
 import { DOMSelector } from '../src/index.js';
+import { Finder } from '../src/js/finder.js';
 /* constants */
 import { SYNTAX_ERR } from '../src/js/constant.js';
 
@@ -1018,6 +1019,44 @@ describe('DOMSelector', () => {
         noexcept: true
       });
       assert.strictEqual(res, false, 'result');
+    });
+
+    it('should skip Finder setup for a single attribute selector', () => {
+      const engine = new DOMSelector(window);
+      const node = document.createElement('div');
+      node.setAttribute('data-state', 'ready');
+      const setup = sinon.spy(Finder.prototype, 'setup');
+      try {
+        assert.strictEqual(engine.matches('[data-state="ready"]', node), true);
+        node.removeAttribute('data-state');
+        assert.strictEqual(engine.matches('[data-state="ready"]', node), false);
+        assert.strictEqual(setup.callCount, 0);
+      } finally {
+        setup.restore();
+      }
+    });
+
+    it('should use Finder for compound selectors and invalid attributes', () => {
+      const engine = new DOMSelector(window);
+      const node = document.createElement('div');
+      node.setAttribute('data-state', 'ready');
+      node.setAttribute('data-other', '');
+      const setup = sinon.spy(Finder.prototype, 'setup');
+      try {
+        assert.strictEqual(
+          engine.matches('[data-state][data-other]', node),
+          true
+        );
+        assert.strictEqual(setup.callCount, 1);
+        assert.throws(
+          () => engine.matches('[data-state="ready" q]', node),
+          error =>
+            error instanceof window.DOMException && error.name === SYNTAX_ERR
+        );
+        assert.strictEqual(setup.callCount, 2);
+      } finally {
+        setup.restore();
+      }
     });
 
     it('should reevaluate attribute matches after mutations and cache clearing', () => {

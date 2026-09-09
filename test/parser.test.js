@@ -31,6 +31,56 @@ const AN_PLUS_B = 'AnPlusB';
 const RAW = 'Raw';
 const SELECTOR_LIST = 'SelectorList';
 
+describe('parse single attribute selector', () => {
+  it('should return the attribute AST with its value and flags', () => {
+    const ast = parser.parseSingleAttributeSelector('[data-state="ready" i]');
+    assert.strictEqual(ast.type, ATTR_SELECTOR);
+    assert.strictEqual(ast.name.name, 'data-state');
+    assert.strictEqual(ast.matcher, '=');
+    assert.strictEqual(ast.value.value, 'ready');
+    assert.strictEqual(ast.flags, 'i');
+  });
+
+  it('should accept escaped and namespaced attribute names', () => {
+    for (const selector of [
+      '[data\\-state]',
+      '[*|data-state]',
+      ' [data-state] '
+    ]) {
+      const ast = parser.parseSingleAttributeSelector(selector);
+      assert.strictEqual(ast.type, ATTR_SELECTOR, selector);
+      assert.strictEqual(ast.matcher, null, selector);
+    }
+  });
+
+  it('should return null for other selector shapes', () => {
+    for (const selector of [
+      '*',
+      '.ready',
+      'div[data-state]',
+      '[data-state][data-other]',
+      '[data-state], [data-other]',
+      '[data-state] > [data-other]',
+      '[data-state]:is([data-other])'
+    ]) {
+      assert.strictEqual(
+        parser.parseSingleAttributeSelector(selector),
+        null,
+        selector
+      );
+    }
+  });
+
+  it('should preserve parser errors for malformed selectors', () => {
+    for (const selector of ['[]', '[data-state=]']) {
+      assert.throws(
+        () => parser.parseSingleAttributeSelector(selector),
+        error => error.name === SYNTAX_ERR
+      );
+    }
+  });
+});
+
 describe('unescape selector', () => {
   const func = parser.unescapeSelector;
 

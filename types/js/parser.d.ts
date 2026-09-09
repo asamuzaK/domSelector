@@ -1,6 +1,7 @@
 export declare const unescapeSelector: (selector?: string) => string;
 export declare const preprocess: (value: string) => string;
 export declare const parseSelector: (sel: string, context?: string) => import('css-tree').CssNode;
+export declare const parseSingleAttributeSelector: (selector: string) => import('css-tree').CssNode | null;
 export declare const walkAST: (ast?: import('css-tree').CssNode, toObject?: boolean, callback?: (node: import('css-tree').CssNode) => void) => {
     branches: Array<Array<import('css-tree').CssNode>>;
     info: object;
