@@ -43,6 +43,13 @@ Creates an instance of the DOMSelector.
 * `opt` **{object}?** Options:
   * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal cache. Default is 2048.
 
+DOM implementations can additionally supply `idlUtils` (`wrapperForImpl` and
+`implForWrapper`) and `domSymbolTree` for internal node access. With `idlUtils`,
+`getAttributeList(elementImpl)` can return the implementation's attribute list.
+Its entries expose `name`, `value`, `namespaceURI`, and `localName`, as on `Attr`.
+The selector engine reads this list without modifying it. When the callback is
+omitted, attribute-list matching uses the public `attributes` collection.
+
 ### `matches(selector, node, opt?)`
 
 Equivalent to [Element.matches()](https://developer.mozilla.org/docs/Web/API/Element/matches).

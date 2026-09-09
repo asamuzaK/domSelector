@@ -52,6 +52,7 @@ export class DOMSelector {
   #document;
   #finder;
   #idlUtils;
+  #domSymbolTree;
   #nwsapi;
   #cache;
 
@@ -62,14 +63,15 @@ export class DOMSelector {
    * @param {object} [opt] - Options.
    */
   constructor(window, document, opt = {}) {
-    const { cacheSize, idlUtils } = opt;
+    const { cacheSize, idlUtils, domSymbolTree, getAttributeList } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
     this.#idlUtils = idlUtils;
+    this.#domSymbolTree = domSymbolTree;
     this.#cache = new LRUCache({
       max: cacheSize ?? CACHE_SIZE
     });
-    this.#finder = new Finder(this.#window);
+    this.#finder = new Finder(this.#window, { idlUtils, getAttributeList });
     this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
   }
 
@@ -312,7 +314,12 @@ export class DOMSelector {
         node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument;
       return collectAllDescendants(node, document);
     }
-    const fastNodes = findBySimpleAttribute(selector, node);
+    const fastNodes = findBySimpleAttribute(
+      selector,
+      node,
+      this.#idlUtils,
+      this.#domSymbolTree
+    );
     if (Array.isArray(fastNodes)) {
       return fastNodes;
     }

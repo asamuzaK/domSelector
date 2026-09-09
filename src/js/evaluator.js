@@ -38,6 +38,8 @@ const KEYS_UNCACHE = new Set(['any-link', 'defined', 'dir', 'link', 'scope']);
 export class Evaluator {
   /* private fields */
   #domTraverser;
+  #idlUtils;
+  #getAttributeList;
   #eventHandler;
   #filterLeavesCache;
   #invalidateResults;
@@ -49,8 +51,13 @@ export class Evaluator {
 
   /**
    * @param {Window} window - The window object.
+   * @param {object} [opt] - Internal DOM access options.
+   * @param {object} [opt.idlUtils] - Optional implementation/wrapper utilities.
+   * @param {import('./matcher.js').GetAttributeList} [opt.getAttributeList] - Reads the attributes of an element implementation.
    */
-  constructor(window) {
+  constructor(window, { idlUtils, getAttributeList } = {}) {
+    this.#getAttributeList = getAttributeList;
+    this.#idlUtils = idlUtils;
     this.window = window;
     this.documentCache = new WeakMap();
     this.#domTraverser = new DOMTraverser(this);
@@ -351,7 +358,13 @@ export class Evaluator {
     const { type: astType } = ast;
     switch (astType) {
       case ATTR_SELECTOR: {
-        return matchAttributeSelector(ast, node, opt);
+        return matchAttributeSelector(
+          ast,
+          node,
+          opt,
+          this.#idlUtils?.implForWrapper?.(node),
+          this.#getAttributeList
+        );
       }
       case ID_SELECTOR: {
         return node.id === this.getUnescapedName(ast);

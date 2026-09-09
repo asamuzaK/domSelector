@@ -5,6 +5,8 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
+import idlUtils from 'jsdom/lib/generated/idl/utils.js';
+import internalConstants from 'jsdom/lib/jsdom/living/helpers/internal-constants.js';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 
 /* test */
@@ -2656,6 +2658,87 @@ describe('utility functions', () => {
 
   describe('findBySimpleAttribute', () => {
     const func = util.findBySimpleAttribute;
+
+    it('should wrap only matching descendants without creating a TreeWalker', () => {
+      const root = document.createElement('div');
+      root.setAttribute('hidden', '');
+      root.innerHTML =
+        'text<!-- comment --><div hidden><span></span></div><p><span hidden></span></p>';
+      const first = root.firstElementChild;
+      const second = root.lastElementChild.firstElementChild;
+      const wrapped = [];
+      const utils = {
+        implForWrapper: idlUtils.implForWrapper,
+        wrapperForImpl(impl) {
+          wrapped.push(impl);
+          return idlUtils.wrapperForImpl(impl);
+        }
+      };
+      document.createTreeWalker = () => {
+        assert.fail('should not create a public TreeWalker');
+      };
+      const res = func(
+        '[hidden]',
+        root,
+        utils,
+        internalConstants.domSymbolTree
+      );
+      assert.deepEqual(res, [first, second], 'result');
+      assert.deepEqual(
+        wrapped,
+        [idlUtils.implForWrapper(first), idlUtils.implForWrapper(second)],
+        'only matching descendants are wrapped, in tree order'
+      );
+    });
+
+    it('should use internal attribute methods with a public TreeWalker fallback', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div hidden></div><span></span>';
+      const first = root.firstElementChild;
+      let walkers = 0;
+      const createTreeWalker = document.createTreeWalker.bind(document);
+      document.createTreeWalker = (...args) => {
+        walkers++;
+        return createTreeWalker(...args);
+      };
+      for (const child of root.children) {
+        child.hasAttribute = child.getAttributeNames = () => {
+          assert.fail('should use implementation attribute methods');
+        };
+      }
+      const utils = {
+        implForWrapper: idlUtils.implForWrapper,
+        wrapperForImpl() {
+          assert.fail('TreeWalker results are already wrapped');
+        }
+      };
+      assert.deepEqual(func('[hidden]', root, utils), [first], 'result');
+      assert.strictEqual(walkers, 1, 'public TreeWalker fallback');
+    });
+
+    it('should reject unsupported queries before accessing the internal tree', () => {
+      const root = document.createElement('div');
+      const utils = {
+        implForWrapper() {
+          assert.fail('should reject the query before unwrapping');
+        }
+      };
+      const tree = {
+        treeIterator() {
+          assert.fail('should reject the query before traversing');
+        }
+      };
+      for (const selector of [
+        '[lang]',
+        '[hidden=""]',
+        'div[hidden]',
+        '[hidden'
+      ]) {
+        assert.strictEqual(func(selector, root, utils, tree), null, selector);
+      }
+      const xml = document.implementation.createDocument(null, 'root');
+      assert.strictEqual(func('[hidden]', xml, utils, tree), null, 'XML');
+    });
 
     it('should return null if selector is not a string', () => {
       const root = document.createElement('div');

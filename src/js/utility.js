@@ -996,9 +996,16 @@ export const findByExactIdAttribute = (selector, node) => {
  * Finds descendants for simple attribute-presence selectors.
  * @param {string} selector - The CSS selector to match against.
  * @param {Document|DocumentFragment|Element} node - The node to find within.
+ * @param {object} [idlUtils] - Optional implementation/wrapper utilities.
+ * @param {object} [domSymbolTree] - Optional jsdom internal tree.
  * @returns {Array<Element>|null} Matching elements, or `null` when this function does not apply.
  */
-export const findBySimpleAttribute = (selector, node) => {
+export const findBySimpleAttribute = (
+  selector,
+  node,
+  idlUtils,
+  domSymbolTree
+) => {
   if (typeof selector !== 'string') {
     return null;
   }
@@ -1026,11 +1033,30 @@ export const findBySimpleAttribute = (selector, node) => {
   if (document.contentType !== MIME_HTML) {
     return null;
   }
+  if (idlUtils?.implForWrapper && domSymbolTree) {
+    const root = idlUtils.implForWrapper(node);
+    const nodes = [];
+    for (const candidate of domSymbolTree.treeIterator(root)) {
+      if (
+        candidate !== root &&
+        candidate.nodeType === ELEMENT_NODE &&
+        hasAttributeLocalName(candidate, name)
+      ) {
+        nodes.push(idlUtils.wrapperForImpl(candidate));
+      }
+    }
+    return nodes;
+  }
   const walker = document.createTreeWalker(node, SHOW_ELEMENT);
   const nodes = [];
   let nextNode = walker.nextNode();
   while (nextNode) {
-    if (hasAttributeLocalName(nextNode, name)) {
+    if (
+      hasAttributeLocalName(
+        idlUtils?.implForWrapper ? idlUtils.implForWrapper(nextNode) : nextNode,
+        name
+      )
+    ) {
       nodes.push(nextNode);
     }
     nextNode = walker.nextNode();

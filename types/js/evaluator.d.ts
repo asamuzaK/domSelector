@@ -12,7 +12,10 @@ export declare class Evaluator {
     node: Document | DocumentFragment | Element | undefined;
     pseudoElements: any[] | undefined;
     invalidate: boolean | undefined;
-    constructor(window: Window);
+    constructor(window: Window, { idlUtils, getAttributeList }?: {
+        idlUtils?: object;
+        getAttributeList?: import('./matcher.js').GetAttributeList;
+    });
     get eventHandler(): EventHandler;
     get verifyShadowHost(): boolean;
     setup(selector: string, node: Document | DocumentFragment | Element, opt?: {

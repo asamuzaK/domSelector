@@ -37,6 +37,21 @@ const astMetaCache = new WeakMap();
 const htmlAttrMetaCache = new WeakMap();
 
 /**
+ * Attribute data supplied by a DOM implementation.
+ * @typedef {object} AttributeData
+ * @property {string} name - Qualified attribute name.
+ * @property {string} value - Attribute value.
+ * @property {string|null} namespaceURI - Attribute namespace.
+ * @property {string} localName - Attribute local name.
+ */
+
+/**
+ * @callback GetAttributeList
+ * @param {object} element - Unwrapped element implementation.
+ * @returns {readonly AttributeData[]} The element's attributes, in order.
+ */
+
+/**
  * Validates a pseudo-element selector.
  * @param {string} astName - The name of the pseudo-element from the AST.
  * @param {string} astType - The type of the selector from the AST.
@@ -382,12 +397,16 @@ export const matchRequiredPseudoClass = (astName, node, keys) => {
  * @param {boolean} [opt.check] - True if running in an internal check.
  * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
  * @param {object} [opt.globalObject] - The global object.
+ * @param {object} [impl] - Optional element implementation.
+ * @param {GetAttributeList} [getAttributeList] - Reads implementation attributes.
  * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
 export const matchAttributeSelector = (
   ast,
   node,
-  { check, forgive, globalObject } = {}
+  { check, forgive, globalObject } = {},
+  impl,
+  getAttributeList
 ) => {
   const {
     flags: astFlags,
@@ -404,7 +423,8 @@ export const matchAttributeSelector = (
     );
   }
   const astRawName = astName?.name;
-  const isHTML = isHTMLElement(node);
+  const attrNode = impl ?? node;
+  const isHTML = isHTMLElement(attrNode);
   const metaCache = isHTML ? htmlAttrMetaCache : astMetaCache;
   let meta = metaCache.get(ast);
   if (meta === undefined) {
@@ -428,13 +448,13 @@ export const matchAttributeSelector = (
   // Parsing and flag validation still run before this matching shortcut.
   if (isHTML && meta.equalityName !== null) {
     const attrName = meta.equalityName;
-    if (node.getAttribute(attrName) === astValue.value) {
+    if (attrNode.getAttribute(attrName) === astValue.value) {
       return true;
     }
     // Prefixed or duplicate names can hide another matching attribute.
     let occurrences = 0;
     let needsFallback = false;
-    for (const attributeName of node.getAttributeNames()) {
+    for (const attributeName of attrNode.getAttributeNames()) {
       if (attributeName === attrName) {
         occurrences++;
       }
@@ -456,14 +476,15 @@ export const matchAttributeSelector = (
     if (!meta.hasPipe) {
       if (
         meta.astName === 'lang' &&
-        node.hasAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')
+        attrNode.hasAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang')
       ) {
         return false;
       }
-      if (node.hasAttribute(meta.astName)) {
+      if (attrNode.hasAttribute(meta.astName)) {
         return true;
       }
-      const attrs = node.attributes;
+      const attrs =
+        impl && getAttributeList ? getAttributeList(impl) : node.attributes;
       if (!attrs || attrs.length === 0) {
         return false;
       }
@@ -488,7 +509,8 @@ export const matchAttributeSelector = (
       return false;
     }
   }
-  const { attributes } = node;
+  const attributes =
+    impl && getAttributeList ? getAttributeList(impl) : node.attributes;
   if (!attributes || !attributes.length) {
     return false;
   }

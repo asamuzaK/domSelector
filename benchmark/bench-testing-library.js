@@ -4,6 +4,7 @@
 import { run, bench, group } from 'mitata';
 import { JSDOM } from 'jsdom';
 import idlUtils from 'jsdom/lib/generated/idl/utils.js';
+import internalConstants from 'jsdom/lib/jsdom/living/helpers/internal-constants.js';
 import { DOMSelector } from '../src/index.js';
 
 const DEPTH = 4;
@@ -75,7 +76,9 @@ const totalElements = document.querySelectorAll('*').length;
 const domSelector = new DOMSelector(window);
 const documentImpl = idlUtils.implForWrapper(document);
 const jsdomSelector = new DOMSelector(window, documentImpl, {
-  idlUtils
+  idlUtils,
+  domSymbolTree: internalConstants.domSymbolTree,
+  getAttributeList: element => element._attributeList
 });
 const rootImpl = idlUtils.implForWrapper(root);
 const implicitRoleCandidates = [...document.querySelectorAll('input')].map(

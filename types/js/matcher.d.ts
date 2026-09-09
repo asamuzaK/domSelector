@@ -1,3 +1,10 @@
+export type AttributeData = {
+    name: string;
+    value: string;
+    namespaceURI: string | null;
+    localName: string;
+};
+export type GetAttributeList = (element: object) => readonly AttributeData[];
 export declare const matchPseudoElementSelector: (astName: string, astType: string, { forgive, globalObject, warn }?: {
     forgive?: boolean;
     globalObject?: object;
@@ -16,7 +23,7 @@ export declare const matchAttributeSelector: (ast: import('css-tree').CssNode, n
     check?: boolean;
     forgive?: boolean;
     globalObject?: object;
-}) => boolean;
+}, impl?: object, getAttributeList?: GetAttributeList) => boolean;
 export declare const matchTypeSelector: (ast: import('css-tree').CssNode, node: Element, { check, forgive, globalObject }?: {
     check?: boolean;
     forgive?: boolean;
