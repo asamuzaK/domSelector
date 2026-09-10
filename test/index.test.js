@@ -751,6 +751,25 @@ describe('DOMSelector', () => {
   });
 
   describe('matches', () => {
+    for (const [selector, attribute] of [
+      ['#null', 'id'],
+      ['.null', 'class']
+    ]) {
+      it(`should require an attribute for ${selector} selectors`, () => {
+        const node = document.createElement('div');
+        document.body.appendChild(node);
+        const domSelector = new DOMSelector(window);
+
+        assert.strictEqual(domSelector.matches(selector, node), false);
+        node.setAttribute(attribute, '');
+        domSelector.clear();
+        assert.strictEqual(domSelector.matches(selector, node), false);
+        node.setAttribute(attribute, 'null');
+        domSelector.clear();
+        assert.strictEqual(domSelector.matches(selector, node), true);
+      });
+    }
+
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
       node.setAttribute('data-testid', 'target');
@@ -1044,6 +1063,28 @@ describe('DOMSelector', () => {
   });
 
   describe('closest', () => {
+    for (const [selector, attribute] of [
+      ['#null', 'id'],
+      ['.null', 'class']
+    ]) {
+      it(`should require an attribute for ${selector} selectors`, () => {
+        const parent = document.createElement('div');
+        const node = document.createElement('span');
+        parent.setAttribute(attribute, 'null');
+        parent.appendChild(node);
+        document.body.appendChild(parent);
+        const domSelector = new DOMSelector(window);
+
+        assert.strictEqual(domSelector.closest(selector, node), parent);
+        parent.removeAttribute(attribute);
+        domSelector.clear();
+        assert.strictEqual(domSelector.closest(selector, node), null);
+        node.setAttribute(attribute, 'null');
+        domSelector.clear();
+        assert.strictEqual(domSelector.closest(selector, node), node);
+      });
+    }
+
     it('should find the nearest attribute match after mutations', () => {
       document.body.innerHTML = `
         <div id="outer" data-rootownerid>

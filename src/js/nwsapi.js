@@ -738,7 +738,7 @@ export class Nwsapi {
   compileId(selector, source) {
     const match = selector.match(Nwsapi.#patterns.id);
     return {
-      source: `if(/^${match[1]}$/.test(e.getAttribute("id"))){${source}}`,
+      source: `if(/^${match[1]}$/.test(e.getAttribute("id")??"")){${source}}`,
       selector: match.pop()
     };
   }
@@ -753,7 +753,7 @@ export class Nwsapi {
     const match = selector.match(Nwsapi.#patterns.className);
     const compatLocal = this.#quirksMode ? 'i' : '';
     return {
-      source: `if(/(^|\\s)${match[1]}(\\s|$)/${compatLocal}.test(e.getAttribute("class"))){${source}}`,
+      source: `if(/(^|\\s)${match[1]}(\\s|$)/${compatLocal}.test(e.getAttribute("class")??"")){${source}}`,
       selector: match.pop()
     };
   }
