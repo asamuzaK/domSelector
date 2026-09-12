@@ -1381,14 +1381,14 @@ export class PseudoClassEvaluator {
    * @returns {object|null} The wrapper object containing the WeakSet, or null.
    */
   #buildHasAllowlist(leaves) {
-    const { seed } = findBestSeed(leaves);
-    if (!seed) {
-      return null;
-    }
     if (
       this.#evaluator.shadow ||
       this.#evaluator.node.nodeType === DOCUMENT_FRAGMENT_NODE
     ) {
+      return null;
+    }
+    const { seed } = findBestSeed(leaves);
+    if (!seed) {
       return null;
     }
     let seedElements = null;
@@ -1526,27 +1526,6 @@ export class PseudoClassEvaluator {
         const [leaf] = leaves;
         const filterLeaves = this.#evaluator.getFilterLeaves(leaves);
         const isLastFilter = filterLeaves.length === 0;
-        if (
-          leaf.type === ID_SELECTOR &&
-          canUseFastIdSearch(node, this.#evaluator.root)
-        ) {
-          const leafName = unescapeSelector(leaf.name);
-          const foundNode = this.#evaluator.root.getElementById(leafName);
-          if (foundNode && foundNode !== node && node.contains(foundNode)) {
-            if (
-              isLastFilter ||
-              this.#evaluator.matchLeaves(filterLeaves, foundNode, opt)
-            ) {
-              if (isLastLeaf) {
-                return true;
-              }
-              if (this.#matchHasPseudoFunc(remainingLeaves, foundNode, opt)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        }
         if (leaf.type === CLASS_SELECTOR && canUseFastClassSearch(node)) {
           const leafName = unescapeSelector(leaf.name);
           const collection = node.getElementsByClassName(leafName);
@@ -1588,6 +1567,26 @@ export class PseudoClassEvaluator {
             }
           }
           return false;
+        }
+        if (
+          leaf.type === ID_SELECTOR &&
+          canUseFastIdSearch(node, this.#evaluator.root)
+        ) {
+          const leafName = unescapeSelector(leaf.name);
+          const foundNode = this.#evaluator.root.getElementById(leafName);
+          if (foundNode && foundNode !== node && node.contains(foundNode)) {
+            if (
+              isLastFilter ||
+              this.#evaluator.matchLeaves(filterLeaves, foundNode, opt)
+            ) {
+              if (isLastLeaf) {
+                return true;
+              }
+              if (this.#matchHasPseudoFunc(remainingLeaves, foundNode, opt)) {
+                return true;
+              }
+            }
+          }
         }
         const walker = this.#evaluator.createTreeWalker(node);
         traverseNode(node, walker);
