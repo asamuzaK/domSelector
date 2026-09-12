@@ -3917,5 +3917,201 @@ describe('patched JSDOM', () => {
       );
       assert.deepEqual(res, [], 'result');
     });
+
+    it('should update :nth-child selector results after DOM mutation', () => {
+      const dom = new DOMParser().parseFromString(
+        `<root>
+          <item id="a"/>
+          <item id="b"/>
+        </root>`,
+        'application/xml'
+      );
+      const root = dom.documentElement;
+      const res1 = root.querySelectorAll('item:nth-child(2)');
+      assert.deepEqual(res1, [dom.getElementById('b')]);
+      const a = dom.getElementById('a');
+      const x = dom.createElement('item');
+      root.insertBefore(x, a);
+      const res2 = root.querySelectorAll('item:nth-child(2)');
+      assert.deepEqual(res2, [dom.getElementById('a')]);
+    });
+
+    it('should update :nth-child selector results after class mutation', () => {
+      const dom = new DOMParser().parseFromString(
+        `<root>
+          <item id="a" class="selected"/>
+          <item id="b"/>
+          <item id="c" class="selected"/>
+        </root>`,
+        'application/xml'
+      );
+      const root = dom.documentElement;
+      const res1 = root.querySelectorAll('item:nth-child(2 of .selected)');
+      assert.deepEqual(res1, [dom.getElementById('c')]);
+      const b = dom.getElementById('b');
+      b.classList.add('selected');
+      const res2 = root.querySelectorAll('item:nth-child(2 of .selected)');
+      assert.deepEqual(res2, [dom.getElementById('b')]);
+    });
+
+    it('should update :nth-child(n of S) results after class mutations', () => {
+      const div1 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      div1.id = 'div1';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li1.classList.add('li');
+      li2.classList.add('li');
+      li3.id = 'li3';
+      li3.classList.add('li');
+      ul1.append(li1, li2, li3);
+      div1.appendChild(ul1);
+      document.body.appendChild(div1);
+      const resA = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resA, [li3], 'resA');
+      li2.classList.add('li');
+      const resB = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resB, [li2], 'resB');
+      li2.classList.remove('li');
+      const resC = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resC, [li3], 'resC');
+      // :is()
+      const resIsA = document.querySelectorAll(':nth-child(2 of :is(.li))');
+      assert.deepEqual(resIsA, [li3], 'resIsA');
+      li2.classList.add('li');
+      const resIsB = document.querySelectorAll(':nth-child(2 of :is(.li))');
+      assert.deepEqual(resIsB, [li2], 'resIsB');
+      li2.classList.remove('li');
+      const resIsC = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resIsC, [li3], 'resIsC');
+    });
+
+    it('should update :has() results after mutations', () => {
+      const div1 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      div1.id = 'div1';
+      ul1.id = 'ul1';
+      li1.id = 'li';
+      li2.classList.add('li');
+      li3.id = 'li';
+      ul1.append(li1, li2, li3);
+      div1.appendChild(ul1);
+      document.body.appendChild(div1);
+      assert.deepEqual(ul1.matches('ul:has(#li)'), true, 'ul1 matches');
+      assert.deepEqual(
+        document.querySelectorAll('ul:has(#li)'),
+        [ul1],
+        'ul1 selected'
+      );
+      const resA = document.querySelectorAll('ul:has(#li.li)');
+      assert.deepEqual(resA, [], 'resA');
+      li2.id = 'li';
+      assert.deepEqual(li2.matches('#li.li'), true, 'li2 matches');
+      const resB = document.querySelectorAll('ul:has(#li.li)');
+      assert.deepEqual(resB, [ul1], 'resB');
+      li2.classList.remove('li');
+      assert.deepEqual(li2.matches('#li.li'), false, 'li2 unmatches');
+      console.log('ul:has(#li.li) after');
+      const resC = document.querySelectorAll('ul:has(#li.li)');
+      assert.deepEqual(resC, [], 'resC');
+    });
+
+    it('should correctly evaluate :has() involving duplicate IDs', () => {
+      const container = document.createElement('div');
+      const parent1 = document.createElement('div');
+      parent1.className = 'parent';
+      const child1 = document.createElement('span');
+      child1.id = 'dup';
+      parent1.appendChild(child1);
+      container.appendChild(parent1);
+      document.body.appendChild(container);
+      const res1 = [...document.querySelectorAll('.parent:has(div#dup)')];
+      assert.deepEqual(res1, [], 'no parent contains div#dup initially');
+      const parent2 = document.createElement('div');
+      parent2.className = 'parent';
+      const child2 = document.createElement('div');
+      child2.id = 'dup';
+      parent2.appendChild(child2);
+      container.appendChild(parent2);
+      const res2 = [...document.querySelectorAll('.parent:has(div#dup)')];
+      assert.deepEqual(
+        res2,
+        [parent2],
+        'matches parent2 containing div#dup after mutation'
+      );
+      const res3 = [...document.querySelectorAll('.parent:has(:is(#dup))')];
+      assert.deepEqual(
+        res3,
+        [parent1, parent2],
+        'matches both parents with :has(:is(#dup))'
+      );
+      container.remove();
+    });
+
+    it('should correctly match :has(:is(...)) in separate deep trees', () => {
+      const container = document.createElement('div');
+      const wrapper1 = document.createElement('div');
+      const parent1 = document.createElement('div');
+      parent1.className = 'deep-parent';
+      const child1 = document.createElement('span');
+      child1.id = 'deep-dup';
+      parent1.appendChild(child1);
+      wrapper1.appendChild(parent1);
+      const wrapper2 = document.createElement('div');
+      const parent2 = document.createElement('div');
+      parent2.className = 'deep-parent';
+      const child2 = document.createElement('div');
+      child2.id = 'deep-dup';
+      parent2.appendChild(child2);
+      wrapper2.appendChild(parent2);
+      container.appendChild(wrapper1);
+      container.appendChild(wrapper2);
+      document.body.appendChild(container);
+      const res = [
+        ...document.querySelectorAll('.deep-parent:has(:is(#deep-dup))')
+      ];
+      assert.deepEqual(
+        res,
+        [parent1, parent2],
+        'matches both deep parents avoiding allowlist clipping'
+      );
+      container.remove();
+    });
+
+    it('should not use ID inside :not() as a seed', () => {
+      const container = document.createElement('div');
+      const wrapper1 = document.createElement('div');
+      const parent1 = document.createElement('div');
+      parent1.className = 'not-parent';
+      const child1 = document.createElement('span');
+      child1.id = 'not-seed';
+      parent1.appendChild(child1);
+      wrapper1.appendChild(parent1);
+      const wrapper2 = document.createElement('div');
+      const parent2 = document.createElement('div');
+      parent2.className = 'not-parent';
+      const child2 = document.createElement('span');
+      child2.className = 'other-child';
+      parent2.appendChild(child2);
+      wrapper2.appendChild(parent2);
+      container.appendChild(wrapper1);
+      container.appendChild(wrapper2);
+      document.body.appendChild(container);
+      const res = [
+        ...document.querySelectorAll('.not-parent:has(:not(#not-seed))')
+      ];
+      assert.deepEqual(
+        res,
+        [parent2],
+        'matches parent2 containing elements other than #not-seed'
+      );
+      container.remove();
+    });
   });
 });

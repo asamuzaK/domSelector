@@ -2256,6 +2256,85 @@ describe('utility functions', () => {
 
     it('should select TYPE_SELECTOR while ignoring universal selector', () => {
       const nodes = [
+        { type: TYPE_SELECTOR, name: '*' },
+        { type: TYPE_SELECTOR, name: 'div' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'tag', value: 'div' });
+      assert.strictEqual(res.priority, 1);
+    });
+
+    it('should select CLASS_SELECTOR and override TYPE_SELECTOR', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: 'div' },
+        { type: CLASS_SELECTOR, name: 'active' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'active' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should select ID_SELECTOR and override CLASS_SELECTOR', () => {
+      const nodes = [{ type: ID_SELECTOR, name: 'target' }];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'id', value: 'target' });
+      assert.strictEqual(res.priority, 3);
+    });
+
+    it('should not select ID_SELECTOR and instead use CLASS_SELECTOR', () => {
+      const nodes = [
+        { type: CLASS_SELECTOR, name: 'active' },
+        { type: ID_SELECTOR, name: 'target' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'active' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should traverse nested arrays to find best selector seed', () => {
+      const nodes = [
+        [{ type: TYPE_SELECTOR, name: 'span' }],
+        [{ type: CLASS_SELECTOR, name: 'inner' }]
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res.seed, { type: 'class', value: 'inner' });
+      assert.strictEqual(res.priority, 2);
+    });
+
+    it('should return immediately if initial state priority is 3', () => {
+      const nodes = [{ type: CLASS_SELECTOR, name: 'new-class' }];
+      const initialState = {
+        seed: { type: 'id', value: 'existing-id' },
+        priority: 3
+      };
+      const res = func(nodes, initialState);
+      assert.deepEqual(res.seed, { type: 'id', value: 'existing-id' });
+      assert.strictEqual(res.priority, 3);
+    });
+
+    it('should ignore TYPE_SELECTOR when name is undefined or empty', () => {
+      const nodes = [
+        { type: TYPE_SELECTOR, name: undefined },
+        { type: TYPE_SELECTOR, name: '' }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res, { seed: null, priority: 0 });
+    });
+
+    it('should not pick invalid seed for pseudo-class only selectors', () => {
+      const nodes = [
+        {
+          type: PS_CLASS_SELECTOR,
+          name: 'dir',
+          children: [{ type: 999, value: 'rtl' }]
+        }
+      ];
+      const res = func(nodes);
+      assert.deepEqual(res, { seed: null, priority: 0 });
+    });
+
+    it('should select TYPE_SELECTOR while ignoring universal selector', () => {
+      const nodes = [
         { type: TYPE_SELECTOR, name: '*' }, // ignored
         { type: TYPE_SELECTOR, name: 'div' }
       ];
@@ -2274,24 +2353,13 @@ describe('utility functions', () => {
       assert.strictEqual(res.priority, 2);
     });
 
-    it('should select ID_SELECTOR and override CLASS_SELECTOR', () => {
-      const nodes = [
-        { type: CLASS_SELECTOR, name: 'active' },
-        { type: ID_SELECTOR, name: 'target' }, // overwrites priority
-        { type: TYPE_SELECTOR, name: 'div' } // ignored
-      ];
-      const res = func(nodes);
-      assert.deepEqual(res.seed, { type: 'id', value: 'target' });
-      assert.strictEqual(res.priority, 3);
-    });
-
-    it('should stop traversal immediately when ID_SELECTOR is found', () => {
+    it('should not stop traversal but does not set seed', () => {
       const nodes = [
         { type: ID_SELECTOR, name: 'first-id' },
         { type: ID_SELECTOR, name: 'second-id' }
       ];
       const res = func(nodes);
-      assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
+      assert.deepEqual(res.seed, null);
     });
 
     it('should traverse nested arrays to find best selector seed', () => {
@@ -2304,7 +2372,7 @@ describe('utility functions', () => {
       assert.strictEqual(res.priority, 2);
     });
 
-    it('should traverse node children recursively for best seed', () => {
+    it('should not traverse node children recursively for best seed', () => {
       const nodes = [
         {
           type: 999,
@@ -2318,56 +2386,10 @@ describe('utility functions', () => {
         }
       ];
       const res = func(nodes);
-      assert.deepEqual(res.seed, { type: 'class', value: 'deep' });
-      assert.strictEqual(res.priority, 2);
-    });
-
-    it('should return immediately if initial state priority is 3', () => {
-      const nodes = [
-        { type: CLASS_SELECTOR, name: 'new-class' },
-        { type: ID_SELECTOR, name: 'new-id' }
-      ];
-      const initialState = {
-        seed: { type: 'id', value: 'existing-id' },
-        priority: 3
-      };
-      const res = func(nodes, initialState);
-      assert.deepEqual(res.seed, { type: 'id', value: 'existing-id' });
-      assert.strictEqual(res.priority, 3);
-    });
-
-    it('should break loop and skip remaining nodes once ID is found', () => {
-      const nodes = [
-        { type: TYPE_SELECTOR, name: 'div' },
-        { type: ID_SELECTOR, name: 'first-id' },
-        { type: ID_SELECTOR, name: 'second-id' },
-        null,
-        [{ type: ID_SELECTOR, name: 'third-id' }]
-      ];
-      const res = func(nodes);
-      assert.deepEqual(res.seed, { type: 'id', value: 'first-id' });
-      assert.strictEqual(res.priority, 3);
-    });
-
-    it('should ignore TYPE_SELECTOR when name is undefined or empty', () => {
-      const nodes = [
-        { type: TYPE_SELECTOR, name: undefined },
-        { type: TYPE_SELECTOR, name: '' }
-      ];
-      const res = func(nodes);
-      assert.deepEqual(res, { seed: null, priority: 0 });
-    });
-
-    it('should not pick invalid seed for pseudo-class only selectors like :dir()', () => {
-      const nodes = [
-        {
-          type: PS_CLASS_SELECTOR,
-          name: 'dir',
-          children: [{ type: 999, value: 'rtl' }]
-        }
-      ];
-      const res = func(nodes);
-      assert.deepEqual(res, { seed: null, priority: 0 });
+      assert.deepEqual(res, {
+        priority: 0,
+        seed: null
+      });
     });
   });
 

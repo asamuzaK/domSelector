@@ -113,15 +113,29 @@ describe('PseudoClassEvaluator', () => {
         if (!leaves || !leaves.length) {
           return true;
         }
-        const [leaf] = leaves;
-        if (leaf.type === TYPE_SELECTOR) {
-          return leaf.name === '*' || node.localName === leaf.name;
-        }
-        if (leaf.type === ID_SELECTOR) {
-          return node.id === leaf.name;
-        }
-        if (leaf.type === CLASS_SELECTOR) {
-          return node.classList.contains(leaf.name);
+        for (const leaf of leaves) {
+          if (leaf.type === TYPE_SELECTOR) {
+            if (leaf.name !== '*' && node.localName !== leaf.name) {
+              return false;
+            }
+          } else if (leaf.type === ID_SELECTOR) {
+            if (node.id !== leaf.name) {
+              return false;
+            }
+          } else if (leaf.type === CLASS_SELECTOR) {
+            if (!node.classList.contains(leaf.name)) {
+              return false;
+            }
+          } else if (leaf.type === ATTR_SELECTOR) {
+            if (
+              leaf.name &&
+              leaf.name.name &&
+              node.hasAttribute &&
+              !node.hasAttribute(leaf.name.name)
+            ) {
+              return false;
+            }
+          }
         }
         return true;
       }),

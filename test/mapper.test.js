@@ -208,14 +208,14 @@ describe('Mapper', () => {
       );
     });
 
-    it('should set invalidate to false for standalone nth-child of', () => {
+    it('should set invalidate to true for nth-child of selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':nth-child(2 of .foo)';
       mapper.correspond(selector);
       assert.strictEqual(
         mockContext.invalidate,
-        false,
-        'invalidate should be false if only nth-child of selector exists'
+        true,
+        'invalidate should be true if only nth-child of selector exists'
       );
     });
 

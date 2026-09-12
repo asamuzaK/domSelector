@@ -843,13 +843,12 @@ export const findBestSeed = (nodes, state = { seed: null, priority: 0 }) => {
     if (Array.isArray(node)) {
       findBestSeed(node, state);
     } else if (node && typeof node === 'object') {
-      // ID Selector (Fastest)
-      if (node.type === ID_SELECTOR) {
+      if (node.type === ID_SELECTOR && nodes.length === 1) {
         state.seed = { type: 'id', value: node.name };
         state.priority = 3;
         return state;
-      } else if (node.type === CLASS_SELECTOR && state.priority < 2) {
-        // Class Selector
+      }
+      if (node.type === CLASS_SELECTOR && state.priority < 2) {
         state.seed = { type: 'class', value: node.name };
         state.priority = 2;
       } else if (
@@ -858,12 +857,8 @@ export const findBestSeed = (nodes, state = { seed: null, priority: 0 }) => {
         node.name &&
         node.name !== '*'
       ) {
-        // Type/Tag Selector (Excludes universal '*')
         state.seed = { type: 'tag', value: node.name };
         state.priority = 1;
-      }
-      if (node.children) {
-        findBestSeed(node.children, state);
       }
     }
   }
