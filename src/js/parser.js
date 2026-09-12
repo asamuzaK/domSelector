@@ -74,7 +74,7 @@ const REG_SHADOW_PS_ELEMENT = /^part|slotted$/;
 
 /**
  * Unescapes a CSS selector string.
- * @param {string} [selector=''] - The CSS selector to unescape.
+ * @param {string} [selector] - The CSS selector to unescape.
  * @returns {string} The unescaped selector string.
  */
 export const unescapeSelector = (selector = '') => {
@@ -182,7 +182,7 @@ export const preprocess = value => {
 /**
  * Creates an Abstract Syntax Tree (AST) from a CSS selector string.
  * @param {string} sel - The CSS selector string.
- * @param {string} [context='selectorList'] - Parse what part of CSS.
+ * @param {string} [context] - Parse what part of CSS.
  * @returns {import('css-tree').CssNode} The parsed AST object.
  */
 export const parseSelector = (sel, context = 'selectorList') => {
@@ -229,8 +229,8 @@ export const parseSelector = (sel, context = 'selectorList') => {
 /**
  * Walks the provided AST to collect selector branches and gather information
  * about its contents.
- * @param {import('css-tree').CssNode} [ast={}] - The AST to traverse.
- * @param {boolean} [toObject=false] - True if converts ast to object.
+ * @param {import('css-tree').CssNode} [ast] - The AST to traverse.
+ * @param {boolean} [toObject] - True if converts ast to object.
  * @param {(node: import('css-tree').CssNode) => void} [callback] - Optional callback for each node.
  * @returns {{branches: Array<Array<import('css-tree').CssNode>>, info: object}} An object containing the selector branches and info.
  */

@@ -3,10 +3,7 @@ export declare class PseudoClassEvaluator {
     constructor(evaluator: import('./evaluator.js').Evaluator);
     clearResults(all?: boolean): void;
     reset(): void;
-    matchPseudoClassSelector(ast: import('css-tree').CssNode, node: Element, opt?: {
-        forgive?: boolean;
-        warn?: boolean;
-    }): boolean;
+    matchPseudoClassSelector(ast: import('css-tree').CssNode, node: Element, opt?: import('../index.js').FindOptions): boolean;
     private #evaluateLogicalPseudo;
     private #evaluatePseudoClassFunc;
     private #matchActivePseudoClass;

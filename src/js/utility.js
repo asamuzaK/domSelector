@@ -94,7 +94,7 @@ export const verifyArray = (arr, type) => {
  * Generate a DOMException.
  * @param {string} msg - The error message.
  * @param {string} name - The error name.
- * @param {object} [globalObject=globalThis] - The global object (e.g., Window).
+ * @param {object} [globalObject] - The global object (e.g., Window).
  * @returns {DOMException} The generated DOMException object.
  */
 export const generateException = (msg, name, globalObject = globalThis) => {
@@ -154,7 +154,7 @@ export const resolveContent = node => {
  * Traverse node tree with a TreeWalker.
  * @param {Element} node - The target node.
  * @param {TreeWalker} walker - The TreeWalker instance.
- * @param {boolean} [force=false] - Traverse only to the next node.
+ * @param {boolean} [force] - Traverse only to the next node.
  * @returns {Element|null} - The current Element node if found, otherwise null.
  */
 export const traverseNode = (node, walker, force = false) => {
@@ -757,8 +757,8 @@ export const getNamespaceURI = (ns, node) => {
 
 /**
  * Check if a namespace is declared.
- * @param {string} [ns=''] - The namespace.
- * @param {Element} [node={}] - The Element node.
+ * @param {string} [ns] - The namespace.
+ * @param {Element} [node] - The Element node.
  * @returns {boolean} - True if the namespace is declared.
  */
 export const isNamespaceDeclared = (ns = '', node = {}) => {
@@ -817,7 +817,7 @@ export const compareNodes = (a, b) => {
 
 /**
  * Sort a collection of nodes.
- * @param {Array<Element>|Set<Element>} [nodes=[]] - Collection of nodes.
+ * @param {Array<Element>|Set<Element>} [nodes] - Collection of nodes.
  * @returns {Array<Element>} - Collection of sorted nodes.
  */
 export const sortNodes = (nodes = []) => {

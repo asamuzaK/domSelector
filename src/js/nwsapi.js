@@ -1339,7 +1339,7 @@ export class Nwsapi {
 
   /**
    * Clears internal caches and state.
-   * @param {boolean} [clearAll=false] - Whether to clear all caches.
+   * @param {boolean} [clearAll] - Whether to clear all caches.
    */
   clear(clearAll = false) {
     if (clearAll) {

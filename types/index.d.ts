@@ -9,9 +9,25 @@ export type CheckResult = {
     pseudoElement: string | null;
     ast: import('css-tree').CssNode | null;
 };
+export type UserOptions = {
+    noexcept?: boolean;
+    warn?: boolean;
+};
+export type FindOptions = {
+    dir?: string;
+    check?: boolean;
+    forgive?: boolean;
+    noexcept?: boolean;
+    warn?: boolean;
+    isShadowRoot?: boolean;
+    globalObject?: object;
+};
 export declare class DOMSelector {
     #private;
-    constructor(window: Window, document: Document, opt?: object);
+    constructor(window: Window, document: Document, opt?: {
+        cacheSize?: number;
+        idlUtils?: object;
+    });
     clear(clearAll?: boolean): void;
     extractSubjects(selector: string, caseSensitive?: boolean): Array<{
         id: string | null;
@@ -22,10 +38,10 @@ export declare class DOMSelector {
     check(selector: string, node: Element, opt?: {
         requireAst?: boolean;
     }): CheckResult | null;
-    matches(selector: string, node: Element, opt?: object): boolean;
-    closest(selector: string, node: Element, opt?: object): Element | null;
-    querySelector(selector: string, node: Document | DocumentFragment | Element, opt?: object): Element | null;
-    querySelectorAll(selector: string, node: Document | DocumentFragment | Element, opt?: object): Array<Element>;
+    matches(selector: string, node: Element, opt?: UserOptions): boolean;
+    closest(selector: string, node: Element, opt?: UserOptions): Element | null;
+    querySelector(selector: string, node: Document | DocumentFragment | Element, opt?: UserOptions): Element | null;
+    querySelectorAll(selector: string, node: Document | DocumentFragment | Element, opt?: UserOptions): Array<Element>;
     private #wrapNode;
     private #validateNodeType;
     private #tryNwsapi;

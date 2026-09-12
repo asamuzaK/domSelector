@@ -38,14 +38,14 @@
     "commander": "^15.0.0",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^64.3.8",
+    "eslint-plugin-jsdoc": "^64.3.9",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-regexp": "^3.3.0",
     "eslint-plugin-unicorn": "^74.0.0",
     "globals": "^17.12.0",
     "jsdom": "^30.0.1",
     "mitata": "^1.0.34",
-    "mocha": "^12.0.0",
+    "mocha": "^12.0.1",
     "neostandard": "^0.14.0-next.1",
     "prettier": "^3.9.6",
     "sinon": "^22.1.0",
@@ -76,5 +76,5 @@
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
-  "version": "9.1.2"
+  "version": "9.1.3"
 }
