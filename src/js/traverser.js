@@ -73,8 +73,7 @@ export class DOMTraverser {
    * Yields combinator matches.
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @yields {Element} The matched node.
    */
   *yieldCombinatorMatches(twig, node, opt = {}) {
@@ -163,7 +162,7 @@ export class DOMTraverser {
    * Finds descendant nodes and yields matches.
    * @param {Array<object>} leaves - The AST leaves.
    * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
   *yieldFindDescendantNodes(leaves, baseNode, opt) {
@@ -240,7 +239,7 @@ export class DOMTraverser {
    * Traverses all descendant nodes and yields matches.
    * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
    * @param {Array<object>} leaves - The AST leaves.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
   *yieldTraverseAllDescendants(baseNode, leaves, opt) {

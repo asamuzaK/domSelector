@@ -38,11 +38,29 @@ const CACHE_SIZE = 4096;
 const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 
+/* types */
 /**
  * @typedef {object} CheckResult
  * @property {boolean} match - The match result.
  * @property {string|null} pseudoElement - The pseudo-element, if any.
  * @property {import('css-tree').CssNode|null} ast - The AST object.
+ */
+
+/**
+ * @typedef {object} UserOptions
+ * @property {boolean} [noexcept] - True to suppress exceptions.
+ * @property {boolean} [warn] - True to enable console warnings.
+ */
+
+/**
+ * @typedef {object} FindOptions
+ * @property {string} [dir] - The traversal direction.
+ * @property {boolean} [check] - True if running in internal check mode.
+ * @property {boolean} [forgive] - True to ignore unknown or invalid selectors.
+ * @property {boolean} [noexcept] - True to suppress exceptions.
+ * @property {boolean} [warn] - True to enable console warnings.
+ * @property {boolean} [isShadowRoot] - Indicates if the node is a ShadowRoot.
+ * @property {object} [globalObject] - The Window object.
  */
 
 /* DOMSelector */
@@ -57,9 +75,11 @@ export class DOMSelector {
 
   /**
    * Creates an instance of DOMSelector.
-   * @param {Window} window - The window object.
-   * @param {Document} document - The document object.
+   * @param {Window} window - The Window object.
+   * @param {Document} document - The Document object.
    * @param {object} [opt] - Options.
+   * @param {number} [opt.cacheSize] - The maximum size of the LRU cache.
+   * @param {object} [opt.idlUtils] - The internal IDL wrapper used for jsdom.
    */
   constructor(window, document, opt = {}) {
     const { cacheSize, idlUtils } = opt;
@@ -199,7 +219,12 @@ export class DOMSelector {
         pseudoElement: null
       };
     }
-    const options = { ...opt, check: true, noexcept: true, warn: false };
+    const options = {
+      check: true,
+      noexcept: true,
+      warn: false,
+      globalObject: this.#window
+    };
     return this.#finder.setup(selector, node, options).find(TARGET_SELF);
   }
 
@@ -207,14 +232,19 @@ export class DOMSelector {
    * Returns true if the element matches the selector.
    * @param {string} selector - The CSS selector to match against.
    * @param {Element} node - The element node to test.
-   * @param {object} [opt] - Optional parameters.
+   * @param {UserOptions} [opt] - User options.
    * @returns {boolean} True if the element matches, false otherwise.
    */
   matches(selector, node, opt = {}) {
     node = this.#wrapNode(node);
+    const options = {
+      ...opt,
+      check: false,
+      globalObject: this.#window
+    };
     const error = this.#validateNodeType(node, true);
     if (error) {
-      return this.#finder.onError(error, opt);
+      return this.#finder.onError(error, options);
     }
     if (REG_UNIVERSAL.test(selector)) {
       return true;
@@ -225,7 +255,7 @@ export class DOMSelector {
     if (nwsapiRes.success) {
       return nwsapiRes.result;
     }
-    const nodes = this.#findNodes(selector, node, opt, TARGET_SELF);
+    const nodes = this.#findNodes(selector, node, options, TARGET_SELF);
     return !!(nodes && nodes.size > 0);
   }
 
@@ -233,14 +263,19 @@ export class DOMSelector {
    * Traverses up the DOM tree to find the first node that matches the selector.
    * @param {string} selector - The CSS selector to match against.
    * @param {Element} node - The element from which to start traversing.
-   * @param {object} [opt] - Optional parameters.
+   * @param {UserOptions} [opt] - User options.
    * @returns {Element|null} The first matching ancestor element, or `null`.
    */
   closest(selector, node, opt = {}) {
     node = this.#wrapNode(node);
+    const options = {
+      ...opt,
+      check: false,
+      globalObject: this.#window
+    };
     const error = this.#validateNodeType(node, true);
     if (error) {
-      return this.#finder.onError(error, opt);
+      return this.#finder.onError(error, options);
     }
     if (REG_UNIVERSAL.test(selector)) {
       return node;
@@ -251,7 +286,7 @@ export class DOMSelector {
     if (nwsapiRes.success) {
       return nwsapiRes.result;
     }
-    const nodes = this.#findNodes(selector, node, opt, TARGET_LINEAL);
+    const nodes = this.#findNodes(selector, node, options, TARGET_LINEAL);
     if (nodes && nodes.size) {
       let refNode = node;
       while (refNode) {
@@ -268,14 +303,19 @@ export class DOMSelector {
    * Returns the first element within the subtree that matches the selector.
    * @param {string} selector - The CSS selector to match.
    * @param {Document|DocumentFragment|Element} node - The node to find within.
-   * @param {object} [opt] - Optional parameters.
+   * @param {UserOptions} [opt] - User options.
    * @returns {Element|null} The first matching element, or `null`.
    */
   querySelector(selector, node, opt = {}) {
     node = this.#wrapNode(node);
+    const options = {
+      ...opt,
+      check: false,
+      globalObject: this.#window
+    };
     const error = this.#validateNodeType(node);
     if (error) {
-      this.#finder.onError(error, opt);
+      this.#finder.onError(error, options);
       return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
@@ -285,7 +325,7 @@ export class DOMSelector {
     if (fastNode === null || fastNode?.nodeType === ELEMENT_NODE) {
       return fastNode;
     }
-    const nodes = this.#findNodes(selector, node, opt, TARGET_FIRST);
+    const nodes = this.#findNodes(selector, node, options, TARGET_FIRST);
     if (nodes && nodes.size) {
       return nodes.values().next().value;
     }
@@ -297,14 +337,19 @@ export class DOMSelector {
    * Note: This method returns an Array, not a NodeList.
    * @param {string} selector - The CSS selector to match.
    * @param {Document|DocumentFragment|Element} node - The node to find within.
-   * @param {object} [opt] - Optional parameters.
+   * @param {UserOptions} [opt] - User options.
    * @returns {Array<Element>} An array of elements, or an empty array.
    */
   querySelectorAll(selector, node, opt = {}) {
     node = this.#wrapNode(node);
+    const options = {
+      ...opt,
+      check: false,
+      globalObject: this.#window
+    };
     const error = this.#validateNodeType(node);
     if (error) {
-      this.#finder.onError(error, opt);
+      this.#finder.onError(error, options);
       return [];
     }
     if (REG_UNIVERSAL.test(selector)) {
@@ -316,7 +361,7 @@ export class DOMSelector {
     if (Array.isArray(fastNodes)) {
       return fastNodes;
     }
-    const nodes = this.#findNodes(selector, node, opt, TARGET_ALL);
+    const nodes = this.#findNodes(selector, node, options, TARGET_ALL);
     if (nodes && nodes.size) {
       return [...nodes];
     }
@@ -355,9 +400,9 @@ export class DOMSelector {
    * @private
    * @param {string} selector - The CSS selector to match against.
    * @param {Document|Element} node - The target node to check.
-   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_SELF).
-   * @param {(node: Element) => Array<Element>|Element|boolean|null} callback - The callback function that executes the specific nwsapi method.
-   * @param {boolean} [isCheck] - True if is check method.
+   * @param {number} targetType - The target type indicating the scope.
+   * @param {(node: Element) => Array<Element>|Element|boolean|null} callback - The specific nwsapi function.
+   * @param {boolean} [isCheck] - True if called from the check method.
    * @returns {{success: boolean, result: Array<Element>|Element|boolean|null}} An object indicating whether the execution succeeded and its result.
    */
   #tryNwsapi(selector, node, targetType, callback, isCheck = false) {
@@ -393,8 +438,8 @@ export class DOMSelector {
    * @private
    * @param {string} selector - The CSS selector to match against.
    * @param {Document|DocumentFragment|Element} node - The node from which to start searching.
-   * @param {object} opt - Optional parameters.
-   * @param {number} targetType - The target constant indicating the scope (e.g., TARGET_FIRST, TARGET_ALL).
+   * @param {FindOptions} [opt] - The finder options.
+   * @param {number} targetType - The target type indicating the scope.
    * @returns {Set<Element>|null} The search results from Finder, or null.
    */
   #findNodes(selector, node, opt, targetType) {

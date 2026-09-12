@@ -44,7 +44,7 @@ export class Evaluator {
   #nestingAST;
   #pseudoClassEvaluator;
   #results;
-  #shadowDOMEvaluator;
+  #shadowEvaluator;
   #unescapedCache;
 
   /**
@@ -56,7 +56,7 @@ export class Evaluator {
     this.#domTraverser = new DOMTraverser(this);
     this.#eventHandler = new EventHandler(window);
     this.#pseudoClassEvaluator = new PseudoClassEvaluator(this);
-    this.#shadowDOMEvaluator = new ShadowDOMEvaluator(this);
+    this.#shadowEvaluator = new ShadowDOMEvaluator(this);
     this.#unescapedCache = new WeakMap();
     this.clearResults(true);
   }
@@ -74,17 +74,14 @@ export class Evaluator {
    * @returns {boolean} True if shadow host is verified, false otherwise.
    */
   get verifyShadowHost() {
-    return this.#shadowDOMEvaluator.verifyShadowHost;
+    return this.#shadowEvaluator.verifyShadowHost;
   }
 
   /**
    * Sets up the evaluator.
    * @param {string} selector - The CSS selector.
    * @param {Document|DocumentFragment|Element} node - Document, DocumentFragment, or Element.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.check] - Indicates if running in internal check().
-   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {Evaluator} The Evaluator instance.
    */
   setup(selector, node, opt = {}) {
@@ -92,13 +89,12 @@ export class Evaluator {
     this.check = !!check;
     this.noexcept = !!noexcept;
     this.warn = !!warn;
-    this.matchOpts = { warn: this.warn };
     [this.document, this.root, this.shadow] = resolveContent(node);
     this.node = node;
     this.pseudoElements = [];
     this.invalidate = false;
     this.#domTraverser.reset();
-    this.#shadowDOMEvaluator.reset();
+    this.#shadowEvaluator.reset();
     this.#pseudoClassEvaluator.reset();
     this.clearResults();
     return this;
@@ -107,8 +103,7 @@ export class Evaluator {
   /**
    * Handles errors.
    * @param {Error} e - The error object.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.noexcept] - If true, exceptions are not thrown.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @throws {Error} Throws an error.
    * @returns {void}
    */
@@ -164,7 +159,7 @@ export class Evaluator {
    * Matches a selector.
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Document|DocumentFragment|Element} node - The Document, DocumentFragment, or Element node.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   matchSelector(ast, node, opt) {
@@ -176,11 +171,7 @@ export class Evaluator {
       node.nodeType === DOCUMENT_FRAGMENT_NODE &&
       ast.type === PS_CLASS_SELECTOR
     ) {
-      return this.#shadowDOMEvaluator.matchSelectorForShadowRoot(
-        ast,
-        node,
-        opt
-      );
+      return this.#shadowEvaluator.matchSelectorForShadowRoot(ast, node, opt);
     }
     return false;
   }
@@ -189,7 +180,7 @@ export class Evaluator {
    * Matches leaves against a node with cache check.
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
    * @param {Element} node - The Element node.
-   * @param {object} opt - The match options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   matchLeaves(leaves, node, opt) {
@@ -233,7 +224,14 @@ export class Evaluator {
           // No action needed for other types.
         }
       }
-      bool = this.matchSelector(leaf, node, opt);
+      bool = this.matchSelector(
+        leaf,
+        node,
+        opt ?? {
+          warn: this.warn,
+          globalObject: this.window
+        }
+      );
       if (!bool) {
         break;
       }
@@ -287,7 +285,7 @@ export class Evaluator {
    * @returns {boolean} True if matches, otherwise false.
    */
   evaluateShadowHost(ast, node) {
-    return this.#shadowDOMEvaluator.evaluateShadowHost(ast, node);
+    return this.#shadowEvaluator.evaluateShadowHost(ast, node);
   }
 
   /**
@@ -295,24 +293,20 @@ export class Evaluator {
    * @see https://html.spec.whatwg.org/_pseudo-classes
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  matchPseudoClassSelector(ast, node, opt = {}) {
+  matchPseudoClassSelector(ast, node, opt) {
     return this.#pseudoClassEvaluator.matchPseudoClassSelector(ast, node, opt);
   }
 
   /**
    * Creates a TreeWalker.
    * @param {Document|DocumentFragment|Element} node - The Document, DocumentFragment, or Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.force] - Force creation of a new TreeWalker.
-   * @param {number} [opt.whatToShow] - The NodeFilter whatToShow value.
+   * @param {object} opt - Options.
    * @returns {TreeWalker} The TreeWalker object.
    */
-  createTreeWalker(node, opt = {}) {
+  createTreeWalker(node, opt) {
     return this.#domTraverser.createTreeWalker(node, opt);
   }
 
@@ -320,11 +314,10 @@ export class Evaluator {
    * Yields combinator matches (Lazy evaluation, O(1) memory).
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {string} [opt.dir] - The find direction.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
-  *yieldCombinatorMatches(twig, node, opt = {}) {
+  *yieldCombinatorMatches(twig, node, opt) {
     yield* this.#domTraverser.yieldCombinatorMatches(twig, node, opt);
   }
 
@@ -332,7 +325,7 @@ export class Evaluator {
    * Finds descendant nodes and yields matches.
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
    * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
   *yieldFindDescendantNodes(leaves, baseNode, opt) {
@@ -344,7 +337,7 @@ export class Evaluator {
    * @private
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   #matchSelectorForElement(ast, node, opt) {

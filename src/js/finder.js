@@ -33,6 +33,24 @@ import {
   TYPE_SELECTOR
 } from './constant.js';
 
+/* types */
+/**
+ * @typedef {object} StrategyOptions
+ * @property {boolean} [complex] - Indicates if the selector branch is complex.
+ * @property {boolean} [precede] - Indicates whether to search preceding nodes.
+ * @property {string} [dir] - The traversal direction.
+ * @property {Array<import('css-tree').CssNode>} [filterLeaves] - An array of AST leaves used for filtering.
+ */
+
+/**
+ * @typedef {object} TraversalOptions
+ * @property {boolean} [force] - Indicates whether to force traversal.
+ * @property {boolean} [precede] - Indicates whether to search preceding nodes.
+ * @property {Element} [boundaryNode] - The traversal boundary limit.
+ * @property {Element} [startNode] - The starting node for the traversal.
+ * @property {string} [targetType] - The target type.
+ */
+
 /**
  * Finder
  * Evaluates CSS selectors to find and collect matched nodes.
@@ -53,13 +71,10 @@ export class Finder extends Evaluator {
    * Sets up the finder.
    * @param {string} selector - The CSS selector.
    * @param {Document|DocumentFragment|Element} node - Document, DocumentFragment, or Element.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.check] - True if running in internal check.
-   * @param {boolean} [opt.noexcept] - True to suppress exceptions.
-   * @param {boolean} [opt.warn] - True to enable console warnings.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {Finder} The Finder instance.
    */
-  setup(selector, node, opt = {}) {
+  setup(selector, node, opt) {
     super.setup(selector, node, opt);
     this.#ast = null;
     this.#mapper = new Mapper(this);
@@ -247,7 +262,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object containing leaves.
    * @param {string} targetType - The target type.
-   * @param {object} [opt] - Strategy options.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {object} Result object with nodes and flags.
    */
   #findEntryNodes(twig, targetType, opt = {}) {
@@ -264,7 +279,8 @@ export class Finder extends Evaluator {
         return this.#findEntryNodesForPseudoElement(
           leaf,
           filterLeaves,
-          targetType
+          targetType,
+          opt
         );
       }
       case ID_SELECTOR: {
@@ -317,7 +333,11 @@ export class Finder extends Evaluator {
       }
       return { compound, filtered: true, nodes: [this.node], pending: false };
     }
-    matchPseudoElementSelector(leaf.name, leaf.type, this.matchOpts);
+    const options = {
+      warn: this.warn,
+      globalObject: this.window
+    };
+    matchPseudoElementSelector(leaf.name, leaf.type, options);
     return { compound, filtered: false, nodes: [], pending: false };
   }
 
@@ -326,7 +346,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object containing leaves.
    * @param {string} targetType - The target type.
-   * @param {object} [opt] - Strategy options.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {object} Result object with nodes and flags.
    */
   #findEntryNodesForId(twig, targetType, opt = {}) {
@@ -359,7 +379,7 @@ export class Finder extends Evaluator {
         const nodes = node ? [node] : [];
         return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
-      if (node && this.matchLeaves(filterLeaves, node, this.matchOpts)) {
+      if (node && this.matchLeaves(filterLeaves, node)) {
         return { compound, filtered: true, nodes: [node], pending: false };
       }
     }
@@ -371,7 +391,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
    * @param {string} targetType - The target type.
-   * @param {object} [opt] - Strategy options.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {object} Result object with nodes and flags.
    */
   #findEntryNodesForClass(leaves, targetType, opt = {}) {
@@ -391,7 +411,7 @@ export class Finder extends Evaluator {
       !precede &&
       canUseFastClassSearch(this.node)
     ) {
-      this.matchLeaves(leaves, this.node, this.matchOpts);
+      this.matchLeaves(leaves, this.node);
       const [leaf] = leaves;
       const className = this.getUnescapedName(leaf);
       const collection = this.node.getElementsByClassName(className);
@@ -409,7 +429,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
    * @param {string} targetType - The target type.
-   * @param {object} [opt] - Strategy options.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {object} Result object with nodes and flags.
    */
   #findEntryNodesForType(leaves, targetType, opt = {}) {
@@ -432,7 +452,7 @@ export class Finder extends Evaluator {
       this.document.contentType === MIME_HTML &&
       canUseFastTagSearch(this.node, tagName)
     ) {
-      this.matchLeaves(leaves, this.node, this.matchOpts);
+      this.matchLeaves(leaves, this.node);
       const collection = this.node.getElementsByTagName(tagName);
       return this.#filterAndFormatCollection(
         collection,
@@ -448,7 +468,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object containing leaves.
    * @param {string} targetType - The target type.
-   * @param {object} [opt] - Strategy options.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {object} Result object with nodes and flags.
    */
   #findEntryNodesForOther(twig, targetType, opt = {}) {
@@ -548,7 +568,7 @@ export class Finder extends Evaluator {
       if (isWithinScope) {
         for (const pendingItem of pendingItems) {
           const { leaves } = pendingItem.twig;
-          if (this.matchLeaves(leaves, nextNode, this.matchOpts)) {
+          if (this.matchLeaves(leaves, nextNode)) {
             const { index } = pendingItem;
             this.#ast[index].filtered = true;
             this.#ast[index].find = true;
@@ -589,9 +609,7 @@ export class Finder extends Evaluator {
       }
     } else {
       for (const node of entryNodes) {
-        if (
-          this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)
-        ) {
+        if (this.#hasValidPathPrev(node, branch, lastIndex - 1)) {
           matchedNodes.add(node);
         }
       }
@@ -754,7 +772,7 @@ export class Finder extends Evaluator {
    */
   #processComplexBranchFirstPrev(branch, entryNodes, targetType, lastIndex) {
     for (const node of entryNodes) {
-      if (this.#hasValidPathPrev(node, branch, lastIndex - 1, this.matchOpts)) {
+      if (this.#hasValidPathPrev(node, branch, lastIndex - 1)) {
         return node;
       }
     }
@@ -765,9 +783,7 @@ export class Finder extends Evaluator {
         targetType
       });
       while (refNode) {
-        if (
-          this.#hasValidPathPrev(refNode, branch, lastIndex - 1, this.matchOpts)
-        ) {
+        if (this.#hasValidPathPrev(refNode, branch, lastIndex - 1)) {
           return refNode;
         }
         [refNode] = this.#findNodeWalker(entryLeaves, refNode, {
@@ -785,10 +801,9 @@ export class Finder extends Evaluator {
    * @param {Element} node - The starting node.
    * @param {Array<import('./processor.js').ProcessedBranch>} branch - The selector branch.
    * @param {number} index - The current branch index.
-   * @param {object} opt - The match options.
    * @returns {boolean} True if a valid path exists, otherwise false.
    */
-  #hasValidPathPrev(node, branch, index, opt) {
+  #hasValidPathPrev(node, branch, index) {
     if (index < 0) {
       return true;
     }
@@ -797,16 +812,16 @@ export class Finder extends Evaluator {
     const comboName = combo.name;
     if (comboName === '+') {
       const refNode = node.previousElementSibling;
-      if (refNode && this.matchLeaves(leaves, refNode, opt)) {
-        if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
+      if (refNode && this.matchLeaves(leaves, refNode)) {
+        if (this.#hasValidPathPrev(refNode, branch, index - 1)) {
           return true;
         }
       }
     } else if (comboName === '~') {
       let refNode = node.previousElementSibling;
       while (refNode) {
-        if (this.matchLeaves(leaves, refNode, opt)) {
-          if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
+        if (this.matchLeaves(leaves, refNode)) {
+          if (this.#hasValidPathPrev(refNode, branch, index - 1)) {
             return true;
           }
         }
@@ -814,16 +829,16 @@ export class Finder extends Evaluator {
       }
     } else if (comboName === '>') {
       const parentNode = node.parentNode;
-      if (parentNode && this.matchLeaves(leaves, parentNode, opt)) {
-        if (this.#hasValidPathPrev(parentNode, branch, index - 1, opt)) {
+      if (parentNode && this.matchLeaves(leaves, parentNode)) {
+        if (this.#hasValidPathPrev(parentNode, branch, index - 1)) {
           return true;
         }
       }
     } else {
       let refNode = node.parentNode;
       while (refNode) {
-        if (this.matchLeaves(leaves, refNode, opt)) {
-          if (this.#hasValidPathPrev(refNode, branch, index - 1, opt)) {
+        if (this.matchLeaves(leaves, refNode)) {
+          if (this.#hasValidPathPrev(refNode, branch, index - 1)) {
             return true;
           }
         }
@@ -872,20 +887,20 @@ export class Finder extends Evaluator {
    * Finds lineal matching nodes (self and ancestors).
    * @private
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @param {object} [opt] - Options like complex flag.
+   * @param {StrategyOptions} [opt] - The strategy options.
    * @returns {Array} Array containing nodes and filtered boolean.
    */
   #findLineal(leaves, opt = {}) {
     const { complex } = opt;
     const nodes = [];
-    const selfMatched = this.matchLeaves(leaves, this.node, this.matchOpts);
+    const selfMatched = this.matchLeaves(leaves, this.node);
     if (selfMatched) {
       nodes.push(this.node);
     }
     if (!selfMatched || complex) {
       let currentNode = this.node.parentNode;
       while (currentNode) {
-        if (this.matchLeaves(leaves, currentNode, this.matchOpts)) {
+        if (this.matchLeaves(leaves, currentNode)) {
           nodes.push(currentNode);
           if (!complex) {
             break;
@@ -912,10 +927,7 @@ export class Finder extends Evaluator {
     const nodeArray = [];
     for (let i = 0; i < len; i++) {
       const currentNode = collection[i];
-      if (
-        !hasFilter ||
-        this.matchLeaves(filterLeaves, currentNode, this.matchOpts)
-      ) {
+      if (!hasFilter || this.matchLeaves(filterLeaves, currentNode)) {
         nodeArray.push(currentNode);
       }
     }
@@ -949,7 +961,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
    * @param {Element} node - The starting node.
-   * @param {object} [opt] - Traversal options.
+   * @param {TraversalOptions} [opt] - The traversal options.
    * @returns {Array<Element>} An array of matched nodes.
    */
   #findNodeWalker(leaves, node, opt = {}) {
@@ -974,7 +986,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
    * @param {Element} node - The starting node.
-   * @param {object} [opt] - Options for finding.
+   * @param {TraversalOptions} [opt] - The traversal options.
    * @returns {Array<Element>} An array of matched nodes.
    */
   #findPrecede(leaves, node, opt = {}) {
@@ -995,7 +1007,7 @@ export class Finder extends Evaluator {
    * @private
    * @param {TreeWalker} walker - The TreeWalker instance.
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
-   * @param {object} [opt] - Options for traversal.
+   * @param {TraversalOptions} [opt] - The traversal options.
    * @returns {Array<Element>} An array of collected nodes.
    */
   #traverseAndCollectNodes(walker, leaves, opt = {}) {
@@ -1004,7 +1016,7 @@ export class Finder extends Evaluator {
     if (
       targetType === TARGET_ALL &&
       boundaryNode &&
-      this.matchLeaves(leaves, boundaryNode, this.matchOpts)
+      this.matchLeaves(leaves, boundaryNode)
     ) {
       collectedNodes.push(boundaryNode);
     }
@@ -1025,10 +1037,7 @@ export class Finder extends Evaluator {
           break;
         }
       }
-      if (
-        this.matchLeaves(leaves, currentNode, this.matchOpts) &&
-        currentNode !== this.node
-      ) {
+      if (this.matchLeaves(leaves, currentNode) && currentNode !== this.node) {
         collectedNodes.push(currentNode);
         if (targetType !== TARGET_ALL) {
           break;
