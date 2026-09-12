@@ -40,10 +40,7 @@ const htmlAttrMetaCache = new WeakMap();
  * Validates a pseudo-element selector.
  * @param {string} astName - The name of the pseudo-element from the AST.
  * @param {string} astType - The type of the selector from the AST.
- * @param {object} [opt] - Optional parameters.
- * @param {boolean} [opt.forgive] - If true, ignores unknown pseudo-elements.
- * @param {object} [opt.globalObject] - The global object.
- * @param {boolean} [opt.warn] - If true, throws an error for unsupported ones.
+ * @param {import('../index.js').FindOptions} [opt] - Options.
  * @throws {DOMException} If the selector is invalid or unsupported.
  * @returns {void}
  */
@@ -378,10 +375,7 @@ export const matchRequiredPseudoClass = (astName, node, keys) => {
  * Matches an attribute selector against an element.
  * @param {import('css-tree').CssNode} ast - The AST for the attribute selector.
  * @param {Element} node - The element node to match against.
- * @param {object} [opt] - Optional parameters.
- * @param {boolean} [opt.check] - True if running in an internal check.
- * @param {boolean} [opt.forgive] - True to forgive certain syntax errors.
- * @param {object} [opt.globalObject] - The global object.
+ * @param {import('../index.js').FindOptions} [opt] - Options.
  * @returns {boolean} - True if the attribute selector matches, otherwise false.
  */
 export const matchAttributeSelector = (
@@ -724,10 +718,7 @@ export const matchAttributeSelector = (
  * Matches a type selector against an element.
  * @param {import('css-tree').CssNode} ast - The AST for the type selector.
  * @param {Element} node - The element node to match against.
- * @param {object} [opt] - Optional parameters.
- * @param {boolean} [opt.check] - True if running in an internal check.
- * @param {boolean} [opt.forgive] - True to forgive undeclared namespace.
- * @param {object} [opt.globalObject] - The global object.
+ * @param {import('../index.js').FindOptions} [opt] - Options.
  * @returns {boolean} - True if the type selector matches, otherwise false.
  */
 export const matchTypeSelector = (

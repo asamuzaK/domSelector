@@ -130,9 +130,7 @@ export class PseudoClassEvaluator {
    * @see https://html.spec.whatwg.org/_pseudo-classes
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   matchPseudoClassSelector(ast, node, opt = {}) {
@@ -383,12 +381,10 @@ export class PseudoClassEvaluator {
    * @private
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
-  #evaluateLogicalPseudo(ast, node, opt = {}) {
+  #evaluateLogicalPseudo(ast, node, opt) {
     const { children: astChildren, name: astName } = ast;
     if (!astChildren.length && astName !== 'is' && astName !== 'where') {
       const css = generateCSS(ast);
@@ -455,9 +451,7 @@ export class PseudoClassEvaluator {
    * @see https://html.spec.whatwg.org/_pseudo-classes
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
-   * @param {boolean} [opt.forgive] - Ignores unknown or invalid selectors.
-   * @param {boolean} [opt.warn] - If true, console warnings are enabled.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   #evaluatePseudoClassFunc(ast, node, opt = {}) {
@@ -1093,7 +1087,7 @@ export class PseudoClassEvaluator {
    * @param {import('css-tree').CssNode} ast - The AST.
    * @param {Element} node - The Element node.
    * @param {string} nthName - The name of the nth pseudo-class.
-   * @param {object} opt - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   #matchAnPlusB(ast, node, nthName, opt) {
@@ -1239,7 +1233,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {Array<Array<import('css-tree').CssNode>>} branches - The selector branches to test.
    * @param {Element} node - The element node to match against.
-   * @param {object} [opt] - Optional parameters.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if any branch matches, otherwise false.
    */
   #filterNthChildOfSelectorBranches(branches, node, opt) {
@@ -1258,7 +1252,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {import('css-tree').CssNode} astData - The AST data.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {boolean} True if matches, otherwise false.
    */
   #matchLogicalPseudoFunc(astData, node, opt = {}) {
@@ -1335,7 +1329,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {import('css-tree').CssNode} astData - The AST data.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {Element|null} The matched node.
    */
   #evaluateHasPseudo(astData, node, opt = {}) {
@@ -1457,7 +1451,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} astLeaves - The AST leaves.
    * @param {Element} node - The Element node.
-   * @param {object} [opt] - Options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchHasPseudoFunc(astLeaves, node, opt = {}) {
@@ -1491,7 +1485,7 @@ export class PseudoClassEvaluator {
    * @param {import('./processor.js').ProcessedBranch} twig - The AST twig object.
    * @param {Element} node - The Element node.
    * @param {Array<object>} remainingLeaves - The remaining AST leaves.
-   * @param {object} opt - The match options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   #hasCombinatorMatch(twig, node, remainingLeaves, opt) {
@@ -1615,7 +1609,7 @@ export class PseudoClassEvaluator {
    * @param {Element} refNode - The element node to check.
    * @param {Array<import('css-tree').CssNode>} leaves - The current AST leaves.
    * @param {Array<import('css-tree').CssNode>} remainingLeaves - The remaining AST leaves.
-   * @param {object} opt - The match options.
+   * @param {import('../index.js').FindOptions} opt - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   #checkNode(refNode, leaves, remainingLeaves, opt) {
