@@ -180,7 +180,7 @@ export class Evaluator {
    * Matches leaves against a node with cache check.
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
    * @param {Element} node - The Element node.
-   * @param {import('../index.js').FindOptions} opt - Options.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   matchLeaves(leaves, node, opt) {

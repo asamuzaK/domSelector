@@ -320,9 +320,10 @@ export class Finder extends Evaluator {
    * @param {import('css-tree').CssNode} leaf - The AST leaf.
    * @param {Array<object>} filterLeaves - Leaves for filtering.
    * @param {string} targetType - The target type.
+   * @param {StrategyOptions} opt - The strategy options.
    * @returns {object} Object with nodes, filtered, and pending flags.
    */
-  #findEntryNodesForPseudoElement(leaf, filterLeaves, targetType) {
+  #findEntryNodesForPseudoElement(leaf, filterLeaves, targetType, opt) {
     const compound = filterLeaves.length > 0;
     if (targetType === TARGET_SELF && this.check) {
       const css = generateCSS(leaf);
@@ -333,11 +334,7 @@ export class Finder extends Evaluator {
       }
       return { compound, filtered: true, nodes: [this.node], pending: false };
     }
-    const options = {
-      warn: this.warn,
-      globalObject: this.window
-    };
-    matchPseudoElementSelector(leaf.name, leaf.type, options);
+    matchPseudoElementSelector(leaf.name, leaf.type, opt);
     return { compound, filtered: false, nodes: [], pending: false };
   }
 

@@ -110,7 +110,7 @@ export class DOMSelector {
   /**
    * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
    * @param {string} selector - The CSS selector to parse.
-   * @param {boolean} caseSensitive - True if tag key should be case sensitive.
+   * @param {boolean} [caseSensitive=false] - True if key should be case sensitive.
    * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
    */
   extractSubjects(selector, caseSensitive = false) {

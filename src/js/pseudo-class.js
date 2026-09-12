@@ -1329,7 +1329,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {import('css-tree').CssNode} astData - The AST data.
    * @param {Element} node - The Element node.
-   * @param {import('../index.js').FindOptions} opt - Options.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {Element|null} The matched node.
    */
   #evaluateHasPseudo(astData, node, opt = {}) {
@@ -1451,7 +1451,7 @@ export class PseudoClassEvaluator {
    * @private
    * @param {Array<import('css-tree').CssNode>} astLeaves - The AST leaves.
    * @param {Element} node - The Element node.
-   * @param {import('../index.js').FindOptions} opt - Options.
+   * @param {import('../index.js').FindOptions} [opt] - Options.
    * @returns {boolean} True if matched, otherwise false.
    */
   #matchHasPseudoFunc(astLeaves, node, opt = {}) {
