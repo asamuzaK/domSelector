@@ -41,7 +41,7 @@ Creates an instance of the DOMSelector.
 * `window` **{Window}** The window object.
 * `document` **{Document}?** The document object. Defaults to window.document.
 * `opt` **{object}?** Options:
-  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal cache. Default is 2048.
+  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal cache. Default is 4096.
 
 ### `matches(selector, node, opt?)`
 
