@@ -64,7 +64,6 @@ export class Mapper {
     );
     const {
       hasHasPseudoFunc,
-      hasLogicalPseudoFunc,
       hasNestingSelector,
       hasNthChildOfSelector,
       hasStatePseudoClass,
@@ -76,7 +75,7 @@ export class Mapper {
       hasNestingSelector ||
       hasStatePseudoClass ||
       hasUnsupportedPseudoClass ||
-      !!(hasLogicalPseudoFunc && hasNthChildOfSelector);
+      hasNthChildOfSelector;
     // Process branches.
     const processed = this.#processor.process(branches, selector);
     ast = processed.ast;

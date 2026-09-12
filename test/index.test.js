@@ -3917,5 +3917,82 @@ describe('patched JSDOM', () => {
       );
       assert.deepEqual(res, [], 'result');
     });
+
+    it('should update :nth-child selector results after DOM mutation', () => {
+      const dom = new DOMParser().parseFromString(`
+        <root>
+          <item id="a"/>
+          <item id="b"/>
+        </root>
+      `, "application/xml");
+      const root = dom.documentElement;
+      const res1 = root.querySelectorAll("item:nth-child(2)");
+      assert.deepEqual(res1, [
+        dom.getElementById("b")
+      ]);
+      const a = dom.getElementById("a");
+      const x = dom.createElement("item");
+      root.insertBefore(x, a);
+      const res2 = root.querySelectorAll("item:nth-child(2)");
+      assert.deepEqual(res2, [
+        dom.getElementById("a")
+      ]);
+    });
+
+    it('should update :nth-child selector results after class mutation', () => {
+      const dom = new DOMParser().parseFromString(`
+        <root>
+          <item id="a" class="selected"/>
+          <item id="b"/>
+          <item id="c" class="selected"/>
+        </root>
+      `, "application/xml");
+      const root = dom.documentElement;
+      const res1 = root.querySelectorAll("item:nth-child(2 of .selected)");
+      assert.deepEqual(res1, [
+        dom.getElementById("c")
+      ]);
+      const b = dom.getElementById("b");
+      b.classList.add("selected");
+      const res2 = root.querySelectorAll("item:nth-child(2 of .selected)");
+      assert.deepEqual(res2, [
+        dom.getElementById("b")
+      ]);
+    });
+
+    it('should update :nth-child(n of S) results after class mutations', () => {
+      const div1 = document.createElement('div');
+      const ul1 = document.createElement('ul');
+      const li1 = document.createElement('li');
+      const li2 = document.createElement('li');
+      const li3 = document.createElement('li');
+      div1.id = 'div1';
+      ul1.id = 'ul1';
+      li1.id = 'li1';
+      li1.classList.add('li');
+      li2.classList.add('li');
+      li3.id = 'li3';
+      li3.classList.add('li');
+      ul1.append(li1, li2, li3);
+      div1.appendChild(ul1);
+      document.body.appendChild(div1);
+      const resA = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resA, [ li3 ], 'resA');
+      li2.classList.add('li');
+      const resB = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resB, [ li2 ], 'resB');
+      li2.classList.remove('li');
+      const resC = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resC, [ li3 ], 'resC');
+      // :is()
+      const resIsA = document.querySelectorAll(':nth-child(2 of :is(.li))');
+      assert.deepEqual(resIsA, [ li3 ], 'resIsA');
+      li2.classList.add('li');
+      const resIsB = document.querySelectorAll(':nth-child(2 of :is(.li))');
+      assert.deepEqual(resIsB, [ li2 ], 'resIsB');
+      li2.classList.remove('li');
+      const resIsC = document.querySelectorAll(':nth-child(2 of .li)');
+      assert.deepEqual(resIsC, [ li3 ], 'resIsC');
+    });
   });
 });
