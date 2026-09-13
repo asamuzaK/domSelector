@@ -39,9 +39,13 @@ const {
 Creates an instance of the DOMSelector.
 
 * `window` **{Window}** The window object.
-* `document` **{Document}?** The document object. Defaults to window.document.
+* `document` **{Document}?** The document object. Defaults to `window.document`.
 * `opt` **{object}?** Options:
-  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal cache. Default is 4096.
+  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal LRU cache. Defaults to `4096`.
+  * `opt.idlUtils` **{object}?** The internal IDL wrapper used for jsdom.
+  * `opt.maxLength` **{number}?** The maximum length of the selector allowed. Defaults to `2048`.
+
+---
 
 ### `matches(selector, node, opt?)`
 
@@ -50,8 +54,8 @@ Equivalent to [Element.matches()](https://developer.mozilla.org/docs/Web/API/Ele
 * `selector` **{string}** CSS selector.
 * `node` **{Element}** Element node.
 * `opt` **{object}?** Options:
-  * `opt.noexcept` **{boolean}?** Do not throw exceptions.
-  * `opt.warn` **{boolean}?** Console warn (e.g. unsupported pseudo-class).
+  * `opt.noexcept` **{boolean}?** `true` to suppress exceptions (e.g., `DOMException` for invalid selectors) and return `false` instead.
+  * `opt.warn` **{boolean}?** `true` to output warnings to the console when encountering unsupported or deprecated features.
 * **Returns** **{boolean}** `true` if matched, `false` otherwise.
 
 ### `closest(selector, node, opt?)`
@@ -61,8 +65,8 @@ Equivalent to [Element.closest()](https://developer.mozilla.org/docs/Web/API/Ele
 * `selector` **{string}** CSS selector.
 * `node` **{Element}** Element node.
 * `opt` **{object}?** Options:
-  * `opt.noexcept` **{boolean}?** Do not throw exceptions.
-  * `opt.warn` **{boolean}?** Console warn (e.g. unsupported pseudo-class).
+  * `opt.noexcept` **{boolean}?** `true` to suppress exceptions and return `null` instead.
+  * `opt.warn` **{boolean}?** `true` to output warnings to the console when encountering unsupported or deprecated features.
 * **Returns** **{Element | null}** The matched ancestor node or `null`.
 
 ### `querySelector(selector, node, opt?)`
@@ -72,21 +76,21 @@ Equivalent to [Document.querySelector()](https://developer.mozilla.org/docs/Web/
 * `selector` **{string}** CSS selector.
 * `node` **{Document | DocumentFragment | Element}** Node to find within.
 * `opt` **{object}?** Options:
-  * `opt.noexcept` **{boolean}?** Do not throw exceptions.
-  * `opt.warn` **{boolean}?** Console warn (e.g. unsupported pseudo-class).
+  * `opt.noexcept` **{boolean}?** `true` to suppress exceptions and return `null` instead.
+  * `opt.warn` **{boolean}?** `true` to output warnings to the console when encountering unsupported or deprecated features.
 * **Returns** **{Element | null}** The matched node or `null`.
 
 ### `querySelectorAll(selector, node, opt?)`
 
 Equivalent to [Document.querySelectorAll()](https://developer.mozilla.org/docs/Web/API/Document/querySelectorAll), [DocumentFragment.querySelectorAll()](https://developer.mozilla.org/docs/Web/API/DocumentFragment/querySelectorAll) and [Element.querySelectorAll()](https://developer.mozilla.org/docs/Web/API/Element/querySelectorAll).
-**NOTE**: Returns a standard `Array`, not a `NodeList`.
+**NOTE**: Returns a standard `Array<Element>`, not a `NodeList`.
 
 * `selector` **{string}** CSS selector.
 * `node` **{Document | DocumentFragment | Element}** Node to find within.
 * `opt` **{object}?** Options:
-  * `opt.noexcept` **{boolean}?** Do not throw exceptions.
-  * `opt.warn` **{boolean}?** Console warn (e.g. unsupported pseudo-class).
-* **Returns** **{Array}** Array of matched nodes.
+  * `opt.noexcept` **{boolean}?** `true` to suppress exceptions and return an empty array `[]` instead.
+  * `opt.warn` **{boolean}?** `true` to output warnings to the console when encountering unsupported or deprecated features.
+* **Returns** **{Array<Element>}** Array of matched elements.
 
 ### `check(selector, node, opt?)`
 
@@ -96,12 +100,14 @@ Checks if an element matches a CSS selector and returns additional abstract synt
 * `selector` **{string}** CSS selector.
 * `node` **{Element}** Element node.
 * `opt` **{object}?** Options:
-  * `opt.noexcept` **{boolean}?** Do not throw exceptions.
-  * `opt.warn` **{boolean}?** Console warn (e.g. unsupported pseudo-class).
-* **Returns** **{object}** An object containing the following properties:
+  * `opt.requireAst` **{boolean}?** Indicates whether to always try to parse and return the AST.
+  * `opt.noexcept` **{boolean}?** `true` to suppress exceptions and store the error in the `error` property of the result instead of throwing.
+  * `opt.warn` **{boolean}?** `true` to output warnings to the console when encountering unsupported or deprecated features.
+* **Returns** **{CheckResult}** An object containing the following properties:
   * `match` **{boolean}** `true` if the element matches the selector, `false` otherwise.
   * `pseudoElement` **{string | null}** The pseudo-element extracted from the selector, if any.
   * `ast` **{object | null}** The parsed AST object.
+  * `error` **{DOMException | Error | null}** The error object, if any.
 
 ### `extractSubjects(selector, caseSensitive?)`
 
@@ -109,7 +115,10 @@ Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
 
 * `selector` **{string}** CSS selector.
 * `caseSensitive` **{boolean}?** `true` if the tag key should be case sensitive. Defaults to `false`.
-* **Returns** **{Array\<{id: string|null, className: string|null, tag: string|null}\>}** An array of extracted keys.
+* **Returns** **{Array<SelectorSubject>}** An array of extracted subject keys. Each object contains:
+  * `id` **{string | null}** The ID.
+  * `className` **{string | null}** The class name.
+  * `tag` **{string | null}** The tag name.
 
 ### `supports(selector)`
 
