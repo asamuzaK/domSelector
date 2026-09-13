@@ -4,6 +4,7 @@
 
 /* import */
 import * as cssTree from 'css-tree';
+import { stringifyValue } from './utility.js';
 
 /* constants */
 import {
@@ -135,19 +136,7 @@ export const unescapeSelector = (selector = '') => {
  * @returns {string} The preprocessed selector string.
  */
 export const preprocess = value => {
-  // Non-string values will be converted to string.
-  if (typeof value !== 'string') {
-    if (value === undefined || value === null) {
-      return String(value);
-    } else if (Array.isArray(value)) {
-      return value.join(',');
-    } else if (Object.hasOwn(value, 'toString')) {
-      return value.toString();
-    } else {
-      throw new DOMException(`Invalid selector ${value}`, SYNTAX_ERR);
-    }
-  }
-  let selector = value;
+  let selector = stringifyValue(value);
   let index = 0;
   while (index >= 0) {
     // @see https://drafts.csswg.org/selectors/#id-selectors

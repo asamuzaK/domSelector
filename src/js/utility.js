@@ -24,6 +24,7 @@ import {
   MIME_HTML,
   PS_ELEMENT_SELECTOR,
   SHOW_ELEMENT,
+  SYNTAX_ERR,
   TARGET_FIRST,
   TEXT_NODE,
   TYPE_FROM,
@@ -67,6 +68,27 @@ const REG_SIMPLE_ATTRIBUTE = /^\[([a-z][a-z\d_-]*)\]$/;
  */
 export const getType = o =>
   Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
+
+/**
+ * Stringify a value.
+ * @param {unknown} value - The value to stringify.
+ * @returns {string} The stringifyed value.
+ */
+export const stringifyValue = value => {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value === undefined || value === null || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value.join(',');
+  }
+  if (Object.hasOwn(value, 'toString')) {
+    return value.toString();
+  }
+  throw new DOMException(`Invalid selector ${value}`, SYNTAX_ERR);
+};
 
 /**
  * Verify array contents.

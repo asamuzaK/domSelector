@@ -88,6 +88,54 @@ describe('utility functions', () => {
     });
   });
 
+  describe('stringify value', () => {
+    const func = util.stringifyValue;
+
+    it('should return string as-is', () => {
+      const res = func('.foo');
+      assert.strictEqual(res, '.foo', 'result');
+    });
+
+    it('should convert undefined argument to string "undefined"', () => {
+      const res = func(undefined);
+      assert.strictEqual(res, 'undefined', 'result');
+    });
+
+    it('should convert null argument to string "null"', () => {
+      const res = func(null);
+      assert.strictEqual(res, 'null', 'result');
+    });
+
+    it('should convert boolean argument to string', () => {
+      const res = func(true);
+      assert.strictEqual(res, 'true', 'result');
+    });
+
+    it('should convert array argument to string', () => {
+      const res = func(['.foo', '.bar']);
+      assert.strictEqual(res, '.foo,.bar', 'result');
+    });
+
+    it('should convert object with toString() property to string', () => {
+      const res = func({
+        toString: () => '.foo'
+      });
+      assert.strictEqual(res, '.foo', 'result');
+    });
+
+    it('should throw DOMException when argument is a number', () => {
+      assert.throws(
+        () => func(1),
+        e => {
+          assert.strictEqual(e instanceof DOMException, true, 'instance');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+          return true;
+        }
+      );
+    });
+  });
+
   describe('verify array contents', () => {
     const func = util.verifyArray;
 
