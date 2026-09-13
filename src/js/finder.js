@@ -101,6 +101,7 @@ export class Finder extends Evaluator {
       if (this.check) {
         return {
           ast: this.#selectorAST,
+          error: e,
           match: false,
           pseudoElement: this.pseudoElements.length
             ? this.pseudoElements.join('')
@@ -175,6 +176,7 @@ export class Finder extends Evaluator {
     if (this.check) {
       return {
         ast: this.#selectorAST,
+        error: null,
         match: nodes.size > 0,
         pseudoElement: this.pseudoElements.length
           ? this.pseudoElements.join('')

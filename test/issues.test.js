@@ -1347,6 +1347,7 @@ describe('domSelector regression tests', () => {
           ast: cssTree.parse('p', {
             context: 'selectorList'
           }),
+          error: null,
           match: true,
           pseudoElement: null
         },
@@ -1357,6 +1358,7 @@ describe('domSelector regression tests', () => {
         domSelector.check('', p),
         {
           ast: null,
+          error: new DOMException('Invalid selector ', 'SyntaxError'),
           match: false,
           pseudoElement: null
         },
@@ -1369,6 +1371,7 @@ describe('domSelector regression tests', () => {
           ast: cssTree.parse('p', {
             context: 'selectorList'
           }),
+          error: null,
           match: true,
           pseudoElement: null
         },
@@ -1405,6 +1408,7 @@ describe('domSelector regression tests', () => {
           ast: cssTree.parse('.foo:focus-visible', {
             context: 'selectorList'
           }),
+          error: null,
           match: false,
           pseudoElement: null
         },
@@ -1417,6 +1421,7 @@ describe('domSelector regression tests', () => {
           ast: cssTree.parse(':link, :visited', {
             context: 'selectorList'
           }),
+          error: null,
           match: true,
           pseudoElement: null
         },

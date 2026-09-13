@@ -45,6 +45,7 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
  * @property {boolean} match - The match result.
  * @property {string|null} pseudoElement - The pseudo-element, if any.
  * @property {import('css-tree').CssNode|null} ast - The AST object.
+ * @property {DOMException|Error|null} error - The error object, or null.
  */
 
 /**
@@ -182,19 +183,27 @@ export class DOMSelector {
    * @param {Element} node - The element node to check.
    * @param {object} [opt] - Optional parameters.
    * @param {boolean} [opt.requireAst] - Indicates always try to parse AST.
-   * @returns {CheckResult|null} An object containing the check result.
+   * @returns {CheckResult} An object containing the check result.
    */
   check(selector, node, opt = {}) {
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
-      const errorOptions = {
-        noexcept: false,
-        warn: true,
-        globalObject: this.#window
+      let ast = null;
+      if (opt.requireAst) {
+        const astCacheKey = `check_ast_${selector}`;
+        ast = this.#cache.get(astCacheKey);
+        if (ast === undefined) {
+          ast = parseSelector(selector);
+          this.#cache.set(astCacheKey, ast);
+        }
+      }
+      return {
+        ast,
+        error: nodeError,
+        match: false,
+        pseudoElement: null
       };
-      this.#finder.onError(nodeError, errorOptions);
-      return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
       const astCacheKey = `check_ast_${selector.trim()}`;
@@ -205,6 +214,7 @@ export class DOMSelector {
       }
       return {
         ast,
+        error: null,
         match: true,
         pseudoElement: null
       };
@@ -227,8 +237,9 @@ export class DOMSelector {
         }
       }
       return {
-        match: nwsapiRes.result,
         ast,
+        error: null,
+        match: nwsapiRes.result,
         pseudoElement: null
       };
     }
