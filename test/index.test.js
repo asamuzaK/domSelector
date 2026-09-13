@@ -106,10 +106,12 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should initialize instance with custom jsdom options', () => {
+    it('should initialize instance with custom options', () => {
       const res = new DOMSelector(window, null, {
-        domSymbolTree: {},
-        idlUtils: {}
+        cacheSize: 1,
+        domSymbolTree: {}, // Not in use
+        idlUtils: {},
+        maxLength: 1
       });
       assert.strictEqual(res.onError, undefined, 'onError is undefined');
       assert.strictEqual(res.setup, undefined, 'setup is undefined');

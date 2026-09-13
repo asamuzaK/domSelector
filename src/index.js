@@ -102,7 +102,7 @@ export class DOMSelector {
     this.#maxLength =
       Number.isInteger(maxLength) && maxLength > 0 ? maxLength : MAX_LENGTH;
     this.#cache = new LRUCache({
-      max: cacheSize ?? CACHE_SIZE
+      max: Number.isInteger(cacheSize) && cacheSize > 0 ? cacheSize : CACHE_SIZE
     });
     this.#finder = new Finder(this.#window);
     this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
@@ -136,9 +136,8 @@ export class DOMSelector {
       this.#validateSelector(selector);
     if (error) {
       return [DEFAULT_SUBJECT];
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     const cacheKey = `extract_${selector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
     if (subjects !== undefined) {
@@ -175,9 +174,8 @@ export class DOMSelector {
       this.#validateSelector(selector);
     if (error) {
       return false;
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     const cacheKey = `supports_${selector}`;
     let isSupported = this.#cache.get(cacheKey);
     if (isSupported !== undefined) {
@@ -215,9 +213,8 @@ export class DOMSelector {
         match: false,
         pseudoElement: null
       };
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
@@ -302,9 +299,8 @@ export class DOMSelector {
     if (error) {
       this.#finder.onError(error, options);
       return false;
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
@@ -342,9 +338,8 @@ export class DOMSelector {
     if (error) {
       this.#finder.onError(error, options);
       return null;
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
@@ -390,9 +385,8 @@ export class DOMSelector {
     if (error) {
       this.#finder.onError(error, options);
       return null;
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node);
     if (nodeError) {
@@ -432,9 +426,8 @@ export class DOMSelector {
     if (error) {
       this.#finder.onError(error, options);
       return [];
-    } else {
-      selector = validatedSelector;
     }
+    selector = validatedSelector;
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node);
     if (nodeError) {
