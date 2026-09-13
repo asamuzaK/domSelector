@@ -503,7 +503,7 @@ export class DOMSelector {
    * @private
    * @param {Document|DocumentFragment|Element} node - The node to check.
    * @param {boolean} [element] - `true` if the node must be an Element.
-   * @returns {TypeError|null} Returns a TypeError if invalid, otherwise null.
+   * @returns {TypeError|null} A TypeError if invalid, otherwise null.
    */
   #validateNodeType(node, element = false) {
     if (!node?.nodeType) {
