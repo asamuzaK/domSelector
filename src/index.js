@@ -463,7 +463,7 @@ export class DOMSelector {
    * Validates a selector.
    * @private
    * @param {string} selector - The selector to check.
-   * @returns {{ selector:string|null, error:DOMException|RangeError|null}} Returns validation result.
+   * @returns {{ selector:string|null, error:DOMException|RangeError|null}} The validation result.
    */
   #validateSelector(selector) {
     try {
