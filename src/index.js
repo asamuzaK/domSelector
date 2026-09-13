@@ -33,6 +33,7 @@ import {
   TARGET_SELF
 } from './js/constant.js';
 const CACHE_SIZE = 4096;
+const DEFAULT_SUBJECT = { id: null, className: null, tag: null };
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
@@ -44,6 +45,13 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
  * @property {boolean} match - The match result.
  * @property {string|null} pseudoElement - The pseudo-element, if any.
  * @property {import('css-tree').CssNode|null} ast - The AST object.
+ */
+
+/**
+ * @typedef {object} SelectorSubject
+ * @property {string|null} id - The ID.
+ * @property {string|null} classname - The class name.
+ * @property {string|null} tag - The tag name.
  */
 
 /**
@@ -111,11 +119,11 @@ export class DOMSelector {
    * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
    * @param {string} selector - The CSS selector to parse.
    * @param {boolean} [caseSensitive] - True if key should be case sensitive.
-   * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+   * @returns {Array<SelectorSubject>} The list of selector subjects.
    */
   extractSubjects(selector, caseSensitive = false) {
     if (!selector || typeof selector !== 'string') {
-      return [{ id: null, className: null, tag: null }];
+      return [DEFAULT_SUBJECT];
     }
     const cacheKey = `extract_${selector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
@@ -134,7 +142,7 @@ export class DOMSelector {
       }
     }
     if (!subjects.length) {
-      subjects.push({ id: null, className: null, tag: null });
+      subjects.push(DEFAULT_SUBJECT);
     }
     this.#cache.set(cacheKey, subjects);
     return subjects;
