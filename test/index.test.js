@@ -429,20 +429,63 @@ describe('DOMSelector', () => {
   });
 
   describe('check', () => {
-    it('should throw TypeError when arguments are undefined', () => {
-      assert.throws(
-        () => new DOMSelector(window).check(),
-        window.TypeError,
-        'Unexpected type Undefined'
-      );
+    it('should not throw TypeError when arguments are undefined', () => {
+      const domSelector = new DOMSelector(window);
+      const { ast, error, match, pseudoElement } = domSelector.check();
+      assert.deepEqual(ast, null, 'ast');
+      assert.strictEqual(error instanceof window.TypeError, true, 'error');
+      assert.strictEqual(error.message, 'Unexpected type Undefined', 'message');
+      assert.strictEqual(match, false, 'match');
+      assert.strictEqual(pseudoElement, null, 'pseudoElement');
     });
 
-    it('should throw TypeError when target node is #document', () => {
-      assert.throws(
-        () => new DOMSelector(window).check(null, document),
-        window.TypeError,
-        'Unexpected node #document'
+    it('should not throw TypeError when target node is not Element', () => {
+      const domSelector = new DOMSelector(window);
+      const { ast, error, match, pseudoElement } = domSelector.check(
+        null,
+        document
       );
+      assert.deepEqual(ast, null, 'ast');
+      assert.strictEqual(error instanceof window.TypeError, true, 'error');
+      assert.strictEqual(error.message, 'Unexpected node #document', 'message');
+      assert.strictEqual(match, false, 'match');
+      assert.strictEqual(pseudoElement, null, 'pseudoElement');
+    });
+
+    it('should include AST when target node is not Element', () => {
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.check('.foo', document, { requireAst: true });
+      assert.deepEqual(
+        res.ast,
+        cssTree.parse('.foo', {
+          context: 'selectorList'
+        }),
+        'ast'
+      );
+      assert.strictEqual(res.error instanceof window.TypeError, true, 'error');
+      assert.strictEqual(
+        res.error.message,
+        'Unexpected node #document',
+        'message'
+      );
+      assert.strictEqual(res.match, false, 'match');
+      assert.strictEqual(res.pseudoElement, null, 'pseudoElement');
+      const res2 = domSelector.check('.foo', document, { requireAst: true });
+      assert.deepEqual(
+        res2.ast,
+        cssTree.parse('.foo', {
+          context: 'selectorList'
+        }),
+        'ast'
+      );
+      assert.strictEqual(res2.error instanceof window.TypeError, true, 'error');
+      assert.strictEqual(
+        res2.error.message,
+        'Unexpected node #document',
+        'message'
+      );
+      assert.strictEqual(res2.match, false, 'match');
+      assert.strictEqual(res2.pseudoElement, null, 'pseudoElement');
     });
 
     it('should match simple tag selector and cache parse AST', () => {
@@ -452,11 +495,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('li', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -465,11 +509,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res2,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('li', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -482,11 +527,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: false,
-          pseudoElement: null,
           ast: cssTree.parse('dd', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: false,
+          pseudoElement: null
         },
         'result'
       );
@@ -495,11 +541,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res2,
         {
-          match: false,
-          pseudoElement: null,
           ast: cssTree.parse('dd', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: false,
+          pseudoElement: null
         },
         'result'
       );
@@ -512,11 +559,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: '::before',
           ast: cssTree.parse('li::before', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: '::before'
         },
         'result'
       );
@@ -528,11 +576,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('null', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -546,6 +595,10 @@ describe('DOMSelector', () => {
           ast: cssTree.parse('[foo=bar baz]', {
             context: 'selectorList'
           }),
+          error: new DOMException(
+            'Invalid selector [foo=bar baz]',
+            'SyntaxError'
+          ),
           match: false,
           pseudoElement: null
         },
@@ -564,6 +617,10 @@ describe('DOMSelector', () => {
           ast: cssTree.parse('[foo=bar baz]::before', {
             context: 'selectorList'
           }),
+          error: new DOMException(
+            'Invalid selector [foo=bar baz]',
+            'SyntaxError'
+          ),
           match: false,
           pseudoElement: '::before'
         },
@@ -590,11 +647,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('#main p:not(.foo)', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -610,14 +668,15 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse(
             ':is(ol > li:is(:only-child, :last-child), ul > li:is(:only-child, :last-child))',
             {
               context: 'selectorList'
             }
-          )
+          ),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -633,9 +692,10 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
+          ast: null,
+          error: null,
           match: false,
-          pseudoElement: null,
-          ast: null
+          pseudoElement: null
         },
         'result'
       );
@@ -659,11 +719,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('li', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -687,11 +748,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: '::before',
           ast: cssTree.parse('li::before', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: '::before'
         },
         'result'
       );
@@ -708,6 +770,7 @@ describe('DOMSelector', () => {
           ast: cssTree.parse(':unknown-pseudo', {
             context: 'selectorList'
           }),
+          error: null,
           match: false,
           pseudoElement: null
         },
@@ -722,11 +785,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('*', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
@@ -739,11 +803,12 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('*|*', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );

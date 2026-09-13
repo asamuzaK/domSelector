@@ -1297,11 +1297,12 @@ describe('Finder', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: '::before',
           ast: cssTree.parse('li::before', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: '::before'
         },
         'result'
       );
@@ -1317,11 +1318,12 @@ describe('Finder', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: '::before::marker',
           ast: cssTree.parse('li.li::before::marker', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: '::before::marker'
         },
         'result'
       );
@@ -1337,11 +1339,12 @@ describe('Finder', () => {
       assert.deepEqual(
         res,
         {
-          match: true,
-          pseudoElement: null,
           ast: cssTree.parse('li', {
             context: 'selectorList'
-          })
+          }),
+          error: null,
+          match: true,
+          pseudoElement: null
         },
         'result'
       );
