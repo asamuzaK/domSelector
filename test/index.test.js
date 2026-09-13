@@ -156,7 +156,7 @@ describe('DOMSelector', () => {
   });
 
   describe('extractSubjects', () => {
-    it('should return universal subject for empty or null input', () => {
+    it('should return subject for empty or null input', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects(),
@@ -173,6 +173,24 @@ describe('DOMSelector', () => {
         [{ id: null, className: null, tag: null }],
         'empty string'
       );
+    });
+
+    it('should log error and return subject for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const stubConsole = sinon.stub(console, 'error');
+      try {
+        const res = domSelector.extractSubjects(`.${'a'.repeat(10)}`);
+        assert.strictEqual(stubConsole.calledOnce, true, 'console');
+        assert.deepEqual(
+          res,
+          [{ id: null, className: null, tag: null }],
+          'result'
+        );
+      } finally {
+        stubConsole.restore();
+      }
     });
 
     it('should extract tag name subject from simple type selector', () => {
@@ -358,6 +376,20 @@ describe('DOMSelector', () => {
       assert.strictEqual(domSelector.supports({}), false, 'object');
     });
 
+    it('should log error and return false for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const stubConsole = sinon.stub(console, 'error');
+      try {
+        const res = domSelector.supports(`.${'a'.repeat(10)}`);
+        assert.strictEqual(stubConsole.calledOnce, true, 'console');
+        assert.strictEqual(res, false, 'result');
+      } finally {
+        stubConsole.restore();
+      }
+    });
+
     it('should return true for supported simple selector strings', () => {
       const domSelector = new DOMSelector(window, document);
       assert.strictEqual(domSelector.supports('.foo'), true, 'class selector');
@@ -429,12 +461,45 @@ describe('DOMSelector', () => {
   });
 
   describe('check', () => {
-    it('should not throw TypeError when arguments are undefined', () => {
+    it('should include TypeError when arguments are undefined', () => {
       const domSelector = new DOMSelector(window);
       const { ast, error, match, pseudoElement } = domSelector.check();
       assert.deepEqual(ast, null, 'ast');
       assert.strictEqual(error instanceof window.TypeError, true, 'error');
       assert.strictEqual(error.message, 'Unexpected type Undefined', 'message');
+      assert.strictEqual(match, false, 'match');
+      assert.strictEqual(pseudoElement, null, 'pseudoElement');
+    });
+
+    it('should include DOMException when selector is not parsable', () => {
+      const domSelector = new DOMSelector(window);
+      const { ast, error, match, pseudoElement } = domSelector.check(
+        1,
+        document.documentElement
+      );
+      assert.deepEqual(ast, null, 'ast');
+      assert.strictEqual(error instanceof window.DOMException, true, 'error');
+      assert.strictEqual(error.name, 'SyntaxError', 'name');
+      assert.strictEqual(error.message, 'Invalid selector 1', 'message');
+      assert.strictEqual(match, false, 'match');
+      assert.strictEqual(pseudoElement, null, 'pseudoElement');
+    });
+
+    it('should include RangeError when selector is too long', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const { ast, error, match, pseudoElement } = domSelector.check(
+        `.${'a'.repeat(10)}`,
+        document.documentElement
+      );
+      assert.deepEqual(ast, null, 'ast');
+      assert.strictEqual(error instanceof window.RangeError, true, 'error');
+      assert.strictEqual(
+        error.message,
+        'Selector exceeds maximum allowed length of 10.',
+        'message'
+      );
       assert.strictEqual(match, false, 'match');
       assert.strictEqual(pseudoElement, null, 'pseudoElement');
     });
@@ -824,7 +889,6 @@ describe('DOMSelector', () => {
         const node = document.createElement('div');
         document.body.appendChild(node);
         const domSelector = new DOMSelector(window);
-
         assert.strictEqual(domSelector.matches(selector, node), false);
         node.setAttribute(attribute, '');
         domSelector.clear();
@@ -834,6 +898,52 @@ describe('DOMSelector', () => {
         assert.strictEqual(domSelector.matches(selector, node), true);
       });
     }
+
+    it('should throw DOMException for invalid selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.throws(
+        () => domSelector.matches(1, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true, 'error');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+          return true;
+        }
+      );
+    });
+
+    it('should throw RangeError for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      assert.throws(
+        () =>
+          domSelector.matches(`.${'a'.repeat(10)}`, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.RangeError, true, 'error');
+          assert.strictEqual(
+            e.message,
+            'Selector exceeds maximum allowed length of 10.',
+            'message'
+          );
+          return true;
+        }
+      );
+    });
+
+    it('should return false for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const res = domSelector.matches(
+        `.${'a'.repeat(10)}`,
+        document.documentElement,
+        {
+          noexcept: true
+        }
+      );
+      assert.strictEqual(res, false, 'result');
+    });
 
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
@@ -861,6 +971,7 @@ describe('DOMSelector', () => {
         );
       }
     });
+
     it('should throw TypeError when selector argument is omitted', () => {
       assert.throws(
         () => new DOMSelector(window).matches(),
@@ -1139,7 +1250,6 @@ describe('DOMSelector', () => {
         parent.appendChild(node);
         document.body.appendChild(parent);
         const domSelector = new DOMSelector(window);
-
         assert.strictEqual(domSelector.closest(selector, node), parent);
         parent.removeAttribute(attribute);
         domSelector.clear();
@@ -1149,6 +1259,52 @@ describe('DOMSelector', () => {
         assert.strictEqual(domSelector.closest(selector, node), node);
       });
     }
+
+    it('should throw DOMException for invalid selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.throws(
+        () => domSelector.closest(1, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true, 'error');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+          return true;
+        }
+      );
+    });
+
+    it('should throw RangeError for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      assert.throws(
+        () =>
+          domSelector.closest(`.${'a'.repeat(10)}`, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.RangeError, true, 'error');
+          assert.strictEqual(
+            e.message,
+            'Selector exceeds maximum allowed length of 10.',
+            'message'
+          );
+          return true;
+        }
+      );
+    });
+
+    it('should return null for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const res = domSelector.closest(
+        `.${'a'.repeat(10)}`,
+        document.documentElement,
+        {
+          noexcept: true
+        }
+      );
+      assert.strictEqual(res, null, 'result');
+    });
 
     it('should find the nearest attribute match after mutations', () => {
       document.body.innerHTML = `
@@ -1161,7 +1317,6 @@ describe('DOMSelector', () => {
       const inner = document.getElementById('inner');
       const target = document.getElementById('target');
       const domSelector = new DOMSelector(window);
-
       assert.strictEqual(
         domSelector.closest('[data-rootownerid]', target),
         inner
@@ -1174,7 +1329,6 @@ describe('DOMSelector', () => {
         domSelector.closest('#outer, [data-rootownerid]', target),
         inner
       );
-
       inner.removeAttribute('data-rootownerid');
       domSelector.clear();
       assert.strictEqual(
@@ -1246,6 +1400,7 @@ describe('DOMSelector', () => {
         );
       }
     });
+
     it('should throw TypeError when arguments are omitted', () => {
       assert.throws(
         () => new DOMSelector(window).closest(null),
@@ -1524,6 +1679,55 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelector', () => {
+    it('should throw DOMException for invalid selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.throws(
+        () => domSelector.querySelector(1, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true, 'error');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+          return true;
+        }
+      );
+    });
+
+    it('should throw RangeError for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      assert.throws(
+        () =>
+          domSelector.querySelector(
+            `.${'a'.repeat(10)}`,
+            document.documentElement
+          ),
+        e => {
+          assert.strictEqual(e instanceof window.RangeError, true, 'error');
+          assert.strictEqual(
+            e.message,
+            'Selector exceeds maximum allowed length of 10.',
+            'message'
+          );
+          return true;
+        }
+      );
+    });
+
+    it('should return null for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const res = domSelector.querySelector(
+        `.${'a'.repeat(10)}`,
+        document.documentElement,
+        {
+          noexcept: true
+        }
+      );
+      assert.strictEqual(res, null, 'result');
+    });
+
     it('should throw DOMException for invalid equality selectors', () => {
       const node = document.createElement('div');
       node.setAttribute('data-testid', 'target');
@@ -2128,6 +2332,55 @@ describe('DOMSelector', () => {
   });
 
   describe('querySelectorAll', () => {
+    it('should throw DOMException for invalid selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.throws(
+        () => domSelector.querySelectorAll(1, document.documentElement),
+        e => {
+          assert.strictEqual(e instanceof window.DOMException, true, 'error');
+          assert.strictEqual(e.name, 'SyntaxError', 'name');
+          assert.strictEqual(e.message, 'Invalid selector 1', 'message');
+          return true;
+        }
+      );
+    });
+
+    it('should throw RangeError for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      assert.throws(
+        () =>
+          domSelector.querySelectorAll(
+            `.${'a'.repeat(10)}`,
+            document.documentElement
+          ),
+        e => {
+          assert.strictEqual(e instanceof window.RangeError, true, 'error');
+          assert.strictEqual(
+            e.message,
+            'Selector exceeds maximum allowed length of 10.',
+            'message'
+          );
+          return true;
+        }
+      );
+    });
+
+    it('should return empty array for too long selector', () => {
+      const domSelector = new DOMSelector(window, null, {
+        maxLength: 10
+      });
+      const res = domSelector.querySelectorAll(
+        `.${'a'.repeat(10)}`,
+        document.documentElement,
+        {
+          noexcept: true
+        }
+      );
+      assert.deepEqual(res, [], 'result');
+    });
+
     it('should match complex logical selectors across query contexts', () => {
       document.body.innerHTML = `
         <div id="container" class="container">
