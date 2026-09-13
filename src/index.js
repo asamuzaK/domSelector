@@ -186,9 +186,14 @@ export class DOMSelector {
    */
   check(selector, node, opt = {}) {
     node = this.#wrapNode(node);
-    const error = this.#validateNodeType(node, true);
-    if (error) {
-      this.#finder.onError(error, opt);
+    const nodeError = this.#validateNodeType(node, true);
+    if (nodeError) {
+      const errorOptions = {
+        noexcept: false,
+        warn: true,
+        globalObject: this.#window
+      };
+      this.#finder.onError(nodeError, errorOptions);
       return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
@@ -244,15 +249,15 @@ export class DOMSelector {
    * @returns {boolean} True if the element matches, false otherwise.
    */
   matches(selector, node, opt = {}) {
-    node = this.#wrapNode(node);
     const options = {
       ...opt,
       check: false,
       globalObject: this.#window
     };
-    const error = this.#validateNodeType(node, true);
-    if (error) {
-      return this.#finder.onError(error, options);
+    node = this.#wrapNode(node);
+    const nodeError = this.#validateNodeType(node, true);
+    if (nodeError) {
+      return this.#finder.onError(nodeError, options);
     }
     if (REG_UNIVERSAL.test(selector)) {
       return true;
@@ -275,15 +280,15 @@ export class DOMSelector {
    * @returns {Element|null} The first matching ancestor element, or `null`.
    */
   closest(selector, node, opt = {}) {
-    node = this.#wrapNode(node);
     const options = {
       ...opt,
       check: false,
       globalObject: this.#window
     };
-    const error = this.#validateNodeType(node, true);
-    if (error) {
-      return this.#finder.onError(error, options);
+    node = this.#wrapNode(node);
+    const nodeError = this.#validateNodeType(node, true);
+    if (nodeError) {
+      return this.#finder.onError(nodeError, options);
     }
     if (REG_UNIVERSAL.test(selector)) {
       return node;
@@ -315,15 +320,15 @@ export class DOMSelector {
    * @returns {Element|null} The first matching element, or `null`.
    */
   querySelector(selector, node, opt = {}) {
-    node = this.#wrapNode(node);
     const options = {
       ...opt,
       check: false,
       globalObject: this.#window
     };
-    const error = this.#validateNodeType(node);
-    if (error) {
-      this.#finder.onError(error, options);
+    node = this.#wrapNode(node);
+    const nodeError = this.#validateNodeType(node);
+    if (nodeError) {
+      this.#finder.onError(nodeError, options);
       return null;
     }
     if (REG_UNIVERSAL.test(selector)) {
@@ -349,15 +354,15 @@ export class DOMSelector {
    * @returns {Array<Element>} An array of elements, or an empty array.
    */
   querySelectorAll(selector, node, opt = {}) {
-    node = this.#wrapNode(node);
     const options = {
       ...opt,
       check: false,
       globalObject: this.#window
     };
-    const error = this.#validateNodeType(node);
-    if (error) {
-      this.#finder.onError(error, options);
+    node = this.#wrapNode(node);
+    const nodeError = this.#validateNodeType(node);
+    if (nodeError) {
+      this.#finder.onError(nodeError, options);
       return [];
     }
     if (REG_UNIVERSAL.test(selector)) {
@@ -387,7 +392,7 @@ export class DOMSelector {
   }
 
   /**
-   * Validates a node and returns an Error if invalid.
+   * Validates a node.
    * @private
    * @param {Document|DocumentFragment|Element} node - The node to check.
    * @param {boolean} [element] - `true` if the node must be an Element.
