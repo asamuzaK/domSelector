@@ -34,7 +34,7 @@ import {
   TARGET_SELF
 } from './js/constant.js';
 const CACHE_SIZE = 4096;
-const MAX_LENGTH = 512;
+const MAX_LENGTH = 2048;
 const DEFAULT_SUBJECT = { id: null, className: null, tag: null };
 
 /* regexp */
