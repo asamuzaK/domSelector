@@ -70,27 +70,6 @@ export const getType = o =>
   Object.prototype.toString.call(o).slice(TYPE_FROM, TYPE_TO);
 
 /**
- * Stringify a value.
- * @param {unknown} value - The value to stringify.
- * @returns {string} The stringifyed value.
- */
-export const stringifyValue = value => {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (value === undefined || value === null || typeof value === 'boolean') {
-    return String(value);
-  }
-  if (Array.isArray(value)) {
-    return value.join(',');
-  }
-  if (Object.hasOwn(value, 'toString')) {
-    return value.toString();
-  }
-  throw new DOMException(`Invalid selector ${value}`, SYNTAX_ERR);
-};
-
-/**
  * Verify array contents.
  * @param {Array} arr - The array.
  * @param {string} type - Expected type, e.g. 'String'.
@@ -121,6 +100,33 @@ export const verifyArray = (arr, type) => {
  */
 export const generateException = (msg, name, globalObject = globalThis) => {
   return new globalObject.DOMException(msg, name);
+};
+
+/**
+ * Stringify a value.
+ * @param {unknown} value - The value to stringify.
+ * @param {object} [globalObject] - The global object (e.g., Window).
+ * @returns {string} The stringifyed value.
+ */
+export const stringifyValue = (value, globalObject = globalThis) => {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value === undefined || value === null || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value.join(',');
+  }
+  if (Object.hasOwn(value, 'toString')) {
+    return value.toString();
+  }
+  const error = generateException(
+    `Invalid selector ${value}`,
+    SYNTAX_ERR,
+    globalObject
+  );
+  throw error;
 };
 
 /**

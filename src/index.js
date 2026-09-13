@@ -19,7 +19,8 @@ import {
   collectAllDescendants,
   findByExactIdAttribute,
   findBySimpleAttribute,
-  getType
+  getType,
+  stringifyValue
 } from './js/utility.js';
 
 /* constants */
@@ -33,6 +34,7 @@ import {
   TARGET_SELF
 } from './js/constant.js';
 const CACHE_SIZE = 4096;
+const MAX_LENGTH = 512;
 const DEFAULT_SUBJECT = { id: null, className: null, tag: null };
 
 /* regexp */
@@ -51,7 +53,7 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 /**
  * @typedef {object} SelectorSubject
  * @property {string|null} id - The ID.
- * @property {string|null} classname - The class name.
+ * @property {string|null} className - The class name.
  * @property {string|null} tag - The tag name.
  */
 
@@ -64,7 +66,7 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 /**
  * @typedef {object} FindOptions
  * @property {string} [dir] - The traversal direction.
- * @property {boolean} [check] - True if running in internal check mode.
+ * @property {boolean} [check] - Indicates if running in internal check mode.
  * @property {boolean} [forgive] - True to ignore unknown or invalid selectors.
  * @property {boolean} [noexcept] - True to suppress exceptions.
  * @property {boolean} [warn] - True to enable console warnings.
@@ -75,12 +77,13 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 /* DOMSelector */
 export class DOMSelector {
   /* private fields */
-  #window;
+  #cache;
   #document;
   #finder;
   #idlUtils;
+  #maxLength;
   #nwsapi;
-  #cache;
+  #window;
 
   /**
    * Creates an instance of DOMSelector.
@@ -89,12 +92,15 @@ export class DOMSelector {
    * @param {object} [opt] - Options.
    * @param {number} [opt.cacheSize] - The maximum size of the LRU cache.
    * @param {object} [opt.idlUtils] - The internal IDL wrapper used for jsdom.
+   * @param {number} [opt.maxLength] - The maximum length of the selector.
    */
   constructor(window, document, opt = {}) {
-    const { cacheSize, idlUtils } = opt;
+    const { cacheSize, idlUtils, maxLength } = opt;
     this.#window = window;
     this.#document = document ?? window.document;
     this.#idlUtils = idlUtils;
+    this.#maxLength =
+      Number.isInteger(maxLength) && maxLength > 0 ? maxLength : MAX_LENGTH;
     this.#cache = new LRUCache({
       max: cacheSize ?? CACHE_SIZE
     });
@@ -104,8 +110,8 @@ export class DOMSelector {
 
   /**
    * Clears the internal caches.
-   * @param {boolean} [clearAll] - Whether to clear all caches. If false,
-   * only cached matching results are cleared.
+   * @param {boolean} [clearAll] - True to clear all caches. If false, only
+   * cached matching results are cleared.
    * @returns {void}
    */
   clear(clearAll = false) {
@@ -125,6 +131,14 @@ export class DOMSelector {
   extractSubjects(selector, caseSensitive = false) {
     if (!selector || typeof selector !== 'string') {
       return [DEFAULT_SUBJECT];
+    }
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      console.error(error);
+      return [DEFAULT_SUBJECT];
+    } else {
+      selector = validatedSelector;
     }
     const cacheKey = `extract_${selector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
@@ -152,11 +166,19 @@ export class DOMSelector {
   /**
    * Checks if the given CSS selector is supported by this engine.
    * @param {string} selector - The CSS selector to check.
-   * @returns {boolean} `true` if the selector is supported, `false` otherwise.
+   * @returns {boolean} True if the selector is supported, false otherwise.
    */
   supports(selector) {
     if (typeof selector !== 'string') {
       return false;
+    }
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      console.error(error);
+      return false;
+    } else {
+      selector = validatedSelector;
     }
     const cacheKey = `supports_${selector}`;
     let isSupported = this.#cache.get(cacheKey);
@@ -186,6 +208,18 @@ export class DOMSelector {
    * @returns {CheckResult} An object containing the check result.
    */
   check(selector, node, opt = {}) {
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      return {
+        error,
+        ast: null,
+        match: false,
+        pseudoElement: null
+      };
+    } else {
+      selector = validatedSelector;
+    }
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
@@ -265,10 +299,19 @@ export class DOMSelector {
       check: false,
       globalObject: this.#window
     };
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      this.#finder.onError(error, options);
+      return false;
+    } else {
+      selector = validatedSelector;
+    }
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
-      return this.#finder.onError(nodeError, options);
+      this.#finder.onError(nodeError, options);
+      return false;
     }
     if (REG_UNIVERSAL.test(selector)) {
       return true;
@@ -296,6 +339,14 @@ export class DOMSelector {
       check: false,
       globalObject: this.#window
     };
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      this.#finder.onError(error, options);
+      return null;
+    } else {
+      selector = validatedSelector;
+    }
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node, true);
     if (nodeError) {
@@ -336,6 +387,14 @@ export class DOMSelector {
       check: false,
       globalObject: this.#window
     };
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      this.#finder.onError(error, options);
+      return null;
+    } else {
+      selector = validatedSelector;
+    }
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node);
     if (nodeError) {
@@ -370,6 +429,14 @@ export class DOMSelector {
       check: false,
       globalObject: this.#window
     };
+    const { error, selector: validatedSelector } =
+      this.#validateSelector(selector);
+    if (error) {
+      this.#finder.onError(error, options);
+      return [];
+    } else {
+      selector = validatedSelector;
+    }
     node = this.#wrapNode(node);
     const nodeError = this.#validateNodeType(node);
     if (nodeError) {
@@ -390,6 +457,35 @@ export class DOMSelector {
       return [...nodes];
     }
     return [];
+  }
+
+  /**
+   * Validates a selector.
+   * @private
+   * @param {string} selector - The selector to check.
+   * @returns {{ selector:string|null, error:DOMException|RangeError|null}} Returns validation result.
+   */
+  #validateSelector(selector) {
+    try {
+      selector = stringifyValue(selector, this.#window);
+      if (selector.length > this.#maxLength) {
+        return {
+          selector: null,
+          error: new this.#window.RangeError(
+            `Selector exceeds maximum allowed length of ${this.#maxLength}.`
+          )
+        };
+      }
+      return {
+        selector,
+        error: null
+      };
+    } catch (e) {
+      return {
+        selector: null,
+        error: e
+      };
+    }
   }
 
   /**
@@ -423,7 +519,7 @@ export class DOMSelector {
    * Executes Nwsapi matching logic with caching and error wrapping.
    * @private
    * @param {string} selector - The CSS selector to match against.
-   * @param {Document|Element} node - The target node to check.
+   * @param {Element} node - The target node to check.
    * @param {number} targetType - The target type indicating the scope.
    * @param {(node: Element) => Array<Element>|Element|boolean|null} callback - The specific nwsapi function.
    * @param {boolean} [isCheck] - True if called from the check method.
