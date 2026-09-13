@@ -175,22 +175,16 @@ describe('DOMSelector', () => {
       );
     });
 
-    it('should log error and return subject for too long selector', () => {
+    it('should return subject for too long selector', () => {
       const domSelector = new DOMSelector(window, null, {
         maxLength: 10
       });
-      const stubConsole = sinon.stub(console, 'error');
-      try {
-        const res = domSelector.extractSubjects(`.${'a'.repeat(10)}`);
-        assert.strictEqual(stubConsole.calledOnce, true, 'console');
-        assert.deepEqual(
-          res,
-          [{ id: null, className: null, tag: null }],
-          'result'
-        );
-      } finally {
-        stubConsole.restore();
-      }
+      const res = domSelector.extractSubjects(`.${'a'.repeat(10)}`);
+      assert.deepEqual(
+        res,
+        [{ id: null, className: null, tag: null }],
+        'result'
+      );
     });
 
     it('should extract tag name subject from simple type selector', () => {
@@ -376,18 +370,12 @@ describe('DOMSelector', () => {
       assert.strictEqual(domSelector.supports({}), false, 'object');
     });
 
-    it('should log error and return false for too long selector', () => {
+    it('should return false for too long selector', () => {
       const domSelector = new DOMSelector(window, null, {
         maxLength: 10
       });
-      const stubConsole = sinon.stub(console, 'error');
-      try {
-        const res = domSelector.supports(`.${'a'.repeat(10)}`);
-        assert.strictEqual(stubConsole.calledOnce, true, 'console');
-        assert.strictEqual(res, false, 'result');
-      } finally {
-        stubConsole.restore();
-      }
+      const res = domSelector.supports(`.${'a'.repeat(10)}`);
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should return true for supported simple selector strings', () => {

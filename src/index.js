@@ -135,7 +135,6 @@ export class DOMSelector {
     const { error, selector: validatedSelector } =
       this.#validateSelector(selector);
     if (error) {
-      console.error(error);
       return [DEFAULT_SUBJECT];
     } else {
       selector = validatedSelector;
@@ -175,7 +174,6 @@ export class DOMSelector {
     const { error, selector: validatedSelector } =
       this.#validateSelector(selector);
     if (error) {
-      console.error(error);
       return false;
     } else {
       selector = validatedSelector;
