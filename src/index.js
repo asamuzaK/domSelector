@@ -96,9 +96,9 @@ export class DOMSelector {
    */
   constructor(window, document, opt = {}) {
     const { cacheSize, idlUtils, maxLength } = opt;
-    this.#window = window;
-    this.#document = document ?? window.document;
     this.#idlUtils = idlUtils;
+    this.#window = window;
+    this.#document = document ? this.#wrapNode(document) : window.document;
     this.#maxLength =
       Number.isInteger(maxLength) && maxLength > 0 ? maxLength : MAX_LENGTH;
     this.#cache = new LRUCache({
@@ -451,6 +451,16 @@ export class DOMSelector {
   }
 
   /**
+   * Wraps the node for IDL internal implementation if idlUtils is present.
+   * @private
+   * @param {Document|DocumentFragment|Element} node - The raw node.
+   * @returns {object} The wrapped or raw node.
+   */
+  #wrapNode(node) {
+    return this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
+  }
+
+  /**
    * Validates a selector.
    * @private
    * @param {string} selector - The selector to check.
@@ -477,16 +487,6 @@ export class DOMSelector {
         error: e
       };
     }
-  }
-
-  /**
-   * Wraps the node for IDL internal implementation if idlUtils is present.
-   * @private
-   * @param {Document|DocumentFragment|Element} node - The raw node.
-   * @returns {object} The wrapped or raw node.
-   */
-  #wrapNode(node) {
-    return this.#idlUtils ? this.#idlUtils.wrapperForImpl(node) : node;
   }
 
   /**
@@ -518,11 +518,9 @@ export class DOMSelector {
    */
   #tryNwsapi(selector, node, targetType, callback, isCheck = false) {
     const document = node.ownerDocument;
-    // jsdom passes an internal document to the constructor but wraps entry nodes.
     if (
       node.isConnected &&
-      (document === this.#document ||
-        this.#idlUtils?.implForWrapper?.(document) === this.#document) &&
+      document === this.#document &&
       document.contentType === MIME_HTML &&
       document.documentElement
     ) {
