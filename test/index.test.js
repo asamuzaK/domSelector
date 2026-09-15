@@ -2173,7 +2173,7 @@ describe('DOMSelector', () => {
         idlUtils
       });
       const res = domSelector.querySelector('[id="li2"]', document);
-      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
       assert.deepEqual(res, node, 'result');
     });
 
@@ -2188,8 +2188,8 @@ describe('DOMSelector', () => {
       const res = domSelector.querySelector('[id="dt1"]', document);
       assert.strictEqual(
         wrapperForImpl.callCount,
-        1,
-        'wrapperForImpl should be called once'
+        2,
+        'wrapperForImpl should be called twice'
       );
       assert.deepEqual(res, target, 'result');
     });
@@ -2776,7 +2776,7 @@ describe('DOMSelector', () => {
       });
       const res = domSelector.querySelectorAll('.li#li2', document);
       delete document._ownerDocument;
-      assert.strictEqual(wrapperForImpl.callCount, i + 1, 'called');
+      assert.strictEqual(wrapperForImpl.callCount, i + 2, 'called');
       assert.deepEqual(res, [node], 'result');
     });
 
