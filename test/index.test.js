@@ -274,7 +274,8 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res1 = domSelector.extractSubjects('div.foo');
       const res2 = domSelector.extractSubjects('div.foo');
-      assert.strictEqual(res1, res2);
+      assert.strictEqual(res1 === res2, false);
+      assert.deepEqual(res1, res2);
     });
 
     it('should handle tag case sensitivity according to option', () => {
