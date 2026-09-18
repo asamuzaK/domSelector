@@ -35,7 +35,7 @@ import {
 } from './js/constant.js';
 const CACHE_SIZE = 4096;
 const MAX_LENGTH = 2048;
-const DEFAULT_SUBJECT = { id: null, className: null, tag: null };
+const DEFAULT_SUBJECT = Object.freeze({ id: null, className: null, tag: null });
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
@@ -141,7 +141,7 @@ export class DOMSelector {
     const cacheKey = `extract_${selector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
     if (subjects !== undefined) {
-      return subjects;
+      return [...subjects];
     }
     subjects = [];
     if (!REG_SELECTOR.test(selector)) {
@@ -158,7 +158,7 @@ export class DOMSelector {
       subjects.push(DEFAULT_SUBJECT);
     }
     this.#cache.set(cacheKey, subjects);
-    return subjects;
+    return [...subjects];
   }
 
   /**
