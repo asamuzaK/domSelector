@@ -16,10 +16,11 @@ import {
 
 /* constants */
 import {
-  ALPHA_NUM,
   ATTR_VALUE_I,
   INPUT_EDIT,
+  LANG_ALPHA_NUM,
   LANG_PART,
+  LANG_PART_SKIP,
   NOT_SUPPORTED_ERR,
   PS_ELEMENT_SELECTOR,
   STRING,
@@ -29,7 +30,10 @@ const KEYS_ATTR_VALUE_I = new Set(ATTR_VALUE_I);
 const KEYS_INPUT_EDIT = new Set(INPUT_EDIT);
 
 /* regexp */
-const REG_LANG_VALID = new RegExp(`^(?:\\*-)?${ALPHA_NUM}${LANG_PART}$`, 'i');
+const REG_LANG_VALID = new RegExp(
+  `^(?:\\*-)?${LANG_ALPHA_NUM}${LANG_PART}$`,
+  'i'
+);
 const REG_ATTR_EQUALITY = /^[a-z][a-z\d_-]*$/;
 
 /* cache */
@@ -179,11 +183,12 @@ export const matchLanguagePseudoClass = (
     meta.langRegex = null;
     return false;
   }
-  const regexStr = langPattern
-    .split('-')
+  const parts = langPattern.split('-');
+  const regexStr = parts
     .map((part, index) => {
-      const core = part === '*' ? ALPHA_NUM : part;
-      return (index === 0 ? core : `-${core}`) + LANG_PART;
+      const core = part === '*' ? LANG_ALPHA_NUM : part;
+      const skip = index === parts.length - 1 ? LANG_PART : LANG_PART_SKIP;
+      return (index === 0 ? core : `-${core}`) + skip;
     })
     .join('');
   const matcherRegex = new RegExp(`^${regexStr}$`, 'i');
