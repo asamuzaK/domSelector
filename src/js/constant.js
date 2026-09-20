@@ -65,7 +65,10 @@ export const SHOW_ELEMENT = 1;
 export const ALPHA_NUM = '[A-Z\\d]+';
 export const CHILD_IDX = '(?:first|last|only)-(?:child|of-type)';
 export const DIGIT = '(?:0|[1-9]\\d*)';
-export const LANG_PART = `(?:-${ALPHA_NUM})*`;
+export const LANG_ALPHA_NUM = '[A-Z\\d]{1,8}';
+export const LANG_SKIP_ALPHA_NUM = '[A-Z\\d]{2,8}';
+export const LANG_PART = `(?:-${LANG_ALPHA_NUM})*`;
+export const LANG_PART_SKIP = `(?:-${LANG_SKIP_ALPHA_NUM})*`;
 export const PSEUDO_CLASS = `(?:any-)?link|${CHILD_IDX}|checked|empty|indeterminate|read-(?:only|write)|target`;
 export const ANB = `[+-]?(?:${DIGIT}n?|n)|(?:[+-]?${DIGIT})?n\\s*[+-]\\s*${DIGIT}`;
 // combinators

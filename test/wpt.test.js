@@ -1076,24 +1076,22 @@ describe('local wpt test cases', () => {
       assert.strictEqual(res, true, 'result');
     });
 
-    // FIXME: throws which is expected, need to fix test
-    xit('lang-013.html, should not match', () => {
+    it('lang-013.html, should match', () => {
       const html =
         '<div class="test"><span id="target" lang="fr-Latn-FR">This should be green</span></div>';
       document.body.innerHTML = html;
       const node = document.getElementById('target');
-      const res = node.matches(':lang(fr, nl, 0, de)');
-      assert.strictEqual(res, false, 'result');
+      const res = node.matches(':lang(fr, nl, "0", de)');
+      assert.strictEqual(res, true, 'result');
     });
 
-    // FIXME: throws which is expected, need to fix test
-    xit('lang-014.html, should not match', () => {
+    it('lang-014.html, should match', () => {
       const html =
         '<div class="test"><span id="target" lang="0">This should be green</span></div>';
       document.body.innerHTML = html;
       const node = document.getElementById('target');
-      const res = node.matches(':lang(0)');
-      assert.strictEqual(res, false, 'result');
+      const res = node.matches(':lang("0")');
+      assert.strictEqual(res, true, 'result');
     });
 
     it('lang-015.html, should match', () => {
@@ -1193,6 +1191,172 @@ describe('local wpt test cases', () => {
       const node = document.getElementById('target');
       const res = node.matches(':lang("art")');
       assert.strictEqual(res, true, 'result');
+    });
+
+    describe('singleton subtag matching.html', () => {
+      const html = `
+        <div lang="fr-x"></div>
+        <div lang="fr-x-standard"></div>
+        <div lang="fr-standard"></div>
+        <div lang="fr-ninechars"></div>
+        <div lang="cocoa-1-bar"></div>
+        <div lang="cocoa-a-bar"></div>
+        <div lang="en-x-private"></div>
+        <div lang="zh-x"></div>
+        <div lang="zh-x-foobar"></div>
+      `;
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(fr-x)').length,
+            2,
+            'length'
+          );
+        },
+        'singleton "x" matches'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(fr-x)').length,
+            2,
+            'length'
+          );
+          const matched = document.querySelectorAll(':lang(fr-x)');
+          assert.strictEqual(matched[0].getAttribute('lang'), 'fr-x', 'first');
+          assert.strictEqual(
+            matched[1].getAttribute('lang'),
+            'fr-x-standard',
+            'second'
+          );
+        },
+        ':lang(fr-x) matches the correct elements'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(fr-standard)').length,
+            1,
+            'length'
+          );
+        },
+        ':lang(fr-standard) only matches lang="fr-standard"'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(fr)').length,
+            3,
+            'length'
+          );
+        },
+        'subtag exceeds 8-char limit'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(cocoa-1)').length,
+            1,
+            'length'
+          );
+          assert.strictEqual(
+            document.querySelectorAll(':lang(cocoa-1)')[0].getAttribute('lang'),
+            'cocoa-1-bar',
+            'first'
+          );
+        },
+        'singleton "1" matches'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(cocoa-a)').length,
+            1,
+            'length'
+          );
+          assert.strictEqual(
+            document.querySelectorAll(':lang(cocoa-a)')[0].getAttribute('lang'),
+            'cocoa-a-bar',
+            'first'
+          );
+        },
+        'singleton "a" matches'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(cocoa-bar)').length,
+            0,
+            'length'
+          );
+        },
+        'cannot skip past singleton "1"'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(en-x)').length,
+            1,
+            'length'
+          );
+          assert.strictEqual(
+            document.querySelectorAll(':lang(en-x)')[0].getAttribute('lang'),
+            'en-x-private',
+            'first'
+          );
+        },
+        ':lang(en-x) matches lang="en-x-private" (private-use singleton)'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(zh-x)').length,
+            2,
+            'length'
+          );
+        },
+        ':lang(zh-x) matches both lang="zh-x" and lang="zh-x-foobar"'
+      );
+
+      it(
+        'should get matched nodes',
+        () => {
+          document.body.innerHTML = html;
+          assert.strictEqual(
+            document.querySelectorAll(':lang(en-private)').length,
+            0,
+            'length'
+          );
+        },
+        'cannot skip past singleton "x"'
+      );
     });
   });
 
