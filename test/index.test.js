@@ -2435,13 +2435,18 @@ describe('DOMSelector', () => {
       document.body.appendChild(root);
       const [input, svg] = root.children;
       const domSelector = new DOMSelector(window);
-      const selector = '[type="text"][data-probe]';
-      const before = domSelector.querySelectorAll(selector, root);
-      assert.deepEqual(before, [input], 'HTML first');
-      root.prepend(svg);
-      domSelector.clear(true);
-      const after = domSelector.querySelectorAll(selector, root);
-      assert.deepEqual(after, [input], 'SVG first');
+      for (const selector of ['[type="text"]', '[type="text"][data-probe]']) {
+        root.append(input, svg);
+        domSelector.clear(true);
+        const before = domSelector.querySelectorAll(selector, root);
+        assert.deepEqual(before, [input], 'HTML first');
+        assert.strictEqual(domSelector.querySelector(selector, root), input);
+        root.prepend(svg);
+        domSelector.clear(true);
+        const after = domSelector.querySelectorAll(selector, root);
+        assert.deepEqual(after, [input], 'SVG first');
+        assert.strictEqual(domSelector.querySelector(selector, root), input);
+      }
     });
 
     it('should keep pending attribute queries within their context', () => {
@@ -3006,6 +3011,54 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelectorAll('[hidden]', root);
       assert.deepEqual(res, [child1, child2], 'result');
+    });
+
+    it('should keep attribute queries within each context in tree order', () => {
+      const connected = document.createElement('section');
+      document.body.appendChild(connected);
+      const detached = document.createElement('section');
+      connected.setAttribute('data-match', 'yes');
+      detached.setAttribute('data-match', 'yes');
+      const fragment = document.createDocumentFragment();
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const shadow = host.attachShadow({ mode: 'open' });
+      const outside = document.createElement('div');
+      outside.setAttribute('data-match', 'yes');
+      document.body.appendChild(outside);
+      const domSelector = new DOMSelector(window);
+      const selector = '[data-match="yes"]';
+      for (const context of [connected, detached, fragment, shadow]) {
+        const container = document.createElement('div');
+        container.innerHTML =
+          'text<!-- comment --><div><p data-match="yes"></p>' +
+          '<div><span data-match="yes"></span></div></div>' +
+          '<p data-match="yes"></p><div><i></i></div>';
+        const first = container.firstElementChild.firstElementChild;
+        const nested = first.nextElementSibling.firstElementChild;
+        const last = container.firstElementChild.nextElementSibling;
+        const shadowHost = document.createElement('div');
+        shadowHost.attachShadow({ mode: 'open' }).innerHTML =
+          '<p data-match="yes"></p>';
+        container.prepend(shadowHost);
+        context.appendChild(container);
+
+        assert.strictEqual(domSelector.querySelector(selector, context), first);
+        assert.deepEqual(domSelector.querySelectorAll(selector, context), [
+          first,
+          nested,
+          last
+        ]);
+        first.remove();
+        nested.setAttribute('data-match', 'no');
+        assert.strictEqual(domSelector.querySelector(selector, context), last);
+        assert.deepEqual(domSelector.querySelectorAll(selector, context), [
+          last
+        ]);
+        last.remove();
+        assert.strictEqual(domSelector.querySelector(selector, context), null);
+        assert.deepEqual(domSelector.querySelectorAll(selector, context), []);
+      }
     });
 
     it('should leave unsupported attribute selectors to Finder', () => {

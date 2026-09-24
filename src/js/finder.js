@@ -5,7 +5,10 @@
 /* import */
 import { Evaluator } from './evaluator.js';
 import { Mapper } from './mapper.js';
-import { matchPseudoElementSelector } from './matcher.js';
+import {
+  matchAttributeSelector,
+  matchPseudoElementSelector
+} from './matcher.js';
 import { generateCSS } from './parser.js';
 import {
   canUseFastClassSearch,
@@ -1011,12 +1014,15 @@ export class Finder extends Evaluator {
    */
   #traverseAndCollectNodes(walker, leaves, opt = {}) {
     const { boundaryNode, force, startNode, targetType } = opt;
+    const [leaf] = leaves;
+    const matchOptions = { warn: this.warn, globalObject: this.window };
+    // Single attribute matches do not use the general matcher's result cache.
+    const matchNode =
+      leaves.length === 1 && leaf.type === ATTR_SELECTOR
+        ? node => matchAttributeSelector(leaf, node, matchOptions)
+        : node => this.matchLeaves(leaves, node);
     const collectedNodes = [];
-    if (
-      targetType === TARGET_ALL &&
-      boundaryNode &&
-      this.matchLeaves(leaves, boundaryNode)
-    ) {
+    if (targetType === TARGET_ALL && boundaryNode && matchNode(boundaryNode)) {
       collectedNodes.push(boundaryNode);
     }
     let currentNode = traverseNode(startNode, walker, !!force);
@@ -1036,7 +1042,7 @@ export class Finder extends Evaluator {
           break;
         }
       }
-      if (this.matchLeaves(leaves, currentNode) && currentNode !== this.node) {
+      if (matchNode(currentNode) && currentNode !== this.node) {
         collectedNodes.push(currentNode);
         if (targetType !== TARGET_ALL) {
           break;
