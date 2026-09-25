@@ -60,6 +60,7 @@ const REG_INVALID_SYNTAX =
 const REG_TEST_LIB = new RegExp(
   `^(?:[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${COMBO}${TAG_TYPE_WO_UNIVERSAL})?)$`
 );
+const REG_UPPERCASE_TAG = /(?:^|[\s>+~,])[a-z\d-]*[A-Z][a-zA-Z\d-]*(?=[#.:[\s>+~,]|$)/;
 
 /**
  * Find a nested :has() pseudo-class.
@@ -301,7 +302,8 @@ export const filterSelector = (selector, target) => {
   if (
     selector.includes('/') ||
     selector.includes('&') ||
-    REG_EXCLUDE_BASIC.test(selector)
+    REG_EXCLUDE_BASIC.test(selector) ||
+    REG_UPPERCASE_TAG.test(selector)
   ) {
     return false;
   }

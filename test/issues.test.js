@@ -2113,4 +2113,165 @@ describe('domSelector regression tests', () => {
       assert.strictEqual(res.length, 1);
     });
   });
+
+  describe('#353 - https://github.com/asamuzaK/domSelector/issues/353', () => {
+    const html = `<!doctype html>
+      <body>
+        <svg id="svg">
+          <foreignObject id="foreign">
+            <div id="div">
+              <button id="button"></button>
+            </div>
+          </foreignObject>
+          <linearGradient id="gradient"></linearGradient>
+          <clipPath id="clip">
+            <circle id="circle" cx="40" cy="35" r="35" />
+          </clipPath>
+        </svg>
+      </body>`;
+    let document;
+
+    beforeEach(() => {
+      const dom = jsdom(html);
+      document = dom.window.document;
+    });
+
+    afterEach(() => {
+      document = null;
+    });
+
+    it('upper case simple selector using matches', () => {
+      const foreign = document.getElementById('foreign');
+      const gradient = document.getElementById('gradient');
+      const button = document.getElementById('button');
+      const clip = document.getElementById('clip');
+      assert.strictEqual(
+        foreign.matches('FOREIGNOBJECT'),
+        false,
+        'foreignObject matches'
+      );
+      assert.strictEqual(
+        gradient.matches('LINEARGRADIENT'),
+        false,
+        'linearGradient matches'
+      );
+      assert.strictEqual(button.matches('BUTTON'), true, 'button matches');
+      assert.strictEqual(clip.matches('CLIPPATH'), false, 'clipPath matches');
+    });
+
+    it('camel case simple selector using matches', () => {
+      const foreign = document.getElementById('foreign');
+      const gradient = document.getElementById('gradient');
+      const button = document.getElementById('button');
+      const clip = document.getElementById('clip');
+      assert.strictEqual(
+        foreign.matches('foreignObject'),
+        true,
+        'foreignObject matches'
+      );
+      assert.strictEqual(
+        gradient.matches('linearGradient'),
+        true,
+        'linearGradient matches'
+      );
+      assert.strictEqual(button.matches('butTon'), true, 'button matches');
+      assert.strictEqual(clip.matches('clipPath'), true, 'clipPath matches');
+    });
+
+    it('should match element when selector has camelCase', () => {
+      const button = document.getElementById('button');
+      const circle = document.getElementById('circle');
+      assert.strictEqual(
+        button.matches('div button'),
+        true,
+        'button matches for ancestor div'
+      );
+      assert.strictEqual(
+        button.matches('foreignObject button'),
+        true,
+        'button matches for ancestor foreignObject'
+      );
+      assert.strictEqual(
+        circle.matches('clipPath circle'),
+        true,
+        'circle matches'
+      );
+    });
+
+    it('should get closest camelCase element', () => {
+      const foreign = document.getElementById('foreign');
+      const button = document.getElementById('button');
+      const clip = document.getElementById('clip');
+      const circle = document.getElementById('circle');
+      assert.deepEqual(
+        button.closest('foreignObject'),
+        foreign,
+        'closest foreignObject from button'
+      );
+      assert.deepEqual(
+        circle.closest('clipPath'),
+        clip,
+        'closest clipPath from circle'
+      );
+    });
+
+    it('should get closest element when selector has camelCase', () => {
+      const foreign = document.getElementById('foreign');
+      const button = document.getElementById('button');
+      const clip = document.getElementById('clip');
+      const circle = document.getElementById('circle');
+      assert.deepEqual(
+        button.closest('svg foreignObject'),
+        foreign,
+        'closest foreignObject from button'
+      );
+      assert.deepEqual(
+        circle.closest('svg clipPath'),
+        clip,
+        'closest clipPath from circle'
+      );
+    });
+
+    it('should find camelCase element', () => {
+      const foreign = document.getElementById('foreign');
+      const gradient = document.getElementById('gradient');
+      const clip = document.getElementById('clip');
+      assert.deepEqual(
+        document.querySelector('foreignObject'),
+        foreign,
+        'selects foreignObject'
+      );
+      assert.deepEqual(
+        document.querySelector('linearGradient'),
+        gradient,
+        'selects linearGradient'
+      );
+      assert.deepEqual(
+        document.querySelector('clipPath'),
+        clip,
+        'selects clipPath'
+      );
+    });
+
+    it('should find element when selector has camelCase', () => {
+      const foreign = document.getElementById('foreign');
+      const gradient = document.getElementById('gradient');
+      const clip = document.getElementById('clip');
+      assert.deepEqual(
+        document.querySelector('svg foreignObject'),
+        foreign,
+        'selects foreignObject'
+      );
+      assert.deepEqual(
+        document.querySelector('svg linearGradient'),
+        gradient,
+        'selects linearGradient'
+      );
+      assert.deepEqual(
+        document.querySelector('svg clipPath'),
+        clip,
+        'selects clipPath'
+      );
+    });
+  });
 });

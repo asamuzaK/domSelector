@@ -28,6 +28,7 @@ import {
   DOCUMENT_NODE,
   ELEMENT_NODE,
   MIME_HTML,
+  NS_HTML,
   TARGET_ALL,
   TARGET_FIRST,
   TARGET_LINEAL,
@@ -520,6 +521,7 @@ export class DOMSelector {
     const document = node.ownerDocument;
     if (
       node.isConnected &&
+      node.namespaceURI === NS_HTML &&
       document === this.#document &&
       document.contentType === MIME_HTML &&
       document.documentElement

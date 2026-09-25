@@ -300,6 +300,8 @@ export const KEYS_PS_ELEMENT_UNSUPPORTED = new Set([
   'target-text'
 ]);
 
-/* mime type */
+/* mime type and namespace */
 /** @type {string} */
 export const MIME_HTML = 'text/html';
+/** @type {string} */
+export const NS_HTML = 'http://www.w3.org/1999/xhtml';
