@@ -15,6 +15,7 @@ import {
   SELECTOR,
   SELECTOR_LIST,
   TARGET_ALL,
+  TARGET_FIRST,
   TARGET_SELF,
   TARGET_LINEAL,
   TYPE_SELECTOR
@@ -624,36 +625,9 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func('::slotted'), false, 'result');
     });
 
-    it('should handle target-specific filters', () => {
+    it('should filter querySelectorAll and querySelector', () => {
       assert.strictEqual(func('p', TARGET_ALL), false, 'result');
-      assert.strictEqual(func('.foo', TARGET_ALL), false, 'result');
-      assert.strictEqual(func('p.foo', TARGET_ALL), true, 'result');
-      assert.strictEqual(
-        func('p.content[id]:is(:last-child, :only-child)', TARGET_ALL),
-        true,
-        'result'
-      );
-      assert.strictEqual(func('.box + .box', TARGET_ALL), false, 'result');
-      assert.strictEqual(func('.box ~ .box', TARGET_ALL), false, 'result');
-      assert.strictEqual(func('.box:first-child', TARGET_ALL), true, 'result');
-      assert.strictEqual(
-        func('.box:nth-child(2n+1)', TARGET_ALL),
-        true,
-        'result'
-      );
-      assert.strictEqual(
-        func('.box:first-of-type', TARGET_ALL),
-        true,
-        'result'
-      );
-      assert.strictEqual(
-        func('.box:nth-of-type(2n+1)', TARGET_ALL),
-        true,
-        'result'
-      );
-      assert.strictEqual(func('[id="foo"]', TARGET_ALL), true, 'result');
-      assert.strictEqual(func('*[role~="button"]', TARGET_ALL), true, 'result');
-      assert.strictEqual(func('[title],svg>title', TARGET_ALL), true, 'result');
+      assert.strictEqual(func('p', TARGET_FIRST), false, 'result');
     });
 
     it('should evaluate complex logical pseudo-classes', () => {
@@ -717,16 +691,6 @@ describe('selector static analysis and validation', () => {
 
     it('should evaluate :has() specific branches', () => {
       assert.strictEqual(
-        func(':has(.foo)', TARGET_ALL),
-        false,
-        'TARGET_ALL with :has()'
-      );
-      assert.strictEqual(
-        func('div:has(.foo)', TARGET_ALL),
-        false,
-        'TARGET_ALL with :has()'
-      );
-      assert.strictEqual(
         func(':has(.foo)', TARGET_SELF),
         false,
         '!isComplex with :has()'
@@ -760,16 +724,6 @@ describe('selector static analysis and validation', () => {
 
     it('should evaluate isComplex branch for :is() and :not()', () => {
       assert.strictEqual(
-        func(':not(.foo .bar)', TARGET_ALL),
-        false,
-        'isComplex false, invalid'
-      );
-      assert.strictEqual(
-        func(':not(:is(.foo > .bar))', TARGET_ALL),
-        false,
-        'isComplex false, invalid nested'
-      );
-      assert.strictEqual(
         func(':not(.foo .bar)', TARGET_SELF),
         true,
         'isComplex true, valid'
@@ -790,17 +744,7 @@ describe('selector static analysis and validation', () => {
         'isComplex false, valid compound'
       );
       assert.strictEqual(
-        func(':is(:not(:is(.foo, .bar)), .baz)', TARGET_ALL),
-        false,
-        'invalid deeply nested logic'
-      );
-      assert.strictEqual(
         func(':is(:not(:is(.foo, .bar)), .baz)', TARGET_SELF),
-        false,
-        'invalid deeply nested logic'
-      );
-      assert.strictEqual(
-        func('p:not(:is(:not(.content))):not(.foo)', TARGET_ALL),
         false,
         'invalid deeply nested logic'
       );
@@ -851,24 +795,6 @@ describe('selector static analysis and validation', () => {
       assert.strictEqual(func('div, ,p'), false, 'consecutive commas');
       assert.strictEqual(func('.foo,'), false, 'ending with comma');
       assert.strictEqual(func('div, '), false, 'ending with comma');
-    });
-
-    it('should return false for descendant/child combinators', () => {
-      assert.strictEqual(
-        func(':is(.foo > .bar)', TARGET_ALL),
-        false,
-        'TARGET_ALL with child combinator in :is()'
-      );
-      assert.strictEqual(
-        func(':is(.foo .bar)', TARGET_ALL),
-        false,
-        'TARGET_ALL with descendant combinator in :is()'
-      );
-      assert.strictEqual(
-        func(':is(div > p .content)', TARGET_ALL),
-        false,
-        'TARGET_ALL with multiple combinators in :is()'
-      );
     });
   });
 });

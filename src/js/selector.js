@@ -9,7 +9,6 @@ import { generateException } from './utility.js';
 
 /* constants */
 import {
-  ATTR_TYPE,
   COMBINATOR,
   COMBO,
   COMPOUND_I,
@@ -24,17 +23,13 @@ import {
   PS_ELEMENT_SELECTOR,
   SELECTOR,
   SYNTAX_ERR,
-  TAG_TYPE_WO_UNIVERSAL,
-  TARGET_ALL
+  TARGET_ALL,
+  TARGET_FIRST
 } from './constant.js';
 
 /* regexp */
 const REG_EXCLUDE_BASIC =
   /[|\\]|::|[^\u0021-\u007F\s]|\[\s*[\w$*=^|~-]+(?:(?:"[\w$*=^|~\s'-]+"|'[\w$*=^|~\s"-]+')?(?:\s+[\w$*=^|~-]+)+|"[^"\]]{1,255}|'[^'\]]{1,255})\s*\]|:(?:is|where)\(\s*\)|\[\s*data-/;
-const REG_EXCLUDE_QSA = new RegExp(
-  `(?:^(?:[A-Z]|\\.)[\\w-]*$|${COMPOUND_I}${COMBO}${COMPOUND_I})`,
-  'i'
-);
 const REG_HAS = /has\(/i;
 const REG_IS_NOT = /(?:is|not)\(/i;
 const REG_COMPLEX = new RegExp(`${COMPOUND_I}${COMBO}${COMPOUND_I}`, 'i');
@@ -57,9 +52,8 @@ const REG_CLASS = /\.(\D[^#.*]+)/g;
 const REG_TAG = /^([^#.]+)/;
 const REG_INVALID_SYNTAX =
   /[+~>]\s*[+~>]|^\s*[+~>]|[+~>]\s*$|^\s*,|,\s*,|,\s*$/;
-const REG_TEST_LIB = new RegExp(
-  `^(?:[*]?${ATTR_TYPE}(?:\\s*,\\s*${TAG_TYPE_WO_UNIVERSAL}${COMBO}${TAG_TYPE_WO_UNIVERSAL})?)$`
-);
+const REG_UPPERCASE_TAG =
+  /(?:^|[\s>+~,])[a-z\d-]*[A-Z][a-zA-Z\d-]*(?=[#.:[\s>+~,]|$)/;
 
 /**
  * Find a nested :has() pseudo-class.
@@ -284,16 +278,12 @@ export const filterSelector = (selector, target) => {
   ) {
     return false;
   }
-  // Validate syntax.
-  if (REG_INVALID_SYNTAX.test(selector)) {
+  // Exclude querySelectorAll and querySelector
+  if (target === TARGET_ALL || target === TARGET_FIRST) {
     return false;
   }
-  // Target-specific early exits.
-  if (
-    target === TARGET_ALL &&
-    REG_EXCLUDE_QSA.test(selector) &&
-    !REG_TEST_LIB.test(selector)
-  ) {
+  // Validate syntax.
+  if (REG_INVALID_SYNTAX.test(selector)) {
     return false;
   }
   // Exclude various complex or unsupported selectors early.
@@ -301,7 +291,8 @@ export const filterSelector = (selector, target) => {
   if (
     selector.includes('/') ||
     selector.includes('&') ||
-    REG_EXCLUDE_BASIC.test(selector)
+    REG_EXCLUDE_BASIC.test(selector) ||
+    REG_UPPERCASE_TAG.test(selector)
   ) {
     return false;
   }
@@ -315,8 +306,7 @@ export const filterSelector = (selector, target) => {
   // Logic for pseudo-classes.
   if (selector.includes(':')) {
     // Determine if the selector has complex logical structures.
-    const isComplex =
-      target === TARGET_ALL ? false : REG_COMPLEX.test(selector);
+    const isComplex = REG_COMPLEX.test(selector);
     // Handle :has() specifically.
     if (REG_HAS.test(selector)) {
       if (!isComplex || REG_LOGIC_HAS_COMPOUND.test(selector)) {

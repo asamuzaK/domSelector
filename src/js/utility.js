@@ -22,6 +22,7 @@ import {
   INPUT_LTR,
   INPUT_TEXT,
   MIME_HTML,
+  NS_HTML,
   PS_ELEMENT_SELECTOR,
   SHOW_ELEMENT,
   SYNTAX_ERR,
@@ -51,7 +52,6 @@ const KEYS_NODE_FOCUSABLE_SVG = new Set([
   'symbol',
   'title'
 ]);
-const NS_HTML = 'http://www.w3.org/1999/xhtml';
 
 /* regexp */
 const REG_IS_XHTML = /^(?:application\/xhtml\+x|text\/ht)ml$/;
