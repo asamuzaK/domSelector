@@ -3,8 +3,8 @@
  */
 
 /* import */
-import walk from 'css-tree/walker';
-import generate from 'css-tree/generator';
+import cssTreeWalk from 'css-tree/walker';
+import cssTreeGenerate from 'css-tree/generator';
 import { generateException } from './utility.js';
 
 /* constants */
@@ -27,7 +27,6 @@ import {
   TAG_TYPE_WO_UNIVERSAL,
   TARGET_ALL
 } from './constant.js';
-const { find } = walk;
 
 /* regexp */
 const REG_EXCLUDE_BASIC =
@@ -75,7 +74,7 @@ export const findNestedHas = leaf => leaf.name === 'has';
  * @returns {object|null} The leaf if it matches, otherwise null.
  */
 export const findLogicalWithNestedHas = leaf => {
-  if (KEYS_LOGICAL.has(leaf.name) && find(leaf, findNestedHas)) {
+  if (KEYS_LOGICAL.has(leaf.name) && cssTreeWalk.find(leaf, findNestedHas)) {
     return leaf;
   }
   return null;
@@ -89,7 +88,7 @@ export const findLogicalWithNestedHas = leaf => {
 export const validateHasNesting = astChildren => {
   const l = astChildren.length;
   for (let i = 0; i < l; i++) {
-    const item = find(astChildren[i], findLogicalWithNestedHas);
+    const item = cssTreeWalk.find(astChildren[i], findLogicalWithNestedHas);
     if (item) {
       // If nested :has() is wrapped inside :is() or :where(), it is forgiven.
       if (item.name !== 'is' && item.name !== 'where') {
@@ -111,7 +110,7 @@ export const createHasValidator = globalObj => node => {
     node.name.toLowerCase() === 'has' &&
     !validateHasNesting(Array.from(node.children || []))
   ) {
-    const css = generate(node);
+    const css = cssTreeGenerate(node);
     throw generateException(
       `Disallowed nested :has() pseudo-class: ${css}`,
       SYNTAX_ERR,

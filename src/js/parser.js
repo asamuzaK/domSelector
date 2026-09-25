@@ -3,11 +3,11 @@
  */
 
 /* import */
-import parse from 'css-tree/selector-parser';
-import walk from 'css-tree/walker';
-import convertor from 'css-tree/convertor';
-import { clone } from 'css-tree/utils';
-import generate from 'css-tree/generator';
+import cssTreeParse from 'css-tree/selector-parser';
+import cssTreeWalk from 'css-tree/walker';
+import cssTreeConvertor from 'css-tree/convertor';
+import { clone as cssTreeClone } from 'css-tree/utils';
+import cssTreeGenerate from 'css-tree/generator';
 import { stringifyValue } from './utility.js';
 
 /* constants */
@@ -35,8 +35,6 @@ import {
   SYNTAX_ERR,
   TYPE_SELECTOR
 } from './constant.js';
-const { findAll } = walk;
-const { toPlainObject } = convertor;
 const AST_SORT_ORDER = new Map([
   [PS_ELEMENT_SELECTOR, BIT_01],
   [ID_SELECTOR, BIT_02],
@@ -186,7 +184,7 @@ export const parseSelector = (sel, context = 'selectorList') => {
     throw new DOMException(`Invalid selector ${selector}`, SYNTAX_ERR);
   }
   try {
-    return parse(selector, { context });
+    return cssTreeParse(selector, { context });
   } catch (e) {
     const { message } = e;
     if (
@@ -315,10 +313,13 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
       }
     }
   };
-  const clonedAst = clone(ast);
-  walk(toObject ? toPlainObject(clonedAst) : clonedAst, opt);
+  const clonedAst = cssTreeClone(ast);
+  cssTreeWalk(
+    toObject ? cssTreeConvertor.toPlainObject(clonedAst) : clonedAst,
+    opt
+  );
   if (info.hasNestedSelector === true) {
-    findAll(clonedAst, (node, item, list) => {
+    cssTreeWalk.findAll(clonedAst, (node, item, list) => {
       if (list) {
         if (node.type === PS_CLASS_SELECTOR && KEYS_LOGICAL.has(node.name)) {
           const itemList = list.filter(i => {
@@ -498,6 +499,6 @@ export const extractSubjectsAst = ast => {
 
 /* Re-exported from css-tree. */
 /** @type {typeof import('css-tree').find} */
-export const findAST = walk.find;
+export const findAST = cssTreeWalk.find;
 /** @type {typeof import('css-tree').generate} */
-export const generateCSS = generate;
+export const generateCSS = cssTreeGenerate;
