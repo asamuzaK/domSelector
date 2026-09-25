@@ -184,6 +184,19 @@ export class Evaluator {
    * @returns {boolean} True if matched, otherwise false.
    */
   matchLeaves(leaves, node, opt) {
+    if (leaves.length === 1) {
+      const [leaf] = leaves;
+      if (leaf.type === ATTR_SELECTOR || leaf.type === ID_SELECTOR) {
+        return this.matchSelector(
+          leaf,
+          node,
+          opt ?? {
+            warn: this.warn,
+            globalObject: this.window
+          }
+        );
+      }
+    }
     let results;
     if (this.invalidate) {
       if (!this.#invalidateResults) {

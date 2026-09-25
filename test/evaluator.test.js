@@ -9238,6 +9238,18 @@ describe('Evaluator', () => {
   });
 
   describe('match leaves', () => {
+    it('should re-evaluate a single ID selector after mutations', () => {
+      const leaves = [{ name: 'target', type: ID_SELECTOR }];
+      const node = document.createElement('div');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+      node.id = 'target';
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), true);
+      node.id = 'other';
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+    });
+
     it('should return true when element matches all leaf selectors', () => {
       const leaves = [
         {
