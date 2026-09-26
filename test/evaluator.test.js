@@ -9250,6 +9250,30 @@ describe('Evaluator', () => {
       assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
     });
 
+    it('should re-evaluate form element selectors after mutations', () => {
+      const leaves = [{ name: 'form', type: CLASS_SELECTOR }];
+      const node = document.createElement('form');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+      node.classList.add('form');
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), true);
+      node.classList.remove('form');
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+    });
+
+    it('should re-evaluate pseudo element selectors after mutations', () => {
+      const leaves = [{ name: 'link', type: PS_CLASS_SELECTOR }];
+      const node = document.createElement('a');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+      node.setAttribute('href', 'https://example.com');
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), true);
+      node.removeAttribute('href');
+      assert.strictEqual(evaluator.matchLeaves(leaves, node), false);
+    });
+
     it('should return true when element matches all leaf selectors', () => {
       const leaves = [
         {
