@@ -184,16 +184,18 @@ export class Evaluator {
    * @returns {boolean} True if matched, otherwise false.
    */
   matchLeaves(leaves, node, opt) {
-    const isFormParts =
-      node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName);
+    let isFormParts;
     if (leaves.length === 1) {
       const [leaf] = leaves;
-      if (
-        isFormParts ||
+      const isUncacheable =
         leaf.type === ATTR_SELECTOR ||
         leaf.type === ID_SELECTOR ||
-        (leaf.type === PS_CLASS_SELECTOR && KEYS_UNCACHE.has(leaf.name))
-      ) {
+        (leaf.type === PS_CLASS_SELECTOR && KEYS_UNCACHE.has(leaf.name));
+      if (!isUncacheable) {
+        isFormParts =
+          node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName);
+      }
+      if (isUncacheable || isFormParts) {
         return this.matchSelector(
           leaf,
           node,
@@ -220,10 +222,9 @@ export class Evaluator {
         return nodeResult;
       }
     }
-    let cacheable = true;
-    if (isFormParts) {
-      cacheable = false;
-    }
+    isFormParts ??=
+      node.nodeType === ELEMENT_NODE && KEYS_FORM.has(node.localName);
+    let cacheable = !isFormParts;
     let bool;
     const l = leaves.length;
     for (let i = 0; i < l; i++) {
