@@ -91,3 +91,4 @@ export declare const KEYS_PS_CLASS_SUPPORTED: Set<string>;
 export declare const KEYS_PS_CLASS_UNSUPPORTED: Set<string>;
 export declare const KEYS_PS_ELEMENT_UNSUPPORTED: Set<string>;
 export declare const MIME_HTML: string;
+export declare const NS_HTML: string;
