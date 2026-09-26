@@ -66,6 +66,7 @@ export class Mapper {
       hasHasPseudoFunc,
       hasNestingSelector,
       hasNthChildOfSelector,
+      hasSiblingCombinator,
       hasStatePseudoClass,
       hasUnsupportedPseudoClass
     } = info;
@@ -73,9 +74,10 @@ export class Mapper {
     ctx.invalidate =
       hasHasPseudoFunc ||
       hasNestingSelector ||
+      hasNthChildOfSelector ||
+      hasSiblingCombinator ||
       hasStatePseudoClass ||
-      hasUnsupportedPseudoClass ||
-      hasNthChildOfSelector;
+      hasUnsupportedPseudoClass;
     // Process branches.
     const processed = this.#processor.process(branches, selector);
     ast = processed.ast;

@@ -236,6 +236,7 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
     hasNestingSelector: false,
     hasNotPseudoFunc: false,
     hasNthChildOfSelector: false,
+    hasSiblingCombinator: false,
     hasStatePseudoClass: false,
     hasUnsupportedPseudoClass: false
   };
@@ -251,6 +252,12 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
               `Invalid selector .${node.name}`,
               SYNTAX_ERR
             );
+          }
+          break;
+        }
+        case COMBINATOR: {
+          if (/^[+~]$/.test(node.name)) {
+            info.hasSiblingCombinator = true;
           }
           break;
         }
@@ -294,6 +301,10 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
           }
           break;
         }
+        case NEST_SELECTOR: {
+          info.hasNestingSelector = true;
+          break;
+        }
         case NTH: {
           if (node.selector) {
             info.hasNestedSelector = true;
@@ -303,10 +314,6 @@ export const walkAST = (ast = {}, toObject = false, callback = null) => {
         }
         case SELECTOR: {
           branches.add(node.children);
-          break;
-        }
-        case NEST_SELECTOR: {
-          info.hasNestingSelector = true;
           break;
         }
         default:
