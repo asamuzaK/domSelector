@@ -6309,81 +6309,103 @@ describe('local wpt test cases', () => {
   });
 
   describe('css/selectors/invalidation/sibling.html', () => {
-    it('should get matched node', () => {
-      const html = `
-        <div>
-          <div id="t1">
-            <div class="sibling"></div>
-            <div id="r1"></div>
-            <div id="u1"></div>
-          </div>
-        </div>
-        <div>
-          <div id="t2">
-            <div class="sibling"></div>
-            <div></div>
-            <div id="r2"></div>
-          </div>
-        </div>
-        <div>
-          <div id="t3"></div>
-          <div class="sibling"></div>
-          <div id="r3"></div>
-        </div>
-        <div>
-          <div id="t4"></div>
-          <div id="r4" class="sibling"></div>
-          <div id="u4" class="sibling"></div>
-        </div>
-        <div>
-          <div id="t5"></div>
-          <div id="r5"></div>
-          <div id="u5"></div>
-        </div>
-        <div>
-          <div id="t6"></div>
-          <div></div>
-          <div id="r6" class="sibling">
-            <div id="r6b"></div>
-          </div>
-          <div id="u6"></div>
-        </div>
-        <div>
-          <div id="t7">
-            <div class="child"></div>
-          </div>
-          <div></div>
-          <div>
-            <div id="r7" class="child"></div>
-          </div>
-          <div>
-            <div id="u7" class="child"></div>
-          </div>
-        </div>
-      `;
+    const html = `
+    <div>
+      <div id="t1">
+        <div class="sibling"></div>
+        <div id="r1"></div>
+        <div id="u1"></div>
+    </div>
+    </div>
+    <div>
+      <div id="t2">
+        <div class="sibling"></div>
+        <div></div>
+        <div id="r2"></div>
+      </div>
+    </div>
+    <div>
+      <div id="t3"></div>
+      <div class="sibling"></div>
+      <div id="r3"></div>
+    </div>
+    <div>
+      <div id="t4"></div>
+      <div id="r4" class="sibling"></div>
+      <div id="u4" class="sibling"></div>
+    </div>
+    <div>
+      <div id="t5"></div>
+      <div id="r5"></div>
+      <div id="u5"></div>
+    </div>
+    <div>
+      <div id="t6"></div>
+      <div></div>
+      <div id="r6" class="sibling">
+        <div id="r6b"></div>
+      </div>
+      <div id="u6"></div>
+    </div>
+    <div>
+      <div id="t7">
+        <div class="child"></div>
+      </div>
+      <div></div>
+      <div>
+        <div id="r7" class="child"></div>
+      </div>
+      <div>
+          <div id="u7" class="child"></div>
+      </div>
+    </div>
+    `;
+
+    let t1,
+      t2,
+      t3,
+      t4,
+      t5,
+      t6,
+      t7,
+      r1,
+      r2,
+      r3,
+      r4,
+      r5,
+      r6,
+      r7,
+      u1,
+      u4,
+      u5,
+      u6,
+      u7;
+    beforeEach(() => {
       document.body.innerHTML = html;
-      const t1 = document.getElementById('t1');
-      const t2 = document.getElementById('t2');
-      const t3 = document.getElementById('t3');
-      const t4 = document.getElementById('t4');
-      const t5 = document.getElementById('t5');
-      const t6 = document.getElementById('t6');
-      const t7 = document.getElementById('t7');
+      t1 = document.getElementById('t1');
+      t2 = document.getElementById('t2');
+      t3 = document.getElementById('t3');
+      t4 = document.getElementById('t4');
+      t5 = document.getElementById('t5');
+      t6 = document.getElementById('t6');
+      t7 = document.getElementById('t7');
 
-      const r1 = document.getElementById('r1');
-      const r2 = document.getElementById('r2');
-      const r3 = document.getElementById('r3');
-      const r4 = document.getElementById('r4');
-      const r5 = document.getElementById('r5');
-      const r6 = document.getElementById('r6');
-      const r7 = document.getElementById('r7');
+      r1 = document.getElementById('r1');
+      r2 = document.getElementById('r2');
+      r3 = document.getElementById('r3');
+      r4 = document.getElementById('r4');
+      r5 = document.getElementById('r5');
+      r6 = document.getElementById('r6');
+      r7 = document.getElementById('r7');
 
-      const u1 = document.getElementById('u1');
-      const u4 = document.getElementById('u4');
-      const u5 = document.getElementById('u5');
-      const u6 = document.getElementById('u6');
-      const u7 = document.getElementById('u7');
+      u1 = document.getElementById('u1');
+      u4 = document.getElementById('u4');
+      u5 = document.getElementById('u5');
+      u6 = document.getElementById('u6');
+      u7 = document.getElementById('u7');
+    });
 
+    it('should get matched node', () => {
       assert.strictEqual(r1.matches('.t1 .sibling + *'), false);
       t1.className = 't1';
       assert.strictEqual(r1.matches('.t1 .sibling + *'), true);
@@ -6416,6 +6438,126 @@ describe('local wpt test cases', () => {
       t7.className = 't7';
       assert.strictEqual(r7.matches('.t7 + * + * .child'), true);
       assert.strictEqual(u7.matches('.t7 + * + * .child'), false);
+    });
+
+    it('Adjacent with universal selector', () => {
+      assert.deepEqual(
+        document.querySelector('.t1 .sibling + *'),
+        null,
+        'Initially should not match'
+      );
+
+      t1.className = 't1';
+      assert.deepEqual(
+        document.querySelector('.t1 .sibling + *'),
+        r1,
+        'Should match #r1'
+      );
+
+      const results = document.querySelectorAll('.t1 .sibling + *');
+      assert.strictEqual(
+        results.includes(r1),
+        true,
+        'Results should include #r1'
+      );
+      assert.strictEqual(results.includes(u1), false, '#u1 should not match');
+    });
+
+    it('Indirect adjacent with universal selector', () => {
+      assert.deepEqual(
+        document.querySelector('.t2 .sibling ~ *'),
+        null,
+        'Initially should not match'
+      );
+
+      t2.className = 't2';
+      const results = document.querySelectorAll('.t2 .sibling ~ *');
+      assert.strictEqual(
+        results.includes(r2),
+        true,
+        'Results should contain #r2'
+      );
+    });
+
+    it('Indirect adjacent with two adjacent selectors', () => {
+      assert.deepEqual(
+        document.querySelector('.t3 + .sibling + *'),
+        null,
+        'Initially should not match'
+      );
+
+      t3.className = 't3';
+      assert.deepEqual(
+        document.querySelector('.t3 + .sibling + *'),
+        r3,
+        'Should match #r3'
+      );
+    });
+
+    it('Adjacent class', () => {
+      assert.deepEqual(
+        document.querySelector('.t4 + .sibling'),
+        null,
+        'Initially should not match'
+      );
+
+      t4.className = 't4';
+      assert.deepEqual(
+        document.querySelector('.t4 + .sibling'),
+        r4,
+        'Should match #r4'
+      );
+
+      const results = document.querySelectorAll('.t4 + .sibling');
+      assert.strictEqual(results.includes(u4), false, '#u4 should not match');
+    });
+
+    it('Adjacent universal', () => {
+      assert.deepEqual(
+        document.querySelector('.t5 + *'),
+        null,
+        'Initially should not match'
+      );
+
+      t5.className = 't5';
+      assert.deepEqual(
+        document.querySelector('.t5 + *'),
+        r5,
+        'Should match #r5'
+      );
+    });
+
+    it('Sibling subtree through an indirect adjacent combinator', () => {
+      assert.deepEqual(
+        document.querySelector('.t6 ~ .sibling'),
+        null,
+        'Initially should not match'
+      );
+
+      t6.className = 't6';
+      assert.deepEqual(
+        document.querySelector('.t6 ~ .sibling'),
+        r6,
+        'Should match #r6'
+      );
+    });
+
+    it('Sibling descendant through a universal selector', () => {
+      assert.deepEqual(
+        document.querySelector('.t7 + * + * .child'),
+        null,
+        'Initially should not match'
+      );
+
+      t7.className = 't7';
+      assert.deepEqual(
+        document.querySelector('.t7 + * + * .child'),
+        r7,
+        'Should match #r7'
+      );
+
+      const results = document.querySelectorAll('.t7 + * + * .child');
+      assert.strictEqual(results.includes(u7), false, '#u7 should not match');
     });
   });
 

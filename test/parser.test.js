@@ -8176,6 +8176,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8359,6 +8360,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8426,6 +8428,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8531,6 +8534,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8598,6 +8602,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: true,
           hasUnsupportedPseudoClass: false
         }
@@ -8645,6 +8650,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8692,6 +8698,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: true,
           hasUnsupportedPseudoClass: false
         }
@@ -8753,6 +8760,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8848,6 +8856,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -8933,6 +8942,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9018,6 +9028,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9091,6 +9102,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9164,6 +9176,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9237,6 +9250,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9352,6 +9366,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9467,6 +9482,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9622,6 +9638,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9725,6 +9742,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: true,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9866,6 +9884,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: true,
           hasNthChildOfSelector: true,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
@@ -9913,6 +9932,7 @@ describe('walk AST', () => {
           hasNestingSelector: false,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: true
         }
@@ -9978,6 +9998,7 @@ describe('walk AST', () => {
           hasNestingSelector: true,
           hasNotPseudoFunc: false,
           hasNthChildOfSelector: false,
+          hasSiblingCombinator: false,
           hasStatePseudoClass: false,
           hasUnsupportedPseudoClass: false
         }
