@@ -1,4 +1,4 @@
-/**
+l/**
  * index.test.js
  */
 
@@ -1082,6 +1082,21 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.matches('#li2', node);
       assert.strictEqual(res, true, 'result');
+    });
+
+    
+    it('should return true when nth-child calculation matches', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('li:nth-child(2n)', node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false when nth-child calculation fails', () => {
+      const node = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.matches('li:nth-child(2n+1)', node);
+      assert.strictEqual(res, false, 'result');
     });
 
     it('should return true when nth-child calculation matches', () => {
