@@ -1,4 +1,4 @@
-l/**
+/**
  * index.test.js
  */
 
