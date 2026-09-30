@@ -1088,14 +1088,14 @@ describe('DOMSelector', () => {
     it('should return true when nth-child calculation matches', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
-      const res = domSelector.matches('li:nth-child(2n)', node);
+      const res = domSelector.matches('li:nth-child(1n + 1)', node);
       assert.strictEqual(res, true, 'result');
     });
 
     it('should return false when nth-child calculation fails', () => {
       const node = document.getElementById('li2');
       const domSelector = new DOMSelector(window);
-      const res = domSelector.matches('li:nth-child(2n+1)', node);
+      const res = domSelector.matches('li:nth-child(1n+3)', node);
       assert.strictEqual(res, false, 'result');
     });
 
