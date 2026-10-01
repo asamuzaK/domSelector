@@ -106,7 +106,7 @@ export class DOMSelector {
     this.#cacheSize =
       Number.isInteger(cacheSize) && cacheSize > 0 ? cacheSize : CACHE_SIZE;
     this.#cache = new LRUCache({
-      max: this.＃cacheSize
+      max: this.#cacheSize
     });
     this.#finder = new Finder(this.#window);
     this.#nwsapi = new Nwsapi(this.#window, this.#document, this.#cacheSize);
