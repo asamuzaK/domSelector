@@ -2274,4 +2274,169 @@ describe('domSelector regression tests', () => {
       );
     });
   });
+
+  describe('#357 - https://github.com/asamuzaK/domSelector/issues/357', () => {
+    const html = `<ul id="ul">
+      <li id="li1"></li>
+      <li id="li2"></li>
+      <li id="li3"></li>
+      <li id="li4"></li>
+      <li id="li5"></li>
+    </ul>
+    <dl id="dl">
+      <dt id="dt1"></dt>
+      <dd id="dd1"></dd>
+      <dt id="dt2"></dt>
+      <dd id="dd2"></dd>
+      <dt id="dt3"></dt>
+      <dd id="dd3"></dd>
+      <dt id="dt4"></dt>
+      <dd id="dd4"></dd>
+      <dt id="dt5"></dt>
+      <dd id="dd5"></dd>
+    </dl>`;
+
+    let document;
+
+    beforeEach(() => {
+      const dom = jsdom(html);
+      document = dom.window.document;
+    });
+
+    afterEach(() => {
+      document = null;
+    });
+
+    it('should get matched results for :nth-child()', () => {
+      const ul = document.getElementById('ul');
+      const li1 = document.getElementById('li1');
+      const li2 = document.getElementById('li2');
+      const li3 = document.getElementById('li3');
+      const li4 = document.getElementById('li4');
+      const li5 = document.getElementById('li5');
+
+      const selectors = [
+        ':nth-child(n+3)',
+        ':nth-child(1n+3)',
+        ':nth-last-child(n+2)'
+      ];
+
+      for (let i = 0; i < selectors.length; i++) {
+        const selector = selectors[i];
+        if (i === 0) {
+          // :nth-child(n+3)
+          assert.strictEqual(li1.matches(selector), false, `${i}: li1`);
+          assert.strictEqual(li2.matches(selector), false, `${i}: li2`);
+          assert.strictEqual(li3.matches(selector), true, `${i}: li3`);
+          assert.strictEqual(li4.matches(selector), true, `${i}: li4`);
+          assert.strictEqual(li5.matches(selector), true, `${i}: li5`);
+          assert.deepEqual(
+            ul.querySelectorAll(selector),
+            [li3, li4, li5],
+            `${i}: qsa`
+          );
+        } else if (i === 1) {
+          // :nth-child(1n+3)
+          assert.strictEqual(li1.matches(selector), false, `${i}: li1`);
+          assert.strictEqual(li2.matches(selector), false, `${i}: li2`);
+          assert.strictEqual(li3.matches(selector), true, `${i}: li3`);
+          assert.strictEqual(li4.matches(selector), true, `${i}: li4`);
+          assert.strictEqual(li5.matches(selector), true, `${i}: li5`);
+          assert.deepEqual(
+            ul.querySelectorAll(selector),
+            [li3, li4, li5],
+            `${i}: qsa`
+          );
+        } else if (i === 2) {
+          // :nth-last-child(n+2)
+          assert.strictEqual(li1.matches(selector), true, `${i}: li1`);
+          assert.strictEqual(li2.matches(selector), true, `${i}: li2`);
+          assert.strictEqual(li3.matches(selector), true, `${i}: li3`);
+          assert.strictEqual(li4.matches(selector), true, `${i}: li4`);
+          assert.strictEqual(li5.matches(selector), false, `${i}: li5`);
+          assert.deepEqual(
+            ul.querySelectorAll(selector),
+            [li1, li2, li3, li4],
+            `${i}: qsa`
+          );
+        }
+      }
+    });
+
+    it('should get matched results for :nth-of-type()', () => {
+      const dl = document.getElementById('dl');
+      const dd1 = document.getElementById('dd1');
+      const dd2 = document.getElementById('dd2');
+      const dd3 = document.getElementById('dd3');
+      const dd4 = document.getElementById('dd4');
+      const dd5 = document.getElementById('dd5');
+      const dt1 = document.getElementById('dt1');
+      const dt2 = document.getElementById('dt2');
+      const dt3 = document.getElementById('dt3');
+      const dt4 = document.getElementById('dt4');
+      const dt5 = document.getElementById('dt5');
+
+      const selectors = [
+        ':nth-of-type(n+3)',
+        ':nth-of-type(1n+3)',
+        ':nth-last-of-type(n+2)'
+      ];
+
+      for (let i = 0; i < selectors.length; i++) {
+        const selector = selectors[i];
+        if (i === 0) {
+          // :nth-of-type(n+3)
+          assert.strictEqual(dd1.matches(selector), false, `${i}: dd1`);
+          assert.strictEqual(dd2.matches(selector), false, `${i}: dd2`);
+          assert.strictEqual(dd3.matches(selector), true, `${i}: dd3`);
+          assert.strictEqual(dd4.matches(selector), true, `${i}: dd4`);
+          assert.strictEqual(dd5.matches(selector), true, `${i}: dd5`);
+          assert.strictEqual(dt1.matches(selector), false, `${i}: dt1`);
+          assert.strictEqual(dt2.matches(selector), false, `${i}: dt2`);
+          assert.strictEqual(dt3.matches(selector), true, `${i}: dt3`);
+          assert.strictEqual(dt4.matches(selector), true, `${i}: dt4`);
+          assert.strictEqual(dt5.matches(selector), true, `${i}: dt5`);
+          assert.deepEqual(
+            dl.querySelectorAll(selector),
+            [dt3, dd3, dt4, dd4, dt5, dd5],
+            `${i}: qsa`
+          );
+        } else if (i === 1) {
+          // :nth-of-type(1n+3)
+          assert.strictEqual(dd1.matches(selector), false, `${i}: dd1`);
+          assert.strictEqual(dd2.matches(selector), false, `${i}: dd2`);
+          assert.strictEqual(dd3.matches(selector), true, `${i}: dd3`);
+          assert.strictEqual(dd4.matches(selector), true, `${i}: dd4`);
+          assert.strictEqual(dd5.matches(selector), true, `${i}: dd5`);
+          assert.strictEqual(dt1.matches(selector), false, `${i}: dt1`);
+          assert.strictEqual(dt2.matches(selector), false, `${i}: dt2`);
+          assert.strictEqual(dt3.matches(selector), true, `${i}: dt3`);
+          assert.strictEqual(dt4.matches(selector), true, `${i}: dt4`);
+          assert.strictEqual(dt5.matches(selector), true, `${i}: dt5`);
+          assert.deepEqual(
+            dl.querySelectorAll(selector),
+            [dt3, dd3, dt4, dd4, dt5, dd5],
+            `${i}: qsa`
+          );
+        } else if (i === 2) {
+          // :nth-last-of-type(n+2)
+          assert.strictEqual(dd1.matches(selector), true, `${i}: dd1`);
+          assert.strictEqual(dd2.matches(selector), true, `${i}: dd2`);
+          assert.strictEqual(dd3.matches(selector), true, `${i}: dd3`);
+          assert.strictEqual(dd4.matches(selector), true, `${i}: dd4`);
+          assert.strictEqual(dd5.matches(selector), false, `${i}: dd5`);
+          assert.strictEqual(dt1.matches(selector), true, `${i}: dt1`);
+          assert.strictEqual(dt2.matches(selector), true, `${i}: dt2`);
+          assert.strictEqual(dt3.matches(selector), true, `${i}: dt3`);
+          assert.strictEqual(dt4.matches(selector), true, `${i}: dt4`);
+          assert.strictEqual(dt5.matches(selector), false, `${i}: dt5`);
+          assert.deepEqual(
+            dl.querySelectorAll(selector),
+            [dt1, dd1, dt2, dd2, dt3, dd3, dt4, dd4],
+            `${i}: qsa`
+          );
+        }
+      }
+    });
+  });
 });
