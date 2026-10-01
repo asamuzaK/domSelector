@@ -79,6 +79,7 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 export class DOMSelector {
   /* private fields */
   #cache;
+  ＃cacheSize;
   #document;
   #finder;
   #idlUtils;
@@ -102,11 +103,13 @@ export class DOMSelector {
     this.#document = document ? this.#wrapNode(document) : window.document;
     this.#maxLength =
       Number.isInteger(maxLength) && maxLength > 0 ? maxLength : MAX_LENGTH;
+    this.＃cacheSize =
+      Number.isInteger(cacheSize) && cacheSize > 0 ? cacheSize : CACHE_SIZE;
     this.#cache = new LRUCache({
-      max: Number.isInteger(cacheSize) && cacheSize > 0 ? cacheSize : CACHE_SIZE
+      max: this.＃cacheSize
     });
     this.#finder = new Finder(this.#window);
-    this.#nwsapi = new Nwsapi(this.#window, this.#document, cacheSize);
+    this.#nwsapi = new Nwsapi(this.#window, this.#document, this.＃cacheSize);
   }
 
   /**
