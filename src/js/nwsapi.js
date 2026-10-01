@@ -951,7 +951,7 @@ export class Nwsapi {
       if (nParts[0] === '-') {
         a = -1;
       }
-      if (nParts[0] === '+') {
+      if (nParts[0] === '' || nParts[0] === '+') {
         a = 1;
       }
       let nTerm = 'n';
