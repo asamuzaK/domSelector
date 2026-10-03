@@ -14,12 +14,24 @@ import {
 /* constants */
 import {
   DIR_NEXT,
+  ELEMENT_NODE,
   ID_SELECTOR,
   CLASS_SELECTOR,
   TYPE_SELECTOR,
   PS_ELEMENT_SELECTOR,
-  SHOW_CONTAINER
+  SHOW_CONTAINER,
+  TARGET_ALL
 } from './constant.js';
+
+/* types */
+/**
+ * @typedef {object} TraversalOptions
+ * @property {boolean} [force] - Indicates whether to force traversal.
+ * @property {boolean} [precede] - Indicates whether to search preceding nodes.
+ * @property {Element} [boundaryNode] - The traversal boundary limit.
+ * @property {Element} [startNode] - The starting node for the traversal.
+ * @property {string} [targetType] - The target type.
+ */
 
 /**
  * DOMTraverser
@@ -67,6 +79,57 @@ export class DOMTraverser {
     walker = this.#evaluator.document.createTreeWalker(node, whatToShow);
     this.#walkers.set(node, walker);
     return walker;
+  }
+
+  /**
+   * Traverses and collects nodes matching leaves.
+   * @param {TreeWalker} walker - The TreeWalker instance.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
+   * @param {TraversalOptions} [opt] - The traversal options.
+   * @returns {Array<Element>} An array of collected nodes.
+   */
+  traverseAndCollectNodes(walker, leaves, opt = {}) {
+    const { boundaryNode, force, startNode, targetType } = opt;
+    const collectedNodes = [];
+    if (
+      targetType === TARGET_ALL &&
+      boundaryNode &&
+      this.#evaluator.matchLeaves(leaves, boundaryNode)
+    ) {
+      collectedNodes.push(boundaryNode);
+    }
+    let currentNode = traverseNode(startNode, walker, !!force);
+    if (currentNode.nodeType !== ELEMENT_NODE) {
+      currentNode = walker.nextNode();
+    } else if (
+      currentNode === startNode &&
+      currentNode !== this.#evaluator.root
+    ) {
+      currentNode = walker.nextNode();
+    }
+    while (currentNode) {
+      if (boundaryNode) {
+        if (currentNode === boundaryNode) {
+          break;
+        } else if (
+          targetType === TARGET_ALL &&
+          !boundaryNode.contains(currentNode)
+        ) {
+          break;
+        }
+      }
+      if (
+        this.#evaluator.matchLeaves(leaves, currentNode) &&
+        currentNode !== this.#evaluator.node
+      ) {
+        collectedNodes.push(currentNode);
+        if (targetType !== TARGET_ALL) {
+          break;
+        }
+      }
+      currentNode = walker.nextNode();
+    }
+    return collectedNodes;
   }
 
   /**
