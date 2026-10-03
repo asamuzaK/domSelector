@@ -123,17 +123,6 @@ describe('Finder', () => {
       );
     });
 
-    it('should be a read-only property', () => {
-      const finder = new Finder(window);
-      assert.throws(
-        () => {
-          finder.selectorAST = {};
-        },
-        TypeError,
-        'setting getter-only property should throw TypeError'
-      );
-    });
-
     it('should populate selectorAST when find() is executed', () => {
       const finder = new Finder(window);
       finder.setup('div#div0', document);

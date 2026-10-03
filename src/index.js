@@ -7,6 +7,7 @@
 
 /* import */
 import { LRUCache } from 'lru-cache';
+import { clone as cssTreeClone } from 'css-tree/utils';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst, parseSelector } from './js/parser.js';
@@ -232,7 +233,7 @@ export class DOMSelector {
         }
       }
       return {
-        ast,
+        ast: this.#cloneAST(ast),
         error: nodeError,
         match: false,
         pseudoElement: null
@@ -246,7 +247,7 @@ export class DOMSelector {
         this.#cache.set(astCacheKey, ast);
       }
       return {
-        ast,
+        ast: this.#cloneAST(ast),
         error: null,
         match: true,
         pseudoElement: null
@@ -270,7 +271,7 @@ export class DOMSelector {
         }
       }
       return {
-        ast,
+        ast: this.#cloneAST(ast),
         error: null,
         match: nwsapiRes.result,
         pseudoElement: null
@@ -282,7 +283,13 @@ export class DOMSelector {
       warn: false,
       globalObject: this.#window
     };
-    return this.#finder.setup(selector, node, options).find(TARGET_SELF);
+    const checkResult = this.#finder
+      .setup(selector, node, options)
+      .find(TARGET_SELF);
+    return {
+      ...checkResult,
+      ast: this.#cloneAST(checkResult.ast)
+    };
   }
 
   /**
@@ -452,6 +459,19 @@ export class DOMSelector {
       return [...nodes];
     }
     return [];
+  }
+
+  /**
+   * Generates a cloned selector AST.
+   * @private
+   * @param {import('css-tree').CssNode|null} ast - The selector AST.
+   * @returns {import('css-tree').CssNode|null} Cloned selector AST.
+   */
+  #cloneAST(ast) {
+    if (!ast) {
+      return null;
+    }
+    return cssTreeClone(ast);
   }
 
   /**
