@@ -45,6 +45,7 @@ export declare class DOMSelector {
     closest(selector: string, node: Element, opt?: UserOptions): Element | null;
     querySelector(selector: string, node: Document | DocumentFragment | Element, opt?: UserOptions): Element | null;
     querySelectorAll(selector: string, node: Document | DocumentFragment | Element, opt?: UserOptions): Array<Element>;
+    private #cloneAST;
     private #wrapNode;
     private #validateSelector;
     private #validateNodeType;

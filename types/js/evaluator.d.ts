@@ -8,9 +8,10 @@ export declare class Evaluator {
     warn: boolean | undefined;
     node: Document | DocumentFragment | Element | undefined;
     pseudoElements: any[] | undefined;
-    invalidate: boolean | undefined;
     constructor(window: Window);
     get eventHandler(): EventHandler;
+    get invalidate(): boolean;
+    set invalidate(value: boolean);
     get verifyShadowHost(): boolean;
     setup(selector: string, node: Document | DocumentFragment | Element, opt?: import('../index.js').FindOptions): Evaluator;
     onError(e: Error, opt?: import('../index.js').FindOptions): void;
