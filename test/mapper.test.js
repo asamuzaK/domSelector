@@ -69,8 +69,8 @@ describe('Mapper', () => {
       );
       assert.strictEqual(
         Object.isFrozen(selectorAST),
-        true,
-        'selectorAST should be frozen (Readonly)'
+        false,
+        'selectorAST should not be frozen'
       );
       assert.strictEqual(
         nodes.length,
@@ -132,8 +132,8 @@ describe('Mapper', () => {
       assert.strictEqual(nodes2[0].length, 0, 'nodes array should be cleared');
       assert.strictEqual(
         Object.isFrozen(selAST2),
-        true,
-        'cached selectorAST should remain frozen'
+        false,
+        'cached selectorAST should not be frozen'
       );
       assert.strictEqual(
         selAST1,

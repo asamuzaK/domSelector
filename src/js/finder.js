@@ -69,7 +69,7 @@ export class Finder extends Evaluator {
 
   /**
    * Gets the selector AST.
-   * @returns {Readonly<import('css-tree').CssNode>|null} The selector AST.
+   * @returns {import('css-tree').CssNode|null} The selector AST.
    */
   get selectorAST() {
     return this.#selectorAST;

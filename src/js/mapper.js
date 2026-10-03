@@ -4,14 +4,13 @@
 import { SelectorProcessor } from './processor.js';
 import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
-import { deepFreeze } from './utility.js';
 
 /**
  * @typedef {object} MapperResult
  * @property {Array<import('./processor.js').ProcessedASTNode>} ast - Fresh AST nodes.
  * @property {boolean} invalidate - Invalidation flag for dynamic evaluation.
  * @property {Array<Array<Element>>} nodes - Array of matched element arrays per branch.
- * @property {Readonly<import('css-tree').CssNode>} selectorAST - The readonly selector AST.
+ * @property {import('css-tree').CssNode} selectorAST - The selector AST.
  */
 
 /**
@@ -88,14 +87,13 @@ export class Mapper {
       cachedItem = new Map();
       ctx.documentCache.set(ctx.document, cachedItem);
     }
-    const freezedSelectorAST = deepFreeze(selectorAST);
     cachedItem.set(selector, {
       ast,
       descendant,
       invalidate,
-      selectorAST: freezedSelectorAST
+      selectorAST
     });
-    return this.#prepareResult(ast, invalidate, freezedSelectorAST);
+    return this.#prepareResult(ast, invalidate, selectorAST);
   }
 
   /**

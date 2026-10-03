@@ -1130,21 +1130,3 @@ export const canUseFastClassSearch = node =>
  */
 export const canUseFastTagSearch = (node, leafName) =>
   typeof node.getElementsByTagName === 'function' && !leafName.includes('|');
-
-/**
- * Recursively freezes an object and its nested properties to make it immutable.
- * @template T
- * @param {T} obj - The object to be frozen.
- * @returns {T} The recursively frozen object.
- */
-export const deepFreeze = obj => {
-  if (obj === null || typeof obj !== 'object' || Object.isFrozen(obj)) {
-    return obj;
-  }
-  Object.freeze(obj);
-  // Recursively freeze all nested properties
-  for (const key of Object.keys(obj)) {
-    deepFreeze(obj[key]);
-  }
-  return obj;
-};
