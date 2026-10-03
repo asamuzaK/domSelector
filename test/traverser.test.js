@@ -100,7 +100,65 @@ describe('DOMTraverser', () => {
     });
   });
 
-describe('traverseAndCollectNodes', () => {
+  describe('findPrecede', () => {
+    let leaves;
+
+    beforeEach(() => {
+      leaves = [{ name: 'span', type: TYPE_SELECTOR }];
+    });
+
+    it('should find first matching preceding node and stop before evaluator.node', () => {
+      const boundary = document.getElementById('next-sib1');
+      mockEvaluator.node = boundary;
+      mockEvaluator.matchLeaves.callsFake(
+        (_, node) => node !== boundary && node.tagName === 'SPAN'
+      );
+      const startNode = document.getElementById('root');
+      const result = traverser.findPrecede(leaves, startNode);
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].id, 'prev-sib');
+    });
+
+    it('should collect all matching preceding nodes when targetType is TARGET_ALL', () => {
+      const boundary = document.getElementById('root');
+      mockEvaluator.node = boundary;
+      mockEvaluator.matchLeaves.callsFake(
+        (_, node) =>
+          node !== boundary &&
+          node.parentElement === boundary &&
+          node.classList.contains('target-class')
+      );
+      const startNode = document.getElementById('root');
+      const result = traverser.findPrecede(leaves, startNode, {
+        targetType: TARGET_ALL
+      });
+      assert.strictEqual(result.length, 3);
+      assert.strictEqual(result[0].id, 'prev-sib');
+      assert.strictEqual(result[1].id, 'target');
+      assert.strictEqual(result[2].id, 'next-sib1');
+    });
+
+    it('should pass options correctly to traverseAndCollectNodes', () => {
+      mockEvaluator.node = document.getElementById('root');
+      mockEvaluator.matchLeaves.returns(true);
+      const startNode = document.getElementById('root');
+      const spy = sinon.spy(traverser, 'traverseAndCollectNodes');
+      traverser.findPrecede(leaves, startNode, { force: true });
+      assert.strictEqual(spy.calledOnce, true);
+      assert.strictEqual(spy.firstCall.args[2].force, true);
+      spy.restore();
+    });
+
+    it('should return empty array if no preceding node matches leaves', () => {
+      mockEvaluator.node = document.getElementById('target');
+      mockEvaluator.matchLeaves.returns(false);
+      const startNode = document.getElementById('root');
+      const result = traverser.findPrecede(leaves, startNode);
+      assert.strictEqual(result.length, 0);
+    });
+  });
+
+  describe('traverseAndCollectNodes', () => {
     let walker, leaves;
 
     beforeEach(() => {

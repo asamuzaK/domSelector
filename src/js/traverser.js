@@ -82,6 +82,24 @@ export class DOMTraverser {
   }
 
   /**
+   * Finds matching nodes preceding the current node.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
+   * @param {Element} node - The starting node.
+   * @param {TraversalOptions} [opt] - The traversal options.
+   * @returns {Array<Element>} An array of matched nodes.
+   */
+  findPrecede(leaves, node, opt = {}) {
+    const { force, targetType } = opt;
+    const walker = this.createTreeWalker(this.#evaluator.root);
+    return this.traverseAndCollectNodes(walker, leaves, {
+      boundaryNode: this.#evaluator.node,
+      force,
+      targetType,
+      startNode: node
+    });
+  }
+
+  /**
    * Traverses and collects nodes matching leaves.
    * @param {TreeWalker} walker - The TreeWalker instance.
    * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
