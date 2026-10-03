@@ -100,6 +100,76 @@ describe('DOMTraverser', () => {
     });
   });
 
+  describe('findNodeWalker', () => {
+    let leaves;
+
+    beforeEach(() => {
+      leaves = [{ name: 'span', type: TYPE_SELECTOR }];
+    });
+
+    it('should collect matching nodes using TreeWalker', () => {
+      mockEvaluator.node = document.getElementById('root');
+      mockEvaluator.matchLeaves.callsFake((_, node) => node.tagName === 'SPAN');
+      const startNode = document.getElementById('root');
+      const result = traverser.findNodeWalker(leaves, startNode);
+      assert.ok(result.length > 0);
+      assert.strictEqual(result[0].id, 'prev-sib');
+    });
+
+    it('should return preceding nodes when precede option is true', () => {
+      const boundary = document.getElementById('next-sib1');
+      mockEvaluator.node = boundary;
+      mockEvaluator.matchLeaves.callsFake(
+        (_, node) => node !== boundary && node.tagName === 'SPAN'
+      );
+      const startNode = document.getElementById('root');
+      const precedeSpy = sinon.spy(traverser, 'findPrecede');
+      const result = traverser.findNodeWalker(leaves, startNode, {
+        precede: true
+      });
+      assert.strictEqual(precedeSpy.calledOnce, true);
+      assert.strictEqual(precedeSpy.firstCall.args[0], leaves);
+      assert.strictEqual(precedeSpy.firstCall.args[1], mockEvaluator.root);
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].id, 'prev-sib');
+      precedeSpy.restore();
+    });
+
+    it('should fallback to forward traversal when no preceding nodes are found', () => {
+      mockEvaluator.node = document.getElementById('root');
+      mockEvaluator.matchLeaves.callsFake((_, node) => node.id === 'child1');
+      const findPrecedeStub = sinon.stub(traverser, 'findPrecede').returns([]);
+      const traverseSpy = sinon.spy(traverser, 'traverseAndCollectNodes');
+      const startNode = document.getElementById('target');
+      const result = traverser.findNodeWalker(leaves, startNode, {
+        precede: true
+      });
+      assert.strictEqual(findPrecedeStub.calledOnce, true);
+      assert.strictEqual(traverseSpy.calledOnce, true);
+      assert.strictEqual(result.length, 1);
+      assert.strictEqual(result[0].id, 'child1');
+      findPrecedeStub.restore();
+      traverseSpy.restore();
+    });
+
+    it('should pass options excluding precede', () => {
+      mockEvaluator.node = document.getElementById('root');
+      const traverseSpy = sinon.spy(traverser, 'traverseAndCollectNodes');
+      const startNode = document.getElementById('root');
+      traverser.findNodeWalker(leaves, startNode, {
+        targetType: TARGET_ALL,
+        force: true
+      });
+      assert.strictEqual(traverseSpy.calledOnce, true);
+      const passedOpts = traverseSpy.firstCall.args[2];
+      assert.strictEqual(passedOpts.startNode, startNode);
+      assert.strictEqual(passedOpts.targetType, TARGET_ALL);
+      assert.strictEqual(passedOpts.force, true);
+      assert.strictEqual('precede' in passedOpts, false);
+      traverseSpy.restore();
+    });
+  });
+
   describe('findPrecede', () => {
     let leaves;
 
