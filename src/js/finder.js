@@ -53,7 +53,6 @@ export class Finder extends Evaluator {
   #mapper;
   #nodeWalker;
   #nodes;
-  #rootWalker;
   #scoped;
   #selector;
   #selectorAST = null;
@@ -81,7 +80,6 @@ export class Finder extends Evaluator {
     this.#nodes = null;
     this.#scoped =
       this.node !== this.root && this.node.nodeType === ELEMENT_NODE;
-    this.#rootWalker = null;
     this.#selector = selector;
     this.#selectorAST = null;
     return this;
@@ -556,11 +554,8 @@ export class Finder extends Evaluator {
     if (!pendingItems.size) {
       return;
     }
-    if (!this.#rootWalker) {
-      this.#rootWalker = this.createTreeWalker(this.root);
-    }
     const node = this.#scoped ? this.node : this.root;
-    const walker = this.#rootWalker;
+    const walker = this.createTreeWalker(this.root);
     let nextNode = traverseNode(node, walker);
     while (nextNode) {
       const isWithinScope =
