@@ -121,9 +121,17 @@ describe('Evaluator', () => {
     it('should set and get invalidate value correctly', () => {
       const evaluator = new Evaluator(window);
       evaluator.invalidate = true;
-      assert.strictEqual(evaluator.invalidate, true, 'returns updated value true');
+      assert.strictEqual(
+        evaluator.invalidate,
+        true,
+        'returns updated value true'
+      );
       evaluator.invalidate = false;
-      assert.strictEqual(evaluator.invalidate, false, 'returns updated value false');
+      assert.strictEqual(
+        evaluator.invalidate,
+        false,
+        'returns updated value false'
+      );
     });
   });
 

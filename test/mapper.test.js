@@ -98,13 +98,21 @@ describe('Mapper', () => {
     it('should return cached AST and frozen selectorAST upon cache hit', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.test-class';
-      const { ast: ast1, nodes: nodes1, selectorAST: selAST1 } = mapper.correspond(selector);
+      const {
+        ast: ast1,
+        nodes: nodes1,
+        selectorAST: selAST1
+      } = mapper.correspond(selector);
       ast1[0].dir = 'next';
       ast1[0].filtered = true;
       ast1[0].find = true;
       nodes1[0].push(document.getElementById('test'));
       processorStub.resetHistory();
-      const { ast: ast2, nodes: nodes2, selectorAST: selAST2 } = mapper.correspond(selector);
+      const {
+        ast: ast2,
+        nodes: nodes2,
+        selectorAST: selAST2
+      } = mapper.correspond(selector);
       assert.strictEqual(
         processorStub.notCalled,
         true,

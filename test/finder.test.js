@@ -110,9 +110,17 @@ describe('Finder', () => {
   describe('selectorAST getter', () => {
     it('should return null as initial value and after setup', () => {
       const finder = new Finder(window);
-      assert.strictEqual(finder.selectorAST, null, 'initial value should be null');
+      assert.strictEqual(
+        finder.selectorAST,
+        null,
+        'initial value should be null'
+      );
       finder.setup('div', document);
-      assert.strictEqual(finder.selectorAST, null, 'value after setup should be null');
+      assert.strictEqual(
+        finder.selectorAST,
+        null,
+        'value after setup should be null'
+      );
     });
 
     it('should be a read-only property', () => {
@@ -131,8 +139,16 @@ describe('Finder', () => {
       finder.setup('div#div0', document);
       assert.strictEqual(finder.selectorAST, null, 'null before find()');
       finder.find('all');
-      assert.notStrictEqual(finder.selectorAST, null, 'selectorAST should be populated after find()');
-      assert.strictEqual(finder.selectorAST.type, 'SelectorList', 'AST type should be SelectorList');
+      assert.notStrictEqual(
+        finder.selectorAST,
+        null,
+        'selectorAST should be populated after find()'
+      );
+      assert.strictEqual(
+        finder.selectorAST.type,
+        'SelectorList',
+        'AST type should be SelectorList'
+      );
     });
   });
 
