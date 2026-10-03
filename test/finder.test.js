@@ -107,6 +107,35 @@ describe('Finder', () => {
     });
   });
 
+  describe('selectorAST getter', () => {
+    it('should return null as initial value and after setup', () => {
+      const finder = new Finder(window);
+      assert.strictEqual(finder.selectorAST, null, 'initial value should be null');
+      finder.setup('div', document);
+      assert.strictEqual(finder.selectorAST, null, 'value after setup should be null');
+    });
+
+    it('should be a read-only property', () => {
+      const finder = new Finder(window);
+      assert.throws(
+        () => {
+          finder.selectorAST = {};
+        },
+        TypeError,
+        'setting getter-only property should throw TypeError'
+      );
+    });
+
+    it('should populate selectorAST when find() is executed', () => {
+      const finder = new Finder(window);
+      finder.setup('div#div0', document);
+      assert.strictEqual(finder.selectorAST, null, 'null before find()');
+      finder.find('all');
+      assert.notStrictEqual(finder.selectorAST, null, 'selectorAST should be populated after find()');
+      assert.strictEqual(finder.selectorAST.type, 'SelectorList', 'AST type should be SelectorList');
+    });
+  });
+
   describe('handle error', () => {
     it('should suppress DOMException syntax error when noexcept is true', () => {
       const err = new DOMException('error', SYNTAX_ERR);
