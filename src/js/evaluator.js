@@ -40,6 +40,7 @@ export class Evaluator {
   #domTraverser;
   #eventHandler;
   #filterLeavesCache;
+  #invalidate;
   #invalidateResults;
   #nestingAST;
   #pseudoClassEvaluator;
@@ -70,6 +71,22 @@ export class Evaluator {
   }
 
   /**
+   * Gets the invalidate flag.
+   * @returns {boolean} True if the selector should be invalidated, false otherwise.
+   */
+  get invalidate() {
+    return this.#invalidate;
+  }
+
+  /**
+   * Sets the invalidate flag.
+   * @param {boolean} value - A flag to set.
+   */
+  set invalidate(value) {
+    this.#invalidate = !!value;
+  }
+
+  /**
    * Gets the verifyShadowHost flag from ShadowDOMEvaluator.
    * @returns {boolean} True if shadow host is verified, false otherwise.
    */
@@ -92,7 +109,7 @@ export class Evaluator {
     [this.document, this.root, this.shadow] = resolveContent(node);
     this.node = node;
     this.pseudoElements = [];
-    this.invalidate = false;
+    this.#invalidate = false;
     this.#domTraverser.reset();
     this.#shadowEvaluator.reset();
     this.#pseudoClassEvaluator.reset();
@@ -146,6 +163,7 @@ export class Evaluator {
    * @returns {void}
    */
   clearResults(all = false) {
+    this.#invalidate = false;
     this.#invalidateResults = null;
     this.#pseudoClassEvaluator.clearResults(all);
     if (all) {

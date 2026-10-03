@@ -4,6 +4,15 @@
 import { SelectorProcessor } from './processor.js';
 import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
+import { deepFreeze } from './utility.js';
+
+/**
+ * @typedef {object} MapperResult
+ * @property {Array<import('./processor.js').ProcessedASTNode>} ast - Fresh AST nodes.
+ * @property {boolean} invalidate - Invalidation flag for dynamic evaluation.
+ * @property {Array<Array<Element>>} nodes - Array of matched element arrays per branch.
+ * @property {Readonly<import('css-tree').CssNode>} selectorAST - The readonly selector AST.
+ */
 
 /**
  * Mapper
@@ -22,41 +31,30 @@ export class Mapper {
   }
 
   /**
-   * Gets the corresponding AST and empty nodes array for the given selector.
+   * Gets the corresponding AST, nodes array, invalidate flag, and selector AST.
    * @param {string} selector - The CSS selector string.
-   * @returns {[Array<import('./processor.js').ProcessedASTNode>, Array<Array<Element>>, import('css-tree').CssNode]} An array containing the processed AST, an array for nodes, and the original selector AST.
+   * @returns {MapperResult} The MapperResult object.
    */
   correspond(selector) {
     const ctx = this.#context;
-    const nodes = [];
     let ast = null;
+    let invalidate = false;
+    let selectorAST = null;
     // Check cache.
     if (ctx.documentCache.has(ctx.document)) {
       const cachedItem = ctx.documentCache.get(ctx.document);
       if (cachedItem && cachedItem.has(selector)) {
         const item = cachedItem.get(selector);
         ast = item.ast;
-        ctx.invalidate = item.invalidate;
-        ctx.selectorAST = item.selectorAST;
+        invalidate = item.invalidate;
+        selectorAST = item.selectorAST;
       }
     }
-    // Clear flags for reuse if cache hit.
     if (ast) {
-      const l = ast.length;
-      const freshAst = new Array(l);
-      for (let i = 0; i < l; i++) {
-        freshAst[i] = {
-          branch: ast[i].branch,
-          dir: null,
-          filtered: false,
-          find: false
-        };
-        nodes[i] = [];
-      }
-      return [freshAst, nodes, ctx.selectorAST];
+      return this.#prepareResult(ast, invalidate, selectorAST);
     }
     // Parse selector and build metadata.
-    const selectorAST = parseSelector(selector);
+    selectorAST = parseSelector(selector);
     const { branches, info } = walkAST(
       selectorAST,
       true,
@@ -71,7 +69,7 @@ export class Mapper {
       hasUnsupportedPseudoClass
     } = info;
     // Determine invalidation flags.
-    ctx.invalidate =
+    invalidate =
       hasHasPseudoFunc ||
       hasNestingSelector ||
       hasNthChildOfSelector ||
@@ -90,15 +88,28 @@ export class Mapper {
       cachedItem = new Map();
       ctx.documentCache.set(ctx.document, cachedItem);
     }
+    const freezedSelectorAST = deepFreeze(selectorAST);
     cachedItem.set(selector, {
       ast,
       descendant,
-      invalidate: ctx.invalidate,
-      selectorAST
+      invalidate,
+      selectorAST: freezedSelectorAST
     });
-    // Initialize nodes.
+    return this.#prepareResult(ast, invalidate, freezedSelectorAST);
+  }
+
+  /**
+   * Prepares fresh AST nodes and initialized matching nodes array.
+   * @private
+   * @param {Array<import('./processor.js').ProcessedASTNode>} ast - The cached or parsed AST.
+   * @param {boolean} invalidate - Invalidation flag for dynamic evaluation.
+   * @param {import('css-tree').CssNode} selectorAST - The parsed CSS selector AST.
+   * @returns {MapperResult} The MapperResult object.
+   */
+  #prepareResult(ast, invalidate, selectorAST) {
     const l = ast.length;
     const freshAst = new Array(l);
+    const nodes = new Array(l);
     for (let i = 0; i < l; i++) {
       freshAst[i] = {
         branch: ast[i].branch,
@@ -108,6 +119,6 @@ export class Mapper {
       };
       nodes[i] = [];
     }
-    return [freshAst, nodes, selectorAST];
+    return { ast: freshAst, invalidate, nodes, selectorAST };
   }
 }

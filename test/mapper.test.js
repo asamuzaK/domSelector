@@ -5,7 +5,7 @@
 /* api */
 import { strict as assert } from 'node:assert';
 import { JSDOM } from 'jsdom';
-import { beforeEach, afterEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 
 /* test */
@@ -28,9 +28,7 @@ describe('Mapper', () => {
     mockContext = {
       window,
       document,
-      documentCache: new Map(),
-      invalidate: false,
-      selectorAST: null
+      documentCache: new Map()
     };
     // Stub processor
     processorStub = sinon
@@ -51,8 +49,14 @@ describe('Mapper', () => {
     it('should process and cache selector data on cache miss', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div';
-      const [ast, nodes, selectorAST] = mapper.correspond(selector);
+      const { ast, invalidate, nodes, selectorAST } =
+        mapper.correspond(selector);
       assert.strictEqual(Array.isArray(ast), true, 'ast should be an array');
+      assert.strictEqual(
+        typeof invalidate,
+        'boolean',
+        'invalidate should be a boolean'
+      );
       assert.strictEqual(
         Array.isArray(nodes),
         true,
@@ -62,6 +66,11 @@ describe('Mapper', () => {
         typeof selectorAST,
         'object',
         'selectorAST should be an object'
+      );
+      assert.strictEqual(
+        Object.isFrozen(selectorAST),
+        true,
+        'selectorAST should be frozen (Readonly)'
       );
       assert.strictEqual(
         nodes.length,
@@ -86,16 +95,16 @@ describe('Mapper', () => {
       );
     });
 
-    it('should return cached AST and reset flags upon cache hit', () => {
+    it('should return cached AST and frozen selectorAST upon cache hit', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.test-class';
-      const [ast1, nodes1] = mapper.correspond(selector);
+      const { ast: ast1, nodes: nodes1, selectorAST: selAST1 } = mapper.correspond(selector);
       ast1[0].dir = 'next';
       ast1[0].filtered = true;
       ast1[0].find = true;
       nodes1[0].push(document.getElementById('test'));
       processorStub.resetHistory();
-      const [ast2, nodes2] = mapper.correspond(selector);
+      const { ast: ast2, nodes: nodes2, selectorAST: selAST2 } = mapper.correspond(selector);
       assert.strictEqual(
         processorStub.notCalled,
         true,
@@ -113,14 +122,24 @@ describe('Mapper', () => {
         'find flag should be reset to false'
       );
       assert.strictEqual(nodes2[0].length, 0, 'nodes array should be cleared');
+      assert.strictEqual(
+        Object.isFrozen(selAST2),
+        true,
+        'cached selectorAST should remain frozen'
+      );
+      assert.strictEqual(
+        selAST1,
+        selAST2,
+        'should return the exact same frozen selectorAST reference'
+      );
     });
 
     it('should set invalidate flag to true for :has() pseudo-class', () => {
       const mapper = new Mapper(mockContext);
       const selector = 'div:has(p)';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         true,
         'invalidate should be true for :has() pseudo-class'
       );
@@ -129,9 +148,9 @@ describe('Mapper', () => {
     it('should keep invalidate flag as false for simple ID selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = '#test';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         false,
         'invalidate should remain false for simple ID selectors'
       );
@@ -189,9 +208,9 @@ describe('Mapper', () => {
     it('should set invalidate to true for complex nth-child in :is()', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':is(p):nth-child(2 of .foo)';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         true,
         'invalidate should be true when both conditions are met'
       );
@@ -200,9 +219,9 @@ describe('Mapper', () => {
     it('should set invalidate to false when selector only has :is()', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':is(p)';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         false,
         'invalidate should be false if only logical pseudo exists'
       );
@@ -211,9 +230,9 @@ describe('Mapper', () => {
     it('should set invalidate to true for nth-child of selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = ':nth-child(2 of .foo)';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         true,
         'invalidate should be true if only nth-child of selector exists'
       );
@@ -222,9 +241,9 @@ describe('Mapper', () => {
     it('should set invalidate to false for simple class selector', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.simple-class';
-      mapper.correspond(selector);
+      const { invalidate } = mapper.correspond(selector);
       assert.strictEqual(
-        mockContext.invalidate,
+        invalidate,
         false,
         'invalidate should be false when neither condition is met'
       );
@@ -233,13 +252,13 @@ describe('Mapper', () => {
     it('should return fresh AST objects to prevent cache mutation', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.pure-cache-test';
-      const [ast1] = mapper.correspond(selector);
+      const { ast: ast1 } = mapper.correspond(selector);
       // Simulate finder.js mutating the execution state wrapper
       ast1[0].find = true;
       ast1[0].dir = 'prev';
       // Fetch again to ensure cache hit
       processorStub.resetHistory();
-      const [ast2] = mapper.correspond(selector);
+      const { ast: ast2 } = mapper.correspond(selector);
       assert.strictEqual(processorStub.notCalled, true, 'Should hit the cache');
       assert.notStrictEqual(
         ast1[0],

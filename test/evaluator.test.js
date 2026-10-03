@@ -112,6 +112,21 @@ describe('Evaluator', () => {
     });
   });
 
+  describe('invalidate getter/setter', () => {
+    it('should return default invalidate value from getter', () => {
+      const evaluator = new Evaluator(window);
+      assert.strictEqual(evaluator.invalidate, false, 'default value is false');
+    });
+
+    it('should set and get invalidate value correctly', () => {
+      const evaluator = new Evaluator(window);
+      evaluator.invalidate = true;
+      assert.strictEqual(evaluator.invalidate, true, 'returns updated value true');
+      evaluator.invalidate = false;
+      assert.strictEqual(evaluator.invalidate, false, 'returns updated value false');
+    });
+  });
+
   describe('handle error', () => {
     it('should suppress DOMException errors when noexcept is set', () => {
       const err = new DOMException('error', SYNTAX_ERR);

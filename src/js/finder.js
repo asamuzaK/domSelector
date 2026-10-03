@@ -65,7 +65,15 @@ export class Finder extends Evaluator {
   #rootWalker;
   #scoped;
   #selector;
-  #selectorAST;
+  #selectorAST = null;
+
+  /**
+   * Gets the selector AST.
+   * @returns {Readonly<import('css-tree').CssNode>|null} The selector AST.
+   */
+  get selectorAST() {
+    return this.#selectorAST;
+  }
 
   /**
    * Sets up the finder.
@@ -199,17 +207,21 @@ export class Finder extends Evaluator {
    * @returns {Array} Array containing the AST and nodes arrays.
    */
   #collectNodes(targetType) {
-    [this.#ast, this.#nodes, this.#selectorAST] = this.#mapper.correspond(
+    const { ast, invalidate, nodes, selectorAST } = this.#mapper.correspond(
       this.#selector
     );
-    const ast = this.#ast.values();
+    this.#ast = ast;
+    this.#nodes = nodes;
+    this.invalidate = invalidate;
+    this.#selectorAST = selectorAST;
+    const astValues = this.#ast.values();
     if (targetType === TARGET_ALL || targetType === TARGET_FIRST) {
       const pendingItems = new Set();
       const hasScope =
         typeof this.#selector === 'string' && this.#selector.includes(':scope');
       const scoped = this.#scoped;
       let i = 0;
-      for (const { branch } of ast) {
+      for (const { branch } of astValues) {
         const complex = branch.length > 1;
         const { dir, twig } = getTraversalStrategy(
           branch,
@@ -238,7 +250,7 @@ export class Finder extends Evaluator {
       this.#processPendingItems(pendingItems);
     } else {
       let i = 0;
-      for (const { branch } of ast) {
+      for (const { branch } of astValues) {
         const twig = branch[branch.length - 1];
         const complex = branch.length > 1;
         const dir = DIR_PREV;
