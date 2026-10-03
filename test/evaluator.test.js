@@ -27,6 +27,8 @@ import {
   SELECTOR,
   SYNTAX_ERR,
   TARGET_ALL,
+  TARGET_LINEAL,
+  TARGET_SELF,
   TYPE_SELECTOR
 } from '../src/js/constant.js';
 const AN_PLUS_B = 'AnPlusB';
@@ -414,6 +416,211 @@ describe('Evaluator', () => {
       assert.strictEqual(results[0].id, 'li1', 'matches li1');
       assert.strictEqual(results[1].id, 'li2', 'matches li2');
       assert.strictEqual(results[2].id, 'li3', 'matches li3');
+    });
+  });
+
+  describe('matchSelf', () => {
+    it('should return [node], true, and pseudoElements when node matches leaves', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const [nodes, matched, pseudoElements] = evaluator.matchSelf(leaves);
+      assert.strictEqual(matched, true, 'matched should be true');
+      assert.deepEqual(nodes, [node], 'nodes should contain the current node');
+      assert.deepEqual(pseudoElements, [], 'pseudoElements should be empty');
+    });
+
+    it('should return [], false, and pseudoElements when node does not match leaves', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('span', node);
+      const leaves = [{ name: 'span', type: TYPE_SELECTOR }];
+      const [nodes, matched, pseudoElements] = evaluator.matchSelf(leaves);
+      assert.strictEqual(matched, false, 'matched should be false');
+      assert.deepEqual(nodes, [], 'nodes should be an empty array');
+      assert.deepEqual(pseudoElements, [], 'pseudoElements should be empty');
+    });
+
+    it('should include collected pseudo-elements when check option is enabled', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('div::after', node, { check: true });
+      const leaves = [
+        { name: 'after', type: PS_ELEMENT_SELECTOR, children: null }
+      ];
+      const [nodes, matched, pseudoElements] = evaluator.matchSelf(leaves);
+      assert.strictEqual(
+        matched,
+        true,
+        'matched should be true when checking pseudo-element'
+      );
+      assert.deepEqual(nodes, [node], 'nodes should contain the current node');
+      assert.deepEqual(
+        pseudoElements,
+        ['::after'],
+        'pseudoElements should contain generated CSS for pseudo-element'
+      );
+    });
+  });
+
+  describe('findLineal', () => {
+    it('should match self and stop when self matches', () => {
+      const node = document.getElementById('li1');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('li', node);
+      const leaves = [{ name: 'li', type: TYPE_SELECTOR }];
+      const [nodes, filtered] = evaluator.findLineal(leaves);
+      assert.strictEqual(filtered, true, 'filtered should be true');
+      assert.deepEqual(nodes, [node], 'nodes should contain only self');
+    });
+
+    it('should match nearest ancestor when self does not match', () => {
+      const node = document.getElementById('li1');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const [nodes, filtered] = evaluator.findLineal(leaves);
+      assert.strictEqual(filtered, true, 'filtered should be true');
+      assert.strictEqual(
+        nodes.length,
+        1,
+        'should stop after first ancestor match'
+      );
+      assert.strictEqual(nodes[0].id, 'div2', 'matches nearest ancestor div2');
+    });
+
+    it('should return empty array and false', () => {
+      const node = document.getElementById('li1');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('table', node);
+      const leaves = [{ name: 'table', type: TYPE_SELECTOR }];
+      const [nodes, filtered] = evaluator.findLineal(leaves);
+      assert.strictEqual(filtered, false, 'filtered should be false');
+      assert.deepEqual(nodes, [], 'nodes array should be empty');
+    });
+
+    it('should collect self and all matching ancestors', () => {
+      const node = document.getElementById('div2');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const [nodes, filtered] = evaluator.findLineal(leaves, { complex: true });
+      assert.strictEqual(filtered, true, 'filtered should be true');
+      assert.strictEqual(
+        nodes.length,
+        2,
+        'should match self and all parent divs'
+      );
+      assert.strictEqual(nodes[0].id, 'div2', 'first matched element is self');
+      assert.strictEqual(
+        nodes[1].id,
+        'div1',
+        'second matched element is parent div1'
+      );
+    });
+
+    it('should collect all matching ancestors', () => {
+      const node = document.getElementById('ul1');
+      const evaluator = new Evaluator(window);
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const [nodes, filtered] = evaluator.findLineal(leaves, { complex: true });
+      assert.strictEqual(filtered, true, 'filtered should be true');
+      assert.strictEqual(nodes.length, 2, 'should match all ancestor divs');
+      assert.strictEqual(nodes[0].id, 'div2', 'nearest matching ancestor');
+      assert.strictEqual(nodes[1].id, 'div1', 'further matching ancestor');
+    });
+  });
+
+  describe('checkSelfOrLinealTarget', () => {
+    it('should return result object for TARGET_SELF when node matches leaves', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const result = evaluator.checkSelfOrLinealTarget(
+        leaves,
+        TARGET_SELF,
+        false,
+        true
+      );
+      assert.deepEqual(result, {
+        compound: true,
+        filtered: true,
+        nodes: [node],
+        pending: false
+      });
+    });
+
+    it('should return result object for TARGET_SELF when node does not match leaves', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('span', node);
+      const leaves = [{ name: 'span', type: TYPE_SELECTOR }];
+      const result = evaluator.checkSelfOrLinealTarget(
+        leaves,
+        TARGET_SELF,
+        false,
+        false
+      );
+      assert.deepEqual(result, {
+        compound: false,
+        filtered: false,
+        nodes: [],
+        pending: false
+      });
+    });
+
+    it('should return nearest ancestor for TARGET_LINEAL when complex is false', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('li1');
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const result = evaluator.checkSelfOrLinealTarget(
+        leaves,
+        TARGET_LINEAL,
+        false,
+        false
+      );
+      assert.strictEqual(result.filtered, true);
+      assert.strictEqual(result.nodes.length, 1);
+      assert.strictEqual(result.nodes[0].id, 'div2');
+      assert.strictEqual(result.pending, false);
+      assert.strictEqual(result.compound, false);
+    });
+
+    it('should return self and all matching ancestors for TARGET_LINEAL when complex is true', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div2');
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const result = evaluator.checkSelfOrLinealTarget(
+        leaves,
+        TARGET_LINEAL,
+        true,
+        true
+      );
+      assert.strictEqual(result.filtered, true);
+      assert.strictEqual(result.nodes.length, 2);
+      assert.strictEqual(result.nodes[0].id, 'div2');
+      assert.strictEqual(result.nodes[1].id, 'div1');
+      assert.strictEqual(result.pending, false);
+      assert.strictEqual(result.compound, true);
+    });
+
+    it('should return null when targetType is neither TARGET_SELF nor TARGET_LINEAL', () => {
+      const evaluator = new Evaluator(window);
+      const node = document.getElementById('div1');
+      evaluator.setup('div', node);
+      const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
+      const result = evaluator.checkSelfOrLinealTarget(
+        leaves,
+        TARGET_ALL,
+        false,
+        false
+      );
+      assert.strictEqual(result, null);
     });
   });
 

@@ -332,7 +332,7 @@ export class Finder extends Evaluator {
       const css = generateCSS(leaf);
       this.pseudoElements.push(css);
       if (filterLeaves.length) {
-        const [nodes, filtered] = this.#matchSelf(filterLeaves);
+        const [nodes, filtered] = this.matchSelf(filterLeaves);
         return { compound, filtered, nodes, pending: false };
       }
       return { compound, filtered: true, nodes: [this.node], pending: false };
@@ -353,7 +353,7 @@ export class Finder extends Evaluator {
     const { leaves } = twig;
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.#checkSelfOrLinealTarget(
+    const earlyResult = this.checkSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -397,7 +397,7 @@ export class Finder extends Evaluator {
   #findEntryNodesForClass(leaves, targetType, opt = {}) {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.#checkSelfOrLinealTarget(
+    const earlyResult = this.checkSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -435,7 +435,7 @@ export class Finder extends Evaluator {
   #findEntryNodesForType(leaves, targetType, opt = {}) {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.#checkSelfOrLinealTarget(
+    const earlyResult = this.checkSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -521,7 +521,7 @@ export class Finder extends Evaluator {
         return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
     }
-    const earlyResult = this.#checkSelfOrLinealTarget(
+    const earlyResult = this.checkSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -843,71 +843,6 @@ export class Finder extends Evaluator {
       }
     }
     return false;
-  }
-
-  /**
-   * Performs early evaluation for TARGET_SELF and TARGET_LINEAL.
-   * @private
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @param {string} targetType - The target type.
-   * @param {boolean} complex - Indicates if the branch is complex.
-   * @param {boolean} compound - Indicates if there are filter leaves.
-   * @returns {object|null} The result object if matched, or null otherwise.
-   */
-  #checkSelfOrLinealTarget(leaves, targetType, complex, compound) {
-    if (targetType === TARGET_SELF) {
-      const [nodes, filtered] = this.#matchSelf(leaves);
-      return { compound, filtered, nodes, pending: false };
-    } else if (targetType === TARGET_LINEAL) {
-      const [nodes, filtered] = this.#findLineal(leaves, { complex });
-      return { compound, filtered, nodes, pending: false };
-    }
-    return null;
-  }
-
-  /**
-   * Matches the current node itself against leaves.
-   * @private
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @returns {Array} Array with nodes, match boolean, and pseudo-elements.
-   */
-  #matchSelf(leaves) {
-    const matched = this.matchLeaves(leaves, this.node, {
-      check: this.check,
-      warn: this.warn
-    });
-    const nodes = matched ? [this.node] : [];
-    return [nodes, matched, this.pseudoElements];
-  }
-
-  /**
-   * Finds lineal matching nodes (self and ancestors).
-   * @private
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @param {StrategyOptions} [opt] - The strategy options.
-   * @returns {Array} Array containing nodes and filtered boolean.
-   */
-  #findLineal(leaves, opt = {}) {
-    const { complex } = opt;
-    const nodes = [];
-    const selfMatched = this.matchLeaves(leaves, this.node);
-    if (selfMatched) {
-      nodes.push(this.node);
-    }
-    if (!selfMatched || complex) {
-      let currentNode = this.node.parentNode;
-      while (currentNode) {
-        if (this.matchLeaves(leaves, currentNode)) {
-          nodes.push(currentNode);
-          if (!complex) {
-            break;
-          }
-        }
-        currentNode = currentNode.parentNode;
-      }
-    }
-    const filtered = nodes.length > 0;
-    return [nodes, filtered];
   }
 
   /**

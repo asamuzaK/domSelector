@@ -26,6 +26,8 @@ import {
   NEST_SELECTOR,
   NOT_SUPPORTED_ERR,
   PS_CLASS_SELECTOR,
+  TARGET_LINEAL,
+  TARGET_SELF,
   TYPE_SELECTOR
 } from './constant.js';
 const KEYS_FORM = new Set([...FORM_PARTS, 'fieldset', 'form']);
@@ -325,6 +327,69 @@ export class Evaluator {
    */
   evaluateShadowHost(ast, node) {
     return this.#shadowEvaluator.evaluateShadowHost(ast, node);
+  }
+
+  /**
+   * Performs early evaluation for TARGET_SELF and TARGET_LINEAL.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
+   * @param {string} targetType - The target type.
+   * @param {boolean} complex - Indicates if the branch is complex.
+   * @param {boolean} compound - Indicates if there are filter leaves.
+   * @returns {object|null} The result object if matched, or null otherwise.
+   */
+  checkSelfOrLinealTarget(leaves, targetType, complex, compound) {
+    if (targetType === TARGET_SELF) {
+      const [nodes, filtered] = this.matchSelf(leaves);
+      return { compound, filtered, nodes, pending: false };
+    } else if (targetType === TARGET_LINEAL) {
+      const [nodes, filtered] = this.findLineal(leaves, { complex });
+      return { compound, filtered, nodes, pending: false };
+    }
+    return null;
+  }
+
+  /**
+   * Matches the current node itself against leaves.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
+   * @returns {Array} Array with nodes, match boolean, and pseudo-elements.
+   */
+  matchSelf(leaves) {
+    const matched = this.matchLeaves(leaves, this.node, {
+      check: this.check,
+      warn: this.warn
+    });
+    const nodes = matched ? [this.node] : [];
+    return [nodes, matched, this.pseudoElements];
+  }
+
+  /**
+   * Finds lineal matching nodes (self and ancestors).
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
+   * @param {object} [opt] - The strategy options.
+   * @param {boolean} [opt.complex] - Indicates if the branch is complex.
+   * @returns {Array} Array containing nodes and filtered boolean.
+   */
+  findLineal(leaves, opt = {}) {
+    const { complex } = opt;
+    const nodes = [];
+    const selfMatched = this.matchLeaves(leaves, this.node);
+    if (selfMatched) {
+      nodes.push(this.node);
+    }
+    if (!selfMatched || complex) {
+      let currentNode = this.node.parentNode;
+      while (currentNode) {
+        if (this.matchLeaves(leaves, currentNode)) {
+          nodes.push(currentNode);
+          if (!complex) {
+            break;
+          }
+        }
+        currentNode = currentNode.parentNode;
+      }
+    }
+    const filtered = nodes.length > 0;
+    return [nodes, filtered];
   }
 
   /**
