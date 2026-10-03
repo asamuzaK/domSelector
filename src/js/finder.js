@@ -43,15 +43,6 @@ import {
  */
 
 /**
- * @typedef {object} TraversalOptions
- * @property {boolean} [force] - Indicates whether to force traversal.
- * @property {boolean} [precede] - Indicates whether to search preceding nodes.
- * @property {Element} [boundaryNode] - The traversal boundary limit.
- * @property {Element} [startNode] - The starting node for the traversal.
- * @property {string} [targetType] - The target type.
- */
-
-/**
  * Finder
  * Evaluates CSS selectors to find and collect matched nodes.
  * NOTE: #ast[i] corresponds to #nodes[i]
@@ -721,7 +712,7 @@ export class Finder extends Evaluator {
     const { leaves: entryLeaves } = branch[0];
     const [entryNode] = entryNodes;
     if (this.node.contains(entryNode)) {
-      let [refNode] = this.#findNodeWalker(entryLeaves, entryNode, {
+      let [refNode] = this.findNodeWalker(entryLeaves, entryNode, {
         targetType
       });
       while (refNode) {
@@ -729,7 +720,7 @@ export class Finder extends Evaluator {
         if (matchedNode) {
           return matchedNode;
         }
-        [refNode] = this.#findNodeWalker(entryLeaves, refNode, {
+        [refNode] = this.findNodeWalker(entryLeaves, refNode, {
           targetType,
           force: true
         });
@@ -790,14 +781,14 @@ export class Finder extends Evaluator {
     if (targetType === TARGET_FIRST) {
       const { leaves: entryLeaves } = branch[lastIndex];
       const entryNode = entryNodes[0];
-      let [refNode] = this.#findNodeWalker(entryLeaves, entryNode, {
+      let [refNode] = this.findNodeWalker(entryLeaves, entryNode, {
         targetType
       });
       while (refNode) {
         if (this.#hasValidPathPrev(refNode, branch, lastIndex - 1)) {
           return refNode;
         }
-        [refNode] = this.#findNodeWalker(entryLeaves, refNode, {
+        [refNode] = this.findNodeWalker(entryLeaves, refNode, {
           targetType,
           force: true
         });
@@ -960,102 +951,10 @@ export class Finder extends Evaluator {
    * @returns {object} Result object with nodes and flags.
    */
   #fallbackToWalkerResult(leaves, targetType, precede, compound) {
-    const nodes = this.#findNodeWalker(leaves, this.node, {
+    const nodes = this.findNodeWalker(leaves, this.node, {
       precede,
       targetType
     });
     return { compound, filtered: nodes.length > 0, nodes, pending: false };
-  }
-
-  /**
-   * Finds matching nodes using TreeWalker.
-   * @private
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @param {Element} node - The starting node.
-   * @param {TraversalOptions} [opt] - The traversal options.
-   * @returns {Array<Element>} An array of matched nodes.
-   */
-  #findNodeWalker(leaves, node, opt = {}) {
-    const { precede, ...traversalOpts } = opt;
-    if (precede) {
-      const precedeNodes = this.#findPrecede(leaves, this.root, opt);
-      if (precedeNodes.length) {
-        return precedeNodes;
-      }
-    }
-    if (!this.#nodeWalker) {
-      this.#nodeWalker = this.createTreeWalker(this.node);
-    }
-    return this.#traverseAndCollectNodes(this.#nodeWalker, leaves, {
-      ...traversalOpts,
-      startNode: node
-    });
-  }
-
-  /**
-   * Finds matching nodes preceding the current node.
-   * @private
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
-   * @param {Element} node - The starting node.
-   * @param {TraversalOptions} [opt] - The traversal options.
-   * @returns {Array<Element>} An array of matched nodes.
-   */
-  #findPrecede(leaves, node, opt = {}) {
-    const { force, targetType } = opt;
-    if (!this.#rootWalker) {
-      this.#rootWalker = this.createTreeWalker(this.root);
-    }
-    return this.#traverseAndCollectNodes(this.#rootWalker, leaves, {
-      boundaryNode: this.node,
-      force,
-      targetType,
-      startNode: node
-    });
-  }
-
-  /**
-   * Traverses and collects nodes matching leaves.
-   * @private
-   * @param {TreeWalker} walker - The TreeWalker instance.
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves to match.
-   * @param {TraversalOptions} [opt] - The traversal options.
-   * @returns {Array<Element>} An array of collected nodes.
-   */
-  #traverseAndCollectNodes(walker, leaves, opt = {}) {
-    const { boundaryNode, force, startNode, targetType } = opt;
-    const collectedNodes = [];
-    if (
-      targetType === TARGET_ALL &&
-      boundaryNode &&
-      this.matchLeaves(leaves, boundaryNode)
-    ) {
-      collectedNodes.push(boundaryNode);
-    }
-    let currentNode = traverseNode(startNode, walker, !!force);
-    if (currentNode.nodeType !== ELEMENT_NODE) {
-      currentNode = walker.nextNode();
-    } else if (currentNode === startNode && currentNode !== this.root) {
-      currentNode = walker.nextNode();
-    }
-    while (currentNode) {
-      if (boundaryNode) {
-        if (currentNode === boundaryNode) {
-          break;
-        } else if (
-          targetType === TARGET_ALL &&
-          !boundaryNode.contains(currentNode)
-        ) {
-          break;
-        }
-      }
-      if (this.matchLeaves(leaves, currentNode) && currentNode !== this.node) {
-        collectedNodes.push(currentNode);
-        if (targetType !== TARGET_ALL) {
-          break;
-        }
-      }
-      currentNode = walker.nextNode();
-    }
-    return collectedNodes;
   }
 }

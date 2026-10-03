@@ -26,6 +26,7 @@ import {
   PS_ELEMENT_SELECTOR,
   SELECTOR,
   SYNTAX_ERR,
+  TARGET_ALL,
   TYPE_SELECTOR
 } from '../src/js/constant.js';
 const AN_PLUS_B = 'AnPlusB';
@@ -364,6 +365,55 @@ describe('Evaluator', () => {
         walker2,
         'returns the exact same cached TreeWalker instance'
       );
+    });
+  });
+
+  describe('findNodeWalker', () => {
+    it('should find and return all matching descendant elements', () => {
+      const evaluator = new Evaluator(window);
+      const targetNode = document.getElementById('div5');
+      const leaves = [{ name: 'p', type: TYPE_SELECTOR }];
+      evaluator.setup('p', targetNode);
+      const results = evaluator.findNodeWalker(leaves, targetNode, {
+        targetType: TARGET_ALL
+      });
+      assert.strictEqual(Array.isArray(results), true, 'returns an array');
+      assert.strictEqual(results.length, 3, 'finds 3 matching p elements');
+      assert.strictEqual(results[0].id, 'p1', 'first element is p1');
+      assert.strictEqual(results[1].id, 'p2', 'second element is p2');
+      assert.strictEqual(results[2].id, 'p3', 'third element is p3');
+    });
+
+    it('should return only the first matching element', () => {
+      const evaluator = new Evaluator(window);
+      const targetNode = document.getElementById('div5');
+      const leaves = [{ name: 'p', type: TYPE_SELECTOR }];
+      evaluator.setup('p', targetNode);
+      const results = evaluator.findNodeWalker(leaves, targetNode);
+      assert.strictEqual(Array.isArray(results), true, 'returns an array');
+      assert.strictEqual(results.length, 1, 'finds only 1 matching element');
+      assert.strictEqual(results[0].id, 'p1', 'matches p1');
+    });
+
+    it('should correctly filter elements using multiple leaves', () => {
+      const evaluator = new Evaluator(window);
+      const targetNode = document.getElementById('div1');
+      const leaves = [
+        { name: 'li', type: TYPE_SELECTOR },
+        { name: 'li', type: CLASS_SELECTOR }
+      ];
+      evaluator.setup('li.li', targetNode);
+      const results = evaluator.findNodeWalker(leaves, targetNode, {
+        targetType: TARGET_ALL
+      });
+      assert.strictEqual(
+        results.length,
+        3,
+        'finds 3 li elements with class li'
+      );
+      assert.strictEqual(results[0].id, 'li1', 'matches li1');
+      assert.strictEqual(results[1].id, 'li2', 'matches li2');
+      assert.strictEqual(results[2].id, 'li3', 'matches li3');
     });
   });
 

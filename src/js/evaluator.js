@@ -350,6 +350,17 @@ export class Evaluator {
   }
 
   /**
+   * Finds matching nodes using TreeWalker.
+   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
+   * @param {Element} node - The starting node.
+   * @param {import('./traverser.js').TraversalOptions} opt - The traversal options.
+   * @returns {Array<Element>} An array of matched nodes.
+   */
+  findNodeWalker(leaves, node, opt) {
+    return this.#domTraverser.findNodeWalker(leaves, node, opt);
+  }
+
+  /**
    * Yields combinator matches (Lazy evaluation, O(1) memory).
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
    * @param {Element} node - The Element node.
