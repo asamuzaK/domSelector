@@ -350,7 +350,7 @@ describe('DOMTraverser', () => {
       sinon.restore();
     });
 
-    it('should call dfsComplexBranchNext for each entry node when dir is DIR_NEXT', () => {
+    it('should call matchComplexBranchNext for each entry node when dir is DIR_NEXT', () => {
       const branch = [
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
@@ -359,7 +359,7 @@ describe('DOMTraverser', () => {
       const dir = DIR_NEXT;
       const expectedMatchedNode = document.createElement('p');
       const stubDfs = sinon
-        .stub(traverser, 'dfsComplexBranchNext')
+        .stub(traverser, 'matchComplexBranchNext')
         .callsFake(
           (
             node,
@@ -413,16 +413,19 @@ describe('DOMTraverser', () => {
       );
     });
 
-    it('should use hasValidPathPrev to filter entry nodes when dir is not DIR_NEXT', () => {
+    it('should use matchComplexBranchPrev to filter entry nodes when dir is not DIR_NEXT', () => {
       const branch = [
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
       const entryNodes = [node1, node2];
       const dir = DIR_PREV;
-      const stubHasValidPathPrev = sinon.stub(traverser, 'hasValidPathPrev');
-      stubHasValidPathPrev.withArgs(node1, branch, 0).returns(true);
-      stubHasValidPathPrev.withArgs(node2, branch, 0).returns(false);
+      const stubMatchComplexBranchPrev = sinon.stub(
+        traverser,
+        'matchComplexBranchPrev'
+      );
+      stubMatchComplexBranchPrev.withArgs(node1, branch, 0).returns(true);
+      stubMatchComplexBranchPrev.withArgs(node2, branch, 0).returns(false);
       const result = traverser.processComplexBranchAll(branch, entryNodes, dir);
       assert.strictEqual(
         result instanceof Set,
@@ -432,19 +435,19 @@ describe('DOMTraverser', () => {
       assert.strictEqual(
         result.size,
         1,
-        'should contain only the node that passed hasValidPathPrev'
+        'should contain only the node that passed matchComplexBranchPrev'
       );
       assert.strictEqual(result.has(node1), true, 'should contain node1');
       assert.strictEqual(result.has(node2), false, 'should not contain node2');
       assert.strictEqual(
-        stubHasValidPathPrev.callCount,
+        stubMatchComplexBranchPrev.callCount,
         2,
         'should test every entry node'
       );
     });
   });
 
-  describe('dfsComplexBranchNext', () => {
+  describe('matchComplexBranchNext', () => {
     let parent, child1, child2, grandChild1, grandChild2;
 
     beforeEach(() => {
@@ -476,7 +479,7 @@ describe('DOMTraverser', () => {
       const lastIndex = branch.length - 1;
       const dir = DIR_NEXT;
       sinon.stub(traverser, 'yieldCombinatorMatches').returns([grandChild1]);
-      traverser.dfsComplexBranchNext(
+      traverser.matchComplexBranchNext(
         child1,
         1,
         currentCombo,
@@ -497,7 +500,7 @@ describe('DOMTraverser', () => {
       );
     });
 
-    it('should recursively call dfsComplexBranchNext for intermediate nodes', () => {
+    it('should recursively call matchComplexBranchNext for intermediate nodes', () => {
       const branch = [
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] },
@@ -511,8 +514,8 @@ describe('DOMTraverser', () => {
       stubYield.onCall(0).returns([child1, child2]);
       stubYield.onCall(1).returns([grandChild1]);
       stubYield.onCall(2).returns([]);
-      const spyDfs = sinon.spy(traverser, 'dfsComplexBranchNext');
-      traverser.dfsComplexBranchNext(
+      const spyDfs = sinon.spy(traverser, 'matchComplexBranchNext');
+      traverser.matchComplexBranchNext(
         parent,
         1,
         currentCombo,
@@ -653,8 +656,8 @@ describe('DOMTraverser', () => {
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
-      const stubHasValidPathPrev = sinon
-        .stub(traverser, 'hasValidPathPrev')
+      const stubMatchComplexBranchPrev = sinon
+        .stub(traverser, 'matchComplexBranchPrev')
         .returns(true);
       const result = traverser.processComplexBranchFirstPrev(
         branch,
@@ -664,9 +667,9 @@ describe('DOMTraverser', () => {
       );
       assert.strictEqual(result, child, 'returns matching entry node directly');
       assert.strictEqual(
-        stubHasValidPathPrev.calledOnceWith(child, branch, 0),
+        stubMatchComplexBranchPrev.calledOnceWith(child, branch, 0),
         true,
-        'hasValidPathPrev should be called with correct arguments'
+        'matchComplexBranchPrev should be called with correct arguments'
       );
     });
 
@@ -680,9 +683,12 @@ describe('DOMTraverser', () => {
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
-      const stubHasValidPathPrev = sinon.stub(traverser, 'hasValidPathPrev');
-      stubHasValidPathPrev.withArgs(parent).returns(false);
-      stubHasValidPathPrev.withArgs(child1).returns(true);
+      const stubMatchComplexBranchPrev = sinon.stub(
+        traverser,
+        'matchComplexBranchPrev'
+      );
+      stubMatchComplexBranchPrev.withArgs(parent).returns(false);
+      stubMatchComplexBranchPrev.withArgs(child1).returns(true);
       const stubFindNodeWalker = sinon.stub(traverser, 'findNodeWalker');
       stubFindNodeWalker.onCall(0).returns([child1, child2]);
       const result = traverser.processComplexBranchFirstPrev(
@@ -706,7 +712,7 @@ describe('DOMTraverser', () => {
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
-      sinon.stub(traverser, 'hasValidPathPrev').returns(false);
+      sinon.stub(traverser, 'matchComplexBranchPrev').returns(false);
       const result = traverser.processComplexBranchFirstPrev(
         branch,
         [parent],
@@ -728,7 +734,7 @@ describe('DOMTraverser', () => {
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
-      sinon.stub(traverser, 'hasValidPathPrev').returns(false);
+      sinon.stub(traverser, 'matchComplexBranchPrev').returns(false);
       sinon.stub(traverser, 'findNodeWalker').returns([]);
       const result = traverser.processComplexBranchFirstPrev(
         branch,
@@ -754,10 +760,13 @@ describe('DOMTraverser', () => {
         { combo: { name: ' ' }, leaves: [] },
         { combo: { name: '>' }, leaves: [] }
       ];
-      const stubHasValidPathPrev = sinon.stub(traverser, 'hasValidPathPrev');
-      stubHasValidPathPrev.onCall(0).returns(false);
-      stubHasValidPathPrev.onCall(1).returns(false);
-      stubHasValidPathPrev.onCall(2).returns(true);
+      const stubMatchComplexBranchPrev = sinon.stub(
+        traverser,
+        'matchComplexBranchPrev'
+      );
+      stubMatchComplexBranchPrev.onCall(0).returns(false);
+      stubMatchComplexBranchPrev.onCall(1).returns(false);
+      stubMatchComplexBranchPrev.onCall(2).returns(true);
       const stubFindNodeWalker = sinon.stub(traverser, 'findNodeWalker');
       stubFindNodeWalker.onCall(0).returns([refNode1]);
       stubFindNodeWalker.onCall(1).returns([refNode2]);
@@ -770,7 +779,7 @@ describe('DOMTraverser', () => {
       assert.strictEqual(
         result,
         refNode2,
-        'should return refNode2 which passed hasValidPathPrev'
+        'should return refNode2 which passed matchComplexBranchPrev'
       );
       assert.strictEqual(
         stubFindNodeWalker.callCount,
@@ -796,7 +805,7 @@ describe('DOMTraverser', () => {
     });
   });
 
-  describe('hasValidPathPrev', () => {
+  describe('matchComplexBranchPrev', () => {
     afterEach(() => {
       sinon.restore();
     });
@@ -805,7 +814,7 @@ describe('DOMTraverser', () => {
       const node = document.createElement('div');
       const branch = [];
       assert.strictEqual(
-        traverser.hasValidPathPrev(node, branch, -1),
+        traverser.matchComplexBranchPrev(node, branch, -1),
         true,
         'base case index < 0 should return true'
       );
@@ -820,7 +829,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '+' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(true);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          true
+        );
         assert.strictEqual(
           mockEvaluator.matchLeaves.calledWith(branch[0].leaves, prevSib),
           true
@@ -832,7 +844,10 @@ describe('DOMTraverser', () => {
         const node = document.createElement('p');
         parent.appendChild(node);
         const branch = [{ combo: { name: '+' }, leaves: [] }];
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
 
       it('should return false if previous sibling does not match leaves', () => {
@@ -843,7 +858,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '+' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(false);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
     });
 
@@ -858,7 +876,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '~' }, leaves: [] }];
         mockEvaluator.matchLeaves.callsFake((leaves, n) => n === prevSib1);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          true
+        );
       });
 
       it('should return false if no previous sibling matches leaves', () => {
@@ -869,7 +890,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '~' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(false);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
 
       it('should backtrack through siblings to find a valid full path', () => {
@@ -889,7 +913,10 @@ describe('DOMTraverser', () => {
         mockEvaluator.matchLeaves.callsFake((leaves, n) => {
           return n.classList.contains(leaves[0].name);
         });
-        assert.strictEqual(traverser.hasValidPathPrev(target, branch, 1), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(target, branch, 1),
+          true
+        );
       });
     });
 
@@ -900,7 +927,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '>' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(true);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          true
+        );
       });
 
       it('should return false if parent node does not match leaves', () => {
@@ -909,13 +939,19 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: '>' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(false);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
 
       it('should return false if parent node does not exist', () => {
         const node = document.createElement('div');
         const branch = [{ combo: { name: '>' }, leaves: [] }];
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
     });
 
@@ -928,7 +964,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: ' ' }, leaves: [] }];
         mockEvaluator.matchLeaves.callsFake((leaves, n) => n === grandParent);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          true
+        );
       });
 
       it('should return false if no ancestor matches leaves', () => {
@@ -937,7 +976,10 @@ describe('DOMTraverser', () => {
         parent.appendChild(node);
         const branch = [{ combo: { name: ' ' }, leaves: [] }];
         mockEvaluator.matchLeaves.returns(false);
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 0), false);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 0),
+          false
+        );
       });
 
       it('should handle multi-step combined paths correctly', () => {
@@ -953,7 +995,10 @@ describe('DOMTraverser', () => {
         mockEvaluator.matchLeaves.callsFake((leaves, n) => {
           return n.tagName.toLowerCase() === leaves[0].name;
         });
-        assert.strictEqual(traverser.hasValidPathPrev(node, branch, 1), true);
+        assert.strictEqual(
+          traverser.matchComplexBranchPrev(node, branch, 1),
+          true
+        );
       });
     });
   });
@@ -1397,7 +1442,7 @@ describe('DOMTraverser', () => {
     });
   });
 
-  describe('yieldFindDescendantNodes', () => {
+  describe('yieldDescendantMatches', () => {
     let root;
 
     beforeEach(() => {
@@ -1406,7 +1451,7 @@ describe('DOMTraverser', () => {
 
     it('should find descendant by ID_SELECTOR via fast path', () => {
       const leaves = [{ name: 'child2', type: ID_SELECTOR }];
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 1);
       assert.strictEqual(result[0].id, 'child2');
     });
@@ -1415,7 +1460,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'root', type: ID_SELECTOR }];
       const child = document.getElementById('target');
       mockEvaluator.matchLeaves.callsFake((leaves, node) => node.id === 'root');
-      const result = [...traverser.yieldFindDescendantNodes(leaves, child, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, child, {})];
       assert.strictEqual(
         result.length,
         0,
@@ -1427,14 +1472,14 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'child2', type: ID_SELECTOR }];
       mockEvaluator.getFilterLeaves.returns([{}]);
       mockEvaluator.matchLeaves.returns(false);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 0);
       assert.strictEqual(mockEvaluator.matchLeaves.called, true);
     });
 
     it('should find descendants by CLASS_SELECTOR via fast path', () => {
       const leaves = [{ name: 'target-class', type: CLASS_SELECTOR }];
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 4);
       assert.strictEqual(result[0].id, 'prev-sib');
       assert.strictEqual(result[1].id, 'target');
@@ -1442,7 +1487,7 @@ describe('DOMTraverser', () => {
 
     it('should find descendants by TYPE_SELECTOR via fast path', () => {
       const leaves = [{ name: 'p', type: TYPE_SELECTOR }];
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 2);
       assert.strictEqual(result[0].id, 'child1');
       assert.strictEqual(result[1].id, 'child2');
@@ -1451,7 +1496,7 @@ describe('DOMTraverser', () => {
     it('should fallback to TreeWalker for unsupported fast path selectors', () => {
       const leaves = [{ name: 'disabled', type: 'SOME_OTHER_SELECTOR' }];
       mockEvaluator.matchLeaves.returns(true);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.ok(
         result.length > 0,
         'Yields nodes using fallback traverseAllDescendants'
@@ -1467,7 +1512,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'target', type: ID_SELECTOR }];
       mockEvaluator.matchLeaves.returns(true);
       const result = [
-        ...traverser.yieldFindDescendantNodes(leaves, document, {})
+        ...traverser.yieldDescendantMatches(leaves, document, {})
       ];
       assert.ok(result.length > 1, 'Falls back to TreeWalker');
       assert.strictEqual(
@@ -1481,7 +1526,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'target-class', type: CLASS_SELECTOR }];
       mockEvaluator.getFilterLeaves.returns([{}]);
       mockEvaluator.matchLeaves.returns(true);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 4, 'yields filtered matched nodes');
       assert.strictEqual(result[0].id, 'prev-sib');
     });
@@ -1490,7 +1535,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'target-class', type: CLASS_SELECTOR }];
       mockEvaluator.getFilterLeaves.returns([{}]);
       mockEvaluator.matchLeaves.returns(false);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 0, 'skips unmatched nodes');
     });
 
@@ -1504,7 +1549,7 @@ describe('DOMTraverser', () => {
       });
       mockEvaluator.matchLeaves.returns(true);
       const result = [
-        ...traverser.yieldFindDescendantNodes(leaves, baseNode, {})
+        ...traverser.yieldDescendantMatches(leaves, baseNode, {})
       ];
       assert.strictEqual(result.length, 1, 'Falls back to TreeWalker');
       assert.strictEqual(
@@ -1518,7 +1563,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'p', type: TYPE_SELECTOR }];
       mockEvaluator.getFilterLeaves.returns([{}]);
       mockEvaluator.matchLeaves.returns(true);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 2, 'yields filtered matched nodes');
       assert.strictEqual(result[0].id, 'child1');
     });
@@ -1527,7 +1572,7 @@ describe('DOMTraverser', () => {
       const leaves = [{ name: 'p', type: TYPE_SELECTOR }];
       mockEvaluator.getFilterLeaves.returns([{}]);
       mockEvaluator.matchLeaves.returns(false);
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(result.length, 0, 'skips unmatched nodes');
     });
 
@@ -1541,7 +1586,7 @@ describe('DOMTraverser', () => {
       });
       mockEvaluator.matchLeaves.returns(true);
       const result = [
-        ...traverser.yieldFindDescendantNodes(leaves, baseNode, {})
+        ...traverser.yieldDescendantMatches(leaves, baseNode, {})
       ];
       assert.strictEqual(result.length, 1, 'Falls back to TreeWalker');
       assert.strictEqual(
@@ -1553,7 +1598,7 @@ describe('DOMTraverser', () => {
 
     it('should return without yielding any nodes for PS_ELEMENT_SELECTOR', () => {
       const leaves = [{ name: 'before', type: PS_ELEMENT_SELECTOR }];
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(
         result.length,
         0,
@@ -1577,7 +1622,7 @@ describe('DOMTraverser', () => {
       mockEvaluator.matchLeaves.callsFake(
         (leaves, node) => node.id === 'duplicate-id'
       );
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(
         result.length,
         1,
@@ -1602,7 +1647,7 @@ describe('DOMTraverser', () => {
       mockEvaluator.matchLeaves.callsFake((filterLeaves, node) => {
         return node === innerDup2;
       });
-      const result = [...traverser.yieldFindDescendantNodes(leaves, root, {})];
+      const result = [...traverser.yieldDescendantMatches(leaves, root, {})];
       assert.strictEqual(
         result.length,
         1,
@@ -1629,7 +1674,7 @@ describe('DOMTraverser', () => {
       mockEvaluator.getFilterLeaves.returns([]); // isSimple = true
       const leaves = [{ name: 'shadow-child', type: ID_SELECTOR }];
       const result = [
-        ...traverser.yieldFindDescendantNodes(leaves, baseNode, {})
+        ...traverser.yieldDescendantMatches(leaves, baseNode, {})
       ];
       assert.strictEqual(
         result.length,

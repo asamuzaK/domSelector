@@ -93,7 +93,7 @@ export class Finder extends Evaluator {
   find(targetType) {
     let collection;
     try {
-      collection = this.#collectNodes(targetType);
+      collection = this.#prepareCollection(targetType);
     } catch (e) {
       if (this.check) {
         return {
@@ -195,7 +195,7 @@ export class Finder extends Evaluator {
    * @param {string} targetType - The target type.
    * @returns {Array} Array containing the AST and nodes arrays.
    */
-  #collectNodes(targetType) {
+  #prepareCollection(targetType) {
     const { ast, invalidate, nodes, selectorAST } = this.#mapper.correspond(
       this.#selector
     );
@@ -353,7 +353,7 @@ export class Finder extends Evaluator {
     const { leaves } = twig;
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.checkSelfOrLinealTarget(
+    const earlyResult = this.findSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -383,7 +383,7 @@ export class Finder extends Evaluator {
         return { compound, filtered: true, nodes: [node], pending: false };
       }
     }
-    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
+    return this.#findNodesWithWalker(leaves, targetType, precede, compound);
   }
 
   /**
@@ -397,7 +397,7 @@ export class Finder extends Evaluator {
   #findEntryNodesForClass(leaves, targetType, opt = {}) {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.checkSelfOrLinealTarget(
+    const earlyResult = this.findSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -415,13 +415,9 @@ export class Finder extends Evaluator {
       const [leaf] = leaves;
       const className = this.getUnescapedName(leaf);
       const collection = this.node.getElementsByClassName(className);
-      return this.#filterAndFormatCollection(
-        collection,
-        filterLeaves,
-        compound
-      );
+      return this.#filterCollection(collection, filterLeaves, compound);
     }
-    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
+    return this.#findNodesWithWalker(leaves, targetType, precede, compound);
   }
 
   /**
@@ -435,7 +431,7 @@ export class Finder extends Evaluator {
   #findEntryNodesForType(leaves, targetType, opt = {}) {
     const { complex, precede, filterLeaves = [] } = opt;
     const compound = filterLeaves.length > 0;
-    const earlyResult = this.checkSelfOrLinealTarget(
+    const earlyResult = this.findSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -454,13 +450,9 @@ export class Finder extends Evaluator {
     ) {
       this.matchLeaves(leaves, this.node);
       const collection = this.node.getElementsByTagName(tagName);
-      return this.#filterAndFormatCollection(
-        collection,
-        filterLeaves,
-        compound
-      );
+      return this.#filterCollection(collection, filterLeaves, compound);
     }
-    return this.#fallbackToWalkerResult(leaves, targetType, precede, compound);
+    return this.#findNodesWithWalker(leaves, targetType, precede, compound);
   }
 
   /**
@@ -521,7 +513,7 @@ export class Finder extends Evaluator {
         return { compound, filtered: nodes.length > 0, nodes, pending: false };
       }
     }
-    const earlyResult = this.checkSelfOrLinealTarget(
+    const earlyResult = this.findSelfOrLinealTarget(
       leaves,
       targetType,
       complex,
@@ -534,12 +526,7 @@ export class Finder extends Evaluator {
       targetType === TARGET_FIRST ||
       (leaf.type === ATTR_SELECTOR && !compound)
     ) {
-      return this.#fallbackToWalkerResult(
-        leaves,
-        targetType,
-        precede,
-        compound
-      );
+      return this.#findNodesWithWalker(leaves, targetType, precede, compound);
     }
     return { compound, filtered: false, nodes: [], pending: true };
   }
@@ -587,7 +574,7 @@ export class Finder extends Evaluator {
    * @param {boolean} compound - Indicates if there are filter leaves.
    * @returns {object} Result object with nodes and flags.
    */
-  #filterAndFormatCollection(collection, filterLeaves, compound) {
+  #filterCollection(collection, filterLeaves, compound) {
     const len = collection.length;
     const hasFilter = filterLeaves.length > 0;
     const nodeArray = [];
@@ -614,7 +601,7 @@ export class Finder extends Evaluator {
    * @param {boolean} compound - Indicates if there are filter leaves.
    * @returns {object} Result object with nodes and flags.
    */
-  #fallbackToWalkerResult(leaves, targetType, precede, compound) {
+  #findNodesWithWalker(leaves, targetType, precede, compound) {
     const nodes = this.findNodeWalker(leaves, this.node, {
       precede,
       targetType

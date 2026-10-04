@@ -187,7 +187,7 @@ export class DOMTraverser {
     if (dir === DIR_NEXT) {
       const { combo: firstCombo } = branch[0];
       for (const node of entryNodes) {
-        this.dfsComplexBranchNext(
+        this.matchComplexBranchNext(
           node,
           1,
           firstCombo,
@@ -199,7 +199,7 @@ export class DOMTraverser {
       }
     } else {
       for (const node of entryNodes) {
-        if (this.hasValidPathPrev(node, branch, lastIndex - 1)) {
+        if (this.matchComplexBranchPrev(node, branch, lastIndex - 1)) {
           matchedNodes.add(node);
         }
       }
@@ -218,7 +218,7 @@ export class DOMTraverser {
    * @param {string} dir - The traversal direction.
    * @returns {void}
    */
-  dfsComplexBranchNext(
+  matchComplexBranchNext(
     node,
     index,
     currentCombo,
@@ -233,7 +233,7 @@ export class DOMTraverser {
       if (index === lastIndex) {
         matchedNodes.add(nextNode);
       } else {
-        this.dfsComplexBranchNext(
+        this.matchComplexBranchNext(
           nextNode,
           index + 1,
           nextCombo,
@@ -279,7 +279,7 @@ export class DOMTraverser {
    */
   processComplexBranchFirstPrev(branch, entryNodes, targetType, lastIndex) {
     for (const node of entryNodes) {
-      if (this.hasValidPathPrev(node, branch, lastIndex - 1)) {
+      if (this.matchComplexBranchPrev(node, branch, lastIndex - 1)) {
         return node;
       }
     }
@@ -290,7 +290,7 @@ export class DOMTraverser {
         targetType
       });
       while (refNode) {
-        if (this.hasValidPathPrev(refNode, branch, lastIndex - 1)) {
+        if (this.matchComplexBranchPrev(refNode, branch, lastIndex - 1)) {
           return refNode;
         }
         [refNode] = this.findNodeWalker(entryLeaves, refNode, {
@@ -309,7 +309,7 @@ export class DOMTraverser {
    * @param {number} index - The current branch index.
    * @returns {boolean} True if a valid path exists, otherwise false.
    */
-  hasValidPathPrev(node, branch, index) {
+  matchComplexBranchPrev(node, branch, index) {
     if (index < 0) {
       return true;
     }
@@ -321,7 +321,7 @@ export class DOMTraverser {
       if (
         refNode &&
         this.#evaluator.matchLeaves(leaves, refNode) &&
-        this.hasValidPathPrev(refNode, branch, index - 1)
+        this.matchComplexBranchPrev(refNode, branch, index - 1)
       ) {
         return true;
       }
@@ -330,7 +330,7 @@ export class DOMTraverser {
       while (refNode) {
         if (
           this.#evaluator.matchLeaves(leaves, refNode) &&
-          this.hasValidPathPrev(refNode, branch, index - 1)
+          this.matchComplexBranchPrev(refNode, branch, index - 1)
         ) {
           return true;
         }
@@ -341,7 +341,7 @@ export class DOMTraverser {
       if (
         parentNode &&
         this.#evaluator.matchLeaves(leaves, parentNode) &&
-        this.hasValidPathPrev(parentNode, branch, index - 1)
+        this.matchComplexBranchPrev(parentNode, branch, index - 1)
       ) {
         return true;
       }
@@ -350,7 +350,7 @@ export class DOMTraverser {
       while (refNode) {
         if (
           this.#evaluator.matchLeaves(leaves, refNode) &&
-          this.hasValidPathPrev(refNode, branch, index - 1)
+          this.matchComplexBranchPrev(refNode, branch, index - 1)
         ) {
           return true;
         }
@@ -495,7 +495,7 @@ export class DOMTraverser {
       case ' ':
       default: {
         if (dir === DIR_NEXT) {
-          for (const refNode of this.yieldFindDescendantNodes(
+          for (const refNode of this.yieldDescendantMatches(
             leaves,
             node,
             opt
@@ -528,7 +528,7 @@ export class DOMTraverser {
    * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
-  *yieldFindDescendantNodes(leaves, baseNode, opt) {
+  *yieldDescendantMatches(leaves, baseNode, opt) {
     const [leaf] = leaves;
     const { type: leafType } = leaf;
     const leafName = this.#evaluator.getUnescapedName(leaf);
@@ -595,7 +595,7 @@ export class DOMTraverser {
         // no-op
       }
     }
-    yield* this.yieldTraverseAllDescendants(baseNode, leaves, opt);
+    yield* this.yieldFallbackDescendantMatches(baseNode, leaves, opt);
   }
 
   /**
@@ -605,7 +605,7 @@ export class DOMTraverser {
    * @param {import('../index.js').FindOptions} opt - Options.
    * @yields {Element} The matched node.
    */
-  *yieldTraverseAllDescendants(baseNode, leaves, opt) {
+  *yieldFallbackDescendantMatches(baseNode, leaves, opt) {
     const walker = this.createTreeWalker(baseNode);
     traverseNode(baseNode, walker);
     let currentNode = walker.firstChild();

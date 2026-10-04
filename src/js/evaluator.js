@@ -337,7 +337,7 @@ export class Evaluator {
    * @param {boolean} compound - Indicates if there are filter leaves.
    * @returns {object|null} The result object if matched, or null otherwise.
    */
-  checkSelfOrLinealTarget(leaves, targetType, complex, compound) {
+  findSelfOrLinealTarget(leaves, targetType, complex, compound) {
     if (targetType === TARGET_SELF) {
       const [nodes, filtered] = this.matchSelf(leaves);
       return { compound, filtered, nodes, pending: false };

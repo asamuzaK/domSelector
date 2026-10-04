@@ -536,13 +536,13 @@ describe('Evaluator', () => {
     });
   });
 
-  describe('checkSelfOrLinealTarget', () => {
+  describe('findSelfOrLinealTarget', () => {
     it('should return result object for TARGET_SELF when node matches leaves', () => {
       const evaluator = new Evaluator(window);
       const node = document.getElementById('div1');
       evaluator.setup('div', node);
       const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
-      const result = evaluator.checkSelfOrLinealTarget(
+      const result = evaluator.findSelfOrLinealTarget(
         leaves,
         TARGET_SELF,
         false,
@@ -561,7 +561,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div1');
       evaluator.setup('span', node);
       const leaves = [{ name: 'span', type: TYPE_SELECTOR }];
-      const result = evaluator.checkSelfOrLinealTarget(
+      const result = evaluator.findSelfOrLinealTarget(
         leaves,
         TARGET_SELF,
         false,
@@ -580,7 +580,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('li1');
       evaluator.setup('div', node);
       const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
-      const result = evaluator.checkSelfOrLinealTarget(
+      const result = evaluator.findSelfOrLinealTarget(
         leaves,
         TARGET_LINEAL,
         false,
@@ -598,7 +598,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div2');
       evaluator.setup('div', node);
       const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
-      const result = evaluator.checkSelfOrLinealTarget(
+      const result = evaluator.findSelfOrLinealTarget(
         leaves,
         TARGET_LINEAL,
         true,
@@ -617,7 +617,7 @@ describe('Evaluator', () => {
       const node = document.getElementById('div1');
       evaluator.setup('div', node);
       const leaves = [{ name: 'div', type: TYPE_SELECTOR }];
-      const result = evaluator.checkSelfOrLinealTarget(
+      const result = evaluator.findSelfOrLinealTarget(
         leaves,
         TARGET_ALL,
         false,
