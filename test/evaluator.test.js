@@ -16,6 +16,8 @@ import {
   ATTR_SELECTOR,
   CLASS_SELECTOR,
   COMBINATOR,
+  DIR_NEXT,
+  DIR_PREV,
   IDENT,
   ID_SELECTOR,
   NEST_SELECTOR,
@@ -27,6 +29,7 @@ import {
   SELECTOR,
   SYNTAX_ERR,
   TARGET_ALL,
+  TARGET_FIRST,
   TARGET_LINEAL,
   TARGET_SELF,
   TYPE_SELECTOR
@@ -9868,355 +9871,199 @@ describe('Evaluator', () => {
     });
   });
 
-  describe('find descendant nodes', () => {
-    it('should yield descendant element matching ID selector', () => {
-      const leaves = [
-        {
-          name: 'foobar',
-          type: ID_SELECTOR
-        }
-      ];
-      const parent = document.createElement('div');
-      const node = document.createElement('div');
-      node.id = 'foobar';
-      parent.appendChild(node);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('div #foobar', parent);
-      const res = evaluator.yieldFindDescendantNodes(leaves, parent);
-      assert.deepEqual([...res], [node], 'nodes');
+  describe('processComplexBranchAll', () => {
+    let parent, child1, child2, evaluator;
+
+    beforeEach(() => {
+      parent = document.createElement('div');
+      parent.id = 'test-process-parent';
+      child1 = document.createElement('p');
+      child1.className = 'match-child';
+      child2 = document.createElement('span');
+      child2.className = 'match-child';
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+      document.body.appendChild(parent);
+      evaluator = new Evaluator(window);
+      evaluator.setup('div > .match-child', document);
     });
 
-    it('should yield all descendant elements for universal selector', () => {
-      const leaves = [
-        {
-          name: '\\*',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const node = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul *', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, node);
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'nodes'
-      );
+    afterEach(() => {
+      sinon.restore();
     });
 
-    it('should yield descendant matching ID selector under refNode', () => {
-      const leaves = [
+    it('should delegate to traverser and process complex branch forward (DIR_NEXT)', () => {
+      const branch = [
         {
-          name: 'li3',
-          type: ID_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const node = document.getElementById('li3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul #li3', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [node], 'nodes');
-    });
-
-    it('should yield empty array when descendant ID is not found', () => {
-      const leaves = [
-        {
-          name: 'foobar',
-          type: ID_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul #foobar', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
-    });
-
-    it('should yield empty array when target ID is refNode itself', () => {
-      const leaves = [
-        {
-          name: 'ul1',
-          type: ID_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('div #ul1', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
-    });
-
-    it('should yield descendant matching combined type and ID', () => {
-      const leaves = [
-        {
-          name: 'li3',
-          type: ID_SELECTOR
+          combo: { name: ' ' }, // dummy combo for entry
+          leaves: [{ name: 'div', type: TYPE_SELECTOR }]
         },
         {
-          name: 'li',
-          type: TYPE_SELECTOR
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const node = document.getElementById('li3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul li#li3', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [node], 'nodes');
+      const entryNodes = [parent];
+      const result = evaluator.processComplexBranchAll(
+        branch,
+        entryNodes,
+        DIR_NEXT
+      );
+      assert.strictEqual(result instanceof Set, true, 'returns a Set');
+      assert.strictEqual(result.size, 2, 'finds both matching children');
+      assert.strictEqual(result.has(child1), true, 'includes first child');
+      assert.strictEqual(result.has(child2), true, 'includes second child');
     });
 
-    it('should yield empty array when class fails on ID selector', () => {
-      const leaves = [
+    it('should delegate to traverser and process complex branch backward (DIR_PREV)', () => {
+      const branch = [
         {
-          name: 'li3',
-          type: ID_SELECTOR
+          combo: { name: ' ' },
+          leaves: [{ name: 'div', type: TYPE_SELECTOR }]
         },
         {
-          name: 'foobar',
-          type: CLASS_SELECTOR
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul #li3.foobar', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
-    });
-
-    it('should yield all descendant elements matching class selector', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul .li', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'nodes'
+      const entryNodes = [child1, child2];
+      const result = evaluator.processComplexBranchAll(
+        branch,
+        entryNodes,
+        DIR_PREV
       );
+      assert.strictEqual(result instanceof Set, true, 'returns a Set');
+      assert.strictEqual(
+        result.size,
+        2,
+        'validates paths for both entry nodes'
+      );
+      assert.strictEqual(result.has(child1), true, 'includes first child');
+      assert.strictEqual(result.has(child2), true, 'includes second child');
     });
 
-    it('should yield descendant matching class and pseudo-class', () => {
-      const leaves = [
+    it('should return empty Set when no paths are valid', () => {
+      const branch = [
         {
-          name: 'li',
-          type: CLASS_SELECTOR
+          combo: { name: ' ' },
+          leaves: [{ name: 'non-existent-tag', type: TYPE_SELECTOR }]
         },
         {
-          children: null,
-          name: 'first-child',
-          type: PS_CLASS_SELECTOR
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul .li:first-child', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
-    });
-
-    it('should yield empty array when class selector is not found', () => {
-      const leaves = [
-        {
-          name: 'foobar',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul .foobar', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
-    });
-
-    it('should fallback search when getElementsByClassName missing', () => {
-      const leaves = [
-        {
-          name: 'fallback-class',
-          type: CLASS_SELECTOR
-        }
-      ];
-      const baseNode = document.createDocumentFragment();
-      const child = document.createElement('div');
-      child.className = 'fallback-class';
-      const grandChild = document.createElement('span');
-      grandChild.className = 'fallback-class';
-      child.appendChild(grandChild);
-      baseNode.appendChild(child);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('.fallback-class', baseNode);
-      const res = evaluator.yieldFindDescendantNodes(leaves, baseNode, {});
-      assert.deepEqual([...res], [child, grandChild], 'nodes');
-    });
-
-    it('should yield matching descendant elements in XML document', () => {
-      const leaves = [
-        {
-          name: 'div',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const doc = new window.DOMParser().parseFromString(
-        '<foo></foo>',
-        'text/xml'
+      const entryNodes = [child1];
+      const result = evaluator.processComplexBranchAll(
+        branch,
+        entryNodes,
+        DIR_PREV
       );
-      const root = document.createElement('root');
-      const div1 = document.createElement('div');
-      const div2 = document.createElement('div');
-      const div3 = document.createElement('div');
-      const div4 = document.createElement('div');
-      root.appendChild(div1);
-      root.appendChild(div2);
-      root.appendChild(div3);
-      root.appendChild(div4);
-      doc.documentElement.appendChild(root);
-      const evaluator = new Evaluator(window);
-      evaluator.setup('root div', root);
-      const res = evaluator.yieldFindDescendantNodes(leaves, root);
-      assert.deepEqual([...res], [div1, div2, div3, div4], 'nodes');
-    });
-
-    it('should yield descendants matching wildcard namespace type', () => {
-      const leaves = [
-        {
-          name: '*|li',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul *|li', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'nodes'
+      assert.strictEqual(result instanceof Set, true, 'returns a Set');
+      assert.strictEqual(
+        result.size,
+        0,
+        'returns empty set when path is invalid'
       );
     });
+  });
 
-    it('should yield all descendant elements matching type selector', () => {
-      const leaves = [
-        {
-          name: 'li',
-          type: TYPE_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul li', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual(
-        [...res],
-        [
-          document.getElementById('li1'),
-          document.getElementById('li2'),
-          document.getElementById('li3')
-        ],
-        'nodes'
-      );
+  describe('processComplexBranchFirst', () => {
+    let parent, child1, child2, evaluator;
+
+    beforeEach(() => {
+      parent = document.createElement('div');
+      parent.id = 'test-process-parent';
+      child1 = document.createElement('p');
+      child1.id = 'test-process-child1';
+      child1.className = 'match-child';
+      child2 = document.createElement('span');
+      child2.id = 'test-process-child2';
+      child2.className = 'match-child';
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+      document.body.appendChild(parent);
+      evaluator = new Evaluator(window);
+      evaluator.setup('*', document);
     });
 
-    it('should yield descendant matching type and pseudo-class', () => {
-      const leaves = [
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should delegate to traverser and process forward (DIR_NEXT)', () => {
+      const branch = [
         {
-          name: 'li',
-          type: TYPE_SELECTOR
+          combo: { name: ' ' },
+          leaves: [{ name: 'div', type: TYPE_SELECTOR }]
         },
         {
-          children: null,
-          name: 'first-child',
-          type: PS_CLASS_SELECTOR
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul li:first-child', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [document.getElementById('li1')], 'nodes');
+      const entryNodes = [parent];
+      const result = evaluator.processComplexBranchFirst(
+        branch,
+        entryNodes,
+        DIR_NEXT,
+        TARGET_FIRST
+      );
+      assert.strictEqual(
+        result,
+        child1,
+        'returns the first matched node inside parent'
+      );
     });
 
-    it('should yield empty array when type selector is not found', () => {
-      const leaves = [
+    it('should delegate to traverser and process backward (DIR_PREV)', () => {
+      const branch = [
         {
-          name: 'ol',
-          type: TYPE_SELECTOR
+          combo: { name: ' ' },
+          leaves: [{ name: 'div', type: TYPE_SELECTOR }]
+        },
+        {
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('div1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('div ol', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
+      const entryNodes = [child2];
+      const result = evaluator.processComplexBranchFirst(
+        branch,
+        entryNodes,
+        DIR_PREV,
+        TARGET_FIRST
+      );
+      assert.strictEqual(
+        result,
+        child2,
+        'validates path and returns the entry node itself if valid'
+      );
     });
 
-    it('should yield empty array for pseudo-element selectors', () => {
-      const leaves = [
+    it('should return null when no match is found via traverser', () => {
+      const branch = [
         {
-          children: null,
-          name: 'before',
-          type: PS_ELEMENT_SELECTOR
+          combo: { name: ' ' },
+          leaves: [{ name: 'non-existent-tag', type: TYPE_SELECTOR }]
+        },
+        {
+          combo: { name: '>' },
+          leaves: [{ name: 'match-child', type: CLASS_SELECTOR }]
         }
       ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul ::before', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [], 'nodes');
-    });
-
-    it('should yield descendant elements matching attribute selector', () => {
-      const leaves = [
-        {
-          flags: null,
-          evaluator: null,
-          name: {
-            name: 'hidden',
-            type: IDENT
-          },
-          type: ATTR_SELECTOR,
-          value: null
-        }
-      ];
-      const refNode = document.getElementById('dl1');
-      const span1 = document.getElementById('span1');
-      const span3 = document.getElementById('span3');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('dl [hidden]', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [span1, span3], 'nodes');
-    });
-
-    it('should yield descendant elements matching pseudo-class', () => {
-      const leaves = [
-        {
-          children: null,
-          name: 'first-child',
-          type: PS_CLASS_SELECTOR
-        }
-      ];
-      const refNode = document.getElementById('ul1');
-      const evaluator = new Evaluator(window);
-      evaluator.setup('ul :first-child', document);
-      const res = evaluator.yieldFindDescendantNodes(leaves, refNode);
-      assert.deepEqual([...res], [refNode.firstElementChild], 'nodes');
+      const entryNodes = [child1];
+      const result = evaluator.processComplexBranchFirst(
+        branch,
+        entryNodes,
+        DIR_PREV,
+        TARGET_FIRST
+      );
+      assert.strictEqual(
+        result,
+        null,
+        'returns null when path validation fails'
+      );
     });
   });
 

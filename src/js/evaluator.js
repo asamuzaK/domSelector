@@ -426,6 +426,34 @@ export class Evaluator {
   }
 
   /**
+   * Processes complex branch for all matches.
+   * @param {Array<import('./processor.js').ProcessedBranch>} branch - The selector branch.
+   * @param {Array<Element>} entryNodes - The entry nodes.
+   * @param {string} dir - The traversal direction.
+   * @returns {Set<Element>} Set of matched nodes.
+   */
+  processComplexBranchAll(branch, entryNodes, dir) {
+    return this.#domTraverser.processComplexBranchAll(branch, entryNodes, dir);
+  }
+
+  /**
+   * Processes complex branch for the first match.
+   * @param {Array<import('./processor.js').ProcessedBranch>} branch - The selector branch.
+   * @param {Array<Element>} entryNodes - The entry nodes.
+   * @param {string} dir - The traversal direction.
+   * @param {string} targetType - The target type.
+   * @returns {Element|null} The matched node or null.
+   */
+  processComplexBranchFirst(branch, entryNodes, dir, targetType) {
+    return this.#domTraverser.processComplexBranchFirst(
+      branch,
+      entryNodes,
+      dir,
+      targetType
+    );
+  }
+
+  /**
    * Yields combinator matches (Lazy evaluation, O(1) memory).
    * @param {import('./processor.js').ProcessedBranch} twig - The twig object.
    * @param {Element} node - The Element node.
@@ -434,17 +462,6 @@ export class Evaluator {
    */
   *yieldCombinatorMatches(twig, node, opt) {
     yield* this.#domTraverser.yieldCombinatorMatches(twig, node, opt);
-  }
-
-  /**
-   * Finds descendant nodes and yields matches.
-   * @param {Array<import('css-tree').CssNode>} leaves - The AST leaves.
-   * @param {DocumentFragment|Element} baseNode - The base Element node or Element.shadowRoot.
-   * @param {import('../index.js').FindOptions} opt - Options.
-   * @yields {Element} The matched node.
-   */
-  *yieldFindDescendantNodes(leaves, baseNode, opt) {
-    yield* this.#domTraverser.yieldFindDescendantNodes(leaves, baseNode, opt);
   }
 
   /**
