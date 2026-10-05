@@ -466,9 +466,9 @@ export const parseAstName = selector => {
 };
 
 /**
- * Extracts the rightmost subject keys (id, class, tag) from a CSS selector AST.
+ * Extracts the rightmost subject keys (id, class, tag, attribute) from a CSS selector AST.
  * @param {import('css-tree').CssNode} ast - The AST representation of the CSS selector.
- * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ * @returns {Array<{id: string|null, className: string|null, tag: string|null, attr: string|null}>} The list of extracted keys for each selector group.
  */
 export const extractSubjectsAst = ast => {
   const subjects = [];
@@ -477,6 +477,7 @@ export const extractSubjectsAst = ast => {
       let idKey = null;
       let classKey = null;
       let tagKey = null;
+      let attrKey = null;
       let current = selectorNode.children.tail;
       while (current) {
         const node = current.data;
@@ -492,13 +493,29 @@ export const extractSubjectsAst = ast => {
           if (localName !== '*') {
             tagKey = localName.toLowerCase();
           }
+        } else if (node.type === ATTR_SELECTOR && attrKey === null) {
+          const name = unescapeSelector(node.name.name);
+          // Namespaced attribute names are not used as keys.
+          if (!name.includes('|')) {
+            attrKey = name.toLowerCase();
+          }
         }
-        if (idKey !== null && classKey !== null && tagKey !== null) {
+        if (
+          idKey !== null &&
+          classKey !== null &&
+          tagKey !== null &&
+          attrKey !== null
+        ) {
           break;
         }
         current = current.prev;
       }
-      subjects.push({ id: idKey, className: classKey, tag: tagKey });
+      subjects.push({
+        id: idKey,
+        className: classKey,
+        tag: tagKey,
+        attr: attrKey
+      });
     }
   }
   return subjects;

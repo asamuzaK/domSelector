@@ -15,6 +15,7 @@ export declare const extractSubjectsAst: (ast: import('css-tree').CssNode) => Ar
     id: string | null;
     className: string | null;
     tag: string | null;
+    attr: string | null;
 }>;
 export declare const findAST: typeof import('css-tree').find;
 export declare const generateCSS: typeof import('css-tree').generate;

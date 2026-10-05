@@ -162,17 +162,17 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects(),
-        [{ id: null, className: null, tag: null }],
+        [{ id: null, className: null, tag: null, attr: null }],
         'undefined'
       );
       assert.deepEqual(
         domSelector.extractSubjects(null),
-        [{ id: null, className: null, tag: null }],
+        [{ id: null, className: null, tag: null, attr: null }],
         'null'
       );
       assert.deepEqual(
         domSelector.extractSubjects(''),
-        [{ id: null, className: null, tag: null }],
+        [{ id: null, className: null, tag: null, attr: null }],
         'empty string'
       );
     });
@@ -184,7 +184,7 @@ describe('DOMSelector', () => {
       const res = domSelector.extractSubjects(`.${'a'.repeat(10)}`);
       assert.deepEqual(
         res,
-        [{ id: null, className: null, tag: null }],
+        [{ id: null, className: null, tag: null, attr: null }],
         'result'
       );
     });
@@ -192,81 +192,91 @@ describe('DOMSelector', () => {
     it('should extract tag name subject from simple type selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div'), [
-        { id: null, className: null, tag: 'div' }
+        { id: null, className: null, tag: 'div', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects('*'), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
     it('should extract id subject from single id selector string', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('#foo'), [
-        { id: 'foo', className: null, tag: null }
+        { id: 'foo', className: null, tag: null, attr: null }
       ]);
     });
 
     it('should extract class subject from single class selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.bar'), [
-        { id: null, className: 'bar', tag: null }
+        { id: null, className: 'bar', tag: null, attr: null }
       ]);
     });
 
     it('should extract tag, id, and class from compound selector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div#foo.bar'), [
-        { id: 'foo', className: 'bar', tag: 'div' }
+        { id: 'foo', className: 'bar', tag: 'div', attr: null }
       ]);
     });
 
     it('should extract rightmost subject from complex combinator', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('ul > li.item'), [
-        { id: null, className: 'item', tag: 'li' }
+        { id: null, className: 'item', tag: 'li', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects('div .foo + p#bar'), [
-        { id: 'bar', className: null, tag: 'p' }
+        { id: 'bar', className: null, tag: 'p', attr: null }
       ]);
       assert.deepEqual(
         domSelector.extractSubjects('main ~ section.content > h1'),
-        [{ id: null, className: null, tag: 'h1' }]
+        [{ id: null, className: null, tag: 'h1', attr: null }]
       );
     });
 
     it('should extract multiple subjects from selector list', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo, div#bar'), [
-        { id: null, className: 'foo', tag: null },
-        { id: 'bar', className: null, tag: 'div' }
+        { id: null, className: 'foo', tag: null, attr: null },
+        { id: 'bar', className: null, tag: 'div', attr: null }
       ]);
     });
 
-    it('should strip attribute and pseudo modifiers from subject', () => {
+    it('should extract attribute name and strip pseudo modifiers from subject', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('a[href]:hover::before'), [
-        { id: null, className: null, tag: 'a' }
+        { id: null, className: null, tag: 'a', attr: 'href' }
       ]);
       assert.deepEqual(
         domSelector.extractSubjects('input[type="text"].input-box:focus'),
-        [{ id: null, className: 'input-box', tag: 'input' }]
+        [{ id: null, className: 'input-box', tag: 'input', attr: 'type' }]
+      );
+    });
+
+    it('should extract attribute subject from attribute selector', () => {
+      const domSelector = new DOMSelector(window);
+      assert.deepEqual(
+        domSelector.extractSubjects(
+          '[hidden]:not([hidden=until-found i]):not(embed)'
+        ),
+        [{ id: null, className: null, tag: null, attr: 'hidden' }]
       );
     });
 
     it('should unescape special characters in subject identifiers', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo\\!bar'), [
-        { id: null, className: 'foo!bar', tag: null }
+        { id: null, className: 'foo!bar', tag: null, attr: null }
       ]);
     });
 
     it('should fallback to universal subject on parse failure', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('.foo + .123'), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects(':invalid-pseudo('), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
@@ -281,30 +291,30 @@ describe('DOMSelector', () => {
     it('should handle tag case sensitivity according to option', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('SECTION', true), [
-        { id: null, className: null, tag: 'SECTION' }
+        { id: null, className: null, tag: 'SECTION', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects('SECTION', false), [
-        { id: null, className: null, tag: 'section' }
+        { id: null, className: null, tag: 'section', attr: null }
       ]);
     });
 
     it('should extract universal subject when combined with pseudo', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('*:hover'), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
     it('should extract last class or id from rightmost compound', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div.foo.bar'), [
-        { id: null, className: 'bar', tag: 'div' }
+        { id: null, className: 'bar', tag: 'div', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects('div.foo.bar:hover'), [
-        { id: null, className: 'bar', tag: 'div' }
+        { id: null, className: 'bar', tag: 'div', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects('div#first#second:focus'), [
-        { id: 'second', className: null, tag: 'div' }
+        { id: 'second', className: null, tag: 'div', attr: null }
       ]);
     });
 
@@ -313,8 +323,8 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         domSelector.extractSubjects('a[href]:focus, div.container'),
         [
-          { id: null, className: null, tag: 'a' },
-          { id: null, className: 'container', tag: 'div' }
+          { id: null, className: null, tag: 'a', attr: 'href' },
+          { id: null, className: 'container', tag: 'div', attr: null }
         ]
       );
     });
@@ -322,28 +332,28 @@ describe('DOMSelector', () => {
     it('should skip empty groups in comma-separated selectors', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div, , span'), [
-        { id: null, className: null, tag: 'div' },
-        { id: null, className: null, tag: 'span' }
+        { id: null, className: null, tag: 'div', attr: null },
+        { id: null, className: null, tag: 'span', attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects(',.foo,,'), [
-        { id: null, className: 'foo', tag: null }
+        { id: null, className: 'foo', tag: null, attr: null }
       ]);
     });
 
     it('should fallback to universal when all groups are empty', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects(','), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects(' , , '), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
     it('should fallback to universal subject when AST yields none', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('()'), [
-        { id: null, className: null, tag: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
@@ -351,16 +361,16 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(
         domSelector.extractSubjects('div[data-foo="bar"] > p.baz'),
-        [{ id: null, className: 'baz', tag: 'p' }]
+        [{ id: null, className: 'baz', tag: 'p', attr: null }]
       );
       assert.deepEqual(domSelector.extractSubjects('ul:empty + li#target'), [
-        { id: 'target', className: null, tag: 'li' }
+        { id: 'target', className: null, tag: 'li', attr: null }
       ]);
       assert.deepEqual(
         domSelector.extractSubjects(
           'main:not(.hidden) section ~ article.content'
         ),
-        [{ id: null, className: 'content', tag: 'article' }]
+        [{ id: null, className: 'content', tag: 'article', attr: null }]
       );
     });
   });

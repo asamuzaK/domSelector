@@ -547,58 +547,60 @@ describe('selector static analysis and validation', () => {
 
     it('should extract single type selector', () => {
       assert.deepEqual(func('div'), [
-        { id: null, className: null, tag: 'div' }
+        { id: null, className: null, tag: 'div', attr: null }
       ]);
-      assert.deepEqual(func('*'), [{ id: null, className: null, tag: null }]);
+      assert.deepEqual(func('*'), [
+        { id: null, className: null, tag: null, attr: null }
+      ]);
     });
 
     it('should extract single id selector', () => {
       assert.deepEqual(func('#foo'), [
-        { id: 'foo', className: null, tag: null }
+        { id: 'foo', className: null, tag: null, attr: null }
       ]);
     });
 
     it('should extract compound selector', () => {
       assert.deepEqual(func('div#foo.bar'), [
-        { id: 'foo', className: 'bar', tag: 'div' }
+        { id: 'foo', className: 'bar', tag: 'div', attr: null }
       ]);
     });
 
     it('should extract rightmost subject of complex selector', () => {
       assert.deepEqual(func('ul > li.item'), [
-        { id: null, className: 'item', tag: 'li' }
+        { id: null, className: 'item', tag: 'li', attr: null }
       ]);
       assert.deepEqual(func('div .foo + p#bar'), [
-        { id: 'bar', className: null, tag: 'p' }
+        { id: 'bar', className: null, tag: 'p', attr: null }
       ]);
     });
 
     it('should handle escaped characters properly', () => {
       assert.deepEqual(func('.foo\\!bar'), [
-        { id: null, className: 'foo\\!bar', tag: null }
+        { id: null, className: 'foo\\!bar', tag: null, attr: null }
       ]);
     });
 
     it('should ignore empty groups in selector lists', () => {
       assert.deepEqual(func('div, , span'), [
-        { id: null, className: null, tag: 'div' },
-        { id: null, className: null, tag: 'span' }
+        { id: null, className: null, tag: 'div', attr: null },
+        { id: null, className: null, tag: 'span', attr: null }
       ]);
       assert.deepEqual(func(',.foo,,,'), [
-        { id: null, className: 'foo', tag: null }
+        { id: null, className: 'foo', tag: null, attr: null }
       ]);
       assert.deepEqual(func(','), []);
     });
 
     it('should respect caseSensitive parameter for tag names', () => {
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION', true), [
-        { id: null, className: null, tag: 'SECTION' }
+        { id: null, className: null, tag: 'SECTION', attr: null }
       ]);
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION', false), [
-        { id: null, className: null, tag: 'section' }
+        { id: null, className: null, tag: 'section', attr: null }
       ]);
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION'), [
-        { id: null, className: null, tag: 'section' }
+        { id: null, className: null, tag: 'section', attr: null }
       ]);
     });
   });

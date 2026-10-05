@@ -14,6 +14,7 @@ export type SelectorSubject = {
     id: string | null;
     className: string | null;
     tag: string | null;
+    attr: string | null;
 };
 export type UserOptions = {
     noexcept?: boolean;
