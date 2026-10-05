@@ -224,7 +224,7 @@ export const isSupportedAST = ast => {
  * Extracts the rightmost subject keys (id, class, tag) from a selector.
  * @param {string} selector - The CSS selector string to parse.
  * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
- * @returns {Array<{id: string|null, className: string|null, tag: string|null}>} The list of extracted keys for each selector group.
+ * @returns {ReadonlyArray<import('../index.js').SelectorSubject>} The list of extracted keys for each selector group.
  */
 export const extractSubjectsRegExp = (selector, caseSensitive) => {
   const subjects = [];
@@ -256,9 +256,9 @@ export const extractSubjectsRegExp = (selector, caseSensitive) => {
         }
       }
     }
-    subjects.push({ id: idKey, className: classKey, tag: tagKey });
+    subjects.push(Object.freeze({ id: idKey, className: classKey, tag: tagKey }));
   }
-  return subjects;
+  return Object.freeze(subjects);
 };
 
 /**

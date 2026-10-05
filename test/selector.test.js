@@ -542,63 +542,88 @@ describe('selector static analysis and validation', () => {
     });
   });
 
-  describe('extract subjects via RegExp', () => {
+describe('extract subjects via RegExp', () => {
     const func = selector.extractSubjectsRegExp;
 
     it('should extract single type selector', () => {
       assert.deepEqual(func('div'), [
-        { id: null, className: null, tag: 'div' }
+        Object.freeze({ id: null, className: null, tag: 'div' })
       ]);
-      assert.deepEqual(func('*'), [{ id: null, className: null, tag: null }]);
+      assert.deepEqual(func('*'), [
+        Object.freeze({ id: null, className: null, tag: null })
+      ]);
+    });
+
+    it('should extract single class selector', () => {
+      assert.deepEqual(func('.foo'), [
+        Object.freeze({ id: null, className: 'foo', tag: null })
+      ]);
     });
 
     it('should extract single id selector', () => {
       assert.deepEqual(func('#foo'), [
-        { id: 'foo', className: null, tag: null }
+        Object.freeze({ id: 'foo', className: null, tag: null })
       ]);
     });
 
     it('should extract compound selector', () => {
       assert.deepEqual(func('div#foo.bar'), [
-        { id: 'foo', className: 'bar', tag: 'div' }
+        Object.freeze({ id: 'foo', className: 'bar', tag: 'div' })
       ]);
     });
 
     it('should extract rightmost subject of complex selector', () => {
       assert.deepEqual(func('ul > li.item'), [
-        { id: null, className: 'item', tag: 'li' }
+        Object.freeze({ id: null, className: 'item', tag: 'li' })
       ]);
       assert.deepEqual(func('div .foo + p#bar'), [
-        { id: 'bar', className: null, tag: 'p' }
+        Object.freeze({ id: 'bar', className: null, tag: 'p' })
+      ]);
+    });
+
+    it('should ignore universal selector in tag extraction', () => {
+      assert.deepEqual(func('*.foo'), [
+        Object.freeze({ id: null, className: 'foo', tag: null })
+      ]);
+    });
+
+    it('should handle multiple ids or classes by picking the rightmost/last match', () => {
+      assert.deepEqual(func('div#first#second.class1.class2'), [
+        Object.freeze({ id: 'second', className: 'class2', tag: 'div' })
       ]);
     });
 
     it('should handle escaped characters properly', () => {
       assert.deepEqual(func('.foo\\!bar'), [
-        { id: null, className: 'foo\\!bar', tag: null }
+        Object.freeze({ id: null, className: 'foo\\!bar', tag: null })
       ]);
     });
 
     it('should ignore empty groups in selector lists', () => {
       assert.deepEqual(func('div, , span'), [
-        { id: null, className: null, tag: 'div' },
-        { id: null, className: null, tag: 'span' }
+        Object.freeze({ id: null, className: null, tag: 'div' }),
+        Object.freeze({ id: null, className: null, tag: 'span' })
       ]);
       assert.deepEqual(func(',.foo,,,'), [
-        { id: null, className: 'foo', tag: null }
+        Object.freeze({ id: null, className: 'foo', tag: null })
       ]);
       assert.deepEqual(func(','), []);
     });
 
+    it('should handle empty or whitespace-only strings', () => {
+      assert.deepEqual(func(''), []);
+      assert.deepEqual(func('   '), []);
+    });
+
     it('should respect caseSensitive parameter for tag names', () => {
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION', true), [
-        { id: null, className: null, tag: 'SECTION' }
+        Object.freeze({ id: null, className: null, tag: 'SECTION' })
       ]);
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION', false), [
-        { id: null, className: null, tag: 'section' }
+        Object.freeze({ id: null, className: null, tag: 'section' })
       ]);
       assert.deepEqual(selector.extractSubjectsRegExp('SECTION'), [
-        { id: null, className: null, tag: 'section' }
+        Object.freeze({ id: null, className: null, tag: 'section' })
       ]);
     });
   });

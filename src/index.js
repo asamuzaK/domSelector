@@ -53,10 +53,11 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
  */
 
 /**
- * @typedef {object} SelectorSubject
- * @property {string|null} id - The ID.
- * @property {string|null} className - The class name.
- * @property {string|null} tag - The tag name.
+ * @typedef {Readonly<{
+ *   id: string|null,
+ *   className: string|null,
+ *   tag: string|null
+ * }>} SelectorSubject
  */
 
 /**
@@ -131,39 +132,39 @@ export class DOMSelector {
    * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
    * @param {string} selector - The CSS selector to parse.
    * @param {boolean} [caseSensitive] - True if key should be case sensitive.
-   * @returns {Array<SelectorSubject>} The list of selector subjects.
+   * @returns {ReadonlyArray<SelectorSubject>} The list of selector subjects.
    */
   extractSubjects(selector, caseSensitive = false) {
     if (!selector || typeof selector !== 'string') {
-      return [DEFAULT_SUBJECT];
+      return Object.freeze([DEFAULT_SUBJECT]);
     }
     const { error, selector: validatedSelector } =
       this.#validateSelector(selector);
     if (error) {
-      return [DEFAULT_SUBJECT];
+      return Object.freeze([DEFAULT_SUBJECT]);
     }
-    selector = validatedSelector;
-    const cacheKey = `extract_${selector}_${caseSensitive}`;
+    const cacheKey = `extract_${validatedSelector}_${caseSensitive}`;
     let subjects = this.#cache.get(cacheKey);
     if (subjects !== undefined) {
-      return [...subjects];
+      return subjects;
     }
     subjects = [];
-    if (!REG_SELECTOR.test(selector)) {
-      subjects = extractSubjectsRegExp(selector, caseSensitive);
+    if (!REG_SELECTOR.test(validatedSelector)) {
+      subjects = extractSubjectsRegExp(validatedSelector, caseSensitive);
     } else {
       try {
-        const ast = parseSelector(selector);
+        const ast = parseSelector(validatedSelector);
         subjects = extractSubjectsAst(ast);
       } catch {
         // fall through
       }
     }
     if (!subjects.length) {
-      subjects.push(DEFAULT_SUBJECT);
+      subjects = [DEFAULT_SUBJECT];
     }
+    const frozenSubjects = Object.freeze(subjects);
     this.#cache.set(cacheKey, subjects);
-    return [...subjects];
+    return frozenSubjects;
   }
 
   /**
