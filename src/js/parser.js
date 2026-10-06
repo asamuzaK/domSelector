@@ -494,10 +494,10 @@ export const extractSubjectsAst = ast => {
             tagKey = localName.toLowerCase();
           }
         } else if (node.type === ATTR_SELECTOR && attrKey === null) {
-          const name = unescapeSelector(node.name.name);
+          const attrName = unescapeSelector(node.name.name);
           // Namespaced attribute names are not used as keys.
-          if (!name.includes('|')) {
-            attrKey = name.toLowerCase();
+          if (!attrName.includes('|')) {
+            attrKey = attrName.toLowerCase();
           }
         }
         if (
