@@ -498,7 +498,9 @@ export const extractSubjectsAst = ast => {
         }
         current = current.prev;
       }
-      subjects.push(Object.freeze({ id: idKey, className: classKey, tag: tagKey }));
+      subjects.push(
+        Object.freeze({ id: idKey, className: classKey, tag: tagKey })
+      );
     }
   }
   return Object.freeze(subjects);

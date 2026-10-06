@@ -46,10 +46,6 @@ const REG_LOGIC_HAS_COMPOUND = new RegExp(
 );
 const REG_END_WITH_HAS = new RegExp(`:${HAS_COMPOUND}$`);
 const REG_WO_LOGICAL = new RegExp(`:(?!${PSEUDO_CLASS}|${N_TH})`, 'i');
-const REG_COMBO = new RegExp(COMBO);
-const REG_ID = /#(\D[^#.*]+)/g;
-const REG_CLASS = /\.(\D[^#.*]+)/g;
-const REG_TAG = /^([^#.]+)/;
 const REG_INVALID_SYNTAX =
   /[+~>]\s*[+~>]|^\s*[+~>]|[+~>]\s*$|^\s*,|,\s*,|,\s*$/;
 const REG_UPPERCASE_TAG =
@@ -218,47 +214,6 @@ export const isSupportedAST = ast => {
   };
   walk(ast);
   return isSupported;
-};
-
-/**
- * Extracts the rightmost subject keys (id, class, tag) from a selector.
- * @param {string} selector - The CSS selector string to parse.
- * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
- * @returns {ReadonlyArray<import('../index.js').SelectorSubject>} The list of extracted keys for each selector group.
- */
-export const extractSubjectsRegExp = (selector, caseSensitive) => {
-  const subjects = [];
-  const groups = selector.split(',');
-  for (const item of groups) {
-    const group = item.trim();
-    if (!group) {
-      continue;
-    }
-    const compounds = group.split(REG_COMBO);
-    const rightmost = compounds.at(-1);
-    let idKey = null;
-    let classKey = null;
-    let tagKey = null;
-    if (rightmost) {
-      const idMatch = rightmost.match(REG_ID);
-      if (idMatch) {
-        idKey = idMatch.at(-1).slice(1);
-      }
-      const classMatch = rightmost.match(REG_CLASS);
-      if (classMatch) {
-        classKey = classMatch.at(-1).slice(1);
-      }
-      const tagMatch = rightmost.match(REG_TAG);
-      if (tagMatch) {
-        const tag = tagMatch[1];
-        if (tag !== '*') {
-          tagKey = caseSensitive ? tag : tag.toLowerCase();
-        }
-      }
-    }
-    subjects.push(Object.freeze({ id: idKey, className: classKey, tag: tagKey }));
-  }
-  return Object.freeze(subjects);
 };
 
 /**
