@@ -37,7 +37,12 @@ import {
 } from './js/constant.js';
 const CACHE_SIZE = 4096;
 const MAX_LENGTH = 2048;
-const DEFAULT_SUBJECT = Object.freeze({ id: null, className: null, tag: null });
+const DEFAULT_SUBJECT = Object.freeze({
+  id: null,
+  className: null,
+  tag: null,
+  attr: null
+});
 
 /* regexp */
 const REG_SELECTOR = /[[\]():\\"'`]/;
@@ -57,6 +62,7 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
  * @property {string|null} id - The ID.
  * @property {string|null} className - The class name.
  * @property {string|null} tag - The tag name.
+ * @property {string|null} attr - The attribute name, in lowercase.
  */
 
 /**
@@ -128,7 +134,7 @@ export class DOMSelector {
   }
 
   /**
-   * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
+   * Parses a selector and extracts the rightmost subject keys (Id, Class, Tag, Attribute).
    * @param {string} selector - The CSS selector to parse.
    * @param {boolean} [caseSensitive] - True if key should be case sensitive.
    * @returns {Array<SelectorSubject>} The list of selector subjects.

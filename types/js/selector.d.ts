@@ -8,5 +8,6 @@ export declare const extractSubjectsRegExp: (selector: string, caseSensitive: bo
     id: string | null;
     className: string | null;
     tag: string | null;
+    attr: null;
 }>;
 export declare const filterSelector: (selector: string, target: string) => boolean;

@@ -10166,89 +10166,122 @@ describe('extract subjects via AST', () => {
 
   it('should extract single type selector', () => {
     assert.deepEqual(func(parse('div')), [
-      { id: null, className: null, tag: 'div' }
+      { id: null, className: null, tag: 'div', attr: null }
     ]);
     assert.deepEqual(func(parse('*')), [
-      { id: null, className: null, tag: null }
+      { id: null, className: null, tag: null, attr: null }
     ]);
   });
 
   it('should extract single id selector', () => {
     assert.deepEqual(func(parse('#foo')), [
-      { id: 'foo', className: null, tag: null }
+      { id: 'foo', className: null, tag: null, attr: null }
     ]);
   });
 
   it('should extract single class selector', () => {
     assert.deepEqual(func(parse('.bar')), [
-      { id: null, className: 'bar', tag: null }
+      { id: null, className: 'bar', tag: null, attr: null }
     ]);
   });
 
   it('should extract compound selector', () => {
     assert.deepEqual(func(parse('div#foo.bar')), [
-      { id: 'foo', className: 'bar', tag: 'div' }
+      { id: 'foo', className: 'bar', tag: 'div', attr: null }
+    ]);
+    assert.deepEqual(func(parse('div#foo.bar[baz]')), [
+      { id: 'foo', className: 'bar', tag: 'div', attr: 'baz' }
     ]);
   });
 
   it('should extract rightmost subject of complex selector', () => {
     assert.deepEqual(func(parse('ul > li.item')), [
-      { id: null, className: 'item', tag: 'li' }
+      { id: null, className: 'item', tag: 'li', attr: null }
     ]);
     assert.deepEqual(func(parse('div .foo + p#bar')), [
-      { id: 'bar', className: null, tag: 'p' }
+      { id: 'bar', className: null, tag: 'p', attr: null }
     ]);
     assert.deepEqual(func(parse('main ~ section.content > h1')), [
-      { id: null, className: null, tag: 'h1' }
+      { id: null, className: null, tag: 'h1', attr: null }
     ]);
   });
 
   it('should extract selector list', () => {
     assert.deepEqual(func(parse('.foo, div#bar')), [
-      { id: null, className: 'foo', tag: null },
-      { id: 'bar', className: null, tag: 'div' }
+      { id: null, className: 'foo', tag: null, attr: null },
+      { id: 'bar', className: null, tag: 'div', attr: null }
     ]);
   });
 
   it('should extract the last class/id in the rightmost compound', () => {
     assert.deepEqual(func(parse('div.foo.bar')), [
-      { id: null, className: 'bar', tag: 'div' }
+      { id: null, className: 'bar', tag: 'div', attr: null }
     ]);
     assert.deepEqual(func(parse('div#first#second')), [
-      { id: 'second', className: null, tag: 'div' }
+      { id: 'second', className: null, tag: 'div', attr: null }
     ]);
   });
 
   it('should handle escaped characters properly', () => {
     assert.deepEqual(func(parse('.foo\\!bar')), [
-      { id: null, className: 'foo!bar', tag: null }
+      { id: null, className: 'foo!bar', tag: null, attr: null }
     ]);
     assert.deepEqual(func(parse('#\\31 23')), [
-      { id: '123', className: null, tag: null }
+      { id: '123', className: null, tag: null, attr: null }
     ]);
   });
 
-  it('should ignore attributes, pseudo-classes, and pseudo-elements', () => {
+  it('should extract attributes and ignore pseudo-classes and pseudo-elements', () => {
     assert.deepEqual(func(parse('a[href]:hover::before')), [
-      { id: null, className: null, tag: 'a' }
+      { id: null, className: null, tag: 'a', attr: 'href' }
     ]);
     assert.deepEqual(func(parse('input[type="text"].input-box:focus')), [
-      { id: null, className: 'input-box', tag: 'input' }
+      { id: null, className: 'input-box', tag: 'input', attr: 'type' }
+    ]);
+  });
+
+  it('should extract attributes of the subject only', () => {
+    assert.deepEqual(func(parse('[data-a] .b')), [
+      { id: null, className: 'b', tag: null, attr: null }
+    ]);
+    assert.deepEqual(func(parse('div:not([hidden])')), [
+      { id: null, className: null, tag: 'div', attr: null }
+    ]);
+  });
+
+  it('should lowercase and unescape attribute names', () => {
+    assert.deepEqual(func(parse('[HIDDEN]')), [
+      { id: null, className: null, tag: null, attr: 'hidden' }
+    ]);
+    assert.deepEqual(func(parse('[foo\\.bar]')), [
+      { id: null, className: null, tag: null, attr: 'foo.bar' }
+    ]);
+  });
+
+  it('should not extract namespaced attributes', () => {
+    assert.deepEqual(func(parse('[ns|attr]')), [
+      { id: null, className: null, tag: null, attr: null }
+    ]);
+    assert.deepEqual(func(parse('[*|attr]')), [
+      { id: null, className: null, tag: null, attr: null }
+    ]);
+    assert.deepEqual(func(parse('[|attr]')), [
+      { id: null, className: null, tag: null, attr: null }
     ]);
   });
 
   it('should lowercase tag names', () => {
     assert.deepEqual(func(parse('SECTION')), [
-      { id: null, className: null, tag: 'section' }
+      { id: null, className: null, tag: 'section', attr: null }
     ]);
   });
 
   it('should strip namespaces from tags', () => {
     assert.deepEqual(func(parse('svg|a')), [
-      { id: null, className: null, tag: 'a' }
+      { id: null, className: null, tag: 'a', attr: null }
     ]);
     assert.deepEqual(func(parse('*|div')), [
-      { id: null, className: null, tag: 'div' }
+      { id: null, className: null, tag: 'div', attr: null }
     ]);
   });
 });
