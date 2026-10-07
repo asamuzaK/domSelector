@@ -11,10 +11,7 @@ import { clone as cssTreeClone } from 'css-tree/utils';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst, parseSelector } from './js/parser.js';
-import {
-  filterSelector,
-  isSupportedAST
-} from './js/selector.js';
+import { filterSelector, isSupportedAST } from './js/selector.js';
 import {
   collectAllDescendants,
   findByExactIdAttribute,
@@ -155,7 +152,7 @@ export class DOMSelector {
     subjects = [];
     try {
       const ast = parseSelector(selector);
-      subjects = extractSubjectsAst(ast);
+      subjects = extractSubjectsAst(ast, caseSensitive);
     } catch {
       // fall through
     }
