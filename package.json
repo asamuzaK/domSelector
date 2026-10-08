@@ -63,6 +63,7 @@
     "bench:ps-form": "node --expose-gc benchmark/bench-default.js && node --expose-gc benchmark/bench-indeterminate.js && node --expose-gc benchmark/bench-valid-invalid.js",
     "bench:ps-has": "node --expose-gc benchmark/bench-has.js",
     "bench:ps-nth": "node --expose-gc benchmark/bench-nth-child.js && node --expose-gc benchmark/bench-nth-of-type.js",
+    "bench:subjects": "node --expose-gc benchmark/bench-extract-subjects.js",
     "bench:ps-traverse": "node --expose-gc benchmark/bench-dir.js && node --expose-gc benchmark/bench-lang.js",
     "bench:tl": "node --expose-gc benchmark/bench-testing-library.js",
     "bench:universal": "node --expose-gc benchmark/bench-universal.js",

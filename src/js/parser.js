@@ -468,9 +468,10 @@ export const parseAstName = selector => {
 /**
  * Extracts the rightmost subject keys (id, class, tag, attribute) from a CSS selector AST.
  * @param {import('css-tree').CssNode} ast - The AST representation of the CSS selector.
+ * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
  * @returns {Array<{id: string|null, className: string|null, tag: string|null, attr: string|null}>} The list of extracted keys for each selector group.
  */
-export const extractSubjectsAst = ast => {
+export const extractSubjectsAst = (ast, caseSensitive = false) => {
   const subjects = [];
   if (ast?.type === 'SelectorList') {
     for (const selectorNode of ast.children) {
@@ -491,7 +492,7 @@ export const extractSubjectsAst = ast => {
         } else if (node.type === TYPE_SELECTOR && tagKey === null) {
           const { localName } = parseAstName(unescapeSelector(node.name));
           if (localName !== '*') {
-            tagKey = localName.toLowerCase();
+            tagKey = caseSensitive ? localName : localName.toLowerCase();
           }
         } else if (node.type === ATTR_SELECTOR && attrKey === null) {
           const attrName = unescapeSelector(node.name.name);

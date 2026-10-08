@@ -11,11 +11,7 @@ import { clone as cssTreeClone } from 'css-tree/utils';
 import { Finder } from './js/finder.js';
 import { Nwsapi } from './js/nwsapi.js';
 import { extractSubjectsAst, parseSelector } from './js/parser.js';
-import {
-  extractSubjectsRegExp,
-  filterSelector,
-  isSupportedAST
-} from './js/selector.js';
+import { filterSelector, isSupportedAST } from './js/selector.js';
 import {
   collectAllDescendants,
   findByExactIdAttribute,
@@ -45,7 +41,6 @@ const DEFAULT_SUBJECT = Object.freeze({
 });
 
 /* regexp */
-const REG_SELECTOR = /[[\]():\\"'`]/;
 const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 
 /* types */
@@ -155,15 +150,11 @@ export class DOMSelector {
       return [...subjects];
     }
     subjects = [];
-    if (!REG_SELECTOR.test(selector)) {
-      subjects = extractSubjectsRegExp(selector, caseSensitive);
-    } else {
-      try {
-        const ast = parseSelector(selector);
-        subjects = extractSubjectsAst(ast);
-      } catch {
-        // fall through
-      }
+    try {
+      const ast = parseSelector(selector);
+      subjects = extractSubjectsAst(ast, caseSensitive);
+    } catch {
+      // fall through
     }
     if (!subjects.length) {
       subjects.push(DEFAULT_SUBJECT);

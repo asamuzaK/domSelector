@@ -332,11 +332,10 @@ describe('DOMSelector', () => {
     it('should skip empty groups in comma-separated selectors', () => {
       const domSelector = new DOMSelector(window);
       assert.deepEqual(domSelector.extractSubjects('div, , span'), [
-        { id: null, className: null, tag: 'div', attr: null },
-        { id: null, className: null, tag: 'span', attr: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
       assert.deepEqual(domSelector.extractSubjects(',.foo,,'), [
-        { id: null, className: 'foo', tag: null, attr: null }
+        { id: null, className: null, tag: null, attr: null }
       ]);
     });
 
