@@ -1,7 +1,14 @@
 export default {
+  plugins: ['prettier-plugin-brace-style'],
   arrowParens: 'avoid',
-  printWidth: 80,
+  braceStyle: '1tbs',
   semi: true,
   singleQuote: true,
-  trailingComma: 'none'
+  trailingComma: 'none',
+  overrides: [
+    {
+      files: ['*.md', '*.mdx'],
+      options: {}
+    }
+  ]
 };
