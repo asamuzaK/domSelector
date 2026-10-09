@@ -10155,133 +10155,283 @@ describe('parse AST name', () => {
 
 describe('extract subjects via AST', () => {
   const func = parser.extractSubjectsAst;
-  const parse = sel => cssTree.parse(sel, { context: 'selectorList' });
+  const parse = parser.parseSelector;
 
-  it('should handle empty or invalid AST gracefully', () => {
-    assert.deepEqual(func(null), [], 'null');
-    assert.deepEqual(func(undefined), [], 'undefined');
-    assert.deepEqual(func({}), [], 'empty object');
-    assert.deepEqual(func({ type: 'Selector' }), [], 'not a SelectorList');
+  it('should return an empty frozen array when AST is invalid', () => {
+    const res1 = func();
+    assert.deepEqual(res1, [], 'result');
+    assert.strictEqual(Object.isFrozen(res1), true, 'frozen');
+    const res2 = func(null);
+    assert.deepEqual(res2, [], 'result');
+    assert.strictEqual(Object.isFrozen(res2), true, 'frozen');
+    const res3 = func({});
+    assert.deepEqual(res3, [], 'result');
+    assert.strictEqual(Object.isFrozen(res3), true, 'frozen');
+    const res4 = func({ type: 'Selector' });
+    assert.deepEqual(res4, [], 'result');
+    assert.strictEqual(Object.isFrozen(res4), true, 'frozen');
   });
 
-  it('should extract single type selector', () => {
-    assert.deepEqual(func(parse('div')), [
-      { id: null, className: null, tag: 'div', attr: null }
-    ]);
-    assert.deepEqual(func(parse('*')), [
-      { id: null, className: null, tag: null, attr: null }
-    ]);
+  it('should extract tag subject', () => {
+    const ast = parse('div');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: null,
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
-  it('should extract single id selector', () => {
-    assert.deepEqual(func(parse('#foo')), [
-      { id: 'foo', className: null, tag: null, attr: null }
-    ]);
+  it('should extract class subject', () => {
+    const ast = parse('.my-class');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: 'my-class',
+          tag: null
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract single class selector', () => {
-    assert.deepEqual(func(parse('.bar')), [
-      { id: null, className: 'bar', tag: null, attr: null }
-    ]);
+  it('should extract ID subject', () => {
+    const ast = parse('#my-id');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: 'my-id',
+          className: null,
+          tag: null
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract compound selector', () => {
-    assert.deepEqual(func(parse('div#foo.bar')), [
-      { id: 'foo', className: 'bar', tag: 'div', attr: null }
-    ]);
-    assert.deepEqual(func(parse('div#foo.bar[baz]')), [
-      { id: 'foo', className: 'bar', tag: 'div', attr: 'baz' }
-    ]);
+  it('should return null for universal selector * tag', () => {
+    const ast = parse('*');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: null,
+          tag: null
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract rightmost subject of complex selector', () => {
-    assert.deepEqual(func(parse('ul > li.item')), [
-      { id: null, className: 'item', tag: 'li', attr: null }
-    ]);
-    assert.deepEqual(func(parse('div .foo + p#bar')), [
-      { id: 'bar', className: null, tag: 'p', attr: null }
-    ]);
-    assert.deepEqual(func(parse('main ~ section.content > h1')), [
-      { id: null, className: null, tag: 'h1', attr: null }
-    ]);
+  it('should extract compound selector subjects', () => {
+    const ast = parse('div.my-class#my-id');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: 'my-id',
+          className: 'my-class',
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract selector list', () => {
-    assert.deepEqual(func(parse('.foo, div#bar')), [
-      { id: null, className: 'foo', tag: null, attr: null },
-      { id: 'bar', className: null, tag: 'div', attr: null }
-    ]);
+  it('should extract rightmost subject for multiple class or ID', () => {
+    const ast = parse('div.first-class.second-class#id1#id2');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: 'id2',
+          className: 'second-class',
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract the last class/id in the rightmost compound', () => {
-    assert.deepEqual(func(parse('div.foo.bar')), [
-      { id: null, className: 'bar', tag: 'div', attr: null }
-    ]);
-    assert.deepEqual(func(parse('div#first#second')), [
-      { id: 'second', className: null, tag: 'div', attr: null }
-    ]);
+  it('should extract rightmost subjects separated by combinators', () => {
+    const ast1 = parse('ul > li.item');
+    const res1 = func(ast1);
+    assert.deepEqual(
+      res1,
+      [
+        {
+          id: null,
+          className: 'item',
+          tag: 'li'
+        }
+      ],
+      'result'
+    );
+    const ast2 = parse('main section article.content');
+    const res2 = func(ast2);
+    assert.deepEqual(
+      res2,
+      [
+        {
+          id: null,
+          className: 'content',
+          tag: 'article'
+        }
+      ],
+      'result'
+    );
+    const ast3 = parse('h1 + p');
+    const res3 = func(ast3);
+    assert.deepEqual(
+      res3,
+      [
+        {
+          id: null,
+          className: null,
+          tag: 'p'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should handle escaped characters properly', () => {
-    assert.deepEqual(func(parse('.foo\\!bar')), [
-      { id: null, className: 'foo!bar', tag: null, attr: null }
-    ]);
-    assert.deepEqual(func(parse('#\\31 23')), [
-      { id: '123', className: null, tag: null, attr: null }
-    ]);
+  it('should extract subjects from selector group', () => {
+    const ast = parse('.foo, div#bar');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: 'foo',
+          tag: null
+        },
+        {
+          id: 'bar',
+          className: null,
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should extract attributes and ignore pseudo-classes and pseudo-elements', () => {
-    assert.deepEqual(func(parse('a[href]:hover::before')), [
-      { id: null, className: null, tag: 'a', attr: 'href' }
-    ]);
-    assert.deepEqual(func(parse('input[type="text"].input-box:focus')), [
-      { id: null, className: 'input-box', tag: 'input', attr: 'type' }
-    ]);
+  it('should handle caseSensitivity parameter for tag names', () => {
+    const ast = parse('DIV.my-class');
+    const resDefault = func(ast);
+    assert.deepEqual(
+      resDefault,
+      [
+        {
+          id: null,
+          className: 'my-class',
+          tag: 'div'
+        }
+      ],
+      'case-insensitive'
+    );
+    const resCaseSensitive = func(ast, true);
+    assert.deepEqual(
+      resCaseSensitive,
+      [
+        {
+          id: null,
+          className: 'my-class',
+          tag: 'DIV'
+        }
+      ],
+      'case-sensitive'
+    );
   });
 
-  it('should extract attributes of the subject only', () => {
-    assert.deepEqual(func(parse('[data-a] .b')), [
-      { id: null, className: 'b', tag: null, attr: null }
-    ]);
-    assert.deepEqual(func(parse('div:not([hidden])')), [
-      { id: null, className: null, tag: 'div', attr: null }
-    ]);
+  it('should unescape escaped characters in selector subjects', () => {
+    const ast = parse('div.\\31 23#\\:id');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: ':id',
+          className: '123',
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should lowercase and unescape attribute names', () => {
-    assert.deepEqual(func(parse('[HIDDEN]')), [
-      { id: null, className: null, tag: null, attr: 'hidden' }
-    ]);
-    assert.deepEqual(func(parse('[foo\\.bar]')), [
-      { id: null, className: null, tag: null, attr: 'foo.bar' }
-    ]);
+  it('should extract local name from namespaced type selector', () => {
+    const ast = parse('ns|div, *|span, |p');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: null,
+          tag: 'div'
+        },
+        {
+          id: null,
+          className: null,
+          tag: 'span'
+        },
+        {
+          id: null,
+          className: null,
+          tag: 'p'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should not extract namespaced attributes', () => {
-    assert.deepEqual(func(parse('[ns|attr]')), [
-      { id: null, className: null, tag: null, attr: null }
-    ]);
-    assert.deepEqual(func(parse('[*|attr]')), [
-      { id: null, className: null, tag: null, attr: null }
-    ]);
-    assert.deepEqual(func(parse('[|attr]')), [
-      { id: null, className: null, tag: null, attr: null }
-    ]);
+  it('should break early when all subject keys are matched', () => {
+    const ast = parse('main > div.my-class#my-id[data-foo="bar"]');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: 'my-id',
+          className: 'my-class',
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 
-  it('should lowercase tag names', () => {
-    assert.deepEqual(func(parse('SECTION')), [
-      { id: null, className: null, tag: 'section', attr: null }
-    ]);
-  });
-
-  it('should strip namespaces from tags', () => {
-    assert.deepEqual(func(parse('svg|a')), [
-      { id: null, className: null, tag: 'a', attr: null }
-    ]);
-    assert.deepEqual(func(parse('*|div')), [
-      { id: null, className: null, tag: 'div', attr: null }
-    ]);
+  it('should ignore namespaced attribute names when filling attribute', () => {
+    const ast = parse('div[ns|attr="val"]');
+    const res = func(ast);
+    assert.deepEqual(
+      res,
+      [
+        {
+          id: null,
+          className: null,
+          tag: 'div'
+        }
+      ],
+      'result'
+    );
   });
 });

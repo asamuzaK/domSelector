@@ -37,6 +37,12 @@ export default [
     },
     rules: {
       curly: ['error', 'all'],
+      'jsdoc/no-undefined-types': [
+        'error',
+        {
+          definedTypes: ['ReadonlyArray']
+        }
+      ],
       'no-await-in-loop': 'error',
       'no-use-before-define': [
         'error',
