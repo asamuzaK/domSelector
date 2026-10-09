@@ -469,7 +469,7 @@ export const parseAstName = selector => {
  * Extracts the rightmost subject keys (id, class, tag, attribute) from a CSS selector AST.
  * @param {import('css-tree').CssNode} ast - The AST representation of the CSS selector.
  * @param {boolean} caseSensitive - True if the tag should be case-sensitive.
- * @returns {Array<{id: string|null, className: string|null, tag: string|null, attr: string|null}>} The list of extracted keys for each selector group.
+ * @returns {ReadonlyArray<import('../index.js').SelectorSubject>} The list of extracted keys for each selector group.
  */
 export const extractSubjectsAst = (ast, caseSensitive = false) => {
   const subjects = [];
@@ -511,15 +511,12 @@ export const extractSubjectsAst = (ast, caseSensitive = false) => {
         }
         current = current.prev;
       }
-      subjects.push({
-        id: idKey,
-        className: classKey,
-        tag: tagKey,
-        attr: attrKey
-      });
+      subjects.push(
+        Object.freeze({ id: idKey, className: classKey, tag: tagKey })
+      );
     }
   }
-  return subjects;
+  return Object.freeze(subjects);
 };
 
 /* Re-exported from css-tree. */

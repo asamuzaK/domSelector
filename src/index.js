@@ -53,11 +53,11 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
  */
 
 /**
- * @typedef {object} SelectorSubject
- * @property {string|null} id - The ID.
- * @property {string|null} className - The class name.
- * @property {string|null} tag - The tag name.
- * @property {string|null} attr - The attribute name, in lowercase.
+ * @typedef {Readonly<{
+ *   id: string|null,
+ *   className: string|null,
+ *   tag: string|null
+ * }>} SelectorSubject
  */
 
 /**
