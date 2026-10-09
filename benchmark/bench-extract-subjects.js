@@ -15,7 +15,6 @@ const selectors = [
   'div.my-class#my-id',
   'ul > li.item',
   '.foo, div#bar',
-  
   'a[href]:hover::before',
   'input[type="text"].input-box:focus',
   'main:not(.hidden) section ~ article.content',
