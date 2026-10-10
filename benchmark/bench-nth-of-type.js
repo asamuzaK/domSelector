@@ -12,7 +12,9 @@ import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a massive DOM tree
 const ITEM_COUNT = 3000; // Sufficient number to observe the O(N^2) explosion (too many will freeze the process)
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><ul id="list"></ul></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><ul id="list"></ul></body></html>`
+);
 const { document } = window;
 const list = document.getElementById('list');
 
@@ -49,5 +51,5 @@ group(`Finder O(N^2) Bottleneck Test`, () => {
 // Run the benchmark
 await run({
   colors: true,
-  json: false,
+  json: false
 });

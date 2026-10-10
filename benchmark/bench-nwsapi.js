@@ -22,7 +22,9 @@ process.argv.forEach(arg => {
   }
 });
 
-const { window } = new JSDOM('<!DOCTYPE html><html><body><div id="container"></div></body></html>');
+const { window } = new JSDOM(
+  '<!DOCTYPE html><html><body><div id="container"></div></body></html>'
+);
 const { document } = window;
 const container = document.getElementById('container');
 
@@ -35,7 +37,7 @@ for (let i = 0; i < nodeCount; i++) {
   const p = document.createElement('p');
   div.appendChild(span);
   div.appendChild(p);
-  
+
   container.appendChild(div);
   targetNodes.push(div);
 }
@@ -47,9 +49,9 @@ for (let i = 0; i < totalSelectors; i++) {
   if (mod === 0) {
     selectors.push(`.benchmark-target:not(.dummy-${i})`);
   } else if (mod === 1) {
-    selectors.push(`.benchmark-target:nth-child(${ (i % nodeCount) + 1 })`);
+    selectors.push(`.benchmark-target:nth-child(${(i % nodeCount) + 1})`);
   } else if (mod === 2) {
-    selectors.push(`div:nth-of-type(${ (i % nodeCount) + 1 })`);
+    selectors.push(`div:nth-of-type(${(i % nodeCount) + 1})`);
   } else {
     selectors.push(`.dummy-class-${i} > div + p`);
   }
@@ -88,5 +90,5 @@ group(`nwsapi Performance (Cache: ${cacheSize})`, () => {
 
 await run({
   colors: true,
-  json: false,
+  json: false
 });

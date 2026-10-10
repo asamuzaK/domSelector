@@ -229,6 +229,7 @@ const elementMatchesRandom2 = (api, selector, result) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const elementMatches = (api, selector, result) => {
   let node, doc, reflow;
   if (api === 'jsdom') {
@@ -362,6 +363,7 @@ const elementClosestRandom2 = (api, selector, result) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const elementClosest = (api, selector, result) => {
   let node, doc, reflow;
   if (api === 'jsdom') {
@@ -707,7 +709,7 @@ bench
   })
   .add(`patched-jsdom querySelectorAll('${selectors[17]}')`, () => {
     parentNodeQuerySelectorAll('patched-jsdom', selectors[17], 1000);
-  /*
+    /*
   }).add(`jsdom matches('${selectors[11]}')`, () => {
     elementMatches('jsdom', selectors[11], false);
   }).add(`patched-jsdom matches('${selectors[11]}')`, () => {
@@ -814,7 +816,7 @@ bench
   });
 
 const hzMap = new Map();
-bench.addEventListener('cycle', (e) => {
+bench.addEventListener('cycle', e => {
   const task = e.task;
   const str = task.name;
   const taskError = task.error || task.result?.error;
@@ -832,8 +834,7 @@ bench.addEventListener('cycle', (e) => {
   const samplesCount = task.result.throughput?.samplesCount ?? 0;
   const hzStr = hz.toLocaleString('en-US', { maximumFractionDigits: 0 });
   const rme = typeof rmeVal === 'number' ? rmeVal.toFixed(2) : 'N/A';
-  const formattedStr =
-    `${str} x ${hzStr} ops/sec \xB1${rme}% (${samplesCount} runs sampled)`;
+  const formattedStr = `${str} x ${hzStr} ops/sec \xB1${rme}% (${samplesCount} runs sampled)`;
   if (str.startsWith('patched-jsdom')) {
     const patchedHz = hz;
     const jsdomHz = hzMap.get('jsdom') ?? 0;

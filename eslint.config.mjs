@@ -13,7 +13,7 @@ export default [
   regexp.configs['flat/recommended'],
   prettierRecommended,
   {
-    ignores: ['dist/', 'test/file/', 'test/wpt/', 'benchmark/']
+    ignores: ['dist/', 'test/file/', 'test/wpt/']
   },
   {
     languageOptions: {
@@ -21,7 +21,8 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.webextensions
-      }
+      },
+      ecmaVersion: 'latest'
     },
     linterOptions: {
       reportUnusedDisableDirectives: true

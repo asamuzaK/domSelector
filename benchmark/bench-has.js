@@ -10,7 +10,9 @@ import { Finder } from '../src/js/finder.js';
 import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a massive DOM tree (計 3,001 要素)
-const { window } = new JSDOM(`<!doctype html><html><body><main id="root"></main></body></html>`);
+const { window } = new JSDOM(
+  `<!doctype html><html><body><main id="root"></main></body></html>`
+);
 const { document } = window;
 const main = document.getElementById('root');
 const items = 300;
@@ -59,5 +61,5 @@ group(`2. Dense Seed Protection (Bailout Mode)`, () => {
 // Run the benchmark using mitata engine
 await run({
   colors: true,
-  json: false,
+  json: false
 });

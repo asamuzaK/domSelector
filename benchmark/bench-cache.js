@@ -9,8 +9,8 @@ import { JSDOM } from 'jsdom';
 import { DOMSelector } from '../src/index.js';
 
 // 1. Get arguments from command line
-let cacheSize = 4096;      // Default
-let nodeCount = 5;         // Default
+let cacheSize = 4096; // Default
+let nodeCount = 5; // Default
 let totalSelectors = 8000; // Default
 
 process.argv.forEach(arg => {
@@ -74,5 +74,5 @@ group(`DOMSelector Check (Cache: ${cacheSize})`, () => {
 // Run the benchmark
 await run({
   colors: true,
-  json: false,
+  json: false
 });

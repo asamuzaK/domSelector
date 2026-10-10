@@ -9,7 +9,9 @@ import { TARGET_ALL } from '../src/js/constant.js';
 const FIELDSET_COUNT = 100;
 const INPUT_PER_FIELDSET = 200;
 
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><form id="form"></form></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><form id="form"></form></body></html>`
+);
 const { document } = window;
 const form = document.getElementById('form');
 
@@ -29,7 +31,9 @@ const finder = new Finder(window);
 
 console.log(`=======================================`);
 console.log(`Finder :valid / :invalid Benchmark`);
-console.log(`Fieldsets: ${FIELDSET_COUNT}, Inputs per fieldset: ${INPUT_PER_FIELDSET}`);
+console.log(
+  `Fieldsets: ${FIELDSET_COUNT}, Inputs per fieldset: ${INPUT_PER_FIELDSET}`
+);
 console.log(`=======================================`);
 
 group(`Finder :valid Bottleneck Test`, () => {

@@ -11,7 +11,9 @@ import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a massive DOM tree
 const ITEM_COUNT = 3000;
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><ul id="list"></ul></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><ul id="list"></ul></body></html>`
+);
 const { document } = window;
 const list = document.getElementById('list');
 
@@ -63,5 +65,5 @@ group(`2. Finder :nth-child(anb of S) [Complex + Pseudo-class]`, () => {
 // Run the benchmark
 await run({
   colors: true,
-  json: false,
+  json: false
 });

@@ -1,6 +1,6 @@
 /**
  * benchmark/bench-dir.js
- * Benchmark to measure the O(D^2) ascendant traversal bottleneck 
+ * Benchmark to measure the O(D^2) ascendant traversal bottleneck
  * in the Finder engine's :dir() implementation.
  */
 
@@ -11,7 +11,9 @@ import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a deeply nested DOM tree
 const DEPTH = 100;
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><div id="root" dir="ltr"></div></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><div id="root" dir="ltr"></div></body></html>`
+);
 const { document } = window;
 
 let current = document.getElementById('root');

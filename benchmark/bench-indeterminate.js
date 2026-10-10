@@ -11,7 +11,9 @@ import { TARGET_ALL } from '../src/js/constant.js';
 
 // 1. Setup JSDOM and construct a form with many un-checked radio buttons
 const ITEM_COUNT = 1000;
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><form id="form"></form></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><form id="form"></form></body></html>`
+);
 const { document } = window;
 const form = document.getElementById('form');
 
@@ -43,5 +45,5 @@ group(`Finder :indeterminate Bottleneck Test`, () => {
 // Run the benchmark
 await run({
   colors: true,
-  json: false,
+  json: false
 });

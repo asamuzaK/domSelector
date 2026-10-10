@@ -9,16 +9,27 @@ import { DOMSelector } from '../src/index.js';
 const DEPTH = 4;
 const CHILDREN_PER_NODE = 8; // Total ~4680 nodes
 
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><div id="root"></div></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><div id="root"></div></body></html>`
+);
 const { document } = window;
 const root = document.getElementById('root');
 
 let idCounter = 0;
 
+/**
+ * Recursively builds a mock DOM tree with varied elements and attributes.
+ * @param {Element} parent - The parent DOM element to append generated nodes to.
+ * @param {number} currentDepth - The current depth level of the tree hierarchy.
+ */
 function buildTree(parent, currentDepth) {
-  if (currentDepth >= DEPTH) return;
+  if (currentDepth >= DEPTH) {
+    return;
+  }
   for (let i = 0; i < CHILDREN_PER_NODE; i++) {
-    const el = document.createElement(i % 5 === 0 ? 'svg' : i % 3 === 0 ? 'input' : 'div');
+    const el = document.createElement(
+      i % 5 === 0 ? 'svg' : i % 3 === 0 ? 'input' : 'div'
+    );
     el.className = `level-${currentDepth}`;
     if (i % 2 === 0) {
       el.setAttribute('data-testid', `test-id-${idCounter}`);
@@ -82,6 +93,11 @@ const implicitRoleCandidates = [...document.querySelectorAll('input')].map(
   idlUtils.implForWrapper
 );
 
+/**
+ * Resolves element references targeted by `aria-labelledby` attributes.
+ * @param {DOMSelector} selectorEngine - The selector engine instance used to query elements.
+ * @param {Document|Element} context - The root context node for the query execution.
+ */
 function resolveLabels(selectorEngine, context) {
   for (const control of labelledControls) {
     const id = control.getAttribute('aria-labelledby');
@@ -113,7 +129,10 @@ group(`Testing Library Typical Queries (document)`, () => {
   });
 
   bench(`[placeholder="target-placeholder"]`, () => {
-    domSelector.querySelectorAll('[placeholder="target-placeholder"]', document);
+    domSelector.querySelectorAll(
+      '[placeholder="target-placeholder"]',
+      document
+    );
   });
 
   bench(`[data-role~="tile"]`, () => {
@@ -184,7 +203,8 @@ group(`Testing Library Implicit Role Matching (jsdom)`, () => {
 });
 
 group(`Attribute Equality After Mutations (Element)`, () => {
-  const query = () => domSelector.querySelectorAll('[data-testid="target-test-id"]', root);
+  const query = () =>
+    domSelector.querySelectorAll('[data-testid="target-test-id"]', root);
 
   bench(`Unrelated attribute mutation`, () => {
     root.toggleAttribute('data-dirty');
@@ -195,7 +215,10 @@ group(`Attribute Equality After Mutations (Element)`, () => {
 
   bench(`Matching attribute mutation`, () => {
     const value = targetTestId.getAttribute('data-testid');
-    targetTestId.setAttribute('data-testid', value === 'target-test-id' ? 'changed' : 'target-test-id');
+    targetTestId.setAttribute(
+      'data-testid',
+      value === 'target-test-id' ? 'changed' : 'target-test-id'
+    );
     domSelector.clear();
     return query();
   });
@@ -214,7 +237,9 @@ const scopedDocument = scopedWindow.document;
 const background = scopedDocument.createElement('aside');
 background.innerHTML = '<div><span></span></div>'.repeat(5000);
 const container = scopedDocument.createElement('main');
-container.innerHTML = '<div data-testid="target"><span></span></div>'.repeat(50);
+container.innerHTML = '<div data-testid="target"><span></span></div>'.repeat(
+  50
+);
 scopedDocument.body.append(background, container);
 const scopedSelector = new DOMSelector(scopedWindow);
 
@@ -248,17 +273,23 @@ group('closest attribute ancestor', () => {
       if (domSelector.closest('[data-rootownerid]', target) !== expected) {
         throw new Error('Unexpected closest result');
       }
-      bench(`closest [data-rootownerid] / depth ${depth} / distance ${distance}`, () => {
-        domSelector.closest('[data-rootownerid]', target);
-      });
+      bench(
+        `closest [data-rootownerid] / depth ${depth} / distance ${distance}`,
+        () => {
+          domSelector.closest('[data-rootownerid]', target);
+        }
+      );
       if (distance === 1) {
         let revision = false;
-        bench(`closest [data-rootownerid] after mutation / depth ${depth}`, () => {
-          revision = !revision;
-          target.setAttribute('data-revision', `${revision}`);
-          domSelector.clear();
-          domSelector.closest('[data-rootownerid]', target);
-        });
+        bench(
+          `closest [data-rootownerid] after mutation / depth ${depth}`,
+          () => {
+            revision = !revision;
+            target.setAttribute('data-revision', `${revision}`);
+            domSelector.clear();
+            domSelector.closest('[data-rootownerid]', target);
+          }
+        );
       }
     }
   }

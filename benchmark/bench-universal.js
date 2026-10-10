@@ -8,12 +8,21 @@ import { DOMSelector } from '../src/index.js';
 const DEPTH = 5;
 const CHILDREN_PER_NODE = 10;
 
-const { window } = new JSDOM(`<!DOCTYPE html><html><body><div id="root"></div></body></html>`);
+const { window } = new JSDOM(
+  `<!DOCTYPE html><html><body><div id="root"></div></body></html>`
+);
 const { document } = window;
 const root = document.getElementById('root');
 
+/**
+ * Recursively builds a mock DOM tree with div elements up to a specified depth.
+ * @param {Element} parent - The parent DOM element to append generated nodes to.
+ * @param {number} currentDepth - The current depth level of the tree hierarchy.
+ */
 function buildTree(parent, currentDepth) {
-  if (currentDepth >= DEPTH) return;
+  if (currentDepth >= DEPTH) {
+    return;
+  }
   for (let i = 0; i < CHILDREN_PER_NODE; i++) {
     const el = document.createElement('div');
     el.className = `level-${currentDepth}`;
