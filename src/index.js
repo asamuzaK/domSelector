@@ -54,8 +54,9 @@ const REG_UNIVERSAL = /^\s*(?:\*\|)?\*\s*$/;
 
 /**
  * @typedef {Readonly<{
- *   id: string|null,
+ *   attr: string|null,
  *   className: string|null,
+ *   id: string|null,
  *   tag: string|null
  * }>} SelectorSubject
  */
