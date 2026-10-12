@@ -2980,6 +2980,47 @@ describe('matcher', () => {
       assert.strictEqual(res, false, 'result');
     });
 
+    it('should return true for empty hyphen matcher value', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: {
+          type: STRING,
+          value: ''
+        }
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', '-bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false for non-string matcher value', () => {
+      const ast = {
+        flags: null,
+        matcher: '|=',
+        name: {
+          name: 'foo',
+          type: IDENT
+        },
+        type: ATTR_SELECTOR,
+        value: null
+      };
+      const node = document.createElement('div');
+      node.setAttribute('foo', '-bar');
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const res = func(ast, node);
+      assert.strictEqual(res, false, 'result');
+    });
+
     it('should match prefix attribute value using ^=', () => {
       const ast = {
         flags: null,
