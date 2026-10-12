@@ -668,7 +668,7 @@ export const matchAttributeSelector = (
       return false;
     }
     case '|=': {
-      if (!attrValue || typeof attrValue !== 'string') {
+      if (typeof attrValue !== 'string') {
         return false;
       }
       const prefix = `${attrValue}-`;

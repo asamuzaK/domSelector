@@ -2439,4 +2439,20 @@ describe('domSelector regression tests', () => {
       }
     });
   });
+
+  describe('#370 - https://github.com/asamuzaK/domSelector/issues/370', () => {
+    const html = `
+      <div id="t1" data-a=""></div>
+      <div id="t2" data-a="-x"></div>
+      <div id="t3" data-a="foo-x"></div>
+    `;
+
+    it('should get matched nodes', () => {
+      const { document } = jsdom(html).window;
+      const t1 = document.getElementById('t1');
+      const t2 = document.getElementById('t2');
+      const res = document.querySelectorAll('[data-a|=""]');
+      assert.deepEqual(res, [t1, t2]);
+    });
+  });
 });
