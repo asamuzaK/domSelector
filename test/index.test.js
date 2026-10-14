@@ -205,7 +205,7 @@ describe('DOMSelector', () => {
       const res = domSelector.extractSubjects('div');
       assert.deepEqual(
         res,
-        [{ id: null, className: null, tag: 'div' }],
+        [{ attr: null, className: null, id: null, tag: 'div' }],
         'single tag'
       );
     });
@@ -215,7 +215,7 @@ describe('DOMSelector', () => {
       const res = domSelector.extractSubjects('.my-class');
       assert.deepEqual(
         res,
-        [{ id: null, className: 'my-class', tag: null }],
+        [{ attr: null, className: 'my-class', id: null, tag: null }],
         'single class'
       );
     });
@@ -225,7 +225,7 @@ describe('DOMSelector', () => {
       const res = domSelector.extractSubjects('#my-id');
       assert.deepEqual(
         res,
-        [{ id: 'my-id', className: null, tag: null }],
+        [{ attr: null, className: null, id: 'my-id', tag: null }],
         'single ID'
       );
     });
@@ -235,7 +235,7 @@ describe('DOMSelector', () => {
       const res = domSelector.extractSubjects('div.my-class#my-id');
       assert.deepEqual(
         res,
-        [{ id: 'my-id', className: 'my-class', tag: 'div' }],
+        [{ attr: null, className: 'my-class', id: 'my-id', tag: 'div' }],
         'compound selector'
       );
     });
@@ -247,7 +247,7 @@ describe('DOMSelector', () => {
       );
       assert.deepEqual(
         res,
-        [{ id: 'li1', className: 'item', tag: 'li' }],
+        [{ attr: null, className: 'item', id: 'li1', tag: 'li' }],
         'rightmost subject'
       );
     });
@@ -258,8 +258,8 @@ describe('DOMSelector', () => {
       assert.deepEqual(
         res,
         [
-          { id: null, className: 'foo', tag: null },
-          { id: 'bar', className: null, tag: 'div' }
+          { attr: null, className: 'foo', id: null, tag: null },
+          { attr: null, className: null, id: 'bar', tag: 'div' }
         ],
         'selector group'
       );
@@ -270,13 +270,13 @@ describe('DOMSelector', () => {
       const resDefault = domSelector.extractSubjects('DIV.my-class');
       assert.deepEqual(
         resDefault,
-        [{ id: null, className: 'my-class', tag: 'div' }],
+        [{ attr: null, className: 'my-class', id: null, tag: 'div' }],
         'case-insensitive by default'
       );
       const resSensitive = domSelector.extractSubjects('DIV.my-class', true);
       assert.deepEqual(
         resSensitive,
-        [{ id: null, className: 'my-class', tag: 'DIV' }],
+        [{ attr: null, className: 'my-class', id: null, tag: 'DIV' }],
         'case-sensitive when true'
       );
     });

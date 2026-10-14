@@ -475,44 +475,49 @@ export const extractSubjectsAst = (ast, caseSensitive = false) => {
   const subjects = [];
   if (ast?.type === 'SelectorList') {
     for (const selectorNode of ast.children) {
-      let idKey = null;
-      let classKey = null;
-      let tagKey = null;
       let attrKey = null;
+      let classKey = null;
+      let idKey = null;
+      let tagKey = null;
       let current = selectorNode.children.tail;
       while (current) {
         const node = current.data;
         if (node.type === COMBINATOR) {
           break;
         }
-        if (node.type === ID_SELECTOR && idKey === null) {
-          idKey = unescapeSelector(node.name);
+        if (node.type === ATTR_SELECTOR && attrKey === null) {
+          const attrName = unescapeSelector(node.name.name);
+          // Namespaced attribute names are not used as keys.
+          if (!attrName.includes('|')) {
+            attrKey = attrName;
+          }
         } else if (node.type === CLASS_SELECTOR && classKey === null) {
           classKey = unescapeSelector(node.name);
+        } else if (node.type === ID_SELECTOR && idKey === null) {
+          idKey = unescapeSelector(node.name);
         } else if (node.type === TYPE_SELECTOR && tagKey === null) {
           const { localName } = parseAstName(unescapeSelector(node.name));
           if (localName !== '*') {
             tagKey = caseSensitive ? localName : localName.toLowerCase();
           }
-        } else if (node.type === ATTR_SELECTOR && attrKey === null) {
-          const attrName = unescapeSelector(node.name.name);
-          // Namespaced attribute names are not used as keys.
-          if (!attrName.includes('|')) {
-            attrKey = attrName.toLowerCase();
-          }
         }
         if (
-          idKey !== null &&
+          attrKey !== null &&
           classKey !== null &&
-          tagKey !== null &&
-          attrKey !== null
+          idKey !== null &&
+          tagKey !== null
         ) {
           break;
         }
         current = current.prev;
       }
       subjects.push(
-        Object.freeze({ id: idKey, className: classKey, tag: tagKey })
+        Object.freeze({
+          attr: attrKey,
+          className: classKey,
+          id: idKey,
+          tag: tagKey
+        })
       );
     }
   }
