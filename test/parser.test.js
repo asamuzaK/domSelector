@@ -10157,17 +10157,19 @@ describe('extract subjects via AST', () => {
   const func = parser.extractSubjectsAst;
   const parse = parser.parseSelector;
 
-  it('should return empty array for undefined AST', () => {
-    const res = func();
-    assert.deepEqual(res, [], 'result');
-  });
-
-  it('should return empty array for non-SelectorList AST', () => {
-    const ast = parse('div');
-    // わざとtypeを変更してテスト
-    ast.type = 'Selector';
-    const res = func(ast);
-    assert.deepEqual(res, [], 'result');
+  it('should return an empty frozen array when AST is invalid', () => {
+    const res1 = func();
+    assert.deepEqual(res1, [], 'result');
+    assert.strictEqual(Object.isFrozen(res1), true, 'frozen');
+    const res2 = func(null);
+    assert.deepEqual(res2, [], 'result');
+    assert.strictEqual(Object.isFrozen(res2), true, 'frozen');
+    const res3 = func({});
+    assert.deepEqual(res3, [], 'result');
+    assert.strictEqual(Object.isFrozen(res3), true, 'frozen');
+    const res4 = func({ type: 'Selector' });
+    assert.deepEqual(res4, [], 'result');
+    assert.strictEqual(Object.isFrozen(res4), true, 'frozen');
   });
 
   it('should extract id subject from ID selector', () => {
@@ -10185,6 +10187,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract class subject from class selector', () => {
@@ -10202,6 +10206,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract tag subject from type selector in lowercase by default', () => {
@@ -10219,6 +10225,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract exact tag subject when caseSensitive is true', () => {
@@ -10236,6 +10244,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract attribute subject from attribute selector', () => {
@@ -10253,6 +10263,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should ignore namespaced attribute as subject', () => {
@@ -10270,6 +10282,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract all subjects from a compound selector', () => {
@@ -10287,6 +10301,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should only extract the rightmost subjects when combinators are present', () => {
@@ -10304,6 +10320,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract subjects from a list of multiple selectors', () => {
@@ -10333,6 +10351,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract tag subject in lowercase for camelCase tag by default', () => {
@@ -10350,6 +10370,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should extract exact tag subject for camelCase tag when caseSensitive is true', () => {
@@ -10367,6 +10389,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should maintain case for id, class, and attribute regardless of caseSensitive flag (false)', () => {
@@ -10384,6 +10408,8 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 
   it('should maintain case for id, class, and attribute regardless of caseSensitive flag (true)', () => {
@@ -10401,5 +10427,7 @@ describe('extract subjects via AST', () => {
       ],
       'result'
     );
+    assert.strictEqual(Object.isFrozen(res), true, 'array frozen');
+    assert.strictEqual(Object.isFrozen(res[0]), true, 'object frozen');
   });
 });
