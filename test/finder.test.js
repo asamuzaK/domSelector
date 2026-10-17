@@ -1262,6 +1262,38 @@ describe('Finder', () => {
       assert.deepEqual([...res], [span], 'result');
     });
 
+    it('should find all descendant elements under root node', () => {
+      const root = document.createElement('div');
+      const div = document.createElement('div');
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      const span2 = document.createElement('span');
+      p.appendChild(span);
+      p.appendChild(span2);
+      div.appendChild(p);
+      root.appendChild(div);
+      const finder = new Finder(window);
+      finder.setup('span', root);
+      const res = finder.find('all');
+      assert.deepEqual([...res], [span, span2], 'result');
+    });
+
+    it('should find first descendant element matching child chain', () => {
+      const root = document.createElement('div');
+      const div = document.createElement('div');
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      const span2 = document.createElement('span');
+      p.appendChild(span);
+      p.appendChild(span2);
+      div.appendChild(p);
+      root.appendChild(div);
+      const finder = new Finder(window);
+      finder.setup('div > p > span', root);
+      const res = finder.find('first');
+      assert.deepEqual([...res], [span], 'result');
+    });
+
     it('should find all descendant elements matching child chain', () => {
       const root = document.createElement('div');
       const div = document.createElement('div');

@@ -151,7 +151,9 @@ export class DOMTraverser {
     while (currentNode) {
       if (boundaryNode) {
         if (currentNode === boundaryNode) {
-          break;
+          if (targetType !== TARGET_ALL) {
+            break;
+          }
         } else if (
           targetType === TARGET_ALL &&
           !boundaryNode.contains(currentNode)
