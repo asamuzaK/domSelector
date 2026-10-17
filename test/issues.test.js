@@ -2499,7 +2499,7 @@ describe('domSelector regression tests', () => {
       tbody.appendChild(tr);
       table.appendChild(tbody);
       table.id = 'q';
-      const res = table.querySelectorAll("#q > tbody > .r");
+      const res = table.querySelectorAll('#q > tbody > .r');
       assert.deepEqual(res, [tr], 'result');
     });
 
@@ -2514,7 +2514,7 @@ describe('domSelector regression tests', () => {
       tbody.appendChild(tr);
       table.appendChild(tbody);
       table.id = 'q';
-      const res = table.querySelectorAll(":scope > tbody > .r");
+      const res = table.querySelectorAll(':scope > tbody > .r');
       assert.deepEqual(res, [tr], 'result');
     });
   });
