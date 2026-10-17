@@ -276,7 +276,7 @@ export class Finder extends Evaluator {
     const precede =
       dir === DIR_NEXT &&
       this.node.nodeType === ELEMENT_NODE &&
-      this.node !== this.root;
+      (this.node !== this.root || !this.node.isConnected);
     switch (leaf.type) {
       case PS_ELEMENT_SELECTOR: {
         return this.#findEntryNodesForPseudoElement(

@@ -2455,4 +2455,67 @@ describe('domSelector regression tests', () => {
       assert.deepEqual(res, [t1, t2]);
     });
   });
+
+  describe('#373 - https://github.com/asamuzaK/domSelector/issues/373', () => {
+    it('should get matched nodes', () => {
+      const { document } = jsdom().window;
+      const table = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      const td = document.createElement('tr');
+      tr.appendChild(td);
+      tr.classList.add('r');
+      tbody.appendChild(tr);
+      table.appendChild(tbody);
+      table.id = 'q';
+      document.body.appendChild(table);
+      const res = table.querySelectorAll("[id='q'] > tbody > .r");
+      assert.deepEqual(res, [tr], 'result');
+    });
+
+    it('should get matched nodes with ID attr', () => {
+      const { document } = jsdom().window;
+      const table = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      const td = document.createElement('tr');
+      tr.appendChild(td);
+      tr.classList.add('r');
+      tbody.appendChild(tr);
+      table.appendChild(tbody);
+      table.id = 'q';
+      const res = table.querySelectorAll("[id='q'] > tbody > .r");
+      assert.deepEqual(res, [tr], 'result');
+    });
+
+    it('should get matched nodes with ID selector', () => {
+      const { document } = jsdom().window;
+      const table = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      const td = document.createElement('tr');
+      tr.appendChild(td);
+      tr.classList.add('r');
+      tbody.appendChild(tr);
+      table.appendChild(tbody);
+      table.id = 'q';
+      const res = table.querySelectorAll("#q > tbody > .r");
+      assert.deepEqual(res, [tr], 'result');
+    });
+
+    it('should get matched nodes with ID selector', () => {
+      const { document } = jsdom().window;
+      const table = document.createElement('table');
+      const tbody = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      const td = document.createElement('tr');
+      tr.appendChild(td);
+      tr.classList.add('r');
+      tbody.appendChild(tr);
+      table.appendChild(tbody);
+      table.id = 'q';
+      const res = table.querySelectorAll(":scope > tbody > .r");
+      assert.deepEqual(res, [tr], 'result');
+    });
+  });
 });
