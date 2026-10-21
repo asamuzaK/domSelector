@@ -7,7 +7,7 @@ import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
 
 /* constants */
-const CACHE_SIZE = 4096;
+import { CACHE_SIZE } from './constant.js';
 
 /**
  * @typedef {object} MapperResult

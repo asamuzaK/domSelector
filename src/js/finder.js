@@ -18,6 +18,7 @@ import {
 /* constants */
 import {
   ATTR_SELECTOR,
+  CACHE_SIZE,
   CLASS_SELECTOR,
   DIR_NEXT,
   DIR_PREV,
@@ -34,9 +35,6 @@ import {
 } from './constant.js';
 
 /* types */
-/* constants */
-const CACHE_SIZE = 4096;
-
 /**
  * @typedef {object} StrategyOptions
  * @property {boolean} [complex] - Indicates if the selector branch is complex.

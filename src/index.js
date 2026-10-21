@@ -22,6 +22,7 @@ import {
 
 /* constants */
 import {
+  CACHE_SIZE,
   DOCUMENT_NODE,
   ELEMENT_NODE,
   MIME_HTML,
@@ -31,7 +32,6 @@ import {
   TARGET_LINEAL,
   TARGET_SELF
 } from './js/constant.js';
-const CACHE_SIZE = 4096;
 const MAX_LENGTH = 2048;
 const DEFAULT_SUBJECT = Object.freeze({
   id: null,
