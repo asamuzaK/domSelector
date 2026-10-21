@@ -34,6 +34,9 @@ import {
 } from './constant.js';
 
 /* types */
+/* constants */
+const CACHE_SIZE = 4096;
+
 /**
  * @typedef {object} StrategyOptions
  * @property {boolean} [complex] - Indicates if the selector branch is complex.
@@ -56,6 +59,16 @@ export class Finder extends Evaluator {
   #scoped;
   #selector;
   #selectorAST = null;
+
+  /**
+   * Initializes the finder.
+   * @param {Window} window - The window object.
+   * @param {number} [documentCacheSize] - The max number of items per document cache.
+   */
+  constructor(window, documentCacheSize = CACHE_SIZE) {
+    super(window);
+    this.documentCacheSize = documentCacheSize;
+  }
 
   /**
    * Gets the selector AST.

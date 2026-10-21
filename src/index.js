@@ -111,7 +111,7 @@ export class DOMSelector {
     this.#cache = new LRUCache({
       max: this.#cacheSize
     });
-    this.#finder = new Finder(this.#window);
+    this.#finder = new Finder(this.#window, this.#cacheSize);
     this.#nwsapi = new Nwsapi(this.#window, this.#document, this.#cacheSize);
   }
 

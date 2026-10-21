@@ -1,9 +1,13 @@
 /**
  * mapper.js
  */
+import { LRUCache } from 'lru-cache';
 import { SelectorProcessor } from './processor.js';
 import { parseSelector, walkAST } from './parser.js';
 import { createHasValidator } from './selector.js';
+
+/* constants */
+const CACHE_SIZE = 4096;
 
 /**
  * @typedef {object} MapperResult
@@ -39,11 +43,12 @@ export class Mapper {
     let ast = null;
     let invalidate = false;
     let selectorAST = null;
-    // Check cache.
+    // Check cache. The cached item is an LRU cache bounded by the finder's `documentCacheSize`, so that repeatedly
+    // querying distinct selectors on a live document does not grow the cache without limits.
     if (ctx.documentCache.has(ctx.document)) {
       const cachedItem = ctx.documentCache.get(ctx.document);
-      if (cachedItem && cachedItem.has(selector)) {
-        const item = cachedItem.get(selector);
+      const item = cachedItem.get(selector);
+      if (item) {
         ast = item.ast;
         invalidate = item.invalidate;
         selectorAST = item.selectorAST;
@@ -79,12 +84,15 @@ export class Mapper {
     const processed = this.#processor.process(branches, selector);
     ast = processed.ast;
     const descendant = processed.descendant;
-    // Store in cache.
+    // Store in cache. The cached item is an LRU cache bounded by the finder's `documentCacheSize`, so that
+    // repeatedly querying distinct selectors on a live document does not grow the cache without limits.
     let cachedItem;
     if (ctx.documentCache.has(ctx.document)) {
       cachedItem = ctx.documentCache.get(ctx.document);
     } else {
-      cachedItem = new Map();
+      cachedItem = new LRUCache({
+        max: ctx.documentCacheSize ?? CACHE_SIZE
+      });
       ctx.documentCache.set(ctx.document, cachedItem);
     }
     cachedItem.set(selector, {

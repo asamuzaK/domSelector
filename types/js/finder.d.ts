@@ -7,6 +7,8 @@ export type StrategyOptions = {
 };
 export declare class Finder extends Evaluator {
     #private;
+    documentCacheSize: number;
+    constructor(window: Window, documentCacheSize?: number);
     get selectorAST(): import('css-tree').CssNode | null;
     setup(selector: string, node: Document | DocumentFragment | Element, opt: import('../index.js').FindOptions): Finder;
     find(targetType: string): Set<Element> | import('../index.js').CheckResult;
