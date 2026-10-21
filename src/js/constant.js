@@ -37,6 +37,7 @@ export const BIT_08 = 8;
 export const BIT_16 = 0x10;
 export const BIT_32 = 0x20;
 export const BIT_FFFF = 0xffff;
+export const CACHE_SIZE = 4096;
 export const DUO = 2;
 export const HEX = 16;
 export const TYPE_FROM = 8;
