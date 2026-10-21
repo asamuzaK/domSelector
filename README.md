@@ -41,7 +41,7 @@ Creates an instance of the DOMSelector.
 * `window` **{Window}** The window object.
 * `document` **{Document}?** The document object. Defaults to `window.document`.
 * `opt` **{object}?** Options:
-  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal LRU cache. Defaults to `4096`.
+  * `opt.cacheSize` **{number}?** Maximum number of items to store in the internal LRU cache. Defaults to `4096`. This applies to every internal cache, including the per-document cache that pairs parsed selectors with a document, so that repeatedly querying distinct selectors on a live document does not grow its cache without limits.
   * `opt.idlUtils` **{object}?** The internal IDL wrapper used for jsdom.
   * `opt.maxLength` **{number}?** The maximum length of the selector allowed. Defaults to `2048`.
 

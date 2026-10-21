@@ -4,6 +4,7 @@
 
 /* api */
 import { strict as assert } from 'node:assert';
+import { LRUCache } from 'lru-cache';
 import { JSDOM } from 'jsdom';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
@@ -164,7 +165,7 @@ describe('Mapper', () => {
       );
     });
 
-    it('should initialize new Map entry in documentCache when missing', () => {
+    it('should initialize new LRU cache entry in documentCache when missing', () => {
       const mapper = new Mapper(mockContext);
       const selector = '.new-selector';
       mockContext.documentCache.clear();
@@ -177,18 +178,18 @@ describe('Mapper', () => {
       );
       const cachedItem = mockContext.documentCache.get(document);
       assert.strictEqual(
-        cachedItem instanceof Map,
+        cachedItem instanceof LRUCache,
         true,
-        'Cached item should be a Map instance'
+        'Cached item should be an LRUCache instance'
       );
       assert.strictEqual(
         cachedItem.has(selector),
         true,
-        'Should successfully store the selector in the new Map'
+        'Should successfully store the selector in the new cache'
       );
     });
 
-    it('should reuse documentCache Map instance for new selectors', () => {
+    it('should reuse documentCache entry instance for new selectors', () => {
       const mapper = new Mapper(mockContext);
       const selector1 = '.first-selector';
       const selector2 = '.second-selector';
@@ -199,7 +200,7 @@ describe('Mapper', () => {
       assert.strictEqual(
         initialMap,
         reusedMap,
-        'Should reuse the exact same Map reference'
+        'Should reuse the exact same cache instance'
       );
       assert.strictEqual(
         reusedMap.has(selector1),
@@ -209,7 +210,67 @@ describe('Mapper', () => {
       assert.strictEqual(
         reusedMap.has(selector2),
         true,
-        'Second selector should be appended to the same Map'
+        'Second selector should be appended to the same cache'
+      );
+    });
+
+    it('should evict the least recently used selector once the document cache is full', () => {
+      const mapper = new Mapper(mockContext);
+      const evictedSelector = '.bounded-selector-0';
+      for (let i = 0; i < 4097; i++) {
+        mapper.correspond(`.bounded-selector-${i}`);
+      }
+      const cachedItem = mockContext.documentCache.get(document);
+      assert.strictEqual(
+        cachedItem.size,
+        4096,
+        'Document cache should stay bounded'
+      );
+      assert.strictEqual(
+        cachedItem.has(evictedSelector),
+        false,
+        'Oldest selector should be evicted'
+      );
+      assert.strictEqual(
+        cachedItem.has('.bounded-selector-4096'),
+        true,
+        'Newest selector should be retained'
+      );
+    });
+
+    it('should reprocess an evicted selector and cache it again', () => {
+      const mapper = new Mapper(mockContext);
+      const evictedSelector = '.evicted-selector';
+      const { selectorAST: selectorASTFirst } =
+        mapper.correspond(evictedSelector);
+      for (let i = 0; i < 4097; i++) {
+        mapper.correspond(`.roundtrip-selector-${i}`);
+      }
+      const cachedItem = mockContext.documentCache.get(document);
+      assert.strictEqual(
+        cachedItem.has(evictedSelector),
+        false,
+        'Selector should have been evicted'
+      );
+      processorStub.resetHistory();
+      const { selectorAST: selectorASTSecond } =
+        mapper.correspond(evictedSelector);
+      assert.strictEqual(
+        processorStub.calledOnce,
+        true,
+        'Evicted selector should be processed again'
+      );
+      assert.deepStrictEqual(
+        selectorASTSecond,
+        selectorASTFirst,
+        'Reprocessed selector should return same result'
+      );
+      processorStub.resetHistory();
+      mapper.correspond(evictedSelector);
+      assert.strictEqual(
+        processorStub.notCalled,
+        true,
+        'Reprocessed selector should be cached again'
       );
     });
 
