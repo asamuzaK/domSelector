@@ -820,14 +820,7 @@ export class PseudoClassEvaluator {
           } else if (this.#evaluator.eventHandler.currentEvent) {
             const { altKey, ctrlKey, key, metaKey, target, type } =
               this.#evaluator.eventHandler.currentEvent;
-            if (target === relatedTarget) {
-              if (
-                !this.#lastFocusVisible ||
-                focusTarget === this.#lastFocusVisible
-              ) {
-                bool = true;
-              }
-            } else if (key === 'Tab') {
+            if (key === 'Tab') {
               if (
                 (type === 'keydown' && target !== node) ||
                 (type === 'keyup' && target === node)
@@ -843,6 +836,13 @@ export class PseudoClassEvaluator {
                 } else {
                   bool = true;
                 }
+              }
+            } else if (target === relatedTarget) {
+              if (
+                !this.#lastFocusVisible ||
+                focusTarget === this.#lastFocusVisible
+              ) {
+                bool = true;
               }
             } else if (key) {
               if (
