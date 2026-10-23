@@ -30,6 +30,7 @@ export declare const BIT_08 = 8;
 export declare const BIT_16 = 16;
 export declare const BIT_32 = 32;
 export declare const BIT_FFFF = 65535;
+export declare const CACHE_SIZE = 4096;
 export declare const DUO = 2;
 export declare const HEX = 16;
 export declare const TYPE_FROM = 8;

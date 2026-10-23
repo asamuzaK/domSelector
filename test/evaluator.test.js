@@ -3802,11 +3802,12 @@ describe('Evaluator', () => {
         new window.KeyboardEvent('keydown', { key: 'Tab' })
       );
       input.focus();
-      input.dispatchEvent(
-        new window.KeyboardEvent('keyup', { key: 'Tab' })
-      );
+      input.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'Tab' }));
       evaluator.setup(':focus-visible', input);
-      assert.strictEqual(evaluator.matchPseudoClassSelector(leaf, input, {}), true);
+      assert.strictEqual(
+        evaluator.matchPseudoClassSelector(leaf, input, {}),
+        true
+      );
       node.focus();
       node.dispatchEvent(
         new window.FocusEvent('focus', { relatedTarget: input })

@@ -1962,7 +1962,11 @@ describe('PseudoClassEvaluator', () => {
         },
         currentEvent: null
       };
-      const res = pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {});
+      const res = pseudoEvaluator.matchPseudoClassSelector(
+        ast,
+        buttonTarget,
+        {}
+      );
       assert.strictEqual(
         res,
         false,
