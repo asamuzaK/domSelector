@@ -3661,45 +3661,56 @@ describe('Evaluator', () => {
       parent.appendChild(node2);
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
-      document.body.dispatchEvent(
-        new window.KeyboardEvent('keydown', {
-          key: 'Tab'
-        })
-      );
       node.focus();
       node.dispatchEvent(
-        new window.KeyboardEvent('keyup', {
-          key: 'Tab'
+        new window.KeyboardEvent('keydown', {
+          key: 'Tab',
+          bubbles: true
         })
       );
       node2.focus();
       evaluator.setup(':focus-visible', node2);
       const res = evaluator.matchPseudoClassSelector(leaf, node2, {});
+      node2.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'Tab',
+          bubbles: true
+        })
+      );
       assert.strictEqual(res, true, 'result');
     });
 
-    it('should match :focus-visible for element with tabindex=-1', () => {
+    it('should match :focus-visible when focus moves in key mode', () => {
       const leaf = {
         children: null,
         name: 'focus-visible',
         type: PS_CLASS_SELECTOR
       };
-      const node = document.createElement('div');
-      const node2 = document.createElement('button');
+      const node = document.createElement('button');
+      const node2 = document.createElement('div');
+      node2.setAttribute('tabindex', '-1');
       const parent = document.createElement('form');
-      node.setAttribute('tabindex', '-1');
       parent.appendChild(node);
       parent.appendChild(node2);
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
       node.focus();
-      evaluator.setup(':focus-visible', node);
-      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
-      assert.strictEqual(res, true, 'result');
+      node.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          key: 'Tab',
+          bubbles: true
+        })
+      );
       node2.focus();
       evaluator.setup(':focus-visible', node2);
-      const res2 = evaluator.matchPseudoClassSelector(leaf, node2, {});
-      assert.strictEqual(res2, true, 'result');
+      const res = evaluator.matchPseudoClassSelector(leaf, node2, {});
+      node2.dispatchEvent(
+        new window.KeyboardEvent('keyup', {
+          key: 'Tab',
+          bubbles: true
+        })
+      );
+      assert.strictEqual(res, true, 'result');
     });
 
     it('should match :focus-visible when target is lastFocusVisible', () => {
@@ -3787,7 +3798,15 @@ describe('Evaluator', () => {
       parent.appendChild(node);
       document.getElementById('div0').appendChild(parent);
       const evaluator = new Evaluator(window);
+      document.body.dispatchEvent(
+        new window.KeyboardEvent('keydown', { key: 'Tab' })
+      );
       input.focus();
+      input.dispatchEvent(
+        new window.KeyboardEvent('keyup', { key: 'Tab' })
+      );
+      evaluator.setup(':focus-visible', input);
+      assert.strictEqual(evaluator.matchPseudoClassSelector(leaf, input, {}), true);
       node.focus();
       node.dispatchEvent(
         new window.FocusEvent('focus', { relatedTarget: input })
