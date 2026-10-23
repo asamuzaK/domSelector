@@ -1892,6 +1892,84 @@ describe('PseudoClassEvaluator', () => {
         'returns true because reset() does not clear #lastFocusVisible'
       );
     });
+
+    it('covers relatedTarget is null', () => {
+      buttonTarget.focus();
+      mockEvaluator.eventHandler = {
+        currentFocus: {
+          target: buttonTarget,
+          relatedTarget: null
+        },
+        currentEvent: null
+      };
+      const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {}),
+        true
+      );
+    });
+
+    it('covers relatedTarget matches lastFocusVisible and currentEvent exists', () => {
+      inputTarget.focus();
+      const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
+      pseudoEvaluator.matchPseudoClassSelector(ast, inputTarget, {});
+      buttonTarget.focus();
+      mockEvaluator.eventHandler = {
+        currentFocus: {
+          target: buttonTarget,
+          relatedTarget: inputTarget
+        },
+        currentEvent: { type: 'keydown', key: 'Shift', target: buttonTarget }
+      };
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {}),
+        true
+      );
+    });
+
+    it('covers relatedTarget is neither null nor lastFocusVisible', () => {
+      inputTarget.focus();
+      const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
+      pseudoEvaluator.matchPseudoClassSelector(ast, inputTarget, {});
+      const otherTarget = document.createElement('button');
+      document.body.appendChild(otherTarget);
+      buttonTarget.focus();
+      mockEvaluator.eventHandler = {
+        currentFocus: {
+          target: buttonTarget,
+          relatedTarget: otherTarget
+        },
+        currentEvent: null
+      };
+      assert.strictEqual(
+        pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {}),
+        false
+      );
+      otherTarget.remove();
+    });
+
+    it('reaches the else branch when currentEvent is null, relatedTarget is not null, and does not match lastFocusVisible', () => {
+      inputTarget.focus();
+      const ast = { name: 'focus-visible', type: PS_CLASS_SELECTOR };
+      pseudoEvaluator.matchPseudoClassSelector(ast, inputTarget, {});
+      const otherTarget = document.createElement('button');
+      document.body.appendChild(otherTarget);
+      buttonTarget.focus();
+      mockEvaluator.eventHandler = {
+        currentFocus: {
+          target: buttonTarget,
+          relatedTarget: otherTarget
+        },
+        currentEvent: null
+      };
+      const res = pseudoEvaluator.matchPseudoClassSelector(ast, buttonTarget, {});
+      assert.strictEqual(
+        res,
+        false,
+        'returns false and hits the final else branch'
+      );
+      otherTarget.remove();
+    });
   });
 
   describe('match :focus-within pseudo-class', () => {

@@ -2518,4 +2518,29 @@ describe('domSelector regression tests', () => {
       assert.deepEqual(res, [tr], 'result');
     });
   });
+
+  describe('#375 - https://github.com/asamuzaK/domSelector/issues/375', () => {
+    const html =
+      '<button id=a>A</button><button id=b>B</button><button id=c>C</button>';
+
+    it('should match', () => {
+      const { document, KeyboardEvent } = jsdom(html).window;
+      const [a, b, c] = ['a', 'b', 'c'].map(id => document.getElementById(id));
+      const tab = (from, to) => {
+        from.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })
+        );
+        to.focus();
+        const visible = to.matches(':focus-visible');
+        to.dispatchEvent(
+          new KeyboardEvent('keyup', { key: 'Tab', bubbles: true })
+        );
+        return visible;
+      };
+      a.focus();
+      assert.strictEqual(tab(a, b), true, 'first');
+      assert.strictEqual(tab(b, c), true, 'second');
+      assert.strictEqual(tab(c, a), true, 'third');
+    });
+  });
 });
