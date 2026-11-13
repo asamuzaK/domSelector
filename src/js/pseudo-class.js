@@ -1038,7 +1038,7 @@ export class PseudoClassEvaluator {
     const { localName } = node;
     if (KEYS_FORM_PS_VALID.has(localName)) {
       let { valid } = node.validity;
-      if (node.maxLength >= 0) {
+      if (valid && node.maxLength >= 0) {
         valid = node.maxLength >= node.value.length;
       }
       if (valid && node.minLength >= 0) {
@@ -1061,7 +1061,7 @@ export class PseudoClassEvaluator {
           while (refNode) {
             if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
               valid = refNode.validity.valid;
-              if (refNode.maxLength >= 0) {
+              if (valid && refNode.maxLength >= 0) {
                 valid = refNode.maxLength >= refNode.value.length;
               }
               if (valid && refNode.minLength >= 0) {

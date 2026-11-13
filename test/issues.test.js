@@ -2543,4 +2543,41 @@ describe('domSelector regression tests', () => {
       assert.strictEqual(tab(c, a), true, 'third');
     });
   });
+
+  describe('#375 - https://github.com/asamuzaK/domSelector/issues/375', () => {
+    it('should match', () => {
+      const html = '<input id="input" required maxlength="25">';
+      const { document } = jsdom(html).window;
+      const input = document.getElementById('input');
+      assert.strictEqual(input.validity.valid, false, 'validity');
+      assert.strictEqual(input.matches(':valid'), false, 'valid');
+      assert.strictEqual(input.matches(':invalid'), true, 'invalid');
+    });
+
+    it('should match', () => {
+      const html = '<input id="input" required>';
+      const { document } = jsdom(html).window;
+      const input = document.getElementById('input');
+      assert.strictEqual(input.validity.valid, false, 'validity');
+      assert.strictEqual(input.matches(':valid'), false, 'valid');
+      assert.strictEqual(input.matches(':invalid'), true, 'invalid');
+    });
+
+    it('should match', () => {
+      const html =
+        '<form id="form"><input id="input" required maxlength="25"></form>';
+      const { document } = jsdom(html).window;
+      const form = document.getElementById('form');
+      assert.strictEqual(form.matches(':valid'), false, 'valid');
+      assert.strictEqual(form.matches(':invalid'), true, 'invalid');
+    });
+
+    it('should match', () => {
+      const html = '<form id="form"><input id="input" required></form>';
+      const { document } = jsdom(html).window;
+      const form = document.getElementById('form');
+      assert.strictEqual(form.matches(':valid'), false, 'valid');
+      assert.strictEqual(form.matches(':invalid'), true, 'invalid');
+    });
+  });
 });
