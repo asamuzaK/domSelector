@@ -721,7 +721,7 @@ describe('jsdom issues tagged with `selectors` label', () => {
           <head>
           </head>
           <body>
-            <div id="shadow-root" style="visibility:hidden;"></div>
+            <div id="shadow-root" style="visibility:visible;"></div>
           </body>
         </html>
       `);
