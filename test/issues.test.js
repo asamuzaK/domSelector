@@ -2580,4 +2580,29 @@ describe('domSelector regression tests', () => {
       assert.strictEqual(form.matches(':invalid'), true, 'invalid');
     });
   });
+
+  describe('#380 - https://github.com/asamuzaK/domSelector/issues/380', () => {
+    it('should match', () => {
+      const values = [
+        ['v1', 'ä'],
+        ['v2', '❤'],
+        ['v3', '👍'],
+        ['v4', 'a👍']
+      ];
+      const html = `<!doctype html><html><body>${values.map(([k, v]) => `<b id="${k}" data-v="${v}"></b>`).join('')}</body></html>`;
+      const { document } = jsdom(html).window;
+      const results = [];
+      for (const [k, v] of values) {
+        const node = document.getElementById(k);
+        const res = node.matches(`[data-v="${v}"]`);
+        results.push([res, `${k} matches ${v}`]);
+      }
+      assert.deepEqual(results, [
+        [true, 'v1 matches ä'],
+        [true, 'v2 matches ❤'],
+        [true, 'v3 matches 👍'],
+        [true, 'v4 matches a👍']
+      ]);
+    });
+  });
 });

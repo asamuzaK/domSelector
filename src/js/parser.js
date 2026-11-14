@@ -164,7 +164,7 @@ export const preprocess = value => {
   }
   selector = selector
     .replace(/\f|\r\n?/g, '\n')
-    .replace(/[\0\uD800-\uDFFF]|\\$/g, U_FFFD);
+    .replace(/\0|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|\\$/g, U_FFFD);
   if (selector === '&') {
     return '';
   }
