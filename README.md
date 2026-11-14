@@ -10,7 +10,7 @@ A CSS selector engine built for strict specification compliance.
 
 * **Strict Specification Compliance**: Strictly adheres to modern web standards. It accurately parses, evaluates, and extracts elements across complex combinations of pseudo-classes and HTML attributes. Features comprehensive support for CSS Selectors Level 4 (e.g., `:is()`, `:not()`, `:where()`, `:has()`) and Shadow DOM pseudo-classes (`:host`, `:host-context`).
 * **Utility Functions**: Provides utility methods alongside standard querying, such as `check()` for AST evaluation and `extractSubjects()` for extracting subject keys from selectors.
-* **jsdom's Default Engine**: Adopted as the CSS selector engine for [jsdom](https://github.com/jsdom/jsdom).
+* **jsdom Integration**: Served as the default CSS selector engine for [jsdom](https://github.com/jsdom/jsdom) up to v30.x.
 
 ## Install
 
