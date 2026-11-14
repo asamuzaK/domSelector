@@ -2544,7 +2544,7 @@ describe('domSelector regression tests', () => {
     });
   });
 
-  describe('#375 - https://github.com/asamuzaK/domSelector/issues/375', () => {
+  describe('#379 - https://github.com/asamuzaK/domSelector/issues/379', () => {
     it('should match', () => {
       const html = '<input id="input" required maxlength="25">';
       const { document } = jsdom(html).window;
