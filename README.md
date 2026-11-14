@@ -116,6 +116,7 @@ Parses a selector and extracts the rightmost subject keys (Id, Class, Tag).
 * `selector` **{string}** CSS selector.
 * `caseSensitive` **{boolean}?** `true` if the tag key should be case sensitive. Defaults to `false`.
 * **Returns** **{Array<SelectorSubject>}** An array of extracted subject keys. Each object contains:
+  * `attr` **{string | null}** The attribute name.
   * `id` **{string | null}** The ID.
   * `className` **{string | null}** The class name.
   * `tag` **{string | null}** The tag name.
