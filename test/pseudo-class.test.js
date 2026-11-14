@@ -2205,10 +2205,6 @@ describe('PseudoClassEvaluator', () => {
       node.max = '20';
       node.value = '15';
       document.getElementById('div0').appendChild(node);
-      Object.defineProperty(node, 'validity', {
-        value: { rangeOverflow: false, rangeUnderflow: false },
-        writable: true
-      });
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(leafIn, node, {}),
         true,
@@ -2220,7 +2216,6 @@ describe('PseudoClassEvaluator', () => {
         'fails :out-of-range for value within limits'
       );
       node.value = '25';
-      node.validity = { rangeOverflow: true, rangeUnderflow: false };
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(leafIn, node, {}),
         false,
@@ -2368,10 +2363,6 @@ describe('PseudoClassEvaluator', () => {
 
     it('evaluates form parts using validity.valid', () => {
       const input = document.createElement('input');
-      Object.defineProperty(input, 'validity', {
-        value: { valid: true },
-        writable: true
-      });
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(astValid, input, {}),
         true,
@@ -2382,7 +2373,7 @@ describe('PseudoClassEvaluator', () => {
         false,
         'returns false for :invalid when validity.valid is true'
       );
-      input.validity = { valid: false };
+      input.required = true;
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(astValid, input, {}),
         false,
@@ -2397,7 +2388,6 @@ describe('PseudoClassEvaluator', () => {
 
     it('should override validity based on maxLength', () => {
       const input = document.createElement('input');
-      Object.defineProperty(input, 'validity', { value: { valid: true } });
       input.maxLength = 5;
       input.value = '123456';
       assert.strictEqual(
@@ -2415,7 +2405,6 @@ describe('PseudoClassEvaluator', () => {
 
     it('should override validity based on minLength', () => {
       const input = document.createElement('input');
-      Object.defineProperty(input, 'validity', { value: { valid: true } });
       input.minLength = 3;
       input.value = '12';
       assert.strictEqual(
@@ -2452,10 +2441,6 @@ describe('PseudoClassEvaluator', () => {
       input.type = 'text';
       input.value = '12345';
       input.setAttribute('maxlength', '3');
-      Object.defineProperty(input, 'validity', {
-        value: { valid: true },
-        writable: true
-      });
       form.appendChild(input);
       assert.strictEqual(
         pseudoEvaluator.matchPseudoClassSelector(astValid, form, {}),
@@ -2488,8 +2473,6 @@ describe('PseudoClassEvaluator', () => {
       it('evaluates valid if all descendant form parts are', () => {
         const input1 = document.createElement('input');
         const input2 = document.createElement('input');
-        Object.defineProperty(input1, 'validity', { value: { valid: true } });
-        Object.defineProperty(input2, 'validity', { value: { valid: true } });
         form.appendChild(input1);
         form.appendChild(input2);
         assert.strictEqual(
@@ -2502,8 +2485,7 @@ describe('PseudoClassEvaluator', () => {
       it('evaluates invalid for bad descendant (cached)', () => {
         const input1 = document.createElement('input');
         const input2 = document.createElement('input');
-        Object.defineProperty(input1, 'validity', { value: { valid: true } });
-        Object.defineProperty(input2, 'validity', { value: { valid: false } });
+        input2.required = true;
         form.appendChild(input1);
         form.appendChild(input2);
         assert.strictEqual(
@@ -2512,7 +2494,6 @@ describe('PseudoClassEvaluator', () => {
           'form is invalid if at least one child is invalid'
         );
         const input3 = document.createElement('input');
-        Object.defineProperty(input3, 'validity', { value: { valid: true } });
         form.appendChild(input3);
         assert.strictEqual(
           pseudoEvaluator.matchPseudoClassSelector(astValid, form, {}),
@@ -2523,7 +2504,6 @@ describe('PseudoClassEvaluator', () => {
 
       it('evaluates descendant minLength in TreeWalker', () => {
         const input = document.createElement('input');
-        Object.defineProperty(input, 'validity', { value: { valid: true } });
         input.minLength = 5;
         input.value = '123';
         form.appendChild(input);
@@ -2548,10 +2528,6 @@ describe('PseudoClassEvaluator', () => {
         const input = document.createElement('input');
         form.appendChild(input);
         document.getElementById('div0').appendChild(form);
-        Object.defineProperty(input, 'validity', {
-          value: { valid: true },
-          writable: true
-        });
         assert.strictEqual(
           pseudoEvaluator.matchPseudoClassSelector(astValid, form, {}),
           true,
@@ -2568,12 +2544,9 @@ describe('PseudoClassEvaluator', () => {
       it('evaluates :valid and :invalid for <fieldset>', () => {
         const fieldset = document.createElement('fieldset');
         const invalidInput = document.createElement('input');
+        invalidInput.required = true;
         fieldset.appendChild(invalidInput);
         document.getElementById('div0').appendChild(fieldset);
-        Object.defineProperty(invalidInput, 'validity', {
-          value: { valid: false },
-          writable: true
-        });
         assert.strictEqual(
           pseudoEvaluator.matchPseudoClassSelector(astValid, fieldset, {}),
           false,
