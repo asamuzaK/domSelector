@@ -1023,6 +1023,30 @@ describe('DOMSelector', () => {
       assert.strictEqual(res, false, 'result');
     });
 
+    it('should match An+B keywords and n case-insensitively', () => {
+      const li1 = document.getElementById('li1');
+      const li2 = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      assert.strictEqual(domSelector.matches('li:nth-child(ODD)', li1), true);
+      assert.strictEqual(domSelector.matches('li:nth-child(Odd)', li2), false);
+      assert.strictEqual(domSelector.matches('li:nth-child(EVEN)', li2), true);
+      assert.strictEqual(domSelector.matches('li:nth-child(2N+1)', li1), true);
+      assert.strictEqual(domSelector.matches('li:nth-child(2N+1)', li2), false);
+      assert.strictEqual(domSelector.matches('li:nth-child(N)', li2), true);
+    });
+
+    it('should match An+B with whitespace after the sign of B', () => {
+      const li1 = document.getElementById('li1');
+      const li2 = document.getElementById('li2');
+      const domSelector = new DOMSelector(window);
+      assert.strictEqual(domSelector.matches('li:nth-child(2n- 1)', li1), true);
+      assert.strictEqual(
+        domSelector.matches('li:nth-child(2n- 1)', li2),
+        false
+      );
+      assert.strictEqual(domSelector.matches('li:nth-child(n+ 2)', li2), true);
+    });
+
     it('should return true for matching descendant selector', () => {
       const div = document.createElement('div');
       div.id = 'main';
@@ -2016,6 +2040,20 @@ describe('DOMSelector', () => {
       const domSelector = new DOMSelector(window);
       const res = domSelector.querySelector(':nth-child(even)', node);
       assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
+
+    it('should query first element matching :nth-child(EVEN)', () => {
+      const node = document.getElementById('ul1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector(':nth-child(EVEN)', node);
+      assert.deepEqual(res, document.getElementById('li2'), 'result');
+    });
+
+    it('should query first element matching :nth-last-of-type(Odd)', () => {
+      const node = document.getElementById('ul1');
+      const domSelector = new DOMSelector(window);
+      const res = domSelector.querySelector('li:nth-last-of-type(Odd)', node);
+      assert.deepEqual(res, document.getElementById('li1'), 'result');
     });
 
     it('should query element matching complex :is() list', () => {

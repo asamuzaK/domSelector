@@ -1112,10 +1112,11 @@ export class PseudoClassEvaluator {
         selector: null
       };
       if (nthIdentName) {
-        if (nthIdentName === 'even') {
+        const identName = nthIdentName.toLowerCase();
+        if (identName === 'even') {
           anb.a = 2;
           anb.b = 0;
-        } else if (nthIdentName === 'odd') {
+        } else if (identName === 'odd') {
           anb.a = 2;
           anb.b = 1;
         }

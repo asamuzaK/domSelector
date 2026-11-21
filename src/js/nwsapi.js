@@ -920,7 +920,7 @@ export class Nwsapi {
    */
   compilePseudoTreeStruct(match, source, selectorString) {
     const pseudoName = match[1] ? match[1].toLowerCase() : '';
-    const formula = match[2];
+    const formula = match[2] ? match[2].replace(/\s/g, '').toLowerCase() : '';
     if (!pseudoName || !formula) {
       this.#emit(`'${selectorString}'${SEL_INVALID}`);
       return source;
