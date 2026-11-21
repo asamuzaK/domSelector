@@ -38,10 +38,10 @@
     "commander": "^15.1.0",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^65.4.6",
+    "eslint-plugin-jsdoc": "^65.5.1",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-regexp": "^3.3.3",
-    "eslint-plugin-unicorn": "^79.0.0",
+    "eslint-plugin-unicorn": "^80.0.0",
     "globals": "^17.14.0",
     "jsdom": "^31.0.1",
     "mitata": "^1.0.34",
@@ -50,7 +50,7 @@
     "prettier": "^3.10.1",
     "prettier-plugin-brace-style": "^0.10.4",
     "sinon": "^22.1.0",
-    "tinybench": "^6.2.3",
+    "tinybench": "^6.2.4",
     "typescript": "^7.0.2",
     "wpt-runner": "^7.0.0"
   },
@@ -80,5 +80,5 @@
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
-  "version": "10.0.6"
+  "version": "10.0.7"
 }
