@@ -1055,24 +1055,21 @@ export class PseudoClassEvaluator {
         const walker = this.#evaluator.createTreeWalker(node, { force: true });
         let refNode = traverseNode(node, walker);
         refNode = walker.firstChild();
-        if (!refNode) {
-          valid = true;
-        } else {
-          while (refNode) {
-            if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
-              valid = refNode.validity.valid;
-              if (valid && refNode.maxLength >= 0) {
-                valid = refNode.maxLength >= refNode.value.length;
-              }
-              if (valid && refNode.minLength >= 0) {
-                valid = refNode.minLength <= refNode.value.length;
-              }
-              if (!valid) {
-                break;
-              }
+        valid = true;
+        while (refNode) {
+          if (KEYS_FORM_PS_VALID.has(refNode.localName)) {
+            valid = refNode.validity.valid;
+            if (valid && refNode.maxLength >= 0) {
+              valid = refNode.maxLength >= refNode.value.length;
             }
-            refNode = walker.nextNode();
+            if (valid && refNode.minLength >= 0) {
+              valid = refNode.minLength <= refNode.value.length;
+            }
+            if (!valid) {
+              break;
+            }
           }
+          refNode = walker.nextNode();
         }
         this.#psValidCache.set(node, valid);
       }

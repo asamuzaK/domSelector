@@ -6524,6 +6524,78 @@ describe('Evaluator', () => {
       assert.strictEqual(res, false, 'result is false for empty fieldset');
     });
 
+    it('should match :valid on fieldset with no form controls', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('fieldset');
+      const child = document.createElement('div');
+      child.textContent = 'foo';
+      node.appendChild(child);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false for :invalid on fieldset with no form controls', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('fieldset');
+      const child = document.createElement('div');
+      child.textContent = 'foo';
+      node.appendChild(child);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':invalid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
+    it('should match :valid on form with no form controls', () => {
+      const leaf = {
+        children: null,
+        name: 'valid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const child = document.createElement('div');
+      child.textContent = 'foo';
+      node.appendChild(child);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':valid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, true, 'result');
+    });
+
+    it('should return false for :invalid on form with no form controls', () => {
+      const leaf = {
+        children: null,
+        name: 'invalid',
+        type: PS_CLASS_SELECTOR
+      };
+      const node = document.createElement('form');
+      const child = document.createElement('div');
+      child.textContent = 'foo';
+      node.appendChild(child);
+      const parent = document.getElementById('div0');
+      parent.appendChild(node);
+      const evaluator = new Evaluator(window);
+      evaluator.setup(':invalid', node);
+      const res = evaluator.matchPseudoClassSelector(leaf, node, {});
+      assert.strictEqual(res, false, 'result');
+    });
+
     it('should return false for :in-range on readonly input element', () => {
       const leaf = {
         children: null,
