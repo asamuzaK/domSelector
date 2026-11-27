@@ -32,13 +32,13 @@
   },
   "devDependencies": {
     "@types/css-tree": "^3.2.0",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.11",
     "c8": "^12.0.0",
     "chai": "^6.3.0",
     "commander": "^15.1.0",
-    "eslint": "^10.15.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "^65.5.1",
+    "eslint": "^10.16.0",
+    "eslint-config-prettier": "^10.1.9",
+    "eslint-plugin-jsdoc": "^65.5.7",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-regexp": "^3.3.3",
     "eslint-plugin-unicorn": "^80.0.0",
@@ -50,7 +50,7 @@
     "prettier": "^3.10.1",
     "prettier-plugin-brace-style": "^0.10.4",
     "sinon": "^22.1.0",
-    "tinybench": "^6.2.4",
+    "tinybench": "^6.2.5",
     "typescript": "^7.0.2",
     "wpt-runner": "^7.0.0"
   },
@@ -80,5 +80,5 @@
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
-  "version": "10.0.7"
+  "version": "10.0.8"
 }
